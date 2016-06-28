@@ -30,7 +30,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modules>
-		<module>joynr-types</module>
 		<module>libjoynr</module>
 		<module>clustercontroller</module>
         <module>libjoynr-websocket-runtime</module>

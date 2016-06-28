@@ -223,16 +223,31 @@ function test_failed {
 	echo '####################################################'
 }
 
-function start_java_provider {
+function start_java_provider_cc {
 	echo '####################################################'
-	echo '# starting Java provider'
+	echo '# starting Java provider CC (with in process clustercontroller)'
 	echo '####################################################'
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
 	rm -f java-consumer.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport=mqtt > $ILT_RESULTS_DIR/provider-java.log 2>&1 &
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport=mqtt > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
 	PROVIDER_PID=$!
-	echo "Started Java provider with PID $PROVIDER_PID"
+	echo "Started Java provider cc with PID $PROVIDER_PID"
+	# Allow some time for startup
+	sleep 10
+}
+
+function start_java_provider_ws {
+	echo '####################################################'
+	echo '# starting Java provider WS'
+	echo '# (with websocket connection to standalone clustercontroller)'
+	echo '####################################################'
+	cd $ILT_DIR
+	rm -f java-provider.persistence_file
+	rm -f java-consumer.persistence_file
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN websocket" > $ILT_RESULTS_DIR/provider-java-ws.log 2>&1 &
+	PROVIDER_PID=$!
+	echo "Started Java provider ws with PID $PROVIDER_PID"
 	# Allow some time for startup
 	sleep 10
 }
@@ -260,7 +275,7 @@ function start_cpp_provider {
 	rm -fr $PROVIDER_DIR
 	cp -a $ILT_BUILD_DIR/bin $PROVIDER_DIR
 	cd $PROVIDER_DIR
-	./ilt-provider-cc $DOMAIN > $ILT_RESULTS_DIR/provider-cpp.log 2>&1 &
+	./ilt-provider-ws $DOMAIN > $ILT_RESULTS_DIR/provider-cpp.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started C++ provider with PID $PROVIDER_PID in directory $PROVIDER_DIR"
 	# Allow some time for startup
@@ -279,21 +294,22 @@ function start_javascript_provider {
 	sleep 10
 }
 
-function start_java_consumer {
+function start_java_consumer_cc {
+	echo ''
 	echo '####################################################'
-	echo '# starting Java consumer'
+	echo '# starting Java consumer CC (with in process clustercontroller)'
 	echo '####################################################'
 	cd $ILT_DIR
 	rm -f java-consumer.persistence_file
-	mkdir $ILT_RESULTS_DIR/consumer-java-$1
+	mkdir $ILT_RESULTS_DIR/consumer-java-cc-$1
 	rm -fr $ILT_DIR/target/surefire-reports
-	mvn $SPECIAL_MAVEN_OPTIONS surefire:test -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-$1.log 2>&1
+	mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=mqtt:http -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-cc-$1.log 2>&1
 	SUCCESS=$?
-	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-$1
+	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-cc-$1
 	if [ "$SUCCESS" != 0 ]
 	then
 		echo '####################################################'
-		echo '# Java consumer FAILED'
+		echo '# Java consumer CC FAILED'
 		echo '####################################################'
 		echo "STATUS = $SUCCESS"
 		#test_failed
@@ -301,12 +317,42 @@ function start_java_consumer {
 		#stopall
 	else
 		echo '####################################################'
-		echo '# Java consumer successfully completed'
+		echo '# Java consumer CC successfully completed'
+		echo '####################################################'
+	fi
+}
+
+function start_java_consumer_ws {
+	echo ''
+	echo '####################################################'
+	echo '# starting Java consumer WS'
+	echo '# (with websocket connection to standalone clustercontroller)'
+	echo '####################################################'
+	cd $ILT_DIR
+	rm -f java-consumer.persistence_file
+	mkdir $ILT_RESULTS_DIR/consumer-java-ws-$1
+	rm -fr $ILT_DIR/target/surefire-reports
+	mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=websocket -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-ws-$1.log 2>&1
+	SUCCESS=$?
+	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-ws-$1
+	if [ "$SUCCESS" != 0 ]
+	then
+		echo '####################################################'
+		echo '# Java consumer WS FAILED'
+		echo '####################################################'
+		echo "STATUS = $SUCCESS"
+		#test_failed
+		let FAILED_TESTS+=1
+		#stopall
+	else
+		echo '####################################################'
+		echo '# Java consumer WS successfully completed'
 		echo '####################################################'
 	fi
 }
 
 function start_cpp_consumer {
+	echo ''
 	echo '####################################################'
 	echo '# starting C++ consumer'
 	echo '####################################################'
@@ -332,6 +378,7 @@ function start_cpp_consumer {
 }
 
 function start_javascript_consumer {
+	echo ''
 	echo '####################################################'
 	echo '# starting Javascript consumer'
 	echo '####################################################'
@@ -359,7 +406,8 @@ function start_javascript_consumer {
 }
 
 function start_consumers {
-	start_java_consumer $1
+	start_java_consumer_cc $1
+	start_java_consumer_ws $1
 	start_cpp_consumer $1
 	start_javascript_consumer $1
 }
@@ -374,10 +422,13 @@ rm -fr $ILT_RESULTS_DIR
 mkdir -p $ILT_RESULTS_DIR
 cd $ILT_DIR
 rm -fr node_modules
-rm -fr localStorageStorage
 rm -fr reports
-rm -f npm-debug.log
-rm -f joynr_participantIds.properties
+
+function clean_up {
+	cd $ILT_DIR
+	rm -f derby.log npm-debug.log
+	rm -fr localStorageStorage
+}
 
 # prepare JavaScript
 npm install
@@ -393,26 +444,48 @@ npm install jasmine-node
 # continues to return data for the already stopped provider
 # since it currently assumes that it will be restarted.
 
-# run checks with Java provider
+# run checks with Java provider cc
+clean_up
+echo ''
 echo '####################################################'
 echo '####################################################'
-echo '# RUN CHECKS WITH JAVA PROVIDER'
 echo '####################################################'
+echo '# RUN CHECKS WITH JAVA PROVIDER CC (with in process clustercontroller)'
 echo '####################################################'
-PROVIDER="provider-java"
+PROVIDER="provider-java-cc"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
-start_java_provider
+start_java_provider_cc
+start_consumers $PROVIDER
+stop_provider
+stop_cluster_controller
+stop_services
+
+# run checks with Java provider ws
+clean_up
+echo ''
+echo '####################################################'
+echo '####################################################'
+echo '####################################################'
+echo '# RUN CHECKS WITH JAVA PROVIDER WS'
+echo '# (with websocket connection to standalone clustercontroller)'
+echo '####################################################'
+PROVIDER="provider-java-ws"
+start_services $PROVIDER
+start_cluster_controller $PROVIDER
+start_java_provider_ws
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
 stop_services
 
 # run checks with C++ provider
+clean_up
+echo ''
+echo '####################################################'
 echo '####################################################'
 echo '####################################################'
 echo '# RUN CHECKS WITH C++ PROVIDER'
-echo '####################################################'
 echo '####################################################'
 PROVIDER="provider-cpp"
 start_services $PROVIDER
@@ -424,10 +497,12 @@ stop_cluster_controller
 stop_services
 
 # run checks with Javascript provider
+clean_up
+echo ''
+echo '####################################################'
 echo '####################################################'
 echo '####################################################'
 echo '# RUN CHECKS WITH JAVASCRIPT PROVIDER'
-echo '####################################################'
 echo '####################################################'
 PROVIDER="provider-javascript"
 start_services $PROVIDER

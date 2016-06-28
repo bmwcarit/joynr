@@ -35,68 +35,68 @@ public class LicenseCheck {
     public static final String HEADER_FILES_FILENAME = "/home/joynr/ws/joynr/dev/build/header-files.txt";
     public static final String OBJECT_FILE_DELIMITER = ".o: ";
 
+    private LicenseCheck() {
+    }
+
     public static void main(String[] args) throws IOException {
-        Set<String> uniqueHeaderFileNames = new HashSet<String>();
-        BufferedReader dependFiles = new BufferedReader(new FileReader(DEPEND_FILES_FILENAME));
+        Set<String> uniqueHeaderFileNames = new HashSet<>();
+        try (BufferedReader dependFiles = new BufferedReader(new FileReader(DEPEND_FILES_FILENAME))) {
+            String dependFileName;
+            while ((dependFileName = dependFiles.readLine()) != null) {
+                try (BufferedReader dependFile = new BufferedReader(new FileReader(dependFileName))) {
+                    String line;
+                    while ((line = dependFile.readLine()) != null) {
+                        if (line.startsWith("#") || line.isEmpty()) {
+                            continue;
+                        }
+                        String headerFileName = line.substring(line.indexOf(OBJECT_FILE_DELIMITER)
+                                + OBJECT_FILE_DELIMITER.length());
 
-        String dependFileName = null;
-        while ((dependFileName = dependFiles.readLine()) != null) {
-            BufferedReader dependFile = new BufferedReader(new FileReader(dependFileName));
-            String line = null;
-            while ((line = dependFile.readLine()) != null) {
-                if (line.startsWith("#") || line.isEmpty()) {
-                    continue;
-                }
-                String headerFileName = line.substring(line.indexOf(OBJECT_FILE_DELIMITER)
-                        + OBJECT_FILE_DELIMITER.length());
+                        if (headerFileName.matches(".*/moc_.*\\.cxx")) {
+                            // Qt moc files
+                            continue;
+                        }
 
-                if (headerFileName.matches(".*/moc_.*\\.cxx")) {
-                    // Qt moc files
-                    continue;
-                }
+                        if (headerFileName.startsWith("/home/joynr/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtCore/")
+                                || headerFileName.startsWith("/home/joynr/QtSDK/Desktop/Qt/4.8.1/gcc/include/Qt3Support/")) {
+                            // QtCore is LGPL v2.1
+                            continue;
+                        }
+                        if (headerFileName.contains("ThirdParty/src/googlemock/")) {
+                            // Google Mock is BSD 3-Clause License
+                            continue;
+                        }
+                        if (headerFileName.contains("ThirdParty/src/googletest/")) {
+                            // Google Test is BSD 3-Clause License
+                            continue;
+                        }
 
-                if (headerFileName.startsWith("/home/joynr/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtCore/")
-                        || headerFileName.startsWith("/home/joynr/QtSDK/Desktop/Qt/4.8.1/gcc/include/Qt3Support/")) {
-                    // QtCore is LGPL v2.1
-                    continue;
-                }
-                if (headerFileName.contains("ThirdParty/src/googlemock/")) {
-                    // Google Mock is BSD 3-Clause License
-                    continue;
-                }
-                if (headerFileName.contains("ThirdParty/src/googletest/")) {
-                    // Google Test is BSD 3-Clause License
-                    continue;
-                }
+                        // make paths absolut
+                        if (headerFileName.startsWith(JOYNR_INCLUDE_DIR)) {
+                            headerFileName = JOYNR_BUILD_DIR + headerFileName;
+                        }
+                        if (headerFileName.charAt(0) != '/') {
+                            headerFileName = JOYNR_SRC_DIR + headerFileName;
+                        }
 
-                // make paths absolut
-                if (headerFileName.startsWith(JOYNR_INCLUDE_DIR)) {
-                    headerFileName = JOYNR_BUILD_DIR + headerFileName;
-                }
-                if (headerFileName.charAt(0) != '/') {
-                    headerFileName = JOYNR_SRC_DIR + headerFileName;
-                }
+                        File file = new File(headerFileName);
+                        if (!file.exists()) {
+                            throw new IllegalArgumentException("File not found: " + headerFileName);
+                        }
 
-                File file = new File(headerFileName);
-                if (!file.exists()) {
-                    System.err.println("File not found: " + headerFileName);
-                    dependFile.close();
-                    return;
+                        headerFileName = file.getCanonicalPath();
+
+                        if ((headerFileName.startsWith(JOYNR_SRC_DIR) && !headerFileName.contains("libs/"))
+                                || (headerFileName.startsWith(JOYNR_BUILD_DIR) && !headerFileName.contains("libs/"))) {
+                            // our own stuff
+                            continue;
+                        }
+
+                        uniqueHeaderFileNames.add(headerFileName);
+                    }
                 }
-
-                headerFileName = file.getCanonicalPath(); //new URI(headerFileName).normalize().getPath();
-
-                if ((headerFileName.startsWith(JOYNR_SRC_DIR) && !headerFileName.contains("libs/"))
-                        || (headerFileName.startsWith(JOYNR_BUILD_DIR) && !headerFileName.contains("libs/"))) {
-                    // our own stuff
-                    continue;
-                }
-
-                uniqueHeaderFileNames.add(headerFileName);
             }
-            dependFile.close();
         }
-        dependFiles.close();
 
         BufferedWriter headerFiles = new BufferedWriter(new FileWriter(HEADER_FILES_FILENAME));
         for (String uniqueHeaderFileName : uniqueHeaderFileNames) {

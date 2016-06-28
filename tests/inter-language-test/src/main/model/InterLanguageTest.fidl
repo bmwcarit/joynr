@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -287,18 +287,11 @@ interface TestInterface {
 
 	attribute namedTypeCollection2.MapStringString attributeMapStringString
 
-	method methodWithSingleMapParameters {
-		in {
-			namedTypeCollection2.MapStringString mapArg
-		}
-		out {
-			namedTypeCollection2.MapStringString mapOut
-		}
-	}
-
 	// ATTRIBUTE where getter / setter throws exception
 
-	attribute Boolean attributeWithException
+	attribute Boolean attributeWithExceptionFromGetter readonly
+	
+	attribute Boolean attributeWithExceptionFromSetter
 
 	// METHODS WITHOUT ERROR DEFINITIONS
 
@@ -394,6 +387,15 @@ interface TestInterface {
 		}
 	}
 
+	method methodWithSingleMapParameters {
+		in {
+			namedTypeCollection2.MapStringString mapArg
+		}
+		out {
+			namedTypeCollection2.MapStringString mapOut
+		}
+	}
+
 	method methodWithSingleStructParameters {
 		in {
 			namedTypeCollection2.ExtendedBaseStruct extendedBaseStructArg
@@ -428,7 +430,19 @@ interface TestInterface {
 	}
 
 	// FIRE-AND-FORGET METHODS
-	// same as normal methods
+	<**
+		@description: This attribute is used to record that a fireAndForget method is being performed.
+	**>
+	attribute Int32 attributeFireAndForget
+	
+	method methodFireAndForgetWithoutParameter fireAndForget {
+	}
+
+	method methodFireAndForgetWithInputParameter fireAndForget {
+		in {
+			Int32 int32Arg
+		}
+	}
 
 	// OVERLOADED METHODS
 	// overload with different out parameter is not supported

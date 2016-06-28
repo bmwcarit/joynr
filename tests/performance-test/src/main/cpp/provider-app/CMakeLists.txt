@@ -9,4 +9,9 @@ target_link_libraries(performance-provider-app
     ${Boost_LIBRARIES}
 )
 
+install(
+    TARGETS performance-provider-app
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
 AddClangFormat(performance-provider-app)

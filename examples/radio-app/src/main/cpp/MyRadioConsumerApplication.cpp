@@ -51,7 +51,7 @@ public:
 
     void onError(const exceptions::JoynrRuntimeException& error)
     {
-        if (error.getTypeName() == exceptions::PublicationMissedException::TYPE_NAME) {
+        if (error.getTypeName() == exceptions::PublicationMissedException::TYPE_NAME()) {
             MyRadioHelper::prettyLog(logger,
                                      "ATTRIBUTE SUBSCRIPTION Publication Missed, subscriptionId: " +
                                              error.getMessage());

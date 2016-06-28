@@ -38,6 +38,7 @@ public class OneWayRequest implements JoynrMessageType {
     private String methodName;
     private String[] paramDatatypes;
     private Object[] params;
+    private String creatorUserId;
 
     public OneWayRequest() {
     }
@@ -58,6 +59,15 @@ public class OneWayRequest implements JoynrMessageType {
 
     public String getMethodName() {
         return methodName;
+    }
+
+    @JsonIgnore
+    public String getCreatorUserId() {
+        return creatorUserId;
+    }
+
+    public void setCreatorUserId(String creator) {
+        this.creatorUserId = creator;
     }
 
     @SuppressFBWarnings("EI_EXPOSE_REP")

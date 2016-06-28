@@ -19,8 +19,6 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
-import java.io.IOException;
-
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -77,7 +75,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
                 messageRouter.addNextHop(message.getFrom(), RoutingTypesUtil.fromAddressString(replyToMqttAddress));
             }
             messageRouter.route(message);
-        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException e) {
+        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException e) {
             failureAction.execute(e);
         }
     }

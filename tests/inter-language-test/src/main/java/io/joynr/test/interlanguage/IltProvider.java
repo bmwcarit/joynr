@@ -59,10 +59,12 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     protected BaseStruct attributeBaseStruct;
     protected ExtendedExtendedBaseStruct attributeExtendedExtendedBaseStruct;
     protected MapStringString attributeMapStringString;
+    protected Integer attributeFireAndForget;
 
     private static final Logger logger = LoggerFactory.getLogger(IltProvider.class);
 
     public IltProvider() {
+        attributeFireAndForget = 0;
     }
 
     @Override
@@ -203,16 +205,23 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     }
 
     @Override
-    public Promise<Deferred<Boolean>> getAttributeWithException() {
+    public Promise<Deferred<Boolean>> getAttributeWithExceptionFromGetter() {
         Deferred<Boolean> deferred = new Deferred<Boolean>();
-        deferred.reject(new ProviderRuntimeException("Exception from getAttributeWithException"));
+        deferred.reject(new ProviderRuntimeException("Exception from getAttributeWithExceptionFromGetter"));
         return new Promise<Deferred<Boolean>>(deferred);
     }
 
     @Override
-    public Promise<DeferredVoid> setAttributeWithException(Boolean attributeWithException) {
+    public Promise<Deferred<Boolean>> getAttributeWithExceptionFromSetter() {
+        Deferred<Boolean> deferred = new Deferred<Boolean>();
+        deferred.resolve(false);
+        return new Promise<Deferred<Boolean>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeWithExceptionFromSetter(Boolean attributeWithExceptionFromSetter) {
         DeferredVoid deferred = new DeferredVoid();
-        deferred.reject(new ProviderRuntimeException("Exception from setAttributeWithException"));
+        deferred.reject(new ProviderRuntimeException("Exception from setAttributeWithExceptionFromSetter"));
         return new Promise<DeferredVoid>(deferred);
     }
 
@@ -936,5 +945,31 @@ public class IltProvider extends TestInterfaceAbstractProvider {
             deferred.resolve(mapOut);
         }
         return new Promise<MethodWithSingleMapParametersDeferred>(deferred);
+    }
+
+    @Override
+    public Promise<Deferred<Integer>> getAttributeFireAndForget() {
+        Deferred<Integer> deferred = new Deferred<Integer>();
+        deferred.resolve(attributeFireAndForget);
+        return new Promise<Deferred<Integer>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeFireAndForget(Integer attributeFireAndForget) {
+        DeferredVoid deferred = new DeferredVoid();
+        this.attributeFireAndForget = attributeFireAndForget;
+        attributeFireAndForgetChanged(attributeFireAndForget);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public void methodFireAndForgetWithoutParameter() {
+        setAttributeFireAndForget(attributeFireAndForget + 1);
+    }
+
+    @Override
+    public void methodFireAndForgetWithInputParameter(Integer int32Arg) {
+        setAttributeFireAndForget(int32Arg);
     }
 }

@@ -33,6 +33,7 @@ import com.google.inject.Inject;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.SubscriptionManager;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import joynr.MethodMetaInformation;
 
@@ -63,7 +64,7 @@ public class JoynrMessagingConnectorFactory {
     /**
      * Creates a connector (java reflection dynamic proxy object) to execute remote procedure calls. Internally uses
      * JoynMessaging to transmit calls.
-     * 
+     *
      * @param fromParticipantId
      *            Participant Id of the created stub.
      * @param toParticipantId
@@ -84,12 +85,17 @@ public class JoynrMessagingConnectorFactory {
                                                             subscriptionManager);
     }
 
-    public static MethodMetaInformation ensureMethodMetaInformationPresent(Method method) throws JsonMappingException {
+    public static MethodMetaInformation ensureMethodMetaInformationPresent(Method method) {
         if (metaInformationMap.containsKey(method)) {
             return metaInformationMap.get(method);
         }
 
-        MethodMetaInformation metaInformation = new MethodMetaInformation(method);
+        MethodMetaInformation metaInformation;
+        try {
+            metaInformation = new MethodMetaInformation(method);
+        } catch (JsonMappingException e) {
+            throw new JoynrRuntimeException(e);
+        }
         MethodMetaInformation existingMetaInformation = metaInformationMap.putIfAbsent(method, metaInformation);
         if (existingMetaInformation != null) {
             // we only use putIfAbsent instead of .put, because putIfAbsent is threadsafe

@@ -34,11 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -46,7 +42,6 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.ExpiryDate;
@@ -55,26 +50,15 @@ import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.LongPollingHttpGlobalAddressFactory;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.channel.ChannelMessageSerializerFactory;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
-import io.joynr.messaging.http.HttpMessageSender;
-import io.joynr.messaging.http.operation.ChannelCreatedListener;
-import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
-import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
-import io.joynr.messaging.serialize.JsonSerializer;
-import io.joynr.messaging.serialize.MessageSerializerFactory;
-import io.joynr.proxy.Callback;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.types.DiscoveryEntry;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageRouterTest {
@@ -157,6 +141,6 @@ public class MessageRouterTest {
             return;
         }
         fail("scheduling an expired message should throw");
-
     }
+
 }

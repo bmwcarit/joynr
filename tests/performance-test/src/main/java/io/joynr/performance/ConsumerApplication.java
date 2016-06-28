@@ -124,6 +124,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         discoveryQos.setDiscoveryTimeoutMs(100000);
         discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
+        discoveryQos.setDiscoveryScope(invocationParameters.getDiscoveryScope());
 
         ProxyBuilder<EchoProxy> proxyBuilder = runtime.getProxyBuilder(invocationParameters.getDomainName(),
                                                                        EchoProxy.class);

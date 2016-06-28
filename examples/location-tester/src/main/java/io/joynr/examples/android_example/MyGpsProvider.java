@@ -34,7 +34,6 @@ public class MyGpsProvider extends DefaultGpsProvider {
     private int time = 0;
 
     public MyGpsProvider() {
-        providerQos.setPriority(System.currentTimeMillis());
         location = new GpsLocation(11.5819810, // longitude
                                    48.1351250, // latitude
                                    532.0, // altitude,

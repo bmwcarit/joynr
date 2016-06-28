@@ -28,6 +28,7 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/TimeUtils.h"
 #include "joynr/Logger.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 #include <thread>
 
 using ::testing::A;

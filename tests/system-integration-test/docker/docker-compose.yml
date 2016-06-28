@@ -1,0 +1,21 @@
+version: '2.0'
+
+services:
+
+  mosquitto:
+    image: 'ansi/mosquitto'
+    container_name: mqttbroker
+    entrypoint: /usr/local/sbin/mosquitto -v
+
+  joynrbackend:
+    image: "joynr-backend:latest"
+    container_name: joynrbackend
+
+  jeeapp:
+    image: "sit-jee-app:latest"
+    container_name: sit-jee-app
+
+  sit-node-and-cpp-apps:
+    image: "sit-node-and-cpp-apps:latest"
+    container_name: sit-node-and-cpp-apps
+    tty: true

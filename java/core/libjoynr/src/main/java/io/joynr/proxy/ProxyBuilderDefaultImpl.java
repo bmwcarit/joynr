@@ -19,25 +19,26 @@ package io.joynr.proxy;
  * #L%
  */
 
+import java.util.Set;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.arbitration.ArbitrationCallback;
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.arbitration.ArbitrationStatus;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
-
-import java.util.Set;
-import java.util.UUID;
-
+import io.joynr.util.VersionUtil;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import joynr.types.Version;
 
 public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private static final Logger logger = LoggerFactory.getLogger(ProxyBuilderDefaultImpl.class);
@@ -51,11 +52,14 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private boolean buildCalled;
     Class<T> myClass;
     private final String interfaceName;
+    private Version interfaceVersion;
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
     private MessageRouter messageRouter;
     private Address libjoynrMessagingAddress;
     private long maxMessagingTtl;
+
+    private T proxy;
 
     ProxyBuilderDefaultImpl(DiscoveryAsync localDiscoveryAggregator,
                             Set<String> domains,
@@ -74,6 +78,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             logger.error("INTERFACE_NAME needs to be set in the interface class {}", interfaceClass);
             throw new IllegalStateException(e);
         }
+        interfaceVersion = VersionUtil.getVersionFromAnnotation(interfaceClass);
 
         myClass = interfaceClass;
         this.proxyParticipantId = UUID.randomUUID().toString();
@@ -81,7 +86,11 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.domains = domains;
         discoveryQos = new DiscoveryQos();
-        arbitrator = ArbitratorFactory.create(domains, interfaceName, discoveryQos, localDiscoveryAggregator);
+        arbitrator = ArbitratorFactory.create(domains,
+                                              interfaceName,
+                                              interfaceVersion,
+                                              discoveryQos,
+                                              localDiscoveryAggregator);
         messagingQos = new MessagingQos();
         buildCalled = false;
 
@@ -118,7 +127,11 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     public ProxyBuilder<T> setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
         this.discoveryQos = discoveryQos;
         // TODO which interfaceName should be used here?
-        arbitrator = ArbitratorFactory.create(domains, interfaceName, discoveryQos, localDiscoveryAggregator);
+        arbitrator = ArbitratorFactory.create(domains,
+                                              interfaceName,
+                                              interfaceVersion,
+                                              discoveryQos,
+                                              localDiscoveryAggregator);
 
         return this;
     }
@@ -148,25 +161,37 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
      */
     @Override
     public T build() {
-        arbitrator.startArbitration();
-        ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler();
+        return build(new ProxyCreatedCallback<T>() {
 
-        return ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
+            @Override
+            public void onProxyCreationFinished(T result) {
+                logger.debug("proxy created: interface: {} domains: {}", interfaceName, domains);
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                logger.error("error creating proxy: interface: {} domains: {}, error", new Object[]{ interfaceName,
+                        domains, error.getMessage() });
+            }
+        });
     }
 
     @Override
-    public void build(final ProxyCreatedCallback<T> callback) {
+    public T build(final ProxyCreatedCallback<T> callback) {
         try {
-            T proxy = build();
-            callback.onProxyCreated(proxy);
-        } catch (JoynrIllegalStateException e) {
+            arbitrator.startArbitration();
+            ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler(callback);
+            proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
+            return proxy;
+        } catch (JoynrRuntimeException e) {
             logger.debug("error building proxy", e);
-            callback.onProxyCreationError(e.toString());
+            callback.onProxyCreationError(e);
+            throw e;
         }
     }
 
     // Method called by both synchronous and asynchronous build() to create a ProxyInvocationHandler
-    private ProxyInvocationHandler createProxyInvocationHandler() {
+    private ProxyInvocationHandler createProxyInvocationHandler(final ProxyCreatedCallback<T> callback) {
         if (buildCalled) {
             throw new JoynrIllegalStateException("Proxy builder was already used to build a proxy. Please create a new proxy builder for each proxy.");
         }
@@ -182,18 +207,23 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         // But if the listener is set after the ProxyInvocationHandler the
         // Arbitrator cannot return early
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
-
             @Override
-            public void setArbitrationResult(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
-                if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
-                    proxyInvocationHandler.createConnector(arbitrationResult);
-                    messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
-                }
+            public void onSuccess(ArbitrationResult arbitrationResult) {
+                proxyInvocationHandler.createConnector(arbitrationResult);
+                messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
+                callback.onProxyCreationFinished(proxy);
             }
 
             @Override
-            public void notifyArbitrationStatusChanged(ArbitrationStatus arbitrationStatus) {
-                //do nothing
+            public void onError(Throwable throwable) {
+                JoynrRuntimeException reason;
+                if (throwable instanceof JoynrRuntimeException) {
+                    reason = (JoynrRuntimeException) throwable;
+                } else {
+                    reason = new JoynrRuntimeException(throwable);
+                }
+                proxyInvocationHandler.abort(reason);
+                callback.onProxyCreationError(reason);
             }
         });
 

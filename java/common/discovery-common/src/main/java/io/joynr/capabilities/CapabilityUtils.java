@@ -49,27 +49,6 @@ public class CapabilityUtils {
                                   globalDiscoveryEntry.getPublicKeyId());
     }
 
-    // CHECKSTYLE:OFF
-    public static GlobalDiscoveryEntry newGlobalDiscoveryEntry(String domain,
-                                                               String interfaceName,
-                                                               String participantId,
-                                                               ProviderQos qos,
-                                                               Long lastSeenDateMs,
-                                                               Long expiryDateMs,
-                                                               String publicKeyId,
-                                                               Address address) {
-        // CHECKSTYLE:ON
-        return newGlobalDiscoveryEntry(new Version(),
-                                       domain,
-                                       interfaceName,
-                                       participantId,
-                                       qos,
-                                       lastSeenDateMs,
-                                       expiryDateMs,
-                                       publicKeyId,
-                                       address);
-    }
-
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public static GlobalDiscoveryEntry newGlobalDiscoveryEntry(Version providerVesion,
                                                                String domain,

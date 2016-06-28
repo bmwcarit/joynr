@@ -38,12 +38,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.core</groupId>
-			<artifactId>joynr-types</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>guice-integration</artifactId>
 			<version>${project.version}</version>

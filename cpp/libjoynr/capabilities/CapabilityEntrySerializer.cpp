@@ -27,6 +27,7 @@
 #include "joynr/PrimitiveDeserializer.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/Variant.h"
+#include "joynr/types/Version.h"
 
 namespace joynr
 {
@@ -41,7 +42,13 @@ void ClassDeserializerImpl<CapabilityEntry>::deserialize(CapabilityEntry& capabi
 {
     while (object.hasNextField()) {
         IField& field = object.nextField();
-        if (field.name() == "domain") {
+        if (field.name() == "providerVersion") {
+            IObject& providerVersionObject = field.value();
+            types::Version providerVersion;
+            ClassDeserializerImpl<types::Version>::deserialize(
+                    providerVersion, providerVersionObject);
+            capabilityEntryVar.setProviderVersion(providerVersion);
+        } else if (field.name() == "domain") {
             std::string stringValue;
             PrimitiveDeserializer<std::string>::deserialize(stringValue, field.value());
             capabilityEntryVar.setDomain(stringValue);
@@ -74,6 +81,9 @@ void ClassSerializerImpl<CapabilityEntry>::serialize(const CapabilityEntry& capa
 {
     stream << "{";
     stream << "\"_typeName\":\"" << JoynrTypeId<CapabilityEntry>::getTypeName() << "\",";
+    stream << "\"providerVersion\": ";
+    ClassSerializerImpl<types::Version>::serialize(capabilityEntryVar.getProviderVersion(), stream);
+    stream << ",";
     stream << "\"domain\": ";
     ClassSerializerImpl<std::string>::serialize(capabilityEntryVar.getDomain(), stream);
     stream << ",";

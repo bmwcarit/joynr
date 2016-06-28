@@ -1,0 +1,6 @@
+target
+.project
+.classpath
+.settings
+src/main/generated*
+/bin/

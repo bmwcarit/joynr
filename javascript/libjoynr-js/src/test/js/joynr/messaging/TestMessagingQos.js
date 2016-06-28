@@ -72,6 +72,241 @@ joynrTestRequire("joynr/messaging/TestMessagingQos", [
                 ttl : defaultMessagingSettings.MAX_MESSAGING_TTL_MS
             }));
         });
+
+        var runsWithCustomHeaders = [
+            {
+                params : {
+                    key : "key",
+                    value : "value"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "1key",
+                    value : "1value"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key1",
+                    value : "value1"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key-1",
+                    value : "value1"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "123",
+                    value : "123"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one;two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one:two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one,two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one+two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one&two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one?two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one-two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one.two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one*two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one/two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "one\\two"
+                },
+                ok : true
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "wrongvalue$"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "key",
+                    value : "wrongvalue%"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey ",
+                    value : "value"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey;",
+                    value : "value"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey:",
+                    value : "value"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey,",
+                    value : "value"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey+",
+                    value : "value"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey&",
+                    value : "value"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey?",
+                    value : "value"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey.",
+                    value : "value"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey*",
+                    value : "value"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey/",
+                    value : "value"
+                },
+                ok : false
+            },
+            {
+                params : {
+                    key : "wrongkey\\",
+                    value : "value"
+                },
+                ok : false
+            }
+        ];
+        runsWithCustomHeaders.forEach(function(run) {
+            var expectedTo = run.ok ? "passes" : "fails";
+            var params = run.params;
+            it("setting custom header "
+                + expectedTo
+                + " when key: "
+                + params.key
+                + " value: "
+                + params.value, function() {
+                var key = params.key;
+                var value = params.value;
+                var messagingQos = new MessagingQos();
+                if (run.ok) {
+                    messagingQos.putCustomMessageHeader(key, value);
+                    expect(messagingQos.customHeaders[key]).toEqual(value);
+                } else {
+                    expect(function() {
+                        messagingQos.putCustomMessageHeader(key, value);
+                    }).toThrow();
+                }
+            });
+        });
     });
 
 }); // require

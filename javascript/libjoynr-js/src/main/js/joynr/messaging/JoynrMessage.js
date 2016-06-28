@@ -17,251 +17,313 @@
  * #L%
  */
 
-define("joynr/messaging/JoynrMessage", [
-    "joynr/util/UtilInternal",
-    "uuid"
-], function(Util, uuid) {
+var MESSAGE_CUSTOM_HEADER_PREFIX = "custom-";
+define(
+        "joynr/messaging/JoynrMessage",
+        [
+            "joynr/util/UtilInternal",
+            "uuid"
+        ],
+        function(Util, uuid) {
 
-    /**
-     * @name JoynrMessage
-     * @constructor
-     *
-     * @param {String}
-     *            messageType the message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
-     */
-    function JoynrMessage(messageType) {
-        var i, headerProperty;
+            /**
+             * @name JoynrMessage
+             * @constructor
+             *
+             * @param {String}
+             *            messageType the message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
+             */
+            function JoynrMessage(messageType) {
+                var i, headerProperty;
 
-        /**
-         * The joynr type name
-         *
-         * @name JoynrMessage#_typeName
-         * @type String
-         */
-        Util.objectDefineProperty(this, "_typeName", "joynr.JoynrMessage");
+                /**
+                 * The joynr type name
+                 *
+                 * @name JoynrMessage#_typeName
+                 * @type String
+                 */
+                Util.objectDefineProperty(this, "_typeName", "joynr.JoynrMessage");
 
-        /**
-         * The message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
-         *
-         * @name JoynrMessage#type
-         * @type String
-         */
-        Util.objectDefineProperty(this, "type", messageType);
+                /**
+                 * The message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
+                 *
+                 * @name JoynrMessage#type
+                 * @type String
+                 */
+                Util.objectDefineProperty(this, "type", messageType);
 
-        /**
-         * The message header holding additional values
-         *
-         * @name JoynrMessage#header
-         * @type Object
-         */
-        Util.objectDefineProperty(this, "header", {});
+                /**
+                 * The message header holding additional values
+                 *
+                 * @name JoynrMessage#header
+                 * @type Object
+                 */
+                Util.objectDefineProperty(this, "header", {});
 
-        /**
-         * The serialized message payload
-         *
-         * @name JoynrMessage#payload
-         * @type String
-         */
-        this.payload = "";
+                /**
+                 * The serialized message payload
+                 *
+                 * @name JoynrMessage#payload
+                 * @type String
+                 */
+                this.payload = "";
 
-        /**
-         * @name JoynrMessage#setHeader
-         * @function
-         *
-         * @param {String}
-         *            key is one of the header keys defined in JoynrMessagingDefines
-         * @param {Any}
-         *            value of the header
-         * @returns {JoynrMessage}
-         */
-        Object.defineProperty(this, "setHeader", {
-            enumerable : false,
-            configurable : false,
-            writable : false,
-            value : function(key, value) {
-                this.header[key] = value;
-                return this;
+                /**
+                 * @name JoynrMessage#setHeader
+                 * @function
+                 *
+                 * @param {String}
+                 *            key is one of the header keys defined in JoynrMessagingDefines
+                 * @param {Any}
+                 *            value of the header
+                 * @returns {JoynrMessage}
+                 */
+                Object.defineProperty(this, "setHeader", {
+                    enumerable : false,
+                    configurable : false,
+                    writable : false,
+                    value : function(key, value) {
+                        this.header[key] = value;
+                        return this;
+                    }
+                });
+
+                /**
+                 * @name JoynrMessage#setCustomHeaders
+                 * @function
+                 * @param {Object}
+                 *            a map containing key/value pairs of headers to be set as custom
+                 *            headers. The keys will be added to the header field with the prefix
+                 *            MESSAGE_CUSTOM_HEADER_PREFIX
+                 * @returns {JoynrMessage}
+                 */
+                Object.defineProperty(this, "setCustomHeaders", {
+                    enumerable : false,
+                    configurable : false,
+                    writable : false,
+                    value : function(customHeaders) {
+                        var headerKey;
+                        for (headerKey in customHeaders) {
+                            if (customHeaders.hasOwnProperty(headerKey)) {
+                                this.header[MESSAGE_CUSTOM_HEADER_PREFIX + headerKey] =
+                                        customHeaders[headerKey];
+                            }
+                        }
+                        return this;
+                    }
+                });
+
+                /**
+                 * @name JoynrMessage#getCustomHeaders
+                 * @function
+                 * @returns {Object} customHeader object containing all headers that begin with the
+                 *          prefix MESSAGE_CUSTOM_HEADER_PREFIX
+                 */
+                Object
+                        .defineProperty(
+                                this,
+                                "getCustomHeaders",
+                                {
+                                    enumerable : false,
+                                    configurable : false,
+                                    writable : false,
+                                    value : function() {
+                                        var headerKey, trimmedKey, customHeaders = {};
+                                        for (headerKey in this.header) {
+                                            if (this.header.hasOwnProperty(headerKey)
+                                                && headerKey.substr(
+                                                        0,
+                                                        MESSAGE_CUSTOM_HEADER_PREFIX.length) === MESSAGE_CUSTOM_HEADER_PREFIX) {
+                                                trimmedKey =
+                                                        headerKey
+                                                                .substr(MESSAGE_CUSTOM_HEADER_PREFIX.length);
+
+                                                customHeaders[trimmedKey] = this.header[headerKey];
+                                            }
+                                        }
+                                        return customHeaders;
+                                    }
+                                });
+
+                var headerProperties = [
+                    JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID,
+                    JoynrMessage.JOYNRMESSAGE_HEADER_CREATOR_USER_ID,
+                    JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
+                    JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
+                    JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID,
+                    JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE
+                ];
+
+                function constructGetter(header, property) {
+                    return function() {
+                        return header[property];
+                    };
+                }
+
+                function constructSetter(header, property) {
+                    return function(value) {
+                        header[property] = value;
+                    };
+                }
+
+                /**
+                 * The user ID of the message creator
+                 *
+                 * @name JoynrMessage#creator
+                 * @type String
+                 */
+                /**
+                 * The participant id the message is from
+                 *
+                 * @name JoynrMessage#from
+                 * @type String
+                 */
+                /**
+                 * The participant id the message is to
+                 *
+                 * @name JoynrMessage#to
+                 * @type String
+                 */
+                /**
+                 * The reply channel Id to return response messages to
+                 *
+                 * @name JoynrMessage#replyChannelId
+                 * @type String
+                 */
+                /**
+                 * The expiry date of the message
+                 *
+                 * @name JoynrMessage#expiryDate
+                 * @type String
+                 */
+                for (i = 0; i < headerProperties.length; ++i) {
+                    headerProperty = headerProperties[i];
+                    Object.defineProperty(this, headerProperty, {
+                        set : constructSetter(this.header, headerProperty),
+                        get : constructGetter(this.header, headerProperty)
+                    });
+                }
+
+                this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE, "application/json");
+                if (this.JOYNRMESSAGE_HEADER_MESSAGE_ID === undefined) {
+                    this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID, uuid());
+                }
             }
+
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY = "oneWay";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST = "request";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_REPLY
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_REPLY = "reply";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST = "subscriptionRequest";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST =
+                    "broadcastSubscriptionRequest";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY = "subscriptionReply";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION = "subscriptionPublication";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID
+             */
+            JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID = "msgId";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_HEADER_CREATOR_USER_ID
+             */
+            JoynrMessage.JOYNRMESSAGE_HEADER_CREATOR_USER_ID = "creator";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE
+             */
+            JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE = "expiryDate";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID
+             */
+            JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID = "replyChannelId";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE
+             */
+            JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE = "contentType";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_HEADER_SUBSCRIPTION_ATTRIBUTE
+             */
+            JoynrMessage.JOYNRMESSAGE_HEADER_SUBSCRIPTION_ATTRIBUTE = "subscriptionAttribute";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID
+             */
+            JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID = "to";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID
+             */
+            JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID = "from";
+
+            return JoynrMessage;
+
         });
-
-        var headerProperties = [
-            JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID,
-            JoynrMessage.JOYNRMESSAGE_HEADER_CREATOR_USER_ID,
-            JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
-            JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
-            JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID,
-            JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE
-        ];
-
-        function constructGetter(header, property) {
-            return function() {
-                return header[property];
-            };
-        }
-
-        function constructSetter(header, property) {
-            return function(value) {
-                header[property] = value;
-            };
-        }
-
-        /**
-         * The user ID of the message creator
-         *
-         * @name JoynrMessage#creator
-         * @type String
-         */
-        /**
-         * The participant id the message is from
-         *
-         * @name JoynrMessage#from
-         * @type String
-         */
-        /**
-         * The participant id the message is to
-         *
-         * @name JoynrMessage#to
-         * @type String
-         */
-        /**
-         * The reply channel Id to return response messages to
-         *
-         * @name JoynrMessage#replyChannelId
-         * @type String
-         */
-        /**
-         * The expiry date of the message
-         *
-         * @name JoynrMessage#expiryDate
-         * @type String
-         */
-        for (i = 0; i < headerProperties.length; ++i) {
-            headerProperty = headerProperties[i];
-            Object.defineProperty(this, headerProperty, {
-                set : constructSetter(this.header, headerProperty),
-                get : constructGetter(this.header, headerProperty)
-            });
-        }
-
-        this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE, "application/json");
-        if (this.JOYNRMESSAGE_HEADER_MESSAGE_ID === undefined) {
-            this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID, uuid());
-        }
-    }
-
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY
-     */
-    JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY = "oneWay";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
-     */
-    JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST = "request";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_TYPE_REPLY
-     */
-    JoynrMessage.JOYNRMESSAGE_TYPE_REPLY = "reply";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
-     */
-    JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST = "subscriptionRequest";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST
-     */
-    JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST = "broadcastSubscriptionRequest";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY
-     */
-    JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY = "subscriptionReply";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
-     */
-    JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION = "subscriptionPublication";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP
-     */
-    JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID
-     */
-    JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID = "msgId";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_HEADER_CREATOR_USER_ID
-     */
-    JoynrMessage.JOYNRMESSAGE_HEADER_CREATOR_USER_ID = "creator";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE
-     */
-    JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE = "expiryDate";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID
-     */
-    JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID = "replyChannelId";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE
-     */
-    JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE = "contentType";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_HEADER_SUBSCRIPTION_ATTRIBUTE
-     */
-    JoynrMessage.JOYNRMESSAGE_HEADER_SUBSCRIPTION_ATTRIBUTE = "subscriptionAttribute";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID
-     */
-    JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID = "to";
-    /**
-     * @static
-     * @readonly
-     * @type String
-     * @name JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID
-     */
-    JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID = "from";
-
-    return JoynrMessage;
-
-});

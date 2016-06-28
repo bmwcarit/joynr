@@ -26,7 +26,6 @@ import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 
-import java.io.IOException;
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
@@ -35,16 +34,16 @@ public interface SubscriptionManager {
 
     void registerAttributeSubscription(String fromParticipantId,
                                        Set<String> toParticipantIds,
-                                       AttributeSubscribeInvocation subscriptionRequest) throws IOException;
+                                       AttributeSubscribeInvocation subscriptionRequest);
 
     void registerBroadcastSubscription(String fromParticipantId,
                                        Set<String> toParticipantIds,
-                                       BroadcastSubscribeInvocation subscriptionRequest) throws IOException;
+                                       BroadcastSubscribeInvocation subscriptionRequest);
 
     void unregisterSubscription(String fromParticipantId,
                                 Set<String> toParticipantIds,
                                 String subscriptionId,
-                                MessagingQos qosSettings) throws IOException;
+                                MessagingQos qosSettings);
 
     void touchSubscriptionState(final String subscriptionId);
 

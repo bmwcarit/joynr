@@ -44,6 +44,7 @@ import io.joynr.capabilities.CapabilitiesRegistrarImpl;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
+import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.DispatcherImpl;
@@ -83,6 +84,7 @@ import io.joynr.proxy.ProxyInvocationHandlerImpl;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 
 abstract class AbstractRuntimeModule extends AbstractModule {
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
@@ -91,9 +93,16 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        requestStaticInjection(CapabilityUtils.class,
+                               RpcUtils.class,
+                               ArbitratorFactory.class,
+                               JoynrDelayMessageException.class,
+                               JoynrAppenderManagerFactory.class);
+
         install(new JsonMessageSerializerModule());
         install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)
                                           .build(ProxyInvocationHandlerFactory.class));
+        install(new JoynrMessageScopeModule());
 
         messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
         }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
@@ -127,13 +136,10 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
 
-        requestStaticInjection(CapabilityUtils.class, RpcUtils.class, JoynrAppenderManagerFactory.class);
-
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
-        requestStaticInjection(ArbitratorFactory.class, JoynrDelayMessageException.class);
     }
 
     @Provides
@@ -185,8 +191,10 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     private Address getAddress(String serverUrl, String localChannelId, String targetChannelId) {
         if (localChannelId.equals(targetChannelId)) {
             return new InProcessAddress();
-        } else {
+        } else if (serverUrl.startsWith("http")) {
             return new ChannelAddress(serverUrl, targetChannelId);
+        } else {
+            return new MqttAddress(serverUrl, targetChannelId);
         }
     }
 }

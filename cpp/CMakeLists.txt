@@ -82,52 +82,37 @@ if(${GENERATE_SOURCES})
 endif(${GENERATE_SOURCES})
 
 option(
-    USE_PLATFORM_DEPENDENCIES
-    "Resolve all dependencies (link libraries) from the system?"
-    OFF
-)
-message(STATUS "option USE_PLATFORM_DEPENDENCIES=" ${USE_PLATFORM_DEPENDENCIES})
-
-if(USE_PLATFORM_DEPENDENCIES)
-    set(USE_PLATFORM_SPDLOG ON)
-    set(USE_PLATFORM_JSMN ON)
-    set(USE_PLATFORM_MOSQUITTO ON)
-    set(USE_PLATFORM_GTEST_GMOCK ON)
-    set(USE_PLATFORM_WEBSOCKETPP ON)
-endif(USE_PLATFORM_DEPENDENCIES)
-
-option(
     USE_PLATFORM_SPDLOG
     "Resolve dependency to spdlog from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_SPDLOG=" ${USE_PLATFORM_SPDLOG})
 
 option(
     USE_PLATFORM_JSMN
     "Resolve dependency to jsmn from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_JSMN=" ${USE_PLATFORM_JSMN})
 
 option(
     USE_PLATFORM_MOSQUITTO
     "Resolve dependency to mosquitto from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_MOSQUITTO=" ${USE_PLATFORM_MOSQUITTO})
 
 option(
     USE_PLATFORM_GTEST_GMOCK
     "Resolve dependency to gtest and gmock from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
 
 option(
     USE_PLATFORM_WEBSOCKETPP
     "Resolve dependency to WebSocket++ from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_WEBSOCKETPP=" ${USE_PLATFORM_WEBSOCKETPP})
 

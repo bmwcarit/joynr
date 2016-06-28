@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,24 +19,32 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import java.util.ArrayList;
+import static java.lang.String.format;
+
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Sets;
+
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
+import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.proxy.Callback;
+import joynr.exceptions.ApplicationException;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 /**
  *
@@ -59,34 +67,45 @@ public class Arbitrator {
     private long arbitrationDeadline;
     private Set<String> domains;
     private String interfaceName;
+    private Version interfaceVersion;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
+    private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
+    private final Map<String, Set<Version>> discoveredVersions = new HashMap<>();
 
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public Arbitrator(final Set<String> domains,
                       final String interfaceName,
+                      final Version interfaceVersion,
                       final DiscoveryQos discoveryQos,
                       DiscoveryAsync localDiscoveryAggregator,
                       long minimumArbitrationRetryDelay,
-                      ArbitrationStrategyFunction arbitrationStrategyFunction) {
+                      ArbitrationStrategyFunction arbitrationStrategyFunction,
+                      DiscoveryEntryVersionFilter discoveryEntryVersionFilter) {
+        // CHECKSTYLE:ON
         this.domains = domains;
         this.interfaceName = interfaceName;
+        this.interfaceVersion = interfaceVersion;
         MINIMUM_ARBITRATION_RETRY_DELAY = minimumArbitrationRetryDelay;
         this.discoveryQos = discoveryQos;
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
         arbitrationDeadline = System.currentTimeMillis() + discoveryQos.getDiscoveryTimeoutMs();
+        this.discoveryEntryVersionFilter = discoveryEntryVersionFilter;
     }
 
-    // TODO JOYN-911 make sure we are shutting down correctly onError
     protected void onError(Throwable exception) {
-        if (exception instanceof IllegalStateException) {
-            logger.error("CapabilitiesCallback: " + exception.getMessage(), exception);
-            return;
-        } else if (exception instanceof JoynrShutdownException) {
-            logger.warn("CapabilitiesCallback onError: " + exception.getMessage(), exception);
+        if (exception instanceof JoynrShutdownException) {
+            arbitrationFailed(exception);
         } else if (exception instanceof JoynrRuntimeException) {
-            restartArbitrationIfNotExpired();
+            if (isArbitrationInTime()) {
+                restartArbitration();
+            } else {
+                arbitrationFailed(exception);
+            }
+        } else if (exception instanceof ApplicationException) {
+            arbitrationFailed(exception);
         } else {
-            logger.error("CapabilitiesCallback onError thowable: " + exception.getMessage(), exception);
+            arbitrationFailed(new JoynrRuntimeException(exception));
         }
     }
 
@@ -95,68 +114,7 @@ public class Arbitrator {
      */
     public void startArbitration() {
         logger.debug("start arbitration for domain: {}, interface: {}", domains, interfaceName);
-        // TODO qos map is not used. Implement qos filter in
-        // capabilitiesDirectory or remove qos argument.
-        arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
-        notifyArbitrationStatusChanged();
-
-        localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
-
-            @Override
-            public void onFailure(JoynrRuntimeException error) {
-                Arbitrator.this.onError(error);
-            }
-
-            @Override
-            public void onSuccess(DiscoveryEntry[] discoveryEntries) {
-                assert discoveryEntries != null : "Discovery entries may not be null.";
-                Set<String> discoveredDomains = new HashSet<String>();
-                for (DiscoveryEntry foundDiscoveryEntry: discoveryEntries) {
-                    discoveredDomains.add(foundDiscoveryEntry.getDomain());
-                }
-                if (!discoveredDomains.equals(domains)) {
-                    Set<String> missingDomains = new HashSet<String>(domains);
-                    missingDomains.removeAll(discoveredDomains);
-                    String discoveryErrorMessage = "All domains must be found. The following domain(s) was/were not found: " + missingDomains;
-                    Arbitrator.this.onError(new DiscoveryException(discoveryErrorMessage));
-                } else {
-                    logger.debug("Lookup succeded. Got {}", Arrays.toString(discoveryEntries));
-                    List<DiscoveryEntry> discoveryEntriesList;
-                    // If onChange subscriptions are required ignore
-                    // providers that do not support them
-                    if (discoveryQos.getProviderMustSupportOnChange()) {
-                        discoveryEntriesList = new ArrayList<DiscoveryEntry>(discoveryEntries.length);
-                        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-                            ProviderQos providerQos = discoveryEntry.getQos();
-                            if (providerQos.getSupportsOnChangeSubscriptions()) {
-                                discoveryEntriesList.add(discoveryEntry);
-                            }
-                        }
-                    } else {
-                        discoveryEntriesList = Arrays.asList(discoveryEntries);
-                    }
-
-                    Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
-                            .select(discoveryQos.getCustomParameters(), discoveryEntriesList);
-
-                    logger.debug("Selected capabilities: {}", selectedCapabilities);
-                    if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
-                        Set<String> participantIds = new HashSet<>();
-                        for (DiscoveryEntry selectedCapability : selectedCapabilities) {
-                            if (selectedCapability != null) {
-                                participantIds.add(selectedCapability.getParticipantId());
-                            }
-                        }
-                        logger.debug("Resulting participant IDs: {}", participantIds);
-                        arbitrationResult.setParticipantIds(participantIds);
-                        arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
-                        updateArbitrationResultAtListener();
-                    } else {
-                        restartArbitrationIfNotExpired();
-                    }
-                }
-            }
-        }, domains.toArray(new String[domains.size()]), interfaceName,
+        localDiscoveryAggregator.lookup(new DiscoveryCallback(), domains.toArray(new String[domains.size()]), interfaceName,
                                         new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                                                                      discoveryQos.getDiscoveryTimeoutMs(),
                                                                      joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
@@ -177,66 +135,173 @@ public class Arbitrator {
         // listener is now ready to receive arbitration result/status
         arbitrationListenerSemaphore.release();
         if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
-            updateArbitrationResultAtListener();
-        } else if (arbitrationStatus != ArbitrationStatus.ArbitrationNotStarted) {
-            notifyArbitrationStatusChanged();
+            arbitrationFinished(arbitrationStatus, arbitrationResult);
         }
-
     }
 
     /**
      * Sets the arbitration result at the arbitrationListener if the listener is already registered
      */
-    protected void updateArbitrationResultAtListener() {
-        // wait for arbitration listener to be registered
-        if (arbitrationListenerSemaphore.tryAcquire()) {
-            arbitrationListener.setArbitrationResult(arbitrationStatus, arbitrationResult);
-            arbitrationListenerSemaphore.release();
-        }
-    }
+    protected void arbitrationFinished(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
+        this.arbitrationStatus = arbitrationStatus;
+        this.arbitrationResult = arbitrationResult;
 
-    /**
-     * Notify the arbitrationListener about a changed status without setting an arbitrationResult (e.g. when arbitration
-     * failed)
-     */
-    protected void notifyArbitrationStatusChanged() {
         // wait for arbitration listener to be registered
         if (arbitrationListenerSemaphore.tryAcquire()) {
-            arbitrationListener.notifyArbitrationStatusChanged(arbitrationStatus);
+            arbitrationListener.onSuccess(arbitrationResult);
             arbitrationListenerSemaphore.release();
         }
     }
 
     public ArbitrationStatus getArbitrationStatus() {
-        synchronized (arbitrationStatus) {
-            return arbitrationStatus;
-        }
+        return arbitrationStatus;
     }
 
     protected boolean isArbitrationInTime() {
         return System.currentTimeMillis() < arbitrationDeadline;
     }
 
-    protected void restartArbitrationIfNotExpired() {
-        if (isArbitrationInTime()) {
-            logger.info("Restarting Arbitration");
-            long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
-            try {
-                if (backoff > 0) {
-                    Thread.sleep(backoff);
-                }
-                startArbitration();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+    protected void restartArbitration() {
+        logger.info("Restarting Arbitration");
+        long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
+        try {
+            if (backoff > 0) {
+                Thread.sleep(backoff);
             }
-        } else {
-            cancelArbitration();
+            startArbitration();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
-    protected void cancelArbitration() {
-        arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
-        notifyArbitrationStatusChanged();
+    protected void arbitrationFailed() {
+        arbitrationFailed(null);
     }
 
+    protected void arbitrationFailed(Throwable exception) {
+        arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
+        Throwable reason;
+        if (arbitrationListenerSemaphore.tryAcquire()) {
+            if (exception != null) {
+                reason = exception;
+            } else if (discoveredVersions == null || discoveredVersions.isEmpty()) {
+                reason = new DiscoveryException("Unable to find provider in time: interface: "
+                        + interfaceName + " domains: " + domains);
+            } else {
+                reason = noCompatibleProviderFound(discoveredVersions);
+            }
+            arbitrationListener.onError(reason);
+        }
+    }
+
+    private Throwable noCompatibleProviderFound(Map<String, Set<Version>> discoveredVersions) {
+        Throwable reason = null;
+        if (domains.size() == 1) {
+            if (discoveredVersions.size() != 1) {
+                reason = new IllegalStateException("Only looking for one domain, but got multi-domain result with discovered but incompatible versions.");
+            } else {
+                reason = new NoCompatibleProviderFoundException(interfaceName,
+                                                                interfaceVersion,
+                                                                discoveredVersions.keySet().iterator().next(),
+                                                                discoveredVersions.values().iterator().next());
+            }
+        } else if (domains.size() > 1) {
+            Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
+            for (Map.Entry<String, Set<Version>> versionsByDomainEntry : discoveredVersions.entrySet()) {
+                exceptionsByDomain.put(versionsByDomainEntry.getKey(),
+                                       new NoCompatibleProviderFoundException(interfaceName,
+                                                                              interfaceVersion,
+                                                                              versionsByDomainEntry.getKey(),
+                                                                              versionsByDomainEntry.getValue()));
+            }
+            reason = new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain);
+        }
+        return reason;
+    }
+
+    private class DiscoveryCallback extends Callback<DiscoveryEntry[]> {
+
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                Arbitrator.this.onError(error);
+            }
+
+            @Override
+            public void onSuccess(DiscoveryEntry[] discoveryEntries) {
+                assert discoveryEntries != null : "Discovery entries may not be null.";
+                if (allDomainsDiscovered(discoveryEntries)) {
+                    logger.debug("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
+                    Set<DiscoveryEntry> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
+
+                    Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
+                            .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
+
+                    logger.debug("Selected capabilities: {}", selectedCapabilities);
+                    if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
+                        Set<String> participantIds = getParticipantIds(selectedCapabilities);
+                        arbitrationResult.setParticipantIds(participantIds);
+                        arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
+                    } else {
+                        arbitrationFailed();
+                    }
+                } else {
+                    if (isArbitrationInTime()) {
+                        restartArbitration();
+                    } else {
+                        arbitrationFailed();
+                    }
+                }
+            }
+
+        private boolean allDomainsDiscovered(DiscoveryEntry[] discoveryEntries) {
+            Set<String> discoveredDomains = new HashSet<>();
+            for (DiscoveryEntry foundDiscoveryEntry : discoveryEntries) {
+                discoveredDomains.add(foundDiscoveryEntry.getDomain());
+            }
+            boolean allDomainsDiscovered = discoveredDomains.equals(domains);
+
+            if (!allDomainsDiscovered) {
+                Set<String> missingDomains = new HashSet<>(domains);
+                missingDomains.removeAll(discoveredDomains);
+                logger.debug("All domains must be found. Domains not found: {}", missingDomains);
+            }
+
+                return allDomainsDiscovered;
+            }
+
+            private Set<String> getParticipantIds(Collection<DiscoveryEntry> selectedCapabilities) {
+                Set<String> participantIds = new HashSet<>();
+                for (DiscoveryEntry selectedCapability : selectedCapabilities) {
+                    if (selectedCapability != null) {
+                        participantIds.add(selectedCapability.getParticipantId());
+                    }
+                }
+                logger.debug("Resulting participant IDs: {}", participantIds);
+                return participantIds;
+            }
+
+        private Set<DiscoveryEntry> filterDiscoveryEntries(DiscoveryEntry[] discoveryEntries) {
+            Set<DiscoveryEntry> discoveryEntriesSet;
+            // If onChange subscriptions are required ignore
+            // providers that do not support them
+            if (discoveryQos.getProviderMustSupportOnChange()) {
+                discoveryEntriesSet = new HashSet<>(discoveryEntries.length);
+                for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+                    ProviderQos providerQos = discoveryEntry.getQos();
+                    if (providerQos.getSupportsOnChangeSubscriptions()) {
+                        discoveryEntriesSet.add(discoveryEntry);
+                    }
+                }
+            } else {
+                discoveryEntriesSet = Sets.newHashSet(discoveryEntries);
+            }
+            discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion, discoveryEntriesSet, discoveredVersions);
+            if (discoveryEntriesSet.isEmpty()) {
+                logger.debug(
+                          format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
+                                                       interfaceName, interfaceVersion, Arrays.toString(discoveryEntries)));
+            }
+            return discoveryEntriesSet;
+        }
+    }
 }

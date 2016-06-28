@@ -18,6 +18,7 @@ package io.joynr.messaging.routing;
  * limitations under the License.
  * #L%
  */
+
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -145,7 +146,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
     }
 
     @Override
-    public void route(final JoynrMessage message) throws JoynrSendBufferFullException, JoynrMessageNotSentException {
+    public void route(final JoynrMessage message) {
         checkExpiry(message);
         routeInternal(message, 0, 0);
     }

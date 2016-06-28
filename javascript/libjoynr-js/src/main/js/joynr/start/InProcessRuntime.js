@@ -296,7 +296,10 @@ define(
 
                             log = LoggerFactory.getLogger("joynr.start.InProcessRuntime");
 
-                            persistency = new LocalStorage();
+                            var persistencyProvisioning = provisioning.persistency || {};
+                            persistency = new LocalStorage({
+                                clearPersistency : persistencyProvisioning.clearPersistency
+                            });
 
                             if (Util.checkNullUndefined(provisioning.bounceProxyUrl)) {
                                 throw new Error(

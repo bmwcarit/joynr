@@ -30,8 +30,8 @@ public:
 
     static volatile bool subscribeAttributeEnumerationCallbackDone;
     static volatile bool subscribeAttributeEnumerationCallbackResult;
-    static volatile bool subscribeAttributeWithExceptionCallbackDone;
-    static volatile bool subscribeAttributeWithExceptionCallbackResult;
+    static volatile bool subscribeAttributeWithExceptionFromGetterCallbackDone;
+    static volatile bool subscribeAttributeWithExceptionFromGetterCallbackResult;
 };
 
 joynr::Logger iltConsumerAttributeSubscriptionTestLogger("IltConsumerAttributeSubscriptionTest");
@@ -42,10 +42,10 @@ volatile bool IltConsumerAttributeSubscriptionTest::subscribeAttributeEnumeratio
         false;
 volatile bool IltConsumerAttributeSubscriptionTest::subscribeAttributeEnumerationCallbackResult =
         false;
-volatile bool IltConsumerAttributeSubscriptionTest::subscribeAttributeWithExceptionCallbackDone =
-        false;
-volatile bool IltConsumerAttributeSubscriptionTest::subscribeAttributeWithExceptionCallbackResult =
-        false;
+volatile bool IltConsumerAttributeSubscriptionTest::
+        subscribeAttributeWithExceptionFromGetterCallbackDone = false;
+volatile bool IltConsumerAttributeSubscriptionTest::
+        subscribeAttributeWithExceptionFromGetterCallbackResult = false;
 
 class AttributeEnumerationListener
         : public SubscriptionListener<joynr::interlanguagetest::Enumeration::Enum>
@@ -107,68 +107,73 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
     });
 }
 
-class AttributeWithExceptionListener : public SubscriptionListener<bool>
+class AttributeWithExceptionFromGetterListener : public SubscriptionListener<bool>
 {
 public:
-    AttributeWithExceptionListener() = default;
+    AttributeWithExceptionFromGetterListener() = default;
 
-    ~AttributeWithExceptionListener() override = default;
+    ~AttributeWithExceptionFromGetterListener() override = default;
 
     void onReceive(const bool& value) override
     {
-        JOYNR_LOG_INFO(
-                iltConsumerAttributeSubscriptionTestLogger,
-                "callSubscribeAttributeWithException - callback - unexpectedly got broadcast");
-        IltConsumerAttributeSubscriptionTest::subscribeAttributeWithExceptionCallbackResult = false;
-        IltConsumerAttributeSubscriptionTest::subscribeAttributeWithExceptionCallbackDone = true;
+        JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
+                       "callSubscribeAttributeWithExceptionFromGetter - callback - "
+                       "unexpectedly got broadcast");
+        IltConsumerAttributeSubscriptionTest::
+                subscribeAttributeWithExceptionFromGetterCallbackResult = false;
+        IltConsumerAttributeSubscriptionTest::
+                subscribeAttributeWithExceptionFromGetterCallbackDone = true;
     }
 
     void onError(const joynr::exceptions::JoynrRuntimeException& error) override
     {
         if (error.getTypeName() == "joynr.exceptions.ProviderRuntimeException") {
-            if (error.getMessage() == "Exception from getAttributeWithException") {
-                JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
-                               "callSubscribeAttributeWithException - callback - got expected "
-                               "exception");
+            if (error.getMessage() == "Exception from getAttributeWithExceptionFromGetter") {
+                JOYNR_LOG_INFO(
+                        iltConsumerAttributeSubscriptionTestLogger,
+                        "callSubscribeAttributeWithExceptionFromGetter - callback - got expected "
+                        "exception");
                 IltConsumerAttributeSubscriptionTest::
-                        subscribeAttributeWithExceptionCallbackResult = true;
+                        subscribeAttributeWithExceptionFromGetterCallbackResult = true;
             } else {
                 JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
-                               "callSubscribeAttributeWithException - callback - got "
+                               "callSubscribeAttributeWithExceptionFromGetter - callback - got "
                                "ProviderRuntimeException with wrong message");
                 JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger, error.getMessage());
                 IltConsumerAttributeSubscriptionTest::
-                        subscribeAttributeWithExceptionCallbackResult = false;
+                        subscribeAttributeWithExceptionFromGetterCallbackResult = false;
             }
         } else {
             JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
-                           "callSubscribeAttributeWithException - callback - got invalid "
+                           "callSubscribeAttributeWithExceptionFromGetter - callback - got invalid "
                            "exception "
                            "type");
             JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger, error.getTypeName());
             JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger, error.getMessage());
-            IltConsumerAttributeSubscriptionTest::subscribeAttributeWithExceptionCallbackResult =
-                    false;
+            IltConsumerAttributeSubscriptionTest::
+                    subscribeAttributeWithExceptionFromGetterCallbackResult = false;
         }
-        IltConsumerAttributeSubscriptionTest::subscribeAttributeWithExceptionCallbackDone = true;
+        IltConsumerAttributeSubscriptionTest::
+                subscribeAttributeWithExceptionFromGetterCallbackDone = true;
     }
 };
 
-TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithException)
+TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithExceptionFromGetter)
 {
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
     joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
     JOYNR_ASSERT_NO_THROW({
-        std::shared_ptr<ISubscriptionListener<bool>> listener(new AttributeWithExceptionListener());
-        subscriptionId =
-                testInterfaceProxy->subscribeToAttributeWithException(listener, subscriptionQos);
+        std::shared_ptr<ISubscriptionListener<bool>> listener(
+                new AttributeWithExceptionFromGetterListener());
+        subscriptionId = testInterfaceProxy->subscribeToAttributeWithExceptionFromGetter(
+                listener, subscriptionQos);
         // Waiting one second
-        waitForChange(subscribeAttributeWithExceptionCallbackDone, 1000);
-        ASSERT_TRUE(subscribeAttributeWithExceptionCallbackDone);
-        ASSERT_TRUE(subscribeAttributeWithExceptionCallbackResult);
+        waitForChange(subscribeAttributeWithExceptionFromGetterCallbackDone, 1000);
+        ASSERT_TRUE(subscribeAttributeWithExceptionFromGetterCallbackDone);
+        ASSERT_TRUE(subscribeAttributeWithExceptionFromGetterCallbackResult);
 
-        testInterfaceProxy->unsubscribeFromAttributeWithException(subscriptionId);
+        testInterfaceProxy->unsubscribeFromAttributeWithExceptionFromGetter(subscriptionId);
     });
 }

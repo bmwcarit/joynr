@@ -34,7 +34,6 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -100,8 +99,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
      */
 
     @Override
-    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, MessagingQos messagingQos)
-            throws IOException {
+    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, MessagingQos messagingQos) {
 
         logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
 
@@ -110,7 +108,8 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
                                                                  toParticipantId,
                                                                  request,
-                                                                 expiryDate);
+                                                                 expiryDate,
+                                                                 messagingQos.getCustomMessageHeaders());
 
         messageRouter.route(message);
     }
@@ -120,7 +119,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                   String toParticipantId,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
-                                  MessagingQos messagingQos) throws IOException {
+                                  MessagingQos messagingQos) {
 
         if (!running) {
             throw new IllegalStateException("Request: " + request.getRequestReplyId() + " failed. SenderImpl ID: "
@@ -171,24 +170,15 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
     @Override
     public void sendOneWayRequest(String fromParticipantId, Set<String> toParticipantIds, OneWayRequest oneWayRequest,
-                                  MessagingQos messagingQos) throws IOException {
+                                  MessagingQos messagingQos) {
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
                                                                            toParticipantId,
                                                                            oneWayRequest,
-                                                                           DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
+                                                                           DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()),
+                                                                           messagingQos.getCustomMessageHeaders());
             messageRouter.route(message);
         }
-    }
-
-    @Override
-    public void sendReply(final String fromParticipantId,
-                          final String toParticipantId,
-                          Reply payload,
-                          ExpiryDate expiryDate) throws IOException {
-        JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, payload, expiryDate);
-
-        messageRouter.route(message);
     }
 
     @Override

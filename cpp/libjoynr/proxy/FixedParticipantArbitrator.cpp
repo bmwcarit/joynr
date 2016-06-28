@@ -33,9 +33,10 @@ INIT_LOGGER(FixedParticipantArbitrator);
 FixedParticipantArbitrator::FixedParticipantArbitrator(
         const std::string& domain,
         const std::string& interfaceName,
+        const joynr::types::Version& interfaceVersion,
         joynr::system::IDiscoverySync& discoveryProxy,
         const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
+        : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos),
           participantId(discoveryQos.getCustomParameter("fixedParticipantId").getValue()),
           reqCacheDataFreshness(discoveryQos.getCacheMaxAgeMs())
 {
@@ -44,11 +45,16 @@ FixedParticipantArbitrator::FixedParticipantArbitrator(
 void FixedParticipantArbitrator::attemptArbitration()
 {
     joynr::types::DiscoveryEntry result;
+    discoveredIncompatibleVersions.clear();
     try {
         discoveryProxy.lookup(result, participantId);
-
-        updateArbitrationStatusParticipantIdAndAddress(
-                ArbitrationStatus::ArbitrationSuccessful, participantId);
+        joynr::types::Version providerVersion = result.getProviderVersion();
+        if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
+            providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
+            discoveredIncompatibleVersions.insert(providerVersion);
+        } else {
+            notifyArbitrationListener(participantId);
+        }
     } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to lookup provider (domain: {}, interface: {}) "

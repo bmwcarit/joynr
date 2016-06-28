@@ -19,6 +19,8 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
+
 import javax.annotation.CheckForNull;
 import javax.inject.Named;
 
@@ -28,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import io.joynr.JoynrVersion;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -39,12 +40,10 @@ import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.SystemServicesSettings;
-import io.joynr.util.AnnotationUtil;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
-import joynr.types.Version;
 
 @Singleton
 public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
@@ -90,13 +89,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              providerContainer.getInterfaceName());
         String defaultPublicKeyId = "";
-        JoynrVersion currentJoynrVersion = AnnotationUtil.getAnnotation(provider.getClass(), JoynrVersion.class);
-        if (currentJoynrVersion == null) {
-            throw new IllegalArgumentException("Error while getting JoynrVersion from provider.");
-        }
-        Version currentVersion = new Version(currentJoynrVersion.major(), currentJoynrVersion.minor());
-
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(currentVersion,
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(getVersionFromAnnotation(provider.getClass()),
                                                            domain,
                                                            providerContainer.getInterfaceName(),
                                                            participantId,

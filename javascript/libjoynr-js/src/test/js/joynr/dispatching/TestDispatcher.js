@@ -30,6 +30,7 @@ joynrTestRequire(
             "joynr/messaging/inprocess/InProcessMessagingStub",
             "joynr/messaging/inprocess/InProcessMessagingSkeleton",
             "joynr/messaging/JoynrMessage",
+            "joynr/messaging/MessagingQos",
             "joynr/dispatching/types/OneWayRequest",
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/Reply",
@@ -48,6 +49,7 @@ joynrTestRequire(
                 InProcessMessagingStub,
                 InProcessMessagingSkeleton,
                 JoynrMessage,
+                MessagingQos,
                 OneWayRequest,
                 Request,
                 Reply,
@@ -64,7 +66,7 @@ joynrTestRequire(
                     "libjoynr-js.joynr.dispatching.Dispatcher",
                     function() {
 
-                        var dispatcher, requestReplyManager, subscriptionManager, publicationManager, clusterControllerMessagingStub, libjoynrMessageReceiver, subscriptionId =
+                        var dispatcher, requestReplyManager, subscriptionManager, publicationManager, clusterControllerMessagingStub, securityManager, subscriptionId =
                                 "mySubscriptionId", requestReplyId = "requestReplyId";
 
                         /**
@@ -85,18 +87,19 @@ joynrTestRequire(
                                 "handleSubscriptionStop"
                             ]);
                             clusterControllerMessagingStub =
-                                    jasmine.createSpy("inProcessMessagingStub");
-
-                            libjoynrMessageReceiver =
                                     jasmine.createSpyObj(
-                                            "inProcessMessagingReceiver",
-                                            [ "registerListener"
+                                            "ClusterControllerMessagingStub",
+                                            [ "transmit"
+                                            ]);
+
+                            securityManager =
+                                    jasmine.createSpyObj(
+                                            "SecurityManager",
+                                            [ "getCurrentProcessUserId"
                                             ]);
 
                             dispatcher =
-                                    new Dispatcher(
-                                            clusterControllerMessagingStub,
-                                            libjoynrMessageReceiver);
+                                    new Dispatcher(clusterControllerMessagingStub, securityManager);
                             dispatcher.registerRequestReplyManager(requestReplyManager);
                             dispatcher.registerSubscriptionManager(subscriptionManager);
                             dispatcher.registerPublicationManager(publicationManager);
@@ -270,6 +273,82 @@ joynrTestRequire(
                             dispatcher.receive(joynrMessage);
                             expect(requestReplyManager.handleReply).toHaveBeenCalled();
                             expect(requestReplyManager.handleReply).toHaveBeenCalledWith(reply);
+                        });
+
+                        it("enriches requests with custom headers", function() {
+                            var sentMessage;
+                            var request = new Request({
+                                methodName : "methodName"
+                            });
+                            var messagingQos = new MessagingQos();
+                            var headerKey = "key";
+                            var headerValue = "value";
+                            messagingQos.putCustomMessageHeader(headerKey, headerValue);
+                            dispatcher.sendRequest({
+                                from : "from",
+                                to : "to",
+                                messagingQos : messagingQos,
+                                request : request
+                            });
+                            expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
+                            sentMessage =
+                                    clusterControllerMessagingStub.transmit.mostRecentCall.args[0];
+                            expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
+                        });
+
+                        it("enriches one way requests with custom headers", function() {
+                            var sentMessage;
+                            var request = new OneWayRequest({
+                                methodName : "methodName"
+                            });
+                            var messagingQos = new MessagingQos();
+                            var headerKey = "key";
+                            var headerValue = "value";
+                            messagingQos.putCustomMessageHeader(headerKey, headerValue);
+                            dispatcher.sendOneWayRequest({
+                                from : "from",
+                                to : "to",
+                                messagingQos : messagingQos,
+                                request : request
+                            });
+                            expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
+                            sentMessage =
+                                    clusterControllerMessagingStub.transmit.mostRecentCall.args[0];
+                            expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
+                        });
+
+                        it("enriches replies with custom headers from request", function() {
+                            var sentRequestMessage, sentReplyMessage;
+                            var request = new Request({
+                                methodName : "methodName"
+                            });
+                            var messagingQos = new MessagingQos();
+                            var headerKey = "key";
+                            var headerValue = "value";
+                            messagingQos.putCustomMessageHeader(headerKey, headerValue);
+                            dispatcher.sendRequest({
+                                from : "from",
+                                to : "to",
+                                messagingQos : messagingQos,
+                                request : request
+                            });
+                            expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
+                            sentRequestMessage =
+                                    clusterControllerMessagingStub.transmit.mostRecentCall.args[0];
+                            // get ready for an incoming request: when handleRequest is called, pass an empty reply back.
+                            requestReplyManager.handleRequest.andCallFake(function(
+                                    to,
+                                    request,
+                                    callback) {
+                                callback(new Reply());
+                            });
+                            // now simulate receiving the request message, as if it had been transmitted
+                            // this will be passed on to the mock requestReplyManager
+                            dispatcher.receive(sentRequestMessage);
+                            sentReplyMessage =
+                                    clusterControllerMessagingStub.transmit.mostRecentCall.args[0];
+                            expect(sentReplyMessage.getCustomHeaders()[headerKey]).toEqual(
+                                    headerValue);
                         });
                     });
 

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,6 +134,10 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError);
 
+    void methodFireAndForgetWithoutParameter() override;
+
+    void methodFireAndForgetWithInputParameter(const std::int32_t& int32Arg) override;
+
     virtual void overloadedMethod(
             std::function<void(const std::string& stringOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
@@ -261,13 +265,29 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
 
-    virtual void getAttributeWithException(
+    void getAttributeFireAndForget(
+            std::function<void(const std::int32_t&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+
+    void setAttributeFireAndForget(
+            const std::int32_t& attributeFireAndForget,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+
+    virtual void getAttributeWithExceptionFromGetter(
             std::function<void(const bool&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError);
 
-    virtual void setAttributeWithException(
-            const bool& attributeWithException,
+    virtual void getAttributeWithExceptionFromSetter(
+            std::function<void(const bool&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError);
+
+    virtual void setAttributeWithExceptionFromSetter(
+            const bool& attributeWithExceptionFromSetter,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError);
@@ -302,6 +322,8 @@ private:
     void operator=(const IltProvider&);
 
     std::mutex mutex; // Providers need to be threadsafe
+
+    std::int32_t attributeFireAndForget;
 
     ADD_LOGGER(IltProvider);
 };

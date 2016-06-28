@@ -19,17 +19,8 @@ package io.joynr.test.interlanguage;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
-
-import java.io.StringWriter;
-import java.io.PrintWriter;
-
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
-import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
-import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithFilteringBroadcastAdapter;
-import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithFilteringBroadcastFilterParameters;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultipleArrayParametersBroadcastAdapter;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultipleEnumerationParametersBroadcastAdapter;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultiplePrimitiveParametersBroadcastAdapter;
@@ -48,12 +39,8 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumer
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import org.junit.Test;
 import static org.junit.Assert.fail;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
@@ -69,16 +56,16 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithSinglePrimitiveParameter() {
         String subscriptionId;
-        int minInterval_ms = 0;
-        int maxInterval_ms = 10000;
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
-        int alertAfterInterval_ms = 20000;
-        int publicationTtl_ms = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        int minIntervalMs = 0;
+        int maxIntervalMs = 10000;
+        long validityMs = 60000;
+        int alertAfterIntervalMs = 20000;
+        int publicationTtlMs = 5000;
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
+                                                                                                         .setMaxIntervalMs(maxIntervalMs)
+                                                                                                         .setValidityMs(validityMs)
+                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
+                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -167,16 +154,16 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithMultiplePrimitiveParameters() {
         String subscriptionId;
-        int minInterval_ms = 0;
-        int maxInterval_ms = 10000;
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
-        int alertAfterInterval_ms = 20000;
-        int publicationTtl_ms = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        int minIntervalMs = 0;
+        int maxIntervalMs = 10000;
+        long validityMs = 60000;
+        int alertAfterIntervalMs = 20000;
+        int publicationTtlMs = 5000;
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
+                                                                                                         .setMaxIntervalMs(maxIntervalMs)
+                                                                                                         .setValidityMs(validityMs)
+                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
+                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -267,16 +254,16 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithSingleArrayParameter() {
         String subscriptionId;
-        int minInterval_ms = 0;
-        int maxInterval_ms = 10000;
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
-        int alertAfterInterval_ms = 20000;
-        int publicationTtl_ms = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        int minIntervalMs = 0;
+        int maxIntervalMs = 10000;
+        long validityMs = 60000;
+        int alertAfterIntervalMs = 20000;
+        int publicationTtlMs = 5000;
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
+                                                                                                         .setMaxIntervalMs(maxIntervalMs)
+                                                                                                         .setValidityMs(validityMs)
+                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
+                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -366,16 +353,16 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithMultipleArrayParameters() {
         String subscriptionId;
-        int minInterval_ms = 0;
-        int maxInterval_ms = 10000;
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
-        int alertAfterInterval_ms = 20000;
-        int publicationTtl_ms = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        int minIntervalMs = 0;
+        int maxIntervalMs = 10000;
+        long validityMs = 60000;
+        int alertAfterIntervalMs = 20000;
+        int publicationTtlMs = 5000;
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
+                                                                                                         .setMaxIntervalMs(maxIntervalMs)
+                                                                                                         .setValidityMs(validityMs)
+                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
+                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -466,16 +453,16 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithSingleEnumerationParameter() {
         String subscriptionId;
-        int minInterval_ms = 0;
-        int maxInterval_ms = 10000;
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
-        int alertAfterInterval_ms = 20000;
-        int publicationTtl_ms = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        int minIntervalMs = 0;
+        int maxIntervalMs = 10000;
+        long validityMs = 60000;
+        int alertAfterIntervalMs = 20000;
+        int publicationTtlMs = 5000;
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
+                                                                                                         .setMaxIntervalMs(maxIntervalMs)
+                                                                                                         .setValidityMs(validityMs)
+                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
+                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -564,16 +551,16 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithMultipleEnumerationParameters() {
         String subscriptionId;
-        int minInterval_ms = 0;
-        int maxInterval_ms = 10000;
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
-        int alertAfterInterval_ms = 20000;
-        int publicationTtl_ms = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        int minIntervalMs = 0;
+        int maxIntervalMs = 10000;
+        long validityMs = 60000;
+        int alertAfterIntervalMs = 20000;
+        int publicationTtlMs = 5000;
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
+                                                                                                         .setMaxIntervalMs(maxIntervalMs)
+                                                                                                         .setValidityMs(validityMs)
+                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
+                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -664,16 +651,16 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithSingleStructParameter() {
         String subscriptionId;
-        int minInterval_ms = 0;
-        int maxInterval_ms = 10000;
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
-        int alertAfterInterval_ms = 20000;
-        int publicationTtl_ms = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        int minIntervalMs = 0;
+        int maxIntervalMs = 10000;
+        long validityMs = 60000;
+        int alertAfterIntervalM = 20000;
+        int publicationTtlMs = 5000;
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
+                                                                                                         .setMaxIntervalMs(maxIntervalMs)
+                                                                                                         .setValidityMs(validityMs)
+                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalM)
+                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -762,16 +749,16 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithMultipleStructParameters() {
         String subscriptionId;
-        int minInterval_ms = 0;
-        int maxInterval_ms = 10000;
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
-        int alertAfterInterval_ms = 20000;
-        int publicationTtl_ms = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        int minIntervalMs = 0;
+        int maxIntervalMs = 10000;
+        long validityMs = 60000;
+        int alertAfterIntervalMs = 20000;
+        int publicationTtlMs = 5000;
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
+                                                                                                         .setMaxIntervalMs(maxIntervalMs)
+                                                                                                         .setValidityMs(validityMs)
+                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
+                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");

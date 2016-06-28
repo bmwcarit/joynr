@@ -37,6 +37,7 @@ import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.performance.EchoProviderInvocationParameters.BackendConfig;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
+import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -125,6 +126,7 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
 
         if (invocationParams.getBackendTransportMode() == BackendConfig.MQTT) {
             joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParams.getMqttBrokerUri());
+            joynrConfig.put(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         }
 
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);

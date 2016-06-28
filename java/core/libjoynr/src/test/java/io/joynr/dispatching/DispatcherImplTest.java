@@ -27,6 +27,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -167,7 +168,8 @@ public class DispatcherImplTest {
         JoynrMessage joynrMessage = joynrMessageFactory.createOneWayRequest("fromParticipantId",
                                                                             toParticipantId,
                                                                             request,
-                                                                            expiryDate);
+                                                                            expiryDate,
+                                                                            Collections.<String, String> emptyMap());
 
         fixture.messageArrived(joynrMessage);
 

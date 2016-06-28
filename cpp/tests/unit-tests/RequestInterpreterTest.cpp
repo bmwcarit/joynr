@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #include "joynr/IRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockCallback.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -32,13 +33,16 @@ using ::testing::A;
 using ::testing::_;
 
 MATCHER_P(providerRuntimeException, msg, "") {
-    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME
+    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME()
             && arg.getMessage() == msg;
 }
 
-MATCHER_P(methodInvocationException, msg, "") {
-    return arg.getTypeName() == joynr::exceptions::MethodInvocationException::TYPE_NAME
-            && arg.getMessage() == msg;
+MATCHER_P2(methodInvocationExceptionWithProviderVersion, msg, expectedProviderVersion, "") {
+    const joynr::exceptions::MethodInvocationException *methodInvocationExceptionPtr;
+    return arg.getTypeName() == joynr::exceptions::MethodInvocationException::TYPE_NAME() &&
+            arg.getMessage() == msg &&
+            (methodInvocationExceptionPtr = dynamic_cast<const joynr::exceptions::MethodInvocationException*>(&arg)) != nullptr &&
+            methodInvocationExceptionPtr->getProviderVersion() == expectedProviderVersion;
 }
 
 using namespace joynr;
@@ -163,6 +167,7 @@ TEST_F(RequestInterpreterTest, execute_callsGetterMethodOnRequestCallerWithProvi
 
 TEST_F(RequestInterpreterTest, execute_callsMethodWithInvalidArguments) {
     auto mockCaller = std::make_shared<MockTestRequestCaller>();
+    auto expectedProviderVersion = mockCaller->getProviderVersion();
 
     tests::testRequestInterpreter interpreter;
     std::string methodName = "sumInts";
@@ -176,13 +181,14 @@ TEST_F(RequestInterpreterTest, execute_callsMethodWithInvalidArguments) {
     std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
     };
-    EXPECT_CALL(*callback, onError(methodInvocationException("Illegal argument for method sumInts: ints (Integer[])"))).Times(1);
+    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion("Illegal argument for method sumInts: ints (Integer[])", expectedProviderVersion))).Times(1);
 
     interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
 }
 
 TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments) {
     auto mockCaller = std::make_shared<MockTestRequestCaller>();
+    auto expectedProviderVersion = mockCaller->getProviderVersion();
 
     tests::testRequestInterpreter interpreter;
     std::string methodName = "setTestAttribute";
@@ -196,13 +202,14 @@ TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments) {
     std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
     };
-    EXPECT_CALL(*callback, onError(methodInvocationException("Illegal argument for attribute setter setTestAttribute (Integer)"))).Times(1);
+    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion("Illegal argument for attribute setter setTestAttribute (Integer)", expectedProviderVersion))).Times(1);
 
     interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
 }
 
 TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments2) {
     auto mockCaller = std::make_shared<MockTestRequestCaller>();
+    auto expectedProviderVersion = mockCaller->getProviderVersion();
 
     tests::testRequestInterpreter interpreter;
     std::string methodName = "setTestAttribute";
@@ -216,13 +223,14 @@ TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments2) {
     std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
     };
-    EXPECT_CALL(*callback, onError(methodInvocationException("Illegal argument for attribute setter setTestAttribute (Integer)"))).Times(1);
+    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion("Illegal argument for attribute setter setTestAttribute (Integer)", expectedProviderVersion))).Times(1);
 
     interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
 }
 
 TEST_F(RequestInterpreterTest, execute_callsNonExistingMethod) {
     auto mockCaller = std::make_shared<MockTestRequestCaller>();
+    auto expectedProviderVersion = mockCaller->getProviderVersion();
 
     tests::testRequestInterpreter interpreter;
     std::string methodName = "execute_callsNonExistingMethod";
@@ -234,7 +242,7 @@ TEST_F(RequestInterpreterTest, execute_callsNonExistingMethod) {
     std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
     };
-    EXPECT_CALL(*callback, onError(methodInvocationException("unknown method name for interface test: execute_callsNonExistingMethod"))).Times(1);
+    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion("unknown method name for interface test: execute_callsNonExistingMethod", expectedProviderVersion))).Times(1);
 
     interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
 }
@@ -292,4 +300,3 @@ TEST_F(RequestInterpreterTest, registerUnregister) {
     std::shared_ptr<IRequestInterpreter> gpsInterpreter4 = registrar.getRequestInterpreter(gpsInterfaceName);
     EXPECT_NE(gpsInterpreter1, gpsInterpreter4);
 }
-

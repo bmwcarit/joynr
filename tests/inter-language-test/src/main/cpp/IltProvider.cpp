@@ -32,7 +32,7 @@ bool IltUtil::useRestrictedUnsignedRange = true;
 
 INIT_LOGGER(IltProvider);
 
-IltProvider::IltProvider() : DefaultTestInterfaceProvider(), mutex()
+IltProvider::IltProvider() : DefaultTestInterfaceProvider(), mutex(), attributeFireAndForget(0)
 {
     // set initial value for attributes here, if any
 }
@@ -354,6 +354,16 @@ void IltProvider::methodWithMultipleStructParameters(
     }
     JOYNR_LOG_WARN(logger, "methodWithMultipleStructParameters - OK");
     onSuccess(baseStructWithoutElementsOut, extendedExtendedBaseStructOut);
+}
+
+void IltProvider::methodFireAndForgetWithoutParameter()
+{
+    setAttributeFireAndForget(this->attributeFireAndForget + 1, nullptr, nullptr);
+}
+
+void IltProvider::methodFireAndForgetWithInputParameter(const std::int32_t& int32Arg)
+{
+    setAttributeFireAndForget(int32Arg, nullptr, nullptr);
 }
 
 void IltProvider::overloadedMethod(
@@ -866,23 +876,54 @@ void IltProvider::getAttributeExtendedEnumerationReadonly(
     onSuccess(attributeExtendedEnumerationReadonly);
 }
 
+void IltProvider::getAttributeFireAndForget(
+        std::function<void(const std::int32_t&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::ignore = onError;
+    onSuccess(attributeFireAndForget);
+}
+
+void IltProvider::setAttributeFireAndForget(
+        const std::int32_t& attributeFireAndForget,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::ignore = onError;
+    this->attributeFireAndForget = attributeFireAndForget;
+    attributeFireAndForgetChanged(attributeFireAndForget);
+    if (onSuccess) {
+        onSuccess();
+    }
+}
+
 // attribute with exception
 
-void IltProvider::getAttributeWithException(
+void IltProvider::getAttributeWithExceptionFromGetter(
         std::function<void(const bool&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
     onError(joynr::exceptions::ProviderRuntimeException(
-            "Exception from getAttributeWithException"));
+            "Exception from getAttributeWithExceptionFromGetter"));
 }
 
-void IltProvider::setAttributeWithException(
-        const bool& attributeWithException,
+void IltProvider::getAttributeWithExceptionFromSetter(
+        std::function<void(const bool&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
+{
+    std::ignore = onError;
+    onSuccess(false);
+}
+
+void IltProvider::setAttributeWithExceptionFromSetter(
+        const bool& attributeWithExceptionFromSetter,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
+    std::ignore = attributeWithExceptionFromSetter;
+    std::ignore = onSuccess;
     onError(joynr::exceptions::ProviderRuntimeException(
-            "Exception from setAttributeWithException"));
+            "Exception from setAttributeWithExceptionFromSetter"));
 }
 
 void IltProvider::methodWithSingleMapParameters(

@@ -424,8 +424,10 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerMethodInvocationException)
 {
     // Create a MethodInvocationException
     exceptions::MethodInvocationException exception;
-    std::string detailMessage{"Message of MethodInvocationException"};
-    exception.setMessage(detailMessage);
+    std::string expectedDetailMessage{"Message of MethodInvocationException"};
+    Version expectedProviderVersion(47, 11);
+    exception.setMessage(expectedDetailMessage);
+    exception.setProviderVersion(expectedProviderVersion);
 
     // Serialize into JSON
     std::stringstream stream;
@@ -438,9 +440,10 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerMethodInvocationException)
     JsonTokenizer tokenizer(json);
 
     if (tokenizer.hasNextObject()) {
-        exceptions::MethodInvocationException t;
-        ClassDeserializer<exceptions::MethodInvocationException>::deserialize(t, tokenizer.nextObject());
-        ASSERT_EQ(t.getMessage(), detailMessage);
+        exceptions::MethodInvocationException deserializedException;
+        ClassDeserializer<exceptions::MethodInvocationException>::deserialize(deserializedException, tokenizer.nextObject());
+        ASSERT_EQ(expectedDetailMessage, deserializedException.getMessage());
+        ASSERT_EQ(expectedProviderVersion, deserializedException.getProviderVersion());
     }
 }
 

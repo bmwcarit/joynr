@@ -27,9 +27,17 @@ joynrTestRequire(
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/Reply",
             "joynr/types/TypeRegistrySingleton",
-            "joynr/util/Typing"
+            "joynr/util/Typing",
+            "joynr/util/UtilInternal"
         ],
-        function(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing) {
+        function(
+                RequestReplyManager,
+                OneWayRequest,
+                Request,
+                Reply,
+                TypeRegistrySingleton,
+                Typing,
+                UtilInternal) {
 
             describe(
                     "libjoynr-js.joynr.dispatching.RequestReplyManager",
@@ -368,7 +376,11 @@ joynrTestRequire(
                                 testParamDatatype,
                                 useInvalidProviderParticipantId) {
                             var providerParticipantId = "providerParticipantId";
-                            var provider = {
+                            var TestProvider = function() {};
+                            TestProvider.MAJOR_VERSION = 47;
+                            TestProvider.MINOR_VERSION = 11;
+                            var provider = new TestProvider();
+                            UtilInternal.extend(provider, {
                                 attributeName : {
                                     get : jasmine.createSpy("getterSpy"),
                                     set : jasmine.createSpy("setterSpy")
@@ -386,8 +398,7 @@ joynrTestRequire(
                                     get : jasmine.createSpy("getterSpy"),
                                     set : jasmine.createSpy("setterSpy")
                                 }
-
-                            };
+                            }, true);
                             provider.attributeName.get.andReturn([ testParam
                             ]);
                             provider.attributeName.set.andReturn([]);
@@ -678,7 +689,12 @@ joynrTestRequire(
                                                                             .augmentTypes(
                                                                                     {
                                                                                         "_typeName" : "joynr.exceptions.MethodInvocationException",
-                                                                                        "detailMessage" : 'Could not find an operation "notExistentOperationOrAttribute" in the provider'
+                                                                                        "detailMessage" : 'Could not find an operation "notExistentOperationOrAttribute" in the provider',
+                                                                                        "providerVersion" : {
+                                                                                            "_typeName" : "joynr.types.Version",
+                                                                                            "majorVersion" : 47,
+                                                                                            "minorVersion" : 11
+                                                                                        }
                                                                                     },
                                                                                     typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId
@@ -703,7 +719,12 @@ joynrTestRequire(
                                                                             .augmentTypes(
                                                                                     {
                                                                                         "_typeName" : "joynr.exceptions.MethodInvocationException",
-                                                                                        "detailMessage" : 'Could not find an operation "getNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider'
+                                                                                        "detailMessage" : 'Could not find an operation "getNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider',
+                                                                                        "providerVersion" : {
+                                                                                            "_typeName" : "joynr.types.Version",
+                                                                                            "majorVersion" : 47,
+                                                                                            "minorVersion" : 11
+                                                                                        }
                                                                                     },
                                                                                     typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId
@@ -728,7 +749,12 @@ joynrTestRequire(
                                                                             .augmentTypes(
                                                                                     {
                                                                                         "_typeName" : "joynr.exceptions.MethodInvocationException",
-                                                                                        "detailMessage" : 'Could not find an operation "setNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider'
+                                                                                        "detailMessage" : 'Could not find an operation "setNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider',
+                                                                                        "providerVersion" : {
+                                                                                            "_typeName" : "joynr.types.Version",
+                                                                                            "majorVersion" : 47,
+                                                                                            "minorVersion" : 11
+                                                                                        }
                                                                                     },
                                                                                     typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId

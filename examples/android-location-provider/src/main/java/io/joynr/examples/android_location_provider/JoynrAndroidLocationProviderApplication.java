@@ -50,7 +50,7 @@ public class JoynrAndroidLocationProviderApplication extends Application {
     public void registerProvider(final String domain) {
         if (androidLocationProvider == null) {
             logToOutput("Creating new location provider.");
-            androidLocationProvider = new AndroidLocationProvider("", this.getApplicationContext(), output);
+            androidLocationProvider = new AndroidLocationProvider(this.getApplicationContext(), output);
         }
         if (runtime != null) {
             logToOutput("Registering provider on domain \"" + domain + "\".");

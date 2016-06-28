@@ -30,7 +30,6 @@ import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -142,7 +141,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     @Override
     public void registerAttributeSubscription(String fromParticipantId,
                                               Set<String> toParticipantIds,
-                                              AttributeSubscribeInvocation request) throws IOException {
+                                              AttributeSubscribeInvocation request) {
         if (!request.hasSubscriptionId()) {
             request.setSubscriptionId(UUID.randomUUID().toString());
         }
@@ -189,7 +188,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     @Override
     public void registerBroadcastSubscription(String fromParticipantId,
                                               Set<String> toParticipantIds,
-                                              BroadcastSubscribeInvocation subscriptionRequest) throws IOException {
+                                              BroadcastSubscribeInvocation subscriptionRequest) {
         if (!subscriptionRequest.hasSubscriptionId()) {
             subscriptionRequest.setSubscriptionId(UUID.randomUUID().toString());
         }
@@ -219,7 +218,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     public void unregisterSubscription(String fromParticipantId,
                                        Set<String> toParticipantIds,
                                        String subscriptionId,
-                                       MessagingQos qosSettings) throws IOException {
+                                       MessagingQos qosSettings) {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
         if (subscriptionState != null) {
             logger.info("Called unregister / unsubscribe on subscription id= " + subscriptionId);

@@ -20,15 +20,32 @@ package io.joynr.proxy;
  */
 
 import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.exceptions.JoynrRuntimeException;
+import joynr.exceptions.ApplicationException;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 public abstract class ProxyInvocationHandler implements InvocationHandler {
 
-    abstract Object invoke(Method method, Object[] args) throws Throwable;
+    protected Throwable throwable;
+
+    abstract Object invoke(Method method, Object[] args) throws ApplicationException;
+
+    public abstract void abort(JoynrRuntimeException exception);
 
     abstract void createConnector(ArbitrationResult result);
+
+    /**
+     * This method can be called to specify a throwable which will be thrown each time
+     * {@link #invoke(Object, Method, Object[])} is called.
+     *
+     * @param throwable
+     *            the throwable to be thrown when invoke is called.
+     */
+    void setThrowableForInvoke(Throwable throwable) {
+        this.throwable = throwable;
+    }
 
     /**
      * The InvocationHandler invoke method is mapped to the ProxyInvocationHandler.invoke which does not need the proxy
@@ -36,6 +53,9 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (throwable != null) {
+            throw throwable;
+        }
         return invoke(method, args);
     }
 }

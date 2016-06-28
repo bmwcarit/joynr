@@ -32,9 +32,10 @@ INIT_LOGGER(QosArbitrator);
 
 QosArbitrator::QosArbitrator(const std::string& domain,
                              const std::string& interfaceName,
+                             const joynr::types::Version& interfaceVersion,
                              joynr::system::IDiscoverySync& discoveryProxy,
                              const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos)
+        : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos)
 {
 }
 
@@ -59,19 +60,34 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
         const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
     std::string res = "";
+    discoveredIncompatibleVersions.clear();
 
     // Check for empty results
     if (discoveryEntries.size() == 0)
         return;
 
     std::int64_t highestPriority = -1;
+    joynr::types::Version providerVersion;
     for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
+        providerVersion = discoveryEntry.getProviderVersion();
+
         if (discoveryQos.getProviderMustSupportOnChange() &&
             !providerQos.getSupportsOnChangeSubscriptions()) {
             continue;
         }
+
+        if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
+            providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
+            JOYNR_LOG_TRACE(logger,
+                            "Skipping capabilitiesEntry with incompatible version, expected: " +
+                                    std::to_string(interfaceVersion.getMajorVersion()) + "." +
+                                    std::to_string(interfaceVersion.getMinorVersion()));
+            discoveredIncompatibleVersions.insert(providerVersion);
+            continue;
+        }
+
         if (providerQos.getPriority() > highestPriority) {
             res = discoveryEntry.getParticipantId();
             JOYNR_LOG_TRACE(logger, "setting res to {}", res);
@@ -81,11 +97,10 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
     if (res == "") {
         JOYNR_LOG_WARN(logger,
                        "There was more than one entries in capabilitiesEntries, but none "
-                       "had a Priority > -1");
+                       "was compatible or had a priority > -1");
         return;
     }
-
-    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful, res);
+    notifyArbitrationListener(res);
 }
 
 } // namespace joynr

@@ -51,6 +51,7 @@ var attributeExtendedEnumerationReadonly;
 var attributeBaseStruct;
 var attributeExtendedExtendedBaseStruct;
 var attributeMapStringString;
+var attributeFireAndForget = 0;
 
 exports.setProvider = function(provider) {
     iltProvider = provider;
@@ -225,36 +226,46 @@ exports.implementation = {
         }
     },
 
-    methodWithSingleMapParameters : function(opArgs) {
-        prettyLog("IltProvider.methodWithSingleMapParameters(" + JSON.stringify(opArgs) + ") called");
-        return new Promise(function(resolve, reject) {
-            if (opArgs.mapArg === undefined || opArgs.mapArg === null) {
-                reject(new joynr.exceptions.ProviderRuntimeException(
-                        {detailMessage: "methodWithSingleMapParameters: invalid argument mapArg"}));
-            } else {
-                var mapOut = new MapStringString();
-                for (var i = 1; i <= 3; i++) {
-                    mapOut.put(opArgs.mapArg.get("keyString" + i), "keyString" + i)
-                }
-                resolve({mapOut: mapOut});
-            }
-        });
-    },
-
-    attributeWithException : {
+    attributeFireAndForget : {
         get : function() {
-            prettyLog("IltProvider.attributeWithException.get() called");
+            prettyLog("IltProvider.attributeFireAndForget.get() called");
             return new Promise(function(resolve, reject) {
-                settings = {};
-                settings.detailMessage = "Exception from getAttributeWithException";
-                reject(new joynr.exceptions.ProviderRuntimeException(settings));
+                resolve(attributeFireAndForget);
             });
         },
         set : function(value) {
-            prettyLog("IltProvider.attributeWithException.set(" + value + ") called");
+            prettyLog("IltProvider.attributeFireAndForget.set(" + value + ") called");
+            return new Promise(function(resolve, reject) {
+                attributeFireAndForget = value;
+                self.attributeFireAndForget.valueChanged(attributeFireAndForget);
+                resolve();
+            });
+        }
+    },
+
+    attributeWithExceptionFromGetter : {
+        get : function() {
+            prettyLog("IltProvider.attributeWithExceptionFromGetter.get() called");
             return new Promise(function(resolve, reject) {
                 settings = {};
-                settings.detailMessage = "Exception from setAttributeWithException";
+                settings.detailMessage = "Exception from getAttributeWithExceptionFromGetter";
+                reject(new joynr.exceptions.ProviderRuntimeException(settings));
+            });
+        }
+    },
+
+    attributeWithExceptionFromSetter : {
+        get : function() {
+            prettyLog("IltProvider.attributeWithExceptionFromSetter.get() called");
+            return new Promise(function(resolve, reject) {
+                resolve(false);
+            });
+        },
+        set : function(value) {
+            prettyLog("IltProvider.attributeWithExceptionFromSetter.set(" + value + ") called");
+            return new Promise(function(resolve, reject) {
+                settings = {};
+                settings.detailMessage = "Exception from setAttributeWithExceptionFromSetter";
                 reject(new joynr.exceptions.ProviderRuntimeException(settings));
             });
         }
@@ -402,6 +413,22 @@ exports.implementation = {
         });
     },
 
+    methodWithSingleMapParameters : function(opArgs) {
+        prettyLog("IltProvider.methodWithSingleMapParameters(" + JSON.stringify(opArgs) + ") called");
+        return new Promise(function(resolve, reject) {
+            if (opArgs.mapArg === undefined || opArgs.mapArg === null) {
+                reject(new joynr.exceptions.ProviderRuntimeException(
+                        {detailMessage: "methodWithSingleMapParameters: invalid argument mapArg"}));
+            } else {
+                var mapOut = new MapStringString();
+                for (var i = 1; i <= 3; i++) {
+                    mapOut.put(opArgs.mapArg.get("keyString" + i), "keyString" + i)
+                }
+                resolve({mapOut: mapOut});
+            }
+        });
+    },
+
     methodWithSingleStructParameters : function(opArgs) {
         prettyLog("IltProvider.methodWithSingleStructParameters(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
@@ -443,17 +470,29 @@ exports.implementation = {
                 reject(new joynr.exceptions.ProviderRuntimeException(
                         {detailMessage: "methodWithStringsAndSpecifiedStringOutLength: Maximum length exceeded"}));
             } else {
-                log("### opArgs.int32StringLengthArg: " + opArgs.int32StringLengthArg);
                 var stringOutValue = "";
-                log("### before for: " + stringOutValue);
                 for (i = 0; i < opArgs.int32StringLengthArg; i++) {
-                    log("### for: " + i);
                     stringOutValue += "A";
                 }
-                log("### after for: " + stringOutValue);
                 resolve({stringOut: stringOutValue});
             }
         });
+    },
+
+    // FIRE-AND-FORGET METHODS
+    methodFireAndForgetWithoutParameter : function(opArgs) {
+        prettyLog("IltProvider.methodFireAndForgetWithoutParameter(" + JSON.stringify(opArgs) + ") called");
+        self.attributeFireAndForget.set(attributeFireAndForget + 1);
+    },
+
+    methodFireAndForgetWithInputParameter : function(opArgs) {
+        prettyLog("IltProvider.methodFireAndForgetWithInputParameter(" + JSON.stringify(opArgs) + ") called");
+        if (opArgs.int32Arg === undefined || opArgs.int32Arg === null || typeof opArgs.int32Arg !== "number") {
+            prettyLog("methodFireAndForgetWithInputParameter: invalid argument int32Arg")
+            self.attributeFireAndForget.set(-1);
+        } else {
+            self.attributeFireAndForget.set(opArgs.int32Arg);
+        }
     },
 
     // OVERLOADED METHODS

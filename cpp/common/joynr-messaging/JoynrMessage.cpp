@@ -71,6 +71,11 @@ const std::string& JoynrMessage::HEADER_REPLY_ADDRESS()
     static const std::string headerReplyAddress("replyChannelId");
     return headerReplyAddress;
 }
+const std::string& JoynrMessage::CUSTOM_HEADER_PREFIX()
+{
+    static const std::string customHeaderPrefix("custom-");
+    return customHeaderPrefix;
+}
 
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY = "oneWay";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_REPLY = "reply";
@@ -188,6 +193,21 @@ std::string JoynrMessage::getHeaderForKey(const std::string& key) const
 void JoynrMessage::setHeaderForKey(const std::string& key, const std::string& value)
 {
     header[key] = value;
+}
+
+bool JoynrMessage::containsCustomHeader(const std::string& key) const
+{
+    return containsHeader(CUSTOM_HEADER_PREFIX() + key);
+}
+
+std::string JoynrMessage::getCustomHeader(const std::string& key) const
+{
+    return getHeaderForKey(CUSTOM_HEADER_PREFIX() + key);
+}
+
+void JoynrMessage::setCustomHeader(const std::string& key, const std::string& value)
+{
+    setHeaderForKey(CUSTOM_HEADER_PREFIX() + key, value);
 }
 
 std::string JoynrMessage::getPayload() const

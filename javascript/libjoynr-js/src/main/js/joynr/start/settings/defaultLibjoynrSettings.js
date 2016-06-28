@@ -28,7 +28,11 @@
                 scope : ProviderScope.LOCAL,
                 onChangeSubscriptions : true
             },
-            participantId : "CC.DiscoveryProvider.ParticipantId"
+            participantId : "CC.DiscoveryProvider.ParticipantId",
+            providerVersion : {
+                majorVersion : 0,
+                minorVersion : 1
+            }
         };
 
         var routingCapability = {
@@ -40,7 +44,11 @@
                 scope : ProviderScope.LOCAL,
                 onChangeSubscriptions : true
             },
-            participantId : "CC.RoutingProvider.ParticipantId"
+            participantId : "CC.RoutingProvider.ParticipantId",
+            providerVersion : {
+                majorVersion : 0,
+                minorVersion : 1
+            }
         };
 
         defaultSettings.capabilities = [

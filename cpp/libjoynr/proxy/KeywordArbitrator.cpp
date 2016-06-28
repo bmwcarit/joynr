@@ -30,9 +30,10 @@ INIT_LOGGER(KeywordArbitrator);
 
 KeywordArbitrator::KeywordArbitrator(const std::string& domain,
                                      const std::string& interfaceName,
+                                     const joynr::types::Version& interfaceVersion,
                                      joynr::system::IDiscoverySync& discoveryProxy,
                                      const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
+        : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos),
           keyword(discoveryQos.getCustomParameter(DiscoveryQos::KEYWORD_PARAMETER()).getValue())
 {
 }
@@ -60,11 +61,14 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
     if (discoveryEntries.size() == 0) {
         return;
     }
+    discoveredIncompatibleVersions.clear();
 
     // Loop through the result list
+    joynr::types::Version providerVersion;
     for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
+        providerVersion = discoveryEntry.getProviderVersion();
 
         // Check that the provider supports onChange subscriptions if this was requested
         if (discoveryQos.getProviderMustSupportOnChange() &&
@@ -76,11 +80,15 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
         std::vector<types::CustomParameter> qosParameters = providerQos.getCustomParameters();
         for (types::CustomParameter parameter : qosParameters) {
             std::string name = parameter.getName();
-            if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
+            if (!(name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue())) {
+                continue;
+            } else if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
+                       providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
+                discoveredIncompatibleVersions.insert(providerVersion);
+            } else {
                 std::string res = discoveryEntry.getParticipantId();
                 JOYNR_LOG_TRACE(logger, "setting res to {}", res);
-                updateArbitrationStatusParticipantIdAndAddress(
-                        ArbitrationStatus::ArbitrationSuccessful, res);
+                notifyArbitrationListener(res);
                 return;
             }
         }

@@ -30,6 +30,7 @@
 #include "tests/utils/LibJoynrMockObjects.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/testTypes/DerivedStruct.h"
 #include "joynr/tests/testTypes/AnotherDerivedStruct.h"
@@ -1054,7 +1055,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure) {
     // Setup an onError callback function
     std::function<void(const exceptions::JoynrException&)> onError =
             [] (const exceptions::JoynrException& error) {
-        EXPECT_EQ(exceptions::JoynrTimeOutException::TYPE_NAME, error.getTypeName());
+        EXPECT_EQ(exceptions::JoynrTimeOutException::TYPE_NAME(), error.getTypeName());
     };
 
     // Asynchonously call the void operation

@@ -63,7 +63,9 @@ public class GlobalDomainAccessControllerClient {
     private GlobalDomainAccessControllerProxy getProxy(long ttl) {
         ProxyBuilder<GlobalDomainAccessControllerProxy> accessControlProxyBuilder = proxyBuilderFactory.get(domain,
                                                                                                             GlobalDomainAccessControllerProxy.class);
-        DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.GLOBAL_ONLY, DiscoveryQos.NO_MAX_AGE);
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+        discoveryQos.setCacheMaxAgeMs(DiscoveryQos.NO_MAX_AGE);
         MessagingQos messagingQos = new MessagingQos(ttl);
         return accessControlProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();
     }

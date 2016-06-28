@@ -1,0 +1,16 @@
+The following instruction helps you in getting the sit node app running
+
+mvn install
+npm install -g npm@latest
+npm install
+
+In order to run the end-to-end test, do the following:
+
+1. make sure that a cluster controller is running and is accessible via WebSockets
+2. start the not sit provider:
+   npm run-script startprovider [--sit-node-app:domain=<DOMAIN>] [--sit-node-app:cc:host=<CLUSTER_CONTROLLER_HOST> --sit-node-app:cc:port=<CLUSTER_CONTROLLER_PORT>]
+3. start the node sit consumer test
+   npm run-script startconsumer [--sit-node-app:domain=<DOMAIN>] [--sit-node-app:cc:host=<CLUSTER_CONTROLLER_HOST> --sit-node-app:cc:port=<CLUSTER_CONTROLLER_PORT>]
+
+<DOMAIN> can be of values io.joynr.systemintegrationtest.cpp, io.joynr.systemintegrationtest.node or
+io.joynr.systemintegrationtest.jee

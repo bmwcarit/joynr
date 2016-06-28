@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "log4js": "0.6.29",
-    "node-localstorage": "1.1.2",
+    "node-localstorage": "1.3.0",
     "atmosphere.js": "2.3.2",
     "xmlhttprequest" : "1.8.0",
     "requirejs" : "2.1.22",

@@ -22,6 +22,7 @@
 
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <iosfwd>
 #include "joynr/JoynrCommonExport.h"
 
@@ -63,6 +64,27 @@ public:
      */
     void setTtl(const std::uint64_t& ttl);
 
+    /**
+     * @brief Puts a header value for the given header key, replacing an existing value
+     * if necessary.
+     * @param key the header key for which to put the value.
+     * @param value the value to put for the given header key.
+     */
+    void putCustomMessageHeader(const std::string& key, const std::string& value);
+
+    /**
+     * @brief Puts all key/value pairs from the map into the header value map,
+     * replacing existing values where necessary. This operation is purely additive.
+     * @param values the key/value map to add to the map of custom header values.
+     */
+    void putAllCustomMessageHeaders(const std::unordered_map<std::string, std::string>& values);
+
+    /**
+     * @brief returns the current map of custom message headers.
+     * @return the current map of custom message headers.
+     */
+    const std::unordered_map<std::string, std::string>& getCustomMessageHeaders() const;
+
     /** @brief assignment operator */
     MessagingQos& operator=(const MessagingQos& other) = default;
     /** @brief equality operator */
@@ -71,6 +93,18 @@ public:
 private:
     /** @brief The time to live in milliseconds */
     std::uint64_t ttl;
+
+    /** @brief The map of custom message headers */
+    std::unordered_map<std::string, std::string> messageHeaders;
+
+    /**
+     * @brief Checks that the key and value of a custom message header contain
+     * only valid characters and conform to the relevant patterns.
+     * @param key may contain ascii alphanumeric or hyphen.
+     * @param value may contain alphanumeric, space, semi-colon, colon, comma,
+     * plus, ampersand, question mark, hyphen, dot, star, forward slash and back slash.
+     */
+    void checkCustomHeaderKeyValue(const std::string& key, const std::string& value) const;
 
     /**
       * @brief printing MessagingQos with google-test and google-mock

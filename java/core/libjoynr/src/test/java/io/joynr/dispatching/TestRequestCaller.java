@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
+import io.joynr.JoynrVersion;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import joynr.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@JoynrVersion(major = 6, minor = 16)
 public class TestRequestCaller extends WaitTillCondition implements RequestCaller {
 
     // maps from request payload to response

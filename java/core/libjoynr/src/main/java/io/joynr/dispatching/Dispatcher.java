@@ -1,6 +1,5 @@
 package io.joynr.dispatching;
 
-import java.io.IOException;
 import java.util.Set;
 
 /*
@@ -33,17 +32,17 @@ public interface Dispatcher extends MessageArrivedListener {
                                         Set<String> toParticipantId,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos qosSettings,
-                                        boolean broadcast) throws IOException;
+                                        boolean broadcast);
 
     public void sendSubscriptionStop(String fromParticipantId,
                                      Set<String> toParticipantId,
                                      SubscriptionStop subscriptionStop,
-                                     MessagingQos qosSettings) throws IOException;
+                                     MessagingQos qosSettings);
 
     public void sendSubscriptionPublication(String fromParticipantId,
                                             Set<String> toParticipantId,
                                             SubscriptionPublication publication,
-                                            MessagingQos qosSettings) throws IOException;
+                                            MessagingQos qosSettings);
 
     /**
      *
