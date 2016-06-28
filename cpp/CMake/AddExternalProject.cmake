@@ -22,10 +22,20 @@ function(AddExternalProject NAME)
             LOG_DOWNLOAD ON
             LOG_CONFIGURE ON
             LOG_BUILD ON
-            CMAKE_CACHE_ARGS "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}"
-                             "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}"
-                             "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}"
         )
+
+        list(FIND INPUT_ARGS "NO_PROPAGATE_CMAKE_ARGS" NO_PROPAGATE_CMAKE_ARGS_INDEX)
+        if (NO_PROPAGATE_CMAKE_ARGS_INDEX EQUAL -1)
+            list(
+                APPEND
+                DEFAULT_EP_ARGS
+                CMAKE_CACHE_ARGS "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}"
+                                 "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}"
+                                 "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}"
+            )
+        else()
+            list(REMOVE_AT INPUT_ARGS ${NO_PROPAGATE_CMAKE_ARGS_INDEX})
+        endif()
 
         # if CMAKE_VERSION > 3.2 ninja generator can be used by NOT removing BUILD_BYPRODUCTS
         # otherwise, BUILD_BYPRODUCTS and the following value from the argument list is removed
