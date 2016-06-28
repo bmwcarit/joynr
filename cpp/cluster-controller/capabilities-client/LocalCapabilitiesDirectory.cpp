@@ -56,6 +56,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           capabilitiesClient(capabilitiesClientPtr),
           localAddress(localAddress),
           cacheLock(),
+          pendingLookupsLock(),
           interfaceAddress2GlobalCapabilities(),
           participantId2GlobalCapabilities(),
           interfaceAddress2LocalCapabilities(),
@@ -64,7 +65,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           messageRouter(messageRouter),
           observers(),
           mqttSettings(),
-          libJoynrSettings(libjoynrSettings)
+          libJoynrSettings(libjoynrSettings),
+          pendingLookups()
 {
     // setting up the provisioned values for GlobalCapabilitiesClient
     // The GlobalCapabilitiesServer is also provisioned in MessageRouter
@@ -130,6 +132,11 @@ void LocalCapabilitiesDirectory::add(const joynr::types::DiscoveryEntry& discove
     }
 
     updatePersistedFile();
+    {
+        std::lock_guard<std::mutex> lock(pendingLookupsLock);
+        callPendingLookups(
+                InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()));
+    }
 }
 
 void LocalCapabilitiesDirectory::remove(const std::string& domain,
@@ -361,13 +368,95 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
         // search for global entires in the global capabilities directory
         auto onSuccess = [this, interfaceAddresses, callback, discoveryQos](
                 std::vector<joynr::types::GlobalDiscoveryEntry> capabilities) {
-            this->capabilitiesReceived(capabilities,
-                                       getCachedLocalCapabilities(interfaceAddresses),
-                                       callback,
-                                       discoveryQos.getDiscoveryScope());
+            std::lock_guard<std::mutex> lock(pendingLookupsLock);
+            if (!(discoveryQos.getDiscoveryScope() ==
+                          joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL &&
+                  isCallbackCalled(interfaceAddresses, callback))) {
+                this->capabilitiesReceived(capabilities,
+                                           getCachedLocalCapabilities(interfaceAddresses),
+                                           callback,
+                                           discoveryQos.getDiscoveryScope());
+            }
+            callbackCalled(interfaceAddresses, callback);
         };
+
+        auto onError = [this, interfaceAddresses, callback](
+                const exceptions::JoynrRuntimeException& error) {
+            std::ignore = error;
+            std::lock_guard<std::mutex> lock(pendingLookupsLock);
+            callbackCalled(interfaceAddresses, callback);
+        };
+
+        if (discoveryQos.getDiscoveryScope() == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
+            std::lock_guard<std::mutex> lock(pendingLookupsLock);
+            registerPendingLookup(interfaceAddresses, callback);
+        }
         this->capabilitiesClient->lookup(
-                domains, interfaceName, discoveryQos.getDiscoveryTimeout(), onSuccess);
+                domains, interfaceName, discoveryQos.getDiscoveryTimeout(), onSuccess, onError);
+    }
+}
+
+void LocalCapabilitiesDirectory::callPendingLookups(const InterfaceAddress& interfaceAddress)
+{
+    if (pendingLookups.find(interfaceAddress) == pendingLookups.cend()) {
+        return;
+    }
+    std::vector<CapabilityEntry> localCapabilities =
+            searchCache({interfaceAddress}, std::chrono::milliseconds(-1), true);
+    if (localCapabilities.empty()) {
+        return;
+    }
+    for (const std::shared_ptr<ILocalCapabilitiesCallback>& callback :
+         pendingLookups[interfaceAddress]) {
+        callback->capabilitiesReceived(localCapabilities);
+    }
+    pendingLookups.erase(interfaceAddress);
+}
+
+void LocalCapabilitiesDirectory::registerPendingLookup(
+        const std::vector<InterfaceAddress>& interfaceAddresses,
+        const std::shared_ptr<ILocalCapabilitiesCallback>& callback)
+{
+    for (const InterfaceAddress& address : interfaceAddresses) {
+        pendingLookups[address].push_back(callback); // if no entry exists for key address, an
+                                                     // empty list is automatically created
+    }
+}
+
+bool LocalCapabilitiesDirectory::hasPendingLookups()
+{
+    return !pendingLookups.empty();
+}
+
+bool LocalCapabilitiesDirectory::isCallbackCalled(
+        const std::vector<InterfaceAddress>& interfaceAddresses,
+        const std::shared_ptr<ILocalCapabilitiesCallback>& callback)
+{
+    for (const InterfaceAddress& address : interfaceAddresses) {
+        if (pendingLookups.find(address) == pendingLookups.cend()) {
+            return true;
+        }
+        if (std::find(pendingLookups[address].cbegin(), pendingLookups[address].cend(), callback) ==
+            pendingLookups[address].cend()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void LocalCapabilitiesDirectory::callbackCalled(
+        const std::vector<InterfaceAddress>& interfaceAddresses,
+        const std::shared_ptr<ILocalCapabilitiesCallback>& callback)
+{
+    for (const InterfaceAddress& address : interfaceAddresses) {
+        if (pendingLookups.find(address) != pendingLookups.cend()) {
+            std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>& callbacks =
+                    pendingLookups[address];
+            util::removeAll(callbacks, callback);
+            if (pendingLookups[address].empty()) {
+                pendingLookups.erase(address);
+            }
+        }
     }
 }
 
