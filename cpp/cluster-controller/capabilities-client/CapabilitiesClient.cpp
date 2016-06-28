@@ -60,13 +60,12 @@ void CapabilitiesClient::setDefaultGlobalCapabilitiesDirectoryProxy()
     capabilitiesProxyWorker = defaultCapabilitiesProxy.get();
 }
 
-void CapabilitiesClient::setGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl)
+std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> CapabilitiesClient::
+        getGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl)
 {
     assert(capabilitiesProxyBuilder);
-    capabilitiesProxy.reset(
+    return std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>(
             capabilitiesProxyBuilder->setMessagingQos(MessagingQos(messagingTtl))->build());
-    assert(capabilitiesProxy);
-    capabilitiesProxyWorker = capabilitiesProxy.get();
 }
 
 void CapabilitiesClient::add(
@@ -103,9 +102,10 @@ std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
         const std::string& interfaceName,
         const std::int64_t messagingTtl)
 {
-    setGlobalCapabilitiesDirectoryProxy(messagingTtl);
+    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
+            getGlobalCapabilitiesDirectoryProxy(messagingTtl);
     std::vector<types::GlobalDiscoveryEntry> result;
-    capabilitiesProxyWorker->lookup(result, domains, interfaceName);
+    proxy->lookup(result, domains, interfaceName);
     return result;
 }
 
@@ -116,8 +116,9 @@ void CapabilitiesClient::lookup(
         std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    setGlobalCapabilitiesDirectoryProxy(messagingTtl);
-    capabilitiesProxyWorker->lookupAsync(domains, interfaceName, onSuccess, onError);
+    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
+            getGlobalCapabilitiesDirectoryProxy(messagingTtl);
+    proxy->lookupAsync(domains, interfaceName, onSuccess, onError);
 }
 
 void CapabilitiesClient::lookup(

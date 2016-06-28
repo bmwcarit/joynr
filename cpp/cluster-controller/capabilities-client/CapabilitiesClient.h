@@ -105,7 +105,8 @@ public:
 
 private:
     void setDefaultGlobalCapabilitiesDirectoryProxy();
-    void setGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl);
+    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>
+    getGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl);
 
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
 
