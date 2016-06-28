@@ -41,7 +41,7 @@ using ::testing::AtMost;
 using ::testing::Between;
 
 MATCHER_P(publicationMissedException, subscriptionId, "") {
-    if (arg.getTypeName() == joynr::exceptions::PublicationMissedException::TYPE_NAME) {
+    if (arg.getTypeName() == joynr::exceptions::PublicationMissedException::TYPE_NAME()) {
         joynr::exceptions::PublicationMissedException *errorArg = dynamic_cast<joynr::exceptions::PublicationMissedException*>(arg.clone());
         bool success = errorArg->getSubscriptionId() == subscriptionId && errorArg->getMessage() == subscriptionId;
         delete errorArg;

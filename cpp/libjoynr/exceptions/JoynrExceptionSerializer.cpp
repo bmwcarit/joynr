@@ -33,37 +33,37 @@ namespace joynr
 // Register the JoynrRuntimeException type id and serializer/deserializer
 static const bool isJoynrRuntimeExceptionRegistered =
         SerializerRegistry::registerType<exceptions::JoynrRuntimeException>(
-                exceptions::JoynrRuntimeException::TYPE_NAME);
+                exceptions::JoynrRuntimeException::TYPE_NAME());
 // Register the ProviderRuntimeException type id and serializer/deserializer
 static const bool isProviderRuntimeExceptionRegistered =
         SerializerRegistry::registerType<exceptions::ProviderRuntimeException>(
-                exceptions::ProviderRuntimeException::TYPE_NAME);
+                exceptions::ProviderRuntimeException::TYPE_NAME());
 // Register the DiscoveryException type id and serializer/deserializer
 static const bool isDiscoveryExceptionRegistered =
         SerializerRegistry::registerType<exceptions::DiscoveryException>(
-                exceptions::DiscoveryException::TYPE_NAME);
+                exceptions::DiscoveryException::TYPE_NAME());
 // Register the ApplicationException type id and serializer/deserializer
 static const bool isApplicationExceptionRegistered =
         SerializerRegistry::registerType<exceptions::ApplicationException>(
-                exceptions::ApplicationException::TYPE_NAME);
+                exceptions::ApplicationException::TYPE_NAME());
 // Register the JoynrTimeOutException type id and serializer/deserializer
 static const bool isJoynrTimeOutExceptionRegistered =
         SerializerRegistry::registerType<exceptions::JoynrTimeOutException>(
-                exceptions::JoynrTimeOutException::TYPE_NAME);
+                exceptions::JoynrTimeOutException::TYPE_NAME());
 // Register the PublicationMissedException type id and serializer/deserializer
 static const bool isPublicationMissedExceptionRegistered =
         SerializerRegistry::registerType<exceptions::PublicationMissedException>(
-                exceptions::PublicationMissedException::TYPE_NAME);
+                exceptions::PublicationMissedException::TYPE_NAME());
 // Register the MethodInvocationException type id and serializer/deserializer
 static const bool isMethodInvocationExceptionRegistered =
         SerializerRegistry::registerType<exceptions::MethodInvocationException>(
                 exceptions::MethodInvocationException::TYPE_NAME());
 static const bool isJoynrMessageNotSentExceptionRegistered =
         SerializerRegistry::registerType<joynr::exceptions::JoynrMessageNotSentException>(
-                exceptions::JoynrMessageNotSentException::TYPE_NAME);
+                exceptions::JoynrMessageNotSentException::TYPE_NAME());
 static const bool isJoynrJoynrDelayMessageExceptionRegistered =
         SerializerRegistry::registerType<joynr::exceptions::JoynrDelayMessageException>(
-                exceptions::JoynrDelayMessageException::TYPE_NAME);
+                exceptions::JoynrDelayMessageException::TYPE_NAME());
 
 template <>
 void ClassDeserializerImpl<exceptions::ApplicationException>::deserialize(

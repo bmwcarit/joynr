@@ -27,44 +27,86 @@ namespace exceptions
 {
 
 // TODO This is a workaround which must be removed after the new serializer is introduced
-const std::string JoynrException::TYPE_NAME = "io.joynr.exceptions.JoynrException";
-const std::string JoynrRuntimeException::TYPE_NAME = "io.joynr.exceptions.JoynrRuntimeException";
-const std::string JoynrTimeOutException::TYPE_NAME = "io.joynr.exceptions.JoynrTimeoutException";
-const std::string JoynrMessageNotSentException::TYPE_NAME =
-        "io.joynr.exceptions.JoynrMessageNotSentException";
-const std::string JoynrDelayMessageException::TYPE_NAME =
-        "io.joynr.exceptions.JoynrDelayMessageException";
-const std::string DiscoveryException::TYPE_NAME = "io.joynr.exceptions.DiscoveryException";
-const std::string ProviderRuntimeException::TYPE_NAME = "joynr.exceptions.ProviderRuntimeException";
-const std::string PublicationMissedException::TYPE_NAME =
-        "joynr.exceptions.PublicationMissedException";
-const std::string ApplicationException::TYPE_NAME = "joynr.exceptions.ApplicationException";
+const std::string& JoynrException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "io.joynr.exceptions.JoynrException";
+    return TYPE_NAME;
+}
+
+const std::string& JoynrRuntimeException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "io.joynr.exceptions.JoynrRuntimeException";
+    return TYPE_NAME;
+}
+
+const std::string& JoynrTimeOutException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "io.joynr.exceptions.JoynrTimeOutException";
+    return TYPE_NAME;
+}
+
+const std::string& JoynrMessageNotSentException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "io.joynr.exceptions.JoynrMessageNotSentException";
+    return TYPE_NAME;
+}
+
+const std::string& JoynrDelayMessageException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "io.joynr.exceptions.JoynrDelayMessageException";
+    return TYPE_NAME;
+}
+
+const std::string& DiscoveryException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "io.joynr.exceptions.DiscoveryException";
+    return TYPE_NAME;
+}
+
+const std::string& ProviderRuntimeException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "joynr.exceptions.ProviderRuntimeException";
+    return TYPE_NAME;
+}
+
+const std::string& PublicationMissedException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "joynr.exceptions.PublicationMissedException";
+    return TYPE_NAME;
+}
+
+const std::string& ApplicationException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "joynr.exceptions.ApplicationException";
+    return TYPE_NAME;
+}
 
 static const bool isJoynrExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrException>(JoynrException::TYPE_NAME);
+        Variant::registerType<joynr::exceptions::JoynrException>(JoynrException::TYPE_NAME());
 static const bool isJoynrRuntimeExceptionRegistered =
         Variant::registerType<joynr::exceptions::JoynrRuntimeException>(
-                JoynrRuntimeException::TYPE_NAME);
+                JoynrRuntimeException::TYPE_NAME());
 static const bool isJoynrTimeOutExceptionRegistered =
         Variant::registerType<joynr::exceptions::JoynrTimeOutException>(
-                JoynrTimeOutException::TYPE_NAME);
+                JoynrTimeOutException::TYPE_NAME());
 static const bool isJoynrMessageNotSentExceptionRegistered =
         Variant::registerType<joynr::exceptions::JoynrMessageNotSentException>(
-                JoynrMessageNotSentException::TYPE_NAME);
+                JoynrMessageNotSentException::TYPE_NAME());
 static const bool isJoynrJoynrDelayMessageExceptionRegistered =
         Variant::registerType<joynr::exceptions::JoynrDelayMessageException>(
-                JoynrDelayMessageException::TYPE_NAME);
+                JoynrDelayMessageException::TYPE_NAME());
 static const bool isDiscoveryExceptionRegistered =
-        Variant::registerType<joynr::exceptions::DiscoveryException>(DiscoveryException::TYPE_NAME);
+        Variant::registerType<joynr::exceptions::DiscoveryException>(
+                DiscoveryException::TYPE_NAME());
 static const bool isProviderRuntimeExceptionRegistered =
         Variant::registerType<joynr::exceptions::ProviderRuntimeException>(
-                ProviderRuntimeException::TYPE_NAME);
+                ProviderRuntimeException::TYPE_NAME());
 static const bool isPublicationMissedExceptionRegistered =
         Variant::registerType<joynr::exceptions::PublicationMissedException>(
-                PublicationMissedException::TYPE_NAME);
+                PublicationMissedException::TYPE_NAME());
 static const bool isApplicationExceptionRegistered =
         Variant::registerType<joynr::exceptions::ApplicationException>(
-                ApplicationException::TYPE_NAME);
+                ApplicationException::TYPE_NAME());
 
 JoynrException::JoynrException() noexcept : message()
 {
@@ -91,7 +133,7 @@ void JoynrException::setMessage(const std::string& message)
 
 const std::string& JoynrException::getTypeName() const
 {
-    return JoynrException::TYPE_NAME;
+    return JoynrException::TYPE_NAME();
 }
 
 JoynrException* JoynrException::clone() const
@@ -111,7 +153,7 @@ JoynrRuntimeException::JoynrRuntimeException(const std::string& message) noexcep
 
 const std::string& JoynrRuntimeException::getTypeName() const
 {
-    return JoynrRuntimeException::TYPE_NAME;
+    return JoynrRuntimeException::TYPE_NAME();
 }
 
 JoynrRuntimeException* JoynrRuntimeException::clone() const
@@ -126,7 +168,7 @@ JoynrTimeOutException::JoynrTimeOutException(const std::string& message) noexcep
 
 const std::string& JoynrTimeOutException::getTypeName() const
 {
-    return JoynrTimeOutException::TYPE_NAME;
+    return JoynrTimeOutException::TYPE_NAME();
 }
 
 JoynrTimeOutException* JoynrTimeOutException::clone() const
@@ -141,7 +183,7 @@ JoynrMessageNotSentException::JoynrMessageNotSentException(const std::string& me
 
 const std::string& JoynrMessageNotSentException::getTypeName() const
 {
-    return JoynrMessageNotSentException::TYPE_NAME;
+    return JoynrMessageNotSentException::TYPE_NAME();
 }
 
 JoynrMessageNotSentException* JoynrMessageNotSentException::clone() const
@@ -181,7 +223,7 @@ void JoynrDelayMessageException::setDelayMs(const std::chrono::milliseconds& del
 
 const std::string& JoynrDelayMessageException::getTypeName() const
 {
-    return JoynrDelayMessageException::TYPE_NAME;
+    return JoynrDelayMessageException::TYPE_NAME();
 }
 
 JoynrDelayMessageException* JoynrDelayMessageException::clone() const
@@ -206,7 +248,7 @@ DiscoveryException::DiscoveryException(const std::string& message) noexcept
 
 const std::string& DiscoveryException::getTypeName() const
 {
-    return DiscoveryException::TYPE_NAME;
+    return DiscoveryException::TYPE_NAME();
 }
 
 DiscoveryException* DiscoveryException::clone() const
@@ -221,7 +263,7 @@ ProviderRuntimeException::ProviderRuntimeException(const std::string& message) n
 
 const std::string& ProviderRuntimeException::getTypeName() const
 {
-    return ProviderRuntimeException::TYPE_NAME;
+    return ProviderRuntimeException::TYPE_NAME();
 }
 
 ProviderRuntimeException* ProviderRuntimeException::clone() const
@@ -247,7 +289,7 @@ std::string PublicationMissedException::getSubscriptionId() const noexcept
 
 const std::string& PublicationMissedException::getTypeName() const
 {
-    return PublicationMissedException::TYPE_NAME;
+    return PublicationMissedException::TYPE_NAME();
 }
 
 void PublicationMissedException::setSubscriptionId(const std::string& newValue) noexcept
@@ -311,7 +353,7 @@ void ApplicationException::setErrorTypeName(const std::string& value) noexcept
 
 const std::string& ApplicationException::getTypeName() const
 {
-    return ApplicationException::TYPE_NAME;
+    return ApplicationException::TYPE_NAME();
 }
 
 ApplicationException* ApplicationException::clone() const

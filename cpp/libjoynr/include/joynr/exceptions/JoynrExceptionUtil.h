@@ -104,31 +104,31 @@ public:
     static void throwJoynrException(const exceptions::JoynrException& error)
     {
         std::string typeName = error.getTypeName();
-        if (typeName == exceptions::JoynrRuntimeException::TYPE_NAME) {
+        if (typeName == exceptions::JoynrRuntimeException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::JoynrRuntimeException&>(
                     const_cast<exceptions::JoynrException&>(error));
-        } else if (typeName == exceptions::JoynrTimeOutException::TYPE_NAME) {
+        } else if (typeName == exceptions::JoynrTimeOutException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::JoynrTimeOutException&>(
                     const_cast<exceptions::JoynrException&>(error));
-        } else if (typeName == exceptions::DiscoveryException::TYPE_NAME) {
+        } else if (typeName == exceptions::DiscoveryException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::DiscoveryException&>(
                     const_cast<exceptions::JoynrException&>(error));
         } else if (typeName == exceptions::MethodInvocationException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::MethodInvocationException&>(
                     const_cast<exceptions::JoynrException&>(error));
-        } else if (typeName == exceptions::ProviderRuntimeException::TYPE_NAME) {
+        } else if (typeName == exceptions::ProviderRuntimeException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::ProviderRuntimeException&>(
                     const_cast<exceptions::JoynrException&>(error));
-        } else if (typeName == exceptions::PublicationMissedException::TYPE_NAME) {
+        } else if (typeName == exceptions::PublicationMissedException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::PublicationMissedException&>(
                     const_cast<exceptions::JoynrException&>(error));
-        } else if (typeName == exceptions::ApplicationException::TYPE_NAME) {
+        } else if (typeName == exceptions::ApplicationException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::ApplicationException&>(
                     const_cast<exceptions::JoynrException&>(error));
-        } else if (typeName == exceptions::JoynrMessageNotSentException::TYPE_NAME) {
+        } else if (typeName == exceptions::JoynrMessageNotSentException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::JoynrMessageNotSentException&>(
                     const_cast<exceptions::JoynrException&>(error));
-        } else if (typeName == exceptions::JoynrDelayMessageException::TYPE_NAME) {
+        } else if (typeName == exceptions::JoynrDelayMessageException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::JoynrDelayMessageException&>(
                     const_cast<exceptions::JoynrException&>(error));
         } else {

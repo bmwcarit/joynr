@@ -68,7 +68,7 @@ public:
     /**
      * @brief The typeName of the exception used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
     /**
      * @brief Set the detail message of the exception.
      *
@@ -115,7 +115,7 @@ public:
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 };
 
 /**
@@ -139,7 +139,7 @@ public:
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 };
 
 /**
@@ -163,7 +163,7 @@ public:
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 };
 
 /**
@@ -215,7 +215,7 @@ public:
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
     static const std::chrono::milliseconds DEFAULT_DELAY_MS;
 
 private:
@@ -257,7 +257,7 @@ public:
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 };
 
 /**
@@ -283,7 +283,7 @@ public:
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 };
 
 /**
@@ -330,7 +330,7 @@ public:
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 
 private:
     std::string subscriptionId;
@@ -409,7 +409,7 @@ public:
     /**
      * @brief The typeName of the exception used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 
 private:
     Variant value;
