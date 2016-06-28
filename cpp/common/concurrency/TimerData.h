@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public:
      *      @ref isPeriodic returns @c false this method will return always the
      *      one expiry date. This date could also be in the past.
      */
-    virtual std::chrono::system_clock::time_point getNextExpiry() = 0;
+    virtual std::chrono::steady_clock::time_point getNextExpiry() = 0;
 
     /**
      * Returns the expiry callback
@@ -116,11 +116,11 @@ public:
                      const std::chrono::milliseconds delay);
     ~OneShotTimerData() override = default;
 
-    std::chrono::system_clock::time_point getNextExpiry() override;
+    std::chrono::steady_clock::time_point getNextExpiry() override;
 
 private:
     /*! Time point of exiry */
-    const std::chrono::system_clock::time_point expiry;
+    const std::chrono::steady_clock::time_point expiry;
 };
 
 /**
@@ -144,7 +144,7 @@ public:
                       const std::chrono::milliseconds interval);
     ~PeriodicTimerData() override = default;
 
-    std::chrono::system_clock::time_point getNextExpiry() override;
+    std::chrono::steady_clock::time_point getNextExpiry() override;
 
 private:
     /*! The regular interval the timer expires */
@@ -152,7 +152,7 @@ private:
     /*! Counter the will be increased by each call to @ref getNextExpiry */
     int counter;
     /*! Time point of creation */
-    const std::chrono::system_clock::time_point creation;
+    const std::chrono::steady_clock::time_point creation;
 };
 
 } // namespace joynr
