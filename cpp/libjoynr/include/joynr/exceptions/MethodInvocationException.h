@@ -57,7 +57,7 @@ public:
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 
 private:
     Version providerVersion;

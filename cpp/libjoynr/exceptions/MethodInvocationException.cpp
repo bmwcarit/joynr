@@ -25,13 +25,9 @@ namespace joynr
 namespace exceptions
 {
 
-// TODO This is a workaround which must be removed after the new serializer is introduced
-const std::string MethodInvocationException::TYPE_NAME =
-        "joynr.exceptions.MethodInvocationException";
-
 static const bool isMethodInvocationExceptionRegistered =
         Variant::registerType<joynr::exceptions::MethodInvocationException>(
-                MethodInvocationException::TYPE_NAME);
+                MethodInvocationException::TYPE_NAME());
 
 MethodInvocationException::MethodInvocationException() noexcept : JoynrRuntimeException(),
                                                                   providerVersion()
@@ -53,12 +49,18 @@ MethodInvocationException::MethodInvocationException(const std::string& message,
 
 const std::string& MethodInvocationException::getTypeName() const
 {
-    return MethodInvocationException::TYPE_NAME;
+    return MethodInvocationException::TYPE_NAME();
 }
 
 MethodInvocationException* MethodInvocationException::clone() const
 {
     return new MethodInvocationException(const_cast<MethodInvocationException&>(*this));
+}
+
+const std::string& MethodInvocationException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "joynr.exceptions.MethodInvocationException";
+    return TYPE_NAME;
 }
 
 } // namespace exceptions

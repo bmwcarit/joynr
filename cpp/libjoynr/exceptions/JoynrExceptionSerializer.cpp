@@ -57,7 +57,7 @@ static const bool isPublicationMissedExceptionRegistered =
 // Register the MethodInvocationException type id and serializer/deserializer
 static const bool isMethodInvocationExceptionRegistered =
         SerializerRegistry::registerType<exceptions::MethodInvocationException>(
-                exceptions::MethodInvocationException::TYPE_NAME);
+                exceptions::MethodInvocationException::TYPE_NAME());
 static const bool isJoynrMessageNotSentExceptionRegistered =
         SerializerRegistry::registerType<joynr::exceptions::JoynrMessageNotSentException>(
                 exceptions::JoynrMessageNotSentException::TYPE_NAME);

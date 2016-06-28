@@ -38,7 +38,7 @@ MATCHER_P(providerRuntimeException, msg, "") {
 }
 
 MATCHER_P(methodInvocationException, msg, "") {
-    return arg.getTypeName() == joynr::exceptions::MethodInvocationException::TYPE_NAME
+    return arg.getTypeName() == joynr::exceptions::MethodInvocationException::TYPE_NAME()
             && arg.getMessage() == msg;
 }
 

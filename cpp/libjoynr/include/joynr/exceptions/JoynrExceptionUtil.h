@@ -113,7 +113,7 @@ public:
         } else if (typeName == exceptions::DiscoveryException::TYPE_NAME) {
             throw dynamic_cast<exceptions::DiscoveryException&>(
                     const_cast<exceptions::JoynrException&>(error));
-        } else if (typeName == exceptions::MethodInvocationException::TYPE_NAME) {
+        } else if (typeName == exceptions::MethodInvocationException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::MethodInvocationException&>(
                     const_cast<exceptions::JoynrException&>(error));
         } else if (typeName == exceptions::ProviderRuntimeException::TYPE_NAME) {
