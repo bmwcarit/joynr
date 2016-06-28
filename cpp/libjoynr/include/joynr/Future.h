@@ -28,6 +28,7 @@
 #include "joynr/Util.h"
 #include "joynr/StatusCode.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/Semaphore.h"
 
 namespace joynr
@@ -104,7 +105,7 @@ protected:
     void checkOk() const
     {
         if (!isOk()) {
-            util::throwJoynrException(*error);
+            exceptions::JoynrExceptionUtil::throwJoynrException(*error);
         }
     }
 

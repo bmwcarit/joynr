@@ -30,7 +30,6 @@
 
 #include "joynr/Logger.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/exceptions/MethodInvocationException.h"
 
 namespace joynr
 {
@@ -119,43 +118,6 @@ std::string createUuid()
     static std::mutex uuidMutex;
     std::lock_guard<std::mutex> uuidLock(uuidMutex);
     return boost::uuids::to_string(uuidGenerator());
-}
-
-void throwJoynrException(const exceptions::JoynrException& error)
-{
-    std::string typeName = error.getTypeName();
-    if (typeName == exceptions::JoynrRuntimeException::TYPE_NAME) {
-        throw dynamic_cast<exceptions::JoynrRuntimeException&>(
-                const_cast<exceptions::JoynrException&>(error));
-    } else if (typeName == exceptions::JoynrTimeOutException::TYPE_NAME) {
-        throw dynamic_cast<exceptions::JoynrTimeOutException&>(
-                const_cast<exceptions::JoynrException&>(error));
-    } else if (typeName == exceptions::DiscoveryException::TYPE_NAME) {
-        throw dynamic_cast<exceptions::DiscoveryException&>(
-                const_cast<exceptions::JoynrException&>(error));
-    } else if (typeName == exceptions::MethodInvocationException::TYPE_NAME) {
-        throw dynamic_cast<exceptions::MethodInvocationException&>(
-                const_cast<exceptions::JoynrException&>(error));
-    } else if (typeName == exceptions::ProviderRuntimeException::TYPE_NAME) {
-        throw dynamic_cast<exceptions::ProviderRuntimeException&>(
-                const_cast<exceptions::JoynrException&>(error));
-    } else if (typeName == exceptions::PublicationMissedException::TYPE_NAME) {
-        throw dynamic_cast<exceptions::PublicationMissedException&>(
-                const_cast<exceptions::JoynrException&>(error));
-    } else if (typeName == exceptions::ApplicationException::TYPE_NAME) {
-        throw dynamic_cast<exceptions::ApplicationException&>(
-                const_cast<exceptions::JoynrException&>(error));
-    } else if (typeName == exceptions::JoynrMessageNotSentException::TYPE_NAME) {
-        throw dynamic_cast<exceptions::JoynrMessageNotSentException&>(
-                const_cast<exceptions::JoynrException&>(error));
-    } else if (typeName == exceptions::JoynrDelayMessageException::TYPE_NAME) {
-        throw dynamic_cast<exceptions::JoynrDelayMessageException&>(
-                const_cast<exceptions::JoynrException&>(error));
-    } else {
-        std::string message = error.getMessage();
-        throw exceptions::JoynrRuntimeException("Unknown exception: " + error.getTypeName() + ": " +
-                                                message);
-    }
 }
 
 std::string removeEscapeFromSpecialChars(const std::string& inputStr)
