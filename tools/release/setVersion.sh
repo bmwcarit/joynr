@@ -11,21 +11,21 @@ oldVersionWithoutSnapshot=`echo $oldVersion | sed -e "s/-SNAPSHOT//g"`
 newVersionWithoutSnapshot=`echo $newVersion | sed -e "s/-SNAPSHOT//g"`
 IFS='.' read -a version <<< "$newVersionWithoutSnapshot"
 
-echo sed -i '' 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt
-sed -i '' 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt
-echo sed -i '' 's/set(JOYNR_MINOR_VERSION .*)/set(JOYNR_MINOR_VERSION '${version[1]}')/g' cpp/CMakeLists.txt
-sed -i '' 's/set(JOYNR_MINOR_VERSION .*)/set(JOYNR_MINOR_VERSION '${version[1]}')/g' cpp/CMakeLists.txt
-echo sed -i '' 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
-sed -i '' 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
+echo sed -i -e 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt
+sed -i -e 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt
+echo sed -i -e 's/set(JOYNR_MINOR_VERSION .*)/set(JOYNR_MINOR_VERSION '${version[1]}')/g' cpp/CMakeLists.txt
+sed -i -e 's/set(JOYNR_MINOR_VERSION .*)/set(JOYNR_MINOR_VERSION '${version[1]}')/g' cpp/CMakeLists.txt
+echo sed -i -e 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
+sed -i -e 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
 
-echo sed -i '' 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSnapshot}' REQUIRED)/g' \
+echo sed -i -e 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSnapshot}' REQUIRED)/g' \
 examples/radio-app/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
 tests/robustness-test/CMakeLists.txt \
 tests/system-integration-test/CMakeLists.txt
 
-sed -i '' 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSnapshot}' REQUIRED)/g' \
+sed -i -e 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSnapshot}' REQUIRED)/g' \
 examples/radio-app/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
@@ -39,7 +39,7 @@ mvn versions:commit -P android,javascript
 
 echo "sed files..."
 
-sed -i '' 's/'$oldVersion'/'$newVersion'/g' \
+sed -i -e 's/'$oldVersion'/'$newVersion'/g' \
 cpp/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/inter-language-test/package.json \
@@ -60,10 +60,10 @@ examples/radio-node/pom.xml \
 examples/radio-node/package.json \
 javascript/libjoynr-js/src/main/resources/package.json
 
-sed -i '' 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
+sed -i -e 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
 java/core/clustercontroller-standalone/README
 
-sed -i '' 's/Version:        '${oldVersionWithoutSnapshot}'/Version:        '${newVersionWithoutSnapshot}'/g' \
+sed -i -e 's/Version:        '${oldVersionWithoutSnapshot}'/Version:        '${newVersionWithoutSnapshot}'/g' \
 cpp/distribution/joynr.spec
 
 echo "prepare git patch"
