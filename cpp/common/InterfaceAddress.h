@@ -39,10 +39,43 @@ public:
     bool operator==(const InterfaceAddress& interfaceAddress) const;
     bool operator<(const InterfaceAddress& interfaceAddress) const;
 
+    /**
+     * @brief Returns a hash code value for this object
+     * @return a hash code value for this object.
+     */
+    std::size_t hashCode() const;
+
 private:
     std::string domain;
     std::string interfaceName;
 };
 
+std::size_t hash_value(const InterfaceAddress& tInterfaceAddress);
+
 } // namespace joynr
+
+namespace std
+{
+
+/**
+ * @brief Function object that implements a hash function for joynr::InterfaceAddress.
+ *
+ * Used by the unordered associative containers std::unordered_set, std::unordered_multiset,
+ * std::unordered_map, std::unordered_multimap as default hash function.
+ */
+template <>
+struct hash<joynr::InterfaceAddress>
+{
+
+    /**
+     * @brief method overriding default implementation of operator ()
+     * @param tStructValue the operators argument
+     * @return the ordinal number representing the enum value
+     */
+    std::size_t operator()(const joynr::InterfaceAddress& tInterfaceAddress) const
+    {
+        return joynr::hash_value(tInterfaceAddress);
+    }
+};
+} // namespace std
 #endif // INTERFACEADDRESS_H_
