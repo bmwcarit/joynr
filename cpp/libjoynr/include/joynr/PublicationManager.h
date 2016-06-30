@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,8 +217,10 @@ private:
     // Functions called by runnables
     void pollSubscription(const std::string& subscriptionId);
     void removePublication(const std::string& subscriptionId);
-    void removeAttributePublication(const std::string& subscriptionId);
-    void removeBroadcastPublication(const std::string& subscriptionId);
+    void removeAttributePublication(const std::string& subscriptionId,
+                                    const bool updatePersistenceFile = true);
+    void removeBroadcastPublication(const std::string& subscriptionId,
+                                    const bool updatePersistenceFile = true);
 
     // Helper functions
     bool publicationExists(const std::string& subscriptionId) const;

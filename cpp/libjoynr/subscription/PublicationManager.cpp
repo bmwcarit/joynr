@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,12 +135,12 @@ PublicationManager::~PublicationManager()
 
     while (subscriptionId2SubscriptionRequest.size() > 0) {
         auto subscriptionRequest = subscriptionId2SubscriptionRequest.begin();
-        removeAttributePublication((subscriptionRequest->second)->getSubscriptionId());
+        removeAttributePublication((subscriptionRequest->second)->getSubscriptionId(), false);
     }
 
     while (subscriptionId2BroadcastSubscriptionRequest.size() > 0) {
         auto broadcastRequest = subscriptionId2BroadcastSubscriptionRequest.begin();
-        removeBroadcastPublication((broadcastRequest->second)->getSubscriptionId());
+        removeBroadcastPublication((broadcastRequest->second)->getSubscriptionId(), false);
     }
 }
 
@@ -651,53 +651,36 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
     }
 }
 
-void PublicationManager::removeAttributePublication(const std::string& subscriptionId)
+void PublicationManager::removeAttributePublication(const std::string& subscriptionId,
+                                                    const bool updatePersistenceFile)
 {
     JOYNR_LOG_DEBUG(logger, "removePublication: {}", subscriptionId);
-
-    if (!publicationExists(subscriptionId)) {
-        JOYNR_LOG_DEBUG(logger, "publication {}  does not exist - will not remove", subscriptionId);
-        return;
-    }
 
     std::shared_ptr<Publication> publication(publications.take(subscriptionId));
     std::shared_ptr<SubscriptionRequestInformation> request(
             subscriptionId2SubscriptionRequest.take(subscriptionId));
 
-    std::vector<Variant> subscriptionList(
-            subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
-
-    {
+    if (publication != nullptr && request != nullptr) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Delete the onChange publication if needed
         removeOnChangePublication(subscriptionId, request, publication);
     }
 
-    saveAttributeSubscriptionRequestsMap(subscriptionList);
+    if (updatePersistenceFile) {
+        saveAttributeSubscriptionRequestsMap(
+                subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
+    }
 }
 
-void PublicationManager::removeBroadcastPublication(const std::string& subscriptionId)
+void PublicationManager::removeBroadcastPublication(const std::string& subscriptionId,
+                                                    const bool updatePersistenceFile)
 {
     JOYNR_LOG_DEBUG(logger, "removeBroadcast: {}", subscriptionId);
 
-    if (!publicationExists(subscriptionId)) {
-        JOYNR_LOG_DEBUG(logger, "publication {}  does not exist - will not remove", subscriptionId);
-        return;
-    }
+    std::shared_ptr<Publication> publication(publications.take(subscriptionId));
 
-    std::shared_ptr<Publication> publication = nullptr;
-    if (publications.contains(subscriptionId)) {
-        publication = std::shared_ptr<Publication>(publications.take(subscriptionId));
-    }
-
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> request = nullptr;
-    if (subscriptionId2BroadcastSubscriptionRequest.contains(subscriptionId)) {
-        request = std::shared_ptr<BroadcastSubscriptionRequestInformation>(
-                subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId));
-    }
-
-    std::vector<Variant> subscriptionList(
-            subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> request(
+            subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId));
 
     if (publication != nullptr && request != nullptr) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -710,7 +693,10 @@ void PublicationManager::removeBroadcastPublication(const std::string& subscript
         removePublicationEndRunnable(publication);
     }
 
-    saveBroadcastSubscriptionRequestsMap(subscriptionList);
+    if (updatePersistenceFile) {
+        saveBroadcastSubscriptionRequestsMap(
+                subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
+    }
 }
 
 void PublicationManager::removeOnChangePublication(
@@ -1131,13 +1117,10 @@ void PublicationManager::PublicationEndRunnable::shutdown()
 
 void PublicationManager::PublicationEndRunnable::run()
 {
-    if (!publicationManager.publicationExists(subscriptionId)) {
-        return;
-    }
     std::shared_ptr<Publication> publication(publicationManager.publications.value(subscriptionId));
     publicationManager.removePublication(subscriptionId);
 
-    {
+    if (publication != nullptr) {
         std::lock_guard<std::recursive_mutex> lock((publication->mutex));
         publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
     }
