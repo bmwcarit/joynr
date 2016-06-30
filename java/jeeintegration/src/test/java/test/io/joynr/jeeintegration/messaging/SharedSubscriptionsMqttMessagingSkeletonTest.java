@@ -19,6 +19,7 @@ package test.io.joynr.jeeintegration.messaging;
  * #L%
  */
 
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,14 +73,16 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test
     public void testSubscribesToSharedSubscription() {
+        when(ownAddress.getTopic()).thenReturn("ownTopic");
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
-                                                               "channelId");
+                                                               "channelId",
+                                                               "receiverId");
         subject.init();
-        verify(mqttClient).subscribe(startsWith("$share:"));
-        verify(mqttClient).subscribe(startsWith("replyto/"));
+        verify(mqttClient).subscribe(eq("$share:channelId:ownTopic/#"));
+        verify(mqttClient).subscribe(eq("replyto/ownTopic/receiverId/#"));
     }
 
     @Test
@@ -88,7 +91,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
-                                                               "channel@123_bling$$");
+                                                               "channel@123_bling$$",
+                                                               "receiverId");
         subject.init();
         verify(mqttClient).subscribe(startsWith("$share:channelbling:"));
     }
@@ -99,7 +103,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
-                                                               "@123_$$-!");
+                                                               "@123_$$-!",
+                                                               "receiverId");
         subject.init();
     }
 
