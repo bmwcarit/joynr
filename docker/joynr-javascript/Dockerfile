@@ -5,7 +5,6 @@ FROM joynr-android:latest
 ###################################################
 RUN dnf install -y \
 	nodejs \
-	npm \
 	&& dnf clean all
 
 ###################################################
