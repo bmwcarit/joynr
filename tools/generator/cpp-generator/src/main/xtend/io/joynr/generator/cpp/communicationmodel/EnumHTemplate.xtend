@@ -61,8 +61,7 @@ class EnumHTemplate extends EnumTemplate {
 #include "joynr/Util.h"
 #include "joynr/Variant.h"
 
-#include <muesli/TypeRegistry.h>
-#include <muesli/Traits.h>
+#include "joynr/serializer/Serializer.h"
 
 «IF type.hasExtendsDeclaration»
 	#include «type.extendedType.includeOf»
@@ -207,6 +206,7 @@ struct EnumTraits<«type.typeName»>
 {
 	using Wrapper = «type.typeNameOfContainingClass»;
 };
+} // namespace muesli
 
 #endif // «headerGuard»
 '''

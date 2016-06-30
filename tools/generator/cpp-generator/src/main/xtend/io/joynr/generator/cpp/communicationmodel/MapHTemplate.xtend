@@ -69,7 +69,7 @@ class MapHTemplate extends MapTemplate {
 	#include «member.includeOf»
 «ENDFOR»
 
-#include <muesli/TypeRegistry.h>
+#include "joynr/serializer/Serializer.h"
 
 «getNamespaceStarter(type, true)»
 

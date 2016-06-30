@@ -70,13 +70,7 @@ class TypeHTemplate extends CompoundTypeTemplate {
 	#include «member.includeOf»
 «ENDFOR»
 
-#include <muesli/TypeRegistry.h>
-«IF type.members.size > 0 »
-#include <muesli/NameValuePair.h>
-«ENDIF»
-«IF hasExtendsDeclaration(type)»
-#include <muesli/BaseClass.h>
-«ENDIF»
+#include "joynr/serializer/Serializer.h"
 
 «getNamespaceStarter(type, true)»
 

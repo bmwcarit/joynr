@@ -26,6 +26,12 @@
 #include <boost/mpl/identity.hpp>
 #include <boost/variant.hpp>
 
+#include <muesli/archives/json/JsonInputArchive.h>
+#include <muesli/archives/json/JsonOutputArchive.h>
+#include <muesli/streams/StringIStream.h>
+#include <muesli/streams/StringOStream.h>
+#include <muesli/TypeRegistry.h>
+
 #include "joynr/Util.h"
 #include "joynr/serializer/JsonDeserializable.h"
 
