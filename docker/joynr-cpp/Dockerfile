@@ -118,6 +118,24 @@ RUN cd /opt \
     && rm -rf websocketpp
 
 ###################################################
+# install DLT
+###################################################
+
+RUN cd /opt \
+    && git clone http://git.projects.genivi.org/dlt-daemon.git \
+    && cd dlt-daemon \
+    && git checkout v2.15.0 \
+    && mkdir build \
+    && cd build \
+    && cmake .. -DWITH_DLT_DBUS=OFF -DWITH_DLT_TESTS=OFF -DWITH_DLT_EXAMPLES=OFF \
+    && make install -j"$(nproc)" \
+    && cd /opt/ \
+    && rm -rf dlt-daemon
+
+# DLT installs itself in /usr/local/lib64
+ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib64/pkgconfig
+
+###################################################
 # Copy build scripts
 ###################################################
 COPY scripts /data/scripts
