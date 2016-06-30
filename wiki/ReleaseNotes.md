@@ -7,6 +7,7 @@ None.
 ##Other changes
 * **[C++]** Fixed high cpu load which occurs when the system time is changed
 * **[C++]** Fixed persistency of local capability entries
+* **[C++]** Stability fixes for proxy arbitration
 * **[JS]** Added reconnect after connection loss for websockets
 * **[JS]** Support to clear local storage when loading joynr library
 
