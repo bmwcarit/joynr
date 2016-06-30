@@ -500,6 +500,7 @@ set(
 set(
     libjoynr_test_HEADERS
     "PrettyPrint.h"
+    "utils/TimeUtils.h"
     "utils/LibJoynrMockObjects.h"
     ${JoynrTest_GENHEADERS}
 )

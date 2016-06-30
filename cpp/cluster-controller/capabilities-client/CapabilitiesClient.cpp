@@ -47,26 +47,16 @@ INIT_LOGGER(CapabilitiesClient);
 // The capabilitiesClient should not be responsible to change the DiscoveryQoS.
 
 CapabilitiesClient::CapabilitiesClient()
-        : defaultCapabilitiesProxy(nullptr),
-          capabilitiesProxy(nullptr),
-          capabilitiesProxyBuilder(nullptr),
-          capabilitiesProxyWorker(nullptr)
+        : defaultCapabilitiesProxy(nullptr), capabilitiesProxyBuilder(nullptr)
 {
 }
 
-void CapabilitiesClient::setDefaultGlobalCapabilitiesDirectoryProxy()
-{
-    assert(defaultCapabilitiesProxy);
-    capabilitiesProxyWorker = defaultCapabilitiesProxy.get();
-}
-
-void CapabilitiesClient::setGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl)
+std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> CapabilitiesClient::
+        getGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl)
 {
     assert(capabilitiesProxyBuilder);
-    capabilitiesProxy.reset(
+    return std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>(
             capabilitiesProxyBuilder->setMessagingQos(MessagingQos(messagingTtl))->build());
-    assert(capabilitiesProxy);
-    capabilitiesProxyWorker = capabilitiesProxy.get();
 }
 
 void CapabilitiesClient::add(
@@ -76,26 +66,25 @@ void CapabilitiesClient::add(
         return;
     }
 
-    setDefaultGlobalCapabilitiesDirectoryProxy();
-
     std::function<void(const exceptions::JoynrException&)> onError =
             [&](const exceptions::JoynrException& error) {
         std::ignore = error;
         JOYNR_LOG_ERROR(logger, "Error occured during the execution of capabilitiesProxy->add");
     };
-    capabilitiesProxyWorker->addAsync(capabilitiesInformationList, nullptr, onError);
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);
 }
 
 void CapabilitiesClient::remove(const std::string& participantId)
 {
-    setDefaultGlobalCapabilitiesDirectoryProxy();
-    capabilitiesProxyWorker->remove(participantId);
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->remove(participantId);
 }
 
 void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
 {
-    setDefaultGlobalCapabilitiesDirectoryProxy();
-    capabilitiesProxyWorker->remove(participantIdList);
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->remove(participantIdList);
 }
 
 std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
@@ -103,9 +92,10 @@ std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
         const std::string& interfaceName,
         const std::int64_t messagingTtl)
 {
-    setGlobalCapabilitiesDirectoryProxy(messagingTtl);
+    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
+            getGlobalCapabilitiesDirectoryProxy(messagingTtl);
     std::vector<types::GlobalDiscoveryEntry> result;
-    capabilitiesProxyWorker->lookup(result, domains, interfaceName);
+    proxy->lookup(result, domains, interfaceName);
     return result;
 }
 
@@ -116,8 +106,9 @@ void CapabilitiesClient::lookup(
         std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    setGlobalCapabilitiesDirectoryProxy(messagingTtl);
-    capabilitiesProxyWorker->lookupAsync(domains, interfaceName, onSuccess, onError);
+    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
+            getGlobalCapabilitiesDirectoryProxy(messagingTtl);
+    proxy->lookupAsync(domains, interfaceName, onSuccess, onError);
 }
 
 void CapabilitiesClient::lookup(
@@ -126,8 +117,8 @@ void CapabilitiesClient::lookup(
                 onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    setDefaultGlobalCapabilitiesDirectoryProxy();
-    capabilitiesProxyWorker->lookupAsync(
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->lookupAsync(
             participantId,
             [onSuccess](const joynr::types::GlobalDiscoveryEntry& capability) {
                 std::vector<joynr::types::GlobalDiscoveryEntry> result;

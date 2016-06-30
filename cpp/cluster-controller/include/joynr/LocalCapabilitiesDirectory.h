@@ -20,6 +20,7 @@
 #define LOCALCAPABILITIESDIRECTORY_H
 
 #include <chrono>
+#include <unordered_map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -187,6 +188,11 @@ public:
      */
     void injectGlobalCapabilitiesFromFile(const std::string& fileName);
 
+    /*
+     * returns true if lookup calls with discovery scope LOCAL_THEN_GLOBAL are ongoing
+     */
+    bool hasPendingLookups();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
@@ -238,6 +244,7 @@ private:
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
     std::string localAddress;
     std::mutex cacheLock;
+    std::mutex pendingLookupsLock;
 
     TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2GlobalCapabilities;
     TypedClientMultiCache<std::string, CapabilityEntry> participantId2GlobalCapabilities;
@@ -253,8 +260,18 @@ private:
 
     LibjoynrSettings& libJoynrSettings; // to retrieve info about persistency
 
+    std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
+            pendingLookups;
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
+    bool hasEntryInCache(const CapabilityEntry& entry, bool localEntries);
+    void registerPendingLookup(const std::vector<InterfaceAddress>& interfaceAddresses,
+                               const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
+    bool isCallbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
+                          const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
+    void callbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
+                        const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
+    void callPendingLookups(const InterfaceAddress& interfaceAddress);
 };
 
 // NOTE: This future is used to convert the synchronous call of the middleware

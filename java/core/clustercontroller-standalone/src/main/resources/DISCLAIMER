@@ -74,11 +74,6 @@ The software listed below included in some products is licensed under the "Commo
 The software listed below included in some products is licensed under the "DOM4J License". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/DOM4J-License.txt".
 - dom4j:dom4j:1.6.1
 
-The software listed below included in some products is licensed under the “Eclipse Public License, v.1.0”. A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/EPL-1.txt". To obtain a copy of the source code for these components, visit the URLs listed below.
-- org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2
-  About file: WEB-INF/lib/org.eclipse.paho.client.mqttv3-1.0.2.jar:about.html
-  Sources: http://git.eclipse.org/c/paho/org.eclipse.paho.mqtt.java.git/
-
 Software libraries listed below included in some products are free software that is licensed under "GNU Lesser General Public License (LGPL) v2.1". A copy of that license in the English original version with a disclaimer of warranty and an exclusion of liability is included in this document "META-INF/licenses/LGPL-2.1.txt". This free software has been developed by third parties and is copyrighted. It is provided for free, and you are permitted to use it according to the mentioned license. LGPL v 2.1 supersedes other licenses. The complete corresponding source code is included in the files listed below.
 - javassist:javassist:3.12.1.GA
   Sources: WEB-INF/lib/javassist-3.12.1.GA-sources.jar

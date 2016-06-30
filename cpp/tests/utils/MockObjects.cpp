@@ -17,7 +17,7 @@
  * #L%
  */
 #include "tests/utils/MockObjects.h"
-#include "joynr/TimeUtils.h"
+#include "tests/utils/TimeUtils.h"
 
 using namespace joynr;
 

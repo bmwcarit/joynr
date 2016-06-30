@@ -25,6 +25,10 @@ provisioning.ccAddress = {
     path : ""
 };
 
+provisioning.persistency = {
+    clearPersistency : true
+};
+
 provisioning.logging = {
     configuration : {
         loggers : {
