@@ -28,9 +28,6 @@ The software listed below included in some products is licensed under the "DOM4J
 - dom4j:dom4j:1.6.1
 
 The software listed below included in some products is licensed under the “Eclipse Public License, v.1.0”. A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/EPL-1.txt". To obtain a copy of the source code for these components, visit the URLs listed below.
-- org.eclipse.emf:codegen:2.2.3
-  About file: info/codegen-2.2.3-jar/about.html
-  Sources: http://git.eclipse.org/c/emf/org.eclipse.emf.git/tree/?h=R2_2_maintenance
 - org.eclipse.emf:org.eclipse.emf.codegen:2.11.0-v20150806-0404
   About file: info/org.eclipse.emf.codegen-2.11.0-v20150806-0404-jar/about.html
   Sources: http://git.eclipse.org/c/emf/org.eclipse.emf.git/tree/?h=R2_11_maintenance

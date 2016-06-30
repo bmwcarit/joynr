@@ -13,6 +13,19 @@
   and builds individual dependencies during the joynr build using CMake's ExternalProject_Add
   mechanism.
 
+#joynr 0.18.4
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Fixed high cpu load which occurs when the system time is changed
+* **[C++]** Fixed persistency of local capability entries
+* **[C++]** Stability fixes for proxy arbitration
+* **[JS]** Added reconnect after connection loss for websockets
+* **[JS]** Support to clear local storage when loading joynr library
+
 #joynr 0.18.2
 This is a minor bug fix release.
 

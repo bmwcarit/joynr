@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
  * #L%
  */
 #include "TimerData.h"
-
-#include "joynr/TimeUtils.h"
 
 namespace joynr
 {
@@ -56,11 +54,11 @@ OneShotTimerData::OneShotTimerData(const Timer::TimerId id,
                                    std::function<void(Timer::TimerId)> removeCallback,
                                    const std::chrono::milliseconds delay)
         : TimerData(id, expiryCallback, removeCallback, false),
-          expiry(TimeUtils::getCurrentTime() + delay)
+          expiry(std::chrono::steady_clock::now() + delay)
 {
 }
 
-std::chrono::system_clock::time_point OneShotTimerData::getNextExpiry()
+std::chrono::steady_clock::time_point OneShotTimerData::getNextExpiry()
 {
     return expiry;
 }
@@ -72,11 +70,11 @@ PeriodicTimerData::PeriodicTimerData(const Timer::TimerId id,
         : TimerData(id, expiryCallback, removeCallback, true),
           interval(interval),
           counter(0),
-          creation(TimeUtils::getCurrentTime())
+          creation(std::chrono::steady_clock::now())
 {
 }
 
-std::chrono::system_clock::time_point PeriodicTimerData::getNextExpiry()
+std::chrono::steady_clock::time_point PeriodicTimerData::getNextExpiry()
 {
     return creation + (interval * (++counter));
 }
