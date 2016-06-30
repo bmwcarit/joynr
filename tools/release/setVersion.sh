@@ -4,17 +4,27 @@ if (( $# != 2 )); then
     exit 1
 fi
 
+os=`uname`
+
+function _sed {
+    if [[ "$os" =~ "Linux" ]]; then
+        sed -i -e "$1" ${@:2}
+    else
+        sed -i '' -e "$1" ${@:2}
+    fi
+}
+
 oldVersion=$1
 newVersion=$2
 oldVersionWithoutSnapshot=`echo $oldVersion | sed -e "s/-SNAPSHOT//g"`
 newVersionWithoutSnapshot=`echo $newVersion | sed -e "s/-SNAPSHOT//g"`
 IFS='.' read -a version <<< "$newVersionWithoutSnapshot"
 
-sed -i -e 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt
-sed -i -e 's/set(JOYNR_MINOR_VERSION .*)/set(JOYNR_MINOR_VERSION '${version[1]}')/g' cpp/CMakeLists.txt
-sed -i -e 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
+_sed 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt
+_sed 's/set(JOYNR_MINOR_VERSION .*)/set(JOYNR_MINOR_VERSION '${version[1]}')/g' cpp/CMakeLists.txt
+_sed 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
 
-sed -i -e 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSnapshot}' REQUIRED)/g' \
+_sed 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSnapshot}' REQUIRED)/g' \
 examples/radio-app/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
@@ -24,7 +34,7 @@ tests/system-integration-test/CMakeLists.txt
 mvn versions:set -P android,javascript -DnewVersion=$2
 mvn versions:commit -P android,javascript
 
-sed -i -e 's/'$oldVersion'/'$newVersion'/g' \
+_sed 's/'$oldVersion'/'$newVersion'/g' \
 cpp/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/inter-language-test/package.json \
@@ -45,10 +55,10 @@ examples/radio-node/pom.xml \
 examples/radio-node/package.json \
 javascript/libjoynr-js/src/main/resources/package.json
 
-sed -i -e 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
+_sed 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
 java/core/clustercontroller-standalone/README
 
-sed -i -e 's/Version:        '${oldVersionWithoutSnapshot}'/Version:        '${newVersionWithoutSnapshot}'/g' \
+_sed 's/Version:        '${oldVersionWithoutSnapshot}'/Version:        '${newVersionWithoutSnapshot}'/g' \
 cpp/distribution/joynr.spec
 
 echo "prepare git patch"
