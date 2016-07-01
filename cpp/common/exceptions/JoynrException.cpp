@@ -136,11 +136,6 @@ const std::string& JoynrException::getTypeName() const
     return JoynrException::TYPE_NAME();
 }
 
-JoynrException* JoynrException::clone() const
-{
-    return new JoynrException(const_cast<JoynrException&>(*this));
-}
-
 bool JoynrException::operator==(const JoynrException& other) const
 {
     return message == other.getMessage();

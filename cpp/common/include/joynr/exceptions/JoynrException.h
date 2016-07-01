@@ -62,7 +62,7 @@ public:
     /**
      * @return A copy of the exception object.
      */
-    virtual JoynrException* clone() const;
+    virtual JoynrException* clone() const = 0;
     /**
      * Equality operator
      */
