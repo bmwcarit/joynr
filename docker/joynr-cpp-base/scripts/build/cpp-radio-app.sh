@@ -3,17 +3,21 @@
 source /data/src/docker/joynr-base/scripts/global.sh
 
 START=$(date +%s)
+ADDITIONAL_CMAKE_ARGS=''
 
 function usage
 {
-    echo "usage: cpp-radio-app.sh [--jobs X]"
-    echo "default jobs is $JOBS"
+    echo "usage: cpp-radio-app.sh [--jobs X  --additionalcmakeargs <args>]"
+    echo "default jobs is $JOBS and additionalcmakeargs is $ADDITIONAL_CMAKE_ARGS"
 }
 
 while [ "$1" != "" ]; do
     case $1 in
         --jobs )                shift
                                 JOBS=$1
+                                ;;
+        --additionalcmakeargs ) shift
+                                ADDITIONAL_CMAKE_ARGS=$1
                                 ;;
         * )                     usage
                                 exit 1
@@ -25,6 +29,7 @@ log "CPP RADIO APP JOBS: $JOBS"
 
 log "ENVIRONMENT"
 env
+echo "ADDITIONAL_CMAKE_ARGS is $ADDITIONAL_CMAKE_ARGS"
 
 # fail on first error
 set -e
@@ -44,7 +49,10 @@ rm -rf /data/build/radio
 mkdir /data/build/radio
 cd /data/build/radio
 
-cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR -DJOYNR_SERVER=localhost:8080 /data/src/examples/radio-app
+cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
+      -DJOYNR_SERVER=localhost:8080 \
+      $ADDITIONAL_CMAKE_ARGS \
+      /data/src/examples/radio-app
 
 time make -j $JOBS
 

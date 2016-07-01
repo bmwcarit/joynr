@@ -9,6 +9,7 @@ START=$(date +%s)
 CLANGFORMATTER='ON'
 BUILDTYPE='Debug'
 ARCHIVEBINARIES='OFF'
+ADDITIONAL_CMAKE_ARGS=''
 
 TESTS=(inter-language-test performance-test robustness-test system-integration-test)
 
@@ -22,8 +23,10 @@ function join_strings
 function usage
 {
     local joined_tests=$(join_strings " | " "${TESTS[@]}")
-    echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X --clangformatter ON|OFF --buildtype Debug|Release --archivebinaries ON|OFF]"
-    echo "default: jobs is $JOBS, clangformatter is $CLANGFORMATTER, buildtype is $BUILDTYPE and archivebinaries is $ARCHIVEBINARIES"
+    echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X --clangformatter ON|OFF \
+    --buildtype Debug|Release --archivebinaries ON|OFF --additionalcmakeargs <args>]"
+    echo "default: jobs is $JOBS, clangformatter is $CLANGFORMATTER, buildtype is \
+    $BUILDTYPE, archivebinaries is $ARCHIVEBINARIES and additionalcmakeargs is $ADDITIONAL_CMAKE_ARGS"
 }
 
 SELECTED_TEST=$1
@@ -42,6 +45,9 @@ while [ "$1" != "" ]; do
                                 ;;
         --archivebinaries )     shift
                                 ARCHIVEBINARIES=$1
+                                ;;
+        --additionalcmakeargs ) shift
+                                ADDITIONAL_CMAKE_ARGS=$1
                                 ;;
         * )                     usage
                                 exit 1
@@ -71,6 +77,7 @@ log "CPP BUILD TESTS JOBS: $JOBS"
 
 log "ENVIRONMENT"
 env
+echo "ADDITIONAL_CMAKE_ARGS is $ADDITIONAL_CMAKE_ARGS"
 
 cd /data/src/
 mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests \
@@ -90,6 +97,8 @@ cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
       -DENABLE_CLANG_FORMATTER=$CLANGFORMATTER \
       -DJOYNR_SERVER=localhost:8080 \
       -DCMAKE_BUILD_TYPE=$BUILDTYPE \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      $ADDITIONAL_CMAKE_ARGS \
       ${SRC_FOLDER}
 
 time make -j $JOBS
