@@ -69,12 +69,13 @@ cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=$DBUS \
       -DENABLE_GCOV=$GCOV \
       -DPYTHON_EXECUTABLE=/usr/bin/python \
       -DJOYNR_SERVER=localhost:8080 \
-      -DCMAKE_BUILD_TYPE=Debug /data/src/cpp \
+      -DCMAKE_BUILD_TYPE=Debug \
       -DENABLE_CLANG_FORMATTER=$ENABLE_CLANG_FORMATTER \
       -DBUILD_TESTS=$BUILD_TESTS \
       -DCMAKE_INSTALL_SYSCONFDIR=/etc \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      $ADDITIONAL_CMAKE_ARGS
+      $ADDITIONAL_CMAKE_ARGS \
+      /data/src/cpp
 
 if [ "$GCOV" == "ON" ] ; then
     echo "run coverage build"
