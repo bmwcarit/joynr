@@ -113,8 +113,6 @@ set(ilt-provider_SOURCES
 set(ilt_LIBRARIES
     ${Joynr_LIB_COMMON_LIBRARIES}
     ${Boost_LIBRARIES}
-    ${GTEST_LIBRARIES}
-    ${GMOCK_LIBRARIES}
 )
 
 # Put the generated code into a library and put the library in the bin directory
@@ -200,6 +198,8 @@ target_link_libraries(ilt-consumer-ws
     ilt
     ${ilt_LIBRARIES}
     ${Joynr_LIB_WS_LIBRARIES}
+    ${GTEST_LIBRARIES}
+    ${GMOCK_LIBRARIES}
 )
 
 install(TARGETS

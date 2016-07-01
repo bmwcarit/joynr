@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 
 #include <chrono>
 #include <atomic>
+#include <mutex>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
@@ -84,6 +85,8 @@ private:
 
     /*! Queue of waiting work */
     BlockingQueue queue;
+
+    std::mutex mutex;
 };
 } // namespace joynr
 

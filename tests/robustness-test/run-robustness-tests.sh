@@ -260,7 +260,7 @@ function start_javascript_provider {
 	echo '# starting Javascript provider'
 	echo '####################################################'
 	cd $JOYNR_SOURCE_DIR/tests/robustness-test
-	nohup npm run-script startprovider --robustnessTest:domain=$DOMAIN > $ROBUSTNESS_RESULTS_DIR/provider_javascript.log 2>&1 &
+	nohup npm run-script startprovider --robustness-test:domain=$DOMAIN > $ROBUSTNESS_RESULTS_DIR/provider_javascript.log 2>&1 &
 	PROVIDER_PID=$!
 	disown $PROVIDER_PID
 	echo "Started Javascript provider with PID $PROVIDER_PID"

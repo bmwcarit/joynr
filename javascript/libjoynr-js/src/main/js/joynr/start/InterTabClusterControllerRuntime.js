@@ -334,7 +334,8 @@ define(
 
                             var persistencyProvisioning = provisioning.persistency || {};
                             persistency = new LocalStorage({
-                                clearPersistency : persistencyProvisioning.clearPersistency
+                                clearPersistency : persistencyProvisioning.clearPersistency,
+                                location : persistencyProvisioning.location
                             });
 
                             if (Util.checkNullUndefined(provisioning.bounceProxyUrl)) {

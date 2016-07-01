@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ private:
     TimerId currentId;
 
     /*! Sorted map by absolute time_point of active timers */
-    std::map<const std::chrono::system_clock::time_point, TimerData*> timers;
+    std::map<const std::chrono::steady_clock::time_point, TimerData*> timers;
 
     /*! Wait condition used as a timer */
     std::condition_variable waitCondition;

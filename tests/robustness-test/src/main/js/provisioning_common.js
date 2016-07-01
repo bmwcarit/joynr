@@ -26,67 +26,6 @@ provisioning.ccAddress = {
     port : 4242,
     path : ""
 };
-var discoveryChannelId = "discoverydirectory_channelid";
-provisioning.channelUrls = {};
-provisioning.channelUrls[discoveryChannelId] =
-        [ provisioning.bounceProxyBaseUrl + "/discovery/channels/" + discoveryChannelId + "/"
-        ];
-var globalCapDirCapability = {
-    domain : "io.joynr",
-    interfaceName : "infrastructure/Globalcapabilitiesdirectory",
-    providerQos : {
-        qos : [],
-        version : 0,
-        priority : 1,
-        isLocalOnly : false,
-        onChangeSubscriptions : true
-    },
-    channelId : discoveryChannelId,
-    participantId : "capabilitiesdirectory_participantid"
-};
-var channelUrlDirCapability = {
-    domain : "io.joynr",
-    interfaceName : "infrastructure/Channelurldirectory",
-    providerQos : {
-        qos : [],
-        version : 0,
-        priority : 1,
-        isLocalOnly : false,
-        onChangeSubscriptions : true
-    },
-    channelId : discoveryChannelId,
-    participantId : "channelurldirectory_participantid"
-};
-var discoveryCapability = {
-    domain : "io.joynr",
-    interfaceName : "system/Discovery",
-    providerQos : {
-        qos : [],
-        version : 0,
-        priority : 1,
-        isLocalOnly : false,
-        onChangeSubscriptions : true
-    },
-    participantId : "CC.DiscoveryProvider.ParticipantId"
-};
-var routingCapability = {
-    domain : "io.joynr",
-    interfaceName : "system/Routing",
-    providerQos : {
-        qos : [],
-        version : 0,
-        priority : 1,
-        isLocalOnly : false,
-        onChangeSubscriptions : true
-    },
-    participantId : "CC.RoutingProvider.ParticipantId"
-};
-provisioning.capabilities = [
-    globalCapDirCapability,
-    channelUrlDirCapability,
-    discoveryCapability,
-    routingCapability
-];
 
 provisioning.logging = {
     configuration : {

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,8 @@ SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(
           Thread(threadName),
           keepRunning(true),
           currentlyRunning(nullptr),
-          queue()
+          queue(),
+          mutex()
 {
     Thread::start();
 }
@@ -53,8 +54,11 @@ void SingleThreadedDelayedScheduler::shutdown()
 
     queue.shutdown();
 
-    if (currentlyRunning != nullptr) {
-        currentlyRunning->shutdown();
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        if (currentlyRunning != nullptr) {
+            currentlyRunning->shutdown();
+        }
     }
 
     Thread::stop();
@@ -72,10 +76,21 @@ void SingleThreadedDelayedScheduler::run()
         if (work != nullptr) {
 
             JOYNR_LOG_TRACE(logger, "Got work. Executing now.");
-
-            currentlyRunning = work;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                if (!keepRunning) {
+                    if (work->isDeleteOnExit()) {
+                        delete work;
+                    }
+                    break;
+                }
+                currentlyRunning = work;
+            }
             work->run();
-            currentlyRunning = nullptr;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                currentlyRunning = nullptr;
+            }
 
             JOYNR_LOG_TRACE(logger, "Finished work");
 

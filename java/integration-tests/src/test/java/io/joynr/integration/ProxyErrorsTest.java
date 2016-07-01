@@ -112,7 +112,8 @@ public class ProxyErrorsTest {
 
         discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
-        discoveryQos.setDiscoveryTimeoutMs(200);
+        discoveryQos.setDiscoveryTimeoutMs(500);
+        discoveryQos.setRetryIntervalMs(100);
 
         callback = new ProxyCreatedCallback<ProxyErrorsTest.TestProxyWrongVersion>() {
 

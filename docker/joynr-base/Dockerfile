@@ -1,4 +1,4 @@
-FROM fedora:23
+FROM fedora:24
 
 # set this date to cause all images to be updated
 ENV REFRESHED_AT 2016-02-16
@@ -50,6 +50,8 @@ RUN dnf update -y \
 	xz \
 	maven \
 	hostname.x86_64 \
+        clang \
+        libcxx-devel \
 	&& dnf groupinstall -y 'Development Tools' \
 	&& dnf clean all
 

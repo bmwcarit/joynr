@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,6 +113,8 @@ define(
              *            then registered with the message router on the remote side
              * @param {WebSocketAddress}
              *            settings.remoteAddress to which messages are sent on the websocket server.
+             * @param {Object} settings.provisioning
+             * @param {Number} settings.provisioning.reconnectSleepTimeMs
              */
             var SharedWebSocket =
                     function SharedWebSocket(settings) {
@@ -125,18 +127,29 @@ define(
                                 settings.remoteAddress,
                                 "WebSocketAddress",
                                 "remoteAddress");
+                        Object.defineProperty(this, 'EVENT_CODE_SHUTDOWN', {
+                            enumerable: false,
+                            configurable: false,
+                            writable: false,
+                            readable: true,
+                            value: 4000
+                        });
 
                         var websocket = null;
+                        var provisioning = settings.provisioning || {};
+                        var reconnectSleepTimeMs = provisioning.reconnectSleepTimeMs || 1000; // default value = 1000ms
                         var localAddress = settings.localAddress;
                         var remoteUrl = webSocketAddressToUrl(settings.remoteAddress);
                         var onmessageCallback = null;
                         var queuedMessages = [];
                         var onOpen;
                         var onError;
+                        var onClose;
 
                         var resetConnection = function resetConnection() {
                             websocket = new WebSocket(remoteUrl);
                             websocket.onopen = onOpen;
+                            websocket.onclose = onClose;
                             websocket.onerror = onError;
                             if (onmessageCallback !== null) {
                                 websocket.onmessage = onmessageCallback;
@@ -144,17 +157,26 @@ define(
                         };
 
                         onError = function onError(event) {
-                            log.error("error in websocket: " + JSON.stringify(event));
-                            setTimeout(resetConnection, 5000);
+                            log.error("error in websocket: "
+                                    + event.code
+                                    + " reason: "
+                                    + event.reason
+                                    + ". Resetting connection.");
+                            setTimeout(resetConnection, reconnectSleepTimeMs);
                         };
 
-                        var OnClose =
-                                function onClose(event) {
-                                    log.info("websocket closed. code: "
-                                        + event.code
-                                        + " reason: "
-                                        + event.reason);
-                                };
+                        onClose = function onClose(event) {
+                            if (event.code !== this.EVENT_CODE_SHUTDOWN) {
+                                log.info("connection closed unexpectedly. code: "
+                                    + event.code
+                                    + " reason: "
+                                    + event.reason
+                                    + ". Trying to reconnect...");
+                                setTimeout(resetConnection, reconnectSleepTimeMs);
+                            } else {
+                                log.info("connection closed. reason: " + event.reason);
+                            }
+                        };
 
                         // send all queued messages, requeuing to the front in case of a problem
                         onOpen = function onOpen() {
@@ -191,7 +213,7 @@ define(
                          */
                         this.close = function close() {
                             if (websocket !== null) {
-                                websocket.close();
+                                websocket.close(this.EVENT_CODE_SHUTDOWN, "shutdown");
                             }
                         };
 

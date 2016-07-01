@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,8 @@ protected:
 
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
 
-    virtual void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter) = 0;
+    virtual void startLibJoynrMessagingSkeleton(
+            const std::shared_ptr<MessageRouter>& messageRouter) = 0;
 
     void init(std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,

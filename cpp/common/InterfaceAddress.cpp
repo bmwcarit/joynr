@@ -18,6 +18,8 @@
  */
 #include "common/InterfaceAddress.h"
 
+#include <boost/functional/hash.hpp>
+
 namespace joynr
 {
 
@@ -53,4 +55,20 @@ bool InterfaceAddress::operator<(const InterfaceAddress& interfaceAddress) const
     }
     return domain < interfaceAddress.getDomain();
 }
+
+std::size_t InterfaceAddress::hashCode() const
+{
+    std::size_t seed = 0;
+
+    boost::hash_combine(seed, getDomain());
+    boost::hash_combine(seed, getInterface());
+
+    return seed;
+}
+
+std::size_t hash_value(const InterfaceAddress& tInterfaceAddress)
+{
+    return tInterfaceAddress.hashCode();
+}
+
 } // namespace joynr

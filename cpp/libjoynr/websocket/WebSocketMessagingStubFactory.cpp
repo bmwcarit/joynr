@@ -87,7 +87,7 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
 
 void WebSocketMessagingStubFactory::addClient(
         const system::RoutingTypes::WebSocketClientAddress& clientAddress,
-        IWebSocketSendInterface* webSocket)
+        const std::shared_ptr<IWebSocketSendInterface>& webSocket)
 {
     if (clientStubMap.count(clientAddress) == 0) {
         WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(webSocket);
@@ -112,7 +112,7 @@ void WebSocketMessagingStubFactory::removeClient(
 
 void WebSocketMessagingStubFactory::addServer(
         const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
-        IWebSocketSendInterface* webSocket)
+        const std::shared_ptr<IWebSocketSendInterface>& webSocket)
 {
     auto serverStub = std::make_shared<WebSocketMessagingStub>(webSocket);
     {

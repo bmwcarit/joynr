@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 
 #include <functional>
+#include <memory>
 #include <thread>
 #include <vector>
 
@@ -134,7 +135,7 @@ public:
         );
         JOYNR_LOG_DEBUG(logger, "server URL: {}",serverAddress.toString());
         joynr::Semaphore connected(0);
-        webSocket = new joynr::WebSocketPpClient(wsSettings);
+        webSocket = std::make_shared<joynr::WebSocketPpClient>(wsSettings);
         webSocket->registerConnectCallback([&connected](){connected.notify();});
         webSocket->connect(serverAddress);
 
@@ -149,7 +150,7 @@ protected:
     joynr::WebSocketSettings wsSettings;
     WebSocketServer server;
     joynr::system::RoutingTypes::WebSocketAddress serverAddress;
-    joynr::WebSocketPpClient* webSocket;
+    std::shared_ptr<joynr::WebSocketPpClient> webSocket;
 };
 
 INIT_LOGGER(WebSocketMessagingStubTest);

@@ -47,7 +47,7 @@ public:
      * @param webSocket Interface to be used to send data
      * @param onStubClosed Function to be called on close
      */
-    WebSocketMessagingStub(IWebSocketSendInterface* webSocket);
+    WebSocketMessagingStub(const std::shared_ptr<IWebSocketSendInterface>& webSocket);
 
     /**
      * @brief Destructor

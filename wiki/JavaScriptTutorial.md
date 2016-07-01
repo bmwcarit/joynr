@@ -151,6 +151,10 @@ var websocketLibJoynrProvisioning = {
                              *     host: <host>,
                              *     path: <path> //default value is ""
                              */
+    websocket: { // optional
+        // default value is 1000
+        reconnectSleepTimeMs : <time in milliseconds between websocket reconnect attempts>
+    }
 };
 
 var interTabLibjoynrProvisioning = {

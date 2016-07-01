@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,21 +28,13 @@ namespace joynr
 namespace TimeUtils
 {
 /**
- * @brief Returns the current time as an absolute std::time_point
- * @return Current time as a std::time_point
- */
-inline static std::chrono::system_clock::time_point getCurrentTime()
-{
-    return std::chrono::system_clock::now();
-}
-/**
  * @brief Returns the current time as a relative duration in MS since epoch
  * @return Current time in milliseconds since epoch
  */
 inline static std::uint64_t getCurrentMillisSinceEpoch()
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
-                   getCurrentTime().time_since_epoch()).count();
+                   std::chrono::system_clock::now().time_since_epoch()).count();
 }
 } // namespace TimeUtils
 

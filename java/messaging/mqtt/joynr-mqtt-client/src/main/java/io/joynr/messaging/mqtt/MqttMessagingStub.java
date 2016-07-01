@@ -1,9 +1,5 @@
 package io.joynr.messaging.mqtt;
 
-import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
-import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
-import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
-
 /*
  * #%L
  * %%
@@ -28,7 +24,6 @@ import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JoynrMessageSerializer;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.MqttAddress;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 /**
  * Messaging stub used to send messages to a MQTT Broker
@@ -40,21 +35,21 @@ public class MqttMessagingStub implements IMessaging {
     private MqttAddress address;
     private JoynrMqttClient mqttClient;
     private JoynrMessageSerializer messageSerializer;
-    private MqttAddress replyToMqttAddress;
+    private MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator;
 
     public MqttMessagingStub(MqttAddress address,
-                             MqttAddress replyToMqttAddress,
                              JoynrMqttClient mqttClient,
-                             JoynrMessageSerializer messageSerializer) {
+                             JoynrMessageSerializer messageSerializer,
+                             MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator) {
         this.address = address;
-        this.replyToMqttAddress = replyToMqttAddress;
         this.mqttClient = mqttClient;
         this.messageSerializer = messageSerializer;
+        this.mqttMessageReplyToAddressCalculator = mqttMessageReplyToAddressCalculator;
     }
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
-        setReplyTo(message);
+        mqttMessageReplyToAddressCalculator.setReplyTo(message);
         String topic = address.getTopic() + PRIORITY_LOW + message.getTo();
         String serializedMessage = messageSerializer.serialize(message);
         try {
@@ -75,12 +70,4 @@ public class MqttMessagingStub implements IMessaging {
         }
     }
 
-    private void setReplyTo(JoynrMessage message) {
-        String type = message.getType();
-        if (type != null
-                && message.getReplyTo() == null
-                && (type.equals(MESSAGE_TYPE_REQUEST) || type.equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST) || type.equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST))) {
-            message.setReplyTo(RoutingTypesUtil.toAddressString(replyToMqttAddress));
-        }
-    }
 }

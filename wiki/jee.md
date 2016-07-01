@@ -55,7 +55,7 @@ implement any interfaces) and provide methods annotated with:
 Additionally, the method must be annotated with
 `javax.enterprise.inject.Produces`.
 
-Properties you have to set for the integration to work are:
+#### Manadatory Properties
 
 * `MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT` - this property needs
 to be set to the context root of your deployed application, with `/messaging`
@@ -75,9 +75,15 @@ E.g. `http://endpointregistry.mycompany.net:8080`.
 connecting to the MQTT broker being used for communication.
 E.g. `tcp://mqtt.mycompany.net:1883`.
 
+#### Optional Properties
+
+* `JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS` - enables the [HiveMQ](http://www.hivemq.com) specific 'shared subscription' feature, which allows clustering of JEE applications using just MQTT for communication. Set this to `true` to enable the feature. Defaults to `false`.
+
 You are principally free to provide any other valid joynr properties via these
 configuration methods. See the [official joynr documentation](http://joynr.io)
 for details.
+
+#### Example
 
 An example of a configuration EJB is:
 
