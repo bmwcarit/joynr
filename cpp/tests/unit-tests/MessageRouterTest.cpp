@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/Semaphore.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
@@ -33,6 +34,11 @@
 using ::testing::Return;
 using ::testing::Pointee;
 using namespace joynr;
+
+ACTION_P(ReleaseSemaphore, semaphore)
+{
+    semaphore->notify();
+}
 
 class MessageRouterTest : public ::testing::Test {
 public:
@@ -193,12 +199,16 @@ TEST_F(MessageRouterTest, outdatedMessagesAreRemoved){
 void MessageRouterTest::routeMessageToAddress(
         const std::string& destinationParticipantId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address) {
+    joynr::Semaphore semaphore(0);
     messageRouter->addNextHop(destinationParticipantId, address);
     joynrMessage.setHeaderTo(destinationParticipantId);
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
     ON_CALL(*messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
+    ON_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+            .WillByDefault(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
     messageRouter->route(joynrMessage);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 }
 
 TEST_F(MessageRouterTest, routeMessageToHttpAddress) {
