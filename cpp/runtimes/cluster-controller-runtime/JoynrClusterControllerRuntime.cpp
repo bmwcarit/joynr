@@ -138,22 +138,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
     initializeAllDependencies();
 }
 
-void JoynrClusterControllerRuntime::importMessageRouterFromFile()
-{
-    messageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
-}
-
-void JoynrClusterControllerRuntime::importPersistedLocalCapabilitiesDirectory()
-{
-    localCapabilitiesDirectory->loadPersistedFile();
-}
-
-void JoynrClusterControllerRuntime::injectGlobalCapabilitiesFromFile(const std::string& fileName)
-{
-    assert(localCapabilitiesDirectory);
-    localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(fileName);
-}
-
 void JoynrClusterControllerRuntime::initializeAllDependencies()
 {
     /**
@@ -180,8 +164,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // init message router
     messageRouter =
             std::make_shared<MessageRouter>(messagingStubFactory, std::move(securityManager));
-
-    importMessageRouterFromFile();
+    messageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
 
     const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
     assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());
@@ -377,6 +360,11 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       *
       */
     publicationManager = new PublicationManager();
+    publicationManager->loadSavedAttributeSubscriptionRequestsMap(
+            libjoynrSettings.getSubscriptionRequestPersistenceFilename());
+    publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
+            libjoynrSettings.getBroadcastSubscriptionRequestPersistenceFilename());
+
     subscriptionManager = new SubscriptionManager();
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
     auto libjoynrMessagingAddress =
@@ -413,8 +401,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                          channelGlobalCapabilityDir,
                                                          *messageRouter,
                                                          libjoynrSettings);
-
-    importPersistedLocalCapabilitiesDirectory();
+    localCapabilitiesDirectory->loadPersistedFile();
+    // importPersistedLocalCapabilitiesDirectory();
 
     std::string discoveryProviderParticipantId(
             systemServicesSettings.getCcDiscoveryProviderParticipantId());
@@ -586,7 +574,8 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(
     JoynrClusterControllerRuntime* runtime =
             new JoynrClusterControllerRuntime(coreApplication, settings);
 
-    runtime->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);
+    assert(runtime->localCapabilitiesDirectory);
+    runtime->localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);
     runtime->start();
 
     return runtime;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,17 @@ class Settings;
 class JOYNR_EXPORT LibjoynrSettings
 {
 public:
-    static const std::string& SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
-    static const std::string& SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME();
+    static const std::string& SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
     static const std::string& SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
+    static const std::string& SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME();
+    static const std::string& SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
+    static const std::string& SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
+
+    static const std::string& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
-    static const std::string& DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
-    static const std::string& DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME();
     static const std::string& DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME();
-    static const std::string& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME();
+    static const std::string& DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
+    static const std::string& DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
 
     explicit LibjoynrSettings(Settings& settings);
     LibjoynrSettings(const LibjoynrSettings&) = default;
@@ -47,14 +50,20 @@ public:
 
     ~LibjoynrSettings() = default;
 
-    std::string getParticipantIdsPersistenceFilename() const;
-    void setParticipantIdsPersistenceFilename(const std::string& filename);
+    std::string getBroadcastSubscriptionRequestPersistenceFilename() const;
+    void setBroadcastSubscriptionRequestPersistenceFilename(const std::string& filename);
+
+    std::string getLocalCapabilitiesDirectoryPersistenceFilename() const;
+    void setLocalCapabilitiesDirectoryPersistenceFilename(const std::string& filename);
 
     std::string getMessageRouterPersistenceFilename() const;
     void setMessageRouterPersistenceFilename(const std::string& filename);
 
-    std::string getLocalCapabilitiesDirectoryPersistenceFilename() const;
-    void setLocalCapabilitiesDirectoryPersistenceFilename(const std::string& filename);
+    std::string getParticipantIdsPersistenceFilename() const;
+    void setParticipantIdsPersistenceFilename(const std::string& filename);
+
+    std::string getSubscriptionRequestPersistenceFilename() const;
+    void setSubscriptionRequestPersistenceFilename(const std::string& filename);
 
     void printSettings() const;
 

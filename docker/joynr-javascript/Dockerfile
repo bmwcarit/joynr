@@ -8,9 +8,10 @@ RUN dnf install -y \
 	&& dnf clean all
 
 ###################################################
-# install libs needed to run phantomjs
+# install libs needed to unpack and run phantomjs
 ###################################################
 RUN dnf install -y \
+	bzip2 \
 	freetype-devel \
 	fontconfig-devel \
 	&& dnf clean all
