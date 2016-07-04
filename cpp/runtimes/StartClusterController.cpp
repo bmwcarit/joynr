@@ -23,6 +23,9 @@
 #include "joynr/Logger.h"
 #include "joynr/Settings.h"
 #include "joynr/Util.h"
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 using namespace joynr;
 
@@ -37,6 +40,11 @@ void printUsage(Logger& logger, const std::string& programName)
 
 int main(int argc, char* argv[])
 {
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+    // Register app at the dlt-daemon for logging
+    DLT_REGISTER_APP("JOCC", "joynr cluster controller");
+#endif // JOYNR_ENABLE_DLT_LOGGING
+
     // init a logger
     Logger logger("Runtime");
 
