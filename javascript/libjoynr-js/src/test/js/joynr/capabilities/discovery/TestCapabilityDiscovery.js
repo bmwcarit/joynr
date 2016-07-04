@@ -93,7 +93,7 @@ joynrTestRequire(
                         scope : discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
                                 ? ProviderScope.LOCAL
                                 : ProviderScope.GLOBAL,
-                        onChangeSubscriptions : true
+                        supportsOnChangeSubscriptions : true
                     }),
                     address : JSON.stringify((newGlobalAddress !== undefined ? newGlobalAddress : address)),
                     participantId : "700",
@@ -125,7 +125,7 @@ joynrTestRequire(
                         scope : discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
                                 ? ProviderScope.LOCAL
                                 : ProviderScope.GLOBAL,
-                        onChangeSubscriptions : true
+                        supportsOnChangeSubscriptions : true
                     }),
                     participantId : "700",
                     lastSeenDateMs : Date.now(),
@@ -746,7 +746,7 @@ joynrTestRequire(
                                     ],
                                     priority : 1234,
                                     scope : scope,
-                                    onChangeSubscription : true
+                                    supportsOnChangeSubscriptions : true
                                 }),
                                 participantId : "700",
                                 lastSeenDateMs : 123,
@@ -768,7 +768,7 @@ joynrTestRequire(
                                     ],
                                     priority : 1234,
                                     scope : scope,
-                                    onChangeSubscription : true
+                                    supportsOnChangeSubscriptions : true
                                 }),
                                 address : JSON.stringify(address),
                                 participantId : "700",

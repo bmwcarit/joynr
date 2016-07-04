@@ -160,7 +160,7 @@ joynrTestRequire(
                                     priority: 123,
                                     scope: discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
                                             ? true : false,
-                                    onChangeSubscriptions : true
+                                    supportsOnChangeSubscriptions : true
                             });
 
                             discoveryEntryWithMajor47AndMinor0 = new DiscoveryEntry({
