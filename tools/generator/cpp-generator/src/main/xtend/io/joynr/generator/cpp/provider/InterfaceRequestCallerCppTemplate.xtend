@@ -75,20 +75,21 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 						const «returnType»& «attributeName»
 				)> onSuccess,
 				std::function<void(
-						const exceptions::ProviderRuntimeException&
+						const std::shared_ptr<exceptions::ProviderRuntimeException>&
 				)> onError
 		) {
+			std::function<void(const exceptions::ProviderRuntimeException&)> onErrorWrapper =
+			[onError] (const exceptions::ProviderRuntimeException& error) {
+				onError(std::make_shared<exceptions::ProviderRuntimeException>(error));
+			};
 			try {
-				provider->get«attributeName.toFirstUpper»(onSuccess, onError);
+				provider->get«attributeName.toFirstUpper»(onSuccess, onErrorWrapper);
 			} catch (const exceptions::ProviderRuntimeException& e) {
-				std::string message = "Could not perform «interfaceName»RequestCaller::get«attributeName.toFirstUpper», caught exception: " +
-									e.getTypeName() + ":" + e.getMessage();
-				onError(e);
+				onError(std::make_shared<exceptions::ProviderRuntimeException>(e));
 			} catch (const exceptions::JoynrException& e) {
 				std::string message = "Could not perform «interfaceName»RequestCaller::get«attributeName.toFirstUpper», caught exception: " +
 									e.getTypeName() + ":" + e.getMessage();
-				onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
-															e.getMessage()));
+				onError(std::make_shared<exceptions::ProviderRuntimeException>(message));
 			}
 		}
 	«ENDIF»
@@ -97,20 +98,23 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 				const «returnType»& «attributeName»,
 				std::function<void()> onSuccess,
 				std::function<void(
-						const exceptions::ProviderRuntimeException&
+						const std::shared_ptr<exceptions::ProviderRuntimeException>&
 				)> onError
 		) {
+			std::function<void(const exceptions::ProviderRuntimeException&)> onErrorWrapper =
+			[onError] (const exceptions::ProviderRuntimeException& error) {
+				onError(std::make_shared<exceptions::ProviderRuntimeException>(error));
+			};
 			try {
-				provider->set«attributeName.toFirstUpper»(«attributeName», onSuccess, onError);
+				provider->set«attributeName.toFirstUpper»(«attributeName», onSuccess, onErrorWrapper);
 			} catch (const exceptions::ProviderRuntimeException& e) {
 				std::string message = "Could not perform «interfaceName»RequestCaller::set«attributeName.toFirstUpper», caught exception: " +
 									e.getTypeName() + ":" + e.getMessage();
-				onError(e);
+				onError(std::make_shared<exceptions::ProviderRuntimeException>(e));
 			} catch (const exceptions::JoynrException& e) {
 				std::string message = "Could not perform «interfaceName»RequestCaller::set«attributeName.toFirstUpper», caught exception: " +
 									e.getTypeName() + ":" + e.getMessage();
-				onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
-															e.getMessage()));
+				onError(std::make_shared<exceptions::ProviderRuntimeException>(message));
 			}
 		}
 	«ENDIF»
@@ -138,7 +142,7 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 					)> onSuccess,
 				«ENDIF»
 				std::function<void(
-						const exceptions::JoynrException&
+						const std::shared_ptr<exceptions::JoynrException>&
 				)> onError
 			«ENDIF»
 	) {
@@ -149,12 +153,12 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
 							std::string typeName = «errorTypeName»::getTypeName();
 							std::string name = «errorTypeName»::getLiteral(errorEnum);
-							onError(exceptions::ApplicationException(typeName + "::" + name, std::make_shared<«errorTypeName»::ApplicationExceptionErrorImpl>(name)));
+							onError(std::make_shared<exceptions::ApplicationException>(typeName + "::" + name, std::make_shared<«errorTypeName»::ApplicationExceptionErrorImpl>(name)));
 					};
 			«ELSE»
 			std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorWrapper =
 					[onError] (const joynr::exceptions::ProviderRuntimeException& error) {
-						onError(error);
+						onError(std::make_shared<exceptions::ProviderRuntimeException>(error));
 					};
 			«ENDIF»
 		«ENDIF»
@@ -171,12 +175,12 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 		// if the constructor is used properly (with the appropriate literal of the reported error
 		// enumeration).
 		} catch (const exceptions::ProviderRuntimeException& e) {
-			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
-								e.getTypeName() + ":" + e.getMessage();
 			«IF method.fireAndForget»
+				std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
+									e.getTypeName() + ":" + e.getMessage();
 				JOYNR_LOG_ERROR(logger, message);
 			«ELSE»
-				onError(e);
+				onError(std::make_shared<exceptions::ProviderRuntimeException>(e));
 			«ENDIF»
 		} catch (const exceptions::JoynrException& e) {
 			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
@@ -184,8 +188,7 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 			«IF method.fireAndForget»
 				JOYNR_LOG_ERROR(logger, message);
 			«ELSE»
-				onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
-															e.getMessage()));
+				onError(std::make_shared<exceptions::ProviderRuntimeException>(message));
 			«ENDIF»
 		}
 	}

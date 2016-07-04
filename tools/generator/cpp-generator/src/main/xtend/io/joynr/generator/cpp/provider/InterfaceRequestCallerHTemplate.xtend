@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ public:
 							const «attribute.typeName»&
 					)> onSuccess,
 					std::function<void(
-							const exceptions::ProviderRuntimeException&
+							const std::shared_ptr<exceptions::ProviderRuntimeException>&
 					)> onError
 			);
 		«ENDIF»
@@ -114,7 +114,7 @@ public:
 					const «attribute.typeName»& «attributeName»,
 					std::function<void()> onSuccess,
 					std::function<void(
-							const exceptions::ProviderRuntimeException&
+							const std::shared_ptr<exceptions::ProviderRuntimeException>&
 					)> onError
 			);
 		«ENDIF»
@@ -152,7 +152,7 @@ public:
 						)> onSuccess,
 					«ENDIF»
 					std::function<void(
-							const exceptions::JoynrException&
+							const std::shared_ptr<exceptions::JoynrException>&
 					)> onError
 				«ENDIF»
 		);

@@ -103,7 +103,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithMapParamete
         //EXPECT_EQ(inputMap, response.at(0).get<types::TestTypes::TStringKeyMap>());
         callback->onSuccess(std::move(reply));
     };
-    auto onError = [] (const exceptions::JoynrException& exception) {
+    auto onError = [] (const std::shared_ptr<exceptions::JoynrException>&) {
         ADD_FAILURE()<< "unexpected call of onError function";
     };
     // since Google Mock does not support r-value references, the call to onSuccess(Reply&&) is proxied to onSuccess(const Reply&)
@@ -129,7 +129,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
         // EXPECT_EQ(types::Localisation::GpsLocation(), response.at(0).get<types::Localisation::GpsLocation>());
         callback->onSuccess(std::move(response));
     };
-    auto onError = [] (const exceptions::JoynrException&) {
+    auto onError = [] (const std::shared_ptr<exceptions::JoynrException>&) {
         ADD_FAILURE()<< "unexpected call of onError function";
     };
     // since Google Mock does not support r-value references, the call to onSuccess(Reply&&) is proxied to onSuccess(const Reply&)
@@ -153,8 +153,8 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithProviderRun
 
     auto callback = std::make_shared<MockCallback<void>>();
     auto onSuccess = [] (joynr::Reply&&) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
-    auto onError = [callback] (const exceptions::JoynrException& exception) {
-        callback->onError(exception);
+    auto onError = [callback] (const std::shared_ptr<exceptions::JoynrException>& exception) {
+        callback->onError(*exception);
     };
     EXPECT_CALL(*callback, onError(providerRuntimeException(mockCaller->providerRuntimeExceptionTestMsg))).Times(1);
 
@@ -176,8 +176,8 @@ TEST_F(RequestInterpreterTest, execute_callsGetterMethodOnRequestCallerWithProvi
 
     auto callback = std::make_shared<MockCallback<std::int32_t>>();
     auto onSuccess = [] (joynr::Reply&&) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
-    auto onError = [callback] (const exceptions::JoynrException& exception) {
-        callback->onError(exception);
+    auto onError = [callback] (const std::shared_ptr<exceptions::JoynrException>& exception) {
+        callback->onError(*exception);
     };
     EXPECT_CALL(*callback, onError(providerRuntimeException(mockCaller->providerRuntimeExceptionTestMsg))).Times(1);
 
@@ -196,8 +196,8 @@ TEST_F(RequestInterpreterTest, execute_callsMethodWithInvalidArguments) {
 
     auto callback = std::make_shared<MockCallback<std::int32_t>>();
     auto onSuccess = [] (joynr::Reply&&) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
-    auto onError = [callback] (const exceptions::JoynrException& exception) {
-        callback->onError(exception);
+    auto onError = [callback] (const std::shared_ptr<exceptions::JoynrException>& exception) {
+        callback->onError(*exception);
     };
     EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion(expectedProviderVersion))).Times(1);
 
@@ -215,8 +215,8 @@ TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments) {
 
     auto callback = std::make_shared<MockCallback<std::int32_t>>();
     auto onSuccess = [] (joynr::Reply&&) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
-    auto onError = [callback] (const exceptions::JoynrException& exception) {
-        callback->onError(exception);
+    auto onError = [callback] (const std::shared_ptr<exceptions::JoynrException>& exception) {
+        callback->onError(*exception);
     };
     EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion(expectedProviderVersion))).Times(1);
 
@@ -234,8 +234,8 @@ TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments2) {
 
     auto callback = std::make_shared<MockCallback<std::int32_t>>();
     auto onSuccess = [] (joynr::Reply&&) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
-    auto onError = [callback] (const exceptions::JoynrException& exception) {
-        callback->onError(exception);
+    auto onError = [callback] (const std::shared_ptr<exceptions::JoynrException>& exception) {
+        callback->onError(*exception);
     };
     EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion(expectedProviderVersion))).Times(1);
 
@@ -252,8 +252,8 @@ TEST_F(RequestInterpreterTest, execute_callsNonExistingMethod) {
 
     auto callback = std::make_shared<MockCallback<std::int32_t>>();
     auto onSuccess = [] (joynr::Reply&&) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
-    auto onError = [callback] (const exceptions::JoynrException& exception) {
-        callback->onError(exception);
+    auto onError = [callback] (const std::shared_ptr<exceptions::JoynrException>& exception) {
+        callback->onError(*exception);
     };
     EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion(expectedProviderVersion))).Times(1);
 

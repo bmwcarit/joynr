@@ -169,10 +169,10 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         };
 
         auto onError = [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-                const exceptions::JoynrException& exception) {
+                const std::shared_ptr<exceptions::JoynrException>& exception) {
             Reply reply;
             reply.setRequestReplyId(requestReplyId);
-            reply.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(exception));
+            reply.setError(exception);
             JOYNR_LOG_DEBUG(logger,
                             "Got error reply from RequestInterpreter for requestReplyId {}",
                             requestReplyId);

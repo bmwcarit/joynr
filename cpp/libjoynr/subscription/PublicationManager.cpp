@@ -848,11 +848,11 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
             }
         };
 
-        std::function<void(const exceptions::JoynrException&)> onError =
+        std::function<void(const std::shared_ptr<exceptions::JoynrException>&)> onError =
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
-                        const exceptions::JoynrException& exception) {
+                        const std::shared_ptr<exceptions::JoynrException>& exception) {
 
-            sendPublicationError(publication, subscriptionRequest, subscriptionRequest, exception);
+            sendPublicationError(publication, subscriptionRequest, subscriptionRequest, *exception);
 
             // Reschedule the next poll
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
@@ -874,14 +874,14 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                             "Could not perform pollSubscription, caught exception: {} : {}",
                             e.getTypeName(),
                             e.getMessage());
-            onError(e);
+            onError(std::make_shared<exceptions::ProviderRuntimeException>(e));
         } catch (const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Could not perform an pollSubscription, caught exception: {} : {}",
                             e.getTypeName(),
                             e.getMessage());
-            onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() +
-                                                         ":" + e.getMessage()));
+            onError(std::make_shared<exceptions::ProviderRuntimeException>(
+                    "caught exception: " + e.getTypeName() + ":" + e.getMessage()));
         }
     }
 }

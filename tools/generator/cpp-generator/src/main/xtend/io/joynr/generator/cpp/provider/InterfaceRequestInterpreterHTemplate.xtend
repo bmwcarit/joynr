@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ public:
 	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
 				 Request& request,
 				 std::function<void (BaseReply&& reply)> onSuccess,
-				 std::function<void (const exceptions::JoynrException& exception)> onError) override;
+				 std::function<void (const std::shared_ptr<exceptions::JoynrException>& exception)> onError) override;
 
 	/**
 	 * @brief Implements IRequestInterpreter.execute().

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +40,13 @@ public:
     {
         std::shared_ptr<exceptions::JoynrException> error = reply.getError();
         if (error) {
-            caller.returnError(*error);
+            caller.returnError(error);
             return;
         }
 
         if (!reply.hasResponse()) {
-            caller.returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
+            caller.returnError(std::make_shared<exceptions::JoynrRuntimeException>(
+                    "Reply object had no response."));
             return;
         }
 
@@ -53,7 +54,8 @@ public:
         try {
             reply.getResponse(responseTuple);
         } catch (const std::exception& exception) {
-            caller.returnError(exceptions::JoynrRuntimeException(exception.what()));
+            caller.returnError(
+                    std::make_shared<exceptions::JoynrRuntimeException>(exception.what()));
             return;
         }
         callReturnValue(std::move(responseTuple), caller, std::index_sequence_for<Ts...>{});
@@ -78,7 +80,7 @@ public:
     {
         std::shared_ptr<exceptions::JoynrException> error = reply.getError();
         if (error) {
-            caller.returnError(*error);
+            caller.returnError(error);
             return;
         }
         caller.returnValue();

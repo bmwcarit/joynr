@@ -140,8 +140,8 @@ bool «className»::usesClusterController() const{
 						future->onSuccess(«attributeName»);
 					};
 
-			std::function<void(const exceptions::JoynrException& error)> onError =
-					[future] (const exceptions::JoynrException& error) {
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onError =
+					[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
 						future->onError(error);
 					};
 
@@ -162,11 +162,11 @@ bool «className»::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const exceptions::JoynrException& error)> onErrorWrapper =
-					[future, onError] (const exceptions::JoynrException& error) {
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
+					[future, onError] (const std::shared_ptr<exceptions::JoynrException>& error) {
 						future->onError(error);
 						if (onError){
-							onError(static_cast<const exceptions::JoynrRuntimeException&>(error));
+							onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
 						}
 					};
 
@@ -195,11 +195,11 @@ bool «className»::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const exceptions::JoynrException& error)> onErrorWrapper =
-				[future, onError] (const exceptions::JoynrException& error) {
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
+				[future, onError] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 					if (onError) {
-						onError(static_cast<const exceptions::JoynrRuntimeException&>(error));
+						onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
 					}
 				};
 
@@ -223,8 +223,8 @@ bool «className»::usesClusterController() const{
 						future->onSuccess();
 					};
 
-			std::function<void(const exceptions::JoynrException& error)> onError =
-					[future] (const exceptions::JoynrException& error) {
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onError =
+					[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
 						future->onError(error);
 					};
 
@@ -314,8 +314,8 @@ bool «className»::usesClusterController() const{
 						future->onSuccess(«outputUntypedParamList»);
 					};
 
-			std::function<void(const exceptions::JoynrException& error)> onError =
-				[future] (const exceptions::JoynrException& error) {
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onError =
+				[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 				};
 
@@ -338,8 +338,8 @@ bool «className»::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const exceptions::JoynrException& error)> onErrorWrapper =
-					[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
+					[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 				};

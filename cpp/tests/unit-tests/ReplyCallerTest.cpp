@@ -18,6 +18,7 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "joynr/ReplyCaller.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockCallback.h"
@@ -29,13 +30,13 @@ using ::testing::_;
 using namespace ::testing;
 
 MATCHER(timeoutException, "") {
-    return (dynamic_cast<const joynr::exceptions::JoynrTimeOutException*>(&arg) != nullptr)
-            && arg.getMessage() == "timeout waiting for the response";
+    return (std::dynamic_pointer_cast<joynr::exceptions::JoynrTimeOutException>(arg) != nullptr)
+            && arg->getMessage() == "timeout waiting for the response";
 }
 
 MATCHER_P(providerRuntimeException, msg, "") {
-    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME()
-            && arg.getMessage() == msg;
+    return arg->getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME()
+            && arg->getMessage() == msg;
 }
 
 using namespace joynr;
@@ -78,14 +79,14 @@ TEST_F(ReplyCallerTest, errorReceived) {
     std::string errorMsg = "errorMsgFromProvider";
     EXPECT_CALL(*intCallback, onError(providerRuntimeException(errorMsg))).Times(1);
     EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
-    intFixture.returnError(exceptions::ProviderRuntimeException(errorMsg));
+    intFixture.returnError(std::make_shared<exceptions::ProviderRuntimeException>(errorMsg));
 }
 
 TEST_F(ReplyCallerTest, errorReceivedForVoid) {
     std::string errorMsg = "errorMsgFromProvider";
     EXPECT_CALL(*voidCallback, onError(providerRuntimeException(errorMsg))).Times(1);
     EXPECT_CALL(*voidCallback, onSuccess()).Times(0);
-    voidFixture.returnError(exceptions::ProviderRuntimeException(errorMsg));
+    voidFixture.returnError(std::make_shared<exceptions::ProviderRuntimeException>(errorMsg));
 }
 
 TEST_F(ReplyCallerTest, resultReceived) {

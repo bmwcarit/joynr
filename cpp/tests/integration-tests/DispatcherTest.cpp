@@ -18,6 +18,7 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include <string>
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
@@ -53,7 +54,7 @@ public:
                 [this] (const joynr::types::Localisation::GpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const exceptions::JoynrException&) {
+                [] (const std::shared_ptr<exceptions::JoynrException>&) {
                 })),
         mockSubscriptionListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),

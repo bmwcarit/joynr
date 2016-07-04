@@ -19,6 +19,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 
 #include "joynr/ReplyInterpreter.h"
 #include "joynr/ReplyCaller.h"
@@ -32,7 +33,7 @@ using ::testing::A;
 using ::testing::_;
 
 MATCHER_P(joynrException, other, "") {
-    return arg.getTypeName() == other.getTypeName() && arg.getMessage() == other.getMessage();
+    return arg->getTypeName() == other.getTypeName() && arg->getMessage() == other.getMessage();
 }
 
 using namespace joynr;
@@ -73,7 +74,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
             [callback](const types::TestTypes::TEverythingMap& map) {
                 callback->onSuccess(map);
             },
-            [callback](const exceptions::JoynrException& error){
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
                 callback->onError(error);
             });
 
@@ -97,7 +98,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
             [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const exceptions::JoynrException& error){
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
                 callback->onError(error);
             });
 
@@ -122,7 +123,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void) {
             [callback]() {
                 callback->onSuccess();
             },
-            [callback](const exceptions::JoynrException& error){
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
                 callback->onError(error);
             });
 
@@ -151,7 +152,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error) {
             [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const exceptions::JoynrException& error){
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
                 callback->onError(error);
             });
 
@@ -175,7 +176,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error) {
             [callback]() {
                 callback->onSuccess();
             },
-            [callback](const exceptions::JoynrException& error){
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
                 callback->onError(error);
             });
 
@@ -198,7 +199,7 @@ TEST_F(ReplyInterpreterTest, execute_empty_reply) {
             [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const exceptions::JoynrException& error){
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
                 callback->onError(error);
             });
 

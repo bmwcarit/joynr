@@ -120,8 +120,8 @@ bool «className»::usesClusterController() const{
 						future->onSuccess(«attributeName»);
 					};
 
-			std::function<void(const exceptions::ProviderRuntimeException&)> onError =
-					[future] (const exceptions::ProviderRuntimeException& error) {
+			std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)> onError =
+					[future] (const std::shared_ptr<exceptions::ProviderRuntimeException>& error) {
 						future->onError(error);
 					};
 
@@ -148,11 +148,11 @@ bool «className»::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const exceptions::ProviderRuntimeException&)> onErrorWrapper =
-					[future, onError] (const exceptions::ProviderRuntimeException& error) {
+			std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)> onErrorWrapper =
+					[future, onError] (const std::shared_ptr<exceptions::ProviderRuntimeException>& error) {
 						future->onError(error);
 						if (onError) {
-							onError(error);
+							onError(*error);
 						}
 					};
 
@@ -180,11 +180,11 @@ bool «className»::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const exceptions::ProviderRuntimeException&)> onErrorWrapper =
-					[future, onError] (const exceptions::ProviderRuntimeException& error) {
+			std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)> onErrorWrapper =
+					[future, onError] (const std::shared_ptr<exceptions::ProviderRuntimeException>& error) {
 						future->onError(error);
 						if (onError) {
-							onError(error);
+							onError(*error);
 						}
 					};
 
@@ -208,8 +208,8 @@ bool «className»::usesClusterController() const{
 						future->onSuccess();
 					};
 
-			std::function<void(const exceptions::ProviderRuntimeException&)> onError =
-					[future] (const exceptions::ProviderRuntimeException& error) {
+			std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)> onError =
+					[future] (const std::shared_ptr<exceptions::ProviderRuntimeException>& error) {
 						future->onError(error);
 					};
 
@@ -334,8 +334,8 @@ bool «className»::usesClusterController() const{
 					);
 				};
 
-		std::function<void(const exceptions::JoynrException&)> onError =
-				[future] (const exceptions::JoynrException& error) {
+		std::function<void(const std::shared_ptr<exceptions::JoynrException>&)> onError =
+				[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 				};
 		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
@@ -361,8 +361,8 @@ bool «className»::usesClusterController() const{
 					}
 				};
 
-		std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-				[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
+		std::function<void(const std::shared_ptr<exceptions::JoynrException>&)> onErrorWrapper =
+				[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 				};

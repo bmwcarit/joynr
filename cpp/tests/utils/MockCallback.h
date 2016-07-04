@@ -78,7 +78,7 @@ template <typename ... Ts>
 class MockCallbackWithJoynrException{
 public:
     MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
-    MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
+    MOCK_METHOD1_T(onError, void(const std::shared_ptr<joynr::exceptions::JoynrException>& error));
 };
 
 template<>
@@ -86,7 +86,7 @@ class MockCallbackWithJoynrException<void> {
 
 public:
     MOCK_METHOD0(onSuccess, void(void));
-    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrException& error));
+    MOCK_METHOD1(onError, void(const std::shared_ptr<joynr::exceptions::JoynrException>& error));
 };
 
 #endif // MOCKCALLBACK_H_

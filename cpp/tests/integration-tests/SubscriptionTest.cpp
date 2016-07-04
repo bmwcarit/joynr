@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
@@ -60,7 +61,7 @@ public:
                 [this](const types::Localisation::GpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const exceptions::JoynrException& error){
+                [] (const std::shared_ptr<exceptions::JoynrException>& error){
                 })),
         mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>()),

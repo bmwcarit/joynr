@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -302,12 +302,12 @@ class CppInterfaceUtil extends InterfaceUtil {
 	def produceApplicationRuntimeErrorSplitForOnErrorWrapper(FInterface serviceInterface, FMethod method)
 '''
 	«IF method.hasErrorEnum»
-		if (const exceptions::JoynrRuntimeException* runtimeError = dynamic_cast<const exceptions::JoynrRuntimeException*>(&error)) {
+		if (const exceptions::JoynrRuntimeException* runtimeError = dynamic_cast<const exceptions::JoynrRuntimeException*>(error.get())) {
 			if(onRuntimeError) {
 				onRuntimeError(*runtimeError);
 			}
 		}
-		else if (const exceptions::ApplicationException* applicationError = dynamic_cast<const exceptions::ApplicationException*>(&error)) {
+		else if (const exceptions::ApplicationException* applicationError = dynamic_cast<const exceptions::ApplicationException*>(error.get())) {
 			if(onApplicationError) {
 				onApplicationError(muesli::EnumTraits<«getMethodErrorEnum(serviceInterface, method)»>::Wrapper::getEnum(applicationError->getName()));
 			}
@@ -322,7 +322,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 			}
 		}
 		else {
-			const std::string errorMessage = "Unknown exception: " + error.getTypeName() + ": " + error.getMessage();
+			const std::string errorMessage = "Unknown exception: " + error->getTypeName() + ": " + error->getMessage();
 			if (onRuntimeError) {
 				onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
 			}
@@ -332,7 +332,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 		}
 	«ELSE»
 		if (onRuntimeError) {
-			onRuntimeError(static_cast<const exceptions::JoynrRuntimeException&>(error));
+			onRuntimeError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
 		}
 	«ENDIF»
 '''

@@ -52,7 +52,8 @@ public:
             std::shared_ptr<RequestCaller> requestCaller,
             Request& request,
             std::function<void(BaseReply&& outParams)> onSuccess,
-            std::function<void(const exceptions::JoynrException& exception)> onError) = 0;
+            std::function<void(const std::shared_ptr<exceptions::JoynrException>& exception)>
+                    onError) = 0;
 
     /**
       * Executes fire-and-forget request on the @param requestCaller object.

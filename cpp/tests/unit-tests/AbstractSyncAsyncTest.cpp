@@ -168,7 +168,7 @@ public:
             const MessagingQos& qos,
             const Request& request,
             std::shared_ptr<IReplyCaller> callback) {
-        callback->returnError(*error);
+        callback->returnError(error);
     }
 
     template <typename T>

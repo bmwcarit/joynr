@@ -69,7 +69,7 @@ void «interfaceName»RequestInterpreter::execute(
 		std::shared_ptr<joynr::RequestCaller> requestCaller,
 		Request& request,
 		std::function<void (BaseReply&& reply)> onSuccess,
-		std::function<void (const exceptions::JoynrException& exception)> onError
+		std::function<void (const std::shared_ptr<exceptions::JoynrException>& exception)> onError
 ) {
 	«IF francaIntf.hasReadAttribute || francaIntf.hasWriteAttribute || !methodsWithoutFireAndForget.empty»
 		// cast generic RequestCaller to «interfaceName»Requestcaller
@@ -106,7 +106,7 @@ void «interfaceName»RequestInterpreter::execute(
 								};
 						«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», std::move(requestCallerOnSuccess), onError);
 					} catch (const std::exception&) {
-						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)", requestCaller->getProviderVersion()));
+						onError(std::make_shared<exceptions::MethodInvocationException>("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)", requestCaller->getProviderVersion()));
 					}
 					return;
 				}
@@ -153,7 +153,7 @@ void «interfaceName»RequestInterpreter::execute(
 							std::move(requestCallerOnSuccess),
 							onError);
 				} catch (const std::exception& exception) {
-					onError(exceptions::MethodInvocationException(exception.what(), requestCaller->getProviderVersion()));
+					onError(std::make_shared<exceptions::MethodInvocationException>(exception.what(), requestCaller->getProviderVersion()));
 				}
 
 				return;
@@ -165,7 +165,7 @@ void «interfaceName»RequestInterpreter::execute(
 	«ENDIF»
 
 	JOYNR_LOG_WARN(logger, "unknown method name for interface «interfaceName»: {}", request.getMethodName());
-	onError(exceptions::MethodInvocationException("unknown method name for interface «interfaceName»: " + request.getMethodName(), requestCaller->getProviderVersion()));
+	onError(std::make_shared<exceptions::MethodInvocationException>("unknown method name for interface «interfaceName»: " + request.getMethodName(), requestCaller->getProviderVersion()));
 }
 
 void «interfaceName»RequestInterpreter::execute(
