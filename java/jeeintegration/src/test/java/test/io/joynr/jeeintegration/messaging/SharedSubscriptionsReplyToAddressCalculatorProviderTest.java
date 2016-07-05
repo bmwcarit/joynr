@@ -78,7 +78,8 @@ public class SharedSubscriptionsReplyToAddressCalculatorProviderTest {
         MqttAddress replyToMqttAddress = new MqttAddress(brokerUri, topic);
         String enableSharedSubscriptions = Boolean.valueOf(enabled).toString();
         SharedSubscriptionReplyToAddressCalculatorProvider subject = new SharedSubscriptionReplyToAddressCalculatorProvider(replyToMqttAddress,
-                                                                                                                            enableSharedSubscriptions);
+                                                                                                                            enableSharedSubscriptions,
+                                                                                                                            "receiverId");
         return subject.get();
     }
 

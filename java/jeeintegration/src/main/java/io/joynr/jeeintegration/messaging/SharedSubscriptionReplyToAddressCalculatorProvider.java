@@ -20,6 +20,7 @@ package io.joynr.jeeintegration.messaging;
  */
 
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS;
+import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_ADDRESS;
 
 import com.google.inject.Inject;
@@ -45,11 +46,12 @@ public class SharedSubscriptionReplyToAddressCalculatorProvider implements
 
     @Inject
     public SharedSubscriptionReplyToAddressCalculatorProvider(@Named(PROPERTY_MQTT_ADDRESS) MqttAddress replyToMqttAddress,
-                                                              @Named(JEE_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions) {
+                                                              @Named(JEE_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
+                                                              @Named(RECEIVERID) String receiverId) {
         MqttAddress replyToAddressToUse = replyToMqttAddress;
         if (Boolean.valueOf(enableSharedSubscriptions)) {
             replyToAddressToUse = new MqttAddress(replyToMqttAddress.getBrokerUri(), REPLYTO_PREFIX
-                    + replyToMqttAddress.getTopic());
+                    + replyToMqttAddress.getTopic() + "/" + receiverId);
         }
         this.replyToMqttAddress = replyToAddressToUse;
     }

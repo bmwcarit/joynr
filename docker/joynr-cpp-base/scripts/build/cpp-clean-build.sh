@@ -6,11 +6,14 @@ DBUS='OFF'
 GCOV='OFF'
 ENABLE_CLANG_FORMATTER='ON'
 BUILD_TESTS='ON'
+ADDITIONAL_CMAKE_ARGS=''
 
 function usage
 {
-    echo "usage: cpp-clean-build.sh [--dbus ON|OFF --gcov ON|OFF --jobs X --enableclangformatter ON|OFF --buildtests ON|OFF]"
-    echo "default dbus is $DBUS, gcov is $GCOV, jobs is $JOBS"
+    echo "usage: cpp-clean-build.sh [--dbus ON|OFF --gcov ON|OFF --jobs X \
+    --enableclangformatter ON|OFF --buildtests ON|OFF --additionalcmakeargs <args>]"
+    echo "default dbus is $DBUS, gcov is $GCOV, jobs is $JOBS, additionalcmakeargs is \
+    $ADDITIONAL_CMAKE_ARGS"
 }
 
 while [ "$1" != "" ]; do
@@ -30,6 +33,9 @@ while [ "$1" != "" ]; do
         --buildtests )           shift
                                  BUILD_TESTS=$1
                                  ;;
+        --additionalcmakeargs )  shift
+                                 ADDITIONAL_CMAKE_ARGS=$1
+                                 ;;
         * )                      usage
                                  exit 1
     esac
@@ -46,6 +52,7 @@ START=$(date +%s)
 
 log "ENVIRONMENT"
 env
+echo "ADDITIONAL_CMAKE_ARGS is $ADDITIONAL_CMAKE_ARGS"
 
 log "CLEAN BUILD DIRECTORY"
 rm -rf ~/.cmake/packages
@@ -57,16 +64,18 @@ cd /data/build/joynr
 log "RUN CMAKE"
 
 # fail on first error
-set -e
+set -e -x
 cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=$DBUS \
       -DENABLE_GCOV=$GCOV \
       -DPYTHON_EXECUTABLE=/usr/bin/python \
       -DJOYNR_SERVER=localhost:8080 \
-      -DCMAKE_BUILD_TYPE=Debug /data/src/cpp \
+      -DCMAKE_BUILD_TYPE=Debug \
       -DENABLE_CLANG_FORMATTER=$ENABLE_CLANG_FORMATTER \
       -DBUILD_TESTS=$BUILD_TESTS \
       -DCMAKE_INSTALL_SYSCONFDIR=/etc \
-      -DCMAKE_INSTALL_PREFIX=/usr
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      $ADDITIONAL_CMAKE_ARGS \
+      /data/src/cpp
 
 if [ "$GCOV" == "ON" ] ; then
     echo "run coverage build"

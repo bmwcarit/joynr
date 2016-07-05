@@ -97,7 +97,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 customParameters : [],
                 priority : Date.now(),
                 scope : libjoynrAsync.types.ProviderScope.GLOBAL,
-                onChangeSubscriptions : true
+                supportsOnChangeSubscriptions : true
             });
 
             // build the provider

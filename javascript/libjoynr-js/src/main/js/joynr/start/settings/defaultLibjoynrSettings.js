@@ -26,7 +26,7 @@
                 customParameters : [],
                 priority : 1,
                 scope : ProviderScope.LOCAL,
-                onChangeSubscriptions : true
+                supportsOnChangeSubscriptions : true
             },
             participantId : "CC.DiscoveryProvider.ParticipantId",
             providerVersion : {
@@ -42,7 +42,7 @@
                 customParameters : [],
                 priority : 1,
                 scope : ProviderScope.LOCAL,
-                onChangeSubscriptions : true
+                supportsOnChangeSubscriptions : true
             },
             participantId : "CC.RoutingProvider.ParticipantId",
             providerVersion : {

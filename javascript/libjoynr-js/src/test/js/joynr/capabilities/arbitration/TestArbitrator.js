@@ -68,10 +68,11 @@ joynrTestRequire(
                     providerVersion : providerVersion,
                     domain : domain,
                     interfaceName : interfaceName,
-                    qos : new ProviderQos([ new CustomParameter("theName", "theValue")
-                    ], 123, 1234, discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
-                            ? true
-                            : false, true),
+                    qos : new ProviderQos({
+                        customParameter : [new CustomParameter( { name : "theName", value : "theValue"})],
+                        priority : 123,
+                        scope : discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY ? true : false,
+                        supportsOnChangeSubscriptions : true}),
                     participandId : "700",
                     lastSeenDateMs : Date.now(),
                     publicKeyId : ""
@@ -160,7 +161,7 @@ joynrTestRequire(
                                     priority: 123,
                                     scope: discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
                                             ? true : false,
-                                    onChangeSubscriptions : true
+                                    supportsOnChangeSubscriptions : true
                             });
 
                             discoveryEntryWithMajor47AndMinor0 = new DiscoveryEntry({

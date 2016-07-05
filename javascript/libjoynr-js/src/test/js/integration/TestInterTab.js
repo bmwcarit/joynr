@@ -323,7 +323,7 @@ joynrTestRequire(
                                         customParameters : [],
                                         priority : Date.now(),
                                         scope : joynr.types.ProviderScope.GLOBAL,
-                                        onChangeSubscriptions : true
+                                        supportsOnChangeSubscriptions : true
                                     });
 
                                     // create radio provider
@@ -898,7 +898,7 @@ joynrTestRequire(
                                             customParameters : [],
                                             priority : Date.now(),
                                             scope : joynr.types.ProviderScope.GLOBAL,
-                                            onChangeSubscriptions : true
+                                            supportsOnChangeSubscriptions : true
                                         });
 
                                         discoveryProxy

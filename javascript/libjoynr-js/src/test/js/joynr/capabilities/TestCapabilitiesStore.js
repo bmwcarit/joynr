@@ -57,7 +57,7 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
                 ],
                 priority : 1234,
                 scope : ProviderScope.LOCAL,
-                onChangeSubscriptions : true
+                supportsOnChangeSubscriptions : true
             }),
             channelId : "0001",
             publicKeyId : "",

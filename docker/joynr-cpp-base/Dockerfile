@@ -14,15 +14,6 @@ RUN dnf update -y \
 	&& dnf clean all
 
 ###################################################
-# install boost
-###################################################
-RUN dnf update -y \
-	&& dnf install -y \
-	boost \
-	boost-devel \
-	&& dnf clean all
-
-###################################################
 # install clang 3.5 for formatting
 ###################################################
 RUN cd /tmp/ \
@@ -32,23 +23,6 @@ RUN cd /tmp/ \
     --strip-components=2 \
     && mv clang-format /usr/local/bin/ \
     && rm -f clang+llvm-3.5.0-x86_64-fedora20.tar.xz
-
-###################################################
-# install gcovr for code coverage reports
-###################################################
-RUN dnf update -y \
-	&& dnf install -y \
-	python-pip \
-	&& dnf clean all \
-	&& pip install gcovr
-
-###################################################
-# install lcov
-###################################################
-RUN dnf update -y \
-	&& dnf install -y \
-	lcov \
-	&& dnf clean all
 
 ###################################################
 # install rpm-build required by CMake / CPack
@@ -86,21 +60,6 @@ RUN cd /opt \
     && make install -j"$(nproc)" \
     && cd /opt/ \
     && rm -rf spdlog
-
-###################################################
-# install googletest & googlemock
-###################################################
-
-RUN cd /opt \
-    && git clone https://github.com/google/googletest.git \
-    && cd googletest \
-    && git checkout ddb8012e \
-    && mkdir build \
-    && cd build \
-    && cmake .. \
-    && make install -j"$(nproc)" \
-    && cd /opt/ \
-    && rm -rf googletest
 
 ###################################################
 # install websocket++
