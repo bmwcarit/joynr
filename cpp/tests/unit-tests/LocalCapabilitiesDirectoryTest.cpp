@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <functional>
 #include <string>
 #include <tuple>
 #include <cstdint>
@@ -37,12 +38,18 @@
 #include "joynr/Logger.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
+#include "joynr/Semaphore.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;
 using ::testing::ElementsAre;
 using namespace ::testing;
 using namespace joynr;
+
+ACTION_P(AcquireSemaphore,semaphore)
+{
+        semaphore->wait();
+}
 
 class LocalCapabilitiesDirectoryTest : public ::testing::Test {
 public:
@@ -120,6 +127,20 @@ public:
         std::ignore = participantId;
         std::vector<types::GlobalDiscoveryEntry> result;
         onSuccess(result);
+    }
+
+    void fakeLookupWithError(
+            const std::vector<std::string>& domains,
+            const std::string& interfaceName,
+            const std::int64_t messagingTtl,
+            std::function<void(const std::vector<types::GlobalDiscoveryEntry>& capabilities)> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
+        std::ignore = domains;
+        std::ignore = interfaceName;
+        std::ignore = messagingTtl;
+        std::ignore = onSuccess;
+        exceptions::DiscoveryException fakeDiscoveryException("fakeDiscoveryException");
+        onError(fakeDiscoveryException);
     }
 
     void fakeLookupWithResults(
@@ -825,6 +846,104 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(10).size());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_registerLocalCapabilityWhileLookupIsWaiting){
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    Semaphore semaphore(0);
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+
+    joynr::types::Version providerVersion(47, 11);
+    joynr::types::DiscoveryEntry entry(
+        providerVersion,
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        lastSeenDateMs,
+        expiryDateMs,
+        PUBLIC_KEY_ID
+    );
+    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(DoAll(AcquireSemaphore(&semaphore),Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults)));
+
+    auto thread = std::thread([&]() {
+        localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+    });
+    EXPECT_EQ(0, callback->getResults(100).size());
+
+    EXPECT_TRUE(localCapabilitiesDirectory->hasPendingLookups());
+
+    localCapabilitiesDirectory->add(entry);
+
+    EXPECT_EQ(1, callback->getResults(10).size());
+    EXPECT_TRUE(localCapabilitiesDirectory->hasPendingLookups());
+
+    //capabilitiesClient.lookup should return;
+    semaphore.notify();
+    thread.join();
+
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_cleanupPendingCallbacksInCaseCapabilitiesClientCallsOnSuccessCallback){
+    Semaphore semaphore(0);
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(DoAll(AcquireSemaphore(&semaphore),Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults)));
+
+    auto thread = std::thread([&]() {
+        localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+    });
+
+    EXPECT_EQ(0, callback->getResults(100).size());
+    EXPECT_TRUE(localCapabilitiesDirectory->hasPendingLookups());
+
+    //capabilitiesClient.lookup should return;
+    semaphore.notify();
+    thread.join();
+
+    EXPECT_EQ(2, callback->getResults(100).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_cleanupPendingCallbacksInCaseCapabilitiesClientCallsOnErrorCallback){
+    Semaphore semaphore(0);
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(DoAll(AcquireSemaphore(&semaphore),Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError)));
+
+    auto thread = std::thread([&]() {
+        localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+    });
+
+    EXPECT_EQ(0, callback->getResults(100).size());
+    EXPECT_TRUE(localCapabilitiesDirectory->hasPendingLookups());
+
+    //capabilitiesClient.lookup should return;
+    semaphore.notify();
+    thread.join();
+
+    EXPECT_EQ(0, callback->getResults(100).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, lookupMultipeDomainsReturnsResultForMultipleDomains) {

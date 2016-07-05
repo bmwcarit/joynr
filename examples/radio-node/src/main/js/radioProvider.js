@@ -68,9 +68,15 @@ var runInteractiveConsole = function(radioProvider, onDone) {
 
     rl.on('close', function() {
         if (onDone) {
-            onDone();
+            onDone().then(function() {
+                process.exit(0);
+            }).catch(function(error) {
+                console.log("error while shutting down: " + error);
+                process.exit(1);
+            });
+        } else {
+            process.exit(0);
         }
-        process.exit(0);
     });
 
     showHelp(MODES);
@@ -118,7 +124,12 @@ joynr.load(provisioning).then(function(loadedJoynr) {
 
     joynr.registration.registerProvider(domain, radioProvider, providerQos).then(function() {
         log("provider registered successfully");
-        runInteractiveConsole(radioProvider);
+        runInteractiveConsole(radioProvider, function() {
+            return joynr.registration.unregisterProvider(domain, radioProvider)
+            .finally(function() {
+                joynr.shutdown();
+            });
+        });
         return null;
     }).catch(function(error) {
         log("error registering provider: " + error.toString());

@@ -49,7 +49,7 @@ public class MqttModule extends AbstractModule {
     @Provides
     @Named(PROPERTY_MQTT_ADDRESS)
     public MqttAddress provideMqttOwnAddress(MqttGlobalAddressFactory globalAddressFactory) {
-        return (MqttAddress) globalAddressFactory.create();
+        return globalAddressFactory.create();
     }
 
     @Override
@@ -78,5 +78,6 @@ public class MqttModule extends AbstractModule {
                                                    });
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
 
+        bind(MqttMessageReplyToAddressCalculator.class).to(DefaultMqttMessageReplyToAddressCalculator.class);
     }
 }

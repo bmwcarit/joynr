@@ -22,6 +22,7 @@
 #include <exception>
 #include <gtest/gtest.h>
 #include <joynr/exceptions/JoynrException.h>
+#include <joynr/exceptions/MethodInvocationException.h>
 
 #define JOYNR_TEST_NO_THROW(statement, fail) \
     try { \

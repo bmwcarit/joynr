@@ -34,7 +34,7 @@ MATCHER(timeoutException, "") {
 }
 
 MATCHER_P(providerRuntimeException, msg, "") {
-    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME
+    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME()
             && arg.getMessage() == msg;
 }
 

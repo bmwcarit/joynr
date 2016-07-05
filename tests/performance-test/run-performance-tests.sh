@@ -32,6 +32,7 @@ PERFORMANCETESTS_RESULTS_DIR=""
 TESTCASE=""
 USE_MAVEN=ON # Indicates whether java applications shall be started with maven or as standalone apps
 MOSQUITTO_CONF=""
+USE_NPM=ON # Indicates whether npm will be used to launch javascript applications.
 
 ### Constants ###
 DOMAINNAME="performance_test_domain"
@@ -42,7 +43,7 @@ JAVA_WARMUPS=50
 
 # For test cases with a single consumer, this constant stores the number of messages which
 # will be transmitted during the test
-SINGLECONSUMER_RUNS=10000
+SINGLECONSUMER_RUNS=1000
 
 # For test cases with several consumers, this constant stores how many consumer instances will
 # be created
@@ -50,7 +51,7 @@ MULTICONSUMER_NUMINSTANCES=5
 
 # For test cases with several consumers, this constant stores how many messages a single
 # consumer transmits
-MULTICONSUMER_RUNS=2000
+MULTICONSUMER_RUNS=200
 
 # If a test case has to transmit a string, the length will be determined by this constant
 INPUTDATA_STRINGLENGTH=10
@@ -251,11 +252,22 @@ function performJsConsumerTest {
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
-    npm run-script --performance-test:runs=$SINGLECONSUMER_RUNS \
-                   --performance-test:domain=$DOMAINNAME \
-                   --performance-test:stringlength=$INPUTDATA_STRINGLENGTH \
-                   --performance-test:bytearraylength=$INPUTDATA_BYTEARRAYSIZE \
-                     jsconsumertest 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+    if [ "$USE_NPM" == "ON" ]
+    then
+        npm run-script --performance-test:runs=$SINGLECONSUMER_RUNS \
+                       --performance-test:domain=$DOMAINNAME \
+                       --performance-test:stringlength=$INPUTDATA_STRINGLENGTH \
+                       --performance-test:bytearraylength=$INPUTDATA_BYTEARRAYSIZE \
+                         jsconsumertest 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+    else
+        # This call assumes that the required js dependencies are installed locally
+        node node_modules/jasmine-node/lib/jasmine-node/cli.js src/main/js/consumer.spec.js \
+            --config runs $SINGLECONSUMER_RUNS \
+            --config domain $DOMAINNAME \
+            --config stringlength $INPUTDATA_STRINGLENGTH \
+            --config bytearraylength $INPUTDATA_BYTEARRAYSIZE \
+        1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+    fi
 }
 
 function stopJetty {
@@ -303,7 +315,7 @@ function echoUsage {
 -r <performance-results-dir> -s <performance-source-dir> \
 -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|OAP_TO_BACKEND_MOSQ|\
 CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-bin-dir>\
-[-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF> -z <mosquitto.conf>]"
+[-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF> -z <mosquitto.conf> -n <use node ON|OFF>]"
 }
 
 function checkDirExists {
@@ -315,7 +327,7 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:j:p:r:s:t:x:y:m:z:" OPTIONS;
+while getopts "c:j:p:r:s:t:x:y:m:z:n:" OPTIONS;
 do
     case $OPTIONS in
         c)
@@ -348,6 +360,9 @@ do
             ;;
         z)
             MOSQUITTO_CONF=$OPTARG
+            ;;
+        n)
+            USE_NPM=$OPTARG
             ;;
         \?)
             echoUsage

@@ -113,8 +113,8 @@ internalRequestObject.setMethodName("«method.joynrName»");
 «className»::«className»(
 		joynr::IJoynrMessageSender* joynrMessageSender,
 		joynr::ISubscriptionManager* subscriptionManager,
-		const std::string &domain,
-		const std::string proxyParticipantId,
+		const std::string& domain,
+		const std::string& proxyParticipantId,
 		const std::string& providerParticipantId,
 		const joynr::MessagingQos &qosSettings,
 		joynr::IClientCache *cache,

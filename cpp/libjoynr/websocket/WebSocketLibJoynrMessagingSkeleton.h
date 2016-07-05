@@ -21,6 +21,7 @@
 
 #include <string>
 #include <functional>
+#include <memory>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
@@ -34,7 +35,7 @@ class MessageRouter;
 class WebSocketLibJoynrMessagingSkeleton : public IMessaging
 {
 public:
-    explicit WebSocketLibJoynrMessagingSkeleton(MessageRouter& messageRouter);
+    explicit WebSocketLibJoynrMessagingSkeleton(std::shared_ptr<MessageRouter> messageRouter);
 
     ~WebSocketLibJoynrMessagingSkeleton() override = default;
 
@@ -47,7 +48,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketLibJoynrMessagingSkeleton);
     ADD_LOGGER(WebSocketLibJoynrMessagingSkeleton);
-    MessageRouter& messageRouter;
+    std::shared_ptr<MessageRouter> messageRouter;
 };
 
 } // namespace joynr

@@ -308,7 +308,11 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     log = LoggerFactory.getLogger("joynr.start.WebSocketLibjoynrRuntime");
 
-                    persistency = new LocalStorage();
+                    var persistencyProvisioning = provisioning.persistency || {};
+                    persistency = new LocalStorage({
+                        clearPersistency : persistencyProvisioning.clearPersistency,
+                        location : persistencyProvisioning.location
+                    });
 
                     initialRoutingTable = {};
                     untypedCapabilities = provisioning.capabilities || [];
@@ -336,7 +340,8 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     sharedWebSocket = new SharedWebSocket({
                         remoteAddress : ccAddress,
-                        localAddress : localAddress
+                        localAddress : localAddress,
+                        provisioning : provisioning.websocket || {}
                     });
 
                     webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({

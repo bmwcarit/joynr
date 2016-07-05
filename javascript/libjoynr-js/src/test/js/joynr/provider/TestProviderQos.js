@@ -48,7 +48,7 @@ joynrTestRequire("joynr/provider/TestProviderQos", [
                 ],
                 priority : 1234,
                 scope : ProviderScope.LOCAL,
-                onChangeSubscriptions : true
+                supportsOnChangeSubscriptions : true
             });
             expect(providerQos).toBeDefined();
             expect(providerQos).not.toBeNull();
@@ -56,17 +56,23 @@ joynrTestRequire("joynr/provider/TestProviderQos", [
             expect(providerQos instanceof ProviderQos).toEqual(true);
         });
 
-        function testValues(customParameters, version, priority, scope, onChangeSubscriptions) {
+        function testValues(
+                customParameters,
+                version,
+                priority,
+                scope,
+                supportsOnChangeSubscriptions) {
             var providerQos = new ProviderQos({
                 customParameters : customParameters,
                 priority : priority,
                 scope : scope,
-                onChangeSubscriptions : onChangeSubscriptions
+                supportsOnChangeSubscriptions : supportsOnChangeSubscriptions
             });
             expect(providerQos.customParameters).toEqual(customParameters);
             expect(providerQos.priority).toEqual(priority);
             expect(providerQos.scope).toEqual(scope);
-            expect(providerQos.onChangeSubscriptions).toEqual(onChangeSubscriptions);
+            expect(providerQos.supportsOnChangeSubscriptions)
+                    .toEqual(supportsOnChangeSubscriptions);
         }
 
         /*

@@ -19,8 +19,6 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
-import java.io.IOException;
-
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -61,6 +59,15 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
         mqttClient = mqttClientFactory.create();
         mqttClient.setMessageListener(this);
         mqttClient.start();
+        subscribe();
+    }
+
+    /**
+     * Performs standard subscription to the {@link #ownAddress own address'} topic; override this method to perform
+     * custom subscriptions. One use-case could be to subscribe to one topic for incoming messages and another topic for
+     * replies.
+     */
+    protected void subscribe() {
         mqttClient.subscribe(ownAddress.getTopic() + "/#");
     }
 
@@ -77,7 +84,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
                 messageRouter.addNextHop(message.getFrom(), RoutingTypesUtil.fromAddressString(replyToMqttAddress));
             }
             messageRouter.route(message);
-        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException e) {
+        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException e) {
             failureAction.execute(e);
         }
     }
@@ -88,4 +95,13 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
         transmit(message, failureAction);
 
     }
+
+    protected JoynrMqttClient getClient() {
+        return mqttClient;
+    }
+
+    protected MqttAddress getOwnAddress() {
+        return ownAddress;
+    }
+
 }

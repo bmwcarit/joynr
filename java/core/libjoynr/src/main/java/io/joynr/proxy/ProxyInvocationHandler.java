@@ -20,15 +20,22 @@ package io.joynr.proxy;
  */
 
 import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.exceptions.JoynrRuntimeException;
+import joynr.exceptions.ApplicationException;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class ProxyInvocationHandler implements InvocationHandler {
+    private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandler.class);
+    protected Throwable throwable;
 
-    private Throwable throwable;
+    abstract Object invoke(Method method, Object[] args) throws ApplicationException;
 
-    abstract Object invoke(Method method, Object[] args) throws Throwable;
+    public abstract void abort(JoynrRuntimeException exception);
 
     abstract void createConnector(ArbitrationResult result);
 
@@ -52,6 +59,15 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         if (throwable != null) {
             throw throwable;
         }
-        return invoke(method, args);
+        try {
+            return invoke(method, args);
+        } catch (Exception e) {
+            if (this.throwable != null) {
+                logger.debug("exception caught: {} overriden by: {}", e.getMessage(), throwable.getMessage());
+                throw throwable;
+            } else {
+                throw e;
+            }
+        }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,9 +103,16 @@ void ThreadPool::threadLifecycle()
 
             JOYNR_LOG_TRACE(logger, "Thread got runnable and will do work");
 
-            // Add runable to the queue of currently running context
+            // Add runnable to the queue of currently running context
             {
                 std::lock_guard<std::mutex> lock(mutex);
+                if (!keepRunning) {
+                    // Call Dtor of runnable if needed
+                    if (runnable->isDeleteOnExit()) {
+                        delete runnable;
+                    }
+                    break;
+                }
                 currentlyRunning.insert(runnable);
             }
 

@@ -20,6 +20,9 @@ package joynr.exceptions;
  */
 
 import io.joynr.exceptions.JoynrRuntimeException;
+import joynr.types.Version;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Joynr exception class to report error during method invocations (RPC) at a provider
@@ -27,6 +30,8 @@ import io.joynr.exceptions.JoynrRuntimeException;
  */
 public class MethodInvocationException extends JoynrRuntimeException {
     private static final long serialVersionUID = 2077255751860166967L;
+    @JsonProperty("providerVersion")
+    private Version providerVersion;
 
     /**
      * Constructor for a MethodInvocationException with detail message.
@@ -44,5 +49,69 @@ public class MethodInvocationException extends JoynrRuntimeException {
      */
     public MethodInvocationException(Exception cause) {
         super(cause);
+    }
+
+    /**
+     * Constructor for a MethodInvocationException with detail message.
+     *
+     * @param message further description of the reported invocation error
+     * @param providerVersion the version of the provider which could not handle the method invocation
+     */
+    public MethodInvocationException(String message, Version providerVersion) {
+        super(message);
+        this.providerVersion = providerVersion;
+    }
+
+    /**
+     * Constructor for a MethodInvocationException with detail message.
+     *
+     * @param cause exception that caused the method invocation exception
+     * @param providerVersion the version of the provider which could not handle the method invocation
+     */
+    public MethodInvocationException(Exception cause, Version providerVersion) {
+        super(cause);
+        this.providerVersion = providerVersion;
+    }
+
+    /**
+     * Gets the version of the provider which could not handle the method invocation
+     *
+     * @return the version of the provider which could not handle the method invocation
+     */
+    public Version getProviderVersion() {
+        return providerVersion;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        MethodInvocationException other = (MethodInvocationException) obj;
+        if (getProviderVersion() == null) {
+            if (other.getProviderVersion() != null) {
+                return false;
+            }
+        } else if (!getProviderVersion().equals(other.getProviderVersion())) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((providerVersion == null) ? 0 : providerVersion.hashCode());
+        return result;
     }
 }

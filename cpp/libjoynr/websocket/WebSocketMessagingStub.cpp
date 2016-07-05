@@ -30,7 +30,8 @@ namespace joynr
 
 INIT_LOGGER(WebSocketMessagingStub);
 
-WebSocketMessagingStub::WebSocketMessagingStub(IWebSocketSendInterface* webSocket)
+WebSocketMessagingStub::WebSocketMessagingStub(
+        const std::shared_ptr<IWebSocketSendInterface>& webSocket)
         : webSocket(webSocket)
 {
 }

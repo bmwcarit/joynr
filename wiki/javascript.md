@@ -544,7 +544,7 @@ The ```ProviderQos``` has the following members:
 * **customParameters** e.g. the key-value for the arbitration strategy Keyword during discovery
 * **priority** the priority used for arbitration strategy HighestPriority during discovery
 * **scope** the scope (see below), used in discovery
-* **onChangeSubscriptions** whether the provider supports subscriptions on changes
+* **supportsOnChangeSubscriptions** whether the provider supports subscriptions on changes
 
 The **scope** can be
 * **LOCAL** The provider will be registered in the local capability directory
@@ -556,7 +556,7 @@ var providerQos = new joynr.types.ProviderQos({
     customParameters: [],
     priority : 100,
     scope: joynr.types.ProviderScope.GLOBAL,
-    onChangeSubscription : true
+    supportsOnChangeSubscriptions : true
 });
 ```
 

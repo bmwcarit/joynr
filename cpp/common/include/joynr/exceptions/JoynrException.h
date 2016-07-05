@@ -56,7 +56,7 @@ public:
     /**
      * return The typeName of the exception used for serialization and logging.
      */
-    virtual const std::string getTypeName() const;
+    virtual const std::string& getTypeName() const;
     /**
      * @return A copy of the exception object.
      */
@@ -68,7 +68,7 @@ public:
     /**
      * @brief The typeName of the exception used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
     /**
      * @brief Set the detail message of the exception.
      *
@@ -110,12 +110,12 @@ public:
      * @param message Further description of the reported runtime error
      */
     explicit JoynrRuntimeException(const std::string& message) noexcept;
-    const std::string getTypeName() const override;
+    const std::string& getTypeName() const override;
     JoynrRuntimeException* clone() const override;
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 };
 
 /**
@@ -134,12 +134,12 @@ public:
      * @param message Further description of the reported timeout
      */
     explicit JoynrTimeOutException(const std::string& message) noexcept;
-    const std::string getTypeName() const override;
+    const std::string& getTypeName() const override;
     JoynrTimeOutException* clone() const override;
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 };
 
 /**
@@ -158,12 +158,12 @@ public:
      * @param message reason why the message could not be sent
      */
     explicit JoynrMessageNotSentException(const std::string& message) noexcept;
-    const std::string getTypeName() const override;
+    const std::string& getTypeName() const override;
     JoynrMessageNotSentException* clone() const override;
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 };
 
 /**
@@ -205,7 +205,7 @@ public:
      * @param delayMs The delay in milliseconds.
      */
     virtual void setDelayMs(const std::chrono::milliseconds& delayMs) noexcept;
-    const std::string getTypeName() const override;
+    const std::string& getTypeName() const override;
     JoynrDelayMessageException* clone() const override;
     /**
      * Equality operator
@@ -215,7 +215,7 @@ public:
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
     static const std::chrono::milliseconds DEFAULT_DELAY_MS;
 
 private:
@@ -252,37 +252,12 @@ public:
      * @param message Further description of the reported discovery error
      */
     explicit DiscoveryException(const std::string& message) noexcept;
-    const std::string getTypeName() const override;
+    const std::string& getTypeName() const override;
     DiscoveryException* clone() const override;
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
-};
-
-/**
- * @brief Joynr exception class to report error during method invocations (RPC) at a provider
- * ("no such method", invalid arguments, etc.)
- */
-class JOYNRCOMMON_EXPORT MethodInvocationException : public JoynrRuntimeException
-{
-public:
-    /**
-     * @brief Constructor for a MethodInvocationException without detail message.
-     */
-    MethodInvocationException() noexcept = default;
-    /**
-     * @brief Constructor for a MethodInvocationException with detail message.
-     *
-     * @param message Further description of the reported invocation error
-     */
-    explicit MethodInvocationException(const std::string& message) noexcept;
-    const std::string getTypeName() const override;
-    MethodInvocationException* clone() const override;
-    /**
-     * @brief The typeName used for serialization and logging.
-     */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 };
 
 /**
@@ -303,12 +278,12 @@ public:
      * @param message Further description of the reported error
      */
     explicit ProviderRuntimeException(const std::string& message) noexcept;
-    const std::string getTypeName() const override;
+    const std::string& getTypeName() const override;
     ProviderRuntimeException* clone() const override;
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 };
 
 /**
@@ -346,7 +321,7 @@ public:
      * publication belongs to.
      */
     virtual void setSubscriptionId(const std::string& subscriptionId) noexcept;
-    const std::string getTypeName() const override;
+    const std::string& getTypeName() const override;
     PublicationMissedException* clone() const override;
     /**
      * Equality operator
@@ -355,7 +330,7 @@ public:
     /**
      * @brief The typeName used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 
 private:
     std::string subscriptionId;
@@ -425,7 +400,7 @@ public:
      * @param type name the type name of the error enumeration.
      */
     void setErrorTypeName(const std::string& typeName) noexcept;
-    const std::string getTypeName() const override;
+    const std::string& getTypeName() const override;
     ApplicationException* clone() const override;
     /**
      * Equality operator
@@ -434,7 +409,7 @@ public:
     /**
      * @brief The typeName of the exception used for serialization and logging.
      */
-    static const std::string TYPE_NAME;
+    static const std::string& TYPE_NAME();
 
 private:
     Variant value;

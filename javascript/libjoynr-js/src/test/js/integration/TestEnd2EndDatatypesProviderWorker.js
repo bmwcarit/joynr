@@ -98,7 +98,7 @@ function initializeTest(provisioningSuffix) {
                 customParameters : [],
                 priority : Date.now(),
                 scope : joynr.types.ProviderScope.GLOBAL,
-                onChangeSubscriptions : true
+                supportsOnChangeSubscriptions : true
             });
 
             // build the provider

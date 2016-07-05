@@ -31,6 +31,10 @@ import javax.annotation.Nonnull;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
 
+import io.joynr.JoynrVersion;
+import io.joynr.util.AnnotationUtil;
+import joynr.types.Version;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,14 +54,18 @@ public class AttributePollInterpreter {
                                            interfaceName,
                                            e.toString());
             logger.error(message, e);
-            throw new MethodInvocationException(message);
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getRequestCaller().getClass(),
+                                                                     JoynrVersion.class);
+            throw new MethodInvocationException(message, new Version(joynrVersion.major(), joynrVersion.minor()));
         } catch (IllegalArgumentException e) {
             String message = String.format("Provider of interface \"%s\" does not declare method \"%s\" (exception: \"%s\")",
                                            interfaceName,
                                            method.getName(),
                                            e.toString());
             logger.error(message, e);
-            throw new MethodInvocationException(message);
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getRequestCaller().getClass(),
+                                                                     JoynrVersion.class);
+            throw new MethodInvocationException(message, new Version(joynrVersion.major(), joynrVersion.minor()));
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             String message = String.format("Calling method \"%s\" on \"%s\" provider threw an exception: \"%s\"",
@@ -72,7 +80,9 @@ public class AttributePollInterpreter {
                                            interfaceName,
                                            e.toString());
             logger.error(message, e);
-            throw new MethodInvocationException(message);
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getRequestCaller().getClass(),
+                                                                     JoynrVersion.class);
+            throw new MethodInvocationException(message, new Version(joynrVersion.major(), joynrVersion.minor()));
         }
 
         if (returnValueFromProvider == null) {

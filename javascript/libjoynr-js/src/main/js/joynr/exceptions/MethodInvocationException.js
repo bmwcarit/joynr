@@ -62,6 +62,19 @@ define("joynr/exceptions/MethodInvocationException", [
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
 
+        /**
+         * The provider version information
+         * @name MethodInvocationException#providerVersion
+         * @type String
+         */
+        if (settings) {
+            Util.checkProperty(settings, "Object", "settings");
+            Util.checkPropertyIfDefined(
+                    settings.providerVersion,
+                    "Version",
+                    "settings.providerVersion");
+        }
+
         Util.extend(this, defaultSettings, settings, runtimeException);
     }
 

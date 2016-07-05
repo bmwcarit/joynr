@@ -1,4 +1,4 @@
-FROM fedora:23
+FROM fedora:24
 
 ###################################################
 # install base packages
@@ -9,7 +9,6 @@ RUN dnf update -y \
 	&& dnf install -y \
 	tar \
 	nodejs \
-	npm \
 	procps \
 	java-1.8.0-openjdk-headless \
 	&& dnf clean all

@@ -23,6 +23,7 @@
 #include <chrono>
 
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/NoCompatibleProviderFoundException.h"
 #include "joynr/Logger.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/TypeUtil.h"
@@ -48,6 +49,8 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
           domains({domain}),
           interfaceName(interfaceName),
           interfaceVersion(interfaceVersion),
+          discoveredIncompatibleVersions(),
+          arbitrationError("Arbitration could not be finished in time."),
           participantId(""),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
           listener(nullptr),
@@ -65,7 +68,6 @@ void ProviderArbitrator::startArbitration()
     while (true) {
         // Attempt arbitration (overloaded in subclasses)
         attemptArbitration();
-
         // Finish on success or failure
         if (arbitrationStatus != ArbitrationStatus::ArbitrationRunning)
             return;
@@ -94,8 +96,12 @@ void ProviderArbitrator::startArbitration()
     }
 
     // If this point is reached the arbitration timed out
-    updateArbitrationStatusParticipantIdAndAddress(
-            ArbitrationStatus::ArbitrationCanceledForever, "");
+    if (!discoveredIncompatibleVersions.empty()) {
+        notifyArbitrationListener(
+                exceptions::NoCompatibleProviderFoundException(discoveredIncompatibleVersions));
+    } else {
+        notifyArbitrationListener(arbitrationError);
+    }
 }
 
 std::string ProviderArbitrator::getParticipantId()
@@ -119,12 +125,16 @@ void ProviderArbitrator::setParticipantId(std::string participantId)
     }
 }
 
-void ProviderArbitrator::updateArbitrationStatusParticipantIdAndAddress(
-        ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
-        std::string participantId)
+void ProviderArbitrator::notifyArbitrationListener(const std::string& participantId)
 {
     setParticipantId(participantId);
-    setArbitrationStatus(arbitrationStatus);
+    setArbitrationStatus(ArbitrationStatus::ArbitrationSuccessful);
+}
+
+void ProviderArbitrator::notifyArbitrationListener(const exceptions::DiscoveryException& error)
+{
+    setArbitrationError(error);
+    setArbitrationStatus(ArbitrationStatus::ArbitrationCanceledForever);
 }
 
 void ProviderArbitrator::setArbitrationStatus(
@@ -141,6 +151,15 @@ void ProviderArbitrator::setArbitrationStatus(
             listenerSemaphore.notify();
             throw;
         }
+        listenerSemaphore.notify();
+    }
+}
+
+void ProviderArbitrator::setArbitrationError(const exceptions::DiscoveryException& error)
+{
+    if (listenerSemaphore.waitFor()) {
+        assert(listener != nullptr);
+        listener->setArbitrationError(error);
         listenerSemaphore.notify();
     }
 }

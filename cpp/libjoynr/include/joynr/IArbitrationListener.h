@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,17 @@
 #ifndef IARBITRATIONLISTENER_H
 #define IARBITRATIONLISTENER_H
 
-#include "joynr/ArbitrationStatus.h"
-
 #include <string>
+
+#include "joynr/ArbitrationStatus.h"
 
 namespace joynr
 {
+
+namespace exceptions
+{
+class DiscoveryException;
+}
 
 /**
  * @brief Class interface used by ProviderArbitrator
@@ -51,6 +56,12 @@ public:
      * @param participantId The id of the participant
      */
     virtual void setParticipantId(const std::string& participantId) = 0;
+
+    /**
+     * @brief Set the exception that happened during the arbitration
+     * @param error The exception that happened during the arbitration
+     */
+    virtual void setArbitrationError(const exceptions::DiscoveryException& error) = 0;
 };
 
 } // namespace joynr

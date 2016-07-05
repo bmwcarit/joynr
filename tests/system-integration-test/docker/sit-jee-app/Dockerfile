@@ -14,6 +14,7 @@ EOF\n' \
 RUN asadmin start-domain && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile create-managed-scheduled-executor-service --corepoolsize=20 concurrent/joynrMessagingScheduledExecutor && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile deploy /sit-jee-app.war && \
+	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.systemintegrationtest.jee=FINE && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.messaging=FINEST && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.dispatching=FINEST && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.jeeintegration=FINEST || \

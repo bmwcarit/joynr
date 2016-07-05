@@ -1,10 +1,30 @@
 #joynr 0.19.0
 
 ##API relevant changes
+* **[Java]** Added ability to pass a callback to the proxyBuilder.build() method to be notified on
+  completion (or failure) of the discovery process.
+
+##Other changes
+* **[C++, Java, JS]** Enriched the system integration tests to have test from c++/node apps towards
+  java jee apps
+* **[C++]** Removed option `USE_PLATFORM_DEPENDENCIES` from CMake. By default all dependencies are
+  resolved from system installation paths. However, joynr offers options
+  (`USE_PLATFORM_<DEPENDENCY>=OFF`) to turn system resolution off. In this case, joynr downloads
+  and builds individual dependencies during the joynr build using CMake's ExternalProject_Add
+  mechanism.
+
+#joynr 0.18.4
+This is a minor bug fix release.
+
+##API relevant changes
 None.
 
 ##Other changes
-* **[C++, Java, JS]** Enriched the system integration tests to have test from c++/node apps towards java jee apps
+* **[C++]** Fixed high cpu load which occurs when the system time is changed
+* **[C++]** Fixed persistency of local capability entries
+* **[C++]** Stability fixes for proxy arbitration
+* **[JS]** Added reconnect after connection loss for websockets
+* **[JS]** Support to clear local storage when loading joynr library
 
 #joynr 0.18.2
 This is a minor bug fix release.

@@ -34,7 +34,6 @@ INIT_LOGGER(LibJoynrWebSocketRuntime);
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
           wsSettings(*settings),
-          wsLibJoynrMessagingSkeleton(nullptr),
           websocket(new WebSocketPpClient(wsSettings))
 {
     std::string uuid = util::createUuid();
@@ -90,14 +89,18 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 {
-    delete wsLibJoynrMessagingSkeleton;
-    wsLibJoynrMessagingSkeleton = nullptr;
+    // reset receive callback to remove last reference to MessageRouter in
+    // WebSocketLibJoynrMessagingSkeleton
+    websocket->registerReceiveCallback(nullptr);
+    websocket->close();
 }
 
-void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(MessageRouter& messageRouter)
+void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
+        const std::shared_ptr<MessageRouter>& messageRouter)
 {
-    wsLibJoynrMessagingSkeleton = new WebSocketLibJoynrMessagingSkeleton(messageRouter);
-    websocket->registerReceiveCallback([&](const std::string& msg) {
+    auto wsLibJoynrMessagingSkeleton =
+            std::make_shared<WebSocketLibJoynrMessagingSkeleton>(messageRouter);
+    websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](const std::string& msg) {
         wsLibJoynrMessagingSkeleton->onTextMessageReceived(msg);
     });
 }

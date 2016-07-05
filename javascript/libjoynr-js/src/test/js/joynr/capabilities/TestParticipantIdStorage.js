@@ -33,10 +33,12 @@ joynrTestRequire(
 
                 beforeEach(function() {
                     uuid = "uuid";
-                    interfaceName = "interfaceName";
+                    interfaceName = "interface/Name";
+                    domain = "domain-1";
                     provider = {
                         interfaceName : interfaceName
                     };
+                    var interfaceNameDotted = interfaceName.replace("/", ".");
                     localStorageSpy = jasmine.createSpyObj("localStorageSpy", [
                         "getItem",
                         "setItem"
@@ -44,8 +46,8 @@ joynrTestRequire(
                     uuidSpy = jasmine.createSpy("uuid");
                     uuidSpy.andReturn(uuid);
                     participantIdStorage = new ParticipantIdStorage(localStorageSpy, uuidSpy);
-                    key = "joynr.participant." + domain + "." + provider.interfaceName;
-                    generatedParticipantId = domain + "." + interfaceName + "." + uuid;
+                    key = "joynr.participant." + domain + "." + interfaceNameDotted;
+                    generatedParticipantId = domain + "." + interfaceNameDotted + "." + uuid;
                     storedParticipantId = "storedParticipantId";
                 });
 

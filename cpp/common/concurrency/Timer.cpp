@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ void Timer::runTimer()
 
             // Get the first timer in the sorted map and lock until expiry
             std::unique_lock<std::mutex> lock(mutex);
-            const std::chrono::system_clock::time_point tp = timers.begin()->first;
+            const std::chrono::steady_clock::time_point tp = timers.begin()->first;
             if (waitCondition.wait_until(lock, tp) == std::cv_status::timeout) {
 
                 // In case of a race condition we should check if the time

@@ -332,7 +332,11 @@ define(
                                     LoggerFactory
                                             .getLogger("joynr.start.InterTabClusterControllerRuntime");
 
-                            persistency = new LocalStorage();
+                            var persistencyProvisioning = provisioning.persistency || {};
+                            persistency = new LocalStorage({
+                                clearPersistency : persistencyProvisioning.clearPersistency,
+                                location : persistencyProvisioning.location
+                            });
 
                             if (Util.checkNullUndefined(provisioning.bounceProxyUrl)) {
                                 throw new Error(

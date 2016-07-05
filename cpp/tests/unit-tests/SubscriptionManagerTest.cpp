@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/Runnable.h"
-#include "joynr/TimeUtils.h"
+#include "tests/utils/TimeUtils.h"
 #include "joynr/Logger.h"
 #include "joynr/Directory.h"
 #include "joynr/PeriodicSubscriptionQos.h"
@@ -41,7 +41,7 @@ using ::testing::AtMost;
 using ::testing::Between;
 
 MATCHER_P(publicationMissedException, subscriptionId, "") {
-    if (arg.getTypeName() == joynr::exceptions::PublicationMissedException::TYPE_NAME) {
+    if (arg.getTypeName() == joynr::exceptions::PublicationMissedException::TYPE_NAME()) {
         joynr::exceptions::PublicationMissedException *errorArg = dynamic_cast<joynr::exceptions::PublicationMissedException*>(arg.clone());
         bool success = errorArg->getSubscriptionId() == subscriptionId && errorArg->getMessage() == subscriptionId;
         delete errorArg;

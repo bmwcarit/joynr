@@ -18,6 +18,7 @@
  */
 #include "WebSocketCcMessagingSkeleton.h"
 
+#include <memory>
 #include <QtWebSockets/QWebSocketServer>
 #include <QtWebSockets/QWebSocket>
 
@@ -114,7 +115,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
         try {
             WebSocketClientAddress clientAddress =
                     JsonSerializer::deserialize<WebSocketClientAddress>(message.toStdString());
-            IWebSocketSendInterface* clientWrapper = new QWebSocketSendWrapper(client);
+            std::shared_ptr<IWebSocketSendInterface> clientWrapper =
+                    std::make_shared<QWebSocketSendWrapper>(client);
             messagingStubFactory->addClient(clientAddress, clientWrapper);
 
             std::weak_ptr<WebSocketMessagingStubFactory> weakFactoryRef(messagingStubFactory);

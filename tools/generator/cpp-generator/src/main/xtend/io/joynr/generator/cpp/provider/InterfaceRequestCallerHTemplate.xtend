@@ -50,6 +50,7 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 «getDllExportIncludeStatement()»
 #include "joynr/RequestCaller.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/types/Version.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include <memory>
 
@@ -178,6 +179,12 @@ public:
 	 * @param broadcastListener The listener to be unregistered
 	 */
 	void unregisterBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener) override;
+
+	/**
+	 * @brief Get the version of the provider instance
+	 * @return the version of the provider instance
+	 */
+	joynr::types::Version getProviderVersion() override;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);

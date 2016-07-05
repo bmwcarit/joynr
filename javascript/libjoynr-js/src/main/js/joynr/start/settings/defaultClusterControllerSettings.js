@@ -40,7 +40,7 @@
                         version : 0,
                         priority : 1,
                         isLocalOnly : false,
-                        onChangeSubscriptions : true
+                        supportsOnChangeSubscriptions : true
                     },
                     address : JSON.stringify({
                         _typeName : "joynr.system.RoutingTypes.ChannelAddress",

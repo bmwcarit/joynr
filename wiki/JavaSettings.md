@@ -301,3 +301,14 @@ Possible values are:
  * `wss`
 * **User property**: `joynr.messaging.cc.protocol`
 * **Default value**: `ws`
+
+## JEE Integration
+
+### `JEE_ENABLE_SHARED_SUBSCRIPTIONS`
+
+Use this key to activate shared subscription support by setting the property's value to true. Shared subscriptions are a feature of HiveMQ which allow queue semantics to be used for subscribers to MQTT topics. That is, only one subscriber receives a message, rather than all subscribers. This feature can be used to load balance incoming messages on MQTT. This feature is useful if you want to run a cluster of JEE nodes while using only MQTT for communication (an alternative is to use the HTTP bridge configuration).
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.jeeintegration.enable.sharedsubscriptions`
+* **Default value**: `false`

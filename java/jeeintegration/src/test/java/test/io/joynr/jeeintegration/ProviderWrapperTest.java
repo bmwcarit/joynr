@@ -1,6 +1,3 @@
-/**
- *
- */
 package test.io.joynr.jeeintegration;
 
 /*
@@ -23,28 +20,44 @@ package test.io.joynr.jeeintegration;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.eq;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import com.google.common.collect.Sets;
+import com.google.inject.Injector;
 
 import io.joynr.exceptions.JoynrException;
 import io.joynr.jeeintegration.ProviderWrapper;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
+import io.joynr.messaging.JoynrMessageCreator;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
+import io.joynr.provider.SubscriptionPublisher;
+import io.joynr.provider.SubscriptionPublisherInjection;
 import joynr.types.ProviderQos;
 
 /**
@@ -53,7 +66,9 @@ import joynr.types.ProviderQos;
 @RunWith(MockitoJUnitRunner.class)
 public class ProviderWrapperTest {
 
-    public static interface TestServiceProviderInterface {
+    private static final String USERNAME = "messageCreatorId";
+
+    public static interface TestServiceProviderInterface extends SubscriptionPublisherInjection<SubscriptionPublisher> {
         String INTERFACE_NAME = "test";
 
         Promise<Deferred<String>> testServiceMethod(int paramOne, String paramTwo);
@@ -61,6 +76,8 @@ public class ProviderWrapperTest {
         Promise<Deferred<String>> testServiceMethodNoArgs();
 
         Promise<DeferredVoid> testServiceMethodVoidReturn();
+
+        Promise<DeferredVoid> assertMessageContextActive();
     }
 
     public static interface TestServiceInterface {
@@ -71,9 +88,12 @@ public class ProviderWrapperTest {
         String testServiceMethodNoArgs();
 
         void testServiceMethodVoidReturn();
+
+        void assertMessageContextActive();
     }
 
-    public static class TestServiceImpl implements TestServiceInterface {
+    public static class TestServiceImpl implements TestServiceInterface,
+            SubscriptionPublisherInjection<SubscriptionPublisher> {
 
         @Override
         public String testServiceMethod(int paramOne, String paramTwo) {
@@ -87,6 +107,16 @@ public class ProviderWrapperTest {
 
         @Override
         public void testServiceMethodVoidReturn() {
+        }
+
+        @Override
+        public void assertMessageContextActive() {
+            assertTrue(JoynrJeeMessageContext.getInstance().isActive());
+        }
+
+        @Override
+        public void setSubscriptionPublisher(SubscriptionPublisher subscriptionPublisher) {
+            assertFalse(JoynrJeeMessageContext.getInstance().isActive());
         }
 
     }
@@ -108,6 +138,9 @@ public class ProviderWrapperTest {
             return TestServiceInterface.class.isAssignableFrom(serviceInterface);
         }
     }
+
+    @Mock
+    private JoynrCallingPrincipal joynrCallingPincipal;
 
     @Test
     public void testInvokeVoidReturnMethod() throws Throwable {
@@ -148,6 +181,42 @@ public class ProviderWrapperTest {
         assertPromiseEquals(result, "test");
     }
 
+    @Test
+    public void testSetSubscriptionPublisherDoesNotActivateScope() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = SubscriptionPublisherInjection.class.getMethod("setSubscriptionPublisher",
+                                                                       new Class[]{ SubscriptionPublisher.class });
+
+        subject.invoke(proxy, method, new Object[]{ mock(SubscriptionPublisher.class) });
+        assertFalse(JoynrJeeMessageContext.getInstance().isActive());
+    }
+
+    @Test
+    public void testMessageScopeActivated() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceProviderInterface.class.getMethod("assertMessageContextActive");
+
+        assertFalse(JoynrJeeMessageContext.getInstance().isActive());
+        subject.invoke(proxy, method, new Object[0]);
+        assertFalse(JoynrJeeMessageContext.getInstance().isActive());
+    }
+
+    @Test
+    public void testPrincipalCopied() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceProviderInterface.class.getMethod("testServiceMethodNoArgs");
+
+        subject.invoke(proxy, method, new Object[0]);
+
+        verify(joynrCallingPincipal).setUsername(USERNAME);
+    }
+
     @SuppressWarnings("rawtypes")
     private void assertPromiseEquals(Object result, Object value) {
         assertTrue(((Promise) result).isFulfilled());
@@ -172,11 +241,21 @@ public class ProviderWrapperTest {
         return createSubject(Mockito.mock(BeanManager.class));
     }
 
+    @SuppressWarnings("rawtypes")
     private ProviderWrapper createSubject(BeanManager beanManager) {
-        Bean<?> bean = Mockito.mock(Bean.class);
-        Mockito.doReturn(TestServiceImpl.class).when(bean).getBeanClass();
-        Mockito.doReturn(new TestServiceImpl()).when(bean).create(null);
-        ProviderWrapper subject = new ProviderWrapper(bean, beanManager);
+        Injector injector = mock(Injector.class);
+        JoynrMessageCreator joynrMessageCreator = mock(JoynrMessageCreator.class);
+        when(injector.getInstance(eq(JoynrMessageCreator.class))).thenReturn(joynrMessageCreator);
+        when(joynrMessageCreator.getMessageCreatorId()).thenReturn(USERNAME);
+        Bean<?> joynrCallingPrincipalBean = mock(Bean.class);
+        when(beanManager.getBeans(JoynrCallingPrincipal.class)).thenReturn(Sets.newHashSet(joynrCallingPrincipalBean));
+        when(beanManager.getReference(eq(joynrCallingPrincipalBean),
+                                      eq(JoynrCallingPrincipal.class),
+                                      Mockito.<CreationalContext> any())).thenReturn(joynrCallingPincipal);
+        Bean<?> bean = mock(Bean.class);
+        doReturn(TestServiceImpl.class).when(bean).getBeanClass();
+        doReturn(new TestServiceImpl()).when(bean).create(null);
+        ProviderWrapper subject = new ProviderWrapper(bean, beanManager, injector);
         return subject;
     }
 

@@ -71,7 +71,7 @@ joynrTestRequire(
                                         customParameters : [],
                                         priority : 1,
                                         scope : ProviderScope.GLOBAL,
-                                        onChangeSubscriptions : true
+                                        supportsOnChangeSubscriptions : true
                                     }),
                                     participantId : "1",
                                     publicKeyId : ""
@@ -87,7 +87,7 @@ joynrTestRequire(
                                         customParameters : [],
                                         priority : 4,
                                         scope : ProviderScope.GLOBAL,
-                                        onChangeSubscriptions : true
+                                        supportsOnChangeSubscriptions : true
                                     }),
                                     participantId : "1",
                                     publicKeyId : ""
@@ -113,7 +113,7 @@ joynrTestRequire(
                                         ],
                                         priority : 3,
                                         scope : ProviderScope.GLOBAL,
-                                        onChangeSubscriptions : true
+                                        supportsOnChangeSubscriptions : true
                                     }),
                                     participantId : "1",
                                     publicKeyId : ""
@@ -139,7 +139,7 @@ joynrTestRequire(
                                         ],
                                         priority : 5,
                                         scope : ProviderScope.GLOBAL,
-                                        onChangeSubscriptions : true
+                                        supportsOnChangeSubscriptions : true
                                     }),
                                     participantId : "1",
                                     publicKeyId : ""
@@ -165,7 +165,7 @@ joynrTestRequire(
                                         ],
                                         priority : 2,
                                         scope : ProviderScope.GLOBAL,
-                                        onChangeSubscriptions : true
+                                        supportsOnChangeSubscriptions : true
                                     }),
                                     participantId : "1",
                                     publicKeyId : ""

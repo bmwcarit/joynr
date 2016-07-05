@@ -1,5 +1,7 @@
 package io.joynr.arbitration;
 
+import static org.junit.Assert.assertEquals;
+
 /*
  * #%L
  * %%
@@ -41,6 +43,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -51,6 +54,8 @@ import com.google.common.collect.Sets;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
+import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.proxy.Callback;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -158,10 +163,7 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationRunning);
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
-                                         Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -208,13 +210,9 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationRunning);
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationCanceledForever);
+            Mockito.verify(arbitrationCallback, Mockito.times(1)).onError(any(Throwable.class));
             Mockito.verify(arbitrationCallback, Mockito.never())
-                   .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
-                                         Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -267,10 +265,7 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationRunning);
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
-                                         Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -329,10 +324,7 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationRunning);
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
-                                         Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -388,13 +380,9 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
-            Mockito.verify(arbitrationCallback, Mockito.atLeast(1))
-                   .notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationRunning);
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationCanceledForever);
+            Mockito.verify(arbitrationCallback, Mockito.times(1)).onError(any(Throwable.class));
             Mockito.verify(arbitrationCallback, Mockito.never())
-                   .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
-                                         Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -463,10 +451,7 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationRunning);
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
-                                         Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -503,9 +488,7 @@ public class ArbitrationTest {
 
         verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
                                                              eq(new HashSet<DiscoveryEntry>(capabilitiesList)));
-        verify(arbitrationCallback, times(1)).notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationRunning);
-        verify(arbitrationCallback, times(1)).setArbitrationResult(eq(ArbitrationStatus.ArbitrationSuccesful),
-                                                                   eq(new ArbitrationResult(expectedParticipantId)));
+        verify(arbitrationCallback, times(1)).onSuccess(eq(new ArbitrationResult(expectedParticipantId)));
 
     }
 
@@ -545,10 +528,8 @@ public class ArbitrationTest {
 
         verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
                                                              eq(new HashSet<DiscoveryEntry>(capabilitiesList)));
-        verify(arbitrationCallback, times(1)).notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationRunning);
         ArbitrationResult expectedArbitrationResult = new ArbitrationResult(participantIds);
-        verify(arbitrationCallback, times(1)).setArbitrationResult(eq(ArbitrationStatus.ArbitrationSuccesful),
-                                                                   eq(expectedArbitrationResult));
+        verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 
     @SuppressWarnings("unchecked")
@@ -637,8 +618,82 @@ public class ArbitrationTest {
         arbitrator.setArbitrationListener(arbitrationCallback);
         arbitrator.startArbitration();
 
-        Map<String, Set<Version>> discoveredVersions = new HashMap<>();
-        discoveredVersions.put(domain, Sets.newHashSet(incompatibleVersion));
-        verify(arbitrationCallback).setDiscoveredVersions(discoveredVersions);
+        Set<Version> discoveredVersions = Sets.newHashSet(incompatibleVersion);
+        ArgumentCaptor<NoCompatibleProviderFoundException> noCompatibleProviderFoundExceptionCaptor = ArgumentCaptor.forClass(NoCompatibleProviderFoundException.class);
+        verify(arbitrationCallback).onError(noCompatibleProviderFoundExceptionCaptor.capture());
+        assertEquals(discoveredVersions, noCompatibleProviderFoundExceptionCaptor.getValue().getDiscoveredVersions());
+
+    }
+
+    @Test
+    public void testMultiDomainIncompatibleVersionsReported() {
+        final Version incompatibleVersion = new Version(100, 100);
+        final String domain1 = "domain1";
+        final String domain2 = "domain2";
+        final DiscoveryEntry discoveryEntry1 = new DiscoveryEntry(incompatibleVersion,
+                                                                                            domain1,
+                                                                                            interfaceName,
+                                                                                            "participant1",
+                                                                                            new ProviderQos(),
+                                                                                            System.currentTimeMillis(),
+                                                                                            NO_EXPIRY,
+                                                                                            "public-key-1");
+        final DiscoveryEntry discoveryEntry2 = new DiscoveryEntry(incompatibleVersion,
+                              domain2,
+                              interfaceName,
+                              "participant2",
+                              new ProviderQos(),
+                              System.currentTimeMillis(),
+                              NO_EXPIRY,
+                              "public-key-2");
+        final Collection<DiscoveryEntry> discoveryEntries = Lists.newArrayList(discoveryEntry1,
+                                                                               discoveryEntry2);
+
+        ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
+        when(arbitrationStrategyFunction.select(Mockito.<Map<String, String>> any(),
+                                                Mockito.<Collection<DiscoveryEntry>> any())).thenReturn(new HashSet<DiscoveryEntry>());
+        doAnswer(new Answer<Set<DiscoveryEntry>>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
+                Set<DiscoveryEntry> discoveryEntries = (Set<DiscoveryEntry>) invocation.getArguments()[1];
+                Map<String, Set<Version>> filteredVersions = (Map<String, Set<Version>>) invocation.getArguments()[2];
+                filteredVersions.put(domain1, Sets.newHashSet(discoveryEntry1.getProviderVersion()));
+                filteredVersions.put(domain2, Sets.newHashSet(discoveryEntry2.getProviderVersion()));
+                discoveryEntries.clear();
+                return new HashSet<>();
+            }
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                   Mockito.<Set<DiscoveryEntry>> any(),
+                                                   Mockito.<Map<String, Set<Version>>> any());
+        DiscoveryQos discoveryQos = new DiscoveryQos(10L, arbitrationStrategyFunction, 0L);
+        reset(localDiscoveryAggregator);
+        doAnswer(new Answer<Object>() {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                ((Callback<DiscoveryEntry[]>) invocation.getArguments()[0]).resolve((Object) discoveryEntries.toArray(new DiscoveryEntry[2]));
+                return null;
+            }
+        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntry[]>> any(),
+                                                 any(String[].class),
+                                                 eq(interfaceName),
+                                                 Mockito.<joynr.types.DiscoveryQos> any());
+
+        Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain1, domain2),
+                                                         interfaceName,
+                                                         interfaceVersion,
+                                                         discoveryQos,
+                                                         localDiscoveryAggregator);
+        arbitrator.setArbitrationListener(arbitrationCallback);
+        arbitrator.startArbitration();
+
+        Set<Version> discoveredVersions = Sets.newHashSet(incompatibleVersion);
+        ArgumentCaptor<MultiDomainNoCompatibleProviderFoundException> noCompatibleProviderFoundExceptionCaptor = ArgumentCaptor.forClass(MultiDomainNoCompatibleProviderFoundException.class);
+        verify(arbitrationCallback).onError(noCompatibleProviderFoundExceptionCaptor.capture());
+        assertEquals(discoveredVersions, noCompatibleProviderFoundExceptionCaptor.getValue().getDiscoveredVersionsForDomain(domain2));
+        assertEquals(discoveredVersions, noCompatibleProviderFoundExceptionCaptor.getValue().getDiscoveredVersionsForDomain(domain1));
+
     }
 }

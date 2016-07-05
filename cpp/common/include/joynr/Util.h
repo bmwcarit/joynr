@@ -153,8 +153,6 @@ void logSerializedMessage(Logger& logger,
                           const std::string& explanation,
                           const std::string& message);
 
-void throwJoynrException(const exceptions::JoynrException& error);
-
 template <typename... Ts>
 int getTypeId();
 

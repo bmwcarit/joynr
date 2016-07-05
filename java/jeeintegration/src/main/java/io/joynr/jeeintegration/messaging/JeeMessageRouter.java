@@ -20,6 +20,7 @@ package io.joynr.jeeintegration.messaging;
  */
 
 import static java.lang.String.format;
+
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
