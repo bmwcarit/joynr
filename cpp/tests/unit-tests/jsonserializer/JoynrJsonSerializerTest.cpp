@@ -22,8 +22,6 @@
 #include "ExampleTypes.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
-#include "jsonserializer/RequestSerializer.h"
-#include "jsonserializer/ReplySerializer.h"
 #include "joynr/Logger.h"
 #include "joynr/SubscriptionPublication.h"
 
