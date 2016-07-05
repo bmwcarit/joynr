@@ -47,7 +47,6 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnum.h"
-#include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnumSerializer.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 
