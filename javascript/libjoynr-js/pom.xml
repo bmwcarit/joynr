@@ -688,6 +688,16 @@
 							<configFile>${basedir}/src/test/karma/karma.integration.conf.js</configFile>
 						</configuration>
 					</execution>
+					<execution>
+						<phase>integration-test</phase>
+						<id>karma-system-integration-tests</id>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<configFile>${basedir}/src/test/karma/karma.system.integration.conf.js</configFile>
+						</configuration>
+					</execution>
 				</executions>
 				<configuration>
 					<karmaExecutable>${project.build.directory}/node-classes/node_modules/.bin/karma</karmaExecutable>
