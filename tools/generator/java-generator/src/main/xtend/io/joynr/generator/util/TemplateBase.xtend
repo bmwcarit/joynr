@@ -2,7 +2,7 @@ package io.joynr.generator.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package io.joynr.generator.util
  */
 
 class TemplateBase {
-		
+
 	def warning()
 	'''
 	/*
 	 *
-	 * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+	 * Copyright (C) 2011 - 2016 BMW Car IT GmbH
 	 *
 	 * Licensed under the Apache License, Version 2.0 (the "License");
 	 * you may not use this file except in compliance with the License.
