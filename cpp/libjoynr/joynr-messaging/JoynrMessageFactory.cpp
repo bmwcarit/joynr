@@ -147,7 +147,7 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
                                   const std::string& senderParticipantId,
                                   const std::string& receiverParticipantId,
                                   const MessagingQos& qos,
-                                  const std::string& payload) const
+                                  std::string&& payload) const
 {
     std::int64_t ttl = qos.getTtl();
     msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
@@ -166,7 +166,7 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
     msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
 
     // set payload
-    msg.setPayload(payload);
+    msg.setPayload(std::move(payload));
 }
 
 } // namespace joynr

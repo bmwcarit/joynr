@@ -96,7 +96,7 @@ private:
                  const std::string& senderParticipantId,
                  const std::string& receiverParticipantId,
                  const MessagingQos& qos,
-                 const std::string& payload) const;
+                 std::string&& payload) const;
 
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     ADD_LOGGER(JoynrMessageFactory);
