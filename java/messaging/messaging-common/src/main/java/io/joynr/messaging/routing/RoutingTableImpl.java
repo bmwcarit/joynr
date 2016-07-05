@@ -101,4 +101,15 @@ public class RoutingTableImpl implements RoutingTable {
         hashMap.remove(participantId);
 
     }
+
+    @Override
+    public void apply(AddressOperation addressOperation) {
+        if (addressOperation == null) {
+            throw new IllegalArgumentException();
+        }
+        for (Address address : hashMap.values()) {
+            addressOperation.perform(address);
+        }
+    }
+
 }
