@@ -98,18 +98,6 @@ private:
                  const MessagingQos& qos,
                  const std::string& payload) const;
 
-    void initReplyMsg(JoynrMessage& msg,
-                      const std::string& senderParticipantId,
-                      const std::string& receiverParticipantId,
-                      const std::int64_t ttl,
-                      const Reply& payload) const;
-
-    void initSubscriptionPublicationMsg(JoynrMessage& msg,
-                                        const std::string& senderParticipantId,
-                                        const std::string& receiverParticipantId,
-                                        const std::int64_t ttl,
-                                        const SubscriptionPublication& payload) const;
-
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     ADD_LOGGER(JoynrMessageFactory);
 };
