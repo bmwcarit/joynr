@@ -24,6 +24,8 @@
 #include "joynr/BaseReply.h"
 #include "joynr/Reply.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -49,8 +51,16 @@ public:
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
 
+    std::vector<Variant> getResponseVariant() const;
+    void setResponseVariant(const std::vector<Variant>& response);
+
+    const Variant& getErrorVariant() const;
+    void setErrorVariant(const Variant& errorVariant);
+
 private:
     std::string subscriptionId;
+    std::vector<Variant> responseVariant;
+    Variant errorVariant;
 };
 
 } // namespace joynr

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #include <string>
 
 #include "joynr/AbstractJoynrProvider.h"
-#include "libjoynr/subscription/SubscriptionAttributeListener.h"
+#include "joynr/SubscriptionAttributeListener.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/TestWithoutVersionProvider.h"
@@ -39,20 +39,22 @@ public:
         return "DummyProviderInterface";
     }
 
-    void onAttributeValueChanged(const std::string& attributeName, const Variant& value) {
+    template <typename T>
+    void onAttributeValueChanged(const std::string& attributeName, const T& value) {
         AbstractJoynrProvider::onAttributeValueChanged(attributeName, value);
     }
 
-    void fireBroadcast(const std::string& broadcastName, const std::vector<Variant>& values) {
-        AbstractJoynrProvider::fireBroadcast(broadcastName, values);
+    template <typename... Ts>
+    void fireBroadcast(const std::string& broadcastName, const Ts&... values) {
+        AbstractJoynrProvider::fireBroadcast(broadcastName, std::forward<Ts>(values)...);
     }
 };
 
 TEST(ProviderTest, register_attributeListener) {
-    MockPublicationManager publicationManager;
-    std::string attributeName("testAttribute");
-    std::string subscriptionId("test-subscription-id");
-    Variant attributeValue(Variant::make<int>(42));
+    MockPublicationManager<std::uint32_t> publicationManager;
+    const std::string attributeName("testAttribute");
+    const std::string subscriptionId("test-subscription-id");
+    const std::uint32_t attributeValue = 42;
 
     // Expect the publicationManager to be called when the attribute value changes
     EXPECT_CALL(publicationManager,
@@ -67,10 +69,10 @@ TEST(ProviderTest, register_attributeListener) {
 }
 
 TEST(ProviderTest, unregister_attributeListener) {
-    MockPublicationManager publicationManager;
-    std::string attributeName("testAttribute");
-    std::string subscriptionId("test-subscription-id");
-    Variant attributeValue(Variant::make<int>(42));
+    MockPublicationManager<std::uint32_t> publicationManager;
+    const std::string attributeName("testAttribute");
+    const std::string subscriptionId("test-subscription-id");
+    const std::uint32_t attributeValue = 42;
 
     // Expect the publicationManager not to be called when the attribute value changes
     EXPECT_CALL(publicationManager,
@@ -93,15 +95,15 @@ TEST(ProviderTest, unregister_attributeListener) {
 }
 
 TEST(ProviderTest, versionIsSetCorrectly) {
-    std::uint32_t expectedMajorVersion = 47;
-    std::uint32_t expectedMinorVersion = 11;
+    const std::uint32_t expectedMajorVersion = 47;
+    const std::uint32_t expectedMinorVersion = 11;
     EXPECT_EQ(expectedMajorVersion, tests::testProvider::MAJOR_VERSION);
     EXPECT_EQ(expectedMinorVersion, tests::testProvider::MINOR_VERSION);
 }
 
 TEST(ProviderTest, defaultVersionIsSetCorrectly) {
-    std::uint32_t expectedDefaultMajorVersion = 0;
-    std::uint32_t expectedDefaultMinorVersion = 0;
+    const std::uint32_t expectedDefaultMajorVersion = 0;
+    const std::uint32_t expectedDefaultMinorVersion = 0;
     EXPECT_EQ(expectedDefaultMajorVersion, tests::TestWithoutVersionProvider::MAJOR_VERSION);
     EXPECT_EQ(expectedDefaultMinorVersion, tests::TestWithoutVersionProvider::MINOR_VERSION);
 }

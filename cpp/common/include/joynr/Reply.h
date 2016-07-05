@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "joynr/Variant.h"
 #include "joynr/BaseReply.h"
 #include "joynr/JoynrCommonExport.h"
 
@@ -39,6 +40,8 @@ public:
     Reply(Reply&&) = default;
     Reply& operator=(Reply&&) = default;
 
+    Reply(BaseReply&& baseReply);
+
     bool operator==(const Reply&) const;
     bool operator!=(const Reply&) const;
 
@@ -51,8 +54,17 @@ public:
         archive(MUESLI_NVP(requestReplyId), MUESLI_NVP(response), MUESLI_NVP(error));
     }
 
+    // ====== START /// TO BE DELETED
+    const std::vector<Variant>& getResponseVariant() const;
+    void setResponseVariant(std::vector<Variant> response);
+    const Variant& getErrorVariant() const;
+    void setErrorVariant(const Variant& errorVariant);
+    // ====== END /// TO BE DELETED
+
 private:
+    std::vector<Variant> responseVariant;
     std::string requestReplyId;
+    Variant errorVariant;
 };
 
 } // namespace joynr

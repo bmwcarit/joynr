@@ -21,7 +21,7 @@
 
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
-#include "subscription/SubscriptionRequestInformation.h"
+#include "joynr/SubscriptionRequestInformation.h"
 
 #include <ostream>
 

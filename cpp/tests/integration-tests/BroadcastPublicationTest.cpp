@@ -26,7 +26,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 
-#include "libjoynr/subscription/SubscriptionBroadcastListener.h"
+#include "joynr/SubscriptionBroadcastListener.h"
 
 using namespace ::testing;
 using ::testing::InSequence;
@@ -151,7 +151,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
                     Eq(proxyParticipantId),
                     _,
                     AllOf(
-                        A<SubscriptionPublication>(),
+                        A<const SubscriptionPublication&>(),
                         Property(&SubscriptionPublication::getSubscriptionId, Eq(subscriptionId)))
                     ));
 
@@ -211,7 +211,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
                     Eq(proxyParticipantId),
                     _,
                     AllOf(
-                        A<SubscriptionPublication>(),
+                        A<const SubscriptionPublication&>(),
                         Property(&SubscriptionPublication::getSubscriptionId, Eq(subscriptionId)))
                     ))
             .Times(Exactly(0));

@@ -44,6 +44,7 @@ using ::testing::MakeMatcher;
 #include <string>
 #include <cstdint>
 #include <algorithm>
+#include <memory>
 
 using namespace joynr;
 
@@ -204,16 +205,13 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::GpsLocation gpsLocation;
-    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
+    joynr::types::Localisation::GpsLocation attributeValue;
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    std::vector<Variant> response;
-    response.push_back(attributeValue);
-    expectedPublication.setResponseVariant(response);
+    expectedPublication.setResponse(std::move(attributeValue));
     // Expect an attribute change to send a publication as well as during registering subscription request
     EXPECT_CALL(
                 mockPublicationSender,
@@ -276,16 +274,13 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::GpsLocation gpsLocation;
-    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
+    joynr::types::Localisation::GpsLocation attributeValue;
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    std::vector<Variant> response;
-    response.push_back(attributeValue);
-    expectedPublication.setResponseVariant(response);
+    expectedPublication.setResponse(std::move(attributeValue));
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
                 mockPublicationSender,
@@ -349,16 +344,13 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::GpsLocation gpsLocation;
-    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
+    joynr::types::Localisation::GpsLocation attributeValue;
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    std::vector<Variant> response;
-    response.push_back(attributeValue);
-    expectedPublication.setResponseVariant(response);
+    expectedPublication.setResponse(std::move(attributeValue));
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
                 mockPublicationSender,
@@ -424,8 +416,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The attribute will change to this value
-    joynr::types::Localisation::GpsLocation gpsLocation;
-    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
+    joynr::types::Localisation::GpsLocation attributeValue;
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -435,9 +426,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    std::vector<Variant> response;
-    response.push_back(attributeValue);
-    expectedPublication.setResponseVariant(response);
+    expectedPublication.setResponse(std::move(attributeValue));
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -548,8 +537,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::GpsLocation gpsLocation;
-    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
+    joynr::types::Localisation::GpsLocation attributeValue;
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -559,9 +547,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    std::vector<Variant> response;
-    response.push_back(attributeValue);
-    expectedPublication.setResponseVariant(response);
+    expectedPublication.setResponse(std::move(attributeValue));
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -642,8 +628,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::GpsLocation gpsLocation;
-    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
+    joynr::types::Localisation::GpsLocation attributeValue;
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -653,9 +638,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    std::vector<Variant> response;
-    response.push_back(attributeValue);
-    expectedPublication.setResponseVariant(response);
+    expectedPublication.setResponse(std::move(attributeValue));
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -738,13 +721,11 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The broacast will fire this value
-    joynr::types::Localisation::GpsLocation gpsLocation;
-    std::vector<Variant> broadcastValues;
-    broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
+    joynr::types::Localisation::GpsLocation broadcastValue;
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
-    IBroadcastListener* broadcastListener;
+    SubscriptionBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filterParameters;
@@ -752,7 +733,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponseVariant(broadcastValues);
+    expectedPublication.setResponse(std::move(broadcastValue));
 
     EXPECT_CALL(
                 mockPublicationSender,
@@ -810,7 +791,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Fake broadcast
-    broadcastListener->broadcastOccurred(gpsLocation);
+    broadcastListener->broadcastOccurred(broadcastValue);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
@@ -818,7 +799,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     // Fake broadcast
-    broadcastListener->broadcastOccurred(gpsLocation);
+    broadcastListener->broadcastOccurred(broadcastValue);
 
     std::int64_t newMinInterval = minInterval_ms + 500;
     std::this_thread::sleep_for(std::chrono::milliseconds(50 + newMinInterval));
@@ -832,7 +813,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
 
     // Fake broadcast
-    broadcastListener->broadcastOccurred(gpsLocation);
+    broadcastListener->broadcastOccurred(broadcastValue);
 
     // sleep, waiting for the async publication (which shouldn't come)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -841,7 +822,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
 
     // Fake broadcast. This change shall not result in a new broadcast to the client
-    broadcastListener->broadcastOccurred(gpsLocation);
+    broadcastListener->broadcastOccurred(broadcastValue);
 
     // Wait for the subscription to finish
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -854,20 +835,20 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
-    // The value will be fired by the broadcast
-    joynr::types::Localisation::GpsLocation gpsLocation;
-    std::vector<Variant> broadcastValues;
-    broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
+    // The broacast will fire this value
+    joynr::types::Localisation::GpsLocation broadcastValue;
 
-    // Expect calls to register an unregister a broadcast listener
+    // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
     SubscriptionBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
+    BroadcastFilterParameters filterParameters;
+    subscriptionRequest.setFilterParameters(filterParameters);
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponseVariant(broadcastValues);
+    expectedPublication.setResponse(std::move(broadcastValue));
 
     EXPECT_CALL(
                 mockPublicationSender,
@@ -908,7 +889,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     JOYNR_LOG_DEBUG(logger, "add broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
 
-    broadcastListener->broadcastOccurred(gpsLocation);
+    broadcastListener->broadcastOccurred(broadcastValue);
     // exceed the minInterval
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms+50));
 
@@ -923,7 +904,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     //now, exceed the original expiryDate, and make a broadcast
     std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate));
-    broadcastListener->broadcastOccurred(gpsLocation);
+    broadcastListener->broadcastOccurred(broadcastValue);
 
     // wait for the async publication
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -937,20 +918,20 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
-    // The broadcast will fire this value
-    joynr::types::Localisation::GpsLocation gpsLocation;
-    std::vector<Variant> broadcastValues;
-    broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
+    // The broacast will fire this value
+    joynr::types::Localisation::GpsLocation broadcastValue;
 
-    // Expect calls to register an unregister a broadcast listener
+    // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
     SubscriptionBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
+    BroadcastFilterParameters filterParameters;
+    subscriptionRequest.setFilterParameters(filterParameters);
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponseVariant(broadcastValues);
+    expectedPublication.setResponse(std::move(broadcastValue));
 
     EXPECT_CALL(
                 mockPublicationSender,
@@ -992,7 +973,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     JOYNR_LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
-    broadcastListener->broadcastOccurred(gpsLocation);
+    broadcastListener->broadcastOccurred(broadcastValue);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // now, we expect that one publications have been performed
@@ -1008,7 +989,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate - testExpiryDate_shift));
     // now, the subscription should be death
 
-    broadcastListener->broadcastOccurred(gpsLocation);
+    broadcastListener->broadcastOccurred(broadcastValue);
 
     // wait for the async publication (which shouldn't arrive)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -1080,8 +1061,7 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
     std::shared_ptr<MockTestRequestCaller> requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The value will be fired by the broadcast
-    Variant expected =
-            Variant::make<exceptions::ProviderRuntimeException>(requestCaller->providerRuntimeExceptionTestMsg);
+    auto expected = std::make_shared<exceptions::ProviderRuntimeException>(requestCaller->providerRuntimeExceptionTestMsg);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -1100,7 +1080,7 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setErrorVariant(expected);
+    expectedPublication.setError(expected);
 
     EXPECT_CALL(
                 mockPublicationSender,
@@ -1132,8 +1112,7 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
     std::shared_ptr<MockTestRequestCaller> requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The value will be fired by the broadcast
-    Variant expected =
-            Variant::make<exceptions::MethodInvocationException>("unknown method name for interface test: getNotExistingAttribute");
+    auto expected = std::make_shared<exceptions::MethodInvocationException>("unknown method name for interface test: getNotExistingAttribute");
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -1153,7 +1132,7 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setErrorVariant(expected);
+    expectedPublication.setError(expected);
 
     EXPECT_CALL(
                 mockPublicationSender,

@@ -87,7 +87,7 @@ public:
      * failures
      */
     void registerBroadcastListener(const std::string& broadcastName,
-                                   IBroadcastListener* broadcastListener) override;
+                                   SubscriptionBroadcastListener* broadcastListener) override;
 
     /**
      * @brief Unregister and delete a broadcast listener
@@ -97,12 +97,6 @@ public:
      */
     void unregisterBroadcastListener(const std::string& broadcastName,
                                      SubscriptionBroadcastListener* broadcastListener) override;
-
-    /**
-     * @brief Add a broadcast filter
-     * @param filter The broadcast filter to be added
-     */
-    void addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter) override;
 
 protected:
     /**
@@ -179,7 +173,6 @@ private:
     ReadWriteLock lock;
     std::map<std::string, std::vector<SubscriptionAttributeListener*>> attributeListeners;
     std::map<std::string, std::vector<SubscriptionBroadcastListener*>> broadcastListeners;
-    std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     friend class End2EndBroadcastTest;
     friend class End2EndSubscriptionTest;

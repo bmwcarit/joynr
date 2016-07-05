@@ -29,7 +29,7 @@ namespace joynr
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
 AbstractJoynrProvider::AbstractJoynrProvider()
-        : providerQos(), lock(), attributeListeners(), broadcastListeners(), broadcastFilters()
+        : providerQos(), lock(), attributeListeners(), broadcastListeners()
 {
 }
 #pragma GCC diagnostic pop
@@ -81,21 +81,6 @@ void AbstractJoynrProvider::unregisterAttributeListener(
     }
 }
 
-void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attributeName,
-                                                    const Variant& value)
-{
-    ReadLocker locker(lock);
-
-    if (attributeListeners.find(attributeName) != attributeListeners.cend()) {
-        const std::vector<IAttributeListener*>& listeners = attributeListeners[attributeName];
-
-        // Inform all the attribute listeners for this attribute
-        for (IAttributeListener* listener : listeners) {
-            listener->attributeValueChanged(value);
-        }
-    }
-}
-
 void AbstractJoynrProvider::registerBroadcastListener(
         const std::string& broadcastName,
         SubscriptionBroadcastListener* broadcastListener)
@@ -118,37 +103,6 @@ void AbstractJoynrProvider::unregisterBroadcastListener(
 
     if (listeners.empty()) {
         broadcastListeners.erase(broadcastName);
-    }
-}
-
-void AbstractJoynrProvider::fireBroadcast(const std::string& broadcastName,
-                                          const std::vector<Variant>& values)
-{
-    ReadLocker locker(lock);
-
-    const std::vector<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
-
-    // Inform all the broadcast listeners for this broadcast
-    for (IBroadcastListener* listener : listeners) {
-        auto broadcastFiletersIterator = broadcastFilters.find(broadcastName);
-        if (broadcastFiletersIterator != broadcastFilters.end()) {
-            listener->broadcastOccurred(values, broadcastFiletersIterator->second);
-        } else {
-            listener->broadcastOccurred(values, std::vector<std::shared_ptr<IBroadcastFilter>>());
-        }
-    }
-}
-
-void AbstractJoynrProvider::addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter)
-{
-    std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>>::iterator it =
-            broadcastFilters.find(filter->getName());
-
-    if (it != broadcastFilters.end()) {
-        it->second.push_back(filter);
-    } else {
-        broadcastFilters.insert(std::make_pair(
-                filter->getName(), std::vector<std::shared_ptr<IBroadcastFilter>>({filter})));
     }
 }
 

@@ -30,7 +30,7 @@ namespace joynr
 class RequestCaller;
 class Request;
 class OneWayRequest;
-class Reply;
+class BaseReply;
 
 namespace exceptions
 {
@@ -51,7 +51,7 @@ public:
     virtual void execute(
             std::shared_ptr<RequestCaller> requestCaller,
             Request& request,
-            std::function<void(Reply&& outParams)> onSuccess,
+            std::function<void(BaseReply&& outParams)> onSuccess,
             std::function<void(const exceptions::JoynrException& exception)> onError) = 0;
 
     /**

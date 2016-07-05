@@ -25,6 +25,7 @@
 namespace joynr
 {
 class SubscriptionAttributeListener;
+class SubscriptionBroadcastListener;
 class IBroadcastListener;
 class IBroadcastFilter;
 
@@ -69,7 +70,7 @@ public:
      * failures
      */
     virtual void registerBroadcastListener(const std::string& broadcastName,
-                                           IBroadcastListener* broadcastListener) = 0;
+                                           SubscriptionBroadcastListener* broadcastListener) = 0;
 
     /**
      * @brief Unregister and delete a broadcast listener
@@ -79,12 +80,6 @@ public:
      */
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
                                              SubscriptionBroadcastListener* broadcastListener) = 0;
-
-    /**
-         * @brief Add a broadcast filter
-         * @param filter The broadcast filter to be added
-         */
-    virtual void addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter) = 0;
 
     /**
      * @brief Gets the interface name

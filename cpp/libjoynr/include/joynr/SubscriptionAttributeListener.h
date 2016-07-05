@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,33 +22,47 @@
 #include <string>
 
 #include "joynr/JoynrExport.h"
-#include "joynr/IAttributeListener.h"
 
 namespace joynr
 {
 
 class PublicationManager;
-class Variant;
 
 /**
  * An attribute listener used for onChange subscriptions
  */
-class JOYNR_EXPORT SubscriptionAttributeListener : public IAttributeListener
+class JOYNR_EXPORT SubscriptionAttributeListener
 {
 public:
     /**
      * Create an attribute listener linked to a subscription
      */
     SubscriptionAttributeListener(const std::string& subscriptionId,
-                                  PublicationManager& publicationManager);
+                                  PublicationManager& publicationManager)
+            : subscriptionId(subscriptionId), publicationManager(publicationManager)
+    {
+    }
 
-    // Implementation of IAttributeListener::attributeValueChanged
-    void attributeValueChanged(const Variant& value) override;
+    template <typename T>
+    void attributeValueChanged(const T& value);
 
 private:
     std::string subscriptionId;
     PublicationManager& publicationManager;
 };
+
+} // namespace joynr
+
+#include "joynr/PublicationManager.h"
+
+namespace joynr
+{
+
+template <typename T>
+void SubscriptionAttributeListener::attributeValueChanged(const T& value)
+{
+    publicationManager.attributeValueChanged(subscriptionId, value);
+}
 
 } // namespace joynr
 

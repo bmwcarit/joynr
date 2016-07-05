@@ -18,7 +18,7 @@
  */
 #include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
-#include "libjoynr/subscription/SubscriptionRequestInformation.h"
+#include "joynr/SubscriptionRequestInformation.h"
 
 namespace joynr
 {

@@ -87,24 +87,7 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 		void «interfaceName»AbstractProvider::«attributeName»Changed(
 				const «attribute.typeName»& «attributeName»
 		) {
-			onAttributeValueChanged(
-					"«attributeName»",
-					«IF attributeType.isEnum && attribute.isArray»
-						joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attributeType.derived)»>(«attributeName»))
-					«ELSEIF attributeType.isEnum»
-						Variant::make<«attribute.typeName»>(«attributeName»)
-					«ELSEIF attribute.isArray»
-						joynr::TypeUtil::toVariant<«attributeType.typeName»>(«attributeName»)
-					«ELSEIF attributeType.isCompound»
-						Variant::make<«attribute.typeName»>(«attributeName»)
-					«ELSEIF attributeType.isMap»
-						Variant::make<«attribute.typeName»>(«attributeName»)
-					«ELSEIF attributeType.isByteBuffer»
-						joynr::TypeUtil::toVariant(«attributeName»)
-					«ELSE»
-						Variant::make<«attribute.typeName»>(«attributeName»)
-					«ENDIF»
-			);
+			onAttributeValueChanged("«attributeName»",«attributeName»);
 		}
 	«ENDIF»
 «ENDFOR»

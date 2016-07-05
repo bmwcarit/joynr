@@ -279,7 +279,7 @@ private:
             std::shared_ptr<Publication> publication,
             std::shared_ptr<SubscriptionInformation> subscriptionInformation,
             std::shared_ptr<SubscriptionRequest> request,
-            SubscriptionPublication& subscriptionPublication);
+            const SubscriptionPublication& subscriptionPublication);
 
     void sendPublicationError(std::shared_ptr<Publication> publication,
                               std::shared_ptr<SubscriptionInformation> subscriptionInformation,
@@ -372,7 +372,12 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
 
             if (timeUntilNextPublication == 0) {
                 // Send the publication
-                sendPublication(publication, subscriptionRequest, subscriptionRequest, value);
+                BaseReply replyValue;
+                replyValue.setResponse(value);
+                sendPublication(publication,
+                                subscriptionRequest,
+                                subscriptionRequest,
+                                std::move(replyValue));
             } else {
                 reschedulePublication(subscriptionId, timeUntilNextPublication);
             }
@@ -408,7 +413,10 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
 
         if (timeUntilNextPublication == 0) {
             // Send the publication
-            sendPublication(publication, subscriptionRequest, subscriptionRequest, values...);
+            BaseReply replyValues;
+            replyValues.setResponse(values...);
+            sendPublication(
+                    publication, subscriptionRequest, subscriptionRequest, std::move(replyValues));
         } else {
             if (timeUntilNextPublication > 0) {
                 JOYNR_LOG_DEBUG(logger,
@@ -460,7 +468,12 @@ void PublicationManager::selectiveBroadcastOccurred(
             // Execute broadcast filters
             if (processFilterChain(subscriptionId, filters, values...)) {
                 // Send the publication
-                sendPublication(publication, subscriptionRequest, subscriptionRequest, values...);
+                BaseReply replyValues;
+                replyValues.setResponse(values...);
+                sendPublication(publication,
+                                subscriptionRequest,
+                                subscriptionRequest,
+                                std::move(replyValues));
             }
         } else {
             if (timeUntilNextPublication > 0) {

@@ -27,12 +27,16 @@ static bool isSubscriptionPublicationRegistered =
 
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
-SubscriptionPublication::SubscriptionPublication() : subscriptionId()
+SubscriptionPublication::SubscriptionPublication()
+        : subscriptionId(), responseVariant(), errorVariant(Variant::NULL_VARIANT())
 {
 }
 
-SubscriptionPublication::SubscriptionPublication(Reply&& reply)
-        : response(std::move(reply.response)), error(std::move(reply.error))
+SubscriptionPublication::SubscriptionPublication(BaseReply&& baseReply)
+        : BaseReply::BaseReply(std::move(baseReply)),
+          subscriptionId(),
+          responseVariant(),
+          errorVariant(Variant::NULL_VARIANT())
 {
 }
 
@@ -55,6 +59,26 @@ bool SubscriptionPublication::operator==(const SubscriptionPublication& other) c
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const
 {
     return !(*this == other);
+}
+
+std::vector<Variant> SubscriptionPublication::getResponseVariant() const
+{
+    return responseVariant;
+}
+
+void SubscriptionPublication::setResponseVariant(const std::vector<Variant>& response)
+{
+    this->responseVariant = response;
+}
+
+const Variant& SubscriptionPublication::getErrorVariant() const
+{
+    return this->errorVariant;
+}
+
+void SubscriptionPublication::setErrorVariant(const Variant& errorVariant)
+{
+    this->errorVariant = errorVariant;
 }
 
 } // namespace joynr

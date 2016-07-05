@@ -298,22 +298,34 @@ protected:
                                                       subscribeTo,
                                                       fireBroadcast,
                                                       broadcastName,
-                                                      nullptr,
+                                                      std::nullptr_t{},
                                                       expectedValues...);
     }
+    
+    template <typename BroadcastFilter>
+    void addFilterToTestProvider(std::shared_ptr<MyTestProvider> testProvider, std::shared_ptr<BroadcastFilter> filter)
+    {
+        if (filter) {
+            testProvider->addBroadcastFilter(filter);
+        }
+    }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename BroadcastFilter, typename ...T>
+    void addFilterToTestProvider(std::shared_ptr<MyTestProvider> testProvider, std::nullptr_t filter)
+    {
+        std::ignore = testProvider;
+        std::ignore = filter;
+    }
+
+    template <typename FireBroadcast, typename SubscribeTo, typename BroadcastFilterPtr, typename ...T>
     void testOneShotBroadcastSubscriptionWithFiltering(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
                                           SubscribeTo subscribeTo,
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName,
-                                          std::shared_ptr<BroadcastFilter> filter,
+                                          BroadcastFilterPtr filter,
                                           T... expectedValues) {
         auto testProvider = std::make_shared<MyTestProvider>();
         runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
-        if (filter) {
-            testProvider->addBroadcastFilter(filter);
-        }
+        addFilterToTestProvider(testProvider, filter);
         //This wait is necessary, because registerProvider is async, and a lookup could occur
         // before the register has finished.
         std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));

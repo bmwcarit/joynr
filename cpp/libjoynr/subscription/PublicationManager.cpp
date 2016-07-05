@@ -742,7 +742,7 @@ void PublicationManager::sendSubscriptionPublication(
         std::shared_ptr<Publication> publication,
         std::shared_ptr<SubscriptionInformation> subscriptionInformation,
         std::shared_ptr<SubscriptionRequest> request,
-        SubscriptionPublication& subscriptionPublication)
+        const SubscriptionPublication& subscriptionPublication)
 {
 
     MessagingQos mQos;
