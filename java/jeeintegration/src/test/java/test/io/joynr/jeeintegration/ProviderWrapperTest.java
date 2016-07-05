@@ -56,6 +56,8 @@ import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
+import io.joynr.provider.SubscriptionPublisher;
+import io.joynr.provider.SubscriptionPublisherInjection;
 import joynr.types.ProviderQos;
 
 /**
@@ -66,7 +68,7 @@ public class ProviderWrapperTest {
 
     private static final String USERNAME = "messageCreatorId";
 
-    public static interface TestServiceProviderInterface {
+    public static interface TestServiceProviderInterface extends SubscriptionPublisherInjection<SubscriptionPublisher> {
         String INTERFACE_NAME = "test";
 
         Promise<Deferred<String>> testServiceMethod(int paramOne, String paramTwo);
@@ -90,7 +92,8 @@ public class ProviderWrapperTest {
         void assertMessageContextActive();
     }
 
-    public static class TestServiceImpl implements TestServiceInterface {
+    public static class TestServiceImpl implements TestServiceInterface,
+            SubscriptionPublisherInjection<SubscriptionPublisher> {
 
         @Override
         public String testServiceMethod(int paramOne, String paramTwo) {
@@ -109,6 +112,11 @@ public class ProviderWrapperTest {
         @Override
         public void assertMessageContextActive() {
             assertTrue(JoynrJeeMessageContext.getInstance().isActive());
+        }
+
+        @Override
+        public void setSubscriptionPublisher(SubscriptionPublisher subscriptionPublisher) {
+            assertFalse(JoynrJeeMessageContext.getInstance().isActive());
         }
 
     }
@@ -171,6 +179,18 @@ public class ProviderWrapperTest {
 
         assertTrue(result instanceof Promise);
         assertPromiseEquals(result, "test");
+    }
+
+    @Test
+    public void testSetSubscriptionPublisherDoesNotActivateScope() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = SubscriptionPublisherInjection.class.getMethod("setSubscriptionPublisher",
+                                                                       new Class[]{ SubscriptionPublisher.class });
+
+        subject.invoke(proxy, method, new Object[]{ mock(SubscriptionPublisher.class) });
+        assertFalse(JoynrJeeMessageContext.getInstance().isActive());
     }
 
     @Test
