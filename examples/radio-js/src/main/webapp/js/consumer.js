@@ -21,7 +21,6 @@
  */
 
 var currentStationSubscriptionId;
-var nbt = !!navigator.userAgent.match(/NBT/);
 var prettyLongTtl = 100 * 365 * 24 * 3600 * 1000; // 100 years TTL :-)
 
 var messagingQos, subscriptionQosOnChange, subscriptionQosPeriodic, subscriptionQosOnChangeWithKeepAlive;
@@ -414,7 +413,7 @@ $(function() { // DOM ready
         $("input#txtDomain").val(domain);
 
         messagingQos = new joynr.messaging.MessagingQos({
-            ttl : nbt ? prettyLongTtl : 60000
+            ttl : 60000
         });
 
         subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
