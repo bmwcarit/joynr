@@ -34,6 +34,8 @@
 
 #include "joynr/JsonSerializer.h"
 
+#include "joynr/serializer/Serializer.h"
+
 namespace joynr
 {
 
@@ -116,9 +118,8 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
             Request request;
             joynr::serializer::deserializeFromJson(request, message.getPayload());
             operation = request.getMethodName();
-
-        } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_ERROR(logger, "could not deserialize Request from {} - error {}", e.what());
+        } catch (const std::exception& e) {
+            JOYNR_LOG_ERROR(logger, "could not deserialize Request - error {}", e.what());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
         try {
@@ -127,9 +128,8 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
             operation = request.getSubscribeToName();
 
         } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "could not deserialize SubscriptionRequest from {} - error {}",
-                            e.what());
+            JOYNR_LOG_ERROR(
+                    logger, "could not deserialize SubscriptionRequest - error {}", e.what());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         try {
@@ -139,7 +139,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_ERROR(logger,
-                            "could not deserialize BroadcastSubscriptionRequest from {} - error {}",
+                            "could not deserialize BroadcastSubscriptionRequest - error {}",
                             e.what());
         }
     }
