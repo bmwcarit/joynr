@@ -633,12 +633,12 @@ joynrTestRequire(
                             expect(typeof arbitrator.startArbitration === "function").toBeTruthy();
                         });
 
-                        function arbitratesCorrectly(domains, interfaceName, expected) {
+                        function arbitratesCorrectly(settings) {
                             runs(function() {
                                 staticArbitrationSpy.resolve.reset();
                                 staticArbitrationSpy.reject.reset();
-                                staticArbitrationSettings.domains = domains;
-                                staticArbitrationSettings.interfaceName = interfaceName;
+                                staticArbitrationSettings.domains = settings.domains;
+                                staticArbitrationSettings.interfaceName = settings.interfaceName;
                                 arbitrator.startArbitration(staticArbitrationSettings).then(
                                         staticArbitrationSpy.resolve).catch(staticArbitrationSpy.reject);
                                 // resolve/reject callbacks are called
@@ -650,7 +650,7 @@ joynrTestRequire(
                             }, "successfull call of startArbitration", 300);
 
                             runs(function() {
-                                expect(staticArbitrationSpy.resolve).toHaveBeenCalledWith(expected);
+                                expect(staticArbitrationSpy.resolve).toHaveBeenCalledWith(settings.expected);
                                 expect(staticArbitrationSpy.reject).not.toHaveBeenCalled();
                             });
                         }
@@ -661,16 +661,32 @@ joynrTestRequire(
                                         return discoveredCaps;
                                     });
 
-                            arbitratesCorrectly(["myDomain"], "noneExistingInterface", []);
-                            arbitratesCorrectly(["noneExistingDomain"], "myInterface", []);
-                            arbitratesCorrectly(["myDomain"], "myInterface", [
-                                capabilities[0],
-                                capabilities[1]
-                            ]);
-                            arbitratesCorrectly(["otherDomain"], "otherInterface", [ capabilities[2]
-                            ]);
-                            arbitratesCorrectly(["thirdDomain"], "otherInterface", [ capabilities[3]
-                            ]);
+                            arbitratesCorrectly({
+                                domains: ["myDomain"],
+                                interfaceName: "noneExistingInterface",
+                                expected: []
+                            });
+                            arbitratesCorrectly({
+                                domains: ["noneExistingDomain"],
+                                interfaceName: "myInterface",
+                                expected: []
+                            });
+                            arbitratesCorrectly({
+                                domains: ["myDomain"],
+                                interfaceName: "myInterface",
+                                expected: [capabilities[0],
+                                           capabilities[1]]
+                            });
+                            arbitratesCorrectly({
+                                domains: ["otherDomain"],
+                                interfaceName: "otherInterface",
+                                expected: [capabilities[2]]
+                            });
+                            arbitratesCorrectly({
+                                domains: ["thirdDomain"],
+                                interfaceName: "otherInterface",
+                                expected: [capabilities[3]]
+                            });
                         });
 
                         it("uses the provided arbitrationStrategy", function() {
