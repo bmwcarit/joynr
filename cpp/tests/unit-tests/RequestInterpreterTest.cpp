@@ -40,10 +40,9 @@ MATCHER_P(providerRuntimeException, msg, "") {
             && arg.getMessage() == msg;
 }
 
-MATCHER_P2(methodInvocationExceptionWithProviderVersion, msg, expectedProviderVersion, "") {
+MATCHER_P(methodInvocationExceptionWithProviderVersion, expectedProviderVersion, "") {
     const joynr::exceptions::MethodInvocationException *methodInvocationExceptionPtr;
     return arg.getTypeName() == joynr::exceptions::MethodInvocationException::TYPE_NAME() &&
-            arg.getMessage() == msg &&
             (methodInvocationExceptionPtr = dynamic_cast<const joynr::exceptions::MethodInvocationException*>(&arg)) != nullptr &&
             methodInvocationExceptionPtr->getProviderVersion() == expectedProviderVersion;
 }
@@ -200,7 +199,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodWithInvalidArguments) {
     auto onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
     };
-    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion("Illegal argument for method sumInts: ints (Integer[])", expectedProviderVersion))).Times(1);
+    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion(expectedProviderVersion))).Times(1);
 
     Request request = initRequest(methodName, paramDatatypes, std::string("invalidParamCannotBeConvertedToInteger[]"));
     interpreter.execute(mockCaller, request, onSuccess, onError);
@@ -219,7 +218,7 @@ TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments) {
     auto onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
     };
-    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion("Illegal argument for attribute setter setTestAttribute (Integer)", expectedProviderVersion))).Times(1);
+    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion(expectedProviderVersion))).Times(1);
 
     Request request = initRequest(methodName, paramDatatypes, std::string("invalidParamCannotBeConvertedTostd::Int32_t"));
     interpreter.execute(mockCaller, request, onSuccess, onError);
@@ -238,7 +237,7 @@ TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments2) {
     auto onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
     };
-    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion("Illegal argument for attribute setter setTestAttribute (Integer)", expectedProviderVersion))).Times(1);
+    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion(expectedProviderVersion))).Times(1);
 
     Request request = initRequest(methodName, paramDatatypes, types::Localisation::GpsLocation());
     interpreter.execute(mockCaller, request, onSuccess, onError);
@@ -256,7 +255,7 @@ TEST_F(RequestInterpreterTest, execute_callsNonExistingMethod) {
     auto onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
     };
-    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion("unknown method name for interface test: execute_callsNonExistingMethod", expectedProviderVersion))).Times(1);
+    EXPECT_CALL(*callback, onError(methodInvocationExceptionWithProviderVersion(expectedProviderVersion))).Times(1);
 
     Request request = initRequest(methodName, {});
     interpreter.execute(mockCaller, request, onSuccess, onError);
