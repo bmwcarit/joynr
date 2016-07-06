@@ -125,7 +125,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     Request request;
     request.setRequestReplyId(requestReplyId);
     request.setMethodName("getLocation");
-    request.setParamsVariant(std::vector<Variant>());
+    request.setParams();
     request.setParamDatatypes(std::vector<std::string>());
 
 
@@ -138,11 +138,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
 
     // construct the result we expect in messaging.transmit. The JoynrMessage
     // contains a serialized version of the response with the gps location.
-    std::vector<Variant> value;
-
-    value.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     Reply reply;
-    reply.setResponseVariant(std::move(value));
+    reply.setResponse(gpsLocation1);
     reply.setRequestReplyId(requestReplyId);
     JoynrMessage expectedReply = messageFactory.createReply(
                 proxyParticipantId,
@@ -184,9 +181,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     //construct a reply containing a GpsLocation
     Reply reply;
     reply.setRequestReplyId(requestReplyId);
-    std::vector<Variant> response;
-    response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
-    reply.setResponseVariant(std::move(response));
+    reply.setResponse(gpsLocation1);
 
     JoynrMessage msg = messageFactory.createReply(
                 proxyParticipantId,
