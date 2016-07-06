@@ -370,64 +370,64 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrTimeOutException)
 }
 
 
-TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationWithProviderRuntimeException)
-{
-    // Create a Publication
-    SubscriptionPublication publication;
-    exceptions::ProviderRuntimeException error("Message of ProviderRuntimeException");
-    publication.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
+//TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationWithProviderRuntimeException)
+//{
+//    // Create a Publication
+//    SubscriptionPublication publication;
+//    exceptions::ProviderRuntimeException error("Message of ProviderRuntimeException");
+//    publication.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
 
-    // Serialize into JSON
-    std::stringstream stream;
-    auto serializer = ClassSerializer<SubscriptionPublication>{};
-    serializer.serialize(publication, stream);
-    std::string json{ stream.str() };
-    JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
+//    // Serialize into JSON
+//    std::stringstream stream;
+//    auto serializer = ClassSerializer<SubscriptionPublication>{};
+//    serializer.serialize(publication, stream);
+//    std::string json{ stream.str() };
+//    JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
 
-    // Deserialize from JSON
-    JsonTokenizer tokenizer(json);
+//    // Deserialize from JSON
+//    JsonTokenizer tokenizer(json);
 
-    if (tokenizer.hasNextObject()) {
-        SubscriptionPublication t;
-        ClassDeserializer<SubscriptionPublication>::deserialize(t, tokenizer.nextObject());
-        assert(!t.getErrorVariant().isEmpty());
-        const joynr::exceptions::ProviderRuntimeException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ProviderRuntimeException>());
-        ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
-    }
-}
+//    if (tokenizer.hasNextObject()) {
+//        SubscriptionPublication t;
+//        ClassDeserializer<SubscriptionPublication>::deserialize(t, tokenizer.nextObject());
+//        assert(!t.getErrorVariant().isEmpty());
+//        const joynr::exceptions::ProviderRuntimeException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ProviderRuntimeException>());
+//        ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
+//    }
+//}
 
-TEST_F(JoynrJsonSerializerTest, DISABLED_exampleDeserializerJoynrSubscriptionPublicationWithApplicationException)
-{
-    // Create a Publication
-    SubscriptionPublication publication;
-    using namespace joynr::tests;
-    std::string literal = test::MethodWithErrorEnumExtendedErrorEnum::getLiteral(
-                MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION);
-    // Create a ApplicationException
-    exceptions::ApplicationException error(
-                literal,
-                std::make_shared<test::MethodWithErrorEnumExtendedErrorEnum::ApplicationExceptionErrorImpl>(literal));
-    publication.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
+//TEST_F(JoynrJsonSerializerTest, DISABLED_exampleDeserializerJoynrSubscriptionPublicationWithApplicationException)
+//{
+//    // Create a Publication
+//    SubscriptionPublication publication;
+//    using namespace joynr::tests;
+//    std::string literal = test::MethodWithErrorEnumExtendedErrorEnum::getLiteral(
+//                MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION);
+//    // Create a ApplicationException
+//    exceptions::ApplicationException error(
+//                literal,
+//                std::make_shared<test::MethodWithErrorEnumExtendedErrorEnum::ApplicationExceptionErrorImpl>(literal));
+//    publication.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
 
-    // Serialize into JSON
-    std::stringstream stream;
-    auto serializer = ClassSerializer<SubscriptionPublication>{};
-    serializer.serialize(publication, stream);
-    std::string json{ stream.str() };
-    JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
+//    // Serialize into JSON
+//    std::stringstream stream;
+//    auto serializer = ClassSerializer<SubscriptionPublication>{};
+//    serializer.serialize(publication, stream);
+//    std::string json{ stream.str() };
+//    JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
 
-    // Deserialize from JSON
-    JsonTokenizer tokenizer(json);
+//    // Deserialize from JSON
+//    JsonTokenizer tokenizer(json);
 
-    if (tokenizer.hasNextObject()) {
-        SubscriptionPublication t;
-        ClassDeserializer<SubscriptionPublication>::deserialize(t, tokenizer.nextObject());
-        assert(!t.getErrorVariant().isEmpty());
-        const joynr::exceptions::ApplicationException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ApplicationException>());
-        ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
-        ASSERT_EQ(deserializedError.getName(), error.getName());
-    }
-}
+//    if (tokenizer.hasNextObject()) {
+//        SubscriptionPublication t;
+//        ClassDeserializer<SubscriptionPublication>::deserialize(t, tokenizer.nextObject());
+//        assert(!t.getErrorVariant().isEmpty());
+//        const joynr::exceptions::ApplicationException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ApplicationException>());
+//        ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
+//        ASSERT_EQ(deserializedError.getName(), error.getName());
+//    }
+//}
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
 {

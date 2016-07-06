@@ -27,17 +27,12 @@ static bool isSubscriptionPublicationRegistered =
 
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
-SubscriptionPublication::SubscriptionPublication()
-        : subscriptionId(), error(), responseVariant(), errorVariant(Variant::NULL_VARIANT())
+SubscriptionPublication::SubscriptionPublication() : subscriptionId(), error(), responseVariant()
 {
 }
 
 SubscriptionPublication::SubscriptionPublication(BaseReply&& baseReply)
-        : BaseReply::BaseReply(std::move(baseReply)),
-          subscriptionId(),
-          error(),
-          responseVariant(),
-          errorVariant(Variant::NULL_VARIANT())
+        : BaseReply::BaseReply(std::move(baseReply)), subscriptionId(), error(), responseVariant()
 {
 }
 
@@ -81,16 +76,6 @@ std::shared_ptr<exceptions::JoynrRuntimeException> SubscriptionPublication::getE
 void SubscriptionPublication::setError(std::shared_ptr<exceptions::JoynrRuntimeException> error)
 {
     this->error = std::move(error);
-}
-
-const Variant& SubscriptionPublication::getErrorVariant() const
-{
-    return this->errorVariant;
-}
-
-void SubscriptionPublication::setErrorVariant(const Variant& errorVariant)
-{
-    this->errorVariant = errorVariant;
 }
 
 } // namespace joynr

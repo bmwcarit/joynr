@@ -727,13 +727,12 @@ void PublicationManager::sendPublicationError(
         std::shared_ptr<Publication> publication,
         std::shared_ptr<SubscriptionInformation> subscriptionInformation,
         std::shared_ptr<SubscriptionRequest> request,
-        const exceptions::JoynrException& exception)
+        std::shared_ptr<exceptions::JoynrRuntimeException> exception)
 {
     JOYNR_LOG_DEBUG(logger, "sending subscription error");
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
-    subscriptionPublication.setErrorVariant(
-            exceptions::JoynrExceptionUtil::createVariant(exception));
+    subscriptionPublication.setError(std::move(exception));
     sendSubscriptionPublication(
             publication, subscriptionInformation, request, subscriptionPublication);
     JOYNR_LOG_DEBUG(logger, "sent subscription error");
@@ -853,7 +852,11 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
                         const std::shared_ptr<exceptions::JoynrException>& exception) {
 
-            sendPublicationError(publication, subscriptionRequest, subscriptionRequest, *exception);
+            std::shared_ptr<exceptions::JoynrRuntimeException> runtimeError =
+                    std::dynamic_pointer_cast<exceptions::JoynrRuntimeException>(exception);
+            assert(runtimeError);
+            sendPublicationError(
+                    publication, subscriptionRequest, subscriptionRequest, runtimeError);
 
             // Reschedule the next poll
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {

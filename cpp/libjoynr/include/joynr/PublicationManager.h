@@ -284,7 +284,7 @@ private:
     void sendPublicationError(std::shared_ptr<Publication> publication,
                               std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                               std::shared_ptr<SubscriptionRequest> subscriptionRequest,
-                              const exceptions::JoynrException& exception);
+                              std::shared_ptr<exceptions::JoynrRuntimeException> exception);
 
     void handleAttributeSubscriptionRequest(
             std::shared_ptr<SubscriptionRequestInformation> requestInfo,
