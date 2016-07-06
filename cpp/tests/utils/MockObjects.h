@@ -785,12 +785,6 @@ public:
     MOCK_METHOD1(touchSubscriptionState,void(const std::string& subscriptionId));
 };
 
-template<typename T>
-class MockPublicationManager : public joynr::PublicationManager {
-public:
-    MOCK_METHOD2_T(attributeValueChanged, void(const std::string& subscriptionId, const T& value));
-};
-
 class MockParticipantIdStorage : public joynr::ParticipantIdStorage {
 public:
     MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {

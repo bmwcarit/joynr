@@ -50,50 +50,6 @@ public:
     }
 };
 
-TEST(ProviderTest, register_attributeListener) {
-    MockPublicationManager<std::uint32_t> publicationManager;
-    const std::string attributeName("testAttribute");
-    const std::string subscriptionId("test-subscription-id");
-    const std::uint32_t attributeValue = 42;
-
-    // Expect the publicationManager to be called when the attribute value changes
-    EXPECT_CALL(publicationManager,
-                attributeValueChanged(Eq(subscriptionId),Eq(attributeValue)))
-            .Times(1);
-
-    DummyProvider provider;
-    provider.registerAttributeListener(attributeName,
-                                       new SubscriptionAttributeListener(subscriptionId, publicationManager));
-
-    provider.onAttributeValueChanged(attributeName, attributeValue);
-}
-
-TEST(ProviderTest, unregister_attributeListener) {
-    MockPublicationManager<std::uint32_t> publicationManager;
-    const std::string attributeName("testAttribute");
-    const std::string subscriptionId("test-subscription-id");
-    const std::uint32_t attributeValue = 42;
-
-    // Expect the publicationManager not to be called when the attribute value changes
-    EXPECT_CALL(publicationManager,
-                attributeValueChanged(Eq(subscriptionId),Eq(attributeValue)))
-            .Times(0);
-
-    DummyProvider provider;
-
-    // This should not contact the publicationManager
-    provider.onAttributeValueChanged(attributeName, attributeValue);
-
-    // Do a register then unregister
-    SubscriptionAttributeListener* attributeListener =
-            new SubscriptionAttributeListener(subscriptionId, publicationManager);
-    provider.registerAttributeListener(attributeName, attributeListener);
-    provider.unregisterAttributeListener(attributeName, attributeListener);
-
-    // This should not contact the publicationManager
-    provider.onAttributeValueChanged(attributeName, attributeValue);
-}
-
 TEST(ProviderTest, versionIsSetCorrectly) {
     const std::uint32_t expectedMajorVersion = 47;
     const std::uint32_t expectedMinorVersion = 11;
