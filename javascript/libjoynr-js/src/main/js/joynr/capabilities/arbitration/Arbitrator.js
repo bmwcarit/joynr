@@ -81,7 +81,9 @@ define(
                 // discover caps from local capabilities directory
                 capabilityDiscoveryStub.lookup(domains, interfaceName, new DiscoveryQos({
                     discoveryScope : applicationDiscoveryQos.discoveryScope,
-                    cacheMaxAge : applicationDiscoveryQos.cacheMaxAgeMs
+                    cacheMaxAge : applicationDiscoveryQos.cacheMaxAgeMs,
+                    discoveryTimeout : applicationDiscoveryQos.discoveryTimeoutMs,
+                    providerMustSupportOnChange : applicationDiscoveryQos.providerMustSupportOnChange
                 })).then(
                     function(discoveredCaps) {
                         // filter caps according to chosen arbitration strategy
