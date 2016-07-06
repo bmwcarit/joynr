@@ -28,6 +28,7 @@
 #include "joynr/OnChangeSubscriptionQos.h"
 #include <chrono>
 #include <cstdint>
+#include <string>
 
 using namespace joynr;
 
@@ -56,19 +57,17 @@ public:
         qos.putCustomMessageHeader("test-header", "test-header-value");
         request.setMethodName("methodName");
         request.setRequestReplyId(requestReplyID);
-        request.addParam(Variant::make<int>(42), "java.lang.Integer");
-        request.addParam(Variant::make<std::string>("value"), "java.lang.String");
+        request.setParams(42, "value");
+        request.setParamDatatypes({"java.lang.Integer","java.lang.String"});
         oneWayRequest.setMethodName("methodName");
-        oneWayRequest.addParam(Variant::make<int>(42), "java.lang.Integer");
-        oneWayRequest.addParam(Variant::make<std::string>("value"), "java.lang.String");
+        oneWayRequest.setParams(42, "value");
+        oneWayRequest.setParamDatatypes({"java.lang.Integer","java.lang.String"});
         reply.setRequestReplyId(requestReplyID);
-        std::vector<Variant> response;
-        response.push_back(Variant::make<std::string>("response"));
-        reply.setResponseVariant(std::move(response));
+        reply.setResponse("response");
 
         std::string subscriptionId("subscriptionTestId");
         subscriptionPublication.setSubscriptionId(subscriptionId);
-        response.clear();
+        std::vector<Variant> response;
         response.push_back(Variant::make<std::string>("publication"));
         subscriptionPublication.setResponseVariant(response);
     }
@@ -89,10 +88,10 @@ public:
         // TODO create expected string from params and methodName
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.Request",)";
-        expectedPayloadStream << R"("methodName": "methodName",)";
-        expectedPayloadStream << R"("paramDatatypes": ["java.lang.Integer","java.lang.String"],)";
-        expectedPayloadStream << R"("params": [42,"value"],)";
-        expectedPayloadStream << R"("requestReplyId": ")" << request.getRequestReplyId() << R"("})";
+        expectedPayloadStream << R"("methodName":"methodName",)";
+        expectedPayloadStream << R"("paramDatatypes":["java.lang.Integer","java.lang.String"],)";
+        expectedPayloadStream << R"("params":[42,"value"],)";
+        expectedPayloadStream << R"("requestReplyId":")" << request.getRequestReplyId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
@@ -102,9 +101,9 @@ public:
         // TODO create expected string from params and methodName
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.OneWayRequest",)";
-        expectedPayloadStream << R"("methodName": "methodName",)";
-        expectedPayloadStream << R"("paramDatatypes": ["java.lang.Integer","java.lang.String"],)";
-        expectedPayloadStream << R"("params": [42,"value"])";
+        expectedPayloadStream << R"("methodName":"methodName",)";
+        expectedPayloadStream << R"("paramDatatypes":["java.lang.Integer","java.lang.String"],)";
+        expectedPayloadStream << R"("params":[42,"value"])";
         expectedPayloadStream << R"(})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
@@ -114,8 +113,8 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.Reply",)";
-        expectedPayloadStream << R"("requestReplyId": ")" << reply.getRequestReplyId() << R"(",)";
-        expectedPayloadStream << R"("response": ["response"]})";
+        expectedPayloadStream << R"("requestReplyId":")" << reply.getRequestReplyId() << R"(",)";
+        expectedPayloadStream << R"("response":["response"]})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
