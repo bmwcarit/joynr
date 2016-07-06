@@ -111,8 +111,9 @@ void ClassDeserializerImpl<exceptions::MethodInvocationException>::deserialize(
             t.setMessage(field.value());
         } else if (field.name() == "providerVersion") {
             IObject& providerVersionObject = field.value();
-            Version providerVersion;
-            ClassDeserializerImpl<Version>::deserialize(providerVersion, providerVersionObject);
+            joynr::types::Version providerVersion;
+            ClassDeserializerImpl<joynr::types::Version>::deserialize(
+                    providerVersion, providerVersionObject);
             t.setProviderVersion(providerVersion);
         }
     }
@@ -227,7 +228,7 @@ void ClassSerializerImpl<exceptions::MethodInvocationException>::serialize(
         stream << R"("detailMessage": ")" << exception.getMessage() << R"(",)";
     }
     stream << R"("providerVersion": )";
-    ClassSerializerImpl<Version>::serialize(exception.getProviderVersion(), stream);
+    ClassSerializerImpl<joynr::types::Version>::serialize(exception.getProviderVersion(), stream);
     stream << "}"; // exception
 }
 

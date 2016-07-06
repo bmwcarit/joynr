@@ -28,9 +28,6 @@
 
 namespace joynr
 {
-
-using joynr::types::Version;
-
 namespace exceptions
 {
 
@@ -60,12 +57,12 @@ public:
      */
     explicit MethodInvocationException(const std::string& message) noexcept;
     explicit MethodInvocationException(const std::string& message,
-                                       const Version& providerVersion) noexcept;
+                                       const joynr::types::Version& providerVersion) noexcept;
     const std::string& getTypeName() const override;
     MethodInvocationException* clone() const override;
 
-    void setProviderVersion(const Version& providerVersion);
-    const Version& getProviderVersion() const;
+    void setProviderVersion(const joynr::types::Version& providerVersion);
+    const joynr::types::Version& getProviderVersion() const;
 
     /**
      * Equality operator
@@ -85,7 +82,7 @@ public:
     }
 
 private:
-    Version providerVersion;
+    joynr::types::Version providerVersion;
 };
 
 } // namespace exceptions

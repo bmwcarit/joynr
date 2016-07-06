@@ -274,7 +274,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerMethodInvocationException)
     // Create a MethodInvocationException
     exceptions::MethodInvocationException exception;
     std::string expectedDetailMessage{"Message of MethodInvocationException"};
-    Version expectedProviderVersion(47, 11);
+    types::Version expectedProviderVersion(47, 11);
     exception.setMessage(expectedDetailMessage);
     exception.setProviderVersion(expectedProviderVersion);
 
