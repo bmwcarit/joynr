@@ -61,8 +61,6 @@ public:
     // ====== START /// TO BE DELETED
     const std::vector<Variant>& getResponseVariant() const;
     void setResponseVariant(std::vector<Variant> response);
-    const Variant& getErrorVariant() const;
-    void setErrorVariant(const Variant& errorVariant);
     // ====== END /// TO BE DELETED
 
 private:
@@ -70,7 +68,6 @@ private:
     std::shared_ptr<exceptions::JoynrException> error;
     // ====== START /// TO BE DELETED
     std::vector<Variant> responseVariant;
-    Variant errorVariant;
     // ====== END /// TO BE DELETED
 };
 
