@@ -26,7 +26,6 @@
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/Variant.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/serializer/SerializationPlaceholder.h"
 
@@ -47,9 +46,6 @@ public:
 
     bool operator==(const BaseReply& other) const;
     bool operator!=(const BaseReply& other) const;
-
-    std::shared_ptr<exceptions::JoynrException> getError() const;
-    void setError(std::shared_ptr<exceptions::JoynrException> error);
 
     template <typename... Ts>
     void setResponse(Ts&&... values)
@@ -72,12 +68,11 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(error));
+        archive(MUESLI_NVP(response));
     }
 
 protected:
     joynr::serializer::SerializationPlaceholder response;
-    std::shared_ptr<exceptions::JoynrException> error;
 };
 
 } // namespace joynr

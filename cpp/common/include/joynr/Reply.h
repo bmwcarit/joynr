@@ -24,6 +24,7 @@
 
 #include "joynr/Variant.h"
 #include "joynr/BaseReply.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrCommonExport.h"
 
 namespace joynr
@@ -54,6 +55,9 @@ public:
         archive(MUESLI_NVP(requestReplyId), MUESLI_NVP(response), MUESLI_NVP(error));
     }
 
+    std::shared_ptr<exceptions::JoynrException> getError() const;
+    void setError(std::shared_ptr<exceptions::JoynrException> error);
+
     // ====== START /// TO BE DELETED
     const std::vector<Variant>& getResponseVariant() const;
     void setResponseVariant(std::vector<Variant> response);
@@ -62,9 +66,12 @@ public:
     // ====== END /// TO BE DELETED
 
 private:
-    std::vector<Variant> responseVariant;
     std::string requestReplyId;
+    std::shared_ptr<exceptions::JoynrException> error;
+    // ====== START /// TO BE DELETED
+    std::vector<Variant> responseVariant;
     Variant errorVariant;
+    // ====== END /// TO BE DELETED
 };
 
 } // namespace joynr

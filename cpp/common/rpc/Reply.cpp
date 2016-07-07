@@ -18,22 +18,22 @@
  */
 
 #include "joynr/Reply.h"
-#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
 
 bool isReplyRegistered = Variant::registerType<Reply>("joynr.Reply");
 
-Reply::Reply() : requestReplyId(), responseVariant(), errorVariant(Variant::NULL_VARIANT())
+Reply::Reply() : requestReplyId(), error(), responseVariant(), errorVariant(Variant::NULL_VARIANT())
 {
 }
 
 Reply::Reply(BaseReply&& baseReply)
         : BaseReply::BaseReply(std::move(baseReply)),
-          errorVariant(Variant::NULL_VARIANT()),
           requestReplyId(),
-          responseVariant()
+          error(),
+          responseVariant(),
+          errorVariant(Variant::NULL_VARIANT())
 {
 }
 
@@ -47,9 +47,20 @@ void Reply::setRequestReplyId(const std::string& requestReplyId)
     this->requestReplyId = requestReplyId;
 }
 
+std::shared_ptr<exceptions::JoynrException> Reply::getError() const
+{
+    return error;
+}
+
+void Reply::setError(std::shared_ptr<exceptions::JoynrException> error)
+{
+    this->error = std::move(error);
+}
+
 bool Reply::operator==(const Reply& other) const
 {
-    return requestReplyId == other.getRequestReplyId() && BaseReply::operator==(other);
+    return requestReplyId == other.getRequestReplyId() && error == other.getError() &&
+           BaseReply::operator==(other);
 }
 
 bool Reply::operator!=(const Reply& other) const

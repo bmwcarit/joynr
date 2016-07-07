@@ -21,28 +21,17 @@
 
 #include <memory>
 
-#include "joynr/exceptions/JoynrException.h"
-
 namespace joynr
 {
 
-BaseReply::BaseReply() : response(), error()
+BaseReply::BaseReply() : response()
 {
-}
-
-std::shared_ptr<exceptions::JoynrException> BaseReply::getError() const
-{
-    return error;
-}
-
-void BaseReply::setError(std::shared_ptr<exceptions::JoynrException> error)
-{
-    this->error = std::move(error);
 }
 
 bool BaseReply::operator==(const BaseReply& other) const
 {
-    return error == other.getError();
+    std::ignore = other;
+    return true; // TODO: response == other.getResponse()
 }
 
 bool BaseReply::operator!=(const BaseReply& other) const
