@@ -31,12 +31,8 @@ import static io.joynr.messaging.MessagingPropertyKeys.DISCOVERYDIRECTORYURL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-
 import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
@@ -46,6 +42,8 @@ import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Reads the legacy properties for provisioning capabilities / discovery directory and domain access controller and
@@ -55,36 +53,85 @@ public class LegacyCapabilitiesProvisioning {
 
     private static final Logger logger = LoggerFactory.getLogger(LegacyCapabilitiesProvisioning.class);
 
+    public static class LegacyProvisioningPropertiesHolder {
+
+        @Inject(optional = true)
+        @Named(DISCOVERYDIRECTORYURL)
+        protected String discoveryDirectoryUrl;
+
+        @Inject(optional = true)
+        @Named(CAPABILITYDIRECTORYURL)
+        protected String deprecatedCapabilityDirectoryUrl;
+
+        @Inject(optional = true)
+        @Named(CHANNELID)
+        protected String channelId;
+
+        @Inject(optional = true)
+        @Named(PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN)
+        protected String discoveryDirectoriesDomain;
+
+        @Inject(optional = true)
+        @Named(PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID)
+        protected String capabilitiesDirectoryParticipantId;
+
+        @Inject(optional = true)
+        @Named(PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID)
+        protected String capabilitiesDirectoryChannelId;
+
+        @Inject(optional = true)
+        @Named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID)
+        protected String domainAccessControllerParticipantId;
+
+        @Inject(optional = true)
+        @Named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID)
+        protected String domainAccessControllerChannelId;
+
+        public LegacyProvisioningPropertiesHolder() {
+        }
+
+        // @CHECKSTYLE:OFF
+        public LegacyProvisioningPropertiesHolder(String discoveryDirectoryUrl,
+                String deprecatedCapabilityDirectoryUrl,
+                String channelId,
+                String discoveryDirectoriesDomain,
+                String capabilitiesDirectoryParticipantId,
+                String capabilitiesDirectoryChannelId,
+                String domainAccessControllerParticipantId,
+                String domainAccessControllerChannelId) {
+            // @CHECKSTYLE:ON
+            this.discoveryDirectoryUrl = discoveryDirectoryUrl;
+            this.deprecatedCapabilityDirectoryUrl = deprecatedCapabilityDirectoryUrl;
+            this.channelId = channelId;
+            this.discoveryDirectoriesDomain = discoveryDirectoriesDomain;
+            this.capabilitiesDirectoryParticipantId = capabilitiesDirectoryParticipantId;
+            this.capabilitiesDirectoryChannelId = capabilitiesDirectoryChannelId;
+            this.domainAccessControllerParticipantId = domainAccessControllerParticipantId;
+            this.domainAccessControllerChannelId = domainAccessControllerChannelId;
+        }
+    }
+
     private Map<Class<?>, DiscoveryEntry> legacyDiscoveryEntries = new HashMap<>();
     private Map<Class<?>, Address> legacyAddresses = new HashMap<>();
 
     @Inject
-    // CHECKSTYLE:OFF
-    public LegacyCapabilitiesProvisioning(@Named(DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
-                                          @Named(CAPABILITYDIRECTORYURL) String deprecatedCapabilityDirectoryUrl,
-                                          @Named(CHANNELID) String channelId,
-                                          @Named(PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
-                                          @Named(PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
-                                          @Named(PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId,
-                                          @Named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
-                                          @Named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
-        // CHECKSTYLE:ON
-        String urlToUse = deprecatedCapabilityDirectoryUrl == null || deprecatedCapabilityDirectoryUrl.isEmpty()
-                ? discoveryDirectoryUrl : deprecatedCapabilityDirectoryUrl;
+    public LegacyCapabilitiesProvisioning(LegacyProvisioningPropertiesHolder properties) {
+        String urlToUse = properties.deprecatedCapabilityDirectoryUrl == null || properties.deprecatedCapabilityDirectoryUrl.isEmpty()
+                ? properties.discoveryDirectoryUrl : properties.deprecatedCapabilityDirectoryUrl;
         createDiscoveryEntryFor(GlobalCapabilitiesDirectory.class,
                                 GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                capabilitiesDirectoryChannelId,
-                                capabilitiesDirectoryParticipantId,
+                                properties.capabilitiesDirectoryChannelId,
+                                properties.capabilitiesDirectoryParticipantId,
                                 urlToUse,
-                                channelId,
-                                discoveryDirectoriesDomain);
+                                properties.channelId,
+                                properties.discoveryDirectoriesDomain);
         createDiscoveryEntryFor(GlobalDomainAccessController.class,
                                 GlobalDomainAccessController.INTERFACE_NAME,
-                                domainAccessControllerChannelId,
-                                domainAccessControllerParticipantId,
+                                properties.domainAccessControllerChannelId,
+                                properties.domainAccessControllerParticipantId,
                                 urlToUse,
-                                channelId,
-                                discoveryDirectoriesDomain);
+                                properties.channelId,
+                                properties.discoveryDirectoriesDomain);
     }
 
     private void createDiscoveryEntryFor(Class<?> interfaceClass,

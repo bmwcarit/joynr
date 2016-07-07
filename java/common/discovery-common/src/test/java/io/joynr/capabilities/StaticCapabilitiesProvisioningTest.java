@@ -19,7 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import static org.junit.Assert.assertTrue;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN;
@@ -28,17 +27,17 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_A
 import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITYDIRECTORYURL;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.DISCOVERYDIRECTORYURL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
@@ -47,17 +46,27 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
 import com.google.inject.name.Names;
-
 import io.joynr.messaging.routing.RoutingTable;
+import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StaticCapabilitiesProvisioningTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(StaticCapabilitiesProvisioningTest.class);
 
     private ObjectMapper objectMapper;
 
@@ -68,10 +77,12 @@ public class StaticCapabilitiesProvisioningTest {
     public void setUp() throws Exception {
         objectMapper = new ObjectMapper();
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
+        Field objectMapperField = CapabilityUtils.class.getDeclaredField("objectMapper");
+        objectMapperField.setAccessible(true);
+        objectMapperField.set(CapabilityUtils.class, objectMapper);
     }
 
-    @Test
-    public void testLoadingSerailizedDiscoveryEntries() throws Exception {
+    private Set<DiscoveryEntry> createDiscoveryEntries(String domain, String... interfaceNames) {
         Set<DiscoveryEntry> discoveryEntries = new HashSet<DiscoveryEntry>();
         String participantId = "particpantId";
         ProviderQos qos = new ProviderQos();
@@ -79,27 +90,44 @@ public class StaticCapabilitiesProvisioningTest {
         Long expiryDateMs = 0L;
         String publicKeyId = "publicKeyId";
         Address address = new MqttAddress("brokerUri", "topic");
-        GlobalDiscoveryEntry entry1 = CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
-                                                                              "domain1",
-                                                                              "interfaceName1",
-                                                                              participantId,
-                                                                              qos,
-                                                                              lastSeenDateMs,
-                                                                              expiryDateMs,
-                                                                              publicKeyId,
-                                                                              address);
+        for (String interfaceName : interfaceNames) {
+            GlobalDiscoveryEntry entry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
+                                                                                 domain,
+                                                                                 interfaceName,
+                                                                                 participantId,
+                                                                                 qos,
+                                                                                 lastSeenDateMs,
+                                                                                 expiryDateMs,
+                                                                                 publicKeyId,
+                                                                                 address);
+            discoveryEntries.add(entry);
+        }
+        return discoveryEntries;
+    }
 
-        GlobalDiscoveryEntry entry2 = CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
-                                                                              "domain2",
-                                                                              "interfaceName2",
-                                                                              participantId,
-                                                                              qos,
-                                                                              lastSeenDateMs,
-                                                                              expiryDateMs,
-                                                                              publicKeyId,
-                                                                              address);
-        discoveryEntries.add(entry1);
-        discoveryEntries.add(entry2);
+    @Test
+    public void testLoadingExtraSerializedDiscoveryEntriesPlusLegacy() throws Exception {
+        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("domain", "interfaceName1", "interfaceName2");
+
+        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
+        logger.debug("Serialised entries: " + serializedDiscoveryEntries);
+        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
+
+        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
+        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+
+        assertEquals(4, provisionedDiscoveryEntries.size());
+        assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName1");
+        assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName2");
+        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
+        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalDomainAccessController.INTERFACE_NAME);
+    }
+
+    @Test
+    public void testLoadingSerializedDiscoveryEntriesNoLegacy() throws Exception {
+        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                      GlobalDomainAccessController.INTERFACE_NAME);
 
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
@@ -107,39 +135,110 @@ public class StaticCapabilitiesProvisioningTest {
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
         Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
-        assertTrue(provisionedDiscoveryEntries.contains(entry1));
-        assertTrue(provisionedDiscoveryEntries.contains(entry2));
+        assertEquals(2, provisionedDiscoveryEntries.size());
+        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
+        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalDomainAccessController.INTERFACE_NAME);
+    }
+
+    @Test
+    public void testOverrideJsonWithLegacy() throws IOException {
+        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
+        properties.discoveryDirectoryUrl = "http://localhost:8080";
+        properties.capabilitiesDirectoryChannelId = "capdir_channel_id";
+        properties.capabilitiesDirectoryParticipantId = "capdir_participant_id";
+        properties.channelId = "local_channel_id";
+        properties.discoveryDirectoriesDomain = "io.joynr";
+        properties.domainAccessControllerChannelId = "acl_channel_id";
+        properties.domainAccessControllerParticipantId = "acl_participant_id";
+        properties.deprecatedCapabilityDirectoryUrl = "";
+
+        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
+        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
+
+        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
+        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+
+        assertEquals(2, provisionedDiscoveryEntries.size());
+        assertContainsEntryFor(provisionedDiscoveryEntries,
+                               GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                               properties.capabilitiesDirectoryParticipantId);
+        assertContainsEntryFor(provisionedDiscoveryEntries,
+                               GlobalDomainAccessController.INTERFACE_NAME,
+                               properties.domainAccessControllerParticipantId);
+    }
+
+    private void assertContainsEntryFor(Collection<DiscoveryEntry> entries, String interfaceName) {
+        assertContainsEntryFor(entries, interfaceName, null);
+    }
+
+    private void assertContainsEntryFor(Collection<DiscoveryEntry> entries, String interfaceName, String participantId) {
+        boolean found = false;
+        for (DiscoveryEntry entry : entries) {
+            if (entry instanceof GlobalDiscoveryEntry) {
+                GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) entry;
+                if (globalDiscoveryEntry.getInterfaceName().equals(interfaceName)
+                        && (participantId == null || participantId.equals(globalDiscoveryEntry.getParticipantId()))) {
+                    found = true;
+                }
+            }
+        }
+        assertTrue("Couldn't find " + interfaceName + ((participantId == null ? "" : " / " + participantId)) + " in "
+                + entries, found);
     }
 
     @Test(expected = ProvisionException.class)
-    public void testInvalidJson() {
-        Properties properties = new Properties();
-        properties.put(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES, "this is not json");
+    public void testInvalidJson() throws IOException {
         Injector injector = createInjectorForJsonValue("this is not json");
         injector.getInstance(CapabilitiesProvisioning.class);
     }
 
-    private Injector createInjectorForJsonValue(final String jsonValue) {
+    private Injector createInjectorForJsonValue(final String jsonValue) throws IOException {
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder propertiesHolder = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
+        propertiesHolder.domainAccessControllerParticipantId = "";
+        propertiesHolder.capabilitiesDirectoryParticipantId = "";
+        propertiesHolder.domainAccessControllerChannelId = "";
+        propertiesHolder.discoveryDirectoriesDomain = "";
+        propertiesHolder.channelId = "";
+        propertiesHolder.capabilitiesDirectoryChannelId = "";
+        propertiesHolder.deprecatedCapabilityDirectoryUrl = "";
+        propertiesHolder.discoveryDirectoryUrl = "";
+        return createInjectorForJsonValue(jsonValue, propertiesHolder);
+    }
+
+    private Injector createInjectorForJsonValue(final String jsonValue, final LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder provisioningProperties) throws IOException {
+        final File tmpFile = File.createTempFile("capprovtest", "json");
+        logger.trace("Writing serialised JSON {} to file {}", jsonValue, tmpFile);
+        tmpFile.deleteOnExit();
+        try (FileWriter writer = new FileWriter(tmpFile)) {
+            writer.write(jsonValue + "\n");
+            writer.flush();
+        } catch (IOException e) {
+            fail("Unable to write test data to file: " + tmpFile);
+        }
         Injector injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
                 bind(String.class).annotatedWith(Names.named(PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID))
-                                  .toInstance("");
+                                  .toInstance(provisioningProperties.capabilitiesDirectoryChannelId);
                 bind(String.class).annotatedWith(Names.named(PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID))
-                                  .toInstance("");
-                bind(String.class).annotatedWith(Names.named(PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN)).toInstance("");
+                                  .toInstance(provisioningProperties.capabilitiesDirectoryParticipantId);
+                bind(String.class).annotatedWith(Names.named(PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN)).toInstance(provisioningProperties.discoveryDirectoriesDomain);
                 bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID))
-                                  .toInstance("");
+                                  .toInstance(provisioningProperties.domainAccessControllerChannelId);
                 bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID))
-                                  .toInstance("");
-                bind(String.class).annotatedWith(Names.named(CAPABILITYDIRECTORYURL)).toInstance("");
-                bind(String.class).annotatedWith(Names.named(CHANNELID)).toInstance("");
-                bind(String.class).annotatedWith(Names.named(DISCOVERYDIRECTORYURL)).toInstance("");
+                                  .toInstance(provisioningProperties.domainAccessControllerParticipantId);
+                bind(String.class).annotatedWith(Names.named(CAPABILITYDIRECTORYURL)).toInstance(provisioningProperties.deprecatedCapabilityDirectoryUrl);
+                bind(String.class).annotatedWith(Names.named(CHANNELID)).toInstance(provisioningProperties.channelId);
+                bind(String.class).annotatedWith(Names.named(DISCOVERYDIRECTORYURL)).toInstance(provisioningProperties.discoveryDirectoryUrl);
 
                 bind(ObjectMapper.class).toInstance(objectMapper);
                 bind(RoutingTable.class).toInstance(routingTable);
-                bind(String.class).annotatedWith(Names.named(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES))
-                                  .toInstance(jsonValue);
+                bind(String.class).annotatedWith(Names.named(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES_FILE))
+                                  .toInstance(tmpFile.getAbsolutePath());
                 requestStaticInjection(CapabilityUtils.class);
             }
         },
