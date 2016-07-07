@@ -21,7 +21,6 @@
  */
 
 var currentStationSubscriptionId;
-var prettyLongTtl = 100 * 365 * 24 * 3600 * 1000; // 100 years TTL :-)
 
 var messagingQos, subscriptionQosOnChange, subscriptionQosPeriodic, subscriptionQosOnChangeWithKeepAlive;
 
