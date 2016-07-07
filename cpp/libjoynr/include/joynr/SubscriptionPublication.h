@@ -22,7 +22,6 @@
 #include <vector>
 
 #include "joynr/BaseReply.h"
-#include "joynr/Reply.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
@@ -54,11 +53,15 @@ public:
     std::vector<Variant> getResponseVariant() const;
     void setResponseVariant(const std::vector<Variant>& response);
 
+    std::shared_ptr<exceptions::JoynrRuntimeException> getError() const;
+    void setError(std::shared_ptr<exceptions::JoynrRuntimeException> error);
+
     const Variant& getErrorVariant() const;
     void setErrorVariant(const Variant& errorVariant);
 
 private:
     std::string subscriptionId;
+    std::shared_ptr<exceptions::JoynrRuntimeException> error;
     std::vector<Variant> responseVariant;
     Variant errorVariant;
 };

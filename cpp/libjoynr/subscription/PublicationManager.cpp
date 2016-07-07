@@ -42,6 +42,7 @@
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/Request.h"
+#include "joynr/Reply.h"
 
 namespace joynr
 {

@@ -28,13 +28,14 @@ static bool isSubscriptionPublicationRegistered =
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
 SubscriptionPublication::SubscriptionPublication()
-        : subscriptionId(), responseVariant(), errorVariant(Variant::NULL_VARIANT())
+        : subscriptionId(), error(), responseVariant(), errorVariant(Variant::NULL_VARIANT())
 {
 }
 
 SubscriptionPublication::SubscriptionPublication(BaseReply&& baseReply)
         : BaseReply::BaseReply(std::move(baseReply)),
           subscriptionId(),
+          error(),
           responseVariant(),
           errorVariant(Variant::NULL_VARIANT())
 {
@@ -52,7 +53,8 @@ void SubscriptionPublication::setSubscriptionId(const std::string& subscriptionI
 
 bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const
 {
-    return subscriptionId == other.getSubscriptionId() && BaseReply::operator==(other);
+    return subscriptionId == other.getSubscriptionId() && error == other.getError() &&
+           BaseReply::operator==(other);
     ;
 }
 
@@ -69,6 +71,16 @@ std::vector<Variant> SubscriptionPublication::getResponseVariant() const
 void SubscriptionPublication::setResponseVariant(const std::vector<Variant>& response)
 {
     this->responseVariant = response;
+}
+
+std::shared_ptr<exceptions::JoynrRuntimeException> SubscriptionPublication::getError() const
+{
+    return error;
+}
+
+void SubscriptionPublication::setError(std::shared_ptr<exceptions::JoynrRuntimeException> error)
+{
+    this->error = std::move(error);
 }
 
 const Variant& SubscriptionPublication::getErrorVariant() const
