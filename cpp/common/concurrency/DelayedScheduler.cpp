@@ -21,8 +21,6 @@
 #include <cassert>
 #include <utility>
 
-#include "joynr/Runnable.h"
-
 namespace joynr
 {
 
@@ -34,18 +32,18 @@ DelayedScheduler::DelayedScheduler(std::function<void(Runnable*)> onWorkAvailabl
         : defaultDelayMs(defaultDelayMs),
           onWorkAvailable(onWorkAvailable),
           stoppingDelayedScheduler(false),
-          timedRunnables(),
+          delayedRunnables(),
           writeLock(),
-          timer()
+          nextRunnableHandle(0),
+          ioService(ioService)
 {
-    std::ignore = ioService;
 }
 
 DelayedScheduler::~DelayedScheduler()
 {
     JOYNR_LOG_TRACE(logger, "Dtor called");
     // check if DelayedScheduler::shutdown() was called first
-    assert(timedRunnables.empty());
+    assert(delayedRunnables.empty());
 }
 
 DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
@@ -66,19 +64,51 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
         return INVALID_RUNNABLE_HANDLE;
     }
 
-    using std::placeholders::_1;
-    RunnableHandle currentHandle =
-            timer.addTimer(std::bind(&DelayedScheduler::timerForRunnableExpired, this, _1),
-                           std::bind(&DelayedScheduler::timerForRunnableRemoved, this, _1),
-                           delay.count(),
-                           false);
+    RunnableHandle newRunnableHandle = INVALID_RUNNABLE_HANDLE;
 
-    JOYNR_LOG_TRACE(logger, "Added timer with ID {}", currentHandle);
+    {
+        std::lock_guard<std::mutex> lock(writeLock);
+        newRunnableHandle = ++nextRunnableHandle;
 
-    std::lock_guard<std::mutex> lock(writeLock);
-    timedRunnables.emplace(currentHandle, runnable);
+        delayedRunnables.emplace(
+                std::piecewise_construct,
+                std::forward_as_tuple(newRunnableHandle),
+                std::forward_as_tuple(
+                        std::unique_ptr<Runnable>(runnable),
+                        ioService,
+                        std::chrono::milliseconds(delay),
+                        [this, newRunnableHandle](const boost::system::error_code& errorCode) {
+                            if (!errorCode) {
+                                std::lock_guard<std::mutex> lock(this->writeLock);
+                                {
+                                    // Look up the runnable because it might have been removed
+                                    // by another thread while we were waiting for the mutex.
+                                    auto it = this->delayedRunnables.find(newRunnableHandle);
 
-    return currentHandle;
+                                    if (it == this->delayedRunnables.end()) {
+                                        JOYNR_LOG_WARN(this->logger,
+                                                       "Timed runnable with ID {} not found.",
+                                                       newRunnableHandle);
+                                        return;
+                                    }
+
+                                    if (!this->stoppingDelayedScheduler) {
+                                        Runnable* runnable = it->second.takeRunnable();
+                                        this->onWorkAvailable(runnable);
+                                    }
+                                    this->delayedRunnables.erase(it);
+                                }
+                            } else if (errorCode != boost::system::errc::operation_canceled) {
+                                JOYNR_LOG_ERROR(this->logger,
+                                                "Failed to schedule delayed runnable: {}",
+                                                errorCode.message());
+                            }
+                        }));
+    }
+
+    JOYNR_LOG_TRACE(logger, "Added timer with ID {}", newRunnableHandle);
+
+    return newRunnableHandle;
 }
 
 DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable)
@@ -93,84 +123,25 @@ void DelayedScheduler::unschedule(const RunnableHandle runnableHandle)
         return;
     }
 
-    if (!timer.removeTimer(runnableHandle)) {
-        JOYNR_LOG_TRACE(logger, "Failed to remove timer {}", runnableHandle);
-    }
-
     std::lock_guard<std::mutex> lock(writeLock);
-    auto it = timedRunnables.find(runnableHandle);
-    if (it == timedRunnables.end()) {
-        JOYNR_LOG_WARN(logger, "Timed runnable with ID {} not found.", runnableHandle);
-        return;
-    }
+    {
+        auto it = delayedRunnables.find(runnableHandle);
 
-    Runnable* runnable = it->second;
-    if (runnable != nullptr && runnable->isDeleteOnExit()) {
-        delete runnable;
+        if (it == delayedRunnables.end()) {
+            JOYNR_LOG_WARN(logger, "Timed runnable with ID {} not found.", runnableHandle);
+            return;
+        }
+
+        delayedRunnables.erase(it);
     }
-    timedRunnables.erase(it);
 
     JOYNR_LOG_TRACE(logger, "runnable with handle {} unscheduled", runnableHandle);
 }
 
 void DelayedScheduler::shutdown()
 {
-    JOYNR_LOG_TRACE(logger, "Shutdown called");
-    timer.shutdown();
-    {
-        std::lock_guard<std::mutex> lock(writeLock);
-        stoppingDelayedScheduler = true;
-
-        for (auto it = timedRunnables.begin(); it != timedRunnables.end(); ++it) {
-            if (it->second != nullptr && it->second->isDeleteOnExit()) {
-                delete it->second;
-                it->second = nullptr;
-            }
-        }
-        timedRunnables.clear();
-    }
-}
-
-void DelayedScheduler::timerForRunnableExpired(Timer::TimerId timerId)
-{
-    JOYNR_LOG_TRACE(logger, "timerForRunnableExpired({})", timerId);
-
     std::lock_guard<std::mutex> lock(writeLock);
-    auto it = timedRunnables.find(timerId);
-    if (it == timedRunnables.end()) {
-        JOYNR_LOG_WARN(logger, "Timed runnable with ID {} not found.", timerId);
-        return;
-    }
-    Runnable* tmp = it->second;
-    if (tmp != nullptr) {
-        if (stoppingDelayedScheduler) {
-            if (tmp->isDeleteOnExit()) {
-                delete tmp;
-            }
-
-        } else {
-            onWorkAvailable(tmp);
-        }
-        timedRunnables.erase(it);
-    }
-}
-
-void DelayedScheduler::timerForRunnableRemoved(Timer::TimerId timerId)
-{
-    JOYNR_LOG_INFO(logger, "timerForRunnableRemoved({}). Doing a cleanup", timerId);
-
-    std::lock_guard<std::mutex> lock(writeLock);
-    auto it = timedRunnables.find(timerId);
-    if (it == timedRunnables.end()) {
-        JOYNR_LOG_WARN(logger, "Timed runnable with ID {} not found.", timerId);
-        return;
-    }
-    Runnable* tmp = it->second;
-    if (tmp != nullptr && tmp->isDeleteOnExit()) {
-        delete it->second;
-        it->second = nullptr;
-    }
-    timedRunnables.erase(it);
+    delayedRunnables.clear();
 }
 
 } // namespace joynr

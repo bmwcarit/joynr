@@ -29,11 +29,11 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
-#include "joynr/Timer.h"
+#include "joynr/Runnable.h"
+#include "joynr/DelayedRunnable.h"
 
 namespace joynr
 {
-class Runnable;
 
 /**
  * @class DelayedScheduler
@@ -43,7 +43,7 @@ class JOYNRCOMMON_EXPORT DelayedScheduler
 {
 public:
     /*! Handle to reference a @ref Runnable scheduled to work */
-    typedef Timer::TimerId RunnableHandle;
+    typedef std::uint32_t RunnableHandle;
 
     /*! Invalid handle */
     static const RunnableHandle INVALID_RUNNABLE_HANDLE = 0;
@@ -111,10 +111,6 @@ private:
     /*! @ref DelayedScheduler is not allowed to be copied */
     DISALLOW_COPY_AND_ASSIGN(DelayedScheduler);
 
-    virtual void timerForRunnableExpired(Timer::TimerId timerId);
-
-    virtual void timerForRunnableRemoved(Timer::TimerId timerId);
-
 private:
     /*! Default delay set by the constructor */
     const std::chrono::milliseconds defaultDelayMs;
@@ -125,14 +121,16 @@ private:
     /*! Flag indicating @ref DelayedScheduler will be stopped */
     bool stoppingDelayedScheduler;
 
-    /*! Lookup a @ref Runnable from a expiring @ref Timer */
-    std::unordered_map<RunnableHandle, Runnable*> timedRunnables;
+    std::unordered_map<RunnableHandle, DelayedRunnable> delayedRunnables;
 
-    /*! Guard to limit write access to @ref timedRunnables */
+    /*! Guard to limit write access to @ref delayedRunnables */
     std::mutex writeLock;
 
-    /*! Timer to delay added @ref Runnable */
-    Timer timer;
+    /*! Next runnable handle which will be returned by ::schedule */
+    RunnableHandle nextRunnableHandle;
+
+    /*! Used for async timers. */
+    boost::asio::io_service& ioService;
 };
 
 } // namespace joynr
