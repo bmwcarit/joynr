@@ -22,7 +22,6 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/MessageQueue.h"
-#include "joynr/Timer.h"
 
 #include <chrono>
 #include <cstdint>
@@ -33,34 +32,14 @@ class MessageQueueTest : public ::testing::Test {
 public:
     MessageQueueTest()
         : messageQueue(),
-          cleanerTimer(),
           expiryDate(std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()) + std::chrono::milliseconds(100))
     {
     }
 
     ~MessageQueueTest() = default;
 
-    void SetUp()
-    {
-        cleanerTimer.addTimer(
-            [this](joynr::Timer::TimerId) {
-                this->messageQueue.removeOutdatedMessages();
-            },
-            [](Timer::TimerId) { },
-            50,
-            true
-        );
-    }
-
-    void TearDown()
-    {
-        cleanerTimer.shutdown();
-    }
-
-
 protected:
     MessageQueue messageQueue;
-    Timer cleanerTimer;
     JoynrTimePoint expiryDate;
 
 private:
