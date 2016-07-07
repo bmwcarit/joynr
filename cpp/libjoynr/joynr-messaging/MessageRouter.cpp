@@ -19,6 +19,9 @@
 #include "joynr/MessageRouter.h"
 
 #include <cassert>
+#include <functional>
+#include <boost/asio/placeholders.hpp>
+#include <boost/bind.hpp>
 
 #include "joynr/DispatcherUtils.h"
 #include "joynr/MessagingStubFactory.h"
@@ -62,7 +65,7 @@ private:
 
 MessageRouter::~MessageRouter()
 {
-    messageQueueCleanerTimer.shutdown();
+    messageQueueCleanerTimer.cancel();
     messageScheduler.shutdown();
 }
 
@@ -80,18 +83,15 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
           parentAddress(nullptr),
           incomingAddress(),
           messageQueue(std::move(messageQueue)),
-          messageQueueCleanerTimer(),
           runningParentResolves(),
           accessController(nullptr),
           securityManager(std::move(securityManager)),
           parentResolveMutex(),
-          routingTableFileName()
+          routingTableFileName(),
+          messageQueueCleanerTimer(ioService),
+          messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000))
 {
-    messageQueueCleanerTimer.addTimer(
-            [this](Timer::TimerId) { this->messageQueue->removeOutdatedMessages(); },
-            [](Timer::TimerId) {},
-            1000,
-            true);
+    activateMessageCleanerTimer();
 }
 
 MessageRouter::MessageRouter(
@@ -109,18 +109,15 @@ MessageRouter::MessageRouter(
           parentAddress(nullptr),
           incomingAddress(incomingAddress),
           messageQueue(std::move(messageQueue)),
-          messageQueueCleanerTimer(),
           runningParentResolves(),
           accessController(nullptr),
           securityManager(nullptr),
           parentResolveMutex(),
-          routingTableFileName()
+          routingTableFileName(),
+          messageQueueCleanerTimer(ioService),
+          messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000))
 {
-    messageQueueCleanerTimer.addTimer(
-            [this](Timer::TimerId) { this->messageQueue->removeOutdatedMessages(); },
-            [](Timer::TimerId) {},
-            1000,
-            true);
+    activateMessageCleanerTimer();
 }
 
 void MessageRouter::addProvisionedNextHop(
@@ -305,6 +302,25 @@ void MessageRouter::scheduleMessage(
         JOYNR_LOG_WARN(logger, errorMessage);
         // save the message for later delivery
         messageQueue->queueMessage(message);
+    }
+}
+
+void MessageRouter::activateMessageCleanerTimer()
+{
+    messageQueueCleanerTimer.expires_from_now(messageQueueCleanerTimerPeriodMs);
+    messageQueueCleanerTimer.async_wait(
+            std::bind(&MessageRouter::onMessageCleanerTimerExpired, this, std::placeholders::_1));
+}
+
+void MessageRouter::onMessageCleanerTimerExpired(const boost::system::error_code& errorCode)
+{
+    if (!errorCode) {
+        messageQueue->removeOutdatedMessages();
+        activateMessageCleanerTimer();
+    } else if (errorCode != boost::system::errc::operation_canceled) {
+        JOYNR_LOG_ERROR(logger,
+                        "Failed to schedule timer to remove outdated messages: {}",
+                        errorCode.message());
     }
 }
 
