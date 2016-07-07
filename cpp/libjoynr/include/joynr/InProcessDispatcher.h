@@ -21,6 +21,7 @@
 
 #include <string>
 #include <memory>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/IDispatcher.h"
 #include "joynr/IRequestCallerDirectory.h"
@@ -39,7 +40,7 @@ class MessagingQos;
 class JOYNR_EXPORT InProcessDispatcher : public IDispatcher, public IRequestCallerDirectory
 {
 public:
-    InProcessDispatcher();
+    explicit InProcessDispatcher(boost::asio::io_service& ioService);
     ~InProcessDispatcher() override;
 
     void addReplyCaller(const std::string& requestReplyId,

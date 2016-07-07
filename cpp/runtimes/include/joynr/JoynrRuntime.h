@@ -37,6 +37,7 @@
 #include "joynr/PublicationManager.h"
 #include "joynr/IBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/SingleThreadedIOService.h"
 
 namespace joynr
 {
@@ -175,7 +176,8 @@ protected:
      * @param settings The system service settings
      */
     explicit JoynrRuntime(Settings& settings)
-            : proxyFactory(nullptr),
+            : singleThreadIOService(),
+              proxyFactory(nullptr),
               requestCallerDirectory(nullptr),
               participantIdStorage(nullptr),
               capabilitiesRegistrar(nullptr),
@@ -189,6 +191,8 @@ protected:
         messagingSettings.printSettings();
         systemServicesSettings.printSettings();
     }
+
+    SingleThreadedIOService singleThreadIOService;
 
     /** @brief Factory for creating proxy instances */
     ProxyFactory* proxyFactory;

@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <chrono>
 #include <string>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -49,6 +50,7 @@ public:
     ThreadPoolDelayedScheduler(
             std::uint8_t numberOfThreads,
             const std::string& name,
+            boost::asio::io_service& ioService,
             std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
     /**

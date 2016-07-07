@@ -26,8 +26,10 @@ namespace joynr
 
 ThreadPoolDelayedScheduler::ThreadPoolDelayedScheduler(std::uint8_t numberOfThreads,
                                                        const std::string& name,
+                                                       boost::asio::io_service& ioService,
                                                        std::chrono::milliseconds defaultDelayMs)
         : DelayedScheduler(std::bind(&ThreadPool::execute, &threadPool, std::placeholders::_1),
+                           ioService,
                            defaultDelayMs),
           threadPool(name, numberOfThreads)
 {

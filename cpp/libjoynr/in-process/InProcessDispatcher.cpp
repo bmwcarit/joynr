@@ -29,9 +29,9 @@ namespace joynr
 
 INIT_LOGGER(InProcessDispatcher);
 
-InProcessDispatcher::InProcessDispatcher()
-        : requestCallerDirectory("InProcessDispatcher-RequestCallerDirectory"),
-          replyCallerDirectory("InProcessDispatcher-ReplyCallerDirectory"),
+InProcessDispatcher::InProcessDispatcher(boost::asio::io_service& ioService)
+        : requestCallerDirectory("InProcessDispatcher-RequestCallerDirectory", ioService),
+          replyCallerDirectory("InProcessDispatcher-ReplyCallerDirectory", ioService),
           publicationManager(),
           subscriptionManager()
 

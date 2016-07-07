@@ -165,12 +165,12 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler)
 {
 }
 
-PublicationManager::PublicationManager(int maxThreads)
+PublicationManager::PublicationManager(boost::asio::io_service& ioService, int maxThreads)
         : publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
           fileWriteLock(),
-          delayedScheduler(new ThreadPoolDelayedScheduler(maxThreads, "PubManager")),
+          delayedScheduler(new ThreadPoolDelayedScheduler(maxThreads, "PubManager", ioService)),
           shutDownMutex(),
           shuttingDown(false),
           subscriptionRequestStorageFileName(),

@@ -37,6 +37,7 @@
 #include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/tests/testRequestCaller.h"
 #include "joynr/types/Localisation/GpsLocation.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using namespace ::testing;
 
@@ -53,7 +54,8 @@ ACTION_P(ReleaseSemaphore,semaphore)
 class SubscriptionTest : public ::testing::Test {
 public:
     SubscriptionTest() :
-        mockMessageRouter(new MockMessageRouter()),
+        singleThreadedIOService(),
+        mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
         mockCallback(new MockCallbackWithJoynrException<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
@@ -71,7 +73,7 @@ public:
         requestReplyId("requestReplyId"),
         messageFactory(),
         messageSender(mockMessageRouter),
-        dispatcher(&messageSender),
+        dispatcher(&messageSender, singleThreadedIOService.getIOService()),
         subscriptionManager(nullptr),
         provider(new MockTestProvider),
         publicationManager(nullptr),
@@ -81,8 +83,8 @@ public:
 
     void SetUp(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
-        subscriptionManager = new SubscriptionManager();
-        publicationManager = new PublicationManager();
+        subscriptionManager = new SubscriptionManager(singleThreadedIOService.getIOService());
+        publicationManager = new PublicationManager(singleThreadedIOService.getIOService());
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
@@ -95,6 +97,7 @@ public:
     }
 
 protected:
+    SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<MockCallbackWithJoynrException<types::Localisation::GpsLocation> > mockCallback;
 
@@ -349,7 +352,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                     ReleaseSemaphore(&semaphore)
             ));
 
-    auto mockMessageRouter = std::make_shared<MockMessageRouter>();
+    auto mockMessageRouter = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
     JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
 
     /* ensure the serialization succeeds and the first publication is send to the proxy */

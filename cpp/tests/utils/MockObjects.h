@@ -27,6 +27,7 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+#include <boost/asio.hpp>
 
 #include "PrettyPrint.h"
 #include "LibJoynrMockObjects.h"
@@ -169,8 +170,8 @@ public:
 class MockDelayedScheduler : public joynr::DelayedScheduler
 {
 public:
-    MockDelayedScheduler()
-        : DelayedScheduler([](joynr::Runnable*){ assert(false); }, std::chrono::milliseconds::zero())
+    MockDelayedScheduler(boost::asio::io_service& ioService)
+        : DelayedScheduler([](joynr::Runnable*){ assert(false); }, ioService, std::chrono::milliseconds::zero())
     {
     }
 
@@ -310,8 +311,8 @@ public:
         }
     }
 
-    MockMessageRouter():
-        MessageRouter(std::unique_ptr<joynr::IMessagingStubFactory>(), std::unique_ptr<joynr::IPlatformSecurityManager>(), 0)
+    MockMessageRouter(boost::asio::io_service& ioService):
+        MessageRouter(std::unique_ptr<joynr::IMessagingStubFactory>(), std::unique_ptr<joynr::IPlatformSecurityManager>(), ioService, 0)
     {
         EXPECT_CALL(
                 *this,
@@ -767,6 +768,8 @@ typedef MockDirectory<std::string, joynr::system::RoutingTypes::Address> MockMes
 
 class MockSubscriptionManager : public joynr::SubscriptionManager {
 public:
+    using SubscriptionManager::SubscriptionManager;
+
     MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& subscriptionId));
     MOCK_METHOD4(registerSubscription,void(const std::string& subscribeToName,
                                                     std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller, // SubMgr gets ownership of ptr
@@ -779,6 +782,8 @@ public:
 
 class MockPublicationManager : public joynr::PublicationManager {
 public:
+    using PublicationManager::PublicationManager;
+
     MOCK_METHOD2(attributeValueChanged, void(const std::string& subscriptionId, const joynr::Variant& value));
 };
 
@@ -948,8 +953,8 @@ public:
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
-    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings):
-        messageRouter(),
+    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings, boost::asio::io_service& ioService):
+        messageRouter(ioService),
         libjoynrMockSettings(settings),
         LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter, libjoynrMockSettings){}
 

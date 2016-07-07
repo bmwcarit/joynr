@@ -21,6 +21,7 @@
 
 #include <string>
 #include <memory>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
@@ -45,7 +46,9 @@ public:
     // ownership of messageSender is not passed to dispatcher, so dispatcher is not responsible for
     // deleting it.
     // Todo: should be changed to a std::shared_ptr or reference.
-    explicit Dispatcher(JoynrMessageSender* messageSender, int maxThreads = 4);
+    Dispatcher(JoynrMessageSender* messageSender,
+               boost::asio::io_service& ioService,
+               int maxThreads = 4);
 
     ~Dispatcher() override;
 

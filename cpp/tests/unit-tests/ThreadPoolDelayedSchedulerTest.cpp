@@ -20,6 +20,7 @@
 
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "utils/MockObjects.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "utils/TestRunnable.h"
 
 #include <cstdint>
@@ -33,18 +34,22 @@ using ::testing::StrictMock;
 
 // Expected accuracy of the timer in milliseconds
 
-
-
-TEST(ThreadPoolDelayedSchedulerTest, startAndShutdownWithoutWork)
+class ThreadPoolDelayedSchedulerTest : public testing::Test
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+protected:
+    SingleThreadedIOService singleThreadedIOService;
+};
+
+TEST_F(ThreadPoolDelayedSchedulerTest, startAndShutdownWithoutWork)
+{
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
     scheduler.shutdown();
 }
 
-TEST(ThreadPoolDelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCorrect)
+TEST_F(ThreadPoolDelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCorrect)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
     // Dtor should be called
     StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
@@ -65,9 +70,9 @@ TEST(ThreadPoolDelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfR
     EXPECT_CALL(runnable2, dtorCalled()).Times(1);
 }
 
-TEST(ThreadPoolDelayedSchedulerTest, testAccuracyOfDelayedScheduler)
+TEST_F(ThreadPoolDelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
     StrictMock<MockRunnableWithAccuracy> runnable1(false, 5);
 
@@ -83,9 +88,9 @@ TEST(ThreadPoolDelayedSchedulerTest, testAccuracyOfDelayedScheduler)
     EXPECT_CALL(runnable1, dtorCalled()).Times(1);
 }
 
-TEST(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpired)
+TEST_F(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpired)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
     StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
 
@@ -99,9 +104,9 @@ TEST(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpired
     scheduler.shutdown();
 }
 
-TEST(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
+TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
     StrictMock<MockRunnableWithAccuracy> runnable1(false, 5);
 
@@ -118,9 +123,9 @@ TEST(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
     EXPECT_CALL(runnable1, dtorCalled()).Times(1);
 }
 
-TEST(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
+TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
     StrictMock<MockRunnableWithAccuracy>* runnable1 = new StrictMock<MockRunnableWithAccuracy>(true, 5);
 
@@ -137,9 +142,9 @@ TEST(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUns
     scheduler.shutdown();
 }
 
-TEST(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
+TEST_F(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds(10));
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds(10));
 
     StrictMock<MockRunnableWithAccuracy> runnable1(false, 10);
 
@@ -155,8 +160,9 @@ TEST(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
     EXPECT_CALL(runnable1, dtorCalled()).Times(1);
 }
 
-TEST(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
-    ThreadPoolDelayedScheduler scheduler(3, "ThreadPool");
+TEST_F(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly)
+{
+    ThreadPoolDelayedScheduler scheduler(3, "ThreadPool", singleThreadedIOService.getIOService());
     TestRunnable* runnable = new TestRunnable();
     scheduler.schedule(runnable, std::chrono::milliseconds(1));
     std::this_thread::sleep_for(std::chrono::milliseconds(100));

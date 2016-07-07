@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include "joynr/Directory.h"
 #include "joynr/TrackableObject.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using namespace joynr;
 
@@ -31,14 +32,15 @@ class DirectoryTest : public ::testing::Test
           testValue(nullptr),
           secondTestValue(nullptr),
           firstKey(""),
-          secondKey("")
+          secondKey(""),
+          singleThreadedIOService()
     {
 
     }
 
 
     void SetUp(){
-        directory = new Directory<std::string, std::string>("Directory");
+        directory = new Directory<std::string, std::string>("Directory", singleThreadedIOService.getIOService());
         testValue = std::make_shared<std::string>("testValue");
         secondTestValue = std::make_shared<std::string>("secondTestValue");
         firstKey = std::string("firstKey");
@@ -54,6 +56,7 @@ protected:
     std::shared_ptr<std::string> secondTestValue;
     std::string firstKey;
     std::string secondKey;
+    SingleThreadedIOService singleThreadedIOService;
 private:
     DISALLOW_COPY_AND_ASSIGN(DirectoryTest);
 };
@@ -100,9 +103,9 @@ TEST_F(DirectoryTest, scheduledRemove)
     ASSERT_FALSE(directory->contains(firstKey));
 }
 
-TEST(UnfixturedDirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
+TEST_F(DirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
 {
-    Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
+    Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory",  singleThreadedIOService.getIOService());
     {
         auto tp = std::make_shared<TrackableObject>();
         ASSERT_EQ(TrackableObject::getInstances(), 1);
@@ -114,9 +117,9 @@ TEST(UnfixturedDirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
     delete directory;
 }
 
-TEST(UnfixturedDirectoryTest, ObjectsAreDeletedIfDirectoryIsDeleted)
+TEST_F(DirectoryTest, ObjectsAreDeletedIfDirectoryIsDeleted)
 {
-    Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
+    Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory",  singleThreadedIOService.getIOService());
     {
         auto tp = std::make_shared<TrackableObject>();
         ASSERT_EQ(TrackableObject::getInstances(), 1);
@@ -126,11 +129,11 @@ TEST(UnfixturedDirectoryTest, ObjectsAreDeletedIfDirectoryIsDeleted)
     ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete Object";
 }
 
-TEST(UnfixturedDirectoryTest, useStdStringKeys)
+TEST_F(DirectoryTest, useStdStringKeys)
 {
     std::string key = "key";
     auto value = std::make_shared<std::string>("value");
-    Directory<std::string, std::string> directory("Directory");
+    Directory<std::string, std::string> directory("Directory",  singleThreadedIOService.getIOService());
     ASSERT_FALSE(directory.contains(key)) << "Empty directory contains entry.";
     directory.add(key, value);
     ASSERT_TRUE(directory.contains(key));

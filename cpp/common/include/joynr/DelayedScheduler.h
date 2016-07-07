@@ -24,6 +24,7 @@
 #include <mutex>
 #include <chrono>
 #include <functional>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -53,9 +54,9 @@ public:
      *      has expired
      * @param defaultDelayMs Default delay used by @ref schedule
      */
-    explicit DelayedScheduler(
-            std::function<void(Runnable*)> onWorkAvailable,
-            std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
+    DelayedScheduler(std::function<void(Runnable*)> onWorkAvailable,
+                     boost::asio::io_service& ioService,
+                     std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
     /**
      * @brief Destructor

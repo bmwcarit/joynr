@@ -29,6 +29,7 @@ namespace joynr
 INIT_LOGGER(DelayedScheduler);
 
 DelayedScheduler::DelayedScheduler(std::function<void(Runnable*)> onWorkAvailable,
+                                   boost::asio::io_service& ioService,
                                    std::chrono::milliseconds defaultDelayMs)
         : defaultDelayMs(defaultDelayMs),
           onWorkAvailable(onWorkAvailable),
@@ -37,6 +38,7 @@ DelayedScheduler::DelayedScheduler(std::function<void(Runnable*)> onWorkAvailabl
           writeLock(),
           timer()
 {
+    std::ignore = ioService;
 }
 
 DelayedScheduler::~DelayedScheduler()

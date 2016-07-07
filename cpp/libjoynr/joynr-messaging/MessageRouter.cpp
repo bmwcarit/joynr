@@ -68,13 +68,14 @@ MessageRouter::~MessageRouter()
 
 MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                              std::unique_ptr<IPlatformSecurityManager> securityManager,
+                             boost::asio::io_service& ioService,
                              int maxThreads,
                              std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
           messagingStubFactory(std::move(messagingStubFactory)),
-          routingTable("MessageRouter-RoutingTable"),
+          routingTable("MessageRouter-RoutingTable", ioService),
           routingTableLock(),
-          messageScheduler(maxThreads, "MessageRouter"),
+          messageScheduler(maxThreads, "MessageRouter", ioService),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(),
@@ -96,13 +97,14 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
 MessageRouter::MessageRouter(
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
+        boost::asio::io_service& ioService,
         int maxThreads,
         std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
           messagingStubFactory(std::move(messagingStubFactory)),
-          routingTable("MessageRouter-RoutingTable"),
+          routingTable("MessageRouter-RoutingTable", ioService),
           routingTableLock(),
-          messageScheduler(maxThreads, "MessageRouter"),
+          messageScheduler(maxThreads, "MessageRouter", ioService),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(incomingAddress),

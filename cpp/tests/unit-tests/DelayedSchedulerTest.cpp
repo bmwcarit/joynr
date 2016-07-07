@@ -24,6 +24,7 @@
 
 #include "utils/MockObjects.h"
 #include "tests/utils/TimeUtils.h"
+#include "joynr/SingleThreadedIOService.h"
 
 #include <cstdint>
 #include <cassert>
@@ -44,13 +45,13 @@ class SimpleDelayedScheduler :
 public:
 
     SimpleDelayedScheduler()
-        : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1)),
+        : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1), singleThreadedIOService.getIOService()),
           est_ms(0)
     {
     }
 
     SimpleDelayedScheduler(const std::uint64_t delay)
-        : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1)),
+        : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1), singleThreadedIOService.getIOService()),
           est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
     {
     }
@@ -90,6 +91,7 @@ public:
 
 private:
     const std::uint64_t est_ms;
+    SingleThreadedIOService singleThreadedIOService;
 };
 
 TEST(DelayedSchedulerTest, startAndShutdownWithoutWork)

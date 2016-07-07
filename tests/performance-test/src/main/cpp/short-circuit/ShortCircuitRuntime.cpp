@@ -51,20 +51,22 @@ ShortCircuitRuntime::ShortCircuitRuntime()
 
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
 
-    messageRouter = std::make_shared<MessageRouter>(
-            std::move(messagingStubFactory), libjoynrMessagingAddress);
+    messageRouter = std::make_shared<MessageRouter>(std::move(messagingStubFactory),
+                                                    libjoynrMessagingAddress,
+                                                    singleThreadedIOService.getIOService());
 
     joynrMessageSender = std::make_unique<JoynrMessageSender>(messageRouter);
-    joynrDispatcher = new Dispatcher(joynrMessageSender.get());
+    joynrDispatcher =
+            new Dispatcher(joynrMessageSender.get(), singleThreadedIOService.getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     dispatcherMessagingSkeleton =
             std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = new PublicationManager();
-    subscriptionManager = new SubscriptionManager();
-    inProcessDispatcher = new InProcessDispatcher();
+    publicationManager = new PublicationManager(singleThreadedIOService.getIOService());
+    subscriptionManager = new SubscriptionManager(singleThreadedIOService.getIOService());
+    inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());
 
     inProcessPublicationSender = std::make_unique<InProcessPublicationSender>(subscriptionManager);
     inProcessConnectorFactory = new InProcessConnectorFactory(

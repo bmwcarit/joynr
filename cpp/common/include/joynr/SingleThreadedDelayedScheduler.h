@@ -22,6 +22,7 @@
 #include <chrono>
 #include <atomic>
 #include <mutex>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
@@ -50,6 +51,7 @@ public:
      */
     explicit SingleThreadedDelayedScheduler(
             const std::string& threadName,
+            boost::asio::io_service& ioService,
             std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
     /**

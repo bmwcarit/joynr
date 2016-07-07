@@ -23,6 +23,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <memory>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
@@ -119,8 +120,8 @@ class Directory : public IDirectory<Key, T>
 public:
     Directory() = default;
 
-    explicit Directory(const std::string& directoryName)
-            : callbackMap(), mutex(), callBackRemoverScheduler("DirRemover")
+    Directory(const std::string& directoryName, boost::asio::io_service& ioService)
+            : callbackMap(), mutex(), callBackRemoverScheduler("DirRemover", ioService)
     {
         std::ignore = directoryName;
     }

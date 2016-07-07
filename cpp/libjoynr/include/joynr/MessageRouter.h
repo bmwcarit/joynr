@@ -23,6 +23,7 @@
 #include <mutex>
 #include <string>
 #include <memory>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -73,11 +74,13 @@ public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                   std::unique_ptr<IPlatformSecurityManager> securityManager,
+                  boost::asio::io_service& ioService,
                   int maxThreads = 6,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                   std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
+                  boost::asio::io_service& ioService,
                   int maxThreads = 6,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
