@@ -28,12 +28,12 @@ import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.proxy.ProxyBuilderFactory;
 
 import javax.inject.Named;
 
+import joynr.system.RoutingProvider;
 import joynr.system.RoutingTypes.Address;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,7 +58,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
                                    @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                    CapabilitiesRegistrar capabilitiesRegistrar,
                                    @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
-                                   MessageRouter messageRouter) {
+                                   RoutingProvider routingProvider) {
         // CHECKSTYLE:ON
         super(objectMapper,
               builderFactory,
@@ -75,7 +75,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
               discoveryProviderAddress,
               capabilitiesRegistrar,
               localCapabilitiesDirectory,
-              messageRouter);
+              routingProvider);
         // CHECKSTYLE:ON
     }
 

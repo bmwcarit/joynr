@@ -23,11 +23,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.provider.DeferredVoid;
-import io.joynr.provider.Promise;
-import io.joynr.proxy.Callback;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
@@ -39,8 +35,6 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.CheckForNull;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -75,7 +69,7 @@ public class ChildMessageRouter extends MessageRouterImpl {
         if (address == null && parentRouter != null) {
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {
-                super.addNextHopInternal(toParticipantId, parentRouterMessagingAddress);
+                super.addNextHop(toParticipantId, parentRouterMessagingAddress);
                 address = parentRouterMessagingAddress;
             }
         }
@@ -83,47 +77,34 @@ public class ChildMessageRouter extends MessageRouterImpl {
     }
 
     @Override
-    protected Promise<DeferredVoid> addNextHopInternal(final String participantId, final Address address) {
-        super.addNextHopInternal(participantId, address);
-        final DeferredVoid deferred = new DeferredVoid();
+    public void addNextHop(final String participantId, final Address address) {
+        super.addNextHop(participantId, address);
         if (parentRouter != null) {
-            addNextHopToParent(participantId, deferred);
+            addNextHopToParent(participantId);
         } else {
             deferredParentHops.add(new Runnable() {
                 @Override public void run() {
-                    addNextHopToParent(participantId, deferred);
+                    addNextHopToParent(participantId);
                 }
             });
         }
-        return new Promise<DeferredVoid>(deferred);
     }
 
-    private void addNextHopToParent(String participantId, final DeferredVoid deferred) {
+    private void addNextHopToParent(String participantId) {
         logger.debug("Adding next hop with participant id " + participantId + " to parent router");
-        Callback<Void> callback = new Callback<Void>() {
-            @Override
-            public void onSuccess(@CheckForNull Void result) {
-                deferred.resolve();
-            }
-
-            @Override
-            public void onFailure(JoynrRuntimeException error) {
-                deferred.reject(new ProviderRuntimeException("Failed to add next hop to parent: " + error));
-            }
-        };
         if (incomingAddress instanceof ChannelAddress) {
-            parentRouter.addNextHop(callback, participantId, (ChannelAddress) incomingAddress);
+            parentRouter.addNextHop(participantId, (ChannelAddress) incomingAddress);
         } else if (incomingAddress instanceof CommonApiDbusAddress) {
-            parentRouter.addNextHop(callback, participantId, (CommonApiDbusAddress) incomingAddress);
+            parentRouter.addNextHop(participantId, (CommonApiDbusAddress) incomingAddress);
         } else if (incomingAddress instanceof BrowserAddress) {
-            parentRouter.addNextHop(callback, participantId, (BrowserAddress) incomingAddress);
+            parentRouter.addNextHop(participantId, (BrowserAddress) incomingAddress);
         } else if (incomingAddress instanceof WebSocketAddress) {
-            parentRouter.addNextHop(callback, participantId, (WebSocketAddress) incomingAddress);
+            parentRouter.addNextHop(participantId, (WebSocketAddress) incomingAddress);
         } else if (incomingAddress instanceof WebSocketClientAddress) {
-            parentRouter.addNextHop(callback, participantId, (WebSocketClientAddress) incomingAddress);
+            parentRouter.addNextHop(participantId, (WebSocketClientAddress) incomingAddress);
         } else {
-            deferred.reject(new ProviderRuntimeException("Failed to add next hop to parent: unknown address type"
-                    + incomingAddress.getClass().getSimpleName()));
+            throw new ProviderRuntimeException("Failed to add next hop to parent: unknown address type"
+                    + incomingAddress.getClass().getSimpleName());
         }
     }
 
@@ -134,8 +115,8 @@ public class ChildMessageRouter extends MessageRouterImpl {
         this.parentRouter = parentRouter;
         this.parentRouterMessagingAddress = parentRouterMessagingAddress;
 
-        super.addNextHopInternal(parentRoutingProviderParticipantId, parentRouterMessagingAddress);
-        addNextHopToParent(routingProxyParticipantId, new DeferredVoid());
+        super.addNextHop(parentRoutingProviderParticipantId, parentRouterMessagingAddress);
+        addNextHopToParent(routingProxyParticipantId);
         for (Runnable deferredParentHop : deferredParentHops) {
             deferredParentHop.run();
         }

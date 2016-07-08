@@ -40,7 +40,6 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.proxy.Callback;
 import joynr.JoynrMessage;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
@@ -108,9 +107,7 @@ public class ChildMessageRouterTest {
     @SuppressWarnings("unchecked")
     public void passesNextHopToParent() {
         messageRouter.addNextHop(unknownParticipantId, nextHopAddress);
-        Mockito.verify(messageRouterParent).addNextHop(Mockito.any(Callback.class),
-                                                       Mockito.eq(unknownParticipantId),
-                                                       Mockito.eq(incomingAddress));
+        Mockito.verify(messageRouterParent).addNextHop(Mockito.eq(unknownParticipantId), Mockito.eq(incomingAddress));
     }
 
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
