@@ -25,7 +25,7 @@ public class StaticCapabilitiesProvisioningModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(CapabilitiesProvisioning.class).to(StaticCapabilitiesProvisioning.class);
+        bind(CapabilitiesProvisioning.class).to(StaticCapabilitiesProvisioning.class).asEagerSingleton();
     }
 
 }

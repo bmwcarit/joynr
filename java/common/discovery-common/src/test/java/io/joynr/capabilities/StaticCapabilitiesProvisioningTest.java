@@ -42,9 +42,9 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.AbstractModule;
+import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.ProvisionException;
 import com.google.inject.name.Names;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
@@ -190,7 +190,7 @@ public class StaticCapabilitiesProvisioningTest {
                 + entries, found);
     }
 
-    @Test(expected = ProvisionException.class)
+    @Test(expected = CreationException.class)
     public void testInvalidJson() throws IOException {
         Injector injector = createInjectorForJsonValue("this is not json");
         injector.getInstance(CapabilitiesProvisioning.class);
