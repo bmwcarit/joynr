@@ -865,25 +865,9 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         };
 
         JOYNR_LOG_DEBUG(logger, "run: executing requestInterpreter= {}", attributeGetter);
-        try {
-            Request dummyRequest;
-            dummyRequest.setMethodName(attributeGetter);
-            requestInterpreter->execute(requestCaller, dummyRequest, onSuccess, onError);
-            // ApplicationException is not possible for attributes in Franca
-        } catch (const exceptions::ProviderRuntimeException& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "Could not perform pollSubscription, caught exception: {} : {}",
-                            e.getTypeName(),
-                            e.getMessage());
-            onError(std::make_shared<exceptions::ProviderRuntimeException>(e));
-        } catch (const exceptions::JoynrRuntimeException& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "Could not perform an pollSubscription, caught exception: {} : {}",
-                            e.getTypeName(),
-                            e.getMessage());
-            onError(std::make_shared<exceptions::ProviderRuntimeException>(
-                    "caught exception: " + e.getTypeName() + ":" + e.getMessage()));
-        }
+        Request dummyRequest;
+        dummyRequest.setMethodName(attributeGetter);
+        requestInterpreter->execute(requestCaller, dummyRequest, onSuccess, onError);
     }
 }
 
