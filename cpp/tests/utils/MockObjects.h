@@ -746,26 +746,6 @@ public:
     MOCK_METHOD1(containsRequestCaller, bool(const std::string& participantId));
 };
 
-
-template <typename Key, typename T>
-class MockDirectory : public joynr::IDirectory<Key, T> {
-public:
-    MOCK_METHOD1_T(lookup, std::shared_ptr< T >(const Key& keyId));
-    MOCK_METHOD1_T(contains, bool(const Key& keyId));
-
-    MOCK_METHOD2_T(add, void(const Key &keyId, T* value));
-    MOCK_METHOD2_T(add, void(const Key& keyId, std::shared_ptr < T > value));
-
-    MOCK_METHOD3_T(add, void(const Key &keyId, T* value, std::int64_t ttl_ms));
-    MOCK_METHOD3_T(add, void(const Key& keyId, std::shared_ptr < T > value, std::int64_t ttl_ms));
-    MOCK_METHOD1_T(remove, void(const Key& keyId));
-};
-
-typedef MockDirectory<std::string, joynr::system::RoutingTypes::Address> MockMessagingEndpointDirectory;
-
-
-
-
 class MockSubscriptionManager : public joynr::SubscriptionManager {
 public:
     using SubscriptionManager::SubscriptionManager;
