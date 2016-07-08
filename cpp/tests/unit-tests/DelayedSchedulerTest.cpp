@@ -87,6 +87,9 @@ public:
         {
             JOYNR_LOG_TRACE(logger, "No delay given but work available called.");
         }
+        if (runnable->isDeleteOnExit()) {
+            delete runnable;
+        }
     }
 
 private:
@@ -150,16 +153,16 @@ TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
     SimpleDelayedScheduler scheduler(singleThreadedIOService);
-    StrictMock<MockRunnable> runnable1(true);
-    scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
+    StrictMock<MockRunnable> *runnable1 = new StrictMock<MockRunnable>(true);
+    scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
-    EXPECT_CALL(scheduler, workAvailableCalled(&runnable1)).Times(1);
+    EXPECT_CALL(scheduler, workAvailableCalled(runnable1)).Times(1);
+
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     scheduler.shutdown();
-
-    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
 }
 
 TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
