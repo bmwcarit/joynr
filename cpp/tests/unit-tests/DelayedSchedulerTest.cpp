@@ -18,25 +18,31 @@
  */
 
 #include "gtest/gtest.h"
-#include "joynr/Logger.h"
-
-#include "joynr/DelayedScheduler.h"
-
-#include "utils/MockObjects.h"
-#include "tests/utils/TimeUtils.h"
-#include "joynr/SingleThreadedIOService.h"
 
 #include <cstdint>
 #include <cassert>
+
+#include "joynr/DelayedScheduler.h"
+#include "joynr/Logger.h"
+#include "joynr/Semaphore.h"
+#include "joynr/SingleThreadedIOService.h"
+#include "tests/utils/TimeUtils.h"
+#include "utils/MockObjects.h"
+
 
 using namespace joynr;
 
 using namespace ::testing;
 using ::testing::StrictMock;
 
+ACTION_P(ReleaseSemaphore, semaphore)
+{
+    semaphore->notify();
+}
+
 
 // Expected accuracy of the timer in milliseconds
-static const std::uint64_t timerAccuracy_ms = 5U;
+static const std::uint64_t timerAccuracy_ms = 15U;
 
 class SimpleDelayedScheduler :
     public DelayedScheduler
@@ -50,12 +56,6 @@ public:
     {
     }
 
-    SimpleDelayedScheduler(const std::uint64_t delay, SingleThreadedIOService& singleThreadedIOService)
-        : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1), singleThreadedIOService.getIOService()),
-          est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
-    {
-    }
-
     ~SimpleDelayedScheduler() = default;
 
 #pragma GCC diagnostic push
@@ -64,13 +64,21 @@ public:
     MOCK_CONST_METHOD0(workAvailableInTime, void ());
 #pragma GCC diagnostic pop
 
+    DelayedScheduler::RunnableHandle schedule(Runnable* runnable,
+                  std::chrono::milliseconds delay)
+    {
+        RunnableHandle currentHandle = DelayedScheduler::schedule(runnable, delay);
+        est_ms = TimeUtils::getCurrentMillisSinceEpoch() + delay.count();
+        return currentHandle;
+    }
+
     void workAvailable(Runnable* runnable)
     {
+        const std::uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
         workAvailableCalled(runnable);
 
         if(est_ms > 0)
         {
-            const std::uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
             const std::uint64_t diff_ms = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
 
             JOYNR_LOG_TRACE(logger, "Runnable is available");
@@ -93,7 +101,7 @@ public:
     }
 
 private:
-    const std::uint64_t est_ms;
+    std::uint64_t est_ms;
 };
 
 TEST(DelayedSchedulerTest, startAndShutdownWithoutWork)
@@ -132,16 +140,17 @@ TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCo
 
 TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 {
+    joynr::Semaphore semaphore;
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
-    SimpleDelayedScheduler scheduler(5, singleThreadedIOService);
+    SimpleDelayedScheduler scheduler(singleThreadedIOService);
     StrictMock<MockRunnable> runnable1(false);
     scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
 
     EXPECT_CALL(scheduler, workAvailableCalled(&runnable1)).Times(1);
-    EXPECT_CALL(scheduler, workAvailableInTime()).Times(1);
+    EXPECT_CALL(scheduler, workAvailableInTime()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 
     scheduler.shutdown();
 
@@ -150,17 +159,18 @@ TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 
 TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
 {
+    joynr::Semaphore semaphore;
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
     SimpleDelayedScheduler scheduler(singleThreadedIOService);
     StrictMock<MockRunnable> *runnable1 = new StrictMock<MockRunnable>(true);
     scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
-    EXPECT_CALL(scheduler, workAvailableCalled(runnable1)).Times(1);
+    EXPECT_CALL(scheduler, workAvailableCalled(runnable1)).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(100)));
 
     scheduler.shutdown();
 }
@@ -169,36 +179,36 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
 {
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
-    SimpleDelayedScheduler scheduler(5, singleThreadedIOService);
+    SimpleDelayedScheduler scheduler(singleThreadedIOService);
     StrictMock<MockRunnable> runnable1(false);
-    DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-    scheduler.unschedule(handle);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-    scheduler.shutdown();
+    DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(50));
 
     EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+    EXPECT_CALL(scheduler, workAvailableCalled(&runnable1)).Times(0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    scheduler.unschedule(handle);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    scheduler.shutdown();
 }
 
 TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
 {
+    joynr::Semaphore semaphore;
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
-    SimpleDelayedScheduler scheduler(5, singleThreadedIOService);
+    SimpleDelayedScheduler scheduler(singleThreadedIOService);
     StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
-    DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
+    DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(50));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
 
     scheduler.unschedule(handle);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(100)));
 
     scheduler.shutdown();
 }
