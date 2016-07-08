@@ -36,8 +36,8 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -45,13 +45,13 @@ import java.util.concurrent.ScheduledExecutorService;
  */
  @Singleton
 public class ChildMessageRouter extends MessageRouterImpl {
-
-    private Logger logger = LoggerFactory.getLogger(ChildMessageRouter.class);
+     private Logger logger = LoggerFactory.getLogger(ChildMessageRouter.class);
 
     private Address parentRouterMessagingAddress;
     private RoutingProxy parentRouter;
     private Address incomingAddress;
-    private List<Runnable> deferredParentHops = new LinkedList<>();
+    private Set<String> deferredParentHopsParticipantIds = new HashSet<>();
+
 
     @Inject
     public ChildMessageRouter(RoutingTable routingTable,
@@ -82,11 +82,7 @@ public class ChildMessageRouter extends MessageRouterImpl {
         if (parentRouter != null) {
             addNextHopToParent(participantId);
         } else {
-            deferredParentHops.add(new Runnable() {
-                @Override public void run() {
-                    addNextHopToParent(participantId);
-                }
-            });
+            deferredParentHopsParticipantIds.add(participantId);
         }
     }
 
@@ -117,10 +113,10 @@ public class ChildMessageRouter extends MessageRouterImpl {
 
         super.addNextHop(parentRoutingProviderParticipantId, parentRouterMessagingAddress);
         addNextHopToParent(routingProxyParticipantId);
-        for (Runnable deferredParentHop : deferredParentHops) {
-            deferredParentHop.run();
+        for (String participantIds : deferredParentHopsParticipantIds) {
+            addNextHopToParent(participantIds);
         }
-
+        deferredParentHopsParticipantIds.clear();
     }
 
     /**
