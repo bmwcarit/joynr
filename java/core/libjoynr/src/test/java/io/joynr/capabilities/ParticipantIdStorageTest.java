@@ -19,20 +19,23 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.name.Names;
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.proxy.RpcStubbingTest.TestProvider;
+import joynr.types.GlobalDiscoveryEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.inject.Injector;
-
 import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ParticipantIdStorageTest {
@@ -40,14 +43,25 @@ public class ParticipantIdStorageTest {
     private static final String TOKEN2_PARTICIPANT = "token2Participant";
     ParticipantIdStorage storage;
 
+    @Mock
+    private GlobalDiscoveryEntry capabilitiesDirectoryEntry;
+
+    @Mock
+    private GlobalDiscoveryEntry domainAccessControllerEntry;
+
     @Before
     public void setUp() {
         Injector injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
+                bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY))
+                                                .toInstance(capabilitiesDirectoryEntry);
+                bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(MessagingPropertyKeys.DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY))
+                                                .toInstance(domainAccessControllerEntry);
                 bind(ParticipantIdStorage.class).to(PropertiesFileParticipantIdStorage.class);
             }
-        }, new JoynrPropertiesModule(new Properties()));
+        },
+                                                 new JoynrPropertiesModule(new Properties()));
         storage = injector.getInstance(ParticipantIdStorage.class);
     }
 

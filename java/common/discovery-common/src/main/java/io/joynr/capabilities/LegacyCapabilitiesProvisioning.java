@@ -141,7 +141,7 @@ public class LegacyCapabilitiesProvisioning {
                                          String urlForAddress,
                                          String localChannelId,
                                          String domain) {
-        if (!participantId.isEmpty() && !urlForAddress.isEmpty() && !channelId.isEmpty() && !domain.isEmpty()) {
+        if (isPresent(participantId) && isPresent(urlForAddress) && isPresent(channelId) && isPresent(domain)) {
             Address address;
             if (localChannelId.equals(channelId)) {
                 address = new InProcessAddress();
@@ -165,6 +165,10 @@ public class LegacyCapabilitiesProvisioning {
         } else {
             logger.debug("Insufficient properties data to create entry for interface {}", interfaceName);
         }
+    }
+
+    private boolean isPresent(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     public DiscoveryEntry getDiscoveryEntryForInterface(Class<?> serviceInterface) {
