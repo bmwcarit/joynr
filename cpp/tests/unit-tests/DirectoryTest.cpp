@@ -146,3 +146,17 @@ TEST_F(DirectoryTest, lookupNonExisingKeys)
 {
     ASSERT_TRUE(nullptr == directory->lookup("__THIS__KEY__DOES__NOT__EXIST__"));
 }
+
+TEST_F(DirectoryTest, useLastTTLForKey)
+{
+    Directory<std::string, std::string> directory("Directory",  singleThreadedIOService.getIOService());
+    auto value = std::make_shared<std::string>("value");
+    std::string key("key");
+
+    directory.add(key, value, 100000); // Won't be removed after 50 ms (see sleep_for below)
+    directory.add(key, value, 10);     // Will be removed after 50 ms
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    ASSERT_FALSE(directory.contains(key));
+}
