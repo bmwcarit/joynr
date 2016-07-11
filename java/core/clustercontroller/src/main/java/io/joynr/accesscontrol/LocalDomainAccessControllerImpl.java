@@ -19,16 +19,6 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import io.joynr.accesscontrol.broadcastlistener.LdacDomainRoleEntryChangedBroadcastListener;
-import io.joynr.accesscontrol.broadcastlistener.LdacMasterAccessControlEntryChangedBroadcastListener;
-import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryChangedBroadcastListener;
-import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChangedBroadcastListener;
-import io.joynr.accesscontrol.primarykey.UserDomainInterfaceOperationKey;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.proxy.Callback;
-import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilderFactory;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -36,14 +26,20 @@ import java.util.Map;
 
 import javax.annotation.CheckForNull;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import io.joynr.accesscontrol.broadcastlistener.LdacDomainRoleEntryChangedBroadcastListener;
+import io.joynr.accesscontrol.broadcastlistener.LdacMasterAccessControlEntryChangedBroadcastListener;
+import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryChangedBroadcastListener;
+import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChangedBroadcastListener;
+import io.joynr.accesscontrol.primarykey.UserDomainInterfaceOperationKey;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.proxy.Callback;
+import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.OnChangeSubscriptionQos;
-import joynr.infrastructure.GlobalCapabilitiesDirectory;
-import joynr.infrastructure.GlobalDomainAccessController;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MediatorAccessControlEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
@@ -52,15 +48,17 @@ import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
-
+import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.GlobalDomainAccessController;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastFilterParameters;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MediatorAccessControlEntryChangedBroadcastFilterParameters;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastFilterParameters;
 import joynr.system.Discovery;
 import joynr.system.Routing;
+import joynr.types.GlobalDiscoveryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 @Singleton
 public class LocalDomainAccessControllerImpl implements LocalDomainAccessController {
@@ -107,11 +105,11 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     }
 
     @Inject
-    public LocalDomainAccessControllerImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
+    public LocalDomainAccessControllerImpl(@Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry,
                                            DomainAccessControlStore localDomainAccessStore,
                                            ProxyBuilderFactory proxyBuilderFactory,
                                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain) {
-        this.discoveryDirectoriesDomain = discoveryDirectoriesDomain;
+        this.discoveryDirectoriesDomain = capabilitiesDirectoryEntry.getDomain();
         this.localDomainAccessStore = localDomainAccessStore;
         this.systemServicesDomain = systemServicesDomain;
         globalDomainAccessControllerClient = new GlobalDomainAccessControllerClient(discoveryDirectoriesDomain,
