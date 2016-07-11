@@ -89,7 +89,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     // the current machine how often the publication is exectuted. Hence,
     // we expect the publication to haben between 3 or 5 times.
     EXPECT_CALL(mockPublicationSender,
-                sendSubscriptionPublication(_,_,_,_))
+                sendSubscriptionPublicationMock(_,_,_,_))
             .Times(Between(3, 5));
 
     std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
@@ -126,7 +126,7 @@ TEST_F(PublicationManagerTest, stop_publications) {
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     EXPECT_CALL(mockPublicationSender,
-                sendSubscriptionPublication(_,_,_,_))
+                sendSubscriptionPublicationMock(_,_,_,_))
             .Times(AtMost(2));
 
     std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
@@ -169,7 +169,7 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     EXPECT_CALL(mockPublicationSender,
-                sendSubscriptionPublication(_,_,_,_))
+                sendSubscriptionPublicationMock(_,_,_,_))
             .Times(AtMost(2));
 
     std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
@@ -216,7 +216,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     // Expect an attribute change to send a publication as well as during registering subscription request
     EXPECT_CALL(
                 mockPublicationSender,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -285,7 +285,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
                 mockPublicationSender,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -355,7 +355,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
                 mockPublicationSender,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -430,7 +430,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     expectedPublication.setResponse(std::move(attributeValue));
     EXPECT_CALL(
                 mockPublicationSender,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -441,7 +441,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
 
     EXPECT_CALL(
                 mockPublicationSender2,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -551,7 +551,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     expectedPublication.setResponse(std::move(attributeValue));
     EXPECT_CALL(
                 mockPublicationSender,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -642,7 +642,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     expectedPublication.setResponse(std::move(attributeValue));
     EXPECT_CALL(
                 mockPublicationSender,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -738,7 +738,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     EXPECT_CALL(
                 mockPublicationSender,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -749,7 +749,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     EXPECT_CALL(
                 mockPublicationSender2,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -853,7 +853,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     EXPECT_CALL(
                 mockPublicationSender,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -936,7 +936,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     EXPECT_CALL(
                 mockPublicationSender,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS
@@ -1009,7 +1009,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     // A publication should never be sent
     EXPECT_CALL(
                 mockPublicationSender,
-                sendSubscriptionPublication(
+                sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
                     _, // messaging QoS

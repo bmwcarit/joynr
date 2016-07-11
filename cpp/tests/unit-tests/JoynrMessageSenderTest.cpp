@@ -288,5 +288,5 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     EXPECT_CALL(*(messagingStub.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION)),
                                                       Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
-    joynrMessageSender.sendSubscriptionPublication(senderID, receiverID, qosSettings, publication);
+    joynrMessageSender.sendSubscriptionPublication(senderID, receiverID, qosSettings, std::move(publication));
 }

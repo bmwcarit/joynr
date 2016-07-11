@@ -375,7 +375,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
         SubscriptionPublication subscriptionPublication =
                 JsonSerializer::deserialize<SubscriptionPublication>(jsonSubscriptionPublication);
 
-        std::string subscriptionId = subscriptionPublication.getSubscriptionId();
+        const std::string subscriptionId = subscriptionPublication.getSubscriptionId();
 
         assert(subscriptionManager != nullptr);
 
@@ -396,7 +396,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
         // PublicationInterpreter polymorphism
         IPublicationInterpreter& interpreter =
                 MetaTypeRegistrar::instance().getPublicationInterpreter(typeId);
-        interpreter.execute(callback, subscriptionPublication);
+        interpreter.execute(callback, std::move(subscriptionPublication));
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(
                 logger,

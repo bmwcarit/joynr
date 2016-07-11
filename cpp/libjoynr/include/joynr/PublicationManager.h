@@ -279,7 +279,7 @@ private:
             std::shared_ptr<Publication> publication,
             std::shared_ptr<SubscriptionInformation> subscriptionInformation,
             std::shared_ptr<SubscriptionRequest> request,
-            const SubscriptionPublication& subscriptionPublication);
+            SubscriptionPublication&& subscriptionPublication);
 
     void sendPublicationError(std::shared_ptr<Publication> publication,
                               std::shared_ptr<SubscriptionInformation> subscriptionInformation,

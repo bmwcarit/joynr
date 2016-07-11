@@ -40,7 +40,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,
         const MessagingQos& qos,
-        const SubscriptionPublication& subscriptionPublication)
+        SubscriptionPublication&& subscriptionPublication)
 {
     std::ignore = senderParticipantId; // interface has sourcePartId, because JoynrMessages have a
                                        // source and dest. partId. Those are not necessary for in
@@ -52,7 +52,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       * just call the InProcessDispatcher!
       */
 
-    std::string subscriptionId = subscriptionPublication.getSubscriptionId();
+    const std::string subscriptionId = subscriptionPublication.getSubscriptionId();
     JOYNR_LOG_TRACE(logger, "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);
@@ -72,7 +72,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
     IPublicationInterpreter& interpreter =
             MetaTypeRegistrar::instance().getPublicationInterpreter(typeId);
     JOYNR_LOG_TRACE(logger, "Interpreting publication. id={}", subscriptionId);
-    interpreter.execute(callback, subscriptionPublication);
+    interpreter.execute(callback, std::move(subscriptionPublication));
 }
 
 } // namespace joynr

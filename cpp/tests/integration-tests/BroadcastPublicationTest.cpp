@@ -146,7 +146,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
     ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
     ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
 
-    EXPECT_CALL(*publicationSender, sendSubscriptionPublication(
+    EXPECT_CALL(*publicationSender, sendSubscriptionPublicationMock(
                     Eq(providerParticipantId),
                     Eq(proxyParticipantId),
                     _,
@@ -206,7 +206,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
     ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
     ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(false));
 
-    EXPECT_CALL(*publicationSender, sendSubscriptionPublication(
+    EXPECT_CALL(*publicationSender, sendSubscriptionPublicationMock(
                     Eq(providerParticipantId),
                     Eq(proxyParticipantId),
                     _,

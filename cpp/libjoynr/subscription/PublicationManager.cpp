@@ -734,7 +734,7 @@ void PublicationManager::sendPublicationError(
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
     subscriptionPublication.setError(std::move(exception));
     sendSubscriptionPublication(
-            publication, subscriptionInformation, request, subscriptionPublication);
+            publication, subscriptionInformation, request, std::move(subscriptionPublication));
     JOYNR_LOG_DEBUG(logger, "sent subscription error");
 }
 
@@ -742,7 +742,7 @@ void PublicationManager::sendSubscriptionPublication(
         std::shared_ptr<Publication> publication,
         std::shared_ptr<SubscriptionInformation> subscriptionInformation,
         std::shared_ptr<SubscriptionRequest> request,
-        const SubscriptionPublication& subscriptionPublication)
+        SubscriptionPublication&& subscriptionPublication)
 {
 
     MessagingQos mQos;
@@ -756,7 +756,7 @@ void PublicationManager::sendSubscriptionPublication(
     publicationSender->sendSubscriptionPublication(subscriptionInformation->getProviderId(),
                                                    subscriptionInformation->getProxyId(),
                                                    mQos,
-                                                   subscriptionPublication);
+                                                   std::move(subscriptionPublication));
 
     // Make note of when this publication was sent
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -780,7 +780,7 @@ void PublicationManager::sendPublication(
     SubscriptionPublication subscriptionPublication(std::move(response));
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
     sendSubscriptionPublication(
-            publication, subscriptionInformation, request, subscriptionPublication);
+            publication, subscriptionInformation, request, std::move(subscriptionPublication));
     JOYNR_LOG_TRACE(logger, "sent subscription reply");
 }
 

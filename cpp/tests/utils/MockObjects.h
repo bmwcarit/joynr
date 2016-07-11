@@ -424,7 +424,7 @@ public:
     );
 
     MOCK_METHOD4(
-            sendSubscriptionPublication,
+            sendSubscriptionPublicationMock,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
@@ -432,6 +432,15 @@ public:
                 const joynr::SubscriptionPublication& subscriptionPublication
             )
     );
+    
+    void sendSubscriptionPublication(
+        const std::string& senderParticipantId,
+        const std::string& receiverParticipantId,
+        const joynr::MessagingQos& qos,
+        joynr::SubscriptionPublication&& subscriptionPublication
+    ){
+        sendSubscriptionPublicationMock(senderParticipantId,receiverParticipantId,qos,subscriptionPublication);
+    }
 };
 
 template <typename T>
@@ -454,7 +463,7 @@ public:
 class MockPublicationSender : public joynr::IPublicationSender {
 public:
     MOCK_METHOD4(
-            sendSubscriptionPublication,
+            sendSubscriptionPublicationMock,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
@@ -463,6 +472,14 @@ public:
             )
     );
 
+    void sendSubscriptionPublication(
+        const std::string& senderParticipantId,
+        const std::string& receiverParticipantId,
+        const joynr::MessagingQos& qos,
+        joynr::SubscriptionPublication&& subscriptionPublication
+    ){
+        sendSubscriptionPublicationMock(senderParticipantId,receiverParticipantId,qos,subscriptionPublication);
+    }
 };
 
 class MockClientCache : public joynr::IClientCache {

@@ -37,7 +37,7 @@ public:
     virtual ~IPublicationInterpreter() = default;
     // The ReplyCaller is the instance that calls the actual receiver of the reply.
     virtual void execute(std::shared_ptr<ISubscriptionCallback> callback,
-                         const SubscriptionPublication& subscriptionPublication) = 0;
+                         SubscriptionPublication&& subscriptionPublication) = 0;
 };
 
 } // namespace joynr
