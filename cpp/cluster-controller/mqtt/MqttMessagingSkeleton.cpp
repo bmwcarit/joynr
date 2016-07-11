@@ -21,6 +21,7 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -66,7 +67,8 @@ void MqttMessagingSkeleton::transmit(
 void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
 {
     try {
-        JoynrMessage msg = JsonSerializer::deserialize<JoynrMessage>(message);
+        JoynrMessage msg;
+        joynr::serializer::deserializeFromJson(msg, message);
 
         if (msg.getType().empty()) {
             JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");

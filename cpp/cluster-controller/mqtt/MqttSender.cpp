@@ -18,9 +18,9 @@
  */
 #include "MqttSender.h"
 
-#include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -55,7 +55,7 @@ void MqttSender::sendMessage(
 
     waitForReceiveQueueStarted();
 
-    std::string serializedMessage = JsonSerializer::serialize(message);
+    std::string serializedMessage = joynr::serializer::serializeToJson(message);
 
     const int payloadLength = serializedMessage.length();
     const void* payload = serializedMessage.c_str();

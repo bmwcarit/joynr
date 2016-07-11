@@ -32,6 +32,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/QtTypeUtil.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -77,7 +78,7 @@ void HttpSender::sendMessage(
             dynamic_cast<const system::RoutingTypes::ChannelAddress&>(destinationAddress);
 
     JOYNR_LOG_TRACE(logger, "sendMessage: ...");
-    std::string&& serializedMessage = JsonSerializer::serialize(message);
+    std::string&& serializedMessage = joynr::serializer::serializeToJson(message);
 
     auto startTime = std::chrono::system_clock::now();
 

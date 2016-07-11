@@ -48,10 +48,7 @@ void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const std::string
     // deserialize message and transmit
     try {
         JoynrMessage joynrMsg;
-        using Stream = muesli::StringIStream;
-        Stream stream(message);
-        muesli::JsonInputArchive<Stream> archive(stream);
-        archive(joynrMsg);
+        joynr::serializer::deserializeFromJson(joynrMsg, message);
         if (joynrMsg.getType().empty()) {
             JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message);
             return;

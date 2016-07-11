@@ -74,8 +74,6 @@ private:
     void handleSubscriptionRequestReceived(const JoynrMessage& message);
     void handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message);
     void handleSubscriptionStopReceived(const JoynrMessage& message);
-    template <typename T>
-    static T deserializePayload(const JoynrMessage& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Dispatcher);

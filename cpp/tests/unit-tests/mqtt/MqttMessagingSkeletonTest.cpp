@@ -18,6 +18,9 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include "joynr/serializer/Serializer.h"
+
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 #include "tests/utils/MockObjects.h"
 
@@ -106,7 +109,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest) {
 
 TEST_F(MqttMessagingSkeletonTest, onTextMessageReceivedTest) {
     MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter);
-    std::string serializedMessage = JsonSerializer::serialize<JoynrMessage>(message);
+    std::string serializedMessage = serializer::serializeToJson(message);
     EXPECT_CALL(mockMessageRouter, route(AllOf(Property(&JoynrMessage::getType, Eq(message.getType())),
                                             Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_)).Times(1);
     mqttMessagingSkeleton.onTextMessageReceived(serializedMessage);

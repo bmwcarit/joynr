@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/identity.hpp>
@@ -34,6 +35,35 @@
 
 #include "joynr/Util.h"
 #include "joynr/serializer/JsonDeserializable.h"
+
+namespace joynr
+{
+namespace serializer
+{
+
+template <typename T>
+void deserializeFromJson(T& value, std::string str)
+{
+    using InputStream = muesli::StringIStream;
+    using InputArchive = muesli::JsonInputArchive<InputStream>;
+
+    InputStream stream(std::move(str));
+    auto iarchive = std::make_shared<InputArchive>(stream);
+    (*iarchive)(value);
+}
+
+template <typename T>
+std::string serializeToJson(const T& value)
+{
+    using OutputStream = muesli::StringOStream;
+    using OutputArchive = muesli::JsonOutputArchive<OutputStream>;
+    OutputStream ostream;
+    OutputArchive oarchive(ostream);
+    oarchive(value);
+    return ostream.getString();
+}
+} // namespace serializer
+} // namespace joynr
 
 /*
 namespace joynr

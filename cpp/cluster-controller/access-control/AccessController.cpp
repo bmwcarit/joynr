@@ -113,7 +113,8 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
 
         try {
-            Request request = JsonSerializer::deserialize<Request>(message.getPayload());
+            Request request;
+            joynr::serializer::deserializeFromJson(request, message.getPayload());
             operation = request.getMethodName();
 
         } catch (const std::invalid_argument& e) {

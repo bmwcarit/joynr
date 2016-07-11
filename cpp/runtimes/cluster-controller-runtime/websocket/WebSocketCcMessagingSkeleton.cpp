@@ -147,10 +147,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
     // deserialize message and transmit
     try {
         JoynrMessage joynrMsg;
-        using Stream = muesli::StringIStream;
-        Stream stream(message.toStdString());
-        muesli::JsonInputArchive<Stream> archive(stream);
-        archive(joynrMsg);
+        joynr::serializer::deserializeFromJson(joynrMsg, message.toStdString());
         if (joynrMsg.getType().empty()) {
             JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message.toStdString());
             return;

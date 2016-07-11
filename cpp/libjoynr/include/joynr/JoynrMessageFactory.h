@@ -21,7 +21,6 @@
 
 #include <string>
 
-#include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/IPlatformSecurityManager.h"
 
@@ -113,16 +112,6 @@ private:
 
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     ADD_LOGGER(JoynrMessageFactory);
-
-    template <typename T>
-    std::string serializePayloadAsJson(const T& payload) const
-    {
-        using OutputStream = muesli::StringOStream;
-        OutputStream ostream;
-        muesli::JsonOutputArchive<OutputStream> oarchive(ostream);
-        oarchive(payload);
-        return ostream.getString();
-    }
 };
 
 } // namespace joynr

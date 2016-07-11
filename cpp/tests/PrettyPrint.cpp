@@ -20,6 +20,7 @@
 #include "PrettyPrint.h"
 
 #include "joynr/JsonSerializer.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/JoynrMessage.h"
@@ -55,11 +56,12 @@ namespace system {
 }
 }
 
- void PrintTo(const StatusCodeEnum& value, ::std::ostream* os) {
-     *os << StatusCode::toString(value) << std::endl;
- }
+void PrintTo(const StatusCodeEnum& value, ::std::ostream* os)
+{
+    *os << StatusCode::toString(value) << std::endl;
+}
 
- void PrintTo(const JoynrMessage& value, ::std::ostream* os)
- {
-     *os << JsonSerializer::serialize(value);
- }
+void PrintTo(const JoynrMessage& value, ::std::ostream* os)
+{
+    *os << joynr::serializer::serializeToJson(value);
+}

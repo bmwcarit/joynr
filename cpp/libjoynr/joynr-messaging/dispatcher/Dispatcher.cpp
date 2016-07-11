@@ -22,8 +22,6 @@
 #include <cstdint>
 #include <chrono>
 
-#include "muesli/archives/json/JsonInputArchive.h"
-
 #include "joynr/serializer/Serializer.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
@@ -145,7 +143,8 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 
     // deserialize Request
     try {
-        Request request = deserializePayload<Request>(message);
+        Request request;
+        joynr::serializer::deserializeFromJson(request, message.getPayload());
         const std::string& requestReplyId = request.getRequestReplyId();
         JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
 
@@ -219,7 +218,8 @@ void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
 
     // deserialize json
     try {
-        OneWayRequest request = deserializePayload<OneWayRequest>(message);
+        OneWayRequest request;
+        joynr::serializer::deserializeFromJson(request, message.getPayload());
         // execute request
         requestInterpreter->execute(caller, request);
     } catch (const std::invalid_argument& e) {
@@ -235,7 +235,8 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 {
     // deserialize the Reply
     try {
-        Reply reply = deserializePayload<Reply>(message);
+        Reply reply;
+        joynr::serializer::deserializeFromJson(reply, message.getPayload());
         std::string requestReplyId = reply.getRequestReplyId();
         std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId);
         if (caller == nullptr) {
@@ -413,18 +414,6 @@ void Dispatcher::registerSubscriptionManager(ISubscriptionManager* subscriptionM
 void Dispatcher::registerPublicationManager(PublicationManager* publicationManager)
 {
     this->publicationManager = publicationManager;
-}
-
-template <typename T>
-T Dispatcher::deserializePayload(const JoynrMessage& message)
-{
-    using Stream = muesli::StringIStream;
-    T payload;
-    Stream stream(message.getPayload());
-    auto archive = std::make_shared<muesli::JsonInputArchive<Stream>>(stream);
-    (*archive)(payload);
-
-    return payload;
 }
 
 } // namespace joynr
