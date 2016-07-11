@@ -32,6 +32,7 @@ define([
             "joynr/exceptions/DiscoveryException",
             "joynr/exceptions/NoCompatibleProviderFoundException",
             "joynr/types/Version",
+            "joynr/util/UtilInternal",
             "global/Promise",
             "Date",
             "global/WaitsFor"
@@ -48,6 +49,7 @@ define([
                 DiscoveryException,
                 NoCompatibleProviderFoundException,
                 Version,
+                Util,
                 Promise,
                 Date,
                 waitsFor) {
@@ -67,7 +69,7 @@ define([
                 jasmine.clock().tick(time_ms);
             }
 
-            function getDiscoveryEntry(domain, interfaceName, discoveryStrategy, providerVersion) {
+            function getDiscoveryEntry(domain, interfaceName, discoveryStrategy, providerVersion, supportsOnChangeSubscriptions) {
                 return new DiscoveryEntry({
                     providerVersion : providerVersion,
                     domain : domain,
@@ -76,7 +78,7 @@ define([
                         customParameter : [new CustomParameter( { name : "theName", value : "theValue"})],
                         priority : 123,
                         scope : discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY ? true : false,
-                        supportsOnChangeSubscriptions : true}),
+                        supportsOnChangeSubscriptions : supportsOnChangeSubscriptions}),
                     participandId : "700",
                     lastSeenDateMs : Date.now(),
                     publicKeyId : ""
@@ -91,25 +93,38 @@ define([
                                 domain : "myDomain",
                                 interfaceName : "myInterface",
                                 participantId : 1,
-                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11})
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
+                                qos : {
+                                    supportsOnChangeSubscriptions : true
+                                }
                             },
                             {
                                 domain : "myDomain",
                                 interfaceName : "myInterface",
                                 participantId : 2,
-                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11})
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
+                                qos : {
+                                    supportsOnChangeSubscriptions : false
+                                }
                             },
                             {
                                 domain : "otherDomain",
                                 interfaceName : "otherInterface",
                                 participantId : 3,
-                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11})
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
+                                qos : {
+                                    supportsOnChangeSubscriptions : true
+                                }
                             },
                             {
                                 domain : "thirdDomain",
                                 interfaceName : "otherInterface",
                                 participantId : 4,
-                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11})
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
+                                qos : {
+                                    supportsOnChangeSubscriptions : false
+                                }
+
                             }
                         ];
 
@@ -153,7 +168,8 @@ define([
                                         domain + i.toString(),
                                         interfaceName + i.toString(),
                                         discoveryQos.discoveryStrategy,
-                                        new Version({ majorVersion: 47, minorVersion: 11})
+                                        new Version({ majorVersion: 47, minorVersion: 11}),
+                                        false
                                 ));
                             }
 
@@ -288,7 +304,7 @@ define([
                             increaseFakeTime(1);
                         });
 
-                        it("returns capabilities from discovery", function(done) {
+                        function returnCapabilitiesFromDiscovery(providerMustSupportOnChange, discoveryEntries, expected, done) {
                             var onFulfilledSpy, onRejectedSpy;
 
                             // return discoveryEntries to check whether these are eventually
@@ -306,14 +322,14 @@ define([
                             arbitrator.startArbitration({
                                 domains : [domain],
                                 interfaceName : interfaceName,
-                                discoveryQos : discoveryQos,
+                                discoveryQos : new DiscoveryQos(Util.extend(discoveryQos, { providerMustSupportOnChange : providerMustSupportOnChange})),
                                 proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
                             }).then(onFulfilledSpy).catch(onRejectedSpy).then(function() {
                                 // arbitrator finally returned the discoveryEntries (unfiltered
                                 // because of ArbitrationStrategyCollection.Nothing)
                                 expect(onRejectedSpy).not.toHaveBeenCalled();
                                 expect(onFulfilledSpy).toHaveBeenCalled();
-                                expect(onFulfilledSpy).toHaveBeenCalledWith(discoveryEntries);
+                                expect(onFulfilledSpy).toHaveBeenCalledWith(expected);
                                 done();
                                 return null;
                             }).catch(function() {
@@ -321,6 +337,22 @@ define([
                                 return null;
                             });
                             increaseFakeTime(1);
+                        }
+
+                        function setSupportsOnChangeSubscriptionsToTrue(discoveryEntry) {
+                            discoveryEntry.qos = new ProviderQos(Util.extend(discoveryEntry.qos, { supportsOnChangeSubscriptions : true}));
+                        }
+
+                        it("returns capabilities from discovery", function(done) {
+                            returnCapabilitiesFromDiscovery(false, discoveryEntries, discoveryEntries, done);
+                        });
+
+                        it("returns filtered capabilities from discovery if discoveryQos.providerMustSupportOnChange is true", function(done) {
+                            setSupportsOnChangeSubscriptionsToTrue(discoveryEntries[1]);
+                            setSupportsOnChangeSubscriptionsToTrue(discoveryEntries[5]);
+                            setSupportsOnChangeSubscriptionsToTrue(discoveryEntries[11]);
+                            var filteredDiscoveryEntries = [discoveryEntries[1], discoveryEntries[5], discoveryEntries[11]];
+                            returnCapabilitiesFromDiscovery(true, discoveryEntries, filteredDiscoveryEntries, done);
                         });
 
                         it("returns capabilities with matching provider version", function(done) {
@@ -592,42 +624,113 @@ define([
                             done();
                         });
 
-                        function arbitratesCorrectly(domains, interfaceName, expected) {
-                            staticArbitrationSettings.domains = domains;
-                            staticArbitrationSettings.interfaceName = interfaceName;
+                        function arbitratesCorrectly(settings) {
+                            staticArbitrationSettings.domains = settings.domains;
+                            staticArbitrationSettings.interfaceName = settings.interfaceName;
+                            staticArbitrationSettings.discoveryQos = new DiscoveryQos(Util.extend(staticArbitrationSettings.discoveryQos, {
+                                providerMustSupportOnChange : settings.providerMustSupportOnChange || false
+                            }));
                             return arbitrator.startArbitration(staticArbitrationSettings).then(function(discoveredEntries) {
-                                expect(discoveredEntries).toEqual(expected);
+                                expect(discoveredEntries).toEqual(settings.expected);
                             });
                         }
 
-                        it("arbitrates correctly", function(done) {
-                            var nonExistingInterfacePromise,
-                            nonExistingDomainPromise,
-                            twoProvidersPromise,
-                            singleProviderPromise,
-                            anotherSingleProviderPromise;
+                        it("arbitrates correctly static capabilities", function(done) {
                             spyOn(discoveryQos, "arbitrationStrategy").and.callFake(
                                     function(discoveredCaps) {
                                         return discoveredCaps;
                                     });
 
-                            nonExistingInterfacePromise = arbitratesCorrectly(["myDomain"], "nonExistingInterface", []);
-                            nonExistingDomainPromise = arbitratesCorrectly(["nonExistingDomain"], "myInterface", []);
-                            twoProvidersPromise = arbitratesCorrectly(["myDomain"], "myInterface", [
-                                capabilities[0],
-                                capabilities[1]
-                            ]);
-                            singleProviderPromise = arbitratesCorrectly(["otherDomain"], "otherInterface", [ capabilities[2]
-                            ]);
-                            anotherSingleProviderPromise = arbitratesCorrectly(["thirdDomain"], "otherInterface", [ capabilities[3]
-                            ]);
-                            increaseFakeTime(1);
-                            Promise.all([nonExistingInterfacePromise,
-                                         nonExistingDomainPromise,
-                                         twoProvidersPromise,
-                                         singleProviderPromise,
-                                         anotherSingleProviderPromise
-                            ]).then(function() {
+                            arbitratesCorrectly({
+                                domains: ["myDomain"],
+                                interfaceName: "noneExistingInterface",
+                                expected: []
+                            }).then(function(){
+                                return arbitratesCorrectly({
+                                    domains: ["noneExistingDomain"],
+                                    interfaceName: "myInterface",
+                                    expected: []
+                                });
+                            }).then(function() {
+                                return arbitratesCorrectly({
+                                    domains: ["myDomain"],
+                                    interfaceName: "myInterface",
+                                    expected: [capabilities[0],
+                                               capabilities[1]]
+                                });
+                            }).then(function() {
+                                return arbitratesCorrectly({
+                                    domains: ["otherDomain"],
+                                    interfaceName: "otherInterface",
+                                    expected: [capabilities[2]]
+                                });
+                            }).then(function() {
+                                return arbitratesCorrectly({
+                                    domains: ["thirdDomain"],
+                                    interfaceName: "otherInterface",
+                                    expected: [capabilities[3]]
+                                });
+                            }).then(function(){
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        it("Arbitrator supports discoveryQos.providerSupportsOnChange for static arbitration", function(done) {
+                            spyOn(discoveryQos, "arbitrationStrategy").and.callFake(
+                                    function(discoveredCaps) {
+                                        return discoveredCaps;
+                                    });
+
+                            arbitratesCorrectly({
+                                domains: ["myDomain"],
+                                interfaceName: "noneExistingInterface",
+                                providerMustSupportOnChange : true,
+                                expected: []
+                            }).then(function() {
+                                return arbitratesCorrectly({
+                                    domains: ["noneExistingDomain"],
+                                    interfaceName: "myInterface",
+                                    providerMustSupportOnChange : true,
+                                    expected: []
+                                });
+                            }).then(function(){
+                                return arbitratesCorrectly({
+                                    domains: ["myDomain"],
+                                    interfaceName: "myInterface",
+                                    providerMustSupportOnChange : false,
+                                    expected: [capabilities[0],
+                                               capabilities[1]]
+                                });
+                            }).then(function() {
+                                return arbitratesCorrectly({
+                                    domains: ["myDomain"],
+                                    interfaceName: "myInterface",
+                                    providerMustSupportOnChange : true,
+                                    expected: [capabilities[0]]
+                                });
+                            }).then(function() {
+                                return arbitratesCorrectly({
+                                    domains: ["otherDomain"],
+                                    interfaceName: "otherInterface",
+                                    providerMustSupportOnChange : true,
+                                    expected: [capabilities[2]]
+                                });
+                            }).then(function() {
+                                return arbitratesCorrectly({
+                                    domains: ["thirdDomain"],
+                                    interfaceName: "otherInterface",
+                                    providerMustSupportOnChange : true,
+                                    expected: []
+                                });
+                            }).then(function() {
+                                return arbitratesCorrectly({
+                                    domains: ["thirdDomain"],
+                                    interfaceName: "otherInterface",
+                                    providerMustSupportOnChange : false,
+                                    expected: [capabilities[3]]
+                                });
+                            }).then(function(){
                                 done();
                                 return null;
                             }).catch(fail);
