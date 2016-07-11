@@ -141,26 +141,30 @@ public class LegacyCapabilitiesProvisioning {
                                          String urlForAddress,
                                          String localChannelId,
                                          String domain) {
-        Address address;
-        if (localChannelId.equals(channelId)) {
-            address = new InProcessAddress();
-        } else if (urlForAddress.startsWith("tcp") || urlForAddress.startsWith("mqtt")) {
-            address = new MqttAddress(urlForAddress, channelId + "/+");
+        if (!participantId.isEmpty() && !urlForAddress.isEmpty() && !channelId.isEmpty() && !domain.isEmpty()) {
+            Address address;
+            if (localChannelId.equals(channelId)) {
+                address = new InProcessAddress();
+            } else if (urlForAddress.startsWith("tcp") || urlForAddress.startsWith("mqtt")) {
+                address = new MqttAddress(urlForAddress, channelId + "/+");
+            } else {
+                address = new ChannelAddress(urlForAddress, channelId);
+            }
+            DiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
+                domain,
+                interfaceName,
+                participantId,
+                new ProviderQos(),
+                System.currentTimeMillis(),
+                Long.MAX_VALUE,
+                "",
+                address);
+            logger.debug("Created legacy discovery entry: {}", discoveryEntry);
+            legacyDiscoveryEntries.put(interfaceClass, discoveryEntry);
+            legacyAddresses.put(interfaceClass, address);
         } else {
-            address = new ChannelAddress(urlForAddress, channelId);
+            logger.debug("Insufficient properties data to create entry for interface {}", interfaceName);
         }
-        DiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
-                                                                                domain,
-                                                                                interfaceName,
-                                                                                participantId,
-                                                                                new ProviderQos(),
-                                                                                System.currentTimeMillis(),
-                                                                                Long.MAX_VALUE,
-                                                                                "",
-                                                                                address);
-        logger.debug("Created legacy discovery entry: {}", discoveryEntry);
-        legacyDiscoveryEntries.put(interfaceClass, discoveryEntry);
-        legacyAddresses.put(interfaceClass, address);
     }
 
     public DiscoveryEntry getDiscoveryEntryForInterface(Class<?> serviceInterface) {

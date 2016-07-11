@@ -109,9 +109,11 @@ public class StaticCapabilitiesProvisioningTest {
     public void testLoadingExtraSerializedDiscoveryEntriesPlusLegacy() throws Exception {
         Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("domain", "interfaceName1", "interfaceName2");
 
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
+
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
         logger.debug("Serialised entries: " + serializedDiscoveryEntries);
-        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
+        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
         Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
@@ -121,6 +123,19 @@ public class StaticCapabilitiesProvisioningTest {
         assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName2");
         assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
         assertContainsEntryFor(provisionedDiscoveryEntries, GlobalDomainAccessController.INTERFACE_NAME);
+    }
+
+    private LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder createLegacyProvisioningPropertiesHolder() {
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
+        properties.discoveryDirectoryUrl = "http://localhost:8080";
+        properties.capabilitiesDirectoryChannelId = "capdir_channel_id";
+        properties.capabilitiesDirectoryParticipantId = "capdir_participant_id";
+        properties.channelId = "local_channel_id";
+        properties.discoveryDirectoriesDomain = "io.joynr";
+        properties.domainAccessControllerChannelId = "acl_channel_id";
+        properties.domainAccessControllerParticipantId = "acl_participant_id";
+        properties.deprecatedCapabilityDirectoryUrl = "";
+        return properties;
     }
 
     @Test
@@ -146,15 +161,7 @@ public class StaticCapabilitiesProvisioningTest {
                                                                       GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                                                       GlobalDomainAccessController.INTERFACE_NAME);
 
-        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
-        properties.discoveryDirectoryUrl = "http://localhost:8080";
-        properties.capabilitiesDirectoryChannelId = "capdir_channel_id";
-        properties.capabilitiesDirectoryParticipantId = "capdir_participant_id";
-        properties.channelId = "local_channel_id";
-        properties.discoveryDirectoriesDomain = "io.joynr";
-        properties.domainAccessControllerChannelId = "acl_channel_id";
-        properties.domainAccessControllerParticipantId = "acl_participant_id";
-        properties.deprecatedCapabilityDirectoryUrl = "";
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
 
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
