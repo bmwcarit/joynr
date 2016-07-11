@@ -51,8 +51,11 @@ struct Serializable : ISerializable
     {
     }
 
-    Serializable(const T& data) : storage(data)
+    Serializable(const T& data) = delete;
+
+    T getData() const
     {
+        return storage;
     }
 
 protected:

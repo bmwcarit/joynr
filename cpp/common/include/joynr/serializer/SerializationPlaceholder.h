@@ -79,9 +79,13 @@ public:
     template <typename T>
     void getData(T&& arg)
     {
-        assert(containsInboundData());
-        boost::apply_visitor(
-                [&arg](auto& x) { x.template get<T>(std::forward<T>(arg)); }, *deserializable);
+        assert(containsOutboundData() || containsInboundData());
+        if (containsOutboundData()) {
+            arg = static_cast<const Serializable<std::decay_t<T>>*>(serializable.get())->getData();
+        } else if (containsInboundData()) {
+            boost::apply_visitor(
+                    [&arg](auto& x) { x.template get<T>(std::forward<T>(arg)); }, *deserializable);
+        }
     }
 
     template <typename T>

@@ -40,28 +40,6 @@ using namespace joynr;
 
 class ReplyInterpreterTest : public ::testing::Test {};
 
-
-// we need to serialize, then deserialize the reply to get it in a state which can be passed to a reply interpreter
-template <typename... Ts>
-joynr::Reply initReply(Ts&&... paramValues)
-{
-    joynr::Reply outgoingReply;
-    outgoingReply.setResponse(std::move(paramValues)...);
-
-    using OutputStream = muesli::StringOStream;
-    OutputStream ostream;
-    muesli::JsonOutputArchive<OutputStream> oarchive(ostream);
-    oarchive(outgoingReply);
-
-    joynr::Reply incomingReply;
-    using InputStream = muesli::StringIStream;
-    InputStream istream(ostream.getString());
-    auto iarchive = std::make_shared<muesli::JsonInputArchive<InputStream>>(istream);
-    (*iarchive)(incomingReply);
-
-    return incomingReply;
-}
-
 TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
     // Create a mock callback
     auto callback = std::make_shared<MockCallbackWithJoynrException<joynr::types::TestTypes::TEverythingMap>>();
@@ -79,7 +57,8 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
             });
 
     // Create a reply
-    Reply reply = initReply(responseValue);
+    Reply reply;
+    reply.setResponse(responseValue);
 
     // Interpret the reply
     icaller->execute(std::move(reply));
@@ -105,7 +84,8 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     // Create a reply
     types::Localisation::GpsLocation location;
     location.setAltitude(myAltitude);
-    Reply reply = initReply(location);
+    Reply reply;
+    reply.setResponse(location);
 
     // Interpret the reply
     icaller->execute(std::move(reply));

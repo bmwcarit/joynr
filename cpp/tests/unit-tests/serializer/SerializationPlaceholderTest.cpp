@@ -111,8 +111,9 @@ TEST(SerializationPlaceholderTest, outbound)
 {
     joynr::serializer::SerializationPlaceholder placeholder;
 
-    std::string payload = "hello world";
-    placeholder.setData(payload);
+    const std::string payload = "hello world";
+    std::string handOverToTest = payload;
+    placeholder.setData(std::move(handOverToTest));
     ASSERT_TRUE(placeholder.containsOutboundData());
     ASSERT_FALSE(placeholder.containsInboundData());
 

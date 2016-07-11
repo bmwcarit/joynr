@@ -62,7 +62,7 @@ public:
 
     bool hasResponse() const
     {
-        return response.containsInboundData();
+        return response.containsInboundData() || response.containsOutboundData();
     }
 
     template <typename Archive>

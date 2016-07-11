@@ -64,23 +64,12 @@ protected:
 template <typename... Ts>
 joynr::Request initRequest(std::string methodName, std::vector<std::string> paramDataTypes, Ts... paramValues)
 {
-    Request outgoingRequest;
-    outgoingRequest.setMethodName(methodName);
-    outgoingRequest.setParamDatatypes(std::move(paramDataTypes));
-    outgoingRequest.setParams(std::move(paramValues)...);
+    Request outRequest;
+    outRequest.setMethodName(methodName);
+    outRequest.setParamDatatypes(std::move(paramDataTypes));
+    outRequest.setParams(std::move(paramValues)...);
 
-    using OutputStream = muesli::StringOStream;
-    OutputStream ostream;
-    muesli::JsonOutputArchive<OutputStream> oarchive(ostream);
-    oarchive(outgoingRequest);
-
-    joynr::Request incomingRequest;
-    using InputStream = muesli::StringIStream;
-    InputStream istream(ostream.getString());
-    auto iarchive = std::make_shared<muesli::JsonInputArchive<InputStream>>(istream);
-    (*iarchive)(incomingRequest);
-
-    return incomingRequest;
+    return outRequest;
 }
 
 TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithMapParameter) {
