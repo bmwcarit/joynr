@@ -50,7 +50,6 @@ bool SubscriptionPublication::operator==(const SubscriptionPublication& other) c
 {
     return subscriptionId == other.getSubscriptionId() && error == other.getError() &&
            BaseReply::operator==(other);
-    ;
 }
 
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const
