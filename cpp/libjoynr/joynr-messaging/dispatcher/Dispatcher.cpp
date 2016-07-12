@@ -352,8 +352,8 @@ void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
 
     std::string subscriptionId;
     try {
-        SubscriptionStop subscriptionStop =
-                JsonSerializer::deserialize<SubscriptionStop>(jsonSubscriptionStop);
+        SubscriptionStop subscriptionStop;
+        joynr::serializer::deserializeFromJson(subscriptionStop, jsonSubscriptionStop);
 
         subscriptionId = subscriptionStop.getSubscriptionId();
     } catch (const std::invalid_argument& e) {

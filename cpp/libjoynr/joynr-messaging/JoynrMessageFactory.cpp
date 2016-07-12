@@ -136,7 +136,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionStop(const std::string& send
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
-    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<SubscriptionStop>(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
