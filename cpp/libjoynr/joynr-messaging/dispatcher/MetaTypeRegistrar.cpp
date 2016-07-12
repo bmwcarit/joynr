@@ -25,7 +25,7 @@ namespace joynr
 
 MetaTypeRegistrar* MetaTypeRegistrar::registrarInstance = nullptr;
 
-MetaTypeRegistrar::MetaTypeRegistrar() : publicationInterpreters(), publicationInterpretersMutex()
+MetaTypeRegistrar::MetaTypeRegistrar() : publicationInterpretersMutex()
 {
     // Register known types
     registerMetaType<std::string>();
@@ -56,21 +56,6 @@ MetaTypeRegistrar& MetaTypeRegistrar::instance()
     }
 
     return *registrarInstance;
-}
-
-IPublicationInterpreter& MetaTypeRegistrar::getPublicationInterpreter(int typeId)
-{
-    std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
-
-    IPublicationInterpreter* ret = nullptr;
-    auto search = publicationInterpreters.find(typeId);
-    if (search != publicationInterpreters.end()) {
-        ret = search->second;
-    }
-
-    // It is a programming error if the interpreter does not exist
-    assert(ret);
-    return *ret;
 }
 
 } // namespace joynr

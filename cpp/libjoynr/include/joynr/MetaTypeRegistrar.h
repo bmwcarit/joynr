@@ -21,7 +21,6 @@
 
 #include "joynr/JoynrExport.h"
 
-#include "joynr/IPublicationInterpreter.h"
 #include "joynr/ReplyInterpreter.h"
 #include <mutex>
 #include <unordered_map>
@@ -69,18 +68,6 @@ public:
     template <class T>
     void registerEnumMetaType();
 
-    /**
-     * Get the publication interpreter with the given type id.
-     * Returns a reference to enforce that the caller does not have ownership.
-     * Publication interpreters are created and registered with the metatype registrar
-     * in the I&lt;Interface&gt; constructor when a &lt;Interface&gt;Proxy is created.
-     * They are valid for the whole lifetime of the application and get deleted when
-     * the process shuts down.
-     *
-     * @return a reference to the publication interpreter
-     */
-    IPublicationInterpreter& getPublicationInterpreter(int typeId);
-
 private:
     MetaTypeRegistrar();
     DISALLOW_COPY_AND_ASSIGN(MetaTypeRegistrar);
@@ -97,8 +84,6 @@ private:
     template <class... Ts>
     void addPublicationInterpreterForBroadcastType();
 
-    // A threadsafe hash holding PublicationInterpreters
-    std::unordered_map<int, IPublicationInterpreter*> publicationInterpreters;
     std::mutex publicationInterpretersMutex;
 };
 
