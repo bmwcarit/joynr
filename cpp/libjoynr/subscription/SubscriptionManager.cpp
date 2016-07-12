@@ -24,6 +24,7 @@
 
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {

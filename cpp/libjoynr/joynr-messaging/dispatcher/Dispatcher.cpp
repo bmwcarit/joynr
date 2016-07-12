@@ -390,13 +390,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
 
         subscriptionManager->touchSubscriptionState(subscriptionId);
 
-        int typeId = callback->getTypeId();
-
-        // Get the publication interpreter - this has to be a reference to support
-        // PublicationInterpreter polymorphism
-        IPublicationInterpreter& interpreter =
-                MetaTypeRegistrar::instance().getPublicationInterpreter(typeId);
-        interpreter.execute(callback, std::move(subscriptionPublication));
+        callback->execute(std::move(subscriptionPublication));
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(
                 logger,

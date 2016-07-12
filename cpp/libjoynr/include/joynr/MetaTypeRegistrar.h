@@ -21,12 +21,13 @@
 
 #include "joynr/JoynrExport.h"
 
-#include "joynr/PublicationInterpreter.h"
+#include "joynr/IPublicationInterpreter.h"
 #include "joynr/ReplyInterpreter.h"
 #include <mutex>
 #include <unordered_map>
 
 #include "joynr/JoynrTypeId.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -104,9 +105,6 @@ private:
 template <class T>
 void MetaTypeRegistrar::addEnumPublicationInterpreter(int typeId)
 {
-    if (publicationInterpreters.find(typeId) == publicationInterpreters.end()) {
-        publicationInterpreters.insert({typeId, new EnumPublicationInterpreter<T>()});
-    }
 }
 
 // For enums, the metatype Id is T::Enum or std::vector<T::Enum>
@@ -144,11 +142,6 @@ void MetaTypeRegistrar::registerMetaType()
 template <class... Ts>
 void MetaTypeRegistrar::addPublicationInterpreter()
 {
-    int typeId = util::getTypeId<Ts...>();
-
-    if (publicationInterpreters.find(typeId) == publicationInterpreters.end()) {
-        publicationInterpreters.insert({typeId, new PublicationInterpreter<Ts...>()});
-    }
 }
 
 } // namespace joynr

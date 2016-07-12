@@ -40,12 +40,6 @@ MetaTypeRegistrar::MetaTypeRegistrar() : publicationInterpreters(), publicationI
     registerMetaType<std::uint32_t>();
     registerMetaType<std::int64_t>();
     registerMetaType<std::uint64_t>();
-
-    {
-        std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
-        publicationInterpreters.insert(
-                {util::getTypeId<void>(), new PublicationInterpreter<void>()});
-    }
 }
 
 MetaTypeRegistrar& MetaTypeRegistrar::instance()

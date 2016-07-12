@@ -22,7 +22,6 @@
 #include <tuple>
 
 #include "joynr/MetaTypeRegistrar.h"
-#include "joynr/IPublicationInterpreter.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/ISubscriptionManager.h"
 
@@ -65,14 +64,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
         return;
     }
 
-    int typeId = callback->getTypeId();
-
-    // Get the publication interpreter - this has to be a reference to support
-    // PublicationInterpreter polymorphism
-    IPublicationInterpreter& interpreter =
-            MetaTypeRegistrar::instance().getPublicationInterpreter(typeId);
-    JOYNR_LOG_TRACE(logger, "Interpreting publication. id={}", subscriptionId);
-    interpreter.execute(callback, std::move(subscriptionPublication));
+    callback->execute(std::move(subscriptionPublication));
 }
 
 } // namespace joynr
