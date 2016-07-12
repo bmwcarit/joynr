@@ -18,14 +18,14 @@
  */
 #ifndef SUBSCRIPTIONCALLBACK_H
 #define SUBSCRIPTIONCALLBACK_H
-#include "joynr/PrivateCopyAssign.h"
+
 #include <memory>
 
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionListener.h"
-#include "joynr/TrackableObject.h"
+#include "joynr/PublicationInterpreter.h"
 #include "joynr/Logger.h"
-#include "joynr/Util.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -67,10 +67,6 @@ public:
         listener->onReceive(value, values...);
     }
 
-    void timeOut()
-    {
-        // TODO
-    }
 
     int getTypeId() const override
     {
