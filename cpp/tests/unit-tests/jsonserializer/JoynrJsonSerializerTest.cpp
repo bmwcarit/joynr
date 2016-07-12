@@ -370,118 +370,43 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrTimeOutException)
 }
 
 
-//TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationWithProviderRuntimeException)
-//{
-//    // Create a Publication
-//    SubscriptionPublication publication;
-//    exceptions::ProviderRuntimeException error("Message of ProviderRuntimeException");
-//    publication.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationWithProviderRuntimeException)
+{
+    // Create a Publication
+    SubscriptionPublication publication;
+    publication.setError(std::make_shared<exceptions::ProviderRuntimeException>("Message of ProviderRuntimeException"));
 
-//    // Serialize into JSON
-//    std::stringstream stream;
-//    auto serializer = ClassSerializer<SubscriptionPublication>{};
-//    serializer.serialize(publication, stream);
-//    std::string json{ stream.str() };
-//    JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
+    // Serialize into JSON
+    std::string json = joynr::serializer::serializeToJson(publication);
+    JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
 
-//    // Deserialize from JSON
-//    JsonTokenizer tokenizer(json);
+    SubscriptionPublication deserializedSubscriptionPublication;
+    joynr::serializer::deserializeFromJson(deserializedSubscriptionPublication, json);
 
-//    if (tokenizer.hasNextObject()) {
-//        SubscriptionPublication t;
-//        ClassDeserializer<SubscriptionPublication>::deserialize(t, tokenizer.nextObject());
-//        assert(!t.getErrorVariant().isEmpty());
-//        const joynr::exceptions::ProviderRuntimeException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ProviderRuntimeException>());
-//        ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
-//    }
-//}
-
-//TEST_F(JoynrJsonSerializerTest, DISABLED_exampleDeserializerJoynrSubscriptionPublicationWithApplicationException)
-//{
-//    // Create a Publication
-//    SubscriptionPublication publication;
-//    using namespace joynr::tests;
-//    std::string literal = test::MethodWithErrorEnumExtendedErrorEnum::getLiteral(
-//                MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION);
-//    // Create a ApplicationException
-//    exceptions::ApplicationException error(
-//                literal,
-//                std::make_shared<test::MethodWithErrorEnumExtendedErrorEnum::ApplicationExceptionErrorImpl>(literal));
-//    publication.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
-
-//    // Serialize into JSON
-//    std::stringstream stream;
-//    auto serializer = ClassSerializer<SubscriptionPublication>{};
-//    serializer.serialize(publication, stream);
-//    std::string json{ stream.str() };
-//    JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
-
-//    // Deserialize from JSON
-//    JsonTokenizer tokenizer(json);
-
-//    if (tokenizer.hasNextObject()) {
-//        SubscriptionPublication t;
-//        ClassDeserializer<SubscriptionPublication>::deserialize(t, tokenizer.nextObject());
-//        assert(!t.getErrorVariant().isEmpty());
-//        const joynr::exceptions::ApplicationException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ApplicationException>());
-//        ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
-//        ASSERT_EQ(deserializedError.getName(), error.getName());
-//    }
-//}
+    EXPECT_EQ(publication, deserializedSubscriptionPublication);
+}
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
 {
     // Create a publication
     SubscriptionPublication expectedPublication;
     std::string someString{"Hello World"};
-    std::vector<Variant> expectedResponse;
-    expectedResponse.push_back(Variant::make<std::string>(someString));
     const std::int32_t expectedInt = 101;
-    expectedResponse.push_back(Variant::make<int>(expectedInt));
     SomeOtherType expectedSomeOtherType(2);
-    expectedResponse.push_back(Variant::make<SomeOtherType>(expectedSomeOtherType));
     const float expectedFloat = 9.99f;
-    expectedResponse.push_back(Variant::make<float>(expectedFloat));
     bool expectedBool = true;
-    expectedResponse.push_back(Variant::make<bool>(expectedBool));
 
-    expectedPublication.setResponseVariant(expectedResponse);
+    expectedPublication.setResponse(someString, expectedInt, expectedSomeOtherType, expectedFloat, expectedBool);
     expectedPublication.setSubscriptionId("000-10000-01101");
 
     // Serialize into JSON
-    std::stringstream stream;
-    auto serializer = ClassSerializer<SubscriptionPublication>();
-    serializer.serialize(expectedPublication, stream);
-    std::string json{ stream.str() };
+    std::string json = joynr::serializer::serializeToJson(expectedPublication);
     JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
 
-    // Deserialize from JSON
-    JsonTokenizer tokenizer(json);
+    SubscriptionPublication deserializedSubscriptionPublication;
+    joynr::serializer::deserializeFromJson(deserializedSubscriptionPublication, json);
 
-    if (tokenizer.hasNextObject()) {
-        SubscriptionPublication publication;
-        ClassDeserializer<SubscriptionPublication>::deserialize(publication, tokenizer.nextObject());
-        std::vector<Variant> response = publication.getResponseVariant();
-        EXPECT_EQ(expectedPublication.getResponseVariant().size(), response.size());
-        Variant first = response[0];
-        EXPECT_TRUE(first.is<std::string>());
-        EXPECT_EQ(someString, first.get<std::string>());
-        Variant intParam = response[1];
-        EXPECT_TRUE(intParam.is<std::uint64_t>());
-        EXPECT_FALSE(intParam.is<std::int32_t>());
-        EXPECT_EQ(expectedInt, static_cast<std::int32_t>(intParam.get<std::uint64_t>()));
-        Variant someOtherTypeParam = response[2];
-        EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
-        EXPECT_EQ(expectedSomeOtherType.getA(), someOtherTypeParam.get<SomeOtherType>().getA());
-        Variant floatParam = response[3];
-        EXPECT_TRUE(floatParam.is<double>());
-        EXPECT_FALSE(floatParam.is<float>());
-        EXPECT_EQ(expectedFloat, static_cast<float>(floatParam.get<double>()));
-        Variant boolParam = response[4];
-        EXPECT_TRUE(boolParam.is<bool>());
-        EXPECT_EQ(expectedBool, boolParam.get<bool>());
-        EXPECT_EQ(expectedPublication.getSubscriptionId(), publication.getSubscriptionId());
-    }
+    EXPECT_EQ(expectedPublication, deserializedSubscriptionPublication);
 }
 
 // test with real MasterAccessControlEntry

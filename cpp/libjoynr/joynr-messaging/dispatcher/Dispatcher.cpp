@@ -372,8 +372,9 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     std::string jsonSubscriptionPublication = message.getPayload();
 
     try {
-        SubscriptionPublication subscriptionPublication =
-                JsonSerializer::deserialize<SubscriptionPublication>(jsonSubscriptionPublication);
+        SubscriptionPublication subscriptionPublication;
+        joynr::serializer::deserializeFromJson(
+                subscriptionPublication, jsonSubscriptionPublication);
 
         const std::string subscriptionId = subscriptionPublication.getSubscriptionId();
 

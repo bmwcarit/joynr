@@ -19,13 +19,15 @@
 #ifndef EXAMPLETYPES_H
 #define EXAMPLETYPES_H
 
+#include <string>
+#include <vector>
+#include <utility>
+
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "joynr/Variant.h"
 
-#include <string>
-#include <vector>
-#include <utility>
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -50,6 +52,11 @@ struct SomeOtherType
 
     int getA() const { return a; }
     void setA(int value) { a = value; }
+    template <typename Archive>
+    void serialize(Archive& ar)
+    {
+        ar(MUESLI_NVP(a));
+    }
 
 private:
     int a;

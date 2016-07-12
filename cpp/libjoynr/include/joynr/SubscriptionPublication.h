@@ -25,6 +25,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -56,6 +57,12 @@ public:
     std::shared_ptr<exceptions::JoynrRuntimeException> getError() const;
     void setError(std::shared_ptr<exceptions::JoynrRuntimeException> error);
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(subscriptionId), MUESLI_NVP(error));
+    }
+
 private:
     std::string subscriptionId;
     std::shared_ptr<exceptions::JoynrRuntimeException> error;
@@ -63,5 +70,7 @@ private:
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::SubscriptionPublication, "joynr.SubscriptionPublication")
 
 #endif // SUBSCRIPTIONPUBLICATION_H

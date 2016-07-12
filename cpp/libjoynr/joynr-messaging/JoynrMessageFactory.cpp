@@ -82,11 +82,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION);
-    initMsg(msg,
-            senderId,
-            receiverId,
-            qos,
-            JsonSerializer::serialize<SubscriptionPublication>(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
