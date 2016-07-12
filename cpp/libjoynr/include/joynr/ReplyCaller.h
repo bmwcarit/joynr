@@ -24,8 +24,6 @@
 
 #include "joynr/IReplyCaller.h"
 #include "joynr/ReplyInterpreter.h"
-#include "joynr/StatusCode.h"
-#include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
