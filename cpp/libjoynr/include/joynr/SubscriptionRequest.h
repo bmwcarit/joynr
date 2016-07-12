@@ -57,8 +57,8 @@ public:
     std::string getSubscribeToName() const;
     void setSubscribeToName(const std::string& subscribedToName);
 
-    void setQos(const Variant& qos);
-    const Variant& getQos() const;
+    void setQosVariant(const Variant& qosVariant);
+    const Variant& getQosVariant() const;
 
     const SubscriptionQos* getSubscriptionQosPtr();
 
@@ -74,7 +74,7 @@ private:
       */
     std::string subscriptionId;
     std::string subscribedToName;
-    Variant qos;
+    Variant qosVariant;
 
     ADD_LOGGER(SubscriptionRequest);
 };

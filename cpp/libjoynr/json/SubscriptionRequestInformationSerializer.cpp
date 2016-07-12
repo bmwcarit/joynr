@@ -43,7 +43,7 @@ void ClassDeserializerImpl<SubscriptionRequestInformation>::deserialize(
             info.setSubscribeToName(field.value());
         } else if (field.name() == "qos") {
             Variant qos = convertVariant(field.value());
-            info.setQos(qos);
+            info.setQosVariant(qos);
         } else if (field.name() == "proxyId") {
             std::string proxyId = field.value();
             info.setProxyId(proxyId);
@@ -66,7 +66,7 @@ void ClassSerializerImpl<SubscriptionRequestInformation>::serialize(
     stream << R"("subscribeToName": ")" << info.getSubscribeToName() << R"(",)";
     stream << R"("qos": )";
     ClassSerializer<Variant> variantSerializer;
-    variantSerializer.serialize(info.getQos(), stream);
+    variantSerializer.serialize(info.getQosVariant(), stream);
     stream << R"(,)"
            << R"("proxyId": ")" << info.getProxyId() << R"(",)";
     stream << R"("providerId": ")" << info.getProviderId();

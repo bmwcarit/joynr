@@ -68,7 +68,7 @@ TEST(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrect)
                 subscriptionRequest);
 
     EXPECT_EQ("methodName", subscriptionRequest.getSubscribeToName());
-    EXPECT_EQ(qos, subscriptionRequest.getQos().get<OnChangeSubscriptionQos>());
+    EXPECT_EQ(qos, subscriptionRequest.getQosVariant().get<OnChangeSubscriptionQos>());
 }
 
 TEST(SubscriptionManagerTest, registerSubscription_missedPublicationRunnableWorks) {

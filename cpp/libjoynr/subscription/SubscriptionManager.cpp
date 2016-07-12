@@ -87,7 +87,7 @@ void SubscriptionManager::registerSubscription(
 
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                std::chrono::system_clock::now().time_since_epoch()).count();
-    subscriptionRequest.setQos(qosVariant);
+    subscriptionRequest.setQosVariant(qosVariant);
     const SubscriptionQos* qos = subscriptionRequest.getSubscriptionQosPtr();
     if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE() &&
         qos->getExpiryDateMs() < now) {

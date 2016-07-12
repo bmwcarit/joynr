@@ -72,7 +72,7 @@ public:
                     200, // maxInterval_ms
                     80 // alertInterval_ms
         };
-        request.setQos(qos);
+        request.setQosVariant(qos);
         request.setFilterParameters(filterParameters);
 
         requestCaller->registerBroadcastListener(
@@ -164,7 +164,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
                 800, // validity_ms
                 0 // minInterval_ms
     };
-    request.setQos(qos);
+    request.setQosVariant(qos);
     request.setFilterParameters(filterParameters);
 
     requestCaller->registerBroadcastListener(

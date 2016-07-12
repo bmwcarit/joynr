@@ -44,7 +44,7 @@ void ClassDeserializerImpl<SubscriptionRequest>::deserialize(
         }
         if (field.name() == "qos") {
             Variant qos = convertVariant(field.value());
-            subscriptionRequest.setQos(qos);
+            subscriptionRequest.setQosVariant(qos);
         }
     }
 }
@@ -60,7 +60,7 @@ void ClassSerializerImpl<SubscriptionRequest>::serialize(
     stream << R"("subscribedToName": ")" << subscriptionRequest.getSubscribeToName() << R"(",)";
     stream << R"("qos": )";
     ClassSerializer<Variant> variantSerializer{};
-    variantSerializer.serialize(subscriptionRequest.getQos(), stream);
+    variantSerializer.serialize(subscriptionRequest.getQosVariant(), stream);
     stream << "}";
 }
 

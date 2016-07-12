@@ -54,14 +54,14 @@ public:
 
     // Make sure that broadcast subscriptions are only used with on change qos.
     // Method from base class is hidden. See below in private section.
-    void setQos(const OnChangeSubscriptionQos& qos);
+    void setQosVariant(const OnChangeSubscriptionQos& qosVariant);
 
     BroadcastFilterParameters getFilterParameters() const;
     void setFilterParameters(const BroadcastFilterParameters& filterParameters);
 
 private:
     // Hide method for setting all kinds of QOS derived from base class
-    void setQos(const Variant& qos);
+    void setQosVariant(const Variant& qosVariant);
 
     BroadcastFilterParameters filterParameters;
 

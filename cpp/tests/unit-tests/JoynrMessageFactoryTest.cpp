@@ -222,7 +222,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest)
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId("subscriptionId");
     subscriptionRequest.setSubscribeToName("attributeName");
-    subscriptionRequest.setQos(subscriptionQos);
+    subscriptionRequest.setQosVariant(subscriptionQos);
     JoynrMessage joynrMessage = messageFactory.createSubscriptionRequest(
             senderID, receiverID, qos, subscriptionRequest);
     checkHeaderCreatorFromTo(joynrMessage);

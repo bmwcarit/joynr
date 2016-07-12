@@ -368,7 +368,7 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         if (!isPublicationAlreadyScheduled(subscriptionId)) {
             std::int64_t timeUntilNextPublication =
-                    getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
+                    getTimeUntilNextPublication(publication, subscriptionRequest->getQosVariant());
 
             if (timeUntilNextPublication == 0) {
                 // Send the publication
@@ -409,7 +409,7 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Only proceed if publication can immediately be sent
         std::int64_t timeUntilNextPublication =
-                getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
+                getTimeUntilNextPublication(publication, subscriptionRequest->getQosVariant());
 
         if (timeUntilNextPublication == 0) {
             // Send the publication
@@ -462,7 +462,7 @@ void PublicationManager::selectiveBroadcastOccurred(
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Only proceed if publication can immediately be sent
         std::int64_t timeUntilNextPublication =
-                getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
+                getTimeUntilNextPublication(publication, subscriptionRequest->getQosVariant());
 
         if (timeUntilNextPublication == 0) {
             // Execute broadcast filters

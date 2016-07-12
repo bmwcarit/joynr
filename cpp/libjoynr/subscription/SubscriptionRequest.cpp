@@ -35,7 +35,7 @@ static const bool isSubscriptionRequestRegistered =
 SubscriptionRequest::SubscriptionRequest()
         : subscriptionId(),
           subscribedToName(),
-          qos(Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos()))
+          qosVariant(Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos()))
 {
     subscriptionId = util::createUuid();
 }
@@ -50,24 +50,24 @@ std::string SubscriptionRequest::getSubscribeToName() const
     return subscribedToName;
 }
 
-const Variant& SubscriptionRequest::getQos() const
+const Variant& SubscriptionRequest::getQosVariant() const
 {
-    return qos;
+    return qosVariant;
 }
 
 const SubscriptionQos* SubscriptionRequest::getSubscriptionQosPtr()
 {
-    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
-        return &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
+    if (qosVariant.is<OnChangeWithKeepAliveSubscriptionQos>()) {
+        return &qosVariant.get<OnChangeWithKeepAliveSubscriptionQos>();
     }
-    if (qos.is<PeriodicSubscriptionQos>()) {
-        return &qos.get<PeriodicSubscriptionQos>();
+    if (qosVariant.is<PeriodicSubscriptionQos>()) {
+        return &qosVariant.get<PeriodicSubscriptionQos>();
     }
-    if (qos.is<OnChangeSubscriptionQos>()) {
-        return &qos.get<OnChangeSubscriptionQos>();
+    if (qosVariant.is<OnChangeSubscriptionQos>()) {
+        return &qosVariant.get<OnChangeSubscriptionQos>();
     }
-    if (qos.is<SubscriptionQos>()) {
-        return &qos.get<SubscriptionQos>();
+    if (qosVariant.is<SubscriptionQos>()) {
+        return &qosVariant.get<SubscriptionQos>();
     }
 
     return nullptr;
@@ -75,7 +75,7 @@ const SubscriptionQos* SubscriptionRequest::getSubscriptionQosPtr()
 
 bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const
 {
-    bool equal = getQos() == subscriptionRequest.getQos();
+    bool equal = getQosVariant() == subscriptionRequest.getQosVariant();
     return subscriptionId == subscriptionRequest.getSubscriptionId() &&
            subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
 }
@@ -90,9 +90,9 @@ void SubscriptionRequest::setSubscribeToName(const std::string& attributeName)
     this->subscribedToName = attributeName;
 }
 
-void SubscriptionRequest::setQos(const Variant& qos)
+void SubscriptionRequest::setQosVariant(const Variant& qos)
 {
-    this->qos = qos;
+    this->qosVariant = qos;
 }
 
 std::string SubscriptionRequest::toString() const

@@ -198,7 +198,7 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId("subscriptionId");
     subscriptionRequest.setSubscribeToName("attributeName");
-    subscriptionRequest.setQos(qos);
+    subscriptionRequest.setQosVariant(qos);
 
     JoynrMessage message = messageFactory.createSubscriptionRequest(
                 senderID,
@@ -231,7 +231,7 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     subscriptionRequest.setFilterParameters(filter);
     subscriptionRequest.setSubscriptionId("subscriptionId");
     subscriptionRequest.setSubscribeToName("broadcastName");
-    subscriptionRequest.setQos(qos);
+    subscriptionRequest.setQosVariant(qos);
 
     JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
                 senderID,

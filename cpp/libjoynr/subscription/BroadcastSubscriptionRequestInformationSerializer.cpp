@@ -43,7 +43,7 @@ void ClassDeserializerImpl<BroadcastSubscriptionRequestInformation>::deserialize
             info.setSubscribeToName(field.value());
         } else if (field.name() == "qos") {
             Variant qos = convertVariant(field.value());
-            info.setQos(qos.get<OnChangeSubscriptionQos>());
+            info.setQosVariant(qos.get<OnChangeSubscriptionQos>());
         } else if (field.name() == "filterParameters") {
             BroadcastFilterParameters filterParameters;
             ClassDeserializer<BroadcastFilterParameters> filterParametersDeserializer;
@@ -71,7 +71,7 @@ void ClassSerializerImpl<BroadcastSubscriptionRequestInformation>::serialize(
     stream << R"("subscribeToName": ")" << info.getSubscribeToName() << R"(",)";
     stream << R"("qos": )";
     ClassSerializer<Variant> variantSerializer;
-    variantSerializer.serialize(info.getQos(), stream);
+    variantSerializer.serialize(info.getQosVariant(), stream);
     stream << R"(,"filterParameters": )";
     if (info.getFilterParameters().getFilterParameters().empty()) {
         stream << R"({})";

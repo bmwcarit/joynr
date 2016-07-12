@@ -147,7 +147,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQos(subscriptionQos);
+    subscriptionRequest.setQosVariant(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,
@@ -304,7 +304,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQos(subscriptionQos);
+    subscriptionRequest.setQosVariant(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,
@@ -335,7 +335,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName("listOfStrings");
-    subscriptionRequest.setQos(subscriptionQos);
+    subscriptionRequest.setQosVariant(subscriptionQos);
 
     EXPECT_CALL(
             *provider,
@@ -415,7 +415,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     subscriptionRequest.setSubscriptionId(subscriptionId);
     std::string attributeName = "Location";
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQos(subscriptionQos);
+    subscriptionRequest.setQosVariant(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,
@@ -461,7 +461,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQos(subscriptionQos);
+    subscriptionRequest.setQosVariant(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,

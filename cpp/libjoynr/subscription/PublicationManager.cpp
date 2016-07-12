@@ -244,7 +244,7 @@ void PublicationManager::addOnChangePublication(
         std::shared_ptr<Publication> publication)
 {
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
-    if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
+    if (SubscriptionUtil::isOnChangeSubscription(request->getQosVariant())) {
         JOYNR_LOG_TRACE(logger, "adding onChange subscription: {}", subscriptionId);
 
         // Create an attribute listener to listen for onChange events
@@ -687,7 +687,7 @@ void PublicationManager::removeOnChangePublication(
     // to silence unused-variable compiler warnings
     std::ignore = subscriptionId;
 
-    if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
+    if (SubscriptionUtil::isOnChangeSubscription(request->getQosVariant())) {
         // Unregister and delete the attribute listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterAttributeListener(
@@ -803,8 +803,8 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         const SubscriptionQos* qos = subscriptionRequest->getSubscriptionQosPtr();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationInterval =
-                SubscriptionUtil::getPeriodicPublicationInterval(subscriptionRequest->getQos());
+        std::int64_t publicationInterval = SubscriptionUtil::getPeriodicPublicationInterval(
+                subscriptionRequest->getQosVariant());
 
         // check if the subscription qos needs a periodic publication
         if (publicationInterval > 0) {

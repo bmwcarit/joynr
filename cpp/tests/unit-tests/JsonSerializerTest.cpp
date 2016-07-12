@@ -69,7 +69,7 @@ INIT_LOGGER(JsonSerializerTest);
 TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     SubscriptionRequest request;
     Variant subscriptionQos = Variant::make<SubscriptionQos>(SubscriptionQos(5000));
-    request.setQos(subscriptionQos);
+    request.setQosVariant(subscriptionQos);
     std::string result = JsonSerializer::serialize<SubscriptionRequest>(request);
     JOYNR_LOG_DEBUG(logger, "result: {}", result);
     SubscriptionRequest desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
@@ -79,7 +79,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
 TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     BroadcastSubscriptionRequest request;
     OnChangeSubscriptionQos qos{5000, 2000};
-    request.setQos(qos);
+    request.setQosVariant(qos);
     BroadcastFilterParameters filterParams;
     filterParams.setFilterParameter("MyFilter", "MyFilterValue");
     request.setFilterParameters(filterParams);

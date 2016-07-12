@@ -36,7 +36,7 @@ bool BroadcastSubscriptionRequest::operator==(
         const BroadcastSubscriptionRequest& subscriptionRequest) const
 {
 
-    bool equal = getQos() == subscriptionRequest.getQos() &&
+    bool equal = getQosVariant() == subscriptionRequest.getQosVariant() &&
                  getFilterParameters() == subscriptionRequest.getFilterParameters();
     return getSubscriptionId() == subscriptionRequest.getSubscriptionId() &&
            getSubscribeToName() == subscriptionRequest.getSubscribeToName() && equal;
@@ -47,10 +47,10 @@ std::string BroadcastSubscriptionRequest::toString() const
     return JsonSerializer::serialize(*this);
 }
 
-void BroadcastSubscriptionRequest::setQos(const OnChangeSubscriptionQos& qos)
+void BroadcastSubscriptionRequest::setQosVariant(const OnChangeSubscriptionQos& qos)
 {
     Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
-    SubscriptionRequest::setQos(qosVariant);
+    SubscriptionRequest::setQosVariant(qosVariant);
 }
 
 BroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
