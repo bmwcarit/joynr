@@ -19,14 +19,13 @@
 #ifndef SUBSCRIPTIONREQUEST_H
 #define SUBSCRIPTIONREQUEST_H
 
-#include "joynr/JoynrExport.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/SubscriptionQos.h"
-
 #include <memory>
 #include <string>
 
+#include "joynr/JoynrExport.h"
+#include "joynr/SubscriptionQos.h"
 #include "joynr/Variant.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -67,6 +66,12 @@ public:
 
     void setQos(std::shared_ptr<SubscriptionQos> qos);
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(subscriptionId), MUESLI_NVP(subscribedToName), MUESLI_NVP(qos));
+    }
+
 private:
     /*
       SubscriptionRequest is used to store a subscription while Arbitration is still being done. To
@@ -83,5 +88,7 @@ private:
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::SubscriptionRequest, "joynr.SubscriptionRequest");
 
 #endif // SUBSCRIPTIONREQUEST_H

@@ -22,6 +22,7 @@
 #include <cstdint>
 
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -238,6 +239,12 @@ public:
     /** @brief Returns the value for no expiry date in milliseconds: 0 */
     static const std::int64_t& NO_EXPIRY_DATE();
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(expiryDateMs), MUESLI_NVP(publicationTtlMs));
+    }
+
 protected:
     /** @brief The expiry date in milliseconds */
     std::int64_t expiryDateMs;
@@ -247,5 +254,7 @@ protected:
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::SubscriptionQos, "joynr.SubscriptionQos");
 
 #endif // SUBSCRIPTIONQOS_H
