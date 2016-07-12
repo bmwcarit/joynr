@@ -19,11 +19,9 @@
 #ifndef SUBSCRIPTIONINFORMATION_H
 #define SUBSCRIPTIONINFORMATION_H
 
-#include "joynr/JoynrExport.h"
-#include "joynr/Logger.h"
-#include "joynr/SubscriptionRequest.h"
-
 #include <string>
+
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {
@@ -54,10 +52,7 @@ public:
 private:
     std::string proxyId;
     std::string providerId;
-
-    ADD_LOGGER(SubscriptionInformation);
 };
 
 } // namespace joynr
-
 #endif // SUBSCRIPTIONINFORMATION_H
