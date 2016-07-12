@@ -27,24 +27,12 @@ static bool isSubscriptionRequestInformationRegistered =
         Variant::registerType<SubscriptionRequestInformation>(
                 "joynr.SubscriptionRequestInformation");
 
-SubscriptionRequestInformation::SubscriptionRequestInformation()
-{
-}
-
 SubscriptionRequestInformation::SubscriptionRequestInformation(
         const std::string& proxyParticipantId,
         const std::string& providerParticipantId,
         const SubscriptionRequest& subscriptionRequest)
         : SubscriptionRequest(subscriptionRequest),
           SubscriptionInformation(proxyParticipantId, providerParticipantId)
-{
-}
-
-SubscriptionRequestInformation::SubscriptionRequestInformation(
-        const SubscriptionRequestInformation& subscriptionRequestInformation)
-        : SubscriptionRequest(subscriptionRequestInformation),
-          SubscriptionInformation(subscriptionRequestInformation.getProxyId(),
-                                  subscriptionRequestInformation.getProviderId())
 {
 }
 

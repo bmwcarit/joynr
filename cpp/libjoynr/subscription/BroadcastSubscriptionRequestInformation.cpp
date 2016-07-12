@@ -27,26 +27,12 @@ namespace joynr
 static bool isBroadcastSubscriptionRequestInformationRegistered =
         Variant::registerType<BroadcastSubscriptionRequestInformation>(
                 "joynr.BroadcastSubscriptionRequestInformation");
-
-BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation()
-        : BroadcastSubscriptionRequest(), SubscriptionInformation()
-{
-}
-
 BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation(
         const std::string& proxyParticipantId,
         const std::string& providerParticipantId,
         const BroadcastSubscriptionRequest& subscriptionRequest)
         : BroadcastSubscriptionRequest(subscriptionRequest),
           SubscriptionInformation(proxyParticipantId, providerParticipantId)
-{
-}
-
-BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation(
-        const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation)
-        : BroadcastSubscriptionRequest(subscriptionRequestInformation),
-          SubscriptionInformation(subscriptionRequestInformation.getProxyId(),
-                                  subscriptionRequestInformation.getProviderId())
 {
 }
 

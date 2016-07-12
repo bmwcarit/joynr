@@ -31,17 +31,19 @@ class JOYNR_EXPORT SubscriptionRequestInformation : public SubscriptionRequest,
                                                     public SubscriptionInformation
 {
 public:
-    SubscriptionRequestInformation();
+    SubscriptionRequestInformation() = default;
+    ~SubscriptionRequestInformation() override = default;
+
+    SubscriptionRequestInformation(const SubscriptionRequestInformation&) = default;
+    SubscriptionRequestInformation(SubscriptionRequestInformation&&) = default;
+
     SubscriptionRequestInformation(const std::string& proxyParticipantId,
                                    const std::string& providerParticipantId,
                                    const SubscriptionRequest& subscriptionRequest);
 
-    SubscriptionRequestInformation(
-            const SubscriptionRequestInformation& subscriptionRequestInformation);
-    ~SubscriptionRequestInformation() override = default;
+    SubscriptionRequestInformation& operator=(const SubscriptionRequestInformation&) = default;
+    SubscriptionRequestInformation& operator=(SubscriptionRequestInformation&&) = default;
 
-    SubscriptionRequestInformation& operator=(
-            const SubscriptionRequestInformation& subscriptionRequestInformation) = default;
     bool operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const;
 
     std::string toString() const;

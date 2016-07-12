@@ -31,19 +31,24 @@ class JOYNR_EXPORT BroadcastSubscriptionRequestInformation : public BroadcastSub
                                                              public SubscriptionInformation
 {
 public:
-    BroadcastSubscriptionRequestInformation();
+    BroadcastSubscriptionRequestInformation() = default;
+    ~BroadcastSubscriptionRequestInformation() override = default;
+
+    BroadcastSubscriptionRequestInformation(const BroadcastSubscriptionRequestInformation&) =
+            default;
+    BroadcastSubscriptionRequestInformation(BroadcastSubscriptionRequestInformation&&) = default;
+
     BroadcastSubscriptionRequestInformation(
             const std::string& proxyParticipantId,
             const std::string& providerParticipantId,
             const BroadcastSubscriptionRequest& subscriptionRequest);
 
-    BroadcastSubscriptionRequestInformation(
-            const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation);
-    ~BroadcastSubscriptionRequestInformation() override = default;
-
     BroadcastSubscriptionRequestInformation& operator=(
-            const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) =
+            const BroadcastSubscriptionRequestInformation&) = default;
+
+    BroadcastSubscriptionRequestInformation& operator=(BroadcastSubscriptionRequestInformation&&) =
             default;
+
     bool operator==(
             const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) const;
 
