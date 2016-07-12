@@ -29,6 +29,7 @@
 #include "joynr/SubscriptionStop.h"
 #include "joynr-messaging/DummyPlatformSecurityManager.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/MessagingQos.h"
 
 namespace joynr
 {
