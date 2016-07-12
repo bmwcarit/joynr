@@ -26,6 +26,7 @@
 #include "joynr/BaseReply.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -52,7 +53,7 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(requestReplyId), MUESLI_NVP(response), MUESLI_NVP(error));
+        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(requestReplyId), MUESLI_NVP(error));
     }
 
     std::shared_ptr<exceptions::JoynrException> getError() const;
