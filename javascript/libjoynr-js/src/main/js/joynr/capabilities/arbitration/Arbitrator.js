@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,26 @@ define(
             "joynr/util/LongTimer"
         ],
         function(Promise, DiscoveryQos, Util, DiscoveryException, NoCompatibleProviderFoundException, LongTimer) {
+
+            /**
+             * checks if the provided discoveryEntry supports onChange subscriptions if required
+             *
+             * @name Arbitrator#checkSupportsOnChangeSubscriptions
+             * @function
+             *
+             * @param {DiscoveryEntry} discoveryEntry - the discovery entry to check
+             * @param {Boolean} providerMustSupportOnChange - filter only entries supporting onChange subscriptions
+             */
+            function checkSupportsOnChangeSubscriptions(discoveryEntry, providerMustSupportOnChange) {
+                if (providerMustSupportOnChange === undefined || !providerMustSupportOnChange) {
+                    return true;
+                }
+                if (discoveryEntry.qos === undefined) {
+                    return false;
+                }
+                return discoveryEntry.qos.supportsOnChangeSubscriptions;
+            }
+
             function discoverStaticCapabilities(
                     capabilities,
                     domains,
@@ -49,7 +69,8 @@ define(
                             if (domains.indexOf(capability.domain) !== -1
                                     && interfaceName === capability.interfaceName &&
                                 capability.providerVersion.MAJOR_VERSION === proxyVersion.MAJOR_VERSION &&
-                                capability.providerVersion.MINOR_VERSION === proxyVersion.MINOR_VERSION) {
+                                capability.providerVersion.MINOR_VERSION === proxyVersion.MINOR_VERSION &&
+                                checkSupportsOnChangeSubscriptions(capability, discoveryQos.providerMustSupportOnChange)) {
                                 arbitratedCaps.push(capability);
                             }
                         }
@@ -81,7 +102,9 @@ define(
                 // discover caps from local capabilities directory
                 capabilityDiscoveryStub.lookup(domains, interfaceName, new DiscoveryQos({
                     discoveryScope : applicationDiscoveryQos.discoveryScope,
-                    cacheMaxAge : applicationDiscoveryQos.cacheMaxAgeMs
+                    cacheMaxAge : applicationDiscoveryQos.cacheMaxAgeMs,
+                    discoveryTimeout : applicationDiscoveryQos.discoveryTimeoutMs,
+                    providerMustSupportOnChange : applicationDiscoveryQos.providerMustSupportOnChange
                 })).then(
                     function(discoveredCaps) {
                         // filter caps according to chosen arbitration strategy
@@ -109,7 +132,8 @@ define(
                             for (i = 0; i < arbitratedCaps.length; i++) {
                                 providerVersion = arbitratedCaps[i].providerVersion;
                                 if (providerVersion.majorVersion === proxyVersion.majorVersion &&
-                                    providerVersion.minorVersion >= proxyVersion.minorVersion) {
+                                    providerVersion.minorVersion >= proxyVersion.minorVersion &&
+                                    checkSupportsOnChangeSubscriptions(arbitratedCaps[i], applicationDiscoveryQos.providerMustSupportOnChange)) {
                                     versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
                                 } else {
                                     addtoListIfNotExisting(deferred.incompatibleVersionsFound, providerVersion);

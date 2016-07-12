@@ -44,21 +44,24 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
 
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
     private String channelId;
+    private String receiverId;
 
     @Inject
     public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
                                                     MqttMessageSerializerFactory messageSerializerFactory,
-                                                    @Named(MessagingPropertyKeys.CHANNELID) String channelId) {
+                                                    @Named(MessagingPropertyKeys.CHANNELID) String channelId,
+                                                    @Named(MessagingPropertyKeys.RECEIVERID) String receiverId) {
         super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
         this.channelId = channelId;
+        this.receiverId = receiverId;
     }
 
     @Override
     protected void subscribe() {
-        getClient().subscribe("$share:" + sanitiseChannelIdForUseAsTopic() + ":" + getOwnAddress().getTopic() + "/+");
-        getClient().subscribe(REPLYTO_PREFIX + getOwnAddress().getTopic() + "/+");
+        getClient().subscribe("$share:" + sanitiseChannelIdForUseAsTopic() + ":" + getOwnAddress().getTopic() + "/#");
+        getClient().subscribe(REPLYTO_PREFIX + getOwnAddress().getTopic() + "/" + receiverId + "/#");
     }
 
     private String sanitiseChannelIdForUseAsTopic() {

@@ -29,6 +29,7 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
+import io.joynr.provider.SubscriptionPublisherInjection;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -103,7 +104,7 @@ public class ProviderWrapper implements InvocationHandler {
         Object delegate = createDelegateForMethod(method, isProviderMethod);
         Object result;
         try {
-            if (delegateToMethod != method) {
+            if (isProviderMethod(method, delegateToMethod)) {
                 JoynrJeeMessageContext.getInstance().activate();
                 copyMessageCreatorInfo();
             }
@@ -121,9 +122,17 @@ public class ProviderWrapper implements InvocationHandler {
                 return promiseResult;
             }
         } finally {
-            if (delegateToMethod != method) {
+            if (isProviderMethod(method, delegateToMethod)) {
                 JoynrJeeMessageContext.getInstance().deactivate();
             }
+        }
+        return result;
+    }
+
+    private boolean isProviderMethod(Method method, Method delegateToMethod) {
+        boolean result = delegateToMethod != method;
+        if (method.getDeclaringClass().equals(SubscriptionPublisherInjection.class)) {
+            result = false;
         }
         return result;
     }

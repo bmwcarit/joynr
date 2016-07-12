@@ -26,8 +26,11 @@ import joynr.exceptions.ApplicationException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-public abstract class ProxyInvocationHandler implements InvocationHandler {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+public abstract class ProxyInvocationHandler implements InvocationHandler {
+    private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandler.class);
     protected Throwable throwable;
 
     abstract Object invoke(Method method, Object[] args) throws ApplicationException;
@@ -56,6 +59,15 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         if (throwable != null) {
             throw throwable;
         }
-        return invoke(method, args);
+        try {
+            return invoke(method, args);
+        } catch (Exception e) {
+            if (this.throwable != null) {
+                logger.debug("exception caught: {} overriden by: {}", e.getMessage(), throwable.getMessage());
+                throw throwable;
+            } else {
+                throw e;
+            }
+        }
     }
 }

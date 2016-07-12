@@ -21,6 +21,7 @@
 #include "joynr/SingleThreadedDelayedScheduler.h"
 
 #include "utils/MockObjects.h"
+#include "utils/TestRunnable.h"
 
 #include <cstdint>
 #include <cassert>
@@ -149,4 +150,12 @@ TEST(SingleThreadedDelayedSchedulerTest, useDefaultDelay)
     scheduler.shutdown();
 
     EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+}
+
+TEST(SingleThreadedDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
+    SingleThreadedDelayedScheduler scheduler("SingleThread");
+    TestRunnable* runnable = new TestRunnable();
+    scheduler.schedule(runnable, std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    scheduler.shutdown();
 }

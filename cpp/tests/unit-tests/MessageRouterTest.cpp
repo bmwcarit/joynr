@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/Semaphore.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
@@ -31,7 +32,13 @@
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
 using ::testing::Return;
+using ::testing::Pointee;
 using namespace joynr;
+
+ACTION_P(ReleaseSemaphore, semaphore)
+{
+    semaphore->notify();
+}
 
 class MessageRouterTest : public ::testing::Test {
 public:
@@ -192,12 +199,16 @@ TEST_F(MessageRouterTest, outdatedMessagesAreRemoved){
 void MessageRouterTest::routeMessageToAddress(
         const std::string& destinationParticipantId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address) {
+    joynr::Semaphore semaphore(0);
     messageRouter->addNextHop(destinationParticipantId, address);
     joynrMessage.setHeaderTo(destinationParticipantId);
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
     ON_CALL(*messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
+    ON_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+            .WillByDefault(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
     messageRouter->route(joynrMessage);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 }
 
 TEST_F(MessageRouterTest, routeMessageToHttpAddress) {
@@ -220,4 +231,26 @@ TEST_F(MessageRouterTest, routeMessageToMqttAddress) {
             create(addressWithChannelId("mqtt", destinationChannelId))
             ).Times(1);
     routeMessageToAddress(destinationParticipantId, address);
+}
+
+TEST_F(MessageRouterTest, restoreRoutingTable) {
+    const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
+    std::remove(routingTablePersistenceFilename.c_str());
+
+    auto messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
+    auto messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>());
+    std::string participantId = "myParticipantId";
+    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
+
+    // MUST be done BEFORE savePersistence to pass the persistence filename to the publicationManager
+    messageRouter->loadRoutingTable(routingTablePersistenceFilename);
+    messageRouter->addProvisionedNextHop(participantId, address); // Saves the RoutingTable to the persistence file.
+
+    messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>());
+
+    messageRouter->loadRoutingTable(routingTablePersistenceFilename);
+
+    joynrMessage.setHeaderTo(participantId);
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*address))));
+    messageRouter->route(joynrMessage);
 }

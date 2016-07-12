@@ -12,6 +12,9 @@
   (`USE_PLATFORM_<DEPENDENCY>=OFF`) to turn system resolution off. In this case, joynr downloads
   and builds individual dependencies during the joynr build using CMake's ExternalProject_Add
   mechanism.
+* **[JS]** The unit-, integration-, system-integration- and intertab-tests are now using the
+  [Jasmine](http://jasmine.github.io) 2.4.1 test framework.
+  [Karma](https://karma-runner.github.io) is now used as test runner.
 
 #joynr 0.18.4
 This is a minor bug fix release.

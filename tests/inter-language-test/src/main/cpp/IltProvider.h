@@ -39,43 +39,43 @@ public:
      * Implementation of Franca methods
      */
 
-    virtual void methodWithoutParameters(
+    void methodWithoutParameters(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithoutInputParameter(
+    void methodWithoutInputParameter(
             std::function<void(const bool& booleanOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithoutOutputParameter(
+    void methodWithoutOutputParameter(
             const bool& booleanArg,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithSinglePrimitiveParameters(
+    void methodWithSinglePrimitiveParameters(
             const uint16_t& uInt16Arg,
             std::function<void(const std::string& stringOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithMultiplePrimitiveParameters(
+    void methodWithMultiplePrimitiveParameters(
             const int32_t& int32Arg,
             const float& floatArg,
             const bool& booleanArg,
             std::function<void(const double& doubleOut, const std::string& stringOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithSingleArrayParameters(
+    void methodWithSingleArrayParameters(
             const std::vector<double>& doubleArrayArg,
             std::function<void(const std::vector<std::string>& stringArrayOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithMultipleArrayParameters(
+    void methodWithMultipleArrayParameters(
             const std::vector<std::string>& stringArrayArg,
             const std::vector<int8_t>& int8ArrayArg,
             const std::vector<joynr::interlanguagetest::namedTypeCollection2::
@@ -90,18 +90,18 @@ public:
                             joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>&
                             structWithStringArrayArrayOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithSingleEnumParameters(
+    void methodWithSingleEnumParameters(
             const joynr::interlanguagetest::namedTypeCollection2::
                     ExtendedEnumerationWithPartlyDefinedValues::Enum& enumerationArg,
             std::function<void(const joynr::interlanguagetest::namedTypeCollection2::
                                        ExtendedTypeCollectionEnumerationInTypeCollection::Enum&
                                                enumerationOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithMultipleEnumParameters(
+    void methodWithMultipleEnumParameters(
             const joynr::interlanguagetest::Enumeration::Enum& enumerationArg,
             const joynr::interlanguagetest::namedTypeCollection2::
                     ExtendedTypeCollectionEnumerationInTypeCollection::Enum& extendedEnumerationArg,
@@ -111,18 +111,18 @@ public:
                                const joynr::interlanguagetest::Enumeration::Enum& enumerationOut)>
                     onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithSingleStructParameters(
+    void methodWithSingleStructParameters(
             const joynr::interlanguagetest::namedTypeCollection2::ExtendedBaseStruct&
                     extendedBaseStructArg,
             std::function<void(const joynr::interlanguagetest::namedTypeCollection2::
                                        ExtendedStructOfPrimitives& extendedStructOfPrimitivesOut)>
                     onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithMultipleStructParameters(
+    void methodWithMultipleStructParameters(
             const joynr::interlanguagetest::namedTypeCollection2::ExtendedStructOfPrimitives&
                     extendedStructOfPrimitivesArg,
             const joynr::interlanguagetest::namedTypeCollection2::BaseStruct& baseStructArg,
@@ -132,24 +132,24 @@ public:
                     const joynr::interlanguagetest::namedTypeCollection2::
                             ExtendedExtendedBaseStruct& extendedExtendedBaseStructOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
     void methodFireAndForgetWithoutParameter() override;
 
     void methodFireAndForgetWithInputParameter(const std::int32_t& int32Arg) override;
 
-    virtual void overloadedMethod(
+    void overloadedMethod(
             std::function<void(const std::string& stringOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void overloadedMethod(
+    void overloadedMethod(
             const bool& booleanArg,
             std::function<void(const std::string& stringOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void overloadedMethod(
+    void overloadedMethod(
             const std::vector<joynr::interlanguagetest::namedTypeCollection2::
                                       ExtendedExtendedEnumeration::Enum>& enumArrayArg,
             const int64_t& int64Arg,
@@ -161,20 +161,20 @@ public:
                          const joynr::interlanguagetest::namedTypeCollection2::ExtendedBaseStruct&
                                  extendedBaseStructOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void overloadedMethodWithSelector(
+    void overloadedMethodWithSelector(
             std::function<void(const std::string& stringOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void overloadedMethodWithSelector(
+    void overloadedMethodWithSelector(
             const bool& booleanArg,
             std::function<void(const std::string& stringOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void overloadedMethodWithSelector(
+    void overloadedMethodWithSelector(
             const std::vector<joynr::interlanguagetest::namedTypeCollection2::
                                       ExtendedExtendedEnumeration::Enum>& enumArrayArg,
             const int64_t& int64Arg,
@@ -186,84 +186,86 @@ public:
                          const joynr::interlanguagetest::namedTypeCollection2::ExtendedBaseStruct&
                                  extendedBaseStructOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithStringsAndSpecifiedStringOutLength(
+    void methodWithStringsAndSpecifiedStringOutLength(
             const std::string& stringArg,
             const int32_t& int32StringLengthArg,
             std::function<void(const std::string& stringOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithoutErrorEnum(
+    void methodWithoutErrorEnum(
             const std::string& wantedExceptionArg,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
 
-    virtual void methodWithAnonymousErrorEnum(
+    void methodWithAnonymousErrorEnum(
             const std::string& wantedExceptionArg,
             std::function<void()> onSuccess,
             std::function<void(const joynr::interlanguagetest::TestInterface::
                                        MethodWithAnonymousErrorEnumErrorEnum::Enum& errorEnum)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithExistingErrorEnum(
+    void methodWithExistingErrorEnum(
             const std::string& wantedExceptionArg,
             std::function<void()> onSuccess,
             std::function<void(const joynr::interlanguagetest::namedTypeCollection2::
-                                       ExtendedErrorEnumTc::Enum& errorEnum)> onError);
+                                       ExtendedErrorEnumTc::Enum& errorEnum)> onError) override;
 
-    virtual void methodWithExtendedErrorEnum(
+    void methodWithExtendedErrorEnum(
             const std::string& wantedExceptionArg,
             std::function<void()> onSuccess,
             std::function<void(const joynr::interlanguagetest::TestInterface::
                                        MethodWithExtendedErrorEnumErrorEnum::Enum& errorEnum)>
-                    onError);
+                    onError) override;
 
-    virtual void methodToFireBroadcastWithSinglePrimitiveParameter(
+    void methodToFireBroadcastWithSinglePrimitiveParameter(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodToFireBroadcastWithMultiplePrimitiveParameters(
+    void methodToFireBroadcastWithMultiplePrimitiveParameters(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodToFireBroadcastWithSingleArrayParameter(
+    void methodToFireBroadcastWithSingleArrayParameter(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodToFireBroadcastWithMultipleArrayParameters(
+    void methodToFireBroadcastWithMultipleArrayParameters(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodToFireBroadcastWithSingleEnumerationParameter(
+    void methodToFireBroadcastWithSingleEnumerationParameter(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodToFireBroadcastWithMultipleEnumerationParameters(
+    void methodToFireBroadcastWithMultipleEnumerationParameters(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodToFireBroadcastWithSingleStructParameter(
+    void methodToFireBroadcastWithSingleStructParameter(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodToFireBroadcastWithMultipleStructParameters(
+    void methodToFireBroadcastWithMultipleStructParameters(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodToFireBroadcastWithFiltering(
+    void methodToFireBroadcastWithFiltering(
             const std::string& stringArg,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
 
     void getAttributeFireAndForget(
             std::function<void(const std::int32_t&)> onSuccess,
@@ -276,45 +278,46 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
 
-    virtual void getAttributeWithExceptionFromGetter(
+    void getAttributeWithExceptionFromGetter(
             std::function<void(const bool&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void getAttributeWithExceptionFromSetter(
+    void getAttributeWithExceptionFromSetter(
             std::function<void(const bool&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void setAttributeWithExceptionFromSetter(
+    void setAttributeWithExceptionFromSetter(
             const bool& attributeWithExceptionFromSetter,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void getAttributeInt8readonlyNoSubscriptions(
+    void getAttributeInt8readonlyNoSubscriptions(
             std::function<void(const int8_t&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void getAttributeBooleanReadonly(
+    void getAttributeBooleanReadonly(
             std::function<void(const bool&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void getAttributeExtendedEnumerationReadonly(
+    void getAttributeExtendedEnumerationReadonly(
             std::function<void(const joynr::interlanguagetest::namedTypeCollection2::
                                        ExtendedEnumerationWithPartlyDefinedValues::Enum&)>
                     onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError);
+                    onError) override;
 
-    virtual void methodWithSingleMapParameters(
+    void methodWithSingleMapParameters(
             const joynr::interlanguagetest::namedTypeCollection2::MapStringString& mapArg,
             std::function<void(
                     const joynr::interlanguagetest::namedTypeCollection2::MapStringString& mapOut)>
                     onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
 
 private:
     // Disallow copy and assign

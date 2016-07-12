@@ -20,6 +20,7 @@
 
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "utils/MockObjects.h"
+#include "utils/TestRunnable.h"
 
 #include <cstdint>
 #include <cassert>
@@ -152,4 +153,12 @@ TEST(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
     scheduler.shutdown();
 
     EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+}
+
+TEST(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
+    ThreadPoolDelayedScheduler scheduler(3, "ThreadPool");
+    TestRunnable* runnable = new TestRunnable();
+    scheduler.schedule(runnable, std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    scheduler.shutdown();
 }

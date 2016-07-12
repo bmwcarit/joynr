@@ -64,7 +64,7 @@ define("joynr/messaging/channel/ChannelMessagingStub", [
                                     + ": message marked as outgoing, but channel address "
                                     + settings.destinationChannelAddress
                                     + " is the local channel address.";
-                        return Promise.reject(errorMsg);
+                        return Promise.reject(new Error(errorMsg));
                     }
                     // if outgoing request => set my own channel address as replyChannelId
                     joynrMessage.replyChannelId = serializedChannelAddress;
