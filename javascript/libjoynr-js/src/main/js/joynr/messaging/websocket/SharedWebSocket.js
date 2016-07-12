@@ -127,13 +127,6 @@ define(
                                 settings.remoteAddress,
                                 "WebSocketAddress",
                                 "remoteAddress");
-                        Object.defineProperty(this, 'EVENT_CODE_SHUTDOWN', {
-                            enumerable: false,
-                            configurable: false,
-                            writable: false,
-                            readable: true,
-                            value: 4000
-                        });
 
                         var websocket = null;
                         var provisioning = settings.provisioning || {};
@@ -166,7 +159,7 @@ define(
                         };
 
                         onClose = function onClose(event) {
-                            if (event.code !== this.EVENT_CODE_SHUTDOWN) {
+                            if (event.code !== SharedWebSocket.EVENT_CODE_SHUTDOWN ) {
                                 log.info("connection closed unexpectedly. code: "
                                     + event.code
                                     + " reason: "
@@ -213,7 +206,7 @@ define(
                          */
                         this.close = function close() {
                             if (websocket !== null) {
-                                websocket.close(this.EVENT_CODE_SHUTDOWN, "shutdown");
+                                websocket.close(SharedWebSocket.EVENT_CODE_SHUTDOWN, "shutdown");
                             }
                         };
 
@@ -239,5 +232,6 @@ define(
                         });
 
                     };
+            SharedWebSocket.EVENT_CODE_SHUTDOWN = 4000;
             return SharedWebSocket;
         });
