@@ -138,8 +138,12 @@ define(
                         var onOpen;
                         var onError;
                         var onClose;
+                        var closed = false;
 
                         var resetConnection = function resetConnection() {
+                            if (closed) {
+                                return;
+                            }
                             websocket = new WebSocket(remoteUrl);
                             websocket.onopen = onOpen;
                             websocket.onclose = onClose;
@@ -205,6 +209,7 @@ define(
                          * @function
                          */
                         this.close = function close() {
+                            closed = true;
                             if (websocket !== null) {
                                 websocket.close(SharedWebSocket.EVENT_CODE_SHUTDOWN, "shutdown");
                             }
