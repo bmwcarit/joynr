@@ -77,4 +77,4 @@ protected:
 
 } // namespace joynr
 
-#endif // SUBSCRIPTIONPUBLICATION_H
+#endif // BASEREPLY_H
