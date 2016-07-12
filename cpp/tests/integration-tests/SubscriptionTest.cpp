@@ -28,7 +28,6 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/MetaTypeRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockCallback.h"
@@ -87,8 +86,6 @@ public:
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::GpsLocation>();
-        MetaTypeRegistrar::instance().registerEnumMetaType<joynr::tests::testTypes::TestEnum>();
     }
 
     void TearDown(){

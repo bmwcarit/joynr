@@ -21,7 +21,6 @@
 #include <cassert>
 #include <tuple>
 
-#include "joynr/MetaTypeRegistrar.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/ISubscriptionManager.h"
 

@@ -65,49 +65,12 @@ class InterfaceCppTemplate extends InterfaceTemplate {
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
-#include "joynr/MetaTypeRegistrar.h"
 
 «FOR parameterType: getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
 «getNamespaceStarter(francaIntf)»
-
-I«interfaceName»Base::I«interfaceName»Base()
-{
-	«val typeObjs = getAllComplexTypes(francaIntf, selector)»
-	«var replyMetatypes = getReplyMetatypes(francaIntf)»
-	«var broadcastMetatypes = getBroadcastMetatypes(francaIntf)»
-
-	«IF !typeObjs.isEmpty() || !replyMetatypes.empty || !broadcastMetatypes.empty»
-		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
-	«ENDIF»
-	«FOR datatype : typeObjs»
-		// Register metatype «datatype.typeName»
-		«IF isEnum(datatype)»
-		{
-			registrar.registerEnumMetaType<«datatype.typeNameOfContainingClass»>();
-		}
-		«ELSE»
-«««			«registerMetatypeStatement(datatype.typeName)»
-			registrar.registerMetaType<«datatype.typeName»>();
-		«ENDIF»
-	«ENDFOR»
-
-	«IF francaIntf.broadcasts.size > 0»
-		/*
-		 * Broadcast output parameters are packed into a single publication message when the
-		 * broadcast occurs. They are encapsulated in a map. Hence, a new composite data type is
-		 * needed for all broadcasts. The map is serialized into the publication message. When
-		 * deserializing on consumer side, the right publication interpreter is chosen by calculating
-		 * the type id for the composite type.
-		*/
-	«ENDIF»
-
-	«FOR broadcast: broadcastMetatypes»
-		registrar.registerMetaType<«broadcast»>();
-	«ENDFOR»
-}
 
 const std::string& I«interfaceName»Base::INTERFACE_NAME()
 {

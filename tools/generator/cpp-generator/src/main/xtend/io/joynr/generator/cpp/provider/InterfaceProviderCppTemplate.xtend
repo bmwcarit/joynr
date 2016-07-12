@@ -42,7 +42,6 @@ class InterfaceProviderCppTemplate extends InterfaceTemplate {
 «val interfaceName = francaIntf.joynrName»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/MetaTypeRegistrar.h"
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
 #include "joynr/TypeUtil.h"
@@ -55,26 +54,6 @@ class InterfaceProviderCppTemplate extends InterfaceTemplate {
 {
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
-
-	«val typeObjs = getAllComplexTypes(francaIntf, selector)»
-
-	«IF !typeObjs.isEmpty()»
-		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
-	«ENDIF»
-	«FOR typeobj : typeObjs»
-		«val datatype = typeobj»
-
-		// Register metatype «datatype.typeName»
-		«IF isEnum(datatype)»
-		{
-«««			«registerMetatypeStatement(datatype.typeNameOfContainingClass)»
-«««			int id = «registerMetatypeStatement(datatype.typeName)»
-«««			registrar.registerEnumMetaType<«datatype.typeNameOfContainingClass»>();
-		}
-		«ELSE»
-			registrar.registerMetaType<«datatype.typeName»>();
-		«ENDIF»
-	«ENDFOR»
 }
 
 «interfaceName»Provider::~«interfaceName»Provider()

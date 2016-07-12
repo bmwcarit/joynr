@@ -38,7 +38,6 @@
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/types/Localisation/GpsLocation.h"
-#include "joynr/MetaTypeRegistrar.h"
 
 using namespace ::testing;
 using namespace joynr;

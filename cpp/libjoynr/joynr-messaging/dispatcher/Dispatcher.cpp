@@ -39,7 +39,6 @@
 #include "joynr/PublicationManager.h"
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/MetaTypeRegistrar.h"
 #include "joynr/Request.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
