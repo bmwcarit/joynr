@@ -19,6 +19,8 @@
 #ifndef IREPLYCALLER_H
 #define IREPLYCALLER_H
 
+#include <memory>
+
 #include "joynr/ITimeoutListener.h"
 
 namespace joynr
