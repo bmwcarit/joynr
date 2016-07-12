@@ -63,6 +63,10 @@ public:
 
     std::string toString() const;
 
+    std::shared_ptr<SubscriptionQos> getQos() const;
+
+    void setQos(std::shared_ptr<SubscriptionQos> qos);
+
 private:
     /*
       SubscriptionRequest is used to store a subscription while Arbitration is still being done. To
@@ -75,6 +79,7 @@ private:
     std::string subscribedToName;
     Variant qosVariant;
 
+    std::shared_ptr<SubscriptionQos> qos;
 };
 
 } // namespace joynr

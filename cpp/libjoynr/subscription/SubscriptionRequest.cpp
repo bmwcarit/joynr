@@ -98,4 +98,14 @@ std::string SubscriptionRequest::toString() const
     return JsonSerializer::serialize(*this);
 }
 
+std::shared_ptr<SubscriptionQos> SubscriptionRequest::getQos() const
+{
+    return qos;
+}
+
+void SubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
+{
+    this->qos = std::move(qos);
+}
+
 } // namespace joynr
