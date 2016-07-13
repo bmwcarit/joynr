@@ -27,8 +27,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(SubscriptionRequest);
-
 static const bool isSubscriptionRequestRegistered =
         Variant::registerType<SubscriptionRequest>("joynr.SubscriptionRequest");
 

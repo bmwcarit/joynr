@@ -24,8 +24,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(BroadcastSubscriptionRequestInformation);
-
 static bool isBroadcastSubscriptionRequestInformationRegistered =
         Variant::registerType<BroadcastSubscriptionRequestInformation>(
                 "joynr.BroadcastSubscriptionRequestInformation");

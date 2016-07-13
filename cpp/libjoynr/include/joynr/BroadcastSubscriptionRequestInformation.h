@@ -48,9 +48,6 @@ public:
             const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) const;
 
     std::string toString() const;
-
-private:
-    ADD_LOGGER(BroadcastSubscriptionRequestInformation);
 };
 
 } // namespace joynr
