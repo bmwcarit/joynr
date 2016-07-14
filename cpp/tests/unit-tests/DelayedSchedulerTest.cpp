@@ -44,13 +44,13 @@ class SimpleDelayedScheduler :
 
 public:
 
-    SimpleDelayedScheduler()
+    SimpleDelayedScheduler(SingleThreadedIOService& singleThreadedIOService)
         : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1), singleThreadedIOService.getIOService()),
           est_ms(0)
     {
     }
 
-    SimpleDelayedScheduler(const std::uint64_t delay)
+    SimpleDelayedScheduler(const std::uint64_t delay, SingleThreadedIOService& singleThreadedIOService)
         : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1), singleThreadedIOService.getIOService()),
           est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
     {
@@ -91,19 +91,20 @@ public:
 
 private:
     const std::uint64_t est_ms;
-    SingleThreadedIOService singleThreadedIOService;
 };
 
 TEST(DelayedSchedulerTest, startAndShutdownWithoutWork)
 {
-    SimpleDelayedScheduler scheduler;
+    SingleThreadedIOService singleThreadedIOService;
+    SimpleDelayedScheduler scheduler(singleThreadedIOService);
 
     scheduler.shutdown();
 }
 
 TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCorrect)
 {
-    SimpleDelayedScheduler scheduler;
+    SingleThreadedIOService singleThreadedIOService;
+    SimpleDelayedScheduler scheduler(singleThreadedIOService);
 
     // Dtor should be called
     StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
@@ -126,7 +127,8 @@ TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCo
 
 TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 {
-    SimpleDelayedScheduler scheduler(5);
+    SingleThreadedIOService singleThreadedIOService;
+    SimpleDelayedScheduler scheduler(5, singleThreadedIOService);
     StrictMock<MockRunnable> runnable1(false);
     scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
 
@@ -142,7 +144,8 @@ TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 
 TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
 {
-    SimpleDelayedScheduler scheduler;
+    SingleThreadedIOService singleThreadedIOService;
+    SimpleDelayedScheduler scheduler(singleThreadedIOService);
     StrictMock<MockRunnable> runnable1(true);
     scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
 
@@ -157,7 +160,8 @@ TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
 
 TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
 {
-    SimpleDelayedScheduler scheduler(5);
+    SingleThreadedIOService singleThreadedIOService;
+    SimpleDelayedScheduler scheduler(5, singleThreadedIOService);
     StrictMock<MockRunnable> runnable1(false);
     DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
 
@@ -174,7 +178,8 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
 
 TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
 {
-    SimpleDelayedScheduler scheduler(5);
+    SingleThreadedIOService singleThreadedIOService;
+    SimpleDelayedScheduler scheduler(5, singleThreadedIOService);
     StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
     DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
