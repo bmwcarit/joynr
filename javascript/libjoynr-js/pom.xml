@@ -603,84 +603,6 @@
 				</configuration>
 			</plugin>
 
-			<!-- run the tests -->
-
-			<!-- do the "npm install" to get karma and dependencies -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>npm-install</id>
-						<phase>generate-test-resources</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>install</argument>
-							</arguments>
-							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
-						</configuration>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- run karma -->
-			<plugin>
-				<groupId>com.kelveden</groupId>
-				<artifactId>maven-karma-plugin</artifactId>
-				<version>1.8</version>
-				<executions>
-					<execution>
-						<phase>test</phase>
-						<id>karma-unit-tests</id>
-						<goals>
-							<goal>start</goal>
-						</goals>
-						<configuration>
-							<configFile>${basedir}/src/test/karma/karma.conf.js</configFile>
-						</configuration>
-					</execution>
-					<execution>
-						<phase>integration-test</phase>
-						<id>karma-integration-tests</id>
-						<goals>
-							<goal>start</goal>
-						</goals>
-						<configuration>
-							<configFile>${basedir}/src/test/karma/karma.integration.conf.js</configFile>
-						</configuration>
-					</execution>
-					<execution>
-						<phase>integration-test</phase>
-						<id>karma-system-integration-tests</id>
-						<goals>
-							<goal>start</goal>
-						</goals>
-						<configuration>
-							<configFile>${basedir}/src/test/karma/karma.system.integration.conf.js</configFile>
-						</configuration>
-					</execution>
-					<execution>
-						<phase>integration-test</phase>
-						<id>karma-intertab-integration-tests</id>
-						<goals>
-							<goal>start</goal>
-						</goals>
-						<configuration>
-							<configFile>${basedir}/src/test/karma/karma.intertab.integration.conf.js</configFile>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<karmaExecutable>${project.build.directory}/node-classes/node_modules/.bin/karma</karmaExecutable>
-					<skipKarma>false</skipKarma>
-					<karmaFailureIgnore>false</karmaFailureIgnore>
-				</configuration>
-			</plugin>
-
 			<!-- Configure packaging of production version matter libjoynr-js -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -879,6 +801,83 @@
 							</execution>
 						</executions>
 					</plugin>
+
+					<!-- run the tests -->
+					<!-- do the "npm install" to get karma and dependencies -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>npm-install</id>
+								<phase>generate-test-resources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+									</arguments>
+									<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- run karma -->
+					<plugin>
+						<groupId>com.kelveden</groupId>
+						<artifactId>maven-karma-plugin</artifactId>
+						<version>1.8</version>
+						<executions>
+							<execution>
+								<phase>test</phase>
+								<id>karma-unit-tests</id>
+								<goals>
+									<goal>start</goal>
+								</goals>
+								<configuration>
+									<configFile>${basedir}/src/test/karma/karma.conf.js</configFile>
+								</configuration>
+							</execution>
+							<execution>
+								<phase>integration-test</phase>
+								<id>karma-integration-tests</id>
+								<goals>
+									<goal>start</goal>
+								</goals>
+								<configuration>
+									<configFile>${basedir}/src/test/karma/karma.integration.conf.js</configFile>
+								</configuration>
+							</execution>
+							<execution>
+								<phase>integration-test</phase>
+								<id>karma-system-integration-tests</id>
+								<goals>
+									<goal>start</goal>
+								</goals>
+								<configuration>
+									<configFile>${basedir}/src/test/karma/karma.system.integration.conf.js</configFile>
+								</configuration>
+							</execution>
+							<execution>
+								<phase>integration-test</phase>
+								<id>karma-intertab-integration-tests</id>
+								<goals>
+									<goal>start</goal>
+								</goals>
+								<configuration>
+									<configFile>${basedir}/src/test/karma/karma.intertab.integration.conf.js</configFile>
+								</configuration>
+							</execution>
+						</executions>
+						<configuration>
+							<karmaExecutable>${project.build.directory}/node-classes/node_modules/.bin/karma</karmaExecutable>
+							<skipKarma>false</skipKarma>
+							<karmaFailureIgnore>false</karmaFailureIgnore>
+						</configuration>
+					</plugin>
+
 					<!-- run nodejs based unit tests -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
