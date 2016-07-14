@@ -46,7 +46,7 @@ typeCollection DacTypes {
 			trustworthiness: HIGH, MID, LOW and NONE. Note that NONE refers
 			to a completely untrusted, non-authenticated user. All other TLs
 			are specified by requirements regarding the device used to
-			establish a connection (e.g., vehicle, mobile phone, etc.) and
+			establish a connection (e.g. vehicle, mobile phone, etc.) and
 			the local authentication methods unlocking a user’s certificate
 			(e.g. passwords, biometric authentication, etc.).
 	**>
@@ -127,7 +127,7 @@ typeCollection DacTypes {
 		TrustLevel requiredTrustLevel
 		<**
 			@description: The Trust Level (TL) that is needed by the requester in
-				order to create, edit or delete this Owner ACE. The TL must be listed
+				order to create, edit or delete an Owner ACE. The TL must be listed
 				in the possible required CE Change TLs of the corresponding Master
 				CE. Otherwise this constitutes a conflict.
 		**>
@@ -146,7 +146,7 @@ typeCollection DacTypes {
 	struct MasterAccessControlEntry extends MasterControlEntry {
 		<**
 			@description: The operation this Access Control Entry (ACE) applies
-				to or the whildcard character (asterisk sign) if this ACE applies
+				to or the wildcard character (asterisk sign) if this ACE applies
 				to all operations of the corresponding interface. ACEs that use
 				the wildcard character are overruled by specific ones (if they
 				exist).
@@ -201,7 +201,7 @@ typeCollection DacTypes {
 	struct OwnerAccessControlEntry extends OwnerControlEntry {
 		<**
 			@description: The operation this Access Control Entry (ACE) applies
-				to or the whildcard character (asterisk sign) if this ACE applies
+				to or the wildcard character (asterisk sign) if this ACE applies
 				to all operations of the corresponding interface. ACEs that use
 				the wildcard character are overruled by specific ones (if they
 				exist).
@@ -256,7 +256,8 @@ typeCollection DacTypes {
 	<**
 		@description: The Domain Role Entry (DRE) stores domains for users/role combination.
 			User may become specified role when accessing given domains ACEs/RCEs in ACL/RCL.
-			DREs are stored in the Domain Roles Table (DRT).
+			DREs are stored in the Domain Roles Table (DRT) using the pair (uid, role) as
+			combined primary key.
 	**>
 	struct DomainRoleEntry {
 		<**
@@ -286,7 +287,7 @@ typeCollection DacTypes {
 		ADD
 		<**
 			@description: Entry was updated. An entry with the key already
-				existed and was updated.
+				existed.
 		**>
 		UPDATE
 		<**
@@ -375,7 +376,7 @@ interface GlobalDomainAccessController {
 	<**
 		@description: Returns a list of entries applying to domains the user
 			uid has role Master, i.e. the entries the user uid is allowed to
-			edit. Used by an Master ACL editor app.
+			edit. Used by a Master ACL editor app.
 	**>
 	method getEditableMasterAccessControlEntries {
 		in {
@@ -432,7 +433,7 @@ interface GlobalDomainAccessController {
 	<**
 		@description: Returns a list of entries that apply to user uid,
 			i.e. the entries that define the access rights of the user uid.
-			Used by an Mediator ACL GUI to show access rights of a user
+			Used by a Mediator ACL GUI to show access rights of a user
 			Used when a user logs in to prefetch applying entries to provide
 			early feedback on consumer side.
 	**>
@@ -578,7 +579,7 @@ interface GlobalDomainAccessController {
 	<**
 		@description: Returns a list of entries that apply to user uid,
 			i.e. the entries that define the registration rights of the user uid.
-			Used by an Master RCL GUI to show registration rights of a user.
+			Used by a Master RCL GUI to show registration rights of a user.
 			Used when a user logs in to prefetch applying entries.
 	**>
 	method getMasterRegistrationControlEntries {
@@ -649,7 +650,7 @@ interface GlobalDomainAccessController {
 	<**
 		@description: Returns a list of entries applying to domains the user
 			uid has role Master, i.e. the entries the user uid is allowed to
-			edit. Used by an Master RCL editor app.
+			edit. Used by a Master RCL editor app.
 	**>
 	method getEditableMediatorRegistrationControlEntries {
 		in {
@@ -690,7 +691,7 @@ interface GlobalDomainAccessController {
 	<**
 		@description: Returns a list of entries that apply to user uid,
 			i.e. the entries that define the registration rights of the user uid.
-			Used by an Master RCL GUI to show registration rights of a user.
+			Used by a Master RCL GUI to show registration rights of a user.
 			Used when a user logs in to prefetch applying entries.
 	**>
 	method getOwnerRegistrationControlEntries {
@@ -759,16 +760,15 @@ interface GlobalDomainAccessController {
 	broadcast domainRoleEntryChanged selective {
 		out {
 			DacTypes.ChangeType typeOfChange
-			DacTypes.DomainRoleEntry newDomainRoleEntry
+			DacTypes.DomainRoleEntry changedDomainRoleEntry
 		}
 	}
 
 	<**
-		@description: Event that is fired when new master access
-			control entry is added or an existing entry changed or is removed.
-			The event includes new domain role entry as well as the type of
-			the change.
-			The event includes new access control entry.
+		@description: Event that is fired when a new master access
+			control entry is added or an existing entry is changed or removed.
+			The event includes the new access control entry as well as the
+			the type of change.
 			The interface provider offers two filters for this selective
 			broadcast.
 			The user ID filter filters events based on the userIdOfInterest,
@@ -789,16 +789,14 @@ interface GlobalDomainAccessController {
 	broadcast masterAccessControlEntryChanged selective {
 		out {
 			DacTypes.ChangeType typeOfChange
-			DacTypes.MasterAccessControlEntry newMasterAce
+			DacTypes.MasterAccessControlEntry changedMasterAce
 		}
 	}
 
 	<**
 		@description: Event that is fired when new mediator access
-			control entry is added or an existing entry changed or is removed.
-			The event includes new domain role entry as well as the type of
-			the change.
-			The event includes new access control entry.
+			control entry is added or an existing entry is changed or removed.
+			The event includes the new mediator access control entry.
 			The interface provider offers two filters for this selective
 			broadcast.
 			The user ID filter filters events based on the userIdOfInterest,
@@ -819,16 +817,15 @@ interface GlobalDomainAccessController {
 	broadcast mediatorAccessControlEntryChanged selective {
 		out {
 			DacTypes.ChangeType typeOfChange
-			DacTypes.MasterAccessControlEntry newMediatorAce
+			DacTypes.MasterAccessControlEntry changedMediatorAce
 		}
 	}
 
 	<**
-		@description: Event that is fired when new owner access
-			control entry is added or an existing entry changed or is removed.
-			he event includes new domain role entry as well as the type of
-			the change.
-			The event includes new access control entry.
+		@description: Event that is fired when a new owner access
+			control entry is added or an existing entry is changed or removed.
+			The event includes the new owner access control entry as well as the
+			type of the change.
 			The interface provider offers two filters for this selective
 			broadcast.
 			The user ID filter filters events based on the userIdOfInterest,
@@ -849,20 +846,19 @@ interface GlobalDomainAccessController {
 	broadcast ownerAccessControlEntryChanged selective {
 		out {
 			DacTypes.ChangeType typeOfChange
-			DacTypes.OwnerAccessControlEntry newOwnerAce
+			DacTypes.OwnerAccessControlEntry changedOwnerAce
 		}
 	}
 
 	<**
-		@description: Event that is fired when new master registration
-			control entry is added or an existing entry changed or is removed.
-			The event includes new domain role entry as well as the type of
-			the change.
-			The event includes new access control entry.
+		@description: Event that is fired when a new master registration
+			control entry is added or an existing entry is changed or removed.
+			The event includes the new master registration control entry as
+			well as the type of change.
 			The interface provider offers a filter for this selective
 			broadcast.
 			The user ID filter filters events based on the userIdOfInterest,
-			or does no filtering if these parameters are not set. It is used
+			or does no filtering if this parameter is not set. It is used
 			by the LocalDomainAccessController to subscribe to updates for the
 			current user.
 		@param: userIdOfInterest (String) filter parameter that is used by the
@@ -871,20 +867,19 @@ interface GlobalDomainAccessController {
 	broadcast masterRegistrationControlEntryChanged selective {
 		out {
 			DacTypes.ChangeType typeOfChange
-			DacTypes.MasterRegistrationControlEntry newMasterRce
+			DacTypes.MasterRegistrationControlEntry changedMasterRce
 		}
 	}
 
 	<**
-		@description: Event that is fired when new mediator registration
-			control entry is added or an existing entry changed or is removed.
-			The event includes new domain role entry as well as the type of
-			the change.
-			The event includes new access control entry.
+		@description: Event that is fired when a new mediator registration
+			control entry is added or an existing entry is changed or removed.
+			The event includes the new master registration control entry as
+			well as the type of change.
 			The interface provider offers a filter for this selective
 			broadcast.
 			The user ID filter filters events based on the userIdOfInterest,
-			r does no filtering if these parameters are not set. It is used
+			or does no filtering if this parameter is not set. It is used
 			by the LocalDomainAccessController to subscribe to updates for the
 			current user.
 		@param: userIdOfInterest (String) filter parameter that is used by the
@@ -893,20 +888,19 @@ interface GlobalDomainAccessController {
 	broadcast mediatorRegistrationControlEntryChanged selective {
 		out {
 			DacTypes.ChangeType typeOfChange
-			DacTypes.MasterRegistrationControlEntry newMediatorRce
+			DacTypes.MasterRegistrationControlEntry changedMediatorRce
 		}
 	}
 
 	<**
-		@description: Event that is fired when new master registration
-			control entry is added or an existing entry changed or is removed.
-			The event includes new domain role entry as well as the type of
-			the change.
-			The event includes new access control entry.
+		@description: Event that is fired when a new owner registration
+			control entry is added or an existing entry is changed or removed.
+			The event includes the new owner registration control entry as
+			well as the type of the change.
 			The interface provider offers a filter for this selective
 			broadcast.
 			The user ID filter filters events based on the userIdOfInterest,
-			or does no filtering if these parameters are not set. It is used
+			or does no filtering if this parameter is not set. It is used
 			by the LocalDomainAccessController to subscribe to updates for the
 			current user.
 		@param: userIdOfInterest (String) filter parameter that is used by the
@@ -915,8 +909,7 @@ interface GlobalDomainAccessController {
 	broadcast ownerRegistrationControlEntryChanged selective {
 		out {
 			DacTypes.ChangeType typeOfChange
-			DacTypes.OwnerRegistrationControlEntry newOwnerRce
+			DacTypes.OwnerRegistrationControlEntry changedOwnerRce
 		}
 	}
-
 }
