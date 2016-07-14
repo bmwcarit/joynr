@@ -18,6 +18,7 @@
  */
 #include "joynr/SingleThreadedDelayedScheduler.h"
 
+#include <boost/system/error_code.hpp>
 #include "joynr/Runnable.h"
 
 namespace joynr

@@ -18,6 +18,7 @@
  */
 #include "joynr/DelayedScheduler.h"
 
+#include <boost/system/error_code.hpp>
 #include <cassert>
 #include <utility>
 

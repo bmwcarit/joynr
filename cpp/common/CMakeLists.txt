@@ -29,6 +29,7 @@ set(
 
 set(
     JoynrCommon_TARGET_LIBRARIES
+    ${Boost_LIBRARIES}
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
