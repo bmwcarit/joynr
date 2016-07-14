@@ -18,9 +18,6 @@
  */
 #include "joynr/BroadcastSubscriptionRequestInformation.h"
 
-#include "joynr/JsonSerializer.h"
-#include "joynr/Util.h"
-
 namespace joynr
 {
 
@@ -43,9 +40,12 @@ bool BroadcastSubscriptionRequestInformation::operator==(
            SubscriptionInformation::operator==(subscriptionRequestInformation);
 }
 
-std::string BroadcastSubscriptionRequestInformation::toString() const
+std::string BroadcastSubscriptionRequestInformation::toString()
 {
-    return JsonSerializer::serialize(*this);
+    // TODO fixme
+    /*return joynr::serializer::serializeToJson(
+            static_cast<BroadcastSubscriptionRequestInformation&>(*this));*/
+    return std::string();
 }
 
 } // namespace joynr

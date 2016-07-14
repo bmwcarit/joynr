@@ -23,6 +23,7 @@
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/SubscriptionInformation.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -52,9 +53,19 @@ public:
     bool operator==(
             const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) const;
 
-    std::string toString() const;
+    std::string toString();
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<BroadcastSubscriptionRequest>(this),
+                muesli::BaseClass<SubscriptionInformation>(this));
+    }
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::BroadcastSubscriptionRequestInformation,
+                     "joynr.BroadcastSubscriptionRequestInformation")
 
 #endif // BROADCASTSUBSCRIPTIONREQUESTINFORMATION_H

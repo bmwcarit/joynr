@@ -19,10 +19,10 @@
 #ifndef SUBSCRIPTIONREQUESTINFORMATION_H
 #define SUBSCRIPTIONREQUESTINFORMATION_H
 
+#include <string>
+
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionInformation.h"
-
-#include <string>
 
 namespace joynr
 {
@@ -47,8 +47,17 @@ public:
     bool operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const;
 
     std::string toString() const;
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<SubscriptionRequest>(this),
+                muesli::BaseClass<SubscriptionInformation>(this));
+    }
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::SubscriptionRequestInformation, "joynr.SubscriptionRequestInformation")
 
 #endif // SUBSCRIPTIONREQUESTINFORMATION_H

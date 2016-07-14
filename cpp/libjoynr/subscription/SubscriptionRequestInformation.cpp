@@ -16,8 +16,6 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/JsonSerializer.h"
-#include "joynr/Util.h"
 #include "joynr/SubscriptionRequestInformation.h"
 
 namespace joynr
@@ -45,7 +43,7 @@ bool SubscriptionRequestInformation::operator==(
 
 std::string SubscriptionRequestInformation::toString() const
 {
-    return JsonSerializer::serialize<SubscriptionRequestInformation>(*this);
+    return joynr::serializer::serializeToJson(*this);
 }
 
 } // namespace joynr

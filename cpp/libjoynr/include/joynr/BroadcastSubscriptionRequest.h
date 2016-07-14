@@ -19,12 +19,13 @@
 #ifndef BROADCASTSUBSCRIPTIONREQUEST_H
 #define BROADCASTSUBSCRIPTIONREQUEST_H
 
+#include <string>
+#include <memory>
+#include <boost/type_index.hpp>
+
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-
-#include <string>
-#include <memory>
 
 #include "joynr/Variant.h"
 #include "joynr/Logger.h"
@@ -59,6 +60,33 @@ public:
     BroadcastFilterParameters getFilterParameters() const;
     void setFilterParameters(const BroadcastFilterParameters& filterParameters);
 
+    template <typename Archive>
+    void load(Archive& archive)
+    {
+        archive(muesli::BaseClass<SubscriptionRequest>(this), MUESLI_NVP(filterParameters));
+        const bool correctQosType = (typeid(*qos) == typeid(OnChangeSubscriptionQos));
+        assert(correctQosType);
+        if (!correctQosType) {
+            JOYNR_LOG_ERROR(logger,
+                            "expected OnChangeSubscriptionQos, instead got {}",
+                            boost::typeindex::type_id_runtime(*qos).pretty_name());
+        }
+    }
+
+    template <typename Archive>
+    void save(Archive& archive)
+    {
+        const bool correctQosType = (typeid(*qos) == typeid(OnChangeSubscriptionQos));
+        assert(correctQosType);
+        if (!correctQosType) {
+            JOYNR_LOG_ERROR(logger,
+                            "expected OnChangeSubscriptionQos, instead got {}",
+                            boost::typeindex::type_id_runtime(*qos).pretty_name());
+            return;
+        }
+        archive(muesli::BaseClass<SubscriptionRequest>(this), MUESLI_NVP(filterParameters));
+    }
+
 private:
     // Hide method for setting all kinds of QOS derived from base class
     void setQosVariant(const Variant& qosVariant);
@@ -69,5 +97,9 @@ private:
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::BroadcastSubscriptionRequest,
+                                 joynr::SubscriptionRequest,
+                                 "joynr.BroadcastSubscriptionRequest")
 
 #endif // BROADCASTSUBSCRIPTIONREQUEST_H

@@ -72,7 +72,7 @@ public:
         archive(MUESLI_NVP(subscriptionId), MUESLI_NVP(subscribedToName), MUESLI_NVP(qos));
     }
 
-private:
+protected:
     /*
       SubscriptionRequest is used to store a subscription while Arbitration is still being done. To
       allow SubscriptionManager
