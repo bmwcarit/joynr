@@ -15,6 +15,9 @@
 * **[JS]** The unit-, integration-, system-integration- and intertab-tests are now using the
   [Jasmine](http://jasmine.github.io) 2.4.1 test framework.
   [Karma](https://karma-runner.github.io) is now used as test runner.
+* **[Java]** The way in which the global capabilities and domain access control directories are
+  provisioned has changed. See `StaticCapabilitiesProvisioning` as well as its entry in the
+  [Java Settings documentation](JavaSettings.md) for details.
 
 #joynr 0.18.4
 This is a minor bug fix release.

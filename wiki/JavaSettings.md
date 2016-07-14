@@ -340,3 +340,33 @@ See also `io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient`.
 * **Type**: String
 * **User property**: `joynr.jeeintegration.endpointregistry.uri`
 * **Default value**: n/a
+
+## Static Capabilties Provisioning
+
+### `PROPERTY_PROVISIONED_CAPABILITIES_FILE`
+
+This property can be used to determine the name or path of a file which can be read from
+either the local file system, or if not found there the classpath and contains the
+capabilities to be statically provisioned for the runtime.
+
+By default the global capabilities directory and global domain access control directory
+are statically provisioned. But you are not limited to just provisioning those.
+
+The content of the file is a JSON serialised array of GlobalDiscoveryEntry objects. The
+default file is `provisioned_capabilities.json` and is read from the classpath from the
+`libjoynr.jar`.
+
+The capabilities directory and domain access control directory have a special status, in
+that the system requires exactly one entry for each to be provisioned. The system will
+fail to start if either one is lacking or duplicate entries have been provisioned.  
+If you want to change either one of those entries from the default, you don't have to
+do so using the JSON format. You can override the entries from the JSON by using the
+properties listed in the `ConfigurableMessagingSettings` section above. If you choose
+this approach, ensure that you specify both the participant ID and the URL for the given
+service, as if you omit one of those properties, the entry will not be considered
+complete and will not be loaded, falling back the value found in the JSON.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.capabilities.provisioned.file`
+* **Default value**: `provisioned_capabilities.json`
