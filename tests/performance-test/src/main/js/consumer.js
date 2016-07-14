@@ -19,28 +19,21 @@
  * #L%
  */
 
-//var testbase = require("test-base");
-//jasmine.getEnv().addReporter(new testbase.TestReporter());
+var Promise = require("bluebird").Promise;
 var consumerBase = require("./consumer.base.js");
 
 //disable log
 console.log = function() {};
 
-describe("js consumer performance test", function() {
-
-    beforeEach(function(done) {
-        consumerBase.initialize().then(done);
-    });
-
-    it("EchoString", function(done) {
-        consumerBase.echoString().then(done).catch(done.fail);
-    });
-
-    it("EchoComplexStruct", function(done) {
-        consumerBase.echoComplexStruct().then(done).catch(done.fail);
-    });
-
-    it("EchoByteArray", function(done) {
-        consumerBase.echoByteArray().then(done).catch(done.fail);
-    });
+consumerBase.initialize().then(function() {
+    return Promise.all([consumerBase.echoString(),
+                        consumerBase.echoComplexStruct(),
+                        consumerBase.echoByteArray()])
+        .then(function() {
+            console.log("SUCCEEDED");
+            process.exit(0);
+        });
+}).catch(function(error) {
+    console.log("Error while performing test: " + error);
+    throw error;
 });
