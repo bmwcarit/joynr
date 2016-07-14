@@ -101,6 +101,10 @@ void LibJoynrRuntime::init(
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = new PublicationManager(singleThreadIOService.getIOService());
+    publicationManager->loadSavedAttributeSubscriptionRequestsMap(
+            libjoynrSettings->getSubscriptionRequestPersistenceFilename());
+    publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
+            libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
     subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService());
     inProcessDispatcher = new InProcessDispatcher(singleThreadIOService.getIOService());
 
