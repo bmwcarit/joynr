@@ -52,6 +52,7 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/MapSerializer.h"
 #include "joynr/RoutingTable.h"
+#include "joynr/SingleThreadedIOService.h"
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include <chrono>
@@ -1125,7 +1126,8 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
 
 TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
 {
-    RoutingTable routingTable("routingTable");
+    SingleThreadedIOService ioService;
+    RoutingTable routingTable("routingTable", ioService.getIOService());
     routingTable.add("WebSocketAddress", std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>());
     routingTable.add("ChannelAddress", std::make_shared<joynr::system::RoutingTypes::ChannelAddress>());
     routingTable.add("MqttAddress", std::make_shared<joynr::system::RoutingTypes::MqttAddress>());

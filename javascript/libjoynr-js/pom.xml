@@ -37,10 +37,8 @@
 		<atmosphere.javascript.version>2.0.9</atmosphere.javascript.version>
 		<requirejs.version>2.1.22</requirejs.version>
 		<bluebird.version>3.1.1</bluebird.version>
-		<jasmine.version>1.3.1</jasmine.version>
 		<log4javascript.version>1.4.10</log4javascript.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
-		<phantomjs-maven-plugin.version>0.4</phantomjs-maven-plugin.version>
 		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
 		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
 		<joynr.provisioning.bounceProxyBaseUrl>http://127.0.0.1:8080</joynr.provisioning.bounceProxyBaseUrl>
@@ -81,6 +79,10 @@
 		<testResources>
 			<testResource>
 				<directory>src/test/resources</directory>
+				<filtering>true</filtering>
+			</testResource>
+			<testResource>
+				<directory>src/test/karma</directory>
 				<filtering>true</filtering>
 			</testResource>
 			<!-- the source folder must be copied as resource since otherwise only
@@ -329,7 +331,6 @@
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
 									<includes>js-formatter/code-formatter-config.xml,
-											  js-test-driver/phantomjs-jstd.js,
 											  almond/almond-0.2.5.js</includes>
 								</artifactItem>
 								<artifactItem>
@@ -375,33 +376,17 @@
 									<outputDirectory>${project.build.directory}/test-lib/requirejs</outputDirectory>
 									<includes>META-INF/resources/webjars/requirejs/${requirejs.version}/require.js</includes>
 								</artifactItem>
-								<artifactItem>
-									<groupId>org.webjars</groupId>
-									<artifactId>jasmine</artifactId>
-									<version>${jasmine.version}</version>
-									<type>jar</type>
-									<outputDirectory>${project.build.directory}/test-lib/jasmine</outputDirectory>
-									<includes>META-INF/resources/webjars/jasmine/${jasmine.version}/jasmine.js</includes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.javascript</groupId>
-									<artifactId>js-dependencies</artifactId>
-									<version>${project.version}</version>
-									<type>jar</type>
-									<outputDirectory>${project.build.directory}/test-lib/</outputDirectory>
-									<includes>jasmine_jstd_adapter/JasmineAdapter.js</includes>
-								</artifactItem>
 							</artifactItems>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-            <!--
-             Since the configuration of the maven-java-formatter-plugin is changed
-             in the plugin management section, we need to add the plugin again in the
-             plugin section, even it is already configured in the super POM. Otherwise
-             the configuration is not set correctly on sub modules.
-             -->
+			<!--
+			  Since the configuration of the maven-java-formatter-plugin is changed
+			  in the plugin management section, we need to add the plugin again in the
+			  plugin section, even it is already configured in the super POM. Otherwise
+			  the configuration is not set correctly on sub modules.
+			-->
 			<plugin>
 				<groupId>com.marvinformatics.formatter</groupId>
 				<artifactId>formatter-maven-plugin</artifactId>
@@ -618,80 +603,82 @@
 				</configuration>
 			</plugin>
 
+			<!-- run the tests -->
+
+			<!-- do the "npm install" to get karma and dependencies -->
 			<plugin>
-				<groupId>com.github.klieber</groupId>
-				<artifactId>phantomjs-maven-plugin</artifactId>
-				<version>${phantomjs-maven-plugin.version}</version>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>npm-install</id>
+						<phase>generate-test-resources</phase>
+						<configuration>
+							<executable>npm</executable>
+							<arguments>
+								<argument>install</argument>
+							</arguments>
+							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
+						</configuration>
 						<goals>
-							<goal>install</goal>
+							<goal>exec</goal>
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<version>1.9.7</version>
-				</configuration>
 			</plugin>
-			<!-- JsTestDriver for javascript tests -->
+
+			<!-- run karma -->
 			<plugin>
-				<groupId>com.googlecode.jstd-maven-plugin</groupId>
-				<artifactId>jstd-maven-plugin</artifactId>
-				<version>1.3.5.1</version>
-				<!-- configuration options documentation:
-					http://code.google.com/p/js-test-driver/wiki/CommandLineFlags -->
-				<configuration>
-					<port>42442</port>
-					<server>http://127.0.0.1:42442</server>
-					<browser>${phantomjs.binary};--web-security=no;--local-storage-path=${project.build.directory};${project.build.directory}/build-resources/js-test-driver/phantomjs-jstd.js;%s</browser>
-					<testOutput>${project.build.directory}/jstd-test-results</testOutput>
-					<runnerMode>QUIET</runnerMode>
-					<verbose>true</verbose>
-					<captureConsole>true</captureConsole>
-					<reset>true</reset>
-				</configuration>
+				<groupId>com.kelveden</groupId>
+				<artifactId>maven-karma-plugin</artifactId>
+				<version>1.8</version>
 				<executions>
 					<execution>
-						<id>run-unit-tests</id>
 						<phase>test</phase>
-						<configuration>
-							<config>${project.build.testOutputDirectory}/UnitTests.conf</config>
-						</configuration>
+						<id>karma-unit-tests</id>
 						<goals>
-							<goal>test</goal>
+							<goal>start</goal>
 						</goals>
+						<configuration>
+							<configFile>${basedir}/src/test/karma/karma.conf.js</configFile>
+						</configuration>
 					</execution>
 					<execution>
-						<id>run-integration-tests</id>
 						<phase>integration-test</phase>
-						<configuration>
-							<config>${project.build.testOutputDirectory}/IntegrationTests.conf</config>
-						</configuration>
+						<id>karma-integration-tests</id>
 						<goals>
-							<goal>test</goal>
+							<goal>start</goal>
 						</goals>
+						<configuration>
+							<configFile>${basedir}/src/test/karma/karma.integration.conf.js</configFile>
+						</configuration>
 					</execution>
 					<execution>
-						<id>run-system-integration-tests</id>
 						<phase>integration-test</phase>
-						<configuration>
-							<config>${project.build.testOutputDirectory}/SystemIntegrationTests.conf</config>
-						</configuration>
+						<id>karma-system-integration-tests</id>
 						<goals>
-							<goal>test</goal>
+							<goal>start</goal>
 						</goals>
+						<configuration>
+							<configFile>${basedir}/src/test/karma/karma.system.integration.conf.js</configFile>
+						</configuration>
 					</execution>
 					<execution>
-						<id>run-intertab-integration-tests</id>
 						<phase>integration-test</phase>
-						<configuration>
-							<config>${project.build.testOutputDirectory}/InterTabIntegrationTests.conf</config>
-						</configuration>
+						<id>karma-intertab-integration-tests</id>
 						<goals>
-							<goal>test</goal>
+							<goal>start</goal>
 						</goals>
+						<configuration>
+							<configFile>${basedir}/src/test/karma/karma.intertab.integration.conf.js</configFile>
+						</configuration>
 					</execution>
 				</executions>
+				<configuration>
+					<karmaExecutable>${project.build.directory}/node-classes/node_modules/.bin/karma</karmaExecutable>
+					<skipKarma>false</skipKarma>
+					<karmaFailureIgnore>false</karmaFailureIgnore>
+				</configuration>
 			</plugin>
 
 			<!-- Configure packaging of production version matter libjoynr-js -->
@@ -699,7 +686,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-				    <classesDirectory>${project.build.directory}/jar-classes</classesDirectory>
+					<classesDirectory>${project.build.directory}/jar-classes</classesDirectory>
 				</configuration>
 			</plugin>
 
@@ -709,12 +696,12 @@
 				<version>1.2.0</version>
 				<inherited>false</inherited>
 				<executions>
- 					<execution>
- 						<goals>
- 							<goal>jsdoc3</goal>
- 						</goals>
- 						<phase>install</phase>
- 					</execution>
+					<execution>
+						<goals>
+							<goal>jsdoc3</goal>
+						</goals>
+						<phase>install</phase>
+					</execution>
 				</executions>
 				<configuration>
 					<directoryRoots>
@@ -749,6 +736,7 @@
 						<exclude>jsdoc3.conf.json</exclude>
 						<exclude>src/main/resources/libjoynrEndFrag.js</exclude>
 						<exclude>src/main/resources/package.json</exclude>
+						<exclude>src/test/resources/spec/support/jasmine.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
@@ -765,25 +753,6 @@
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											com.github.klieber
-										</groupId>
-										<artifactId>
-											phantomjs-maven-plugin
-										</artifactId>
-										<versionRange>
-											[0.4,)
-										</versionRange>
-										<goals>
-											<goal>install</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
@@ -841,51 +810,51 @@
 			</activation>
 			<build>
 				<plugins>
-			<!-- Unpack JavaScript dependencies -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-backend-wars</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>single-bounceproxy</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>domain-access-controller-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>accesscontrol.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>discovery-directory-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>discovery.war</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- jetty only needs to run in case of test execution -->
+					<!-- Unpack JavaScript dependencies -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-backend-wars</id>
+								<phase>initialize</phase>
+								<goals>
+									<goal>copy</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+											<artifactId>single-bounceproxy</artifactId>
+											<version>${project.version}</version>
+											<type>war</type>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+											<destFileName>bounceproxy.war</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>io.joynr.java.backend-services</groupId>
+											<artifactId>domain-access-controller-servlet</artifactId>
+											<version>${project.version}</version>
+											<type>war</type>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+											<destFileName>accesscontrol.war</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>io.joynr.java.backend-services</groupId>
+											<artifactId>discovery-directory-servlet</artifactId>
+											<version>${project.version}</version>
+											<type>war</type>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+											<destFileName>discovery.war</destFileName>
+										</artifactItem>
+									</artifactItems>
+									<overWriteReleases>false</overWriteReleases>
+									<overWriteSnapshots>true</overWriteSnapshots>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- jetty only needs to run in case of test execution -->
 					<plugin>
 						<groupId>org.eclipse.jetty</groupId>
 						<artifactId>jetty-maven-plugin</artifactId>
@@ -910,11 +879,10 @@
 							</execution>
 						</executions>
 					</plugin>
-					<!-- jasmine-node for node.js tests -->
+					<!-- run nodejs based unit tests -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.3.1</version>
 						<!-- configuration options documentation:
 							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
 						<executions>

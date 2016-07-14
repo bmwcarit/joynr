@@ -9,3 +9,4 @@ joynr.properties
 joynr_participantIds.properties
 /target
 derby.log
+node_modules

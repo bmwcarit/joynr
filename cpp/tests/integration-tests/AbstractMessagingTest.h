@@ -30,6 +30,7 @@
 #include "joynr/Settings.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "tests/utils/MockObjects.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -57,6 +58,7 @@ public:
     std::shared_ptr<MockMessageReceiver> mockMessageReceiver;
     std::shared_ptr<MockMessageSender> mockMessageSender;
     MessagingStubFactory* messagingStubFactory;
+    SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MessageRouter> messageRouter;
     AbstractMessagingTest() :
         settingsFileName("MessagingTest.settings"),
@@ -74,10 +76,13 @@ public:
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
         messagingStubFactory(new MessagingStubFactory()),
+        singleThreadedIOService(),
         messageRouter(nullptr)
     {
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
-        messageRouter = std::make_unique<MessageRouter>(std::unique_ptr<MessagingStubFactory>(messagingStubFactory), std::unique_ptr<IPlatformSecurityManager>());
+        messageRouter = std::make_unique<MessageRouter>(std::unique_ptr<MessagingStubFactory>(messagingStubFactory),
+                                                        std::unique_ptr<IPlatformSecurityManager>(),
+                                                        singleThreadedIOService.getIOService());
         qos.setTtl(10000);
     }
 

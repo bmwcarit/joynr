@@ -30,6 +30,7 @@
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using ::testing::Return;
 using ::testing::Pointee;
@@ -48,7 +49,8 @@ public:
         messageQueue(nullptr),
         messagingStubFactory(nullptr),
         messageRouter(nullptr),
-        joynrMessage()
+        joynrMessage(),
+        singleThreadedIOService()
     {
         auto messageQueue = std::make_unique<MessageQueue>();
         this->messageQueue = messageQueue.get();
@@ -56,7 +58,10 @@ public:
         auto messagingStubFactory = std::make_unique<MockMessagingStubFactory>();
         this->messagingStubFactory = messagingStubFactory.get();
 
-        messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory), std::unique_ptr<IPlatformSecurityManager>(), 6, std::move(messageQueue));
+        messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory),
+                                                        std::unique_ptr<IPlatformSecurityManager>(),
+                                                        singleThreadedIOService.getIOService(),
+                                                        6, std::move(messageQueue));
         // provision global capabilities directory
         auto addressCapabilitiesDirectory =
                 std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
@@ -87,6 +92,9 @@ protected:
     void routeMessageToAddress(
             const std::string& destinationParticipantId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+
+    SingleThreadedIOService singleThreadedIOService;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouterTest);
 };
@@ -238,7 +246,7 @@ TEST_F(MessageRouterTest, restoreRoutingTable) {
     std::remove(routingTablePersistenceFilename.c_str());
 
     auto messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
-    auto messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>());
+    auto messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>(), singleThreadedIOService.getIOService());
     std::string participantId = "myParticipantId";
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
 
@@ -246,7 +254,7 @@ TEST_F(MessageRouterTest, restoreRoutingTable) {
     messageRouter->loadRoutingTable(routingTablePersistenceFilename);
     messageRouter->addProvisionedNextHop(participantId, address); // Saves the RoutingTable to the persistence file.
 
-    messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>());
+    messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>(), singleThreadedIOService.getIOService());
 
     messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 

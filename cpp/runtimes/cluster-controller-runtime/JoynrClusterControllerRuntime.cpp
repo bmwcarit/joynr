@@ -153,7 +153,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             std::make_unique<DummyPlatformSecurityManager>();
 
     // CAREFUL: the factory creates an old style dispatcher, not the new one!
-    inProcessDispatcher = new InProcessDispatcher();
+    inProcessDispatcher = new InProcessDispatcher(singleThreadIOService.getIOService());
     /* CC */
     // create the messaging stub factory
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
@@ -162,8 +162,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
     // init message router
-    messageRouter =
-            std::make_shared<MessageRouter>(messagingStubFactory, std::move(securityManager));
+    messageRouter = std::make_shared<MessageRouter>(
+            messagingStubFactory, std::move(securityManager), singleThreadIOService.getIOService());
     messageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
 
     const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
@@ -241,7 +241,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     /* LibJoynr */
     assert(messageRouter);
     joynrMessageSender = new JoynrMessageSender(messageRouter);
-    joynrDispatcher = new Dispatcher(joynrMessageSender);
+    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService.getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     /* CC */
@@ -359,13 +359,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       * libJoynr side
       *
       */
-    publicationManager = new PublicationManager();
+    publicationManager = new PublicationManager(singleThreadIOService.getIOService());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
             libjoynrSettings.getBroadcastSubscriptionRequestPersistenceFilename());
 
-    subscriptionManager = new SubscriptionManager();
+    subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService());
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
     auto libjoynrMessagingAddress =
             std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);

@@ -20,10 +20,9 @@ package io.joynr.messaging.routing;
  */
 
 import joynr.JoynrMessage;
-import joynr.system.RoutingProvider;
 import joynr.system.RoutingTypes.Address;
 
-public interface MessageRouter extends RoutingProvider {
+public interface MessageRouter {
     static final String ROUTER_GLOBAL_ADDRESS = "io.joynr.messaging.globalAddress";
     static final String SCHEDULEDTHREADPOOL = "io.joynr.messaging.scheduledthreadpool";
 
@@ -33,4 +32,7 @@ public interface MessageRouter extends RoutingProvider {
 
     public void shutdown();
 
+    public void removeNextHop(String participantId);
+
+    public boolean resolveNextHop(String participantId);
 }

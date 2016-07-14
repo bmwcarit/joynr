@@ -70,6 +70,23 @@ message(STATUS "JOYNR_INSTALL_FULL_SYSCONFDIR = ${JOYNR_INSTALL_FULL_SYSCONFDIR}
 message(STATUS "-----------------------------------------------------")
 
 option(
+    ENABLE_CCACHE
+    "Should ccache be used?"
+    OFF
+)
+message(STATUS "option ENABLE_CCACHE=" ${ENABLE_CCACHE})
+
+if(ENABLE_CCACHE)
+    find_program(CCACHE_FOUND ccache)
+    if(CCACHE_FOUND)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+    else(CCACHE_FOUND)
+        message(WARNING "ccache was not found. Fall-back to default compiler.")
+    endif(CCACHE_FOUND)
+endif(ENABLE_CCACHE)
+
+option(
     GENERATE_SOURCES
     "Generate source files from Franca model?"
     OFF

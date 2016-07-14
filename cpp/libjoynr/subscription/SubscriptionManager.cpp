@@ -58,9 +58,10 @@ SubscriptionManager::~SubscriptionManager()
 
 INIT_LOGGER(SubscriptionManager);
 
-SubscriptionManager::SubscriptionManager()
+SubscriptionManager::SubscriptionManager(boost::asio::io_service& ioService)
         : subscriptions(),
-          missedPublicationScheduler(new SingleThreadedDelayedScheduler("MissedPublications"))
+          missedPublicationScheduler(
+                  new SingleThreadedDelayedScheduler("MissedPublications", ioService))
 {
 }
 

@@ -23,6 +23,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <memory>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
@@ -50,84 +51,19 @@ namespace joynr
   */
 
 template <typename Key, typename T>
-class IDirectory
-{
-public:
-    virtual ~IDirectory() = default;
-    virtual std::shared_ptr<T> lookup(const Key& keyId) = 0;
-    virtual bool contains(const Key& keyId) = 0;
-
-    virtual void add(const Key& keyId, std::shared_ptr<T> value) = 0;
-
-    virtual void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms) = 0;
-    virtual void remove(const Key& keyId) = 0;
-};
-
-template <typename Key, typename T>
-class Directory;
-
-template <typename Key, typename T>
-class RemoverRunnable : public Runnable
-{
-public:
-    RemoverRunnable(const Key& keyId, Directory<Key, T>* directory)
-            : Runnable(true), keyId(keyId), directory(directory)
-    {
-    }
-
-    void shutdown() override
-    {
-    }
-
-    void run() override
-    {
-        runImpl(std::is_same<T, IReplyCaller>{});
-    }
-
-private:
-    void runImpl(std::false_type)
-    {
-        std::shared_ptr<T> val = directory->lookup(keyId);
-        if (val) {
-            directory->remove(keyId);
-        }
-    }
-
-    /*
-     * some objects that are put into the Directory need to be notified when the object is deleted
-     * (e.g. the IReplyCaller will wait for a timeout from TTL). The RemoverRunnable therefore has a
-     * partial specialisation for IReplyCallers and will call timeOut in this case.
-     * This is also the reason why the IReplyCaller has to be in Common, instead of libjoynr/Proxy
-     */
-    void runImpl(std::true_type)
-    {
-        std::shared_ptr<IReplyCaller> value = directory->lookup(keyId);
-        if (value) {
-            value->timeOut();
-            directory->remove(keyId);
-        }
-    }
-
-    DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
-    Key keyId;
-    Directory<Key, T>* directory;
-};
-
-template <typename Key, typename T>
-class Directory : public IDirectory<Key, T>
+class Directory
 {
 public:
     Directory() = default;
 
-    explicit Directory(const std::string& directoryName)
-            : callbackMap(), mutex(), callBackRemoverScheduler("DirRemover")
+    Directory(const std::string& directoryName, boost::asio::io_service& ioService)
+            : callbackMap(), timeoutTimerMap(), mutex(), ioService(ioService)
     {
         std::ignore = directoryName;
     }
 
-    ~Directory() override
+    virtual ~Directory()
     {
-        callBackRemoverScheduler.shutdown();
         JOYNR_LOG_TRACE(logger, "destructor: number of entries = {}", callbackMap.size());
     }
 
@@ -135,7 +71,7 @@ public:
      * Returns the element with the given keyId. In case the element could not be found nullptr is
      * returned.
      */
-    std::shared_ptr<T> lookup(const Key& keyId) override
+    std::shared_ptr<T> lookup(const Key& keyId)
     {
         std::lock_guard<std::mutex> lock(mutex);
         auto found = callbackMap.find(keyId);
@@ -148,7 +84,7 @@ public:
     /*
      * Returns true if an element with the given keyId could be found. False otherwise.
      */
-    bool contains(const Key& keyId) override
+    bool contains(const Key& keyId)
     {
         std::lock_guard<std::mutex> lock(mutex);
         return callbackMap.find(keyId) != callbackMap.cend();
@@ -157,7 +93,7 @@ public:
     /*
      * Adds an element and keeps it until actively removed (using the 'remove' method)
      */
-    void add(const Key& keyId, std::shared_ptr<T> value) override
+    void add(const Key& keyId, std::shared_ptr<T> value)
     {
         std::lock_guard<std::mutex> lock(mutex);
         callbackMap[keyId] = std::move(value);
@@ -166,36 +102,82 @@ public:
     /*
      * Adds an element and removes it automatically after ttl_ms milliseconds have past.
      */
-    void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms) override
+    void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms)
     {
         // Insert the value
         {
             std::lock_guard<std::mutex> lock(mutex);
+
+            // An existing entry shall be overwritten by the new entry.
+            // When we use unordered_map::emplace, we must remove the
+            // existing entry first.
+            auto existingTimerIt = timeoutTimerMap.find(keyId);
+            if (existingTimerIt != timeoutTimerMap.end()) {
+                timeoutTimerMap.erase(existingTimerIt);
+            }
+
+            auto insertionResult = timeoutTimerMap.emplace(std::piecewise_construct,
+                                                           std::forward_as_tuple(keyId),
+                                                           std::forward_as_tuple(ioService));
+
+            assert(insertionResult.second); // Success indication
+            auto timerIt = insertionResult.first;
+
+            timerIt->second.expires_from_now(std::chrono::milliseconds(ttl_ms));
+            timerIt->second.async_wait([keyId, this](const boost::system::error_code& errorCode) {
+                if (!errorCode) {
+                    this->removeAfterTimeout<T>(keyId);
+                } else if (errorCode != boost::system::errc::operation_canceled) {
+                    JOYNR_LOG_TRACE(this->logger,
+                                    "Timer removal of entry from directory failed : {}",
+                                    errorCode.message());
+                }
+            });
+
             callbackMap[keyId] = std::move(value);
         }
-
-        // make a removerRunnable and shedule it to remove the entry after ttl!
-        auto* removerRunnable = new RemoverRunnable<Key, T>(keyId, this);
-        callBackRemoverScheduler.schedule(removerRunnable, std::chrono::milliseconds(ttl_ms));
     }
 
     /*
      * Remove element with key == keyID
      */
-    void remove(const Key& keyId) override
+    void remove(const Key& keyId)
     {
         std::lock_guard<std::mutex> lock(mutex);
+
         callbackMap.erase(keyId);
+        timeoutTimerMap.erase(keyId);
+    }
+
+private:
+    template <typename ValueType, typename KeyType>
+    std::enable_if_t<std::is_same<ValueType, IReplyCaller>::value> removeAfterTimeout(
+            const KeyType& keyId)
+    {
+        auto value = lookup(keyId);
+
+        if (value) {
+            value->timeOut();
+            remove(keyId);
+        }
+    }
+
+    template <typename ValueType, typename KeyType>
+    std::enable_if_t<!std::is_same<ValueType, IReplyCaller>::value> removeAfterTimeout(
+            const KeyType& keyId)
+    {
+        remove(keyId);
     }
 
 protected:
     std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
+    std::unordered_map<Key, boost::asio::steady_timer> timeoutTimerMap;
     ADD_LOGGER(Directory);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
     std::mutex mutex;
-    SingleThreadedDelayedScheduler callBackRemoverScheduler;
+    boost::asio::io_service& ioService;
 };
 
 template <typename Key, typename T>

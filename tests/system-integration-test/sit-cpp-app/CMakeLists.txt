@@ -34,7 +34,7 @@ if(${GENERATE_SOURCES})
     message(STATUS "variable JoynrGenerator_JAR=${JoynrGenerator_JAR}")
     JoynrGenerator(
         OUTPUTPATH ${CMAKE_SOURCE_DIR}/src/main/generated-sources
-        MODELPATH ${CMAKE_SOURCE_DIR}/src/main/model/SystemIntegrationTest.fidl
+        MODELPATH ${CMAKE_SOURCE_DIR}/../src/main/model/SystemIntegrationTest.fidl
         GENERATION_LANGUAGE "cpp"
     )
 endif(${GENERATE_SOURCES})

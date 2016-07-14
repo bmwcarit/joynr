@@ -27,8 +27,11 @@ INIT_LOGGER(SingleThreadedDelayedScheduler);
 
 SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(
         const std::string& threadName,
+        boost::asio::io_service& ioService,
         std::chrono::milliseconds defaultDelayMs)
-        : DelayedScheduler([this](Runnable* work) { this->queue.add(work); }, defaultDelayMs),
+        : DelayedScheduler([this](Runnable* work) { this->queue.add(work); },
+                           ioService,
+                           defaultDelayMs),
           Thread(threadName),
           keepRunning(true),
           currentlyRunning(nullptr),

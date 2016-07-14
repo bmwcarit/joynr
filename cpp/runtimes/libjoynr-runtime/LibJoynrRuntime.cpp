@@ -85,13 +85,14 @@ void LibJoynrRuntime::init(
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
     // create message router
-    messageRouter = std::make_shared<MessageRouter>(
-            std::move(messagingStubFactory), libjoynrMessagingAddress);
+    messageRouter = std::make_shared<MessageRouter>(std::move(messagingStubFactory),
+                                                    libjoynrMessagingAddress,
+                                                    singleThreadIOService.getIOService());
 
     startLibJoynrMessagingSkeleton(messageRouter);
 
     joynrMessageSender = new JoynrMessageSender(messageRouter);
-    joynrDispatcher = new Dispatcher(joynrMessageSender);
+    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService.getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     // create the inprocess skeleton for the dispatcher
@@ -99,9 +100,9 @@ void LibJoynrRuntime::init(
             std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = new PublicationManager();
-    subscriptionManager = new SubscriptionManager();
-    inProcessDispatcher = new InProcessDispatcher();
+    publicationManager = new PublicationManager(singleThreadIOService.getIOService());
+    subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService());
+    inProcessDispatcher = new InProcessDispatcher(singleThreadIOService.getIOService());
 
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
     inProcessConnectorFactory = new InProcessConnectorFactory(

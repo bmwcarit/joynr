@@ -304,6 +304,9 @@ Possible values are:
 
 ## JEE Integration
 
+These properties are defined as constants in the
+`io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys` class.
+
 ### `JEE_ENABLE_SHARED_SUBSCRIPTIONS`
 
 Use this key to activate shared subscription support by setting the property's value to true. Shared subscriptions are a feature of HiveMQ which allow queue semantics to be used for subscribers to MQTT topics. That is, only one subscriber receives a message, rather than all subscribers. This feature can be used to load balance incoming messages on MQTT. This feature is useful if you want to run a cluster of JEE nodes while using only MQTT for communication (an alternative is to use the HTTP bridge configuration).
@@ -312,3 +315,28 @@ Use this key to activate shared subscription support by setting the property's v
 * **Type**: Boolean
 * **User property**: `joynr.jeeintegration.enable.sharedsubscriptions`
 * **Default value**: `false`
+
+### `JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY`
+
+Set this property to `true` if you want to use the HTTP Bridge functionality. In this
+configuration incoming messages are communicated via HTTP and can then be load-balanced
+accross a cluster via, e.g. nginx, and outgoing messages are communicated directly
+via MQTT. If you activate this mode, then you must also provide an endpoint registry
+(see next property).
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.jeeintegration.enable.httpbridge`
+* **Default value**: `false`
+
+### `JEE_INTEGRATION_ENDPOINTREGISTRY_URI`
+
+This property needs to point to the endpoint registration service's URL with which the
+JEE Integration will register itself for its channel's topic.
+E.g. `http://endpointregistry.mycompany.net:8080`.
+See also `io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient`.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.jeeintegration.endpointregistry.uri`
+* **Default value**: n/a

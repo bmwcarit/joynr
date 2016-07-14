@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 #include "tests/utils/MockObjects.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -33,7 +34,9 @@ using namespace joynr;
 
 class MqttMessagingSkeletonTest : public ::testing::Test {
 public:
-    MqttMessagingSkeletonTest() : mockMessageRouter() {}
+    MqttMessagingSkeletonTest() :
+        singleThreadedIOService(),
+        mockMessageRouter(singleThreadedIOService.getIOService()) {}
 
     void SetUp(){
         // create a fake message
@@ -70,6 +73,7 @@ public:
     void TearDown(){
     }
 protected:
+    SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;
     JoynrMessage message;
 };

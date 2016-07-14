@@ -32,6 +32,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/Variant.h"
 
@@ -63,7 +64,7 @@ class SubscriptionQos;
 class JOYNR_EXPORT PublicationManager
 {
 public:
-    explicit PublicationManager(int maxThreads = 2);
+    explicit PublicationManager(boost::asio::io_service& ioService, int maxThreads = 2);
     explicit PublicationManager(DelayedScheduler* scheduler);
     virtual ~PublicationManager();
     /**
