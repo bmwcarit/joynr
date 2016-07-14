@@ -3,7 +3,7 @@ package io.joynr.messaging.routing;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,8 @@ package io.joynr.messaging.routing;
 
 import joynr.system.RoutingTypes.Address;
 
-public interface RoutingTable {
-    public Address get(String participantId);
+public interface AddressOperation {
 
-    public Address put(String participantId, Address address);
+    void perform(Address address);
 
-    public boolean containsKey(String participantId);
-
-    public void remove(String participantId);
-
-    /**
-     * Apply the specified operation to all addresses currently held in the routing table.
-     *
-     * @param addressOperation
-     *            the address operation to perform.
-     */
-    void apply(AddressOperation addressOperation);
 }

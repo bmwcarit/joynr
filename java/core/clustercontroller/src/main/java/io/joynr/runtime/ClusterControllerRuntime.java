@@ -1,5 +1,20 @@
 package io.joynr.runtime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
+import io.joynr.capabilities.CapabilitiesRegistrar;
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.discovery.LocalDiscoveryAggregator;
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.ProviderDirectory;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.messaging.MessagingSkeletonFactory;
+
 /*
  * #%L
  * %%
@@ -20,20 +35,7 @@ package io.joynr.runtime;
  */
 
 import io.joynr.messaging.routing.MessagingStubFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import io.joynr.capabilities.CapabilitiesRegistrar;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.system.RoutingProvider;
 import joynr.system.RoutingTypes.Address;
@@ -54,10 +56,9 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                     MessagingStubFactory messagingStubFactory,
                                     MessagingSkeletonFactory messagingSkeletonFactory,
                                     LocalDiscoveryAggregator localDiscoveryAggregator,
+                                    RoutingTable routingTable,
                                     @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
-                                    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
-                                    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
                                     @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
                                     CapabilitiesRegistrar capabilitiesRegistrar,
                                     LocalCapabilitiesDirectory localCapabilitiesDirectory,
@@ -70,10 +71,9 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
               messagingStubFactory,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
+              routingTable,
               systemServicesDomain,
               dispatcherAddress,
-              capabilitiesDirectoryAddress,
-              domainAccessControllerAddress,
               discoveryProviderAddress);
         // CHECKSTYLE:ON
 

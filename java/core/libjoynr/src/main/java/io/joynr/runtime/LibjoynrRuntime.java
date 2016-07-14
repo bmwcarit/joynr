@@ -1,24 +1,24 @@
 package io.joynr.runtime;
 
-import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.routing.ChildMessageRouter;
-import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilderFactory;
-import joynr.system.RoutingProxy;
-import joynr.system.RoutingTypes.Address;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import io.joynr.discovery.LocalDiscoveryAggregator;
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.ProviderDirectory;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilderFactory;
+import joynr.system.RoutingProxy;
+import joynr.system.RoutingTypes.Address;
 
 /*
  * #%L
@@ -53,10 +53,9 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            MessagingStubFactory messagingStubFactory,
                            MessagingSkeletonFactory messagingSkeletonFactory,
                            LocalDiscoveryAggregator localDiscoveryAggregator,
+                           RoutingTable routingTable,
                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
-                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
-                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
                            ChildMessageRouter messageRouter,
@@ -69,10 +68,9 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
               messagingStubFactory,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
+              routingTable,
               systemServicesDomain,
               dispatcherAddress,
-              capabilitiesDirectoryAddress,
-              domainAccessControllerAddress,
               discoveryProviderAddress);
         // CHECKSTYLE:ON
         ProxyBuilder<RoutingProxy> proxyBuilder = getProxyBuilder(systemServicesDomain, RoutingProxy.class);

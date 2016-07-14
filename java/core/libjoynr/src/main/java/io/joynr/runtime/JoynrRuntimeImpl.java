@@ -40,11 +40,12 @@ import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.PublicationManager;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
+import io.joynr.messaging.routing.AddressOperation;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -98,10 +99,9 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             MessagingStubFactory messagingStubFactory,
                             MessagingSkeletonFactory messagingSkeletonFactory,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
+                            RoutingTable routingTable,
                             @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
                             @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
         // CHECKSTYLE:ON
         this.requestCallerDirectory = requestCallerDirectory;
@@ -122,12 +122,14 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         if (dispatcherAddress instanceof InProcessAddress) {
             ((InProcessAddress) dispatcherAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         }
-        if (capabilitiesDirectoryAddress instanceof InProcessAddress) {
-            ((InProcessAddress) capabilitiesDirectoryAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
-        }
-        if (domainAccessControllerAddress instanceof InProcessAddress) {
-            ((InProcessAddress) domainAccessControllerAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
-        }
+        routingTable.apply(new AddressOperation() {
+            @Override
+            public void perform(Address address) {
+                if (address instanceof InProcessAddress && ((InProcessAddress) address).getSkeleton() == null) {
+                    ((InProcessAddress) address).setSkeleton(new InProcessLibjoynrMessagingSkeleton(JoynrRuntimeImpl.this.dispatcher));
+                }
+            }
+        });
 
         if (discoveryProviderAddress instanceof InProcessAddress) {
             ((InProcessAddress) discoveryProviderAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));

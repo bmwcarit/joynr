@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,27 +19,22 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import java.util.Properties;
-
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.name.Named;
+import com.google.inject.name.Names;
+import joynr.types.GlobalDiscoveryEntry;
+
+import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY;
+import static io.joynr.messaging.MessagingPropertyKeys.DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY;
 
 public class StaticCapabilitiesProvisioningModule extends AbstractModule {
-    private Properties properties;
-
-    public StaticCapabilitiesProvisioningModule(Properties properties) {
-        this.properties = properties;
-    }
 
     @Override
     protected void configure() {
-        bind(CapabilitiesProvisioning.class).to(StaticCapabilitiesProvisioning.class);
+        bind(CapabilitiesProvisioning.class).to(StaticCapabilitiesProvisioning.class).asEagerSingleton();
+        bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY))
+                                        .toProvider(GlobalCapabilitiesDirectoryDiscoveryEntryProvider.class);
+        bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY))
+                                        .toProvider(GlobalDomainAccessControllerDiscoveryEntryProvider.class);
     }
 
-    @Provides
-    @Named(StaticCapabilitiesProvisioning.STATIC_PROVISIONING_PROPERTIES)
-    Properties provideStaticProvisionProperties() {
-        return properties;
-    }
 }
