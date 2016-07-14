@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>0.18.5-SNAPSHOT</version>
+		<version>0.18.5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
