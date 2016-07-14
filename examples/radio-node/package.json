@@ -1,6 +1,6 @@
 {
   "name": "radio-node",
-  "version": "0.18.4",
+  "version": "0.18.5-SNAPSHOT",
   "description": "simple app to demonstrate usage of joynr",
   "main": "src/main/js/radioConsumer.js",
   "private": true,
