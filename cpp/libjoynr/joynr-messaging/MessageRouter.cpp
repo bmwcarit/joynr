@@ -496,9 +496,20 @@ void MessageRouter::loadRoutingTable(std::string fileName)
         routingTableFileName = std::move(fileName);
     }
 
+    std::string jsonString;
     WriteLocker lock(routingTableLock);
     try {
-        routingTable.deserializeFromJson(joynr::util::loadStringFromFile(routingTableFileName));
+        jsonString = joynr::util::loadStringFromFile(routingTableFileName);
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_INFO(logger, ex.what());
+    }
+
+    if (jsonString.empty()) {
+        return;
+    }
+
+    try {
+        routingTable.deserializeFromJson(jsonString);
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }

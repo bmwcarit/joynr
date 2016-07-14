@@ -656,7 +656,7 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
     try {
         jsonString = joynr::util::loadStringFromFile(persistencyFile);
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
+        JOYNR_LOG_INFO(logger, ex.what());
     }
 
     if (jsonString.empty()) {
