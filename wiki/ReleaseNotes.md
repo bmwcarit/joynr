@@ -1,3 +1,14 @@
+#joynr 0.18.5
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JEE]** Fixed bug with multi-out return values not being translated
+  between container classes and multi-valued deferred instances in the
+  `ProviderWrapper`.
+
 #joynr 0.18.4
 This is a minor bug fix release.
 
