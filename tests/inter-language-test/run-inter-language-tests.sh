@@ -71,6 +71,7 @@ fi
 
 # process ids for background stuff
 JETTY_PID=""
+MOSQUITTO_PID=""
 CLUSTER_CONTROLLER_PID=""
 PROVIDER_PID=""
 
@@ -136,6 +137,13 @@ function start_services {
 	echo '####################################################'
 	echo '# starting services'
 	echo '####################################################'
+
+	echo "Starting mosquitto"
+	mosquitto -c /etc/mosquitto/mosquitto.conf > $ILT_RESULTS_DIR/mosquitt-$1.log 2>&1 &
+	MOSQUITTO_PID=$!
+	echo "Mosquitto started with PID $MOSQUITTO_PID"
+	sleep 2
+
 	mvn $SPECIAL_MAVEN_OPTIONS jetty:run-war --quiet > $ILT_RESULTS_DIR/jetty-$1.log 2>&1 &
 	JETTY_PID=$!
 	echo "Starting Jetty with PID $JETTY_PID"
@@ -159,16 +167,26 @@ function start_services {
 }
 
 function stop_services {
+	echo '####################################################'
+	echo '# stopping services'
+	echo '####################################################'
+
 	if [ -n "$JETTY_PID" ]
 	then
 		cd $ILT_DIR
-		echo '####################################################'
-		echo '# stopping services'
-		echo '####################################################'
 		mvn $SPECIAL_MAVEN_OPTIONS jetty:stop --quiet
 		wait $JETTY_PID
 		echo "Stopped Jetty with PID $JETTY_PID"
 		JETTY_PID=""
+	fi
+
+	if [ -n "$MOSQUITTO_PID" ]
+	then
+		echo "Stopping mosquitto with PID $MOSQUITTO_PID"
+		disown $MOSQUITTO_PID
+		kill -9 $MOSQUITTO_PID
+		wait $MOSQUITTO_PID
+		MOSQUITTO_PID=""
 	fi
 }
 
