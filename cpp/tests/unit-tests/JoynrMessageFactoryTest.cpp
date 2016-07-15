@@ -67,9 +67,7 @@ public:
 
         std::string subscriptionId("subscriptionTestId");
         subscriptionPublication.setSubscriptionId(subscriptionId);
-        std::vector<Variant> response;
-        response.push_back(Variant::make<std::string>("publication"));
-        subscriptionPublication.setResponseVariant(response);
+        subscriptionPublication.setResponse("publication");
     }
     void TearDown()
     {
@@ -113,8 +111,8 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.Reply",)";
-        expectedPayloadStream << R"("requestReplyId":")" << reply.getRequestReplyId() << R"(",)";
-        expectedPayloadStream << R"("response":["response"]})";
+        expectedPayloadStream << R"("response":["response"],)";
+        expectedPayloadStream << R"("requestReplyId":")" << reply.getRequestReplyId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
@@ -123,9 +121,9 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.SubscriptionPublication",)";
-        expectedPayloadStream << R"("subscriptionId": ")"
-                              << subscriptionPublication.getSubscriptionId() << R"(",)";
-        expectedPayloadStream << R"("response": ["publication"]})";
+        expectedPayloadStream << R"("response":["publication"],)";
+        expectedPayloadStream << R"("subscriptionId":")"
+                              << subscriptionPublication.getSubscriptionId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
