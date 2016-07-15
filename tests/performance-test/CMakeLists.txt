@@ -94,6 +94,9 @@ add_subdirectory(src/main/cpp/serializer)
 
 add_subdirectory(src/main/cpp/memory-usage)
 
+### simple echo server used to test speed of raw websockets
+add_subdirectory(src/main/cpp/websocket-server-echo)
+
 # copy joynr resources and settings
 file(
     COPY ${Joynr_RESOURCES_DIR}
