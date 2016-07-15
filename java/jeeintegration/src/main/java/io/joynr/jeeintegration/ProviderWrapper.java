@@ -20,11 +20,6 @@ package io.joynr.jeeintegration;
  */
 
 import static java.lang.String.format;
-import io.joynr.provider.AbstractDeferred;
-import io.joynr.provider.Deferred;
-import io.joynr.provider.DeferredVoid;
-import io.joynr.provider.JoynrProvider;
-import io.joynr.provider.Promise;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -35,6 +30,13 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
+import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
+import io.joynr.provider.AbstractDeferred;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.MultiValueDeferred;
+import io.joynr.provider.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,8 +99,13 @@ public class ProviderWrapper implements InvocationHandler {
                 deferred = new DeferredVoid();
                 ((DeferredVoid) deferred).resolve();
             } else {
-                deferred = new Deferred();
-                ((Deferred) deferred).resolve(result);
+                if (result instanceof MultiReturnValuesContainer) {
+                    deferred = new MultiValueDeferred();
+                    ((MultiValueDeferred) deferred).resolve(((MultiReturnValuesContainer) result).getValues());
+                } else {
+                    deferred = new Deferred();
+                    ((Deferred) deferred).resolve(result);
+                }
             }
             Promise promiseResult = new Promise(deferred);
             return promiseResult;
