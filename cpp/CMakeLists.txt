@@ -89,6 +89,13 @@ option(
 message(STATUS "option USE_PLATFORM_SPDLOG=" ${USE_PLATFORM_SPDLOG})
 
 option(
+    USE_PLATFORM_MUESLI
+    "Resolve dependency to muesli from the system?"
+    ON
+)
+message(STATUS "option USE_PLATFORM_MUESLI=" ${USE_PLATFORM_MUESLI})
+
+option(
     USE_PLATFORM_JSMN
     "Resolve dependency to jsmn from the system?"
     ON
@@ -608,6 +615,37 @@ endif(USE_PLATFORM_SPDLOG)
 
 message(STATUS "variable spdlog_INCLUDE_DIRS=" ${spdlog_INCLUDE_DIRS})
 
+### Add muesli ############################################################
+if (USE_PLATFORM_MUESLI)
+    find_package(muesli REQUIRED)
+else(USE_PLATFORM_MUESLI)
+    message(STATUS "############ Download: muesli ############")
+
+    AddExternalProject(
+        muesli
+        GIT_REPOSITORY https://github.com/bmwcarit/muesli
+        GIT_TAG develop
+        TIMEOUT 10
+        # Disable configure step
+        #CONFIGURE_COMMAND ""
+        CMAKE_ARGS -DBUILD_MUESLI_TESTS=Off
+        # Disable build step
+        #BUILD_COMMAND ""
+    )
+
+     ExternalProject_Get_Property(muesli SOURCE_DIR)
+     ExternalProject_Get_Property(muesli BINARY_DIR)
+     set_target_properties(
+        muesli
+        PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${SOURCE_DIR}/include;${BINARY_DIR}/ThirdParty/src/rapidjson/include"
+        INTERFACE_COMPILE_DEFINITIONS "RAPIDJSON_HAS_STDSTRING"
+     )
+endif(USE_PLATFORM_MUESLI)
+get_target_property(muesli_INCLUDE_DIRECTORIES muesli INTERFACE_INCLUDE_DIRECTORIES)
+
+message(STATUS "variable muesli_INCLUDE_DIRECTORIES=" ${muesli_INCLUDE_DIRECTORIES})
+
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     add_subdirectory(common-api)
@@ -736,6 +774,7 @@ set(
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
+    ${muesli_INCLUDE_DIRECTORIES}
     ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
 )
@@ -745,6 +784,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_INCLUDE_DIRS}
+        ${muesli_INCLUDE_DIRECTORIES}
         ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
         ${jsmn_INCLUDE_DIR}
     )

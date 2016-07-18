@@ -321,6 +321,20 @@ target_include_directories(
     ${JoynrTest_SYSTEM_INCLUDE_DIRECTORIES}
 )
 
+#
+# Manually handle muesli dependency of JoynrTestGenerated
+#
+# 1. make sure needed libraries required by muesli are being built
+#    before this target
+add_dependencies(JoynrTestGenerated muesli)
+
+# 2. As cmake OBJECT library do not support linking we need to manually set
+# the COMPILE_DEFINITIONS from muesli.
+get_target_property(muesli_INCLUDE_DIRECTORIES muesli INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(JoynrTestGenerated SYSTEM PUBLIC "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>")
+get_target_property(muesli_COMPILE_DEFINITIONS muesli INTERFACE_COMPILE_DEFINITIONS)
+target_compile_definitions(JoynrTestGenerated PUBLIC ${muesli_COMPILE_DEFINITIONS})
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         OPTIONAL_DBUS_LIBRARIES
