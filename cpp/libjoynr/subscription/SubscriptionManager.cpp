@@ -18,9 +18,10 @@
  */
 #include "joynr/SubscriptionManager.h"
 
+#include <chrono>
 #include <cstdint>
 #include <mutex>
-#include <chrono>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"

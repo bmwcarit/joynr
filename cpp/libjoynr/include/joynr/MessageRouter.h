@@ -23,7 +23,6 @@
 #include <mutex>
 #include <string>
 #include <memory>
-#include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
 
 #include "joynr/PrivateCopyAssign.h"
@@ -44,11 +43,15 @@
 
 namespace boost
 {
+namespace asio
+{
+class io_service;
+} // namespace asio
 namespace system
 {
 class error_code;
-}
-}
+} // namespace system
+} // namespace boost
 
 namespace joynr
 {

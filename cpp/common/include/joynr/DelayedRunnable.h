@@ -19,10 +19,17 @@
 #ifndef DELAYEDRUNNABLE_H
 #define DELAYEDRUNNABLE_H
 
-#include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
 
 #include "joynr/Runnable.h"
+
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
 
 namespace joynr
 {

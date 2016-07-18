@@ -36,7 +36,14 @@
 #include <string>
 #include <memory>
 #include <cstdint>
-#include <boost/asio/io_service.hpp>
+
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
 
 namespace joynr
 {

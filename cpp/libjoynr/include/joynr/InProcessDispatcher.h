@@ -21,7 +21,6 @@
 
 #include <string>
 #include <memory>
-#include <boost/asio/io_service.hpp>
 
 #include "joynr/IDispatcher.h"
 #include "joynr/IRequestCallerDirectory.h"
@@ -30,6 +29,14 @@
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
+
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
 
 namespace joynr
 {

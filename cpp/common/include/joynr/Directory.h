@@ -23,7 +23,6 @@
 #include <mutex>
 #include <unordered_map>
 #include <memory>
-#include <boost/asio/io_service.hpp>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
@@ -31,6 +30,14 @@
 #include "joynr/ITimeoutListener.h"
 #include "joynr/Logger.h"
 #include "joynr/IReplyCaller.h"
+
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
 
 namespace joynr
 {

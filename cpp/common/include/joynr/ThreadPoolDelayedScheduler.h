@@ -22,12 +22,19 @@
 #include <cstdint>
 #include <chrono>
 #include <string>
-#include <boost/asio/io_service.hpp>
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/ThreadPool.h"
+
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
 
 namespace joynr
 {
