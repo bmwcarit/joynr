@@ -127,7 +127,7 @@ public interface «syncClassName» extends «interfaceName»«IF hasFireAndForge
 
 «FOR method: uniqueMultioutMethods»
 	«val containerName = methodToReturnTypeName.get(method)»
-		public class «containerName» {
+		public class «containerName» implements io.joynr.dispatcher.rpc.MultiReturnValuesContainer {
 			«FOR outParameter : method.outputParameters»
 				public final «outParameter.typeName» «outParameter.name»;
 			«ENDFOR»
@@ -140,6 +140,14 @@ public interface «syncClassName» extends «interfaceName»«IF hasFireAndForge
 
 			public static Class<?>[] getDatatypes() {
 				return new Class<?>[] {«FOR outParameter : method.outputParameters SEPARATOR ", "»«outParameter.typeName».class«ENDFOR»};
+			}
+
+			public Object[] getValues() {
+			    return new Object[] {
+			        «FOR outParameter : method.outputParameters SEPARATOR ", "»
+			            «outParameter.name»
+			        «ENDFOR»
+			    };
 			}
 		}
 «ENDFOR»

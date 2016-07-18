@@ -22,15 +22,19 @@ package test.io.joynr.jeeintegration;
  * #L%
  */
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
+import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,6 +65,8 @@ public class ProviderWrapperTest {
         Promise<Deferred<String>> testServiceMethodNoArgs();
 
         Promise<DeferredVoid> testServiceMethodVoidReturn();
+
+        Promise<Deferred<Object[]>> testMultiOutMethod();
     }
 
     public static interface TestServiceInterface {
@@ -71,6 +77,14 @@ public class ProviderWrapperTest {
         String testServiceMethodNoArgs();
 
         void testServiceMethodVoidReturn();
+
+        public class MultiOutResult implements MultiReturnValuesContainer {
+            public Object[] getValues() {
+                return new Object[]{ "one", "two" };
+            }
+        }
+
+        MultiOutResult testMultiOutMethod();
     }
 
     public static class TestServiceImpl implements TestServiceInterface {
@@ -89,6 +103,10 @@ public class ProviderWrapperTest {
         public void testServiceMethodVoidReturn() {
         }
 
+        @Override
+        public MultiOutResult testMultiOutMethod() {
+            return new MultiOutResult();
+        }
     }
 
     public static class TestProviderQosFactory implements ProviderQosFactory {
@@ -119,6 +137,31 @@ public class ProviderWrapperTest {
         Object result = subject.invoke(proxy, method, new Object[0]);
 
         assertTrue(result instanceof Promise);
+    }
+
+    @Test
+    public void testInvokeMultiOutMethod() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceProviderInterface.class.getMethod("testMultiOutMethod");
+
+        Object result = subject.invoke(proxy, method, new Object[0]);
+
+        assertTrue(result instanceof Promise);
+        Promise promise = (Promise) result;
+        assertTrue(promise.isFulfilled());
+        promise.then(new PromiseListener() {
+            @Override
+            public void onFulfillment(Object... values) {
+                assertArrayEquals(new Object[]{ "one", "two" }, values);
+            }
+
+            @Override
+            public void onRejection(JoynrException error) {
+                fail("Shouldn't be here.");
+            }
+        });
     }
 
     @Test
