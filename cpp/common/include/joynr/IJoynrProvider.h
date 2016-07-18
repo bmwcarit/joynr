@@ -27,7 +27,6 @@ namespace joynr
 class SubscriptionAttributeListener;
 class SubscriptionBroadcastListener;
 class IBroadcastListener;
-class IBroadcastFilter;
 
 namespace types
 {

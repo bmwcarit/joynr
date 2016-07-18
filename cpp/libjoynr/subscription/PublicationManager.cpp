@@ -135,7 +135,6 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler)
           queuedBroadcastSubscriptionRequestsMutex(),
           currentScheduledPublications(),
           currentScheduledPublicationsMutex(),
-          broadcastFilters(),
           broadcastFilterLock()
 {
 }
@@ -156,7 +155,6 @@ PublicationManager::PublicationManager(int maxThreads)
           queuedBroadcastSubscriptionRequestsMutex(),
           currentScheduledPublications(),
           currentScheduledPublicationsMutex(),
-          broadcastFilters(),
           broadcastFilterLock()
 {
 }

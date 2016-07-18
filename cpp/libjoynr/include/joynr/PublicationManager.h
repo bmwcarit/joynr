@@ -46,7 +46,6 @@ class BroadcastSubscriptionRequest;
 class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
-class IBroadcastFilter;
 class SubscriptionBroadcastListener;
 
 namespace exceptions
@@ -210,9 +209,6 @@ private:
     // List of subscriptionId's of runnables scheduled with delay <= qos.getMinIntervalMs_ms()
     std::vector<std::string> currentScheduledPublications;
     std::mutex currentScheduledPublicationsMutex;
-
-    // Filters registered for broadcasts. Keyed by broadcast name.
-    std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     // Read/write lock for broadcast filters
     mutable ReadWriteLock broadcastFilterLock;

@@ -30,7 +30,6 @@ namespace joynr
 {
 
 class PublicationManager;
-class IBroadcastFilter;
 
 /**
  * An attribute listener used for broadcast subscriptions
