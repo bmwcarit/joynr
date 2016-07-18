@@ -19,6 +19,18 @@
   provisioned has changed. See `StaticCapabilitiesProvisioning` as well as its entry in the
   [Java Settings documentation](JavaSettings.md) for details.
 
+#joynr 0.18.5
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JEE]** Fixed bug with multi-out return values not being translated
+  between container classes and multi-valued deferred instances in the
+  `ProviderWrapper`.
+>>>>>>> origin/release/0.18.5
+
 #joynr 0.18.4
 This is a minor bug fix release.
 
