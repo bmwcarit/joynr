@@ -1,4 +1,4 @@
-# Parts of this file are inspired by a CMake tutorial (http://www.cmake.org/Wiki/CMake/)
+
 # that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/).
 # There are no attributions specified by the author.
 
@@ -133,6 +133,29 @@ option(
 )
 message(STATUS "option USE_PLATFORM_WEBSOCKETPP=" ${USE_PLATFORM_WEBSOCKETPP})
 
+option(
+    JOYNR_ENABLE_DLT_LOGGING
+    "Use DLT logger?"
+    OFF
+)
+message(STATUS "option JOYNR_ENABLE_DLT_LOGGING=" ${JOYNR_ENABLE_DLT_LOGGING})
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+option(
+    USE_PLATFORM_DLT
+    "Resolve dependency to DLT from the system?"
+    ON
+)
+message(STATUS "option USE_PLATFORM_DLT=" ${USE_PLATFORM_DLT})
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
+option(
+    JOYNR_ENABLE_STDOUT_LOGGING
+    "Use stdout logger?"
+    ON
+)
+message(STATUS "option JOYNR_ENABLE_STDOUT_LOGGING=" ${JOYNR_ENABLE_STDOUT_LOGGING})
+
 # should we use DBUS to communicate between libjoynr and cluster-controller
 option(
     USE_DBUS_COMMONAPI_COMMUNICATION
@@ -162,7 +185,6 @@ option(
 )
 message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
 
-
 option(
     BUILD_CLUSTER_CONTROLLER
     "Build ClusterController?"
@@ -178,10 +200,11 @@ include(AddClangFormat)
 # Following dependencies must be installed by the user beforehand because they either
 # use a shared object or are included through joynr header files into the user's code.
 # Mosquitto is only required when the cluster controller build is enabled.
-if(NOT (USE_PLATFORM_SPDLOG AND USE_PLATFORM_JSMN AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
+set (CHECK_DLT (JOYNR_ENABLE_DLT_LOGGING AND USE_PLATFORM_DLT OR NOT JOYNR_ENABLE_DLT_LOGGING))
+if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_JSMN AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
     set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
     set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
-    set(codeMsg "${codeMsg} USE_PLATFORM_JSMN and USE_PLATFORM_MOSQUITTO.\")")
+    set(codeMsg "${codeMsg} USE_PLATFORM_DLT, USE_PLATFORM_JSMN and USE_PLATFORM_MOSQUITTO.\")")
     install(CODE "${codeMsg}")
 endif()
 
@@ -625,6 +648,45 @@ endif(USE_PLATFORM_SPDLOG)
 
 message(STATUS "variable spdlog_INCLUDE_DIRS=" ${spdlog_INCLUDE_DIRS})
 
+### Add DLT ###########################################################
+if(JOYNR_ENABLE_DLT_LOGGING)
+    if (USE_PLATFORM_DLT)
+        include(FindPkgConfig)
+        pkg_check_modules(DLT REQUIRED automotive-dlt)
+        set(DLT_LIBRARIES "${DLT_LIBRARY_DIRS}/${CMAKE_SHARED_LIBRARY_PREFIX}dlt${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    else(USE_PLATFORM_DLT)
+        message(STATUS "############ Download: DLT ############")
+        get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
+
+        set(DLT_LIBRARY_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}dlt${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        set(DLT_LIBRARIES "${EP_PREFIX}/src/DLT-build/src/lib/${DLT_LIBRARY_NAME}")
+
+        AddExternalProject(
+            DLT
+            GIT_REPOSITORY http://git.projects.genivi.org/dlt-daemon.git
+            GIT_TAG v2.15.0
+            TIMEOUT 10
+            CMAKE_ARGS "-DWITH_MAN=OFF;"
+                       "-DWTIH_DLT_ADAPTOR=OFF;" # sic!
+                       "-DWITH_DLT_CONSOLE=OFF"
+                       "-DWITH_DLT_EXAMPLES=OFF"
+                       "-DWITH_DLT_SYSTEM=OFF"
+                       "-DWITH_DLT_DBUS=OFF"
+                       "-DWITH_DLT_TESTS=OFF"
+            BUILD_BYPRODUCTS ${DLT_LIBRARIES}
+        )
+
+        ExternalProject_Get_Property(DLT SOURCE_DIR)
+        set(DLT_INCLUDE_DIRS "${SOURCE_DIR}/include")
+
+        # The directory does not exist when the import targets are checked. As a workaround
+        # we need to create it here. Otherwise the initial cmake call will fail.
+        file(MAKE_DIRECTORY ${EP_PREFIX}/src/DLT-build/src/lib)
+        file(MAKE_DIRECTORY ${EP_PREFIX}/src/DLT/include)
+    endif(USE_PLATFORM_DLT)
+
+    include(CheckDltImportTargets)
+endif(JOYNR_ENABLE_DLT_LOGGING)
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     add_subdirectory(common-api)
@@ -756,6 +818,7 @@ set(
     ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
 )
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrConfig_LIB_DBUS_INCLUDE_DIRS
@@ -795,6 +858,15 @@ if(USE_PLATFORM_SPDLOG)
     FillJoynrConfigDependencies("PlatformSpdlog")
 endif(USE_PLATFORM_SPDLOG)
 
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+if(USE_PLATFORM_DLT)
+    FillJoynrConfigDependencies("PlatformDltlog")
+else(USE_PLATFORM_DLT)
+    FillJoynrConfigDependencies("ExternalProjectDltlog")
+endif(USE_PLATFORM_DLT)
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
 configure_file(
     JoynrConfig.cmake.in
     "JoynrConfig.cmake" @ONLY
@@ -805,6 +877,7 @@ file(
         "CMake/CheckCurlImportTargets.cmake"
         "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
+        "CMake/CheckDltImportTargets.cmake"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 # ... for the install tree
@@ -854,6 +927,7 @@ install(
         "CMake/CheckCurlImportTargets.cmake"
         "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
+        "CMake/CheckDltImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
 )
 
