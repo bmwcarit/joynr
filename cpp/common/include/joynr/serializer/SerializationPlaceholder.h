@@ -72,7 +72,7 @@ public:
     template <typename Archive>
     void load(Archive& ar)
     {
-        using Deserializable = typename GetDeserializable<Archive>::type;
+        using Deserializable = typename GetDeserializable<std::decay_t<Archive>>::type;
         deserializable = Deserializable(ar);
     }
 
