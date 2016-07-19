@@ -17,10 +17,12 @@
  * #L%
  */
 
-define("joynr/start/settings/defaultMessagingSettings", function() {
+define("joynr/start/settings/defaultMessagingSettings", [ "joynr/messaging/MessagingQosEffort"
+], function(MessagingQosEffort) {
     return {
         // 30 days
-        MAX_MESSAGING_TTL_MS : 2592000000
+        MAX_MESSAGING_TTL_MS : 2592000000,
+        effort : MessagingQosEffort.NORMAL
     };
 
 });

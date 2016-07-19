@@ -19,14 +19,19 @@
 
 define([
     "joynr/start/settings/defaultMessagingSettings",
-    "joynr/messaging/MessagingQos"
-], function(defaultMessagingSettings, MessagingQos) {
+    "joynr/messaging/MessagingQos",
+    "joynr/messaging/MessagingQosEffort"
+], function(defaultMessagingSettings, MessagingQos, MessagingQosEffort) {
 
     describe("libjoynr-js.joynr.messaging.MessagingQos", function() {
         it("is instantiable", function() {
             expect(new MessagingQos()).toBeDefined();
             expect(new MessagingQos({
                 ttl : 60000
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                effort : MessagingQosEffort.BEST_EFFORT
             })).toBeDefined();
         });
 
@@ -50,17 +55,17 @@ define([
             }));
         });
 
-        function testValues(ttl) {
+        function testTtlValues(ttl) {
             var messagingQos = new MessagingQos({
                 ttl : ttl
             });
             expect(messagingQos.ttl).toBe(ttl);
         }
 
-        it("constructs with correct member values", function() {
-            testValues(123456, 1234567);
-            testValues(0, 0);
-            testValues(-123456, -1234567);
+        it("constructs with correct TTL values", function() {
+            testTtlValues(123456, 1234567);
+            testTtlValues(0, 0);
+            testTtlValues(-123456, -1234567);
         });
 
         it("prevents ttl values larger than maxTtl", function() {
@@ -69,6 +74,20 @@ define([
             })).toEqual(new MessagingQos({
                 ttl : defaultMessagingSettings.MAX_MESSAGING_TTL_MS
             }));
+        });
+
+        function testEffortValues(effort, expected) {
+            var messagingQos = new MessagingQos({
+                effort : effort
+            });
+            expect(messagingQos.effort).toBe(expected);
+        }
+
+        it("constructs with correct effort values", function() {
+            testEffortValues(MessagingQosEffort.NORMAL, MessagingQosEffort.NORMAL);
+            testEffortValues(MessagingQosEffort.BEST_EFFORT, MessagingQosEffort.BEST_EFFORT);
+            testEffortValues(null, MessagingQosEffort.NORMAL);
+            testEffortValues("not an enum value", MessagingQosEffort.NORMAL);
         });
 
         var runsWithCustomHeaders = [
