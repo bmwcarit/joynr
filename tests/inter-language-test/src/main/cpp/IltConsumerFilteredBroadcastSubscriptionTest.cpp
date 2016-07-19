@@ -20,6 +20,7 @@
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/interlanguagetest/TestInterfaceBroadcastWithFilteringBroadcastFilterParameters.h"
 
 using namespace ::testing;
 
