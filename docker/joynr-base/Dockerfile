@@ -17,6 +17,7 @@ RUN dnf update -y \
 	autoconf \
 	automake \
 	cmake \
+        corkscrew \
 	dbus-x11 \
 	expat-devel \
 	file \
