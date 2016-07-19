@@ -134,10 +134,10 @@ set_target_properties(
 target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>")
 
 # add muesli
-add_dependencies(JoynrCommon muesli)
-get_target_property(muesli_INCLUDE_DIRECTORIES muesli INTERFACE_INCLUDE_DIRECTORIES)
+add_dependencies(JoynrCommon muesli::muesli)
+get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>")
-get_target_property(muesli_COMPILE_DEFINITIONS muesli INTERFACE_COMPILE_DEFINITIONS)
+get_target_property(muesli_COMPILE_DEFINITIONS muesli::muesli INTERFACE_COMPILE_DEFINITIONS)
 target_compile_definitions(JoynrCommon PUBLIC ${muesli_COMPILE_DEFINITIONS})
 
 target_include_directories(

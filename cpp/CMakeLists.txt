@@ -617,7 +617,7 @@ message(STATUS "variable spdlog_INCLUDE_DIRS=" ${spdlog_INCLUDE_DIRS})
 
 ### Add muesli ############################################################
 if (USE_PLATFORM_MUESLI)
-    find_package(muesli REQUIRED)
+    find_package(muesli 0.1.0 REQUIRED CONFIG)
 else(USE_PLATFORM_MUESLI)
     message(STATUS "############ Download: muesli ############")
 
@@ -633,16 +633,26 @@ else(USE_PLATFORM_MUESLI)
         #BUILD_COMMAND ""
     )
 
-     ExternalProject_Get_Property(muesli SOURCE_DIR)
-     ExternalProject_Get_Property(muesli BINARY_DIR)
-     set_target_properties(
-        muesli
-        PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${SOURCE_DIR}/include;${BINARY_DIR}/ThirdParty/src/rapidjson/include"
-        INTERFACE_COMPILE_DEFINITIONS "RAPIDJSON_HAS_STDSTRING"
-     )
+    ExternalProject_Get_Property(muesli SOURCE_DIR)
+    ExternalProject_Get_Property(muesli BINARY_DIR)
+
+    # add import target for mosquitto library
+    add_library(muesli::muesli SHARED IMPORTED GLOBAL)
+    add_dependencies(muesli::muesli muesli)
+    set_property(
+        TARGET muesli::muesli
+        APPEND
+        PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+            "${SOURCE_DIR}/include"
+            "${BINARY_DIR}/ThirdParty/src/rapidjson/include"
+    )
+    set_property(
+        TARGET muesli::muesli
+        APPEND
+        PROPERTY INTERFACE_COMPILE_DEFINITIONS "RAPIDJSON_HAS_STDSTRING"
+    )
 endif(USE_PLATFORM_MUESLI)
-get_target_property(muesli_INCLUDE_DIRECTORIES muesli INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
 
 message(STATUS "variable muesli_INCLUDE_DIRECTORIES=" ${muesli_INCLUDE_DIRECTORIES})
 
