@@ -27,6 +27,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.MessagingQosEffort;
 import joynr.JoynrMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
@@ -58,6 +59,9 @@ public class JoynrMessageFactory {
         message.setType(joynrMessageType);
         Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
         header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(expiryDate.getValue()));
+        if (messagingQos.getEffort() != null && !MessagingQosEffort.NORMAL.equals(messagingQos.getEffort())) {
+            header.put(JoynrMessage.HEADER_NAME_EFFORT, String.valueOf(messagingQos.getEffort()));
+        }
         message.setHeader(header);
         message.setPayload(serializePayload(payload));
         message.setCustomHeaders(messagingQos.getCustomMessageHeaders());

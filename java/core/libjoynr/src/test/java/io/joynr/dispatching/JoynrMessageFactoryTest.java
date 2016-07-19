@@ -36,6 +36,7 @@ import com.google.inject.Injector;
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.MessagingQosEffort;
 import joynr.JoynrMessage;
 import joynr.PeriodicSubscriptionQos;
 import joynr.Reply;
@@ -115,6 +116,18 @@ public class JoynrMessageFactoryTest {
                      headerExpiry.substring(0, headerExpiry.length() - 4));
         assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
+    }
+
+    @Test
+    public void createRequestWithCustomEffort() {
+        MessagingQos customMessagingQos = new MessagingQos();
+        customMessagingQos.setEffort(MessagingQosEffort.BEST_EFFORT);
+        JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
+                                                                 toParticipantId,
+                                                                 request,
+                                                                 customMessagingQos);
+        assertEquals(String.valueOf(MessagingQosEffort.BEST_EFFORT),
+                     message.getHeaderValue(JoynrMessage.HEADER_NAME_EFFORT));
     }
 
     @Test
