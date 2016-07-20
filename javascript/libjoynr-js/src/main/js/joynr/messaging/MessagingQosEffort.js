@@ -31,7 +31,8 @@ define("joynr/messaging/MessagingQosEffort", [], function() {
      * persisting the message as necessary if the receiver is not currently online. Also known as 'at least once'.
      */
     MessagingQosEffort.NORMAL = {
-        name : "Normal"
+        name : "Normal",
+        value : "NORMAL"
     };
 
     /**
@@ -40,7 +41,8 @@ define("joynr/messaging/MessagingQosEffort", [], function() {
      * online. Also known as 'at most once' or 'fire and forget'.
      */
     MessagingQosEffort.BEST_EFFORT = {
-        name : "Best effort"
+        name : "Best effort",
+        value : "BEST_EFFORT"
     };
 
     /**
