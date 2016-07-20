@@ -20,9 +20,11 @@
 #define ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
 
 #include <cstdint>
-#include "joynr/JoynrCommonExport.h"
+
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/JoynrCommonExport.h"
 #include "joynr/Logger.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -276,6 +278,14 @@ public:
     /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
     static const std::int64_t& NO_ALERT_AFTER_INTERVAL();
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<OnChangeSubscriptionQos>(this),
+                MUESLI_NVP(maxIntervalMs),
+                MUESLI_NVP(alertAfterIntervalMs));
+    }
+
 protected:
     /**
      * @brief The maximum interval in milliseconds.
@@ -296,5 +306,10 @@ private:
 };
 
 } // namespace joynr
+
+// TODO register with actual parent or root base class?
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::OnChangeWithKeepAliveSubscriptionQos,
+                                 joynr::SubscriptionQos,
+                                 "joynr.OnChangeWithKeepAliveSubscriptionQos")
 
 #endif // ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
