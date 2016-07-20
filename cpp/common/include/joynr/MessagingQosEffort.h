@@ -33,9 +33,9 @@ struct MessagingQosEffort
     {
         switch (value) {
         case Enum::BEST_EFFORT:
-            return "Best effort";
+            return "BEST_EFFORT";
         case Enum::NORMAL:
-            return "Normal";
+            return "NORMAL";
         default:
             throw exceptions::JoynrRuntimeException("Invalid messaging QoS effort value");
         }
