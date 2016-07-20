@@ -18,6 +18,10 @@
 * **[Java]** The way in which the global capabilities and domain access control directories are
   provisioned has changed. See `StaticCapabilitiesProvisioning` as well as its entry in the
   [Java Settings documentation](JavaSettings.md) for details.
+* **[JEE]** You can now inject the calling principal in providers in order to see who performed
+  the call currently being executed.
+* **[JEE]** Support for HiveMQ shared subscriptions, which enables clustering using only
+  MQTT for communication.
 
 #joynr 0.18.5
 This is a minor bug fix release.
