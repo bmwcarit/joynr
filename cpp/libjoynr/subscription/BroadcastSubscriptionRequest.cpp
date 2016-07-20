@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/JsonSerializer.h"
 
 namespace joynr
 {
@@ -44,7 +43,7 @@ bool BroadcastSubscriptionRequest::operator==(
 
 std::string BroadcastSubscriptionRequest::toString() const
 {
-    return JsonSerializer::serialize(*this);
+    return joynr::serializer::serializeToJson(*this);
 }
 
 void BroadcastSubscriptionRequest::setQosVariant(const OnChangeSubscriptionQos& qos)

@@ -32,7 +32,6 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/IRequestInterpreter.h"
 #include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
 #include "joynr/PublicationInterpreter.h"
@@ -278,8 +277,8 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
 
     try {
         // PublicationManager is responsible for deleting SubscriptionRequests
-        SubscriptionRequest subscriptionRequest =
-                JsonSerializer::deserialize<SubscriptionRequest>(jsonSubscriptionRequest);
+        SubscriptionRequest subscriptionRequest;
+        joynr::serializer::deserializeFromJson(subscriptionRequest, jsonSubscriptionRequest);
 
         if (!caller) {
             // Provider not registered yet
@@ -319,8 +318,8 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
 
     // PublicationManager is responsible for deleting SubscriptionRequests
     try {
-        BroadcastSubscriptionRequest subscriptionRequest =
-                JsonSerializer::deserialize<BroadcastSubscriptionRequest>(jsonSubscriptionRequest);
+        BroadcastSubscriptionRequest subscriptionRequest;
+        joynr::serializer::deserializeFromJson(subscriptionRequest, jsonSubscriptionRequest);
 
         if (!caller) {
             // Provider not registered yet

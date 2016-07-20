@@ -70,9 +70,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     SubscriptionRequest request;
     Variant subscriptionQos = Variant::make<SubscriptionQos>(SubscriptionQos(5000));
     request.setQosVariant(subscriptionQos);
-    std::string result = JsonSerializer::serialize<SubscriptionRequest>(request);
+    std::string result = joynr::serializer::serializeToJson(request);
     JOYNR_LOG_DEBUG(logger, "result: {}", result);
-    SubscriptionRequest desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
+    SubscriptionRequest desRequest;
+    joynr::serializer::deserializeFromJson(desRequest, result);
     EXPECT_TRUE(request == desRequest);
 }
 
@@ -84,9 +85,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     filterParams.setFilterParameter("MyFilter", "MyFilterValue");
     request.setFilterParameters(filterParams);
     request.setSubscribeToName("myAttribute");
-    std::string requestJson = JsonSerializer::serialize<BroadcastSubscriptionRequest>(request);
+    std::string requestJson = joynr::serializer::serializeToJson(request);
     JOYNR_LOG_DEBUG(logger, requestJson);
-    BroadcastSubscriptionRequest desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(requestJson);
+    BroadcastSubscriptionRequest desRequest;
+    joynr::serializer::deserializeFromJson(desRequest, requestJson);
     EXPECT_TRUE(request == desRequest);
 }
 
@@ -733,7 +735,8 @@ TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
 
     std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
 
-    joynr::types::ProviderQos providerQos = JsonSerializer::deserialize<joynr::types::ProviderQos>(jsonProviderQos);
+    joynr::types::ProviderQos providerQos;
+    joynr::serializer::deserializeFromJson(providerQos, jsonProviderQos);
 
     EXPECT_EQ(providerQos.getScope(), joynr::types::ProviderScope::LOCAL);
     EXPECT_EQ(providerQos.getPriority(), 5);
@@ -746,7 +749,7 @@ TEST_F(JsonSerializerTest, serialize_ProviderQos) {
 
     std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\": [],\"priority\": 5,\"scope\": \"LOCAL\",\"supportsOnChangeSubscriptions\": false}");
 
-    std::string result = JsonSerializer::serialize<joynr::types::ProviderQos>(qos);
+    std::string result = joynr::serializer::serializeToJson(qos);
 
     EXPECT_EQ(jsonProviderQos, result);
 }
@@ -777,12 +780,13 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
 
     OnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
 
-    std::string jsonQos = JsonSerializer::serialize<OnChangeWithKeepAliveSubscriptionQos>(qos);
+    std::string jsonQos = joynr::serializer::serializeToJson(qos);
     JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
-    OnChangeWithKeepAliveSubscriptionQos desQos = JsonSerializer::deserialize<OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
+    OnChangeWithKeepAliveSubscriptionQos desQos;
+    joynr::serializer::deserializeFromJson(desQos, jsonQos);
 
-    jsonQos = JsonSerializer::serialize<OnChangeWithKeepAliveSubscriptionQos>(desQos);
+    jsonQos = joynr::serializer::serializeToJson(desQos);
     JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
     EXPECT_EQ(qos, desQos);

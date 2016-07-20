@@ -19,21 +19,16 @@
 
 #include "AccessController.h"
 
+#include <tuple>
+
 #include "LocalDomainAccessController.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
-
-#include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/system/RoutingTypes/Address.h"
-
-#include <tuple>
-
-#include "joynr/JsonSerializer.h"
-
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
@@ -123,8 +118,8 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
         try {
-            SubscriptionRequest request =
-                    JsonSerializer::deserialize<SubscriptionRequest>(message.getPayload());
+            SubscriptionRequest request;
+            joynr::serializer::deserializeFromJson(request, message.getPayload());
             operation = request.getSubscribeToName();
 
         } catch (const std::invalid_argument& e) {
@@ -133,8 +128,8 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         try {
-            BroadcastSubscriptionRequest request =
-                    JsonSerializer::deserialize<BroadcastSubscriptionRequest>(message.getPayload());
+            BroadcastSubscriptionRequest request;
+            joynr::serializer::deserializeFromJson(request, message.getPayload());
             operation = request.getSubscribeToName();
 
         } catch (const std::invalid_argument& e) {

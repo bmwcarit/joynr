@@ -18,7 +18,6 @@
  */
 #include "joynr/SubscriptionRequest.h"
 
-#include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -95,7 +94,7 @@ void SubscriptionRequest::setQosVariant(const Variant& qos)
 
 std::string SubscriptionRequest::toString() const
 {
-    return JsonSerializer::serialize(*this);
+    return joynr::serializer::serializeToJson(*this);
 }
 
 std::shared_ptr<SubscriptionQos> SubscriptionRequest::getQos() const

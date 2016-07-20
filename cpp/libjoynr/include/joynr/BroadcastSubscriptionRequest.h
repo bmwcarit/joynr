@@ -29,6 +29,7 @@
 
 #include "joynr/Variant.h"
 #include "joynr/Logger.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
