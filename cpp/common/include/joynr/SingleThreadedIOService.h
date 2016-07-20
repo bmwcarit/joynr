@@ -23,6 +23,9 @@
 
 #include <boost/asio/io_service.hpp>
 
+namespace joynr
+{
+
 class SingleThreadedIOService
 {
 public:
@@ -59,4 +62,5 @@ private:
     std::thread ioServiceThread;
 };
 
-#endif
+} // namespace joynr
+#endif // SINGLETHREADEDIOSERVICE_H

@@ -24,12 +24,15 @@
 #include <unordered_map>
 #include <memory>
 
+#include <boost/system/error_code.hpp>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/Runnable.h"
 #include "joynr/ITimeoutListener.h"
 #include "joynr/Logger.h"
 #include "joynr/IReplyCaller.h"
+#include "joynr/SteadyTimer.h"
 
 namespace boost
 {
@@ -130,8 +133,8 @@ public:
             assert(insertionResult.second); // Success indication
             auto timerIt = insertionResult.first;
 
-            timerIt->second.expires_from_now(std::chrono::milliseconds(ttl_ms));
-            timerIt->second.async_wait([keyId, this](const boost::system::error_code& errorCode) {
+            timerIt->second.expiresFromNow(std::chrono::milliseconds(ttl_ms));
+            timerIt->second.asyncWait([keyId, this](const boost::system::error_code& errorCode) {
                 if (!errorCode) {
                     this->removeAfterTimeout<T>(keyId);
                 } else if (errorCode != boost::system::errc::operation_canceled) {
@@ -178,7 +181,7 @@ private:
 
 protected:
     std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
-    std::unordered_map<Key, boost::asio::steady_timer> timeoutTimerMap;
+    std::unordered_map<Key, SteadyTimer> timeoutTimerMap;
     ADD_LOGGER(Directory);
 
 private:

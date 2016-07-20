@@ -44,13 +44,13 @@ ACTION_P(ReleaseSemaphore, semaphore)
 class MessageRouterTest : public ::testing::Test {
 public:
     MessageRouterTest() :
+        singleThreadedIOService(),
         settings(),
         messagingSettings(settings),
         messageQueue(nullptr),
         messagingStubFactory(nullptr),
         messageRouter(nullptr),
-        joynrMessage(),
-        singleThreadedIOService()
+        joynrMessage()
     {
         auto messageQueue = std::make_unique<MessageQueue>();
         this->messageQueue = messageQueue.get();
@@ -82,6 +82,7 @@ public:
     void TearDown(){
     }
 protected:
+    SingleThreadedIOService singleThreadedIOService;
     std::string settingsFileName;
     Settings settings;
     MessagingSettings messagingSettings;
@@ -92,8 +93,6 @@ protected:
     void routeMessageToAddress(
             const std::string& destinationParticipantId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
-
-    SingleThreadedIOService singleThreadedIOService;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouterTest);

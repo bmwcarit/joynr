@@ -23,7 +23,6 @@
 #include <mutex>
 #include <string>
 #include <memory>
-#include <boost/asio/steady_timer.hpp>
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -40,6 +39,7 @@
 #include "joynr/Runnable.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Logger.h"
+#include "joynr/SteadyTimer.h"
 
 namespace boost
 {
@@ -184,7 +184,7 @@ private:
     mutable std::mutex parentResolveMutex;
     std::string routingTableFileName;
 
-    boost::asio::steady_timer messageQueueCleanerTimer;
+    SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
 
     void addNextHopToParent(std::string participantId,

@@ -19,9 +19,9 @@
 #ifndef DELAYEDRUNNABLE_H
 #define DELAYEDRUNNABLE_H
 
-#include <boost/asio/steady_timer.hpp>
-
+#include <functional>
 #include "joynr/Runnable.h"
+#include "joynr/SteadyTimer.h"
 
 namespace boost
 {
@@ -43,8 +43,8 @@ public:
                     std::function<void(const boost::system::error_code&)> timerExpiredCallback)
             : timer(ioService), runnable(std::move(delayedRunnable))
     {
-        timer.expires_from_now(delayMs);
-        timer.async_wait(timerExpiredCallback);
+        timer.expiresFromNow(delayMs);
+        timer.asyncWait(timerExpiredCallback);
     }
 
     ~DelayedRunnable()
@@ -63,7 +63,7 @@ public:
     }
 
 private:
-    boost::asio::steady_timer timer;
+    SteadyTimer timer;
     std::unique_ptr<Runnable> runnable;
 };
 
