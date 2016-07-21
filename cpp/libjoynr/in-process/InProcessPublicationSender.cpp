@@ -21,6 +21,7 @@
 #include <cassert>
 #include <tuple>
 
+#include "joynr/ISubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/ISubscriptionManager.h"
 

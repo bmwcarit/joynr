@@ -20,6 +20,14 @@
 #ifndef LOCALDOMAINACCESSCONTROLLER_H
 #define LOCALDOMAINACCESSCONTROLLER_H
 
+#include <string>
+#include <memory>
+#include <vector>
+#include <cstdint>
+#include <mutex>
+#include <unordered_map>
+#include <chrono>
+
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
@@ -32,14 +40,6 @@
 #include "AccessControlAlgorithm.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
-
-#include <string>
-#include <memory>
-#include <vector>
-#include <cstdint>
-#include <mutex>
-#include <unordered_map>
-#include <chrono>
 
 namespace joynr
 {

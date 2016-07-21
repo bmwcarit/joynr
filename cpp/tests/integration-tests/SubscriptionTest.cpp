@@ -137,17 +137,17 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
                     ReleaseSemaphore(&semaphore)));
 
     std::string attributeName = "Location";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
-    ));
+    );
     std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(subscriptionQos);
+    subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,
@@ -181,12 +181,12 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     //register the subscription on the consumer side
     std::string attributeName = "Location";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
-    ));
+    );
 
     SubscriptionRequest subscriptionRequest;
     //construct a reply containing a GpsLocation
@@ -236,12 +236,12 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
 
     //register the subscription on the consumer side
     std::string attributeName = "testEnum";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
-    ));
+    );
 
     SubscriptionRequest subscriptionRequest;
     //construct a reply containing a GpsLocation
@@ -293,18 +293,18 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                     ReleaseSemaphore(&semaphore)
             ));
     std::string attributeName = "Location";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
-    ));
+    );
     std::string subscriptionId = "SubscriptionID";
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(subscriptionQos);
+    subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,
@@ -323,11 +323,10 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
 
     std::string subscriptionId = "SubscriptionID";
-    Variant subscriptionQos =
-            Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 800, // validity_ms
                 0 // minInterval_ms
-    ));
+    );
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     Semaphore semaphore(0);
@@ -335,7 +334,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName("listOfStrings");
-    subscriptionRequest.setQosVariant(subscriptionQos);
+    subscriptionRequest.setQos(subscriptionQos);
 
     EXPECT_CALL(
             *provider,
@@ -404,18 +403,18 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
                 1100 // alertInterval_ms
-    ));
+    );
     std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     std::string attributeName = "Location";
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(subscriptionQos);
+    subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,
@@ -451,17 +450,17 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     std::string attributeName = "Location";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 1200, // validity_ms
                 10, // minInterval_ms
                 500, // maxInterval_ms
                 1100 // alertInterval_ms
-    ));
+    );
     std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(subscriptionQos);
+    subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,

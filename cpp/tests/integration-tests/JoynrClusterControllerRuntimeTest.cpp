@@ -343,7 +343,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
             .Times(AtLeast(1));
 
 
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     480, // validity
                     200, // min interval
                     200, // max interval
@@ -395,7 +395,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
 
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     2000,   // validity
                     100,   // min interval
                     1000,   // max interval

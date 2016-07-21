@@ -43,6 +43,7 @@
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
+#include "joynr/SubscriptionQos.h"
 
 namespace joynr
 {
@@ -159,7 +160,7 @@ PublicationManager::PublicationManager(int maxThreads)
 {
 }
 
-bool isSubscriptionExpired(const SubscriptionQos* qos, int offset = 0)
+bool isSubscriptionExpired(const std::shared_ptr<SubscriptionQos> qos, int offset = 0)
 {
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                std::chrono::system_clock::now().time_since_epoch()).count();
@@ -209,7 +210,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         addOnChangePublication(subscriptionId, requestInfo, publication);
 
         // Schedule a runnable to remove the publication when it finishes
-        const SubscriptionQos* qos = requestInfo->getSubscriptionQosPtr();
+        const std::shared_ptr<SubscriptionQos> qos = requestInfo->getQos();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
         std::int64_t publicationEndDelay = qos->getExpiryDateMs() - now;
@@ -242,7 +243,7 @@ void PublicationManager::addOnChangePublication(
         std::shared_ptr<Publication> publication)
 {
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
-    if (SubscriptionUtil::isOnChangeSubscription(request->getQosVariant())) {
+    if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         JOYNR_LOG_TRACE(logger, "adding onChange subscription: {}", subscriptionId);
 
         // Create an attribute listener to listen for onChange events
@@ -346,7 +347,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         addBroadcastPublication(subscriptionId, requestInfo, publication);
 
         // Schedule a runnable to remove the publication when it finishes
-        const SubscriptionQos* qos = requestInfo->getSubscriptionQosPtr();
+        const std::shared_ptr<SubscriptionQos> qos = requestInfo->getQos();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
         std::int64_t publicationEndDelay = qos->getExpiryDateMs() - now;
@@ -462,7 +463,7 @@ void PublicationManager::restore(const std::string& providerId,
             std::shared_ptr<SubscriptionRequestInformation> requestInfo(
                     queuedSubscriptionRequestsIterator->second);
             queuedSubscriptionRequests.erase(queuedSubscriptionRequestsIterator);
-            if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
+            if (!isSubscriptionExpired(requestInfo->getQos())) {
                 JOYNR_LOG_DEBUG(logger,
                                 "Restoring subscription for provider: {} {}",
                                 providerId,
@@ -484,7 +485,7 @@ void PublicationManager::restore(const std::string& providerId,
             std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo(
                     queuedBroadcastSubscriptionRequestsIterator->second);
             queuedBroadcastSubscriptionRequests.erase(queuedBroadcastSubscriptionRequestsIterator);
-            if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
+            if (!isSubscriptionExpired(requestInfo->getQos())) {
                 JOYNR_LOG_DEBUG(logger,
                                 "Restoring subscription for provider: {}  {}",
                                 providerId,
@@ -556,7 +557,7 @@ std::vector<Variant> PublicationManager::subscriptionMapToVectorCopy(
                      map.begin();
              iterator != map.end();
              ++iterator) {
-            if (!isSubscriptionExpired((iterator->second)->getSubscriptionQosPtr())) {
+            if (!isSubscriptionExpired((iterator->second)->getQos())) {
                 subscriptionVector.push_back(
                         Variant::make<RequestInformationType>(*iterator->second.get()));
             }
@@ -616,7 +617,7 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
         subscriptionVector.erase(subscriptionVector.begin());
 
         // Add the subscription if it is still valid
-        if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
+        if (!isSubscriptionExpired(requestInfo->getQos())) {
             std::string providerId = requestInfo->getProviderId();
             queuedSubscriptions.insert(std::make_pair(providerId, requestInfo));
             JOYNR_LOG_DEBUG(logger,
@@ -685,7 +686,7 @@ void PublicationManager::removeOnChangePublication(
     // to silence unused-variable compiler warnings
     std::ignore = subscriptionId;
 
-    if (SubscriptionUtil::isOnChangeSubscription(request->getQosVariant())) {
+    if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         // Unregister and delete the attribute listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterAttributeListener(
@@ -717,8 +718,7 @@ bool PublicationManager::isShuttingDown()
 std::int64_t PublicationManager::getPublicationTtlMs(
         std::shared_ptr<SubscriptionRequest> subscriptionRequest) const
 {
-    const SubscriptionQos* qosPtr = subscriptionRequest->getSubscriptionQosPtr();
-    return qosPtr->getPublicationTtlMs();
+    return subscriptionRequest->getQos()->getPublicationTtlMs();
 }
 
 void PublicationManager::sendPublicationError(
@@ -798,11 +798,10 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // See if the publication is needed
-        const SubscriptionQos* qos = subscriptionRequest->getSubscriptionQosPtr();
+        const std::shared_ptr<SubscriptionQos> qos = subscriptionRequest->getQos();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationInterval = SubscriptionUtil::getPeriodicPublicationInterval(
-                subscriptionRequest->getQosVariant());
+        std::int64_t publicationInterval = SubscriptionUtil::getPeriodicPublicationInterval(qos);
 
         // check if the subscription qos needs a periodic publication
         if (publicationInterval > 0) {
@@ -889,7 +888,7 @@ bool PublicationManager::isPublicationAlreadyScheduled(const std::string& subscr
 
 std::int64_t PublicationManager::getTimeUntilNextPublication(
         std::shared_ptr<Publication> publication,
-        Variant qos)
+        const std::shared_ptr<SubscriptionQos> qos)
 {
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     // Check the last publication time against the min interval

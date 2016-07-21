@@ -114,10 +114,10 @@ public:
 
     void invokeSubscriptionCallback(const std::string& subscribeToName,
                                       std::shared_ptr<ISubscriptionCallback> callback,
-                                      const Variant& qosVariant,
+                                      std::shared_ptr<SubscriptionQos>& qos,
                                       SubscriptionRequest& subscriptionRequest) {
         std::ignore = subscribeToName;
-        std::ignore = qosVariant;
+        std::ignore = qos;
         std::ignore = subscriptionRequest;
 
         std::shared_ptr<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>> typedCallback =
@@ -257,7 +257,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    OnChangeSubscriptionQos qos;
+    auto qos = std::make_shared<OnChangeSubscriptionQos>();
     connector->subscribeToLocationUpdateWithSpeedBroadcast(mockListener, qos);
 
     // Wait for a subscription message to arrive

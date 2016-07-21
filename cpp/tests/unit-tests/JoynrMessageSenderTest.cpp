@@ -193,12 +193,12 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     std::int64_t period = 2000;
     std::int64_t validity = 100000;
     std::int64_t alert = 4000;
-    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(validity, period, alert));
+    auto qos = std::make_shared<PeriodicSubscriptionQos>(validity, period, alert);
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId("subscriptionId");
     subscriptionRequest.setSubscribeToName("attributeName");
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
 
     JoynrMessage message = messageFactory.createSubscriptionRequest(
                 senderID,
@@ -223,7 +223,7 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
 
     std::int64_t minInterval = 2000;
     std::int64_t validity = 100000;
-    OnChangeSubscriptionQos qos{validity, minInterval};
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(validity, minInterval);
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filter;
@@ -231,7 +231,7 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     subscriptionRequest.setFilterParameters(filter);
     subscriptionRequest.setSubscriptionId("subscriptionId");
     subscriptionRequest.setSubscribeToName("broadcastName");
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
 
     JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
                 senderID,

@@ -72,7 +72,7 @@ const SubscriptionQos* SubscriptionRequest::getSubscriptionQosPtr()
 
 bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const
 {
-    bool equal = getQosVariant() == subscriptionRequest.getQosVariant();
+    bool equal = *qos == *(subscriptionRequest.qos);
     return subscriptionId == subscriptionRequest.getSubscriptionId() &&
            subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
 }

@@ -347,7 +347,7 @@ protected:
                 ->build();
 
         std::int64_t minInterval_ms = 50;
-        OnChangeSubscriptionQos subscriptionQos(
+        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                     500000,   // validity_ms
                     minInterval_ms);  // minInterval_ms
 
@@ -372,7 +372,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     testOneShotBroadcastSubscription(expectedTestEnum,
                                  [](tests::testProxy* testProxy,
                                     std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
-                                    const OnChangeSubscriptionQos& subscriptionQos) {
+                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos) {
                                     testProxy->subscribeToBroadcastWithEnumOutputBroadcast(subscriptionListener, subscriptionQos);
                                  },
                                  &tests::testProvider::fireBroadcastWithEnumOutput,
@@ -385,7 +385,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
     testOneShotBroadcastSubscription(expectedByteBuffer,
                                  [](tests::testProxy* testProxy,
                                     std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
-                                    const OnChangeSubscriptionQos& subscriptionQos) {
+                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos) {
                                     testProxy->subscribeToBroadcastWithByteBufferParameterBroadcast(subscriptionListener, subscriptionQos);
                                  },
                                  &tests::testProvider::fireBroadcastWithByteBufferParameter,
@@ -436,7 +436,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithFiltering) {
     testOneShotBroadcastSubscriptionWithFiltering(subscriptionListener,
                                      [](tests::testProxy* testProxy,
                                         std::shared_ptr<joynr::ISubscriptionListener<std::string, std::vector<std::string> , std::vector<joynr::tests::testTypes::TestEnum::Enum>, joynr::types::TestTypes::TEverythingStruct, std::vector<joynr::types::TestTypes::TEverythingStruct> > > subscriptionListener,
-                                        const OnChangeSubscriptionQos& subscriptionQos) {
+                                        std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos) {
                                         joynr::tests::TestBroadcastWithFilteringBroadcastFilterParameters filterParameters;
                                         testProxy->subscribeToBroadcastWithFilteringBroadcast(filterParameters, subscriptionListener, subscriptionQos);
                                      },
@@ -500,7 +500,7 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                                                ->build());
 
     std::int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -526,7 +526,7 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // update subscription, much longer minInterval_ms
-    subscriptionQos.setMinIntervalMs(5000);
+    subscriptionQos->setMinIntervalMs(5000);
     testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
@@ -587,7 +587,7 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                                ->build());
 
     std::int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -655,7 +655,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                                ->build());
 
     std::int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -722,7 +722,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
                                                ->build());
 
     std::int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -795,7 +795,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                                ->build());
 
     std::int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -873,7 +873,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                                ->build());
 
     std::int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -950,7 +950,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
                                                ->build());
 
     std::int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -1036,7 +1036,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                                                ->build());
 
     std::int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 

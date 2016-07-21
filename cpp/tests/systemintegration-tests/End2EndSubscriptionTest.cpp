@@ -166,7 +166,7 @@ protected:
                 ->build();
 
         std::int64_t minInterval_ms = 50;
-        OnChangeSubscriptionQos subscriptionQos(
+        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                     500000,   // validity_ms
                     minInterval_ms);  // minInterval_ms
 
@@ -190,7 +190,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute) {
     testOneShotAttributeSubscription(expectedTestEnum,
                                  [](tests::testProxy* testProxy,
                                     std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
-                                    const OnChangeSubscriptionQos& subscriptionQos) {
+                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos) {
                                     testProxy->subscribeToEnumAttribute(subscriptionListener, subscriptionQos);
                                  },
                                  &tests::testProvider::setEnumAttribute,
@@ -203,7 +203,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
     testOneShotAttributeSubscription(expectedByteBuffer,
                                  [](tests::testProxy* testProxy,
                                     std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
-                                    const OnChangeSubscriptionQos& subscriptionQos) {
+                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos) {
                                     testProxy->subscribeToByteBufferAttribute(subscriptionListener, subscriptionQos);
                                  },
                                  &tests::testProvider::setByteBufferAttribute,

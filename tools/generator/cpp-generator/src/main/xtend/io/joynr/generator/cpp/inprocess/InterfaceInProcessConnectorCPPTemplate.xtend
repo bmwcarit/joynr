@@ -262,7 +262,7 @@ bool «className»::usesClusterController() const{
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						SubscriptionUtil::getVariant(*subscriptionQos),
+						subscriptionQos,
 						subscriptionRequest);
 				JOYNR_LOG_DEBUG(logger, "Registered subscription: {}", subscriptionRequest.toString());
 				assert(address);
@@ -441,7 +441,7 @@ bool «className»::usesClusterController() const{
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					Variant::make<OnChangeSubscriptionQos>(*subscriptionQos),
+					subscriptionQos,
 					subscriptionRequest);
 		JOYNR_LOG_DEBUG(logger, "Registered broadcast subscription: {}", subscriptionRequest.toString());
 		assert(address);

@@ -35,7 +35,7 @@ bool BroadcastSubscriptionRequest::operator==(
         const BroadcastSubscriptionRequest& subscriptionRequest) const
 {
 
-    bool equal = getQosVariant() == subscriptionRequest.getQosVariant() &&
+    bool equal = *(getQos()) == *(subscriptionRequest.getQos()) &&
                  getFilterParameters() == subscriptionRequest.getFilterParameters();
     return getSubscriptionId() == subscriptionRequest.getSubscriptionId() &&
            getSubscribeToName() == subscriptionRequest.getSubscribeToName() && equal;

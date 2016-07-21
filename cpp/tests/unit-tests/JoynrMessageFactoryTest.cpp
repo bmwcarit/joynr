@@ -216,11 +216,11 @@ TEST_F(JoynrMessageFactoryTest, createPublication)
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest)
 {
-    Variant subscriptionQos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos());
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId("subscriptionId");
     subscriptionRequest.setSubscribeToName("attributeName");
-    subscriptionRequest.setQosVariant(subscriptionQos);
+    subscriptionRequest.setQos(subscriptionQos);
     JoynrMessage joynrMessage = messageFactory.createSubscriptionRequest(
             senderID, receiverID, qos, subscriptionRequest);
     checkHeaderCreatorFromTo(joynrMessage);

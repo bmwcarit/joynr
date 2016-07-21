@@ -103,15 +103,15 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     std::int64_t period_ms = 100;
     std::int64_t validity_ms = 500;
     std::int64_t alertInterval_ms = 2000;
-    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
+    auto qos = std::make_shared<PeriodicSubscriptionQos>(
                         validity_ms,
                         period_ms,
-                        alertInterval_ms));
+                        alertInterval_ms);
 
     // will be deleted by the publication manager
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -140,14 +140,14 @@ TEST_F(PublicationManagerTest, stop_publications) {
     std::int64_t period_ms = 100;
     std::int64_t validity_ms = 10000;
     std::int64_t alertInterval_ms = 1000;
-    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
+    auto qos = std::make_shared<PeriodicSubscriptionQos>(
                         validity_ms,
                         period_ms,
-                        alertInterval_ms));
+                        alertInterval_ms);
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
 
     publicationManager.add(
                 senderId,
@@ -183,14 +183,14 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     std::int64_t period_ms = 100;
     std::int64_t validity_ms = 10000;
     std::int64_t alertInterval_ms = 1000;
-    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
+    auto qos = std::make_shared<PeriodicSubscriptionQos>(
                         validity_ms,
                         period_ms,
-                        alertInterval_ms));
+                        alertInterval_ms);
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
 
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
     std::this_thread::sleep_for(std::chrono::milliseconds(80));
@@ -251,13 +251,13 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     //SubscriptionQos
     std::int64_t minInterval_ms = 50;
     std::int64_t validity_ms = 500;
-    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(
                         validity_ms,
-                        minInterval_ms));
+                        minInterval_ms);
 
     // will be deleted by the publication manager
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
 
@@ -313,13 +313,13 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     //SubscriptionQos
     std::int64_t minInterval_ms = 500;
     std::int64_t validity_ms = -1; //no expiry date -> infinite subscription
-    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(
                         validity_ms,
-                        minInterval_ms));
+                        minInterval_ms);
 
     // will be deleted by the publication manager
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -383,12 +383,12 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     //SubscriptionQos
     std::int64_t minInterval_ms = 500;
     std::int64_t validity_ms = 600;
-    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(
                         validity_ms,
-                        minInterval_ms));
+                        minInterval_ms);
 
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -473,14 +473,13 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     //SubscriptionQos
     std::int64_t minInterval_ms = 100;
     std::int64_t validity_ms = 600;
-    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(validity_ms,minInterval_ms);
 
     std::int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
-    qos.setExpiryDateMs(now + 5000);
+    qos->setExpiryDateMs(now + 5000);
 
-    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(qosVariant);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -504,9 +503,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     //now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // will be deleted by the publication manager
 
-    qos.setMinIntervalMs(minInterval_ms + 500);
-    qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
-    subscriptionRequest.setQosVariant(qosVariant);
+    qos->setMinIntervalMs(minInterval_ms + 500);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
 
@@ -579,13 +577,12 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     std::int64_t testRelExpiryDate = 500;
     std::int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
     std::int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    qos.setExpiryDateMs(testAbsExpiryDate);
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(validity_ms, minInterval_ms);
+    qos->setExpiryDateMs(testAbsExpiryDate);
 
-    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(qosVariant);
+    subscriptionRequest.setQos(qos);
 
     JOYNR_LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -597,9 +594,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // extend the expiry date
-    qos.setExpiryDateMs(testAbsExpiryDate + 1000);
-    qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
-    subscriptionRequest.setQosVariant(qosVariant);
+    qos->setExpiryDateMs(testAbsExpiryDate + 1000);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -671,13 +667,12 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     std::int64_t testRelExpiryDate = 500 + testExpiryDate_shift;
     std::int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
     std::int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(validity_ms, minInterval_ms);
 
-    qos.setExpiryDateMs(testAbsExpiryDate);
+    qos->setExpiryDateMs(testAbsExpiryDate);
 
-    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(qosVariant);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -691,9 +686,8 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // reduce the expiry date
-    qos.setExpiryDateMs(testAbsExpiryDate - testExpiryDate_shift);
-    qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
-    subscriptionRequest.setQosVariant(qosVariant);
+    qos->setExpiryDateMs(testAbsExpiryDate - testExpiryDate_shift);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -781,13 +775,13 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     //SubscriptionQos
     std::int64_t minInterval_ms = 100;
     std::int64_t validity_ms = 600;
-    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(validity_ms, minInterval_ms);
 
     std::int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
-    qos.setExpiryDateMs(now + 5000);
+    qos->setExpiryDateMs(now + 5000);
 
     subscriptionRequest.setSubscribeToName(broadcastName);
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -808,8 +802,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     //now, let's update the subscription an check if the provided data is correctly processed by the PublicationManager
 
-    qos.setMinIntervalMs(newMinInterval);
-    subscriptionRequest.setQosVariant(qos);
+    qos->setMinIntervalMs(newMinInterval);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
 
@@ -881,12 +875,12 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     std::int64_t testRelExpiryDate = 500;
     std::int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
     std::int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(validity_ms,minInterval_ms);
 
-    qos.setExpiryDateMs(testAbsExpiryDate);
+    qos->setExpiryDateMs(testAbsExpiryDate);
 
     subscriptionRequest.setSubscribeToName(broadcastName);
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "add broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
 
@@ -898,8 +892,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // extend the expiry date
-    qos.setExpiryDateMs(testAbsExpiryDate + 1000);
-    subscriptionRequest.setQosVariant(qos);
+    qos->setExpiryDateMs(testAbsExpiryDate + 1000);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -965,12 +959,12 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     std::int64_t testRelExpiryDate = 500 + testExpiryDate_shift;
     std::int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
     std::int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(validity_ms, minInterval_ms);
 
-    qos.setExpiryDateMs(testAbsExpiryDate);
+    qos->setExpiryDateMs(testAbsExpiryDate);
 
     subscriptionRequest.setSubscribeToName(broadcastName);
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -981,8 +975,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // reduce the expiry date
-    qos.setExpiryDateMs(testAbsExpiryDate - testExpiryDate_shift);
-    subscriptionRequest.setQosVariant(qos);
+    qos->setExpiryDateMs(testAbsExpiryDate - testExpiryDate_shift);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -1037,14 +1031,14 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     //SubscriptionQos
     std::int64_t minInterval_ms = 1;
     std::int64_t validity_ms = 100;
-    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(
                         validity_ms,
-                        minInterval_ms));
+                        minInterval_ms);
 
     // will be deleted by the publication manager
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQosVariant(qos);
+    subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -1169,7 +1163,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 //    std::int64_t period_ms = 100;
 //    std::int64_t validity_ms = 1000;
 //    std::int64_t alertInterval_ms = 1000;
-//    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
+//    auto qos = std::make_shared<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
 //                        validity_ms,
 //                        period_ms,
 //                        alertInterval_ms));
@@ -1221,7 +1215,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 //    std::int64_t period_ms = 100;
 //    std::int64_t validity_ms = 1000;
 //    std::int64_t alertInterval_ms = 1000;
-//    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
+//    auto qos = std::make_shared<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
 //                        validity_ms,
 //                        period_ms,
 //                        alertInterval_ms));

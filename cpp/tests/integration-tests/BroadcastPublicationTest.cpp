@@ -66,13 +66,13 @@ public:
         request.setSubscribeToName("locationUpdateSelective");
         request.setSubscriptionId(subscriptionId);
 
-        OnChangeWithKeepAliveSubscriptionQos qos{
+        auto qos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     80, // validity_ms
                     100, // minInterval_ms
                     200, // maxInterval_ms
                     80 // alertInterval_ms
-        };
-        request.setQosVariant(qos);
+        );
+        request.setQos(qos);
         request.setFilterParameters(filterParameters);
 
         requestCaller->registerBroadcastListener(
@@ -160,11 +160,11 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
 
 TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) {
 
-    OnChangeSubscriptionQos qos{
+    auto qos =  std::make_shared<OnChangeSubscriptionQos>(
                 800, // validity_ms
                 0 // minInterval_ms
-    };
-    request.setQosVariant(qos);
+    );
+    request.setQos(qos);
     request.setFilterParameters(filterParameters);
 
     requestCaller->registerBroadcastListener(

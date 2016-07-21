@@ -47,6 +47,7 @@ class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
 class SubscriptionBroadcastListener;
+class SubscriptionQos;
 
 namespace exceptions
 {
@@ -246,7 +247,8 @@ private:
      *          amount of ms to wait, if interval was too short;
      *          -1 on error
      */
-    std::int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication, Variant qos);
+    std::int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
+                                             const std::shared_ptr<SubscriptionQos> qos);
 
     void saveSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList,
                                      const std::string& storageFilename);
@@ -364,7 +366,7 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         if (!isPublicationAlreadyScheduled(subscriptionId)) {
             std::int64_t timeUntilNextPublication =
-                    getTimeUntilNextPublication(publication, subscriptionRequest->getQosVariant());
+                    getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
 
             if (timeUntilNextPublication == 0) {
                 // Send the publication
@@ -405,7 +407,7 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Only proceed if publication can immediately be sent
         std::int64_t timeUntilNextPublication =
-                getTimeUntilNextPublication(publication, subscriptionRequest->getQosVariant());
+                getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
 
         if (timeUntilNextPublication == 0) {
             // Send the publication
@@ -458,7 +460,7 @@ void PublicationManager::selectiveBroadcastOccurred(
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Only proceed if publication can immediately be sent
         std::int64_t timeUntilNextPublication =
-                getTimeUntilNextPublication(publication, subscriptionRequest->getQosVariant());
+                getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
 
         if (timeUntilNextPublication == 0) {
             // Execute broadcast filters

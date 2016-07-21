@@ -19,8 +19,8 @@
 #include "joynr/SubscriptionUtil.h"
 
 #include <cassert>
+#include <typeinfo>
 
-#include "joynr/Variant.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -30,69 +30,44 @@
 namespace joynr
 {
 
-bool SubscriptionUtil::isOnChangeSubscription(const Variant& qos)
+bool SubscriptionUtil::isOnChangeSubscription(const std::shared_ptr<SubscriptionQos>& qos)
 {
-    return qos.is<OnChangeWithKeepAliveSubscriptionQos>() || qos.is<OnChangeSubscriptionQos>();
+    static const std::type_info& onChangeSubscriptionQosTypeId = typeid(OnChangeSubscriptionQos);
+    static const std::type_info& onChangeWithKeepAliveSubscriptionQosTypeId =
+            typeid(OnChangeWithKeepAliveSubscriptionQos);
+
+    const std::type_info& qosTypeId = typeid(*qos);
+    return qosTypeId == onChangeSubscriptionQosTypeId ||
+           qosTypeId == onChangeWithKeepAliveSubscriptionQosTypeId;
 }
 
-std::int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
+std::int64_t SubscriptionUtil::getAlertInterval(const std::shared_ptr<SubscriptionQos>& qos)
 {
-    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
-        const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
-                &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
-        return subscriptionQosPtr->getAlertAfterIntervalMs();
-    }
-    if (qos.is<PeriodicSubscriptionQos>()) {
-        const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
-        return subscriptionQosPtr->getAlertAfterIntervalMs();
+    if (auto typedQos = std::dynamic_pointer_cast<OnChangeWithKeepAliveSubscriptionQos>(qos)) {
+        return typedQos->getAlertAfterIntervalMs();
+    } else if (auto typedQos = std::dynamic_pointer_cast<PeriodicSubscriptionQos>(qos)) {
+        return typedQos->getAlertAfterIntervalMs();
     }
     return -1;
 }
 
-std::int64_t SubscriptionUtil::getMinInterval(const Variant& qos)
+std::int64_t SubscriptionUtil::getMinInterval(const std::shared_ptr<SubscriptionQos>& qos)
 {
-    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
-        const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
-                &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
-        return subscriptionQosPtr->getMinIntervalMs();
-    }
-    if (qos.is<OnChangeSubscriptionQos>()) {
-        const OnChangeSubscriptionQos* subscriptionQosPtr = &qos.get<OnChangeSubscriptionQos>();
-        return subscriptionQosPtr->getMinIntervalMs();
+    if (auto typedQos = std::dynamic_pointer_cast<OnChangeSubscriptionQos>(qos)) {
+        return typedQos->getMinIntervalMs();
     }
     return -1;
 }
 
-std::int64_t SubscriptionUtil::getPeriodicPublicationInterval(const Variant& qos)
+std::int64_t SubscriptionUtil::getPeriodicPublicationInterval(
+        const std::shared_ptr<SubscriptionQos>& qos)
 {
-    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
-        const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
-                &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
-        return subscriptionQosPtr->getMaxIntervalMs();
-    }
-    if (qos.is<PeriodicSubscriptionQos>()) {
-        const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
-        return subscriptionQosPtr->getPeriodMs();
+    if (auto typedQos = std::dynamic_pointer_cast<OnChangeWithKeepAliveSubscriptionQos>(qos)) {
+        return typedQos->getMaxIntervalMs();
+    } else if (auto typedQos = std::dynamic_pointer_cast<PeriodicSubscriptionQos>(qos)) {
+        return typedQos->getPeriodMs();
     }
     return -1;
-}
-
-Variant SubscriptionUtil::getVariant(const SubscriptionQos& qos)
-{
-    if (dynamic_cast<const OnChangeWithKeepAliveSubscriptionQos*>(&qos) != nullptr) {
-        return Variant::make<OnChangeWithKeepAliveSubscriptionQos>(
-                static_cast<const OnChangeWithKeepAliveSubscriptionQos&>(qos));
-    } else if (dynamic_cast<const OnChangeSubscriptionQos*>(&qos) != nullptr) {
-        return Variant::make<OnChangeSubscriptionQos>(
-                static_cast<const OnChangeSubscriptionQos&>(qos));
-    } else if (dynamic_cast<const PeriodicSubscriptionQos*>(&qos) != nullptr) {
-        return Variant::make<PeriodicSubscriptionQos>(
-                static_cast<const PeriodicSubscriptionQos&>(qos));
-    }
-
-    assert(false);
-    throw exceptions::JoynrRuntimeException(
-            "Exception in SubscriptionUtil: reference to unknown SubscriptionQos has been sent");
 }
 
 } // namespace joynr
