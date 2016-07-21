@@ -27,6 +27,39 @@ RUN dnf update -y \
     && dnf clean all
 
 ###################################################
+# install rapidjson
+###################################################
+
+RUN cd /opt \
+    && git clone https://github.com/miloyip/rapidjson.git rapidjson \
+    && cd rapidjson \
+    && git checkout ab791ae90cbfd2e229be1b5e9db577728cfb3352 \
+    && mkdir build \
+    && cd build \
+    && cmake -DRAPIDJSON_BUILD_DOC=OFF \
+    -DRAPIDJSON_BUILD_EXAMPLES=OFF \
+    -DRAPIDJSON_BUILD_TESTS=OFF \
+    -DRAPIDJSON_BUILD_THIRDPARTY_GTEST=OFF .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf rapidjson
+
+###################################################
+# install muesli
+###################################################
+
+RUN cd /opt \
+    && git clone https://github.com/bmwcarit/muesli.git \
+    && cd muesli \
+    && git checkout 0.1.1 \
+    && mkdir build \
+    && cd build \
+    && cmake -DBUILD_MUESLI_TESTS=Off -DUSE_PLATFORM_RAPIDJSON=On .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf muesli
+
+###################################################
 # install googletest & googlemock
 ###################################################
 
