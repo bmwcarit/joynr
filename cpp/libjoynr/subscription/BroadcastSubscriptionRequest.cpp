@@ -46,12 +46,6 @@ std::string BroadcastSubscriptionRequest::toString() const
     return joynr::serializer::serializeToJson(*this);
 }
 
-void BroadcastSubscriptionRequest::setQosVariant(const OnChangeSubscriptionQos& qos)
-{
-    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
-    SubscriptionRequest::setQosVariant(qosVariant);
-}
-
 BroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
 {
     return filterParameters;

@@ -29,10 +29,7 @@ namespace joynr
 static const bool isSubscriptionRequestRegistered =
         Variant::registerType<SubscriptionRequest>("joynr.SubscriptionRequest");
 
-SubscriptionRequest::SubscriptionRequest()
-        : subscriptionId(),
-          subscribedToName(),
-          qosVariant(Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos()))
+SubscriptionRequest::SubscriptionRequest() : subscriptionId(), subscribedToName(), qos()
 {
     subscriptionId = util::createUuid();
 }
@@ -45,29 +42,6 @@ std::string SubscriptionRequest::getSubscriptionId() const
 std::string SubscriptionRequest::getSubscribeToName() const
 {
     return subscribedToName;
-}
-
-const Variant& SubscriptionRequest::getQosVariant() const
-{
-    return qosVariant;
-}
-
-const SubscriptionQos* SubscriptionRequest::getSubscriptionQosPtr()
-{
-    if (qosVariant.is<OnChangeWithKeepAliveSubscriptionQos>()) {
-        return &qosVariant.get<OnChangeWithKeepAliveSubscriptionQos>();
-    }
-    if (qosVariant.is<PeriodicSubscriptionQos>()) {
-        return &qosVariant.get<PeriodicSubscriptionQos>();
-    }
-    if (qosVariant.is<OnChangeSubscriptionQos>()) {
-        return &qosVariant.get<OnChangeSubscriptionQos>();
-    }
-    if (qosVariant.is<SubscriptionQos>()) {
-        return &qosVariant.get<SubscriptionQos>();
-    }
-
-    return nullptr;
 }
 
 bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const
@@ -85,11 +59,6 @@ void SubscriptionRequest::setSubscriptionId(const std::string& id)
 void SubscriptionRequest::setSubscribeToName(const std::string& attributeName)
 {
     this->subscribedToName = attributeName;
-}
-
-void SubscriptionRequest::setQosVariant(const Variant& qos)
-{
-    this->qosVariant = qos;
 }
 
 std::string SubscriptionRequest::toString() const

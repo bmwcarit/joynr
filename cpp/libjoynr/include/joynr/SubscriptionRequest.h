@@ -55,11 +55,6 @@ public:
     std::string getSubscribeToName() const;
     void setSubscribeToName(const std::string& subscribedToName);
 
-    void setQosVariant(const Variant& qosVariant);
-    const Variant& getQosVariant() const;
-
-    const SubscriptionQos* getSubscriptionQosPtr();
-
     std::string toString() const;
 
     std::shared_ptr<SubscriptionQos> getQos() const;
@@ -82,7 +77,6 @@ protected:
       */
     std::string subscriptionId;
     std::string subscribedToName;
-    Variant qosVariant;
 
     std::shared_ptr<SubscriptionQos> qos;
 };

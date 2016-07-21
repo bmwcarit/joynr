@@ -54,10 +54,6 @@ public:
 
     std::string toString() const;
 
-    // Make sure that broadcast subscriptions are only used with on change qos.
-    // Method from base class is hidden. See below in private section.
-    void setQosVariant(const OnChangeSubscriptionQos& qosVariant);
-
     BroadcastFilterParameters getFilterParameters() const;
     void setFilterParameters(const BroadcastFilterParameters& filterParameters);
 
@@ -89,9 +85,6 @@ public:
     }
 
 private:
-    // Hide method for setting all kinds of QOS derived from base class
-    void setQosVariant(const Variant& qosVariant);
-
     BroadcastFilterParameters filterParameters;
 
     ADD_LOGGER(BroadcastSubscriptionRequest);
