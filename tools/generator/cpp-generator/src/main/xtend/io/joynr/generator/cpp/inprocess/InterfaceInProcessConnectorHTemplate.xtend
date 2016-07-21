@@ -52,7 +52,9 @@ class InterfaceInProcessConnectorHTemplate extends InterfaceTemplate{
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/SubscriptionRequest.h"
+«IF francaIntf.broadcasts.size > 0»
 #include "joynr/BroadcastSubscriptionRequest.h"
+«ENDIF»
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Logger.h"

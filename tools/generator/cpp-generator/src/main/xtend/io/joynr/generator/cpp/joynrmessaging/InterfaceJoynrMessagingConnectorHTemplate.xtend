@@ -58,7 +58,9 @@ class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 #include "joynr/AbstractJoynrMessagingConnector.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/SubscriptionRequest.h"
+«IF francaIntf.broadcasts.size > 0»
 #include "joynr/BroadcastSubscriptionRequest.h"
+«ENDIF»
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 

@@ -66,7 +66,6 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionCallback.h"
-#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/Util.h"
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
