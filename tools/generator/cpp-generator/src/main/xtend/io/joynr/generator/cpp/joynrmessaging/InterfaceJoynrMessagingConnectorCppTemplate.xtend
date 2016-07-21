@@ -237,7 +237,7 @@ bool «className»::usesClusterController() const{
 	«IF attribute.notifiable»
 		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos
+					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos
 		) {
 			joynr::SubscriptionRequest subscriptionRequest;
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
@@ -245,7 +245,7 @@ bool «className»::usesClusterController() const{
 
 		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos,
+					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					std::string& subscriptionId
 		) {
 
@@ -256,19 +256,19 @@ bool «className»::usesClusterController() const{
 
 		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos,
+					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
 		) {
 			JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
 			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
-			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(subscriptionQos));
+			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
 
 			auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnType»>>(subscriptionListener);
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						SubscriptionUtil::getVariant(subscriptionQos),
+						SubscriptionUtil::getVariant(*subscriptionQos),
 						subscriptionRequest);
 			JOYNR_LOG_DEBUG(logger, subscriptionRequest.toString());
 			joynrMessageSender->sendSubscriptionRequest(
@@ -365,11 +365,11 @@ bool «className»::usesClusterController() const{
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					const joynr::OnChangeSubscriptionQos& subscriptionQos
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos
 	«ELSE»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					const joynr::OnChangeSubscriptionQos& subscriptionQos
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos
 	«ENDIF»
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
@@ -383,12 +383,12 @@ bool «className»::usesClusterController() const{
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					const joynr::OnChangeSubscriptionQos& subscriptionQos,
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 					std::string& subscriptionId
 	«ELSE»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					const joynr::OnChangeSubscriptionQos& subscriptionQos,
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 					std::string& subscriptionId
 	«ENDIF»
 	) {
@@ -402,19 +402,19 @@ bool «className»::usesClusterController() const{
 
 	std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::OnChangeSubscriptionQos& subscriptionQos,
+				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest
 	) {
 		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
 		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
-		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(subscriptionQos));
+		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
 
 		auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnTypes»>>(subscriptionListener);
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
+					Variant::make<OnChangeSubscriptionQos>(*subscriptionQos),
 					subscriptionRequest);
 		JOYNR_LOG_DEBUG(logger, subscriptionRequest.toString());
 		joynrMessageSender->sendBroadcastSubscriptionRequest(

@@ -222,7 +222,7 @@ bool «className»::usesClusterController() const{
 	«IF attribute.notifiable»
 		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::SubscriptionQos& subscriptionQos,
+				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 				std::string& subscriptionId)
 		{
 			joynr::SubscriptionRequest subscriptionRequest;
@@ -232,7 +232,7 @@ bool «className»::usesClusterController() const{
 
 		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::SubscriptionQos& subscriptionQos)
+				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos)
 		{
 			joynr::SubscriptionRequest subscriptionRequest;
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
@@ -240,7 +240,7 @@ bool «className»::usesClusterController() const{
 
 		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::SubscriptionQos& subscriptionQos,
+				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 				joynr::SubscriptionRequest& subscriptionRequest)
 		{
 			«IF isEnum(attribute.type)»
@@ -262,7 +262,7 @@ bool «className»::usesClusterController() const{
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						SubscriptionUtil::getVariant(subscriptionQos),
+						SubscriptionUtil::getVariant(*subscriptionQos),
 						subscriptionRequest);
 				JOYNR_LOG_DEBUG(logger, "Registered subscription: {}", subscriptionRequest.toString());
 				assert(address);
@@ -382,11 +382,11 @@ bool «className»::usesClusterController() const{
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::OnChangeSubscriptionQos& subscriptionQos
+				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos
 	«ELSE»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::OnChangeSubscriptionQos& subscriptionQos
+				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos
 	«ENDIF»
 	) {
 		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
@@ -406,12 +406,12 @@ bool «className»::usesClusterController() const{
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::OnChangeSubscriptionQos& subscriptionQos,
+				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				std::string& subscriptionId
 	«ELSE»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::OnChangeSubscriptionQos& subscriptionQos,
+				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				std::string& subscriptionId
 	«ENDIF»
 	) {
@@ -428,7 +428,7 @@ bool «className»::usesClusterController() const{
 
 	std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			const joynr::OnChangeSubscriptionQos& subscriptionQos,
+			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			joynr::BroadcastSubscriptionRequest& subscriptionRequest
 	) {
 		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
@@ -441,7 +441,7 @@ bool «className»::usesClusterController() const{
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
+					Variant::make<OnChangeSubscriptionQos>(*subscriptionQos),
 					subscriptionRequest);
 		JOYNR_LOG_DEBUG(logger, "Registered broadcast subscription: {}", subscriptionRequest.toString());
 		assert(address);
