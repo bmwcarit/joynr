@@ -139,6 +139,7 @@ MATCHER_P2(addressWithChannelId, addressType, channelId, "") {
 }
 
 TEST_F(MessageRouterTest, doNotAddMessageToQueue){
+    joynr::Semaphore semaphore(0);
     const std::string testHttp = "TEST_HTTP";
     const std::string testMqtt = "TEST_MQTT";
     const std::string brokerUri = "brokerUri";
@@ -154,9 +155,11 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     // the message now has a known destination and should be directly routed
     joynrMessage.setHeaderTo(testHttp);
     EXPECT_CALL(*messagingStubFactory, create(addressWithChannelId("http", testHttp))).Times(1).WillOnce(Return(mockMessagingStub));
-    EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
+    ON_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+        .WillByDefault(ReleaseSemaphore(&semaphore));
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 
     // add destination address -> message should be routed
     auto mqttAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
@@ -164,9 +167,11 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     // the message now has a known destination and should be directly routed
     joynrMessage.setHeaderTo(testMqtt);
     EXPECT_CALL(*messagingStubFactory, create(addressWithChannelId("mqtt", testMqtt))).Times(1).WillOnce(Return(mockMessagingStub));
-    EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
+    ON_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+        .WillByDefault(ReleaseSemaphore(&semaphore));
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 }
 
 TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
