@@ -19,14 +19,16 @@
 #ifndef MOCKOBJECTS_H_
 #define MOCKOBJECTS_H_
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <chrono>
 #include <string>
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+#include <functional>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "PrettyPrint.h"
 #include "LibJoynrMockObjects.h"
@@ -51,18 +53,10 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MessageRouter.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
 
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
-#include "joynr/SubscriptionReply.h"
-#include "joynr/SubscriptionStop.h"
-#include "joynr/SubscriptionPublication.h"
-#include "joynr/BroadcastSubscriptionRequest.h"
-
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/vehicle/GpsProvider.h"
 
@@ -90,7 +84,6 @@
 #include "joynr/IMessageSender.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/Directory.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
 #include "joynr/Settings.h"
 #include "joynr/Logger.h"
@@ -99,7 +92,6 @@
 #include "joynr/IProxyBuilder.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
-#include "joynr/Reply.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
@@ -111,6 +103,25 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMediatorRegistrationControlEntryChangedBroadcastFilterParameters.h"
+
+namespace joynr
+{
+class JoynrMessage;
+class RequestCaller;
+class Request;
+class SubscriptionReply;
+class SubscriptionStop;
+class SubscriptionStop;
+class BroadcastSubscriptionRequest;
+
+namespace exceptions
+{
+class JoynrException;
+class JoynrRuntimeException;
+class ProviderRuntimeException;
+class DiscoveryException;
+} // namespace exceptions
+} // namespace joynr
 
 using ::testing::A;
 using ::testing::_;

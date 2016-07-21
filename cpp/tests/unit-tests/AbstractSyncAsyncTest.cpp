@@ -22,6 +22,12 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/Request.h"
+#include "joynr/Reply.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/SubscriptionStop.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/IReplyCaller.h"

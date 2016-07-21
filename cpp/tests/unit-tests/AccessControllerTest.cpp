@@ -17,15 +17,19 @@
  * #L%
  */
 
+#include <tuple>
+#include <string>
+
+#include <gtest/gtest.h>
+
+#include "joynr/Request.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/utils/MockObjects.h"
-#include <gtest/gtest.h>
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/Version.h"
-#include <tuple>
-#include <string>
+
 
 #include "joynr/serializer/Serializer.h"
 

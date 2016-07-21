@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 
 #include "joynr/serializer/Serializer.h"
+#include "joynr/Request.h"
 
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 #include "tests/utils/MockObjects.h"
