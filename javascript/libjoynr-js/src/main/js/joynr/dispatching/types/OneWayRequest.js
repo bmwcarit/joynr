@@ -19,9 +19,8 @@
 
 define("joynr/dispatching/types/OneWayRequest", [
     "joynr/util/UtilInternal",
-    "joynr/util/Typing",
-    "uuid"
-], function(Util, Typing, uuid) {
+    "joynr/util/Typing"
+], function(Util, Typing) {
 
     var defaultSettings = {
         paramDatatypes : [],
