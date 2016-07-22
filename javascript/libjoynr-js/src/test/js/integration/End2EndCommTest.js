@@ -426,10 +426,10 @@ define([
 
                         it("sets the enumArrayAttribute", function(done) {
                             var value = [];
-                            value = [Country.GERMANY, Country.AUSTRIA, Country.AUSTRALIA, Country.CANADA, Country.ITALY];
                             setAttribute("enumArrayAttribute", value).then(function() {
                                 return getAttribute("enumArrayAttribute", value);
                             }).then(function() {
+                                value = [Country.GERMANY, Country.AUSTRIA, Country.AUSTRALIA, Country.CANADA, Country.ITALY];
                                 return setAttribute("enumArrayAttribute", value);
                             }).then(function() {
                                 return getAttribute("enumArrayAttribute", value);
