@@ -92,7 +92,7 @@ define([
             function setAndGetAttribute(attributeName, attributeValue, promiseChain) {
                 return promiseChain.then(function() {
                     var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-                    testAttrType(attributeName, attributeValue).then(function(value) {
+                    return testAttrType(attributeName, attributeValue).then(function(value) {
                         expect(value).toEqual(attributeValue);
                         IntegrationUtils.checkValueAndType(value, attributeValue);
                     }).catch(IntegrationUtils.outputPromiseError);
@@ -151,7 +151,7 @@ define([
 
             function testGetArgumentBack(arg, promiseChain) {
                 return promiseChain.then(function() {
-                    datatypesProxy.getArgumentBack({
+                    return datatypesProxy.getArgumentBack({
                         arg : arg
                     }).then(function(value) {
                         expect(value).toEqual({ returnValue : arg });
