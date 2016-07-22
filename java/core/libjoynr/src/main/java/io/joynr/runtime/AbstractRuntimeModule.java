@@ -18,6 +18,7 @@ package io.joynr.runtime;
  * limitations under the License.
  * #L%
  */
+
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
 import java.util.concurrent.Executors;
@@ -37,13 +38,14 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
-
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.CapabilitiesRegistrarImpl;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
+import io.joynr.capabilities.StaticCapabilitiesProvisioningModule;
+import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.DispatcherImpl;
@@ -61,7 +63,6 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JsonMessageSerializerModule;
-import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -82,19 +83,25 @@ import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.MqttAddress;
 
 abstract class AbstractRuntimeModule extends AbstractModule {
+
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
 
     @Override
     protected void configure() {
+        requestStaticInjection(CapabilityUtils.class,
+                               RpcUtils.class,
+                               ArbitratorFactory.class,
+                               JoynrDelayMessageException.class,
+                               JoynrAppenderManagerFactory.class);
+
         install(new JsonMessageSerializerModule());
         install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)
                                           .build(ProxyInvocationHandlerFactory.class));
+        install(new JoynrMessageScopeModule());
 
         messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
         }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
@@ -127,14 +134,12 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(ParticipantIdStorage.class).to(PropertiesFileParticipantIdStorage.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
-
-        requestStaticInjection(CapabilityUtils.class, RpcUtils.class, JoynrAppenderManagerFactory.class);
+        install(new StaticCapabilitiesProvisioningModule());
 
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
-        requestStaticInjection(ArbitratorFactory.class, JoynrDelayMessageException.class);
     }
 
     @Provides
@@ -142,33 +147,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS)
     Address getDispatcherAddress() {
         return new InProcessAddress();
-    }
-
-    @Provides
-    @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS)
-    Address getCapabilitiesDirectoryAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
-                                            @Named(MessagingPropertyKeys.CAPABILITYDIRECTORYURL) String deprecatedCapabilityDirectoryUrl,
-                                            @Named(MessagingPropertyKeys.CHANNELID) String channelId,
-                                            @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId) {
-        // deprecated: will be removed by 2016-12-31
-        if (deprecatedCapabilityDirectoryUrl != null && deprecatedCapabilityDirectoryUrl.length() > 0) {
-            return getAddress(deprecatedCapabilityDirectoryUrl, channelId, capabilitiesDirectoryChannelId);
-        }
-        return getAddress(discoveryDirectoryUrl, channelId, capabilitiesDirectoryChannelId);
-    }
-
-    @Provides
-    @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS)
-    Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
-                                             @Named(MessagingPropertyKeys.CAPABILITYDIRECTORYURL) String deprecatedCapabilityDirectoryUrl,
-                                             @Named(MessagingPropertyKeys.CHANNELID) String channelId,
-                                             @com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
-        if (deprecatedCapabilityDirectoryUrl != null && deprecatedCapabilityDirectoryUrl.length() > 0) {
-            return getAddress(deprecatedCapabilityDirectoryUrl, channelId, domainAccessControllerChannelId);
-        }
-        return getAddress(discoveryDirectoryUrl, channelId, domainAccessControllerChannelId);
     }
 
     @Provides
@@ -183,13 +161,4 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         return scheduler;
     }
 
-    private Address getAddress(String serverUrl, String localChannelId, String targetChannelId) {
-        if (localChannelId.equals(targetChannelId)) {
-            return new InProcessAddress();
-        } else if (serverUrl.startsWith("http")) {
-            return new ChannelAddress(serverUrl, targetChannelId);
-        } else {
-            return new MqttAddress(serverUrl, targetChannelId);
-        }
-    }
 }

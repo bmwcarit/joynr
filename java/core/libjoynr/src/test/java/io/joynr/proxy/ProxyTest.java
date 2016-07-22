@@ -26,18 +26,17 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import io.joynr.Async;
-import io.joynr.Sync;
-import io.joynr.runtime.SystemServicesSettings;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,7 +60,12 @@ import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
 
+import io.joynr.Async;
+import io.joynr.JoynrVersion;
+import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.ArbitratorFactory;
+import io.joynr.arbitration.DiscoveryEntryVersionFilter;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.common.ExpiryDate;
 import io.joynr.discovery.LocalDiscoveryAggregator;
@@ -84,6 +88,7 @@ import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.runtime.SystemServicesSettings;
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
@@ -125,6 +130,9 @@ public class ProxyTest {
     @Mock
     private Callback<String> callback;
 
+    @Mock
+    private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
+
     private ProxyBuilderFactory proxyBuilderFactory;
 
     private enum ApplicationErrors {
@@ -148,6 +156,7 @@ public class ProxyTest {
         Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
     }
 
+    @JoynrVersion(major = 0, minor = 0)
     public interface TestInterface extends SyncTestInterface, AsyncTestInterface {
         public static final String INTERFACE_NAME = "TestInterface";
     }
@@ -242,6 +251,19 @@ public class ProxyTest {
 
         discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         messagingQos = new MessagingQos();
+
+        Field discoveryEntryVersionFilterField = ArbitratorFactory.class.getDeclaredField("discoveryEntryVersionFilter");
+        discoveryEntryVersionFilterField.setAccessible(true);
+        discoveryEntryVersionFilterField.set(ArbitratorFactory.class, discoveryEntryVersionFilter);
+
+        doAnswer(new Answer<Set<DiscoveryEntry>>() {
+            @Override
+            public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
+                return (Set<DiscoveryEntry>) invocation.getArguments()[1];
+            }
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                    Mockito.<Set<DiscoveryEntry>> any(),
+                                                    Mockito.<Map<String, Set<Version>>> any());
     }
 
     private <T> ProxyBuilderDefaultImpl<T> getProxyBuilder(final Class<T> interfaceClass) {
@@ -281,8 +303,8 @@ public class ProxyTest {
                                                          Mockito.<String> any(),
                                                          Mockito.<Request> any(),
                                                          Mockito.<SynchronizedReplyCaller> any(),
-                                                         Mockito.anyLong())).thenReturn(new Reply(requestReplyId,
-                                                                                                  "Answer"));
+                                                         Mockito.<MessagingQos> any()))
+               .thenReturn(new Reply(requestReplyId, "Answer"));
 
         ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
         TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -299,7 +321,7 @@ public class ProxyTest {
                                                          Mockito.<String> any(),
                                                          Mockito.<Request> any(),
                                                          Mockito.<SynchronizedReplyCaller> any(),
-                                                         Mockito.anyLong()))
+                                                         Mockito.<MessagingQos> any()))
                .thenReturn(new Reply(requestReplyId, new ApplicationException(ApplicationErrors.ERROR_VALUE_2,
                                                                               "syncMethodCallApplicationException")));
 
@@ -342,7 +364,7 @@ public class ProxyTest {
         }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
                                                  Mockito.<String> any(),
                                                  Mockito.<Request> any(),
-                                                 Mockito.anyLong());
+                                                 Mockito.<MessagingQos> any());
         final Future<String> future = proxy.asyncMethod(callback);
 
         // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
@@ -381,7 +403,7 @@ public class ProxyTest {
         }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
                                                  Mockito.<String> any(),
                                                  Mockito.<Request> any(),
-                                                 Mockito.anyLong());
+                                                 Mockito.<MessagingQos> any());
 
         CallbackWithModeledError<String, Enum<?>> callbackWithApplicationException = Mockito.mock(CallbackWithModeledError.class);
         final Future<String> future = proxy.asyncMethodWithApplicationError(callbackWithApplicationException);
@@ -427,7 +449,7 @@ public class ProxyTest {
         }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
                                                  Mockito.<String> any(),
                                                  Mockito.<Request> any(),
-                                                 Mockito.anyLong());
+                                                 Mockito.<MessagingQos> any());
 
         boolean exceptionThrown = false;
         String reply = "";
@@ -454,9 +476,9 @@ public class ProxyTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
-                                                                              expiryDate,
-                                                                              publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
+                                                                               .setExpiryDateMs(expiryDate)
+                                                                               .setPublicationTtlMs(publicationTtl_ms);
 
         proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class), subscriptionQos);
 
@@ -477,9 +499,9 @@ public class ProxyTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
-                                                                              expiryDate,
-                                                                              publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
+                                                                               .setExpiryDateMs(expiryDate)
+                                                                               .setPublicationTtlMs(publicationTtl_ms);
 
         LocationUpdateSelectiveBroadcastFilterParameters filterParameter = new LocationUpdateSelectiveBroadcastFilterParameters();
         String subscriptionId = proxy.subscribeToLocationUpdateSelectiveBroadcast(mock(LocationUpdateSelectiveBroadcastListener.class),
@@ -511,9 +533,9 @@ public class ProxyTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
-                                                                              expiryDate,
-                                                                              publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
+                                                                               .setExpiryDateMs(expiryDate)
+                                                                               .setPublicationTtlMs(publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
                                                                          subscriptionQos);
@@ -543,9 +565,9 @@ public class ProxyTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
-                                                                              expiryDate,
-                                                                              publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
+                                                                               .setExpiryDateMs(expiryDate)
+                                                                               .setPublicationTtlMs(publicationTtl_ms);
 
         String subscriptionId = UUID.randomUUID().toString();
         String subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
@@ -573,7 +595,9 @@ public class ProxyTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
+                                                                       .setExpiryDateMs(expiryDate)
+                                                                       .setPublicationTtlMs(publicationTtl_ms);
 
         abstract class BooleanSubscriptionListener implements AttributeSubscriptionListener<Boolean> {
         }
@@ -607,7 +631,9 @@ public class ProxyTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
+                                                                       .setExpiryDateMs(expiryDate)
+                                                                       .setPublicationTtlMs(publicationTtl_ms);
 
         abstract class BooleanSubscriptionListener implements AttributeSubscriptionListener<Boolean> {
         }

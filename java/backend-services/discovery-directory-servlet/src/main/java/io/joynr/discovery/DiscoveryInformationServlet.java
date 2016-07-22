@@ -1,20 +1,5 @@
 package io.joynr.discovery;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.inject.Singleton;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.inject.Inject;
-
 /*
  * #%L
  * %%
@@ -34,6 +19,20 @@ import com.google.inject.Inject;
  * #L%
  */
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.inject.Singleton;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.inject.Inject;
 import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.directory.Persisted;
 import io.joynr.servlet.JoynrWebServlet;
@@ -44,8 +43,8 @@ import joynr.types.ProviderScope;
 @JoynrWebServlet(value = "/capabilities/")
 public class DiscoveryInformationServlet extends HttpServlet {
     private static final long serialVersionUID = 8839103126167589803L;
-    private transient DiscoveryEntryStore discoveryEntryStore;
-    transient private Gson gson = new GsonBuilder().create();
+    private final transient DiscoveryEntryStore discoveryEntryStore;
+    private final transient Gson gson = new GsonBuilder().create();
 
     @Inject
     public DiscoveryInformationServlet(@Persisted DiscoveryEntryStore discoveryEntryStore) {
@@ -53,22 +52,29 @@ public class DiscoveryInformationServlet extends HttpServlet {
     }
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-        Set<DiscoveryEntry> globalDiscoveryEntries = new HashSet<DiscoveryEntry>();
-        Set<DiscoveryEntry> allDiscoveryEntries = discoveryEntryStore.getAllDiscoveryEntries();
-        for (DiscoveryEntry discoveryEntry : allDiscoveryEntries) {
-            if (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL) {
-                try {
-                    globalDiscoveryEntries.add(discoveryEntry);
-                } catch (Exception e) {
-                    log("error adding channel information", e);
-                }
-            }
-        }
-        out.println(gson.toJson(globalDiscoveryEntries));
-    }
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		response.setContentType("text/html");
+		PrintWriter out;
+		try {
+			out = response.getWriter();
+		} catch (Exception e) {
+			log("error getting writer", e);
+			return;
+		}
+
+		Set<DiscoveryEntry> globalDiscoveryEntries = new HashSet<>();
+		Set<DiscoveryEntry> allDiscoveryEntries = discoveryEntryStore.getAllDiscoveryEntries();
+		for (DiscoveryEntry discoveryEntry : allDiscoveryEntries) {
+			if (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL) {
+				try {
+					globalDiscoveryEntries.add(discoveryEntry);
+				} catch (Exception e) {
+					log("error adding channel information", e);
+				}
+			}
+		}
+		out.println(gson.toJson(globalDiscoveryEntries));
+	}
 
     @Override
     public void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -79,11 +85,15 @@ public class DiscoveryInformationServlet extends HttpServlet {
             removed = discoveryEntryStore.remove(query[1]);
         }
         response.setStatus(200);
-        PrintWriter out = response.getWriter();
-        if (removed) {
-            out.println("OK");
-        } else {
-            out.println("NOK");
+        try {
+            PrintWriter out = response.getWriter();
+            if (removed) {
+                out.println("OK");
+            } else {
+                out.println("NOK");
+            }
+        } catch (Exception e) {
+            log("error getting writer", e);
         }
     }
 

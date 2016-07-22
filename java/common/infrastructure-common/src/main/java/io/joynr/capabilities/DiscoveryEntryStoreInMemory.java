@@ -194,7 +194,6 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
         return lookup(domains, interfaceName, DiscoveryQos.NO_MAX_AGE);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName, long cacheMaxAge) {
         ArrayList<DiscoveryEntry> capabilitiesList = new ArrayList<DiscoveryEntry>();

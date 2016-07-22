@@ -63,17 +63,36 @@ public class HttpBridgeEndpointRegistryClient implements HttpBridgeRegistryClien
 
     private final ScheduledExecutorService scheduledExecutorService;
 
+    public static class EndpointRegistryUriHolder {
+
+        public EndpointRegistryUriHolder() {
+        }
+
+        public EndpointRegistryUriHolder(String endpointRegistryUri) {
+            this.endpointRegistryUri = endpointRegistryUri;
+        }
+
+        @Inject(optional = true)
+        @Named(JeeIntegrationPropertyKeys.JEE_INTEGRATION_ENDPOINTREGISTRY_URI)
+        private String endpointRegistryUri;
+
+        public String get() {
+            return endpointRegistryUri;
+        }
+
+    }
+
     @Inject
     public HttpBridgeEndpointRegistryClient(HttpClient httpClient,
-                                            @Named(JeeIntegrationPropertyKeys.JEE_INTEGRATION_ENDPOINTREGISTRY_URI) String endpointRegistryUri,
+                                            EndpointRegistryUriHolder endpointRegistryUriHolder,
                                             @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService) {
         if (LOG.isDebugEnabled()) {
             LOG.debug(format("Initialising HTTP Bridge Endpoint Registry Client with: %s and %s.",
                              httpClient,
-                             endpointRegistryUri));
+                             endpointRegistryUriHolder.get()));
         }
         this.httpClient = httpClient;
-        this.endpointRegistryUri = endpointRegistryUri;
+        this.endpointRegistryUri = endpointRegistryUriHolder.get();
         this.scheduledExecutorService = scheduledExecutorService;
     }
 

@@ -52,6 +52,7 @@ import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.dispatching.RequestReplyManager;
@@ -147,6 +148,7 @@ public class RpcStubbingTest {
     // private String interfaceName;
     private String fromParticipantId;
     private String toParticipantId;
+    private final MessagingQos messagingQos = new MessagingQos(DEFAULT_TTL);
 
     private Injector injector;
 
@@ -179,6 +181,7 @@ public class RpcStubbingTest {
                                             @Override
                                             protected void configure() {
                                                 requestStaticInjection(RpcUtils.class);
+                                                install(new JoynrMessageScopeModule());
                                                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
                                                 messagingStubFactory = MapBinder.newMapBinder(binder(),
                                                                                               new TypeLiteral<Class<? extends Address>>() {
@@ -198,7 +201,7 @@ public class RpcStubbingTest {
                                                  eq(toParticipantId),
                                                  any(Request.class),
                                                  any(SynchronizedReplyCaller.class),
-                                                 eq(DEFAULT_TTL))).thenAnswer(new Answer<Reply>() {
+                                                 eq(messagingQos))).thenAnswer(new Answer<Reply>() {
 
             @Override
             public Reply answer(InvocationOnMock invocation) throws Throwable {
@@ -229,13 +232,12 @@ public class RpcStubbingTest {
             }
         });
 
-        MessagingQos qosSettings = new MessagingQos(DEFAULT_TTL);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
                                                                                                            subscriptionManager);
         connector = joynrMessagingConnectorFactory.create(fromParticipantId,
                                                           Sets.newHashSet(toParticipantId),
-                                                          qosSettings);
+                                                          messagingQos);
 
     }
 
@@ -256,7 +258,7 @@ public class RpcStubbingTest {
                                                     eq(toParticipantId),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(DEFAULT_TTL));
+                                                    eq(messagingQos));
 
         verify(testMock).noParamsNoReturnValue();
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
@@ -282,7 +284,7 @@ public class RpcStubbingTest {
                                                     eq(toParticipantId),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(DEFAULT_TTL));
+                                                    eq(messagingQos));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(2, requestCaptor.getValue().getParamDatatypes().length);
@@ -304,7 +306,7 @@ public class RpcStubbingTest {
                                                     eq(toParticipantId),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(DEFAULT_TTL));
+                                                    eq(messagingQos));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);
@@ -326,7 +328,7 @@ public class RpcStubbingTest {
                                                     eq(toParticipantId),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(DEFAULT_TTL));
+                                                    eq(messagingQos));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);

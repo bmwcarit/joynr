@@ -151,6 +151,7 @@ set(
 set(
     JoynrRuntime_SOURCES
     "libjoynr-runtime/JoynrRuntimeExecutor.cpp"
+    "JoynrRuntime.cpp"
     "libjoynr-runtime/LibJoynrRuntime.cpp"
 )
 

@@ -25,6 +25,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -100,7 +103,8 @@ public class JoynrMessageFactoryTest {
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
                                                                  toParticipantId,
                                                                  request,
-                                                                 expiryDate);
+                                                                 expiryDate,
+                                                                 Collections.<String, String> emptyMap());
         assertEquals(JoynrMessage.MESSAGE_TYPE_REQUEST, message.getType());
 
         assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
@@ -113,11 +117,32 @@ public class JoynrMessageFactoryTest {
     }
 
     @Test
+    public void createRequestWithCustomHeaders() {
+        final Map<String, String> myCustomHeaders = new HashMap<>();
+        final String headerName = "header";
+        final String headerValue = "value";
+        myCustomHeaders.put(headerName, headerValue);
+        JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
+                                                                 toParticipantId,
+                                                                 request,
+                                                                 expiryDate,
+                                                                 myCustomHeaders);
+        assertEquals(JoynrMessage.MESSAGE_TYPE_REQUEST, message.getType());
+
+        final String expectedCustomHeaderName = JoynrMessage.MESSAGE_CUSTOM_HEADER_PREFIX + headerName;
+        assertTrue(message.getHeader().containsKey(expectedCustomHeaderName));
+        Map<String, String> customHeaders = message.getCustomHeaders();
+        assertTrue(customHeaders.size() == 1);
+        assertTrue(customHeaders.containsKey(headerName));
+    }
+
+    @Test
     public void testCreateOneWayRequest() {
         JoynrMessage joynrMessage = joynrMessageFactory.createOneWayRequest(fromParticipantId,
                                                                             toParticipantId,
                                                                             request,
-                                                                            expiryDate);
+                                                                            expiryDate,
+                                                                            Collections.<String, String> emptyMap());
         assertNotNull(joynrMessage);
         assertEquals(JoynrMessage.MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
         assertEquals(fromParticipantId, joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
@@ -129,11 +154,33 @@ public class JoynrMessageFactoryTest {
     }
 
     @Test
+    public void testCreateOneWayRequestWithCustomHeader() {
+        final Map<String, String> myCustomHeaders = new HashMap<>();
+        final String headerName = "header";
+        final String headerValue = "value";
+        myCustomHeaders.put(headerName, headerValue);
+        JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
+                                                                            toParticipantId,
+                                                                            request,
+                                                                            expiryDate,
+                                                                            myCustomHeaders);
+        assertNotNull(message);
+        assertEquals(JoynrMessage.MESSAGE_TYPE_ONE_WAY, message.getType());
+        final String expectedCustomHeaderName = JoynrMessage.MESSAGE_CUSTOM_HEADER_PREFIX + headerName;
+        assertTrue(message.getHeader().containsKey(expectedCustomHeaderName));
+        Map<String, String> customHeaders = message.getCustomHeaders();
+        assertTrue(customHeaders.size() == 1);
+        assertTrue(customHeaders.containsKey(headerName));
+
+    }
+
+    @Test
     public void createReply() {
         JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId,
                                                                toParticipantId,
                                                                reply,
-                                                               ExpiryDate.fromRelativeTtl(TTL));
+                                                               ExpiryDate.fromRelativeTtl(TTL),
+                                                               Collections.<String, String> emptyMap());
 
         assertEquals(JoynrMessage.MESSAGE_TYPE_REPLY, message.getType());
         assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));

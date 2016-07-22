@@ -41,6 +41,7 @@ define([
     var LocalStorageWrapper =
             function(settings) {
                 settings = settings || {};
+                //the local storage wrapper uses the optionally given location
                 var location = settings.location || "./localStorageStorage";
                 var localStorage = new LocalStorage.LocalStorage(location, settings.quota);
                 Util.checkPropertyIfDefined(

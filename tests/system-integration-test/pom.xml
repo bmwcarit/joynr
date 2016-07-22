@@ -21,17 +21,19 @@
 	<groupId>io.joynr.tests</groupId>
 	<artifactId>system-integration-test</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
+	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tests</artifactId>
-		<version>0.18.5</version>
+		<version>0.19.0</version>
 	</parent>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<license.useLicensesConfigFile>true</license.useLicensesConfigFile>
-	</properties>
+	<modules>
+                <module>sit-cpp-app</module>
+                <module>sit-jee-app</module>
+                <module>sit-node-app</module>
+	</modules>
 
 	<build>
 		<resources>
@@ -39,75 +41,5 @@
 				<directory>src/main/model</directory>
 			</resource>
 		</resources>
-
-		<finalName>${project.artifactId}</finalName>
-
-		<plugins>
-			<!-- Add the generated Java and Franca files to the processing of sources -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>src/main/model</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>io.joynr.tools.generator</groupId>
-				<artifactId>joynr-generator-maven-plugin</artifactId>
-				<version>${project.version}</version>
-				<executions>
-					<execution>
-						<id>generate-cpp</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<model>${basedir}/src/main/model</model>
-							<generationLanguage>cpp</generationLanguage>
-							<outputPath>${basedir}/src/main/generated-cpp</outputPath>
-						</configuration>
-					</execution>
-				</executions>
-				<dependencies>
-					<!-- The following part is only required for target language C++ -->
-					<dependency>
-						<groupId>io.joynr.tools.generator</groupId>
-						<artifactId>cpp-generator</artifactId>
-						<version>${project.version}</version>
-					</dependency>
-				</dependencies>
-			</plugin>
-
-			<!-- clean up should remove any generated code as well -->
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>2.5</version>
-				<configuration>
-					<filesets>
-						<!-- The following part is only required for target language C++ -->
-						<fileset>
-							<directory>src/main/generated-cpp</directory>
-							<includes>
-								<include>**</include>
-							</includes>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
-		</plugins>
 	</build>
 </project>

@@ -1,7 +1,9 @@
+/*jslint es5: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +22,12 @@
 define(
         "joynr/provider/ProviderAttribute",
         [
+            "global/Promise",
             "joynr/util/UtilInternal",
             "joynr/util/Typing",
             "joynr/types/TypeRegistrySingleton"
         ],
-        function(Util, Typing, TypeRegistrySingleton) {
+        function(Promise, Util, Typing, TypeRegistrySingleton) {
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
@@ -160,29 +163,30 @@ define(
                      */
                     this.set =
                             function set(value) {
+                                var originalValue;
+                                var that = this;
                                 if (!privateSetterFunc) {
                                     throw new Error(
                                             "no setter function registered for provider attribute");
                                 }
-                                var oldValue = privateGetterFunc();
-                                // call setter function with the same arguments as this function
-                                var result =
-                                        privateSetterFunc(Typing.augmentTypes(
-                                                value,
-                                                typeRegistry,
-                                                attributeType));
-                                var newValue = privateGetterFunc();
-                                if (newValue !== oldValue) {
-                                    if (this.valueChanged !== undefined) {
-                                        this.valueChanged(newValue);
-                                    }
-                                }
-                                if (Util.isPromise(result)) {
-                                    return result.then(function() {
-                                        return [];
-                                    });
-                                }
-                                return [];
+                                return Promise.resolve(privateGetterFunc()).then(
+                                        function(getterValue) {
+                                            originalValue = getterValue;
+                                            return privateSetterFunc(Typing.augmentTypes(
+                                                    value,
+                                                    typeRegistry,
+                                                    attributeType));
+
+                                        }).then(
+                                        function() {
+                                            if (originalValue !== value
+                                                && that.valueChanged instanceof Function) {
+                                                that.valueChanged(value);
+                                            }
+                                        }).then(function() {
+                                    return [];
+                                });
+
                             };
 
                     /**

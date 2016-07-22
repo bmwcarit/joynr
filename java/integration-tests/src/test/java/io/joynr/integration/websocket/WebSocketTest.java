@@ -20,6 +20,7 @@ package io.joynr.integration.websocket;
  */
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.UUID;
 
 import org.junit.After;
@@ -150,7 +151,8 @@ public class WebSocketTest {
         JoynrMessage msg = joynrMessageFactory.createOneWayRequest("fromID",
                                                                    "toID",
                                                                    request,
-                                                                   ExpiryDate.fromRelativeTtl(100000));
+                                                                   ExpiryDate.fromRelativeTtl(100000),
+                                                                   Collections.<String, String> emptyMap());
 
         webSocketMessagingStub.transmit(msg, new FailureAction() {
 

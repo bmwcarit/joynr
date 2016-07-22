@@ -23,6 +23,9 @@ using namespace joynr;
 
 INIT_LOGGER(MockGpsProvider);
 
+const std::uint32_t MockProvider::MAJOR_VERSION = 1337;
+const std::uint32_t MockProvider::MINOR_VERSION = 42;
+
 const std::string& IMockProviderInterface::INTERFACE_NAME()
 {
     static const std::string INTERFACE_NAME("test/interface");

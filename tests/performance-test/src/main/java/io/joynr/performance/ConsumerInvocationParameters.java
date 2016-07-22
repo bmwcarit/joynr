@@ -26,6 +26,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import io.joynr.arbitration.DiscoveryScope;
+
 /**
  * Takes the command line arguments of the application, parses and checks them.
  * The parsed data is provided through getter methods.
@@ -53,6 +55,7 @@ public class ConsumerInvocationParameters {
     private static final String CMDLINE_OPTIONNAME_TESTCASE = "testcase";
     private static final String CMDLINE_OPTIONNAME_STRINGDATALENGTH = "stringdatalength";
     private static final String CMDLINE_OPTIONNAME_BYTEARRAYSIZE = "bytearraysize";
+    private static final String CMDLINE_OPTIONNAME_DISCOVERYSCOPE = "discoveryscope";
 
     private static String domainName = "";
     private static int numberOfRuns = 1;
@@ -61,6 +64,7 @@ public class ConsumerInvocationParameters {
     private static TESTCASE testCase = TESTCASE.SEND_STRING;
     private static int stringDataLength = 10;
     private static int byteArraySize = 100;
+    private static DiscoveryScope discoveryScope = DiscoveryScope.LOCAL_ONLY;
 
     public ConsumerInvocationParameters(String[] args) throws Exception {
         CommandLine commandLine = parseCommandLineArgs(args);
@@ -102,6 +106,10 @@ public class ConsumerInvocationParameters {
         // getParsedOptionValue seems not to work for enumerations.
         testCase = TESTCASE.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_TESTCASE));
         communicationMode = COMMUNICATIONMODE.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_SYNCMODE));
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_DISCOVERYSCOPE)) {
+            discoveryScope = DiscoveryScope.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_DISCOVERYSCOPE));
+        }
     }
 
     private CommandLine parseCommandLineArgs(String[] args) throws ParseException {
@@ -170,6 +178,16 @@ public class ConsumerInvocationParameters {
                                 .desc("Size of byte arrays which are transmitted during the test")
                                 .build());
 
+        options.addOption(Option.builder("ds")
+                                .longOpt(CMDLINE_OPTIONNAME_DISCOVERYSCOPE)
+                                .required(false)
+                                .hasArg()
+                                .argName("discoveryscope")
+                                .type(DiscoveryScope.class)
+                                .desc("Determines the discovery scope. Can be GLOBAL_ONLY, LOCAL_AND_GLOBAL, "
+                                        + "LOCAL_ONLY or LOCAL_THEN_GLOBAL. Default is LOCAL_ONLY.")
+                                .build());
+
         CommandLineParser parser = new DefaultParser();
 
         try {
@@ -207,5 +225,9 @@ public class ConsumerInvocationParameters {
 
     public int getByteArraySize() {
         return byteArraySize;
+    }
+
+    public DiscoveryScope getDiscoveryScope() {
+        return discoveryScope;
     }
 }

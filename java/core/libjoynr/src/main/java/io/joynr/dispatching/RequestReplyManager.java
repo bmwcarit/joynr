@@ -19,18 +19,11 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import java.io.IOException;
 import java.util.Set;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
-import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
-import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.provider.ProviderCallback;
+import io.joynr.messaging.MessagingQos;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -48,24 +41,12 @@ public interface RequestReplyManager {
      *            Request to be send
      * @param ttl_ms
      *            Time to live in milliseconds.
-     * @throws IOException
-     *            in case of I/O error
-     * @throws JsonMappingException
-     *            in case JSON could not be mapped
-     * @throws JsonGenerationException
-     *            in case JSON could not be generated
-     * @throws JoynrMessageNotSentException
-     *            in case message could not be sent
-     * @throws JoynrSendBufferFullException
-     *            in case send buffer is full
      */
 
-    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, long ttl_ms)
-                                                                                                                       throws JoynrSendBufferFullException,
-                                                                                                                       JoynrMessageNotSentException,
-                                                                                                                       JsonGenerationException,
-                                                                                                                       JsonMappingException,
-                                                                                                                       IOException;
+    public void sendRequest(final String fromParticipantId,
+                            final String toParticipantId,
+                            Request request,
+                            MessagingQos qosSettings);
 
     /**
      * Sends a request and blocks the current thread until the response is received or the roundTripTtl is reached. If
@@ -82,25 +63,13 @@ public interface RequestReplyManager {
      * @param ttl_ms
      *            Time to live in milliseconds.
      * @return response object
-     * @throws IOException
-     *            in case of I/O error
-     * @throws JsonMappingException
-     *            in case JSON could not be mapped
-     * @throws JsonGenerationException
-     *            in case JSON could not be generated
-     * @throws JoynrMessageNotSentException
-     *            in case message could not be sent
-     * @throws JoynrSendBufferFullException
-     *            in case send buffer is full
      */
 
     public Object sendSyncRequest(final String fromParticipantId,
                                   final String toParticipantId,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
-                                  long ttl_ms) throws JoynrCommunicationException, JoynrSendBufferFullException,
-                                              JoynrMessageNotSentException, JsonGenerationException,
-                                              JsonMappingException, IOException;
+                                  MessagingQos qosSettings);
 
     /**
      * Send a one way message.
@@ -113,30 +82,12 @@ public interface RequestReplyManager {
      *            The request data tto send to the endpoints
      * @param ttl_ms
      *            Time to live in milliseconds.
-     * @throws IOException
-     *            in case of I/O error
-     * @throws JsonMappingException
-     *            in case of mapping error
-     * @throws JsonGenerationException
-     *            in case JSON could not be generated
-     * @throws JoynrMessageNotSentException
-     *            in case message could not be sent
-     * @throws JoynrSendBufferFullException
-     *            in case send buffer is full
      */
 
     public void sendOneWayRequest(final String fromParticipantId,
                                   final Set<String> toParticipantIds,
                                   OneWayRequest oneWayRequest,
-                                  long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                              JsonGenerationException, JsonMappingException, IOException;
-
-    public void sendReply(final String fromParticipantId, final String toParticipantId, Reply payload, ExpiryDate ttl_ms)
-                                                                                                                         throws JoynrSendBufferFullException,
-                                                                                                                         JoynrMessageNotSentException,
-                                                                                                                         JsonGenerationException,
-                                                                                                                         JsonMappingException,
-                                                                                                                         IOException;
+                                  MessagingQos messagingQos);
 
     public void handleReply(Reply reply);
 

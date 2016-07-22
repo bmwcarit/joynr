@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(performance-test-0.18.5)
+project(performance-test-0.19.0)
 
 # Compile to a bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -12,10 +12,12 @@ include(SetCppStandard)
 include(Sanitizers)
 include(AddClangFormat)
 
+include(GNUInstallDirs)
+
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.18.5 REQUIRED)
+find_package(Joynr 0.19.0 REQUIRED)
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")
@@ -35,7 +37,6 @@ message(STATUS "variable JOYNR_SERVER_MQTT_PORT=" ${JOYNR_SERVER_MQTT_PORT})
 add_definitions(-DJOYNR_MAX_LOG_LEVEL_FATAL)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/performancetest-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/performancetest-provider.settings)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc-default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc-default-messaging.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/cluster-controller/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/common/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/cluster-controller/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings)
@@ -62,6 +63,11 @@ file(GLOB_RECURSE PERFORMANCE_GENERATED_SOURCES
 add_library(performance-generated SHARED
     ${PERFORMANCE_GENERATED_HEADERS}
     ${PERFORMANCE_GENERATED_SOURCES}
+)
+
+install(
+    TARGETS performance-generated
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 target_link_libraries(performance-generated

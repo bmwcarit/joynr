@@ -149,6 +149,16 @@ private:
      */
     void setParticipantId(const std::string& participantId) override;
 
+    /**
+     * @brief Sets the exception that happened during the arbitrationSemaphore
+     *
+     * If the arbitration is not successful the arbitrator uses setError to report
+     * the error via a DiscoveryException.
+     *
+     * @param error The exception that happened during the arbitration
+     */
+    void setArbitrationError(const exceptions::DiscoveryException& error) override;
+
     /*
      * arbitrationFinished is called when the arbitrationStatus is set to successful and the
      * channelId has been set to a non empty string. The implementation differs for
@@ -185,6 +195,7 @@ private:
     ProviderArbitrator* arbitrator;
     Semaphore arbitrationSemaphore;
     std::string participantId;
+    exceptions::DiscoveryException arbitrationError;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     std::int64_t discoveryTimeout;
 
@@ -212,6 +223,7 @@ ProxyBuilder<T>::ProxyBuilder(
           arbitrator(nullptr),
           arbitrationSemaphore(1),
           participantId(""),
+          arbitrationError("Arbitration could not be finished in time."),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
           discoveryTimeout(-1),
           dispatcherAddress(dispatcherAddress),
@@ -224,7 +236,7 @@ template <class T>
 ProxyBuilder<T>::~ProxyBuilder()
 {
     if (arbitrator != nullptr) {
-        arbitrator->removeArbitationListener();
+        arbitrator->removeArbitrationListener();
         // question: it is only safe to delete the arbitrator here, if the proxybuilder will not be
         // deleted
         // before all arbitrations are finished.
@@ -240,7 +252,7 @@ template <class T>
 T* ProxyBuilder<T>::build()
 {
     T* proxy = proxyFactory->createProxy<T>(domain, messagingQos, cached);
-    waitForArbitration(discoveryTimeout);
+    waitForArbitrationAndCheckStatus();
 
     bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
 
@@ -295,8 +307,9 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     // setDiscoveryQos method can be called twice
     assert(!hasArbitrationStarted);
     discoveryTimeout = discoveryQos.getDiscoveryTimeoutMs();
+    joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
     arbitrator = ProviderArbitratorFactory::createArbitrator(
-            domain, T::INTERFACE_NAME(), discoveryProxy, discoveryQos);
+            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
     arbitrationSemaphore.wait();
     arbitrator->setArbitrationListener(this);
     arbitrator->startArbitration();
@@ -330,6 +343,12 @@ void ProxyBuilder<T>::setParticipantId(const std::string& participantId)
 }
 
 template <class T>
+void ProxyBuilder<T>::setArbitrationError(const exceptions::DiscoveryException& error)
+{
+    this->arbitrationError = error;
+}
+
+template <class T>
 void ProxyBuilder<T>::waitForArbitrationAndCheckStatus()
 {
     waitForArbitrationAndCheckStatus(discoveryTimeout);
@@ -342,12 +361,11 @@ void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(std::uint16_t timeout)
     case ArbitrationStatus::ArbitrationSuccessful:
         break;
     case ArbitrationStatus::ArbitrationRunning:
-        waitForArbitration(timeout);
-        waitForArbitrationAndCheckStatus(0);
+        arbitrationSemaphore.waitFor(std::chrono::milliseconds(timeout));
+        waitForArbitrationAndCheckStatus(50);
         break;
     case ArbitrationStatus::ArbitrationCanceledForever:
-        throw exceptions::DiscoveryException(
-                "Arbitration for this interface has not been successful.");
+        throw arbitrationError;
         break;
     }
 }
@@ -362,7 +380,7 @@ template <class T>
 void ProxyBuilder<T>::waitForArbitration(std::uint16_t timeout)
 {
     if (!arbitrationSemaphore.waitFor(std::chrono::milliseconds(timeout))) {
-        throw exceptions::DiscoveryException("Arbitration could not be finished in time.");
+        throw arbitrationError;
     }
     arbitrationSemaphore.notify();
 }

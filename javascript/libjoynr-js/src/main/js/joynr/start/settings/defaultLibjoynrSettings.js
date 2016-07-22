@@ -26,9 +26,13 @@
                 customParameters : [],
                 priority : 1,
                 scope : ProviderScope.LOCAL,
-                onChangeSubscriptions : true
+                supportsOnChangeSubscriptions : true
             },
-            participantId : "CC.DiscoveryProvider.ParticipantId"
+            participantId : "CC.DiscoveryProvider.ParticipantId",
+            providerVersion : {
+                majorVersion : 0,
+                minorVersion : 1
+            }
         };
 
         var routingCapability = {
@@ -38,9 +42,13 @@
                 customParameters : [],
                 priority : 1,
                 scope : ProviderScope.LOCAL,
-                onChangeSubscriptions : true
+                supportsOnChangeSubscriptions : true
             },
-            participantId : "CC.RoutingProvider.ParticipantId"
+            participantId : "CC.RoutingProvider.ParticipantId",
+            providerVersion : {
+                majorVersion : 0,
+                minorVersion : 1
+            }
         };
 
         defaultSettings.capabilities = [

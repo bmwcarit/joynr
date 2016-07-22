@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,26 +26,31 @@ namespace joynr
 ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
         const std::string& domain,
         const std::string& interfaceName,
+        const joynr::types::Version& interfaceVersion,
         joynr::system::IDiscoverySync& discoveryProxy,
         const DiscoveryQos& discoveryQos)
 {
     DiscoveryQos::ArbitrationStrategy strategy = discoveryQos.getArbitrationStrategy();
     switch (strategy) {
     case DiscoveryQos::ArbitrationStrategy::NOT_SET:
-        return new DefaultArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
+        return new DefaultArbitrator(
+                domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
         break;
     case DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT:
-        return new FixedParticipantArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
+        return new FixedParticipantArbitrator(
+                domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
     case DiscoveryQos::ArbitrationStrategy::LOCAL_ONLY:
         throw exceptions::DiscoveryException("Arbitration: Local-only not implemented yet.");
     case DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY:
-        return new QosArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
+        return new QosArbitrator(
+                domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
     case DiscoveryQos::ArbitrationStrategy::KEYWORD:
         if (discoveryQos.getCustomParameters().count("keyword") == 0) {
             throw exceptions::DiscoveryException(
                     "KeywordArbitrator creation failed: keyword not set");
         }
-        return new KeywordArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
+        return new KeywordArbitrator(
+                domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
     default:
         throw exceptions::DiscoveryException("Arbitrator creation failed: Invalid strategy!");
     }

@@ -67,9 +67,6 @@ WebSocketPpClient::WebSocketPpClient(const WebSocketSettings& wsSettings)
 WebSocketPpClient::~WebSocketPpClient()
 {
     close();
-    if (thread.joinable()) {
-        thread.join();
-    }
 }
 
 void WebSocketPpClient::registerReceiveCallback(std::function<void(const std::string&)> callback)
@@ -176,12 +173,17 @@ void WebSocketPpClient::sendBinaryMessage(
 
 void WebSocketPpClient::close()
 {
-    isRunning = false;
-    boost::system::error_code timerError;
-    // ignore errors
-    reconnectTimer.cancel(timerError);
-    if (state == State::Connected) {
-        disconnect();
+    if (isRunning) {
+        isRunning = false;
+        boost::system::error_code timerError;
+        // ignore errors
+        reconnectTimer.cancel(timerError);
+        if (state == State::Connected) {
+            disconnect();
+        }
+        if (thread.joinable()) {
+            thread.join();
+        }
     }
 }
 

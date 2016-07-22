@@ -20,8 +20,16 @@ package io.joynr.dispatching.subscription;
  */
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.pubsub.HeartbeatSubscriptionInformation;
+import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -36,24 +44,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import io.joynr.dispatching.Dispatcher;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
-import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
-import io.joynr.pubsub.HeartbeatSubscriptionInformation;
-import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
@@ -146,11 +141,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     @Override
     public void registerAttributeSubscription(String fromParticipantId,
                                               Set<String> toParticipantIds,
-                                              AttributeSubscribeInvocation request)
-                                                                                   throws JoynrSendBufferFullException,
-                                                                                   JoynrMessageNotSentException,
-                                                                                   JsonGenerationException,
-                                                                                   JsonMappingException, IOException {
+                                              AttributeSubscribeInvocation request) {
         if (!request.hasSubscriptionId()) {
             request.setSubscriptionId(UUID.randomUUID().toString());
         }
@@ -197,12 +188,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     @Override
     public void registerBroadcastSubscription(String fromParticipantId,
                                               Set<String> toParticipantIds,
-                                              BroadcastSubscribeInvocation subscriptionRequest)
-                                                                                               throws JoynrSendBufferFullException,
-                                                                                               JoynrMessageNotSentException,
-                                                                                               JsonGenerationException,
-                                                                                               JsonMappingException,
-                                                                                               IOException {
+                                              BroadcastSubscribeInvocation subscriptionRequest) {
         if (!subscriptionRequest.hasSubscriptionId()) {
             subscriptionRequest.setSubscriptionId(UUID.randomUUID().toString());
         }
@@ -232,9 +218,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     public void unregisterSubscription(String fromParticipantId,
                                        Set<String> toParticipantIds,
                                        String subscriptionId,
-                                       MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                JoynrMessageNotSentException, JsonGenerationException,
-                                                                JsonMappingException, IOException {
+                                       MessagingQos qosSettings) {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
         if (subscriptionState != null) {
             logger.info("Called unregister / unsubscribe on subscription id= " + subscriptionId);

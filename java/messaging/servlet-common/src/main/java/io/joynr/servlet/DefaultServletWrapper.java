@@ -37,12 +37,13 @@ public class DefaultServletWrapper extends HttpServlet {
 
     private static final long serialVersionUID = 5341721660837975446L;
 
+    @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             RequestDispatcher requestDispatcher = getServletContext().getNamedDispatcher("default");
             requestDispatcher.forward(req, resp);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
         }
     }
 }

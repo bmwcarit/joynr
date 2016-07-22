@@ -45,9 +45,8 @@ public class AndroidRobolectricProxyBuilder<T> extends AndroidProxyBuilder<T> {
         try {
             proxy = buildProxy();
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Log.e("JAS", e.toString());
+            Log.e("JAS", e.getMessage(), e);
             publishProgress(e.getMessage());
-            e.printStackTrace();
         }
         return proxy;
     }

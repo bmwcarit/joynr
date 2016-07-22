@@ -123,7 +123,7 @@ public class JoynrApplicationLauncher {
                 try {
                     app.shutdown();
                 } catch (Exception e) {
-                    logger.error("error shutting down app: {} reason: {}", app.getClass(), e.getMessage());
+                    logger.debug("error shutting down app: " + app.getClass(), e);
                 }
             }
             servletReceiver.shutdown(clear);

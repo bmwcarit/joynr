@@ -357,6 +357,181 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             });
         });
 
+        it("callMethodFireAndForgetWithoutParameter", function() {
+           /*
+            * FireAndForget methods do not have a return value and the calling proxy does not receive an answer to a fireAndForget method call.
+            * The attribute attributeFireAndForget is used in fireAndForget method calls to check if the method is called at the provider.
+            * The provider will change the attribute to a (fireAndForget) method specific value which will be checked in the subscription listener.
+            */
+            log("callMethodFireAndForgetWithoutParameter");
+            var spy = jasmine.createSpyObj("spy", [ "onPublication", "onPublicationError" ]);
+            var expected = -1;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50, validity: 60000 });
+            var attributeFireAndForgetValue = -1;
+            var attributeFireAndForgetSubscriptionId = "";
+
+            runs(() => {
+                // set attributeFireAndForget to 0 (it might have been set to the expected value by another test)
+                log("callMethodFireAndForgetWithoutParameter - setAttributeFireAndForget");
+                var args = {
+                    value: 0
+                };
+                testInterfaceProxy.attributeFireAndForget.set(args)
+                .then(() => {
+                    log("callMethodFireAndForgetWithoutParameter - setAttributeFireAndForget - OK");
+
+                    // subscribe to attributeFireAndForget
+                    log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget");
+                    return testInterfaceProxy.attributeFireAndForget.subscribe({
+                            "subscriptionQos": subscriptionQosOnChange,
+                            "onReceive": spy.onPublication,
+                            "onError": spy.onPublicationError
+                        });
+                })
+                .then((subscriptionId) => {
+                    attributeFireAndForgetSubscriptionId = subscriptionId;
+                    log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget subscriptionId = " + attributeFireAndForgetSubscriptionId);
+                })
+                .catch((error) => {
+                    log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget - FAILED: " + error);
+                    expect("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget - FAILED: " + error).toBeFalsy();
+                });
+            });
+
+            waitsFor(() => {
+                return spy.onPublication.callCount > 0;
+            }, "callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget initial Publication", 5000);
+
+            runs(() => {
+                attributeFireAndForgetValue = spy.onPublication.calls[0].args[0];
+                expect(attributeFireAndForgetValue).toBeDefined();
+                expect(attributeFireAndForgetValue).toEqual(0);
+                log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget - OK");
+
+                // call methodFireAndForgetWithoutParameter
+                expected = attributeFireAndForgetValue + 1;
+                spy.onPublication.reset();
+                spy.onPublicationError.reset();
+
+                log("callMethodFireAndForgetWithoutParameter CALL");
+                testInterfaceProxy.methodFireAndForgetWithoutParameter()
+                .catch((error) => {
+                    log("callMethodFireAndForgetWithoutParameter CALL - FAILED: " + error);
+                    expect("callMethodFireAndForgetWithoutParameter CALL - FAILED: " + error).toBeFalsy();
+                });
+            });
+
+            waitsFor(() => {
+                return spy.onPublication.callCount > 0;
+            }, "callMethodFireAndForgetWithoutParameter Publication", 5000);
+
+            runs(() => {
+                attributeFireAndForgetValue = spy.onPublication.calls[0].args[0];
+                expect(attributeFireAndForgetValue).toBeDefined();
+                expect(attributeFireAndForgetValue).toEqual(expected);
+                log("callMethodFireAndForgetWithoutParameter - OK");
+
+                // unsubscribe again
+                log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe");
+                testInterfaceProxy.attributeFireAndForget.unsubscribe({
+                    "subscriptionId": attributeFireAndForgetSubscriptionId
+                })
+                .then(() => {
+                    log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe - OK");
+                    log("callMethodFireAndForgetWithoutParameter - DONE");
+                })
+                .catch((error) => {
+                    log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: " + error);
+                    expect("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: " + error).toBeFalsy();
+                });
+            });
+        });
+
+        it("callMethodFireAndForgetWithInputParameter", function() {
+            log("callMethodFireAndForgetWithInputParameter");
+            var spy = jasmine.createSpyObj("spy", [ "onPublication", "onPublicationError" ]);
+            var expected = -1;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50, validity: 60000 });
+            var attributeFireAndForgetValue = -1;
+            var attributeFireAndForgetSubscriptionId = "";
+
+            runs(() => {
+                // set attributeFireAndForget to 0 (it might have been set to the expected value by another test)
+                log("callMethodFireAndForgetWithInputParameter - setAttributeFireAndForget");
+                var args = {
+                    value: 0
+                };
+                testInterfaceProxy.attributeFireAndForget.set(args)
+                .then(() => {
+                    log("callMethodFireAndForgetWithInputParameter - setAttributeFireAndForget - OK");
+
+                    // subscribe to attributeFireAndForget
+                    log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget");
+                    return testInterfaceProxy.attributeFireAndForget.subscribe({
+                            "subscriptionQos": subscriptionQosOnChange,
+                            "onReceive": spy.onPublication,
+                            "onError": spy.onPublicationError
+                        });
+                })
+                .then((subscriptionId) => {
+                    attributeFireAndForgetSubscriptionId = subscriptionId;
+                    log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget subscriptionId = " + attributeFireAndForgetSubscriptionId);
+                })
+                .catch((error) => {
+                    log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget - FAILED: " + error);
+                    expect("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget - FAILED: " + error).toBeFalsy();
+                });
+            });
+
+            waitsFor(() => {
+                return spy.onPublication.callCount > 0
+            }, "callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget initial Publication", 5000);
+
+            runs(() => {
+                attributeFireAndForgetValue = spy.onPublication.calls[0].args[0];
+                expect(attributeFireAndForgetValue).toBeDefined();
+                expect(attributeFireAndForgetValue).toEqual(0);
+                log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget - OK");
+
+                // call methodFireAndForgetWithInputParameter
+                expected = attributeFireAndForgetValue + 1;
+                spy.onPublication.reset();
+                spy.onPublicationError.reset();
+
+                log("callMethodFireAndForgetWithInputParameter CALL");
+                testInterfaceProxy.methodFireAndForgetWithoutParameter()
+                .catch(() => {
+                    log("callMethodFireAndForgetWithInputParameter CALL - FAILED: " + error);
+                    expect("callMethodFireAndForgetWithInputParameter CALL - FAILED: " + error).toBeFalsy();
+                });
+            });
+
+            waitsFor(() => {
+                return spy.onPublication.callCount > 0;
+            }, "callMethodFireAndForgetWithInputParameter Publication", 5000);
+
+            runs(() => {
+                attributeFireAndForgetValue = spy.onPublication.calls[0].args[0];
+                expect(attributeFireAndForgetValue).toBeDefined();
+                expect(attributeFireAndForgetValue).toEqual(expected);
+                log("callMethodFireAndForgetWithInputParameter - OK");
+
+                // unsubscribe again
+                log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe");
+                testInterfaceProxy.attributeFireAndForget.unsubscribe({
+                    "subscriptionId": attributeFireAndForgetSubscriptionId
+                })
+                .then(() => {
+                    log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe - OK");
+                    log("callMethodFireAndForgetWithInputParameter - DONE");
+                })
+                .catch((error) => {
+                    log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: " + error);
+                    expect("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: " + error).toBeFalsy();
+                });
+            });
+        });
+
         it("callOverloadedMethod_1", function() {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
             spy.onFulfilled.reset();
@@ -812,22 +987,22 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             });
         });
 
-        it("callGetAttributeWithException", function() {
+        it("callGetAttributeWithExceptionFromGetter", function() {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
             spy.onFulfilled.reset();
             spy.onError.reset();
 
             runs(function() {
-                log("callGetAttributeWithException");
+                log("callGetAttributeWithExceptionFromGetter");
                 var args = {
                     value: false
                 };
-                testInterfaceProxy.attributeWithException.get(args).then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.attributeWithExceptionFromGetter.get(args).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-            }, "callGetAttributeWithException", 5000);
+            }, "callGetAttributeWithExceptionFromGetter", 5000);
 
             runs(function() {
                 expect(spy.onFulfilled.callCount).toEqual(0);
@@ -836,27 +1011,27 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
-                expect(retObj.detailMessage).toEqual("Exception from getAttributeWithException");
-                log("callGetAttributeWithException - OK");
+                expect(retObj.detailMessage).toEqual("Exception from getAttributeWithExceptionFromGetter");
+                log("callGetAttributeWithExceptionFromGetter - OK");
             });
         });
 
-        it("callSetAttributeWithException", function() {
+        it("callSetAttributeWithExceptionFromSetter", function() {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
             spy.onFulfilled.reset();
             spy.onError.reset();
 
             runs(function() {
-                log("callSetAttributeWithException");
+                log("callSetAttributeWithExceptionFromSetter");
                 var args = {
                     value: false
                 };
-                testInterfaceProxy.attributeWithException.set(args).then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.attributeWithExceptionFromSetter.set(args).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-            }, "callSetAttributeWithException", 5000);
+            }, "callSetAttributeWithExceptionFromSetter", 5000);
 
             runs(function() {
                 expect(spy.onFulfilled.callCount).toEqual(0);
@@ -865,8 +1040,8 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
-                expect(retObj.detailMessage).toEqual("Exception from setAttributeWithException");
-                log("callSetAttributeWithException - OK");
+                expect(retObj.detailMessage).toEqual("Exception from setAttributeWithExceptionFromSetter");
+                log("callSetAttributeWithExceptionFromSetter - OK");
             });
         });
 
@@ -1471,7 +1646,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             });
         });
 
-        it("callSubscribeAttributeWithException", function() {
+        it("callSubscribeAttributeWithExceptionFromGetter", function() {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
             var subscriptionId;
             var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
@@ -1481,8 +1656,8 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             spy.onPublicationError.reset();
 
             runs(function() {
-                log("callSubscribeAttributeWithException");
-                testInterfaceProxy.attributeWithException.subscribe({
+                log("callSubscribeAttributeWithExceptionFromGetter");
+                testInterfaceProxy.attributeWithExceptionFromGetter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError
@@ -1491,7 +1666,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
 
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-            }, "callSubscribeAttributeWithException", 5000);
+            }, "callSubscribeAttributeWithExceptionFromGetter", 5000);
 
             runs(function() {
                 if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
@@ -1500,12 +1675,12 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log("subscriptionId = " + subscriptionId);
+                log("callSubscribeAttributeWithExceptionFromGetter - subscriptionId = " + subscriptionId);
             });
 
             waitsFor(function() {
                 return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-            }, "callSubscribeAttributeWithException Publication", 5000);
+            }, "callSubscribeAttributeWithExceptionFromGetter Publication", 5000);
 
             runs(function() {
                 expect(spy.onPublication.callCount).toEqual(0);
@@ -1515,19 +1690,19 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
-                expect(retObj.detailMessage).toEqual("Exception from getAttributeWithException");
+                expect(retObj.detailMessage).toEqual("Exception from getAttributeWithExceptionFromGetter");
 
                 // unsubscribe again
                 spy.onFulfilled.reset();
                 spy.onError.reset();
-                testInterfaceProxy.attributeWithException.unsubscribe({
+                testInterfaceProxy.attributeWithExceptionFromGetter.unsubscribe({
                     "subscriptionId": subscriptionId
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-            }, "callSubscribeAttributeWithException unsubscribe", 5000);
+            }, "callSubscribeAttributeWithExceptionFromGetter unsubscribe", 5000);
 
             runs(function() {
                 if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {

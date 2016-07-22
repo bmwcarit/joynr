@@ -33,6 +33,7 @@ public class JoynrUntypedObjectDeserializer extends UntypedObjectDeserializer {
     transient private TypeDeserializer typeDeserializer;
 
     public JoynrUntypedObjectDeserializer(TypeDeserializer typeDeserializer) {
+        super();
         this.typeDeserializer = typeDeserializer;
     }
 

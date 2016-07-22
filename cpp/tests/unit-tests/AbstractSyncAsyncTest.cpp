@@ -25,7 +25,9 @@
 #include "joynr/ReplyCaller.h"
 #include "joynr/IReplyCaller.h"
 #include "tests/utils/MockObjects.h"
+#include "utils/MockCallback.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 
 using ::testing::A;
 using ::testing::_;

@@ -26,12 +26,11 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.google.inject.name.Named;
-
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ProxyBuilder;
@@ -48,9 +47,9 @@ public class GlobalCapabilitiesDirectoryClient {
 
     @Inject
     public GlobalCapabilitiesDirectoryClient(ProxyBuilderFactory proxyBuilderFactory,
-                                             @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String domain) {
+                                             @Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry) {
         this.proxyBuilderFactory = proxyBuilderFactory;
-        this.domain = domain;
+        this.domain = capabilitiesDirectoryEntry.getDomain();
     }
 
     private GlobalCapabilitiesDirectoryProxy getProxy(long ttl) {

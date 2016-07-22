@@ -19,28 +19,31 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
+
 import javax.annotation.CheckForNull;
 import javax.inject.Named;
-import io.joynr.runtime.SystemServicesSettings;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.ProviderContainerFactory;
-import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-
+import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
-import joynr.types.Version;
 
 @Singleton
 public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
@@ -86,7 +89,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              providerContainer.getInterfaceName());
         String defaultPublicKeyId = "";
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(),
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(getVersionFromAnnotation(provider.getClass()),
                                                            domain,
                                                            providerContainer.getInterfaceName(),
                                                            participantId,

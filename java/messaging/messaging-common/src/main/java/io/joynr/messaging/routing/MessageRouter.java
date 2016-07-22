@@ -19,27 +19,20 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
-
-import java.io.IOException;
-
 import joynr.JoynrMessage;
-import joynr.system.RoutingProvider;
 import joynr.system.RoutingTypes.Address;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
-public interface MessageRouter extends RoutingProvider {
+public interface MessageRouter {
     static final String ROUTER_GLOBAL_ADDRESS = "io.joynr.messaging.globalAddress";
     static final String SCHEDULEDTHREADPOOL = "io.joynr.messaging.scheduledthreadpool";
 
-    public void route(JoynrMessage message) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                           JsonGenerationException, JsonMappingException, IOException;
+    public void route(JoynrMessage message);
 
     public void addNextHop(String participantId, Address address);
 
     public void shutdown();
 
+    public void removeNextHop(String participantId);
+
+    public boolean resolveNextHop(String participantId);
 }

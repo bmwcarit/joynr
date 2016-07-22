@@ -22,6 +22,7 @@
 #include <thread>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/program_options.hpp>
 
 #include "../provider/PerformanceTestEchoProvider.h"
 #include "joynr/JoynrRuntime.h"
@@ -31,40 +32,63 @@ using namespace joynr;
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2) {
-        std::cout << "Usage: performancetest-provider-ws <domainName>" << std::endl;
+    Logger logger("PerformanceTestProviderApplication");
+
+    std::string domainName;
+    bool globalScope = false;
+
+    boost::program_options::options_description optionsDescription("Available options");
+    optionsDescription.add_options()("help,h", "produce help message")(
+            "domain,d", boost::program_options::value(&domainName)->required(), "domain")(
+            "globalscope,g", boost::program_options::value(&globalScope)->default_value(false));
+
+    try {
+        boost::program_options::variables_map optionsMap;
+        boost::program_options::store(
+                boost::program_options::parse_command_line(argc, argv, optionsDescription),
+                optionsMap);
+        boost::program_options::notify(optionsMap);
+
+        if (optionsMap.count("help") > 0) {
+            std::cout << optionsDescription << std::endl;
+            return 0;
+        }
+
+        boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
+        std::string appDirectory =
+                boost::filesystem::system_complete(appFilename).parent_path().string();
+        std::string pathToSettings(appDirectory + "/resources/performancetest-provider.settings");
+
+        std::unique_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToSettings));
+        std::shared_ptr<PerformanceTestEchoProvider> provider =
+                std::make_shared<PerformanceTestEchoProvider>();
+
+        // Set the provider's priority in such a way that a consumer uses the most recent provider.
+        auto millisecondsSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch());
+
+        types::ProviderQos providerQos;
+        providerQos.setPriority(millisecondsSinceEpoch.count());
+        providerQos.setScope(globalScope ? joynr::types::ProviderScope::GLOBAL
+                                         : joynr::types::ProviderScope::LOCAL);
+
+        runtime->registerProvider<tests::performance::EchoProvider>(
+                domainName, provider, providerQos);
+
+        JOYNR_LOG_INFO(
+                logger, "********************************************************************");
+        JOYNR_LOG_INFO(logger, "Provider is registered");
+        JOYNR_LOG_INFO(
+                logger, "********************************************************************");
+
+        // Run the provider for a week (which should be enough for any testcase).
+        std::this_thread::sleep_for(std::chrono::hours(24 * 7));
+
+        runtime->unregisterProvider<tests::performance::EchoProvider>(domainName, provider);
+    } catch (std::exception& e) {
+        std::cerr << e.what() << std::endl;
         return -1;
     }
-
-    Logger logger("PerformanceTestProviderApplication");
-    std::string domainName(argv[1]);
-
-    boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
-    std::string appDirectory =
-            boost::filesystem::system_complete(appFilename).parent_path().string();
-    std::string pathToSettings(appDirectory + "/resources/performancetest-provider.settings");
-
-    std::unique_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToSettings));
-    std::shared_ptr<PerformanceTestEchoProvider> provider =
-            std::make_shared<PerformanceTestEchoProvider>();
-
-    // Set the provider's priority in such a way that a consumer uses the most recent provider.
-    auto millisecondsSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch());
-
-    types::ProviderQos providerQos;
-    providerQos.setPriority(millisecondsSinceEpoch.count());
-
-    runtime->registerProvider<tests::performance::EchoProvider>(domainName, provider, providerQos);
-
-    JOYNR_LOG_INFO(logger, "********************************************************************");
-    JOYNR_LOG_INFO(logger, "Provider is registered");
-    JOYNR_LOG_INFO(logger, "********************************************************************");
-
-    // Run the provider for a week (which should be enough for any testcase).
-    std::this_thread::sleep_for(std::chrono::hours(24 * 7));
-
-    runtime->unregisterProvider<tests::performance::EchoProvider>(domainName, provider);
 
     return 0;
 }

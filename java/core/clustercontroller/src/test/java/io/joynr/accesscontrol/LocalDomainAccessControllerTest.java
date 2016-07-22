@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,6 +32,7 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import joynr.types.GlobalDiscoveryEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,13 +96,14 @@ public class LocalDomainAccessControllerTest {
         domainAccessControlStore = new DomainAccessControlStoreEhCache(cacheManager,
                                                                        new DefaultDomainAccessControlProvisioning());
 
-        String accessControlDomain = "accessControlDomain";
         when(proxyInvocationHandlerFactoryMock.create(any(Set.class),
                                                       any(String.class),
                                                       any(String.class),
                                                       any(DiscoveryQos.class),
                                                       any(MessagingQos.class))).thenReturn(proxyInvocationHandlerMock);
         InProcessAddress libjoynrMessagingAddress = new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+        GlobalDiscoveryEntry accessControlDomain = mock(GlobalDiscoveryEntry.class);
+        when(accessControlDomain.getDomain()).thenReturn("accessControlDomain");
         localDomainAccessController = new LocalDomainAccessControllerImpl(accessControlDomain,
                                                                           domainAccessControlStore,
                                                                           new ProxyBuilderFactoryImpl(localDiscoveryAggregator,

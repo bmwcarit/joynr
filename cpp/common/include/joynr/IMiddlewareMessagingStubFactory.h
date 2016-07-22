@@ -21,6 +21,7 @@
 
 #include <functional>
 #include <memory>
+#include <functional>
 
 namespace joynr
 {

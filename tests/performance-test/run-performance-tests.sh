@@ -24,11 +24,15 @@
 ####################
 
 # Shell script parameters
-JOYNR_SOURCE_DIR=""
-JOYNR_BUILD_DIR=""
-PERFORMANCETESTS_BUILD_DIR=""
+JETTY_PATH=""
+JOYNR_BIN_DIR=""
+PERFORMANCETESTS_BIN_DIR=""
+PERFORMANCETESTS_SOURCE_DIR=""
 PERFORMANCETESTS_RESULTS_DIR=""
 TESTCASE=""
+USE_MAVEN=ON # Indicates whether java applications shall be started with maven or as standalone apps
+MOSQUITTO_CONF=""
+USE_NPM=ON # Indicates whether npm will be used to launch javascript applications.
 
 ### Constants ###
 DOMAINNAME="performance_test_domain"
@@ -39,7 +43,7 @@ JAVA_WARMUPS=50
 
 # For test cases with a single consumer, this constant stores the number of messages which
 # will be transmitted during the test
-SINGLECONSUMER_RUNS=10000
+SINGLECONSUMER_RUNS=1000
 
 # For test cases with several consumers, this constant stores how many consumer instances will
 # be created
@@ -47,7 +51,7 @@ MULTICONSUMER_NUMINSTANCES=5
 
 # For test cases with several consumers, this constant stores how many messages a single
 # consumer transmits
-MULTICONSUMER_RUNS=2000
+MULTICONSUMER_RUNS=200
 
 # If a test case has to transmit a string, the length will be determined by this constant
 INPUTDATA_STRINGLENGTH=10
@@ -89,8 +93,14 @@ function startJetty {
     JETTY_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/jetty_stdout.txt
     JETTY_STDERR=$PERFORMANCETESTS_RESULTS_DIR/jetty_stderr.txt
 
-    cd $JOYNR_SOURCE_DIR/cpp/tests/
-    mvn jetty:run-war --quiet 1>$JETTY_STDOUT 2>$JETTY_STDERR & JETTY_PID=$!
+    cd $JETTY_PATH
+
+    if [ "$USE_MAVEN" != "ON" ]
+    then
+        java -jar start.jar 1>$JETTY_STDOUT 2>$JETTY_STDERR & JETTY_PID=$!
+    else
+        mvn jetty:run-war --quiet 1>$JETTY_STDOUT 2>$JETTY_STDERR & JETTY_PID=$!
+    fi
 
     waitUntilJettyStarted
 }
@@ -101,7 +111,13 @@ function startMosquitto {
     MOSQUITTO_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/mosquitto_stdout.txt
     MOSQUITTO_STDERR=$PERFORMANCETESTS_RESULTS_DIR/mosquitto_stderr.txt
 
-    mosquitto -c /etc/mosquitto/mosquitto.conf 1>$MOSQUITTO_STDOUT 2>$MOSQUITTO_STDERR & MOSQUITTO_PID=$!
+    if [ "$MOSQUITTO_CONF" != "" ] && [ -f $MOSQUITTO_CONF ]
+    then
+        mosquitto -c $MOSQUITTO_CONF 1>$MOSQUITTO_STDOUT 2>$MOSQUITTO_STDERR & MOSQUITTO_PID=$!
+    else
+        echo "WARNING: No mosquitto.conf provided"
+        mosquitto 1>$MOSQUITTO_STDOUT 2>$MOSQUITTO_STDERR & MOSQUITTO_PID=$!
+    fi
 
     sleep 2
 
@@ -113,10 +129,9 @@ function startCppClusterController {
 
     CC_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/cc_stdout.txt
     CC_STDERR=$PERFORMANCETESTS_RESULTS_DIR/cc_stderr.txt
-    CC_CONFIG_FILE=$PERFORMANCETESTS_BUILD_DIR/bin/resources/$1
 
-    cd $JOYNR_BUILD_DIR/bin/
-    ./cluster-controller $CC_CONFIG_FILE 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
+    cd $JOYNR_BIN_DIR
+    ./cluster-controller 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
 
     # Wait long enough in order to allow the cluster controller finish its start procedure
     sleep 5
@@ -130,8 +145,8 @@ function startCppPerformanceTestProvider {
     PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
-    cd $PERFORMANCETESTS_BUILD_DIR/bin/
-    ./performance-provider-app $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    cd $PERFORMANCETESTS_BIN_DIR
+    ./performance-provider-app --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
 
     # Wait long enough in order to allow the provider to finish the registration procedure
     sleep 5
@@ -140,7 +155,7 @@ function startCppPerformanceTestProvider {
     # will not succeed.
     kill $PROVIDER_PID
     wait $PROVIDER_PID
-    ./performance-provider-app $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    ./performance-provider-app --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     sleep 5
 
     echo "C++ performance test provider started"
@@ -155,12 +170,16 @@ function startJavaPerformanceTestProvider {
     CONSUMERCLASS="io.joynr.performance.EchoProviderApplication"
     CONSUMERARGS="-d $DOMAINNAME -s GLOBAL -r IN_PROCESS_CC  -b MQTT -mbu $MQTT_BROKER_URI"
 
-    cd $JOYNR_SOURCE_DIR/tests/performance-test
+    cd $PERFORMANCETESTS_SOURCE_DIR
 
-    mvn exec:java -o \
-        -Dexec.mainClass="$CONSUMERCLASS" \
-        -Dexec.args="$CONSUMERARGS" \
-        1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    if [ "$USE_MAVEN" != "ON" ]
+    then
+        java -jar performance-test-provider.jar $CONSUMERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    else
+        mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" -Dexec.args="$CONSUMERARGS" \
+            1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    fi
+
     sleep 5
 
     echo "Performance test provider started"
@@ -179,14 +198,21 @@ function performJavaConsumerTest {
                   -s $MODE_PARAM -t $TESTCASE_PARAM -bs $INPUTDATA_BYTEARRAYSIZE \
                   -sl $INPUTDATA_STRINGLENGTH"
 
-    cd $JOYNR_SOURCE_DIR/tests/performance-test
+    cd $PERFORMANCETESTS_SOURCE_DIR
 
     TEST_PIDS=()
     for (( i=0; i < $NUM_INSTANCES; ++i ))
     do
         echo "Launching consumer $i ..."
-        mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" \
+
+        if [ "$USE_MAVEN" != "ON" ]
+        then
+            java -jar performance-test-consumer.jar $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+        else
+           mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" \
            -Dexec.args="$CONSUMERARGS" 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+        fi
+
         TEST_PIDS+=$CUR_PID
         TEST_PIDS+=" "
     done
@@ -203,7 +229,7 @@ function performCppConsumerTest {
     NUM_INSTANCES=$5
     NUM_RUNS=$6
 
-    cd $PERFORMANCETESTS_BUILD_DIR/bin
+    cd $PERFORMANCETESTS_BIN_DIR
     CONSUMERARGS="-d $DOMAINNAME -r $NUM_RUNS -t $TESTCASE_PARAM\
                   -s $MODE_PARAM -l $INPUTDATA_STRINGLENGTH -b $INPUTDATA_BYTEARRAYSIZE"
 
@@ -224,19 +250,37 @@ function performJsConsumerTest {
     STDOUT_PARAM=$1
     REPORTFILE_PARAM=$2
 
-    cd $JOYNR_SOURCE_DIR/tests/performance-test
+    cd $PERFORMANCETESTS_SOURCE_DIR
 
-    npm run-script --performance-test:runs=$SINGLECONSUMER_RUNS \
-                   --performance-test:domain=$DOMAINNAME \
-                   --performance-test:stringlength=$INPUTDATA_STRINGLENGTH \
-                   --performance-test:bytearraylength=$INPUTDATA_BYTEARRAYSIZE \
-                     jsconsumertest 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+    if [ "$USE_NPM" == "ON" ]
+    then
+        npm run-script --performance-test:runs=$SINGLECONSUMER_RUNS \
+                       --performance-test:domain=$DOMAINNAME \
+                       --performance-test:stringlength=$INPUTDATA_STRINGLENGTH \
+                       --performance-test:bytearraylength=$INPUTDATA_BYTEARRAYSIZE \
+                         jsconsumertest 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+    else
+        # This call assumes that the required js dependencies are installed locally
+        node node_modules/jasmine-node/lib/jasmine-node/cli.js src/main/js/consumer.spec.js \
+            --config runs $SINGLECONSUMER_RUNS \
+            --config domain $DOMAINNAME \
+            --config stringlength $INPUTDATA_STRINGLENGTH \
+            --config bytearraylength $INPUTDATA_BYTEARRAYSIZE \
+        1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+    fi
 }
 
 function stopJetty {
     echo "Stopping jetty"
-    cd $JOYNR_SOURCE_DIR/cpp/tests/
-    mvn jetty:stop --quiet
+
+    if [ "$USE_MAVEN" != "ON" ]
+    then
+        kill $JETTY_PID
+    else
+        cd $JETTY_PATH
+        mvn jetty:stop --quiet
+    fi
+
     wait $JETTY_PID
     JETTY_PID=""
 }
@@ -267,11 +311,11 @@ function stopAnyProvider {
 }
 
 function echoUsage {
-    echo "Usage: run-performance-tests.sh -p <performance-build-dir> \
--r <performance-results-dir> -s <joynr-source-dir> \
--t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|JS_ASYNC_MOSQUITTO|OAP_TO_BACKEND_MOSQ|\
-CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-build-dir>\
-[-c <number-of-consumers> -x <number-of-runs>]"
+    echo "Usage: run-performance-tests.sh -j <jetty-dir> -p <performance-bin-dir> \
+-r <performance-results-dir> -s <performance-source-dir> \
+-t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|OAP_TO_BACKEND_MOSQ|\
+CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-bin-dir>\
+[-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF> -z <mosquitto.conf> -n <use node ON|OFF>]"
 }
 
 function checkDirExists {
@@ -283,20 +327,23 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:p:r:s:t:x:y:" OPTIONS;
+while getopts "c:j:p:r:s:t:x:y:m:z:n:" OPTIONS;
 do
     case $OPTIONS in
         c)
             MULTICONSUMER_NUMINSTANCES=$OPTARG
             ;;
+        j)
+            JETTY_PATH=${OPTARG%/}
+            ;;
         p)
-            PERFORMANCETESTS_BUILD_DIR=${OPTARG%/}
+            PERFORMANCETESTS_BIN_DIR=${OPTARG%/}
             ;;
         r)
             PERFORMANCETESTS_RESULTS_DIR=${OPTARG%/}
             ;;
         s)
-            JOYNR_SOURCE_DIR=${OPTARG%/}
+            PERFORMANCETESTS_SOURCE_DIR=${OPTARG%/}
             ;;
         t)
             TESTCASE=$OPTARG
@@ -306,7 +353,16 @@ do
             MULTICONSUMER_RUNS=$OPTARG
             ;;
         y)
-            JOYNR_BUILD_DIR=${OPTARG%/}
+            JOYNR_BIN_DIR=${OPTARG%/}
+            ;;
+        m)
+            USE_MAVEN=$OPTARG
+            ;;
+        z)
+            MOSQUITTO_CONF=$OPTARG
+            ;;
+        n)
+            USE_NPM=$OPTARG
             ;;
         \?)
             echoUsage
@@ -328,10 +384,10 @@ OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER OR ALL"
     exit 1
 fi
 
-checkDirExists $JOYNR_SOURCE_DIR
-checkDirExists $JOYNR_BUILD_DIR
-checkDirExists $PERFORMANCETESTS_BUILD_DIR
+checkDirExists $JOYNR_BIN_DIR
+checkDirExists $PERFORMANCETESTS_BIN_DIR
 checkDirExists $PERFORMANCETESTS_RESULTS_DIR
+checkDirExists $PERFORMANCETESTS_SOURCE_DIR
 
 REPORTFILE=$PERFORMANCETESTS_RESULTS_DIR/performancetest-result.txt
 STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer-stdout.txt
@@ -341,7 +397,7 @@ rm -f $REPORTFILE
 
 if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] || [ "$TESTCASE" == "ALL" ]
 then
-    startCppClusterController cc-default-messaging.settings
+    startCppClusterController
     startCppPerformanceTestProvider
 
     echo "### Starting performance tests ###"
@@ -394,9 +450,10 @@ fi
 
 if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ] || [ "$TESTCASE" == "ALL" ]
 then
+    checkDirExists $JETTY_PATH
     startJetty
     startMosquitto
-    startCppClusterController default-messaging.settings
+    startCppClusterController
     startJavaPerformanceTestProvider
 
     echo "### Starting performance tests ###"

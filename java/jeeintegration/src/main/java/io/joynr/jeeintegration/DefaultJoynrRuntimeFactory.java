@@ -52,7 +52,6 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
-import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -76,9 +75,11 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultJoynrRuntimeFactory.class);
 
+    private static final String MQTT = "mqtt";
+
     private static final String LOCALHOST_URL = "https://localhost:8443/";
 
-    private final Properties joynrProperties;
+    private Properties joynrProperties;
 
     private final String joynrLocalDomain;
 
@@ -107,13 +108,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     @Inject
     public DefaultJoynrRuntimeFactory(@JoynrProperties Instance<Properties> joynrProperties,
                                       @JoynrLocalDomain Instance<String> joynrLocalDomain) {
-        if (!joynrProperties.isUnsatisfied() && !joynrProperties.isAmbiguous()) {
-            this.joynrProperties = joynrProperties.get();
-        } else {
-            LOG.info("No custom joynr properties provided. Will use default properties.");
-            this.joynrProperties = new Properties();
-        }
-        this.joynrProperties.put(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         if (!joynrLocalDomain.isUnsatisfied() && !joynrLocalDomain.isAmbiguous()) {
             this.joynrLocalDomain = joynrLocalDomain.get();
         } else {
@@ -121,13 +115,19 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             LOG.error(message);
             throw new JoynrIllegalStateException(message);
         }
-
+        Properties configuredProperties;
+        if (!joynrProperties.isUnsatisfied() && !joynrProperties.isAmbiguous()) {
+            configuredProperties = joynrProperties.get();
+        } else {
+            LOG.info("No custom joynr properties provided. Will use default properties.");
+            configuredProperties = new Properties();
+        }
+        this.joynrProperties = prepareJoynrProperties(configuredProperties);
     }
 
     @Override
     public JoynrRuntime create(Set<Class<? extends JoynrProvider>> providerInterfaceClasses) {
         LOG.info("Fetching consolidated joynr properties to use.");
-        Properties joynrProperties = getJoynrProperties();
         LOG.info("Provisioning access control for {}", providerInterfaceClasses);
         provisionAccessControl(joynrProperties, joynrLocalDomain, getProviderInterfaceNames(providerInterfaceClasses));
         LOG.info(format("Creating application with joynr properties:%n%s", joynrProperties));
@@ -146,21 +146,18 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         return fInjector;
     }
 
-    private Properties getJoynrProperties() {
+    private Properties prepareJoynrProperties(Properties configuredProperties) {
         Properties defaultJoynrProperties = new Properties();
-        defaultJoynrProperties.put(MessagingPropertyKeys.PERSISTENCE_FILE, "build/provider/provider_joynr.properties");
-        defaultJoynrProperties.setProperty("joynr.discovery.participantids_persistence_file",
-                                           "build/provider/joynr_participantIds.properties");
-        defaultJoynrProperties.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, joynrLocalDomain);
-        defaultJoynrProperties.setProperty("joynr.messaging.bounceproxyurl",
-                                           getEnvWithDefault("BOUNCEPROXYURL", LOCALHOST_URL + "bounceproxy/"));
+        defaultJoynrProperties.setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, joynrLocalDomain);
+        defaultJoynrProperties.setProperty(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, MQTT);
 
         // allow use of deprecated CAPABILITYDIRECTORYURL until 2016-12-31
         String defaultDiscoveryDirectoryUrl = getEnvWithDefault("CAPABILITYDIRECTORYURL", LOCALHOST_URL
                 + "discovery/channels/discoverydirectory_channelid/");
         defaultJoynrProperties.setProperty("joynr.messaging.discoverydirectoryurl",
                                            getEnvWithDefault("DISCOVERYDIRECTORYURL", defaultDiscoveryDirectoryUrl));
-        defaultJoynrProperties.putAll(joynrProperties);
+
+        defaultJoynrProperties.putAll(configuredProperties);
         return defaultJoynrProperties;
     }
 
@@ -177,6 +174,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             Field interfaceNameField = providerInterfaceClass.getField("INTERFACE_NAME");
             return (String) interfaceNameField.get(providerInterfaceClass);
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            LOG.debug("error getting interface details", e);
             return providerInterfaceClass.getSimpleName();
         }
     }

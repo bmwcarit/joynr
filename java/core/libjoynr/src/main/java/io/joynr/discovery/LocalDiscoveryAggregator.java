@@ -19,6 +19,8 @@ package io.joynr.discovery;
  * #L%
  */
 
+import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,11 +42,11 @@ import joynr.system.DiscoveryAsync;
 import joynr.system.DiscoveryProvider;
 import joynr.system.DiscoveryProxy;
 import joynr.system.Routing;
+import joynr.system.RoutingProvider;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryQos;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
-import joynr.types.Version;
 
 public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
@@ -63,7 +65,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         String defaultPublicKeyId = "";
         provisionedDiscoveryEntries.put(systemServicesDomain
                 + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
-                                        new DiscoveryEntry(new Version(),
+                                        new DiscoveryEntry(getVersionFromAnnotation(DiscoveryProvider.class),
                                                            systemServicesDomain,
                                                            ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                                            discoveryProviderParticipantId,
@@ -72,14 +74,15 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                            NO_EXPIRY,
                                                            defaultPublicKeyId));
         // provision routing provider to prevent lookup via discovery proxy during startup.
-        provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME, new DiscoveryEntry(new Version(),
-                                                                                                          systemServicesDomain,
-                                                                                                          Routing.INTERFACE_NAME,
-                                                                                                          routingProviderParticipantId,
-                                                                                                          providerQos,
-                                                                                                          System.currentTimeMillis(),
-                                                                                                          NO_EXPIRY,
-                                                                                                          defaultPublicKeyId));
+        provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME,
+                                        new DiscoveryEntry(getVersionFromAnnotation(RoutingProvider.class),
+                                                           systemServicesDomain,
+                                                           Routing.INTERFACE_NAME,
+                                                           routingProviderParticipantId,
+                                                           providerQos,
+                                                           System.currentTimeMillis(),
+                                                           NO_EXPIRY,
+                                                           defaultPublicKeyId));
     }
 
     public void setDiscoveryProxy(DiscoveryProxy discoveryProxy) {

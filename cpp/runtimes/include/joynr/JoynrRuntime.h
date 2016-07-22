@@ -41,6 +41,7 @@
 namespace joynr
 {
 
+class SingleThreadedIOService;
 /**
  * @brief Class representing the central Joynr Api object,
  * used to register / unregister providers and create proxy builders
@@ -51,7 +52,7 @@ public:
     /**
      * @brief Destroys a JoynrRuntime instance
      */
-    virtual ~JoynrRuntime() = default;
+    virtual ~JoynrRuntime();
 
     /**
      * @brief Registers a provider with the joynr communication framework.
@@ -174,21 +175,9 @@ protected:
      * @brief Constructs a JoynrRuntime instance
      * @param settings The system service settings
      */
-    explicit JoynrRuntime(Settings& settings)
-            : proxyFactory(nullptr),
-              requestCallerDirectory(nullptr),
-              participantIdStorage(nullptr),
-              capabilitiesRegistrar(nullptr),
-              messagingSettings(settings),
-              systemServicesSettings(settings),
-              dispatcherAddress(nullptr),
-              messageRouter(nullptr),
-              discoveryProxy(nullptr),
-              publicationManager(nullptr)
-    {
-        messagingSettings.printSettings();
-        systemServicesSettings.printSettings();
-    }
+    explicit JoynrRuntime(Settings& settings);
+
+    std::unique_ptr<SingleThreadedIOService> singleThreadIOService;
 
     /** @brief Factory for creating proxy instances */
     ProxyFactory* proxyFactory;

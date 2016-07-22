@@ -19,7 +19,6 @@ package io.joynr.examples.android_location_provider;
  * #L%
  */
 
-import io.joynr.arbitration.ArbitrationConstants;
 import io.joynr.examples.android_location_provider.MyLocation.LocationResult;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
@@ -28,9 +27,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import joynr.types.CustomParameter;
-import joynr.types.ProviderQos;
-import joynr.types.ProviderScope;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.vehicle.DefaultGpsProvider;
@@ -47,16 +43,10 @@ public class AndroidLocationProvider extends DefaultGpsProvider {
 
     private Output output;
 
-    public AndroidLocationProvider(String keyword, Context applicationContext, Output output) {
+    public AndroidLocationProvider(Context applicationContext, Output output) {
         this.applicationContext = applicationContext;
         this.output = output;
         this.location = new GpsLocation();
-        if (keyword != null && !keyword.equals("")) {
-            CustomParameter[] qosParameterList = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, keyword) };
-            providerQos.setCustomParameters(qosParameterList);
-        }
-        providerQos.setPriority(System.currentTimeMillis());
-
         initLocationProviderAndListener();
     }
 
@@ -101,15 +91,6 @@ public class AndroidLocationProvider extends DefaultGpsProvider {
         logToOutput("Method getLocation was called. Sending the location: " + location.toString());
         deferred.resolve(location);
         return new Promise<Deferred<GpsLocation>>(deferred);
-    }
-
-    @Override
-    public ProviderQos getProviderQos() {
-        CustomParameter[] customParameters = {};
-        Long priority = System.currentTimeMillis();
-        ProviderScope scope = ProviderScope.LOCAL;
-        Boolean supportsOnChangeSubscriptions = false;
-        return new ProviderQos(customParameters, priority, scope, supportsOnChangeSubscriptions);
     }
 
     private void logToOutput(String string) {

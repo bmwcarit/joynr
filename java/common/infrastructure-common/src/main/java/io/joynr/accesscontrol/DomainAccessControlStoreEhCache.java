@@ -138,12 +138,8 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         try {
             cache.put(new Element(dreKey, updatedEntry));
             updateSuccess = true;
-        } catch (IllegalArgumentException e) {
-            logger.error("updateDomainRole failed: {}", e.getMessage());
-        } catch (IllegalStateException e) {
-            logger.error("updateDomainRole failed: {}", e.getMessage());
-        } catch (CacheException e) {
-            logger.error("updateDomainRole failed: {}", e.getMessage());
+        } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
+            logger.error("updateDomainRole failed.", e);
         }
 
         return updateSuccess;
@@ -482,12 +478,8 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         try {
             cache.put(new Element(aceKey, accessControlEntry));
             updateSuccess = true;
-        } catch (IllegalArgumentException e) {
-            logger.error("update {} failed: {}", cacheId, e.getMessage());
-        } catch (IllegalStateException e) {
-            logger.error("update {} failed: {}", cacheId, e.getMessage());
-        } catch (CacheException e) {
-            logger.error("update {} failed: {}", cacheId, e.getMessage());
+        } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
+            logger.error("update " + cacheId + "failed.", e);
         }
 
         return updateSuccess;
@@ -498,12 +490,8 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         boolean removeResult = false;
         try {
             removeResult = cache.remove(aceKey);
-        } catch (IllegalArgumentException e) {
-            logger.error("remove {} failed: {}", cacheId, e.getMessage());
-        } catch (IllegalStateException e) {
-            logger.error("remove {} failed: {}", cacheId, e.getMessage());
-        } catch (CacheException e) {
-            logger.error("remove {} failed: {}", cacheId, e.getMessage());
+        } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
+            logger.error("remove " +  cacheId + " failed.", e);
         }
 
         return removeResult;

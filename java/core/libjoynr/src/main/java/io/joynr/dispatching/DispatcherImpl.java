@@ -22,6 +22,7 @@ package io.joynr.dispatching;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Singleton;
@@ -29,21 +30,19 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
+import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
+
 import joynr.JoynrMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
@@ -85,15 +84,13 @@ public class DispatcherImpl implements Dispatcher {
     public void sendSubscriptionRequest(String fromParticipantId,
                                         Set<String> toParticipantIds,
                                         SubscriptionRequest subscriptionRequest,
-                                        MessagingQos qosSettings,
-                                        boolean broadcast) throws JoynrSendBufferFullException,
-                                                          JoynrMessageNotSentException, JsonGenerationException,
-                                                          JsonMappingException, IOException {
+                                        MessagingQos messagingQos,
+                                        boolean broadcast) {
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                                  toParticipantId,
                                                                                  subscriptionRequest,
-                                                                                 DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()),
+                                                                                 ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()),
                                                                                  broadcast);
 
             messageRouter.route(message);
@@ -104,14 +101,12 @@ public class DispatcherImpl implements Dispatcher {
     public void sendSubscriptionStop(String fromParticipantId,
                                      Set<String> toParticipantIds,
                                      SubscriptionStop subscriptionStop,
-                                     MessagingQos messagingQos) throws JoynrSendBufferFullException,
-                                                               JoynrMessageNotSentException, JsonGenerationException,
-                                                               JsonMappingException, IOException {
+                                     MessagingQos messagingQos) {
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
                                                                               toParticipantId,
                                                                               subscriptionStop,
-                                                                              DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
+                                                                              ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
             messageRouter.route(message);
         }
 
@@ -121,30 +116,27 @@ public class DispatcherImpl implements Dispatcher {
     public void sendSubscriptionPublication(String fromParticipantId,
                                             Set<String> toParticipantIds,
                                             SubscriptionPublication publication,
-                                            MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                     JoynrMessageNotSentException,
-                                                                     JsonGenerationException, JsonMappingException,
-                                                                     IOException {
+                                            MessagingQos messagingQos) {
 
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
                                                                          toParticipantId,
                                                                          publication,
-                                                                         DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()));
+                                                                         ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
             messageRouter.route(message);
         }
     }
 
-    public void sendReply(final String fromParticipantId, final String toParticipantId, Reply reply, long expiryDate)
-                                                                                                                     throws JoynrSendBufferFullException,
-                                                                                                                     JoynrMessageNotSentException,
-                                                                                                                     JsonGenerationException,
-                                                                                                                     JsonMappingException,
-                                                                                                                     IOException {
+    public void sendReply(final String fromParticipantId,
+                          final String toParticipantId,
+                          Reply reply,
+                          long expiryDateMs,
+                          Map<String, String> customHeaders) throws IOException {
         JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId,
                                                                toParticipantId,
                                                                reply,
-                                                               DispatcherUtils.convertTtlToExpirationDate(expiryDate));
+                                                               ExpiryDate.fromAbsolute(expiryDateMs),
+                                                               customHeaders);
         messageRouter.route(message);
     }
 
@@ -155,6 +147,7 @@ public class DispatcherImpl implements Dispatcher {
             return;
         }
         final long expiryDate = message.getExpiryDate();
+        final Map<String, String> customHeaders = message.getCustomHeaders();
         if (DispatcherUtils.isExpired(expiryDate)) {
             logger.debug("TTL expired, discarding message : {}", message.toLogMessage());
             return;
@@ -169,10 +162,12 @@ public class DispatcherImpl implements Dispatcher {
             } else {
                 if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
                     final Request request = objectMapper.readValue(message.getPayload(), Request.class);
+                    request.setCreatorUserId(message.getCreatorUserId());
                     logger.debug("Parsed request from message payload :" + message.getPayload());
-                    handle(request, message.getFrom(), message.getTo(), expiryDate);
+                    handle(request, message.getFrom(), message.getTo(), expiryDate, customHeaders);
                 } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
                     OneWayRequest oneWayRequest = objectMapper.readValue(message.getPayload(), OneWayRequest.class);
+                    oneWayRequest.setCreatorUserId(message.getCreatorUserId());
                     logger.debug("Parsed one way request from message payload :" + message.getPayload());
                     handle(oneWayRequest, message.getTo(), expiryDate);
                 } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
@@ -203,13 +198,14 @@ public class DispatcherImpl implements Dispatcher {
     private void handle(final Request request,
                         final String fromParticipantId,
                         final String toParticipantId,
-                        final long expiryDate) {
+                        final long expiryDate,
+                        final Map<String, String> customHeaders) {
         requestReplyManager.handleRequest(new ProviderCallback<Reply>() {
             @Override
             public void onSuccess(Reply reply) {
                 try {
                     if (!DispatcherUtils.isExpired(expiryDate)) {
-                        sendReply(toParticipantId, fromParticipantId, reply, expiryDate);
+                        sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders);
                     } else {
                         logger.error("Error: reply {} is not send to caller, as the expiryDate of the reply message {} has been reached.",
                                      reply,
@@ -225,7 +221,7 @@ public class DispatcherImpl implements Dispatcher {
                 logger.error("Error processing request: \r\n {} ; error: {}", request, error);
                 Reply reply = new Reply(request.getRequestReplyId(), error);
                 try {
-                    sendReply(toParticipantId, fromParticipantId, reply, expiryDate);
+                    sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders);
                 } catch (Exception e) {
                     logger.error("Error sending error reply: \r\n {}", reply, e);
                 }

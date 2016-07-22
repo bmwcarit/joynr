@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package io.joynr.caching;
 
@@ -122,7 +122,6 @@ public class ClientCacheTest extends GuiceBasedTest {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 }

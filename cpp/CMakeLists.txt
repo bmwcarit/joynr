@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.18.5)
+project(joynr-0.19.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 18)
-set(JOYNR_PATCH_VERSION 5)
+set(JOYNR_MINOR_VERSION 19)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -70,6 +70,23 @@ message(STATUS "JOYNR_INSTALL_FULL_SYSCONFDIR = ${JOYNR_INSTALL_FULL_SYSCONFDIR}
 message(STATUS "-----------------------------------------------------")
 
 option(
+    ENABLE_CCACHE
+    "Should ccache be used?"
+    OFF
+)
+message(STATUS "option ENABLE_CCACHE=" ${ENABLE_CCACHE})
+
+if(ENABLE_CCACHE)
+    find_program(CCACHE_FOUND ccache)
+    if(CCACHE_FOUND)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+    else(CCACHE_FOUND)
+        message(WARNING "ccache was not found. Fall-back to default compiler.")
+    endif(CCACHE_FOUND)
+endif(ENABLE_CCACHE)
+
+option(
     GENERATE_SOURCES
     "Generate source files from Franca model?"
     OFF
@@ -82,52 +99,37 @@ if(${GENERATE_SOURCES})
 endif(${GENERATE_SOURCES})
 
 option(
-    USE_PLATFORM_DEPENDENCIES
-    "Resolve all dependencies (link libraries) from the system?"
-    OFF
-)
-message(STATUS "option USE_PLATFORM_DEPENDENCIES=" ${USE_PLATFORM_DEPENDENCIES})
-
-if(USE_PLATFORM_DEPENDENCIES)
-    set(USE_PLATFORM_SPDLOG ON)
-    set(USE_PLATFORM_JSMN ON)
-    set(USE_PLATFORM_MOSQUITTO ON)
-    set(USE_PLATFORM_GTEST_GMOCK ON)
-    set(USE_PLATFORM_WEBSOCKETPP ON)
-endif(USE_PLATFORM_DEPENDENCIES)
-
-option(
     USE_PLATFORM_SPDLOG
     "Resolve dependency to spdlog from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_SPDLOG=" ${USE_PLATFORM_SPDLOG})
 
 option(
     USE_PLATFORM_JSMN
     "Resolve dependency to jsmn from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_JSMN=" ${USE_PLATFORM_JSMN})
 
 option(
     USE_PLATFORM_MOSQUITTO
     "Resolve dependency to mosquitto from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_MOSQUITTO=" ${USE_PLATFORM_MOSQUITTO})
 
 option(
     USE_PLATFORM_GTEST_GMOCK
     "Resolve dependency to gtest and gmock from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
 
 option(
     USE_PLATFORM_WEBSOCKETPP
     "Resolve dependency to WebSocket++ from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_WEBSOCKETPP=" ${USE_PLATFORM_WEBSOCKETPP})
 

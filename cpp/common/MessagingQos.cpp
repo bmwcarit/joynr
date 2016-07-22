@@ -18,12 +18,14 @@
  */
 #include "joynr/MessagingQos.h"
 
+#include <exception>
 #include <sstream>
+#include <regex>
 
 namespace joynr
 {
 
-MessagingQos::MessagingQos(std::uint64_t ttl) : ttl(ttl)
+MessagingQos::MessagingQos(std::uint64_t ttl) : ttl(ttl), messageHeaders()
 {
 }
 
@@ -35,6 +37,38 @@ std::uint64_t MessagingQos::getTtl() const
 void MessagingQos::setTtl(const std::uint64_t& ttl)
 {
     this->ttl = ttl;
+}
+
+void MessagingQos::putCustomMessageHeader(const std::string& key, const std::string& value)
+{
+    checkCustomHeaderKeyValue(key, value);
+    messageHeaders[key] = value;
+}
+
+void MessagingQos::putAllCustomMessageHeaders(
+        const std::unordered_map<std::string, std::string>& values)
+{
+    for (const auto& it : values) {
+        checkCustomHeaderKeyValue(it.first, it.second);
+        messageHeaders[it.first] = it.second;
+    }
+}
+
+void MessagingQos::checkCustomHeaderKeyValue(const std::string& key, const std::string& value) const
+{
+    if (!std::regex_match(key, std::regex(R"(^[a-zA-Z0-9\-]*$)", std::regex::extended))) {
+        throw std::invalid_argument("key may only contain alphanumeric characters");
+    }
+    if (!std::regex_match(
+                value, std::regex(R"(^([a-zA-Z0-9 ;:,+&\?\.\*\/\\]|-)*$)", std::regex::extended))) {
+        throw std::invalid_argument(
+                "value contains illegal character. See API docs for allowed characters");
+    }
+}
+
+const std::unordered_map<std::string, std::string>& MessagingQos::getCustomMessageHeaders() const
+{
+    return messageHeaders;
 }
 
 bool MessagingQos::operator==(const MessagingQos& other) const

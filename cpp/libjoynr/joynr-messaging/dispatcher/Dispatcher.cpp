@@ -49,10 +49,12 @@ namespace joynr
 
 INIT_LOGGER(Dispatcher);
 
-Dispatcher::Dispatcher(JoynrMessageSender* messageSender, int maxThreads)
+Dispatcher::Dispatcher(JoynrMessageSender* messageSender,
+                       boost::asio::io_service& ioService,
+                       int maxThreads)
         : messageSender(messageSender),
-          requestCallerDirectory("Dispatcher-RequestCallerDirectory"),
-          replyCallerDirectory("Dispatcher-ReplyCallerDirectory"),
+          requestCallerDirectory("Dispatcher-RequestCallerDirectory", ioService),
+          replyCallerDirectory("Dispatcher-ReplyCallerDirectory", ioService),
           publicationManager(nullptr),
           subscriptionManager(nullptr),
           handleReceivedMessageThreadPool("Dispatcher", maxThreads),
@@ -266,7 +268,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
             return;
         }
 
-        caller->execute(reply);
+        caller->execute(std::move(reply));
 
         // Clean up
         removeReplyCaller(requestReplyId);

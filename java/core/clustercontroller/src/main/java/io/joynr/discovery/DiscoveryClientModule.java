@@ -23,10 +23,8 @@ import io.joynr.arbitration.ArbitrationConstants;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.capabilities.CapabilitiesProvisioning;
 import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.DiscoveryEntryStoreInMemory;
-import io.joynr.capabilities.InProcessCapabilitiesProvisioning;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -49,7 +47,6 @@ public class DiscoveryClientModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(LocalCapabilitiesDirectory.class).to(LocalCapabilitiesDirectoryImpl.class).in(Singleton.class);
-        bind(CapabilitiesProvisioning.class).to(InProcessCapabilitiesProvisioning.class);
         bind(DiscoveryEntryStore.class).to(DiscoveryEntryStoreInMemory.class);
     }
 

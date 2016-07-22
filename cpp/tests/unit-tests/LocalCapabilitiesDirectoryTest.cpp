@@ -32,12 +32,14 @@
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
+#include "tests/utils/MockCallback.h"
 #include "joynr/CapabilityEntry.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/Logger.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
 #include "joynr/Semaphore.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;
@@ -59,7 +61,8 @@ public:
         messagingSettings(settings),
         libjoynrsettings(settings),
         capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
-        mockMessageRouter(),
+        singleThreadedIOService(),
+        mockMessageRouter(singleThreadedIOService.getIOService()),
         localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings,
                                                                   capabilitiesClient,
                                                                   LOCAL_ADDRESS,
@@ -262,6 +265,7 @@ protected:
     MessagingSettings messagingSettings;
     LibjoynrSettings libjoynrsettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
+    SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
     std::int64_t lastSeenDateMs;

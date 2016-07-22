@@ -1,7 +1,5 @@
 package io.joynr.messaging;
 
-import io.joynr.common.ExpiryDate;
-
 /*
  * #%L
  * %%
@@ -21,15 +19,13 @@ import io.joynr.common.ExpiryDate;
  * #L%
  */
 
-import io.joynr.messaging.routing.ChildMessageRouter;
-import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.proxy.Callback;
-import joynr.JoynrMessage;
-import joynr.system.RoutingProxy;
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.WebSocketAddress;
+import static org.mockito.Mockito.when;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,10 +35,16 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import io.joynr.common.ExpiryDate;
+
+import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.RoutingTable;
+import joynr.JoynrMessage;
+import joynr.system.RoutingProxy;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.WebSocketAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChildMessageRouterTest {
@@ -80,10 +82,10 @@ public class ChildMessageRouterTest {
                                                messagingStubFactory);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
 
-        Mockito.when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
-        Mockito.when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
-        Mockito.when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
-        Mockito.when(parentAddress.getChannelId()).thenReturn("MessageRouterImplTestChannel");
+        when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
+        when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
+        when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
+        when(parentAddress.getChannelId()).thenReturn("MessageRouterImplTestChannel");
 
     }
 
@@ -105,9 +107,7 @@ public class ChildMessageRouterTest {
     @SuppressWarnings("unchecked")
     public void passesNextHopToParent() {
         messageRouter.addNextHop(unknownParticipantId, nextHopAddress);
-        Mockito.verify(messageRouterParent).addNextHop(Mockito.any(Callback.class),
-                                                       Mockito.eq(unknownParticipantId),
-                                                       Mockito.eq(incomingAddress));
+        Mockito.verify(messageRouterParent).addNextHop(Mockito.eq(unknownParticipantId), Mockito.eq(incomingAddress));
     }
 
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {

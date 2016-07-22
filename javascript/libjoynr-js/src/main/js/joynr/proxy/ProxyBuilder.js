@@ -34,6 +34,7 @@ define("joynr/proxy/ProxyBuilder", [
     "joynr/proxy/DiscoveryQos",
     "joynr/messaging/MessagingQos",
     "joynr/types/TypeRegistrySingleton",
+    "joynr/types/Version",
     "joynr/util/Util",
     "joynr/system/LoggerFactory"
 ], function(
@@ -51,6 +52,7 @@ define("joynr/proxy/ProxyBuilder", [
         DiscoveryQos,
         MessagingQos,
         TypeRegistrySingleton,
+        Version,
         Util,
         LoggerFactory) {
 
@@ -117,7 +119,7 @@ define("joynr/proxy/ProxyBuilder", [
          * @param {String}
          *            settings.domain - the domain on which the provider should be looked for
          * @param {DiscoveryQos}
-         *            settings.discoveryQos - jsthe settings object determining arbitration
+         *            settings.discoveryQos - the settings object determining arbitration
          *            parameters
          * @param {MessagingQos}
          *            settings.messagingQos - the settings object determining arbitration parameters
@@ -180,12 +182,17 @@ define("joynr/proxy/ProxyBuilder", [
 
                     return Promise.all(datatypePromises).then(
                             function() {
+                                var proxyVersion = new Version({
+                                    majorVersion : proxy.constructor.MAJOR_VERSION,
+                                    minorVersion : proxy.constructor.MINOR_VERSION
+                                });
                                 return arbitrator.startArbitration({
                                     domains : [ proxy.domain
                                     ],
                                     interfaceName : proxy.interfaceName,
                                     discoveryQos : settings.discoveryQos,
-                                    staticArbitration : settings.staticArbitration
+                                    staticArbitration : settings.staticArbitration,
+                                    proxyVersion : proxyVersion
                                 }).then(
                                         function(arbitratedCaps) {
                                             if (settings.loggingContext !== undefined) {

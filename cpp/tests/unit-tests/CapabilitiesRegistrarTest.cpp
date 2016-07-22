@@ -25,11 +25,10 @@
 #include <gmock/gmock.h>
 #include "joynr/CapabilitiesRegistrar.h"
 #include "tests/utils/MockObjects.h"
+#include "joynr/types/Version.h"
+#include "joynr/SingleThreadedIOService.h"
 
-using namespace ::testing;
 using namespace joynr;
-
-const std::string participantIdFile = "test_participantids.settings";
 
 class CapabilitiesRegistrarTest : public ::testing::Test {
 public:
@@ -42,9 +41,10 @@ public:
             mockProvider(new MockProvider()),
             domain("testDomain"),
             expectedParticipantId("testParticipantId"),
-            mockMessageRouter(new MockMessageRouter())
+            singleThreadedIOService(),
+            mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
+            expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION)
     {
-
     }
     void SetUp(){
         std::vector<IDispatcher*> dispatcherList;
@@ -63,7 +63,6 @@ public:
     void TearDown(){
         delete capabilitiesRegistrar;
         delete mockDispatcher;
-
     }
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
@@ -75,7 +74,9 @@ protected:
     std::shared_ptr<MockProvider> mockProvider;
     std::string domain;
     std::string expectedParticipantId;
+    SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
+    const types::Version expectedProviderVersion;
 };
 
 TEST_F(CapabilitiesRegistrarTest, add){
@@ -98,7 +99,8 @@ TEST_F(CapabilitiesRegistrarTest, add){
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                         Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
                         Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
-                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
+                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos)),
+                        Property(&joynr::types::DiscoveryEntry::getProviderVersion, Eq(expectedProviderVersion))
                     )
                 )
     ).WillOnce(Return());

@@ -1,0 +1,22 @@
+{
+  "name": "sit-node-app",
+  "version": "0.19.0",
+  "description": "System Integration Test Node App",
+  "main": "src/main/js/consumer.js",
+  "private": true,
+  "dependencies": {
+      "bluebird" : "3.1.1"
+  },
+  "config": {
+    "domain": "io.joynr.systemintegrationtest.node",
+    "cc": {
+      "host": "localhost",
+      "port": "4242"
+    }
+  },
+  "scripts": {
+    "preinstall": "npm install ../../../javascript/libjoynr-js/target/node-classes ../../test-base/target/classes",
+    "startconsumer" : "domain=$npm_package_config_domain cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port node src/main/js/consumer.js",
+    "startprovider" : "domain=$npm_package_config_domain cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port node src/main/js/provider.js"
+  }
+}

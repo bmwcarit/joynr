@@ -18,7 +18,6 @@ package io.joynr.generator.js.communicationmodel
  * limitations under the License.
  */
 
-import com.google.common.collect.Sets
 import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.js.util.GeneratorParameter
@@ -38,21 +37,16 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 	@Inject private extension NamingUtil
 	@Inject private extension JoynrJSGeneratorExtensions
 
-	static var generatedTypes = Sets.newHashSet()
-
 	@Inject
 	new(@Assisted FCompoundType type) {
 		super(type)
 	}
 
 	override generate() '''
-		«IF !generatedTypes.contains(type)»
-			«IF type instanceof FStructType»
-				«generateStructType(type)»
-			«ELSEIF type instanceof FUnionType»
-				«generateUnionType(type as FUnionType)»
-			«ENDIF»
-			«generatedTypes.add(type)»
+		«IF type instanceof FStructType»
+			«generateStructType(type)»
+		«ELSEIF type instanceof FUnionType»
+			«generateUnionType(type as FUnionType)»
 		«ENDIF»
 	'''
 

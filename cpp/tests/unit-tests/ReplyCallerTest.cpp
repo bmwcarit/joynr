@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 #include "joynr/ReplyCaller.h"
 #include "tests/utils/MockObjects.h"
+#include "utils/MockCallback.h"
 
 using ::testing::Property;
 using ::testing::Eq;
@@ -33,7 +34,7 @@ MATCHER(timeoutException, "") {
 }
 
 MATCHER_P(providerRuntimeException, msg, "") {
-    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME
+    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME()
             && arg.getMessage() == msg;
 }
 

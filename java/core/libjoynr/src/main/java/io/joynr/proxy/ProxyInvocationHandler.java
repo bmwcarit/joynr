@@ -20,15 +20,35 @@ package io.joynr.proxy;
  */
 
 import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.exceptions.JoynrRuntimeException;
+import joynr.exceptions.ApplicationException;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-public abstract class ProxyInvocationHandler implements InvocationHandler {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    abstract Object invoke(Method method, Object[] args) throws Throwable;
+public abstract class ProxyInvocationHandler implements InvocationHandler {
+    private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandler.class);
+    protected Throwable throwable;
+
+    abstract Object invoke(Method method, Object[] args) throws ApplicationException;
+
+    public abstract void abort(JoynrRuntimeException exception);
 
     abstract void createConnector(ArbitrationResult result);
+
+    /**
+     * This method can be called to specify a throwable which will be thrown each time
+     * {@link #invoke(Object, Method, Object[])} is called.
+     *
+     * @param throwable
+     *            the throwable to be thrown when invoke is called.
+     */
+    void setThrowableForInvoke(Throwable throwable) {
+        this.throwable = throwable;
+    }
 
     /**
      * The InvocationHandler invoke method is mapped to the ProxyInvocationHandler.invoke which does not need the proxy
@@ -36,6 +56,18 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        return invoke(method, args);
+        if (throwable != null) {
+            throw throwable;
+        }
+        try {
+            return invoke(method, args);
+        } catch (Exception e) {
+            if (this.throwable != null) {
+                logger.debug("exception caught: {} overriden by: {}", e.getMessage(), throwable.getMessage());
+                throw throwable;
+            } else {
+                throw e;
+            }
+        }
     }
 }

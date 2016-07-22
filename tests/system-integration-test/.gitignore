@@ -3,7 +3,7 @@ target
 .project
 .settings
 .checkstyle
-src/main/generated*
+sit-cpp-app-build
 CMakeLists.txt.user
 /provider-joynr.properties
 /joynr_participantIds.properties

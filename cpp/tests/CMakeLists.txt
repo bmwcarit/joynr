@@ -25,82 +25,7 @@ if(${WIN32})
 else()
 endif(${WIN32})
 
-
-if (USE_PLATFORM_GTEST_GMOCK)
-
-    find_package(GTest REQUIRED)
-    find_package(GMock REQUIRED)
-
-else (USE_PLATFORM_GTEST_GMOCK)
-
-    ### clone googletest git repository ###########################################################
-
-    # this repository contains both googletest and googlemock
-    AddExternalProject(
-        googletest-repo
-        DOWNLOAD_DIR "googletest-repo"
-        TIMEOUT 10
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG ddb8012e # there is no version tag on github; this is to make sure that a working version is used
-        CONFIGURE_COMMAND "" # Disable configuring
-        BUILD_COMMAND "" # Disable building
-    )
-
-    get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
-
-    ### Add google test ###########################################################
-
-    # build googletest library
-    AddExternalProject(
-        googletest
-        DOWNLOAD_COMMAND "" # already downloaded by googletest-repo
-        SOURCE_DIR "${EP_PREFIX}/src/googletest-repo/googletest"
-        BUILD_BYPRODUCTS "${EP_PREFIX}/src/googletest-build/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}"
-        CMAKE_ARGS -Dgtest_force_shared_crt=ON
-                   -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
-    )
-
-    ExternalProject_Get_Property(googletest binary_dir)
-    set(googletest_binary_dir ${binary_dir})
-    message(STATUS "variable googletest_binary_dir=${googletest_binary_dir}")
-
-    # build googletest AFTER downloading the sources
-    add_dependencies(googletest googletest-repo)
-
-    # Specify include dir
-    ExternalProject_Get_Property(googletest source_dir)
-    set(googletest_source_dir ${source_dir})
-    message(STATUS "variable googletest_source_dir=${googletest_source_dir}")
-    set(GTEST_INCLUDE_DIRS ${googletest_source_dir}/include)
-    set(GTEST_LIBRARIES ${googletest_binary_dir}/libgtest.a)
-
-    ### Add google mock ###########################################################
-
-    # build googlemock library
-    AddExternalProject(
-        googlemock
-        DOWNLOAD_COMMAND "" # already downloaded by googletest-repo
-        SOURCE_DIR "${EP_PREFIX}/src/googletest-repo/googlemock"
-        BUILD_BYPRODUCTS "${EP_PREFIX}/src/googlemock-build/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX}"
-        CMAKE_ARGS -Dgtest_force_shared_crt=ON
-                   -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
-    )
-
-    ExternalProject_Get_Property(googlemock binary_dir)
-    set(googlemock_binary_dir ${binary_dir})
-    message(STATUS "variable googlemock_binary_dir=${googlemock_binary_dir}")
-
-    # build googlemock AFTER downloading the sources
-    add_dependencies(googlemock googletest-repo)
-
-    # Specify include dir
-    ExternalProject_Get_Property(googlemock source_dir)
-    set(googlemock_source_dir ${source_dir})
-    message(STATUS "variable googlemock_source_dir=${googlemock_source_dir}")
-    set(GMOCK_INCLUDE_DIRS ${googlemock_source_dir}/include)
-    set(GMOCK_LIBRARIES ${googlemock_binary_dir}/libgmock.a)
-
-endif(USE_PLATFORM_GTEST_GMOCK)
+include(AddGtestGmock)
 
 ### copy test resources and settings ##########################################
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
@@ -330,8 +255,6 @@ if(${GENERATE_SOURCES})
     )
 endif(${GENERATE_SOURCES})
 
-include(AddTest.cmake)
-
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
@@ -465,6 +388,7 @@ set(
     cluster_controller_test_HEADERS
     "JoynrTest.h"
     "PrettyPrint.h"
+    "utils/MockCallback.h"
     "utils/MockObjects.h"
     "utils/LibJoynrMockObjects.h"
     "utils/MockLocalCapabilitiesDirectoryCallback.h"
@@ -501,6 +425,7 @@ set(
     libjoynr_test_HEADERS
     "PrettyPrint.h"
     "utils/TimeUtils.h"
+    "utils/TestRunnable.h"
     "utils/LibJoynrMockObjects.h"
     ${JoynrTest_GENHEADERS}
 )
@@ -509,6 +434,7 @@ set(
     cluster_controller_test_SOURCES
     "PrettyPrint.cpp"
     "utils/MockObjects.cpp"
+    "utils/TestRunnable.cpp"
     "utils/MockLocalCapabilitiesDirectoryCallback.cpp"
     "TestMain.cpp"
 )

@@ -43,9 +43,12 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
     std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     std::string defaultPublicKeyId("");
 
-    joynr::types::Version providerVersion;
+    joynr::types::Version routingProviderVersion(
+            joynr::system::IRouting::MAJOR_VERSION, joynr::system::IRouting::MINOR_VERSION);
+    joynr::types::Version discoveryProviderVersion(
+            joynr::system::IDiscovery::MAJOR_VERSION, joynr::system::IDiscovery::MINOR_VERSION);
     joynr::types::DiscoveryEntry routingProviderDiscoveryEntry(
-            providerVersion,
+            routingProviderVersion,
             systemServicesSettings.getDomain(),
             joynr::system::IRouting::INTERFACE_NAME(),
             systemServicesSettings.getCcRoutingProviderParticipantId(),
@@ -56,7 +59,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
     provisionedDiscoveryEntries.insert(std::make_pair(
             routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
     joynr::types::DiscoveryEntry discoveryProviderDiscoveryEntry(
-            providerVersion,
+            discoveryProviderVersion,
             systemServicesSettings.getDomain(),
             joynr::system::IDiscovery::INTERFACE_NAME(),
             systemServicesSettings.getCcDiscoveryProviderParticipantId(),

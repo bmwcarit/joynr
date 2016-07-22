@@ -19,6 +19,8 @@ package io.joynr.messaging.mqtt.paho.client;
  * #L%
  */
 
+import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
+
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -31,8 +33,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
+import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -45,14 +47,17 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private JoynrMqttClient mqttClient = null;
     private int reconnectSleepMs;
     private ScheduledExecutorService scheduledExecutorService;
+    private String receiverId;
 
     @Inject
     public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS) int reconnectSleepMs,
-                                 @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService) {
+                                 @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
+                                 @Named(RECEIVERID) String receiverId) {
         this.ownAddress = ownAddress;
         this.reconnectSleepMs = reconnectSleepMs;
         this.scheduledExecutorService = scheduledExecutorService;
+        this.receiverId = receiverId;
     }
 
     @Override
@@ -69,8 +74,9 @@ public class MqttPahoClientFactory implements MqttClientFactory {
         try {
             logger.debug("Create Mqtt Client. Address: {}", ownAddress);
 
+            String clientId = "joynr:" + receiverId.substring(0, 17);
             MqttClient mqttClient = new MqttClient(ownAddress.getBrokerUri(),
-                                                   ownAddress.getTopic(),
+                                                   clientId,
                                                    new MemoryPersistence(),
                                                    scheduledExecutorService);
             pahoClient = new MqttPahoClient(mqttClient, reconnectSleepMs);

@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/Semaphore.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
@@ -29,13 +30,21 @@
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using ::testing::Return;
+using ::testing::Pointee;
 using namespace joynr;
+
+ACTION_P(ReleaseSemaphore, semaphore)
+{
+    semaphore->notify();
+}
 
 class MessageRouterTest : public ::testing::Test {
 public:
     MessageRouterTest() :
+        singleThreadedIOService(),
         settings(),
         messagingSettings(settings),
         messageQueue(nullptr),
@@ -49,7 +58,10 @@ public:
         auto messagingStubFactory = std::make_unique<MockMessagingStubFactory>();
         this->messagingStubFactory = messagingStubFactory.get();
 
-        messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory), std::unique_ptr<IPlatformSecurityManager>(), 6, std::move(messageQueue));
+        messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory),
+                                                        std::unique_ptr<IPlatformSecurityManager>(),
+                                                        singleThreadedIOService.getIOService(),
+                                                        6, std::move(messageQueue));
         // provision global capabilities directory
         auto addressCapabilitiesDirectory =
                 std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
@@ -70,6 +82,7 @@ public:
     void TearDown(){
     }
 protected:
+    SingleThreadedIOService singleThreadedIOService;
     std::string settingsFileName;
     Settings settings;
     MessagingSettings messagingSettings;
@@ -80,6 +93,7 @@ protected:
     void routeMessageToAddress(
             const std::string& destinationParticipantId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouterTest);
 };
@@ -125,6 +139,7 @@ MATCHER_P2(addressWithChannelId, addressType, channelId, "") {
 }
 
 TEST_F(MessageRouterTest, doNotAddMessageToQueue){
+    joynr::Semaphore semaphore(0);
     const std::string testHttp = "TEST_HTTP";
     const std::string testMqtt = "TEST_MQTT";
     const std::string brokerUri = "brokerUri";
@@ -140,9 +155,11 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     // the message now has a known destination and should be directly routed
     joynrMessage.setHeaderTo(testHttp);
     EXPECT_CALL(*messagingStubFactory, create(addressWithChannelId("http", testHttp))).Times(1).WillOnce(Return(mockMessagingStub));
-    EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
+    ON_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+        .WillByDefault(ReleaseSemaphore(&semaphore));
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 
     // add destination address -> message should be routed
     auto mqttAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
@@ -150,9 +167,11 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     // the message now has a known destination and should be directly routed
     joynrMessage.setHeaderTo(testMqtt);
     EXPECT_CALL(*messagingStubFactory, create(addressWithChannelId("mqtt", testMqtt))).Times(1).WillOnce(Return(mockMessagingStub));
-    EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
+    ON_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+        .WillByDefault(ReleaseSemaphore(&semaphore));
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 }
 
 TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
@@ -192,12 +211,16 @@ TEST_F(MessageRouterTest, outdatedMessagesAreRemoved){
 void MessageRouterTest::routeMessageToAddress(
         const std::string& destinationParticipantId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address) {
+    joynr::Semaphore semaphore(0);
     messageRouter->addNextHop(destinationParticipantId, address);
     joynrMessage.setHeaderTo(destinationParticipantId);
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
     ON_CALL(*messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
+    ON_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+            .WillByDefault(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
     messageRouter->route(joynrMessage);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 }
 
 TEST_F(MessageRouterTest, routeMessageToHttpAddress) {
@@ -220,4 +243,26 @@ TEST_F(MessageRouterTest, routeMessageToMqttAddress) {
             create(addressWithChannelId("mqtt", destinationChannelId))
             ).Times(1);
     routeMessageToAddress(destinationParticipantId, address);
+}
+
+TEST_F(MessageRouterTest, restoreRoutingTable) {
+    const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
+    std::remove(routingTablePersistenceFilename.c_str());
+
+    auto messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
+    auto messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>(), singleThreadedIOService.getIOService());
+    std::string participantId = "myParticipantId";
+    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
+
+    // MUST be done BEFORE savePersistence to pass the persistence filename to the publicationManager
+    messageRouter->loadRoutingTable(routingTablePersistenceFilename);
+    messageRouter->addProvisionedNextHop(participantId, address); // Saves the RoutingTable to the persistence file.
+
+    messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>(), singleThreadedIOService.getIOService());
+
+    messageRouter->loadRoutingTable(routingTablePersistenceFilename);
+
+    joynrMessage.setHeaderTo(participantId);
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*address))));
+    messageRouter->route(joynrMessage);
 }

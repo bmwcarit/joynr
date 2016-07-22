@@ -66,6 +66,9 @@ function build
     docker tag -f ${repository}joynr-cpp-clang${version} ${repository}joynr-cpp-clang:latest
     docker tag -f ${repository}joynr-cpp-clang${version} joynr-cpp-clang:latest
 
+    docker build -t ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base/
+    docker tag -f ${repository}joynr-runtime-environment-base${version} ${repository}joynr-runtime-environment-base:latest
+    docker tag -f ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base:latest
 }
 
 function pull

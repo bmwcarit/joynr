@@ -184,6 +184,10 @@ define(
                             var requestMessage =
                                     new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
                             requestMessage.payload = JSONSerializer.stringify(settings.request);
+                            if (settings.messagingQos.customHeaders) {
+                                requestMessage
+                                        .setCustomHeaders(settings.messagingQos.customHeaders);
+                            }
 
                             log.info("calling "
                                 + settings.request.methodName
@@ -220,7 +224,10 @@ define(
                                     new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY);
                             oneWayRequestMessage.payload =
                                     JSONSerializer.stringify(settings.request);
-
+                            if (settings.messagingQos.customHeaders) {
+                                oneWayRequestMessage
+                                        .setCustomHeaders(settings.messagingQos.customHeaders);
+                            }
                             log.info("calling "
                                 + settings.request.methodName
                                 + ". OneWayRequest: "
@@ -348,10 +355,8 @@ define(
                  *            settings.to participantId of the receiver
                  * @param {Number}
                  *            settings.expiryDate time-to-live
-                 * @param {MessagingQos}
-                 *            settings.messagingQos quality-of-service parameters such as time-to-live
-                 * @param {String}
-                 *            settings.replyChannelId channelId of receiver, as received in request
+                 * @param {Object}
+                 *            settings.customHeaders custom headers from request
                  * @param {Reply}
                  *            reply
                  */
@@ -369,6 +374,7 @@ define(
                     replyMessage.from = settings.from;
                     replyMessage.to = settings.to;
                     replyMessage.expiryDate = settings.expiryDate;
+                    replyMessage.setCustomHeaders(settings.customHeaders);
 
                     /*
                      * in case the reply contains an error, do not perform any special string replacement
@@ -429,179 +435,132 @@ define(
                  */
                 this.receive =
                         function receive(joynrMessage) {
-                            return new Promise(
-                                    function(resolve, reject) {
-                                        log.debug("received message with the following payload: "
-                                            + joynrMessage.payload);
-                                        switch (joynrMessage.type) {
+                            log.debug("received message with the following payload: "
+                                + joynrMessage.payload);
+                            switch (joynrMessage.type) {
 
-                                            case JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST:
-                                                try {
-                                                    var request =
-                                                            new Request(
-                                                                    parsePayload(joynrMessage.payload));
+                                case JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST:
+                                    try {
+                                        var request =
+                                                new Request(parsePayload(joynrMessage.payload));
 
-                                                    requestReplyManager
-                                                            .handleRequest(
-                                                                    joynrMessage.to,
-                                                                    request,
-                                                                    function(reply) {
-                                                                        sendReply(
-                                                                                {
-                                                                                    from : joynrMessage.to,
-                                                                                    to : joynrMessage.from,
-                                                                                    expiryDate : joynrMessage.expiryDate
-                                                                                },
-                                                                                reply);
-                                                                    });
-                                                    resolve();
-                                                } catch (errorInRequest) {
-                                                    // TODO handle error in handling the request
-                                                    log.error("error handling request: "
-                                                        + errorInRequest);
-                                                    reject(new Error("error handling request: "
-                                                        + errorInRequest));
-                                                }
-                                                break;
+                                        requestReplyManager.handleRequest(
+                                                joynrMessage.to,
+                                                request,
+                                                function(reply) {
+                                                    sendReply({
+                                                        from : joynrMessage.to,
+                                                        to : joynrMessage.from,
+                                                        expiryDate : joynrMessage.expiryDate,
+                                                        customHeaders : joynrMessage
+                                                                .getCustomHeaders()
+                                                    }, reply);
+                                                });
+                                    } catch (errorInRequest) {
+                                        // TODO handle error in handling the request
+                                        log.error("error handling request: " + errorInRequest);
+                                    }
+                                    break;
 
-                                            case JoynrMessage.JOYNRMESSAGE_TYPE_REPLY:
-                                                try {
-                                                    var settings =
-                                                            Util
-                                                                    .extend(
-                                                                            parsePayload(joynrMessage.payload),
-                                                                            {
-                                                                                requestReplyId : joynrMessage.requestReplyId
-                                                                            });
-                                                    requestReplyManager.handleReply(new Reply(
-                                                            settings));
-                                                    resolve();
-                                                } catch (errorInReply) {
-                                                    // TODO handle error in handling the reply
-                                                    log.error("error handling reply: "
-                                                        + errorInReply);
-                                                    reject(new Error("error handling reply: "
-                                                        + errorInReply));
-                                                }
-                                                break;
+                                case JoynrMessage.JOYNRMESSAGE_TYPE_REPLY:
+                                    try {
+                                        var settings =
+                                                Util.extend(parsePayload(joynrMessage.payload), {
+                                                    requestReplyId : joynrMessage.requestReplyId
+                                                });
+                                        requestReplyManager.handleReply(new Reply(settings));
+                                    } catch (errorInReply) {
+                                        // TODO handle error in handling the reply
+                                        log.error("error handling reply: " + errorInReply);
+                                    }
+                                    break;
 
-                                            case JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY:
-                                                try {
-                                                    requestReplyManager
-                                                            .handleOneWayRequest(
-                                                                    joynrMessage.to,
-                                                                    new OneWayRequest(
-                                                                            parsePayload(joynrMessage.payload)));
-                                                    resolve();
-                                                } catch (errorInOneWayRequest) {
-                                                    log.error("error handling one way: "
-                                                        + errorInOneWayRequest);
-                                                    reject(new Error("error handling one way: "
-                                                        + errorInOneWayRequest));
-                                                }
-                                                break;
+                                case JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY:
+                                    try {
+                                        requestReplyManager.handleOneWayRequest(
+                                                joynrMessage.to,
+                                                new OneWayRequest(
+                                                        parsePayload(joynrMessage.payload)));
+                                    } catch (errorInOneWayRequest) {
+                                        log
+                                                .error("error handling one way: "
+                                                    + errorInOneWayRequest);
+                                    }
+                                    break;
 
-                                            case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST:
-                                                try {
-                                                    publicationManager
-                                                            .handleSubscriptionRequest(
-                                                                    joynrMessage.from,
-                                                                    joynrMessage.to,
-                                                                    new SubscriptionRequest(
-                                                                            parsePayload(joynrMessage.payload)));
-                                                    resolve();
-                                                } catch (errorInSubscriptionRequest) {
-                                                    // TODO handle error in handling the subscriptionRequest
-                                                    log
-                                                            .error("error handling subscriptionRequest: "
-                                                                + errorInSubscriptionRequest);
-                                                    reject(new Error(
-                                                            "error handling subscriptionRequest: "
-                                                                + errorInSubscriptionRequest));
-                                                }
-                                                break;
+                                case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST:
+                                    try {
+                                        publicationManager.handleSubscriptionRequest(
+                                                joynrMessage.from,
+                                                joynrMessage.to,
+                                                new SubscriptionRequest(
+                                                        parsePayload(joynrMessage.payload)));
+                                    } catch (errorInSubscriptionRequest) {
+                                        // TODO handle error in handling the subscriptionRequest
+                                        log.error("error handling subscriptionRequest: "
+                                            + errorInSubscriptionRequest);
+                                    }
+                                    break;
 
-                                            case JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST:
-                                                try {
-                                                    publicationManager
-                                                            .handleEventSubscriptionRequest(
-                                                                    joynrMessage.from,
-                                                                    joynrMessage.to,
-                                                                    new SubscriptionRequest(
-                                                                            parsePayload(joynrMessage.payload)));
-                                                    resolve();
-                                                } catch (errorInEventSubscriptionRequest) {
-                                                    // TODO handle error in handling the subscriptionRequest
-                                                    log
-                                                            .error("error handling eventSubscriptionRequest: "
-                                                                + errorInEventSubscriptionRequest);
-                                                    reject(new Error(
-                                                            "error handling eventSubscriptionRequest: "
-                                                                + errorInEventSubscriptionRequest));
-                                                }
-                                                break;
+                                case JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST:
+                                    try {
+                                        publicationManager.handleEventSubscriptionRequest(
+                                                joynrMessage.from,
+                                                joynrMessage.to,
+                                                new SubscriptionRequest(
+                                                        parsePayload(joynrMessage.payload)));
+                                    } catch (errorInEventSubscriptionRequest) {
+                                        // TODO handle error in handling the subscriptionRequest
+                                        log.error("error handling eventSubscriptionRequest: "
+                                            + errorInEventSubscriptionRequest);
+                                    }
+                                    break;
 
-                                            case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY:
-                                                try {
-                                                    subscriptionManager
-                                                            .handleSubscriptionReply(new SubscriptionReply(
-                                                                    parsePayload(joynrMessage.payload)));
-                                                    resolve();
-                                                } catch (errorInSubscriptionReply) {
-                                                    // TODO handle error in handling the subscriptionReply
-                                                    log.error("error handling subscriptionReply: "
-                                                        + errorInSubscriptionReply);
-                                                    reject(new Error(
-                                                            "error handling subscriptionReply: "
-                                                                + errorInSubscriptionReply));
-                                                }
-                                                break;
+                                case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY:
+                                    try {
+                                        subscriptionManager
+                                                .handleSubscriptionReply(new SubscriptionReply(
+                                                        parsePayload(joynrMessage.payload)));
+                                    } catch (errorInSubscriptionReply) {
+                                        // TODO handle error in handling the subscriptionReply
+                                        log.error("error handling subscriptionReply: "
+                                            + errorInSubscriptionReply);
+                                    }
+                                    break;
 
-                                            case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP:
-                                                try {
-                                                    publicationManager
-                                                            .handleSubscriptionStop(new SubscriptionStop(
-                                                                    parsePayload(joynrMessage.payload)));
-                                                    resolve();
-                                                } catch (errorInSubscriptionStop) {
-                                                    // TODO handle error in handling the subscriptionStop
-                                                    log.error("error handling subscriptionStop: "
-                                                        + errorInSubscriptionStop);
-                                                    reject(new Error(
-                                                            "error handling subscriptionStop: "
-                                                                + errorInSubscriptionStop));
-                                                }
-                                                break;
+                                case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP:
+                                    try {
+                                        publicationManager
+                                                .handleSubscriptionStop(new SubscriptionStop(
+                                                        parsePayload(joynrMessage.payload)));
+                                    } catch (errorInSubscriptionStop) {
+                                        // TODO handle error in handling the subscriptionStop
+                                        log.error("error handling subscriptionStop: "
+                                            + errorInSubscriptionStop);
+                                    }
+                                    break;
 
-                                            case JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION:
-                                                try {
-                                                    subscriptionManager
-                                                            .handlePublication(new SubscriptionPublication(
-                                                                    parsePayload(joynrMessage.payload)));
-                                                    resolve();
-                                                } catch (errorInPublication) {
-                                                    // TODO handle error in handling the publication
-                                                    log.error("error handling publication: "
-                                                        + errorInPublication);
-                                                    reject(new Error("error handling publication: "
-                                                        + errorInPublication));
-                                                }
-                                                break;
+                                case JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION:
+                                    try {
+                                        subscriptionManager
+                                                .handlePublication(new SubscriptionPublication(
+                                                        parsePayload(joynrMessage.payload)));
+                                    } catch (errorInPublication) {
+                                        // TODO handle error in handling the publication
+                                        log.error("error handling publication: "
+                                            + errorInPublication);
+                                    }
+                                    break;
 
-                                            default:
-                                                log.error("unknown JoynrMessage type: "
-                                                    + joynrMessage.type
-                                                    + ". Discarding message: "
-                                                    // TODO the js formatter is breaking this way, and jslint is
-                                                    // complaining.....
-                                                    + JSONSerializer.stringify(joynrMessage));
-                                                reject(new Error("unknown JoynrMessage type: "
-                                                    + joynrMessage.type
-                                                    + ". Discarding message: "
-                                                    + JSONSerializer.stringify(joynrMessage)));
-                                                break;
-                                        }
-                                    });
+                                default:
+                                    log.error("unknown JoynrMessage type: "
+                                        + joynrMessage.type
+                                        + ". Discarding message: "
+                                        // TODO the js formatter is breaking this way, and jslint is
+                                        // complaining.....
+                                        + JSONSerializer.stringify(joynrMessage));
+                                    break;
+                            }
                         };
             }
 

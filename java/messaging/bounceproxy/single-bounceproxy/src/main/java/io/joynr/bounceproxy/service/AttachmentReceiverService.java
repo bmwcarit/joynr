@@ -62,7 +62,7 @@ public class AttachmentReceiverService {
         try {
             log.debug("Requested attachment: {}", new String(entity, 0, Math.min(50, entity.length), "UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            log.debug("Requested attachment. Failed to log attachment content");
+            log.debug("Requested attachment. Failed to log attachment content", e);
         }
         return Response.ok(entity, MediaType.MULTIPART_FORM_DATA).build();
     }

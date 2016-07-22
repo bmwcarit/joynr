@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <string>
 #include "joynr/LibjoynrSettings.h"
-
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 
 using namespace ::testing;
@@ -53,7 +53,8 @@ ACTION_P(ReleaseSemaphore,semaphore)
 class BroadcastSubscriptionTest : public ::testing::Test {
 public:
     BroadcastSubscriptionTest() :
-        mockMessageRouter(new MockMessageRouter()),
+        singleThreadIOService(),
+        mockMessageRouter(new MockMessageRouter(singleThreadIOService.getIOService())),
         mockRequestCaller(new MockTestRequestCaller()),
         mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double>()),
@@ -64,15 +65,15 @@ public:
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
         messageSender(mockMessageRouter),
-        dispatcher(&messageSender),
+        dispatcher(&messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
     }
 
     void SetUp(){
         //remove stored subscriptions
-        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
-        subscriptionManager = new SubscriptionManager();
+        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+        subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService());
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
         MetaTypeRegistrar::instance().registerMetaType<types::Localisation::GpsLocation>();
@@ -84,6 +85,7 @@ public:
     }
 
 protected:
+    SingleThreadedIOService singleThreadIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListenerOne;

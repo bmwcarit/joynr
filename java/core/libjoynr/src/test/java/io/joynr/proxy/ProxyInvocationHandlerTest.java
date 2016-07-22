@@ -21,6 +21,8 @@ package io.joynr.proxy;
 
 import com.google.common.collect.Sets;
 
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -95,7 +97,7 @@ public class ProxyInvocationHandlerTest {
                     result = proxyInvocationHandler.invoke(TestSyncInterface.class.getDeclaredMethod("testMethod",
                                                                                                      new Class<?>[]{}),
                                                            new Object[]{});
-                } catch (Throwable e) {
+                } catch (Exception e) {
                 }
 
                 return result;
@@ -110,7 +112,7 @@ public class ProxyInvocationHandlerTest {
                     result = proxyInvocationHandler.invoke(TestSyncInterface.class.getDeclaredMethod("testMethod",
                                                                                                      new Class<?>[]{}),
                                                            new Object[]{});
-                } catch (Throwable e) {
+                } catch (Exception e) {
                 }
                 return result;
             }
@@ -136,6 +138,23 @@ public class ProxyInvocationHandlerTest {
         proxyInvocationHandler.invoke(fireAndForgetMethod, args);
 
         verify(connectorInvocationHandler).executeOneWayMethod(fireAndForgetMethod, args);
+    }
+
+    @SuppressWarnings("serial")
+    private static class MyException extends Exception {
+    }
+
+    @Test
+    public void testThrowableOnInvoke() {
+        ProxyInvocationHandler subject = mock(ProxyInvocationHandler.class, CALLS_REAL_METHODS);
+        subject.setThrowableForInvoke(new MyException());
+        try {
+            subject.invoke(this, getClass().getMethod("testThrowableOnInvoke", new Class<?>[0]), new Object[0]);
+        } catch (MyException e) {
+            // Expected
+        } catch (Throwable t) {
+            fail("Wrong exception " + t);
+        }
     }
 
 }

@@ -26,7 +26,6 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr/Util.h"
 #include "joynr-messaging/DummyPlatformSecurityManager.h"
 
 namespace joynr
@@ -34,13 +33,9 @@ namespace joynr
 
 INIT_LOGGER(JoynrMessageFactory);
 
-JoynrMessageFactory::JoynrMessageFactory() : securityManager(new DummyPlatformSecurityManager())
+JoynrMessageFactory::JoynrMessageFactory()
+        : securityManager(std::make_unique<DummyPlatformSecurityManager>())
 {
-}
-
-JoynrMessageFactory::~JoynrMessageFactory()
-{
-    delete securityManager;
 }
 
 JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
@@ -51,7 +46,7 @@ JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
     // create message and set type
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), JsonSerializer::serialize<Request>(payload));
+    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<Request>(payload));
     return msg;
 }
 
@@ -62,7 +57,7 @@ JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), JsonSerializer::serialize<Reply>(payload));
+    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<Reply>(payload));
     return msg;
 }
 
@@ -73,11 +68,7 @@ JoynrMessage JoynrMessageFactory::createOneWayRequest(const std::string& senderI
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
-    initMsg(msg,
-            senderId,
-            receiverId,
-            qos.getTtl(),
-            JsonSerializer::serialize<OneWayRequest>(payload));
+    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<OneWayRequest>(payload));
     return msg;
 }
 
@@ -92,7 +83,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
     initMsg(msg,
             senderId,
             receiverId,
-            qos.getTtl(),
+            qos,
             JsonSerializer::serialize<SubscriptionPublication>(payload));
     return msg;
 }
@@ -108,7 +99,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionRequest(
     initMsg(msg,
             senderId,
             receiverId,
-            qos.getTtl(),
+            qos,
             JsonSerializer::serialize<SubscriptionRequest>(payload));
     return msg;
 }
@@ -124,7 +115,7 @@ JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
     initMsg(msg,
             senderId,
             receiverId,
-            qos.getTtl(),
+            qos,
             JsonSerializer::serialize<BroadcastSubscriptionRequest>(payload));
     return msg;
 }
@@ -136,11 +127,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionReply(const std::string& sen
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
-    initMsg(msg,
-            senderId,
-            receiverId,
-            qos.getTtl(),
-            JsonSerializer::serialize<SubscriptionReply>(payload));
+    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<SubscriptionReply>(payload));
     return msg;
 }
 
@@ -151,23 +138,24 @@ JoynrMessage JoynrMessageFactory::createSubscriptionStop(const std::string& send
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
-    initMsg(msg,
-            senderId,
-            receiverId,
-            qos.getTtl(),
-            JsonSerializer::serialize<SubscriptionStop>(payload));
+    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<SubscriptionStop>(payload));
     return msg;
 }
 
 void JoynrMessageFactory::initMsg(JoynrMessage& msg,
                                   const std::string& senderParticipantId,
                                   const std::string& receiverParticipantId,
-                                  const std::int64_t ttl,
+                                  const MessagingQos& qos,
                                   const std::string& payload) const
 {
+    std::int64_t ttl = qos.getTtl();
     msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
     msg.setHeaderFrom(senderParticipantId);
     msg.setHeaderTo(receiverParticipantId);
+
+    for (const auto& it : qos.getCustomMessageHeaders()) {
+        msg.setCustomHeader(it.first, it.second);
+    }
 
     // calculate expiry date
     JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);

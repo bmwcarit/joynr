@@ -45,7 +45,7 @@ public class Future<T> {
      * occurs/or times out. If the request finishes successfully, it retrieves the return
      * value for the request if one exists, otherwise a JoynrException is thrown.
      *
-     * @param timeout_ms
+     * @param timeoutMs
      *            The maximum number of milliseconds to wait before this request times out
      * @return the result of the request
      * @throws InterruptedException if the thread is interrupted.
@@ -54,8 +54,8 @@ public class Future<T> {
      * @throws ApplicationException if the request failed with a ApplicationException
      * @throws JoynrRuntimeException if the request failed with a JoynrRuntimeException
      */
-    public T get(long timeout_ms) throws InterruptedException, JoynrWaitExpiredException, ApplicationException,
-                                 JoynrRuntimeException {
+    public T get(long timeoutMs) throws InterruptedException, JoynrWaitExpiredException, ApplicationException,
+                                JoynrRuntimeException {
         try {
             statusLock.lock();
             if (this.status.getCode() == RequestStatusCode.OK) {
@@ -69,7 +69,13 @@ public class Future<T> {
                 throw (JoynrRuntimeException) exception;
             }
 
-            boolean awaitOk = statusLockChangedCondition.await(timeout_ms, TimeUnit.MILLISECONDS);
+            while (RequestStatusCode.IN_PROGRESS.equals(status.getCode())) {
+                boolean awaitOk = statusLockChangedCondition.await(timeoutMs, TimeUnit.MILLISECONDS);
+                if (!awaitOk) {
+                    this.status.setCode(RequestStatusCode.ERROR);
+                    throw new JoynrWaitExpiredException();
+                }
+            }
 
             // check if an exception has arrived while waiting
             if (exception != null) {
@@ -77,11 +83,6 @@ public class Future<T> {
                     throw (ApplicationException) exception;
                 }
                 throw (JoynrRuntimeException) exception;
-            }
-
-            if (!awaitOk) {
-                this.status.setCode(RequestStatusCode.ERROR);
-                throw new JoynrWaitExpiredException();
             }
 
             return value;
@@ -122,7 +123,7 @@ public class Future<T> {
             value = result;
             status = new RequestStatus(RequestStatusCode.OK);
             statusLockChangedCondition.signalAll();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             status = new RequestStatus(RequestStatusCode.ERROR);
             exception = new JoynrRuntimeException(e);
         } finally {

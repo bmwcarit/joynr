@@ -31,12 +31,14 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "tests/utils/MockObjects.h"
+#include "utils/MockCallback.h"
 #include "joynr/InterfaceRegistrar.h"
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/MetaTypeRegistrar.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -45,7 +47,8 @@ using namespace joynr;
 class DispatcherTest : public ::testing::Test {
 public:
     DispatcherTest() :
-        mockMessageRouter(new MockMessageRouter()),
+        singleThreadIOService(),
+        mockMessageRouter(new MockMessageRouter(singleThreadIOService.getIOService())),
         mockCallback(new MockCallbackWithJoynrException<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
@@ -62,7 +65,7 @@ public:
         requestReplyId("TEST-requestReplyId"),
         messageFactory(),
         messageSender(mockMessageRouter),
-        dispatcher(&messageSender)
+        dispatcher(&messageSender, singleThreadIOService.getIOService())
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
@@ -83,6 +86,7 @@ public:
 
 protected:
     ADD_LOGGER(DispatcherTest);
+    SingleThreadedIOService singleThreadIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<MockCallbackWithJoynrException<types::Localisation::GpsLocation> > mockCallback;
 

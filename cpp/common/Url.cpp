@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ void Url::parseUrl(const std::string& text)
 
     std::string portString;
 
-    std::size_t branchStart; // used for backtracking
+    std::size_t branchStart = 0; // used for backtracking
 
     // Loop through the text
     for (std::size_t i = 0; i < text.size() && state != State::TERMINATE; i++) {

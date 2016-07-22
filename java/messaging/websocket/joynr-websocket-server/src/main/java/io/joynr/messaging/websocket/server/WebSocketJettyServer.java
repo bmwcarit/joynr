@@ -82,13 +82,13 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
 
     @Override
     public void messageArrived(String message) {
-    messageListener.transmit(message, new FailureAction() {
+        messageListener.transmit(message, new FailureAction() {
 
-        @Override
-        public void execute(Throwable error) {
-            logger.error("Unable to process message: {}", error.getMessage());
-        }
-    });
+            @Override
+            public void execute(Throwable error) {
+                logger.error("Unable to process message: {}", error.getMessage());
+            }
+        });
     }
 
     @Override
@@ -137,7 +137,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
 
         try {
             server.start();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             logger.error("Error while starting websocket server: ", t);
         }
     }
@@ -173,7 +173,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
         WebSocketClientAddress toClientAddress = (WebSocketClientAddress) toAddress;
         Session session = sessionMap.get(toClientAddress.getId());
         if (session == null) {
-          //TODO We need a delay with invalidation of the stub
+            //TODO We need a delay with invalidation of the stub
             throw new JoynrDelayMessageException("no active session for WebSocketClientAddress: " + toClientAddress.getId());
         }
         try {
@@ -195,7 +195,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
             // The client must reconnect, but the message can be queued in the mean time.
             sessionMap.remove(toClientAddress.getId());
             //TODO We need a delay with invalidation of the stub
-            throw new JoynrDelayMessageException(e.getMessage());
+            throw new JoynrDelayMessageException(e.getMessage(), e);
         }
     }
 
@@ -227,7 +227,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                     logger.error("Error parsing WebSocketClientAddress: ", e);
                 }
             } else {
-                    messageArrivedListener.messageArrived(serializedMessage);
+                messageArrivedListener.messageArrived(serializedMessage);
             }
         }
 

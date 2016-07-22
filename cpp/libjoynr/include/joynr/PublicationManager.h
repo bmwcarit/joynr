@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,14 @@
 
 #include "joynr/Variant.h"
 
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
+
 namespace joynr
 {
 
@@ -63,7 +71,7 @@ class SubscriptionQos;
 class JOYNR_EXPORT PublicationManager
 {
 public:
-    explicit PublicationManager(int maxThreads = 2);
+    explicit PublicationManager(boost::asio::io_service& ioService, int maxThreads = 2);
     explicit PublicationManager(DelayedScheduler* scheduler);
     virtual ~PublicationManager();
     /**
@@ -156,6 +164,9 @@ public:
                                    const std::vector<Variant>& values,
                                    const std::vector<std::shared_ptr<IBroadcastFilter>>& filters);
 
+    void loadSavedBroadcastSubscriptionRequestsMap(const std::string& fileName);
+    void loadSavedAttributeSubscriptionRequestsMap(const std::string& fileName);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
 
@@ -217,16 +228,16 @@ private:
     // Functions called by runnables
     void pollSubscription(const std::string& subscriptionId);
     void removePublication(const std::string& subscriptionId);
-    void removeAttributePublication(const std::string& subscriptionId);
-    void removeBroadcastPublication(const std::string& subscriptionId);
+    void removeAttributePublication(const std::string& subscriptionId,
+                                    const bool updatePersistenceFile = true);
+    void removeBroadcastPublication(const std::string& subscriptionId,
+                                    const bool updatePersistenceFile = true);
 
     // Helper functions
     bool publicationExists(const std::string& subscriptionId) const;
     void createPublishRunnable(const std::string& subscriptionId);
     void saveAttributeSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
-    void loadSavedAttributeSubscriptionRequestsMap();
     void saveBroadcastSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
-    void loadSavedBroadcastSubscriptionRequestsMap();
 
     void reschedulePublication(const std::string& subscriptionId, std::int64_t nextPublication);
 

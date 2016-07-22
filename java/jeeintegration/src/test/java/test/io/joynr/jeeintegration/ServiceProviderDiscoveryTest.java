@@ -25,6 +25,7 @@ package test.io.joynr.jeeintegration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import java.io.Serializable;
@@ -85,6 +86,16 @@ public class ServiceProviderDiscoveryTest {
         }
     }
 
+    @ServiceProvider(serviceInterface = MyServiceProvider.class)
+    @Stateless
+    private class DummyBeanFour implements MyServiceSync {
+
+        @Override
+        public String callMe(String parameterOne) {
+            return parameterOne;
+        }
+    }
+
     @SuppressWarnings({ "unchecked", "serial" })
     @Test
     public void testFindServiceProviderBeans() {
@@ -94,13 +105,10 @@ public class ServiceProviderDiscoveryTest {
         Mockito.doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
         Bean<DummyBeanTwo> mockBeanTwo = mock(Bean.class);
         Mockito.doReturn(DummyBeanTwo.class).when(mockBeanTwo).getBeanClass();
-        Bean<DummyBeanThree> mockBeanThree = mock(Bean.class);
-        Mockito.doReturn(DummyBeanThree.class).when(mockBeanThree).getBeanClass();
 
         Set<Bean<?>> beans = new HashSet<>();
         beans.add(mockBeanOne);
         beans.add(mockBeanTwo);
-        beans.add(mockBeanThree);
         Mockito.when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
         })).thenReturn(beans);
 
@@ -133,4 +141,45 @@ public class ServiceProviderDiscoveryTest {
         subject.getProviderInterfaceFor(MyInvalidServiceSync.class);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidServiceInterfaceSpecified() {
+        BeanManager mockBeanManager = mock(BeanManager.class);
+
+        Bean<DummyBeanOne> mockBeanOne = mock(Bean.class);
+        Mockito.doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
+        Bean<DummyBeanFour> mockBeanThree = mock(Bean.class);
+        Mockito.doReturn(DummyBeanThree.class).when(mockBeanThree).getBeanClass();
+
+        Set<Bean<?>> beans = new HashSet<>();
+        beans.add(mockBeanOne);
+        beans.add(mockBeanThree);
+        Mockito.when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
+        })).thenReturn(beans);
+
+        ServiceProviderDiscovery subject = new ServiceProviderDiscovery(mockBeanManager);
+
+        subject.findServiceProviderBeans();
+        fail("Shouldn't be able to get here with an invalid bean (DummyBeanThree)");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWrongServiceInterfaceSpecified() {
+        BeanManager mockBeanManager = mock(BeanManager.class);
+
+        Bean<DummyBeanOne> mockBeanOne = mock(Bean.class);
+            Mockito.doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
+        Bean<DummyBeanFour> mockBeanFour = mock(Bean.class);
+            Mockito.doReturn(DummyBeanFour.class).when(mockBeanFour).getBeanClass();
+
+        Set<Bean<?>> beans = new HashSet<>();
+            beans.add(mockBeanOne);
+            beans.add(mockBeanFour);
+            Mockito.when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
+        })).thenReturn(beans);
+
+        ServiceProviderDiscovery subject = new ServiceProviderDiscovery(mockBeanManager);
+
+        subject.findServiceProviderBeans();
+        fail("Shouldn't be able to get here with an invalid bean (DummyBeanFour)");
+    }
 }

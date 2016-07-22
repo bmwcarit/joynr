@@ -40,7 +40,7 @@
                         version : 0,
                         priority : 1,
                         isLocalOnly : false,
-                        onChangeSubscriptions : true
+                        supportsOnChangeSubscriptions : true
                     },
                     address : JSON.stringify({
                         _typeName : "joynr.system.RoutingTypes.ChannelAddress",
@@ -48,7 +48,11 @@
                         messagingEndpointUrl : defaultSettings.getDefaultDiscoveryChannelUrl()
                     }),
                     publicKeyId : "",
-                    participantId : "capabilitiesdirectory_participantid"
+                    participantId : "capabilitiesdirectory_participantid",
+                    providerVersion : {
+                        majorVersion : 0,
+                        minorVersion : 1
+                    }
                 };
 
                 defaultSettings.capabilities = [ globalCapDirCapability

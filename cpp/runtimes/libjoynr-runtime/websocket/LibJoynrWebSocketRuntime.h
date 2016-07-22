@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #ifndef LIBJOYNRWEBSOCKETRUNTIME_H
 #define LIBJOYNRWEBSOCKETRUNTIME_H
 
+#include <memory>
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
@@ -39,16 +40,15 @@ public:
     ~LibJoynrWebSocketRuntime() override;
 
 protected:
-    WebSocketLibJoynrMessagingSkeleton* wsLibJoynrMessagingSkeleton;
-
-    void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter) override;
+    void startLibJoynrMessagingSkeleton(
+            const std::shared_ptr<MessageRouter>& messageRouter) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);
 
     void onWebSocketError(const std::string& errorMessage);
 
-    WebSocketPpClient* websocket;
+    std::shared_ptr<WebSocketPpClient> websocket;
     ADD_LOGGER(LibJoynrWebSocketRuntime);
 };
 

@@ -29,6 +29,7 @@ import java.util.Properties;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -73,20 +74,20 @@ public class JoynrAndroidExampleApplication extends Application {
                    .build(new ProxyBuilder.ProxyCreatedCallback<GpsProxy>() {
 
                        @Override
-                       public void onProxyCreated(GpsProxy newProxy) {
+                       public void onProxyCreationFinished(GpsProxy newProxy) {
                            logToOutput("Proxy created");
                            proxy = newProxy;
 
                        }
 
                        @Override
-                       public void onProxyCreationError(String errorMessage) {
-                           logToOutput("Error during proxy creation: " + errorMessage + "\n");
+                       public void onProxyCreationError(JoynrRuntimeException error) {
+                           logToOutput("Error during proxy creation: " + error.getMessage() + "\n");
 
                        }
                    });
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logToOutput("ERROR: create proxy failed: " + e.getMessage() + "\n");
             logger.error("create proxy failed: ", e);
         }

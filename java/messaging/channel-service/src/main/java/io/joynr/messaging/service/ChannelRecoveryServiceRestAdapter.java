@@ -164,8 +164,8 @@ public class ChannelRecoveryServiceRestAdapter {
                 }
             }
 
-        } catch (Throwable e) {
-            throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            throw new WebApplicationException(e, Status.INTERNAL_SERVER_ERROR);
         }
 
     }

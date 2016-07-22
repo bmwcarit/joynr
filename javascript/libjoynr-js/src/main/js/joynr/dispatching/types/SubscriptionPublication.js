@@ -49,7 +49,6 @@ define("joynr/dispatching/types/SubscriptionPublication", [
 
         Util.checkPropertyIfDefined(settings.error, [
             "Object",
-            "ApplicationException",
             "JoynrRuntimeException",
             "PublicationMissedException",
             "ProviderRuntimeException"

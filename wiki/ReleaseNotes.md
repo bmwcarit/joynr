@@ -1,3 +1,24 @@
+#joynr 0.19.0
+
+##API relevant changes
+* **[Java]** Added ability to pass a callback to the proxyBuilder.build() method to be notified on
+  completion (or failure) of the discovery process.
+
+##Other changes
+* **[C++, Java, JS]** Enriched the system integration tests to have test from c++/node apps towards
+  java jee apps
+* **[C++]** Removed option `USE_PLATFORM_DEPENDENCIES` from CMake. By default all dependencies are
+  resolved from system installation paths. However, joynr offers options
+  (`USE_PLATFORM_<DEPENDENCY>=OFF`) to turn system resolution off. In this case, joynr downloads
+  and builds individual dependencies during the joynr build using CMake's ExternalProject_Add
+  mechanism.
+* **[JS]** The unit-, integration-, system-integration- and intertab-tests are now using the
+  [Jasmine](http://jasmine.github.io) 2.4.1 test framework.
+  [Karma](https://karma-runner.github.io) is now used as test runner.
+* **[Java]** The way in which the global capabilities and domain access control directories are
+  provisioned has changed. See `StaticCapabilitiesProvisioning` as well as its entry in the
+  [Java Settings documentation](JavaSettings.md) for details.
+
 #joynr 0.18.5
 This is a minor bug fix release.
 

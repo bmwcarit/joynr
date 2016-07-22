@@ -43,8 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import joynr.JoynrMessage;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.sun.jersey.multipart.FormDataParam;
@@ -114,16 +112,13 @@ public class AttachmentSenderService {
             } catch (WebApplicationException e) {
                 log.error("Invalid request from host {}", request.getRemoteHost());
                 throw e;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 log.error("POST message for cluster controller: error: {}", e.getMessage());
                 throw new WebApplicationException(e);
             }
 
-        } catch (JsonParseException e) {
-            return Response.serverError().build();
-        } catch (JsonMappingException e) {
-            return Response.serverError().build();
         } catch (IOException e) {
+            log.error("POST message for cluster controller: error: {}", e.getMessage(), e);
             return Response.serverError().build();
         }
     }

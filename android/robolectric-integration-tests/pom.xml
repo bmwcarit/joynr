@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>0.18.5</version>
+		<version>0.19.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -34,16 +34,25 @@
 		and Android dependencies. A Jetty plugin is set up to only use compile 
  		dependencies and all Android dependencies are included as test dependences. -->
 	<dependencies>
-		<!-- Robolectric dependencies -->
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>access-control-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- Robolectric dependencies -->
 		<dependency>
 			<groupId>org.robolectric</groupId>
 			<artifactId>robolectric</artifactId>
 			<version>3.0</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- this dependency is explicitely mentioned, to avoid
+		     issues with the robolectric maven dependency resolver
+		-->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20080701</version>
 			<scope>test</scope>
 		</dependency>
         <dependency>

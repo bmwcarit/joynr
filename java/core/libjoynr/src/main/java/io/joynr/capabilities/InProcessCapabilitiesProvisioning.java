@@ -24,11 +24,13 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.Discovery;
+import joynr.system.DiscoveryProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
-import joynr.types.Version;
+
+import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
 
 import java.util.Collection;
 import java.util.List;
@@ -56,7 +58,7 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
         String defaultPulicKeyId = "";
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        provisionedList.add(CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
+        provisionedList.add(CapabilityUtils.newGlobalDiscoveryEntry(getVersionFromAnnotation(DiscoveryProvider.class),
                                                                     systemServicesDomain,
                                                                     Discovery.INTERFACE_NAME,
                                                                     discoveryProviderParticipantId,

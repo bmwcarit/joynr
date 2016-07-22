@@ -124,6 +124,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         discoveryQos.setDiscoveryTimeoutMs(100000);
         discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
+        discoveryQos.setDiscoveryScope(invocationParameters.getDiscoveryScope());
 
         ProxyBuilder<EchoProxy> proxyBuilder = runtime.getProxyBuilder(invocationParameters.getDomainName(),
                                                                        EchoProxy.class);
@@ -152,8 +153,6 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     }
 
     private void performAsyncSendStringTest(EchoProxy proxy) {
-        // Workaround. Without a sync 'warmup' call, the async calls sometimes hang.
-        runSyncStringTest(proxy, 1);
         runAsyncSendStringTest(proxy, invocationParameters.getNumberOfWarmupRuns());
 
         long startTime = System.currentTimeMillis();
@@ -196,8 +195,6 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     }
 
     private void performAsyncSendStructTest(EchoProxy proxy) {
-        // Workaround. Without a sync 'warmup' call, the async calls sometimes hang.
-        runSyncSendStructTest(proxy, 1);
         runAsyncSendStructTest(proxy, invocationParameters.getNumberOfWarmupRuns());
 
         long startTime = System.currentTimeMillis();
@@ -251,8 +248,6 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     }
 
     private void performAsyncSendByteArrayTest(EchoProxy proxy) {
-        // Workaround. Without a sync 'warmup' call, the async calls sometimes hang.
-        runSyncSendByteArrayTest(proxy, 1);
         runAsyncSendByteArrayTest(proxy, invocationParameters.getNumberOfWarmupRuns());
 
         long startTime = System.currentTimeMillis();

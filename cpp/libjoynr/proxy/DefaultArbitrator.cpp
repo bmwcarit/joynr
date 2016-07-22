@@ -32,9 +32,10 @@ INIT_LOGGER(DefaultArbitrator);
 
 DefaultArbitrator::DefaultArbitrator(const std::string& domain,
                                      const std::string& interfaceName,
+                                     const joynr::types::Version& interfaceVersion,
                                      joynr::system::IDiscoverySync& discoveryProxy,
                                      const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos)
+        : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos)
 {
 }
 
@@ -45,26 +46,40 @@ void DefaultArbitrator::attemptArbitration()
         discoveryProxy.lookup(result, domains, interfaceName, systemDiscoveryQos);
         receiveCapabilitiesLookupResults(result);
     } catch (const exceptions::JoynrException& e) {
-        JOYNR_LOG_ERROR(logger,
-                        "Unable to lookup provider (domain: {}, interface: {}) "
-                        "from discovery. Error: {}",
-                        domains.size() > 0 ? domains.at(0) : "EMPTY",
-                        interfaceName,
-                        e.getMessage());
+        std::string errorMsg = "Unable to lookup provider (domain: " +
+                               (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                               ", interface: " + interfaceName + ") from discovery. Error: " +
+                               e.getMessage();
+        JOYNR_LOG_ERROR(logger, errorMsg);
+        arbitrationError.setMessage(errorMsg);
     }
 }
 
 void DefaultArbitrator::receiveCapabilitiesLookupResults(
         const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
-    // Check for empty results
-    if (discoveryEntries.size() == 0)
-        return;
+    discoveredIncompatibleVersions.clear();
 
-    // default arbitrator picks first entry
-    joynr::types::DiscoveryEntry discoveredProvider = discoveryEntries.front();
-    updateArbitrationStatusParticipantIdAndAddress(
-            ArbitrationStatus::ArbitrationSuccessful, discoveredProvider.getParticipantId());
+    // Check for empty results
+    if (discoveryEntries.size() == 0) {
+        arbitrationError.setMessage("No entries found for domain: " +
+                                    (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                                    ", interface: " + interfaceName);
+        return;
+    }
+
+    // default arbitrator picks first entry with compatible version
+    joynr::types::Version providerVersion;
+    for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
+        providerVersion = discoveryEntry.getProviderVersion();
+        if (providerVersion.getMajorVersion() == interfaceVersion.getMajorVersion() &&
+            providerVersion.getMinorVersion() >= interfaceVersion.getMinorVersion()) {
+            notifyArbitrationListener(discoveryEntry.getParticipantId());
+            break;
+        } else {
+            discoveredIncompatibleVersions.insert(providerVersion);
+        }
+    }
 }
 
 } // namespace joynr

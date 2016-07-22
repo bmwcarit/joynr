@@ -136,6 +136,17 @@ public:
         return true;
     }
 
+    static std::vector<std::uint64_t> convertInt8ArrayToUInt64Array(
+            const std::vector<std::int8_t>& int8Array)
+    {
+        std::vector<std::uint64_t> uInt64Array;
+        for (auto it = int8Array.cbegin(); it != int8Array.cend(); it++) {
+            // TODO: Beware, input could be negative, maybe increase by +128 to make it positive?
+            uInt64Array.push_back(*it);
+        }
+        return uInt64Array;
+    }
+
     // uint64_t Array
     static std::vector<uint64_t> fillUInt64Array(std::vector<uint64_t>& uInt64Array)
     {

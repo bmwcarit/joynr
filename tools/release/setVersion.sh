@@ -29,7 +29,7 @@ examples/radio-app/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
 tests/robustness-test/CMakeLists.txt \
-tests/system-integration-test/CMakeLists.txt
+tests/system-integration-test/sit-cpp-app/CMakeLists.txt
 
 mvn versions:set -P android,javascript -DnewVersion=$2
 mvn versions:commit -P android,javascript
@@ -42,7 +42,8 @@ tests/performance-test/CMakeLists.txt \
 tests/performance-test/package.json \
 tests/robustness-test/CMakeLists.txt \
 tests/robustness-test/package.json \
-tests/system-integration-test/CMakeLists.txt \
+tests/system-integration-test/sit-cpp-app/CMakeLists.txt \
+tests/system-integration-test/sit-node-app/package.json \
 tests/test-base/src/main/js/package.json \
 examples/radio-app/CMakeLists.txt \
 android/robolectric-integration-tests/src/test/AndroidManifest.xml \

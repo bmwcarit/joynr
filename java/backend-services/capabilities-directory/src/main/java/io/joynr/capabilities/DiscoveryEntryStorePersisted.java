@@ -104,8 +104,7 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            logger.error("unable to add discoveryEntry: {}, reason: {}", discoveryEntry, e.getMessage());
-        } finally {
+            logger.error("unable to add discoveryEntry: " + discoveryEntry, e);
         }
     }
 
@@ -145,7 +144,7 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            logger.error("unable to remove capability: {} reason: {}", participantId, e.getMessage());
+            logger.error("unable to remove capability: " + participantId, e);
             return false;
         } finally {
         }
@@ -173,9 +172,9 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
         List<DiscoveryEntry> result = new ArrayList<>();
         for (String domain : domains) {
             List<DiscoveryEntry> capabilitiesList = entityManager.createQuery(query)
-                                                                  .setParameter("domain", domain)
-                                                                  .setParameter("interfaceName", interfaceName)
-                                                                  .getResultList();
+                    .setParameter("domain", domain)
+                    .setParameter("interfaceName", interfaceName)
+                    .getResultList();
             result.addAll(capabilitiesList);
         }
 

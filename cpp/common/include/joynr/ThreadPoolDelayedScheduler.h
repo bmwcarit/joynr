@@ -28,6 +28,14 @@
 #include "joynr/DelayedScheduler.h"
 #include "joynr/ThreadPool.h"
 
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
+
 namespace joynr
 {
 
@@ -49,6 +57,7 @@ public:
     ThreadPoolDelayedScheduler(
             std::uint8_t numberOfThreads,
             const std::string& name,
+            boost::asio::io_service& ioService,
             std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
     /**

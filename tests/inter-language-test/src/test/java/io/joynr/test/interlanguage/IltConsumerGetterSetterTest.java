@@ -457,14 +457,15 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
      */
 
     @Test
-    public void callGetAttributeWithException() {
+    public void callGetAttributeWithExceptionFromGetter() {
         LOG.info(name.getMethodName() + "");
         try {
-            testInterfaceProxy.getAttributeWithException();
+            testInterfaceProxy.getAttributeWithExceptionFromGetter();
             fail(name.getMethodName() + " - FAILED - unexpected return without exception");
             return;
         } catch (ProviderRuntimeException e) {
-            if (e.getMessage() == null || !e.getMessage().endsWith("Exception from getAttributeWithException")) {
+            if (e.getMessage() == null
+                    || !e.getMessage().endsWith("Exception from getAttributeWithExceptionFromGetter")) {
                 fail(name.getMethodName() + " - FAILED - caught invalid exception: " + e.getMessage());
                 return;
             }
@@ -477,14 +478,15 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
     }
 
     @Test
-    public void callSetAttributeWithException() {
+    public void callSetAttributeWithExceptionFromSetter() {
         LOG.info(name.getMethodName() + "");
         try {
-            testInterfaceProxy.setAttributeWithException(false);
+            testInterfaceProxy.setAttributeWithExceptionFromSetter(false);
             fail(name.getMethodName() + " - FAILED - got no result");
             return;
         } catch (ProviderRuntimeException e) {
-            if (e.getMessage() == null || !e.getMessage().endsWith("Exception from setAttributeWithException")) {
+            if (e.getMessage() == null
+                    || !e.getMessage().endsWith("Exception from setAttributeWithExceptionFromSetter")) {
                 fail(name.getMethodName() + " - FAILED - caught invalid exception: " + e.getMessage());
                 return;
             }

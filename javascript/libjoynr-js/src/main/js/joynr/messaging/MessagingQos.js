@@ -17,65 +17,122 @@
  * #L%
  */
 
-define("joynr/messaging/MessagingQos", [
-    "joynr/start/settings/defaultMessagingSettings",
-    "joynr/system/LoggerFactory",
-    "joynr/util/UtilInternal"
-], function(defaultMessagingSettings, LoggerFactory, Util) {
+define(
+        "joynr/messaging/MessagingQos",
+        [
+            "joynr/start/settings/defaultMessagingSettings",
+            "joynr/system/LoggerFactory",
+            "joynr/util/UtilInternal"
+        ],
+        function(defaultMessagingSettings, LoggerFactory, Util) {
 
-    var defaultSettings = {
-        ttl : 60000
-    };
+            var defaultSettings = {
+                ttl : 60000,
+                customHeaders : {}
+            };
 
-    /**
-     * Constructor of MessagingQos object that is used in the generation of proxy objects
-     * @constructor
-     * @name MessagingQos
-     *
-     * @param {Object} [settings] the settings object for the constructor call
-     * @param {Number} [settings.ttl] Roundtrip timeout for rpc requests, if missing default value is 60 seconds
-     *
-     * @returns {MessagingQos} a messaging Qos Object
-     */
-    function MessagingQos(settings) {
-        var errorMsg;
-        var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
+            /**
+             * Constructor of MessagingQos object that is used in the generation of proxy objects
+             * @constructor
+             * @name MessagingQos
+             *
+             * @param {Object} [settings] the settings object for the constructor call
+             * @param {Number} [settings.ttl] Roundtrip timeout for rpc requests, if missing default value is 60 seconds
+             *
+             * @returns {MessagingQos} a messaging Qos Object
+             */
+            function MessagingQos(settings) {
+                var errorMsg;
+                var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
 
-        if (!(this instanceof MessagingQos)) {
-            // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-            return new MessagingQos(settings);
-        }
+                if (!(this instanceof MessagingQos)) {
+                    // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
+                    return new MessagingQos(settings);
+                }
 
-        settings = Util.extend({}, defaultSettings, settings);
+                settings = Util.extend({}, defaultSettings, settings);
 
-        /**
-         * The time to live for messages
-         *
-         * @name MessagingQos#ttl
-         * @type Number
-         */
-        if (settings.ttl > defaultMessagingSettings.MAX_MESSAGING_TTL_MS) {
-            this.ttl = defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
-            errorMsg =
-                    "Error in MessageQos. Max allowed ttl: "
-                        + defaultMessagingSettings.MAX_MESSAGING_TTL_MS
-                        + ". Passed ttl: "
-                        + settings.ttl;
-            log.warn(errorMsg);
-        } else {
-            this.ttl = settings.ttl;
-        }
-    }
+                /**
+                 * The time to live for messages
+                 *
+                 * @name MessagingQos#ttl
+                 * @type Number
+                 */
+                if (settings.ttl > defaultMessagingSettings.MAX_MESSAGING_TTL_MS) {
+                    this.ttl = defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
+                    errorMsg =
+                            "Error in MessageQos. Max allowed ttl: "
+                                + defaultMessagingSettings.MAX_MESSAGING_TTL_MS
+                                + ". Passed ttl: "
+                                + settings.ttl;
+                    log.warn(errorMsg);
+                } else {
+                    this.ttl = settings.ttl;
+                }
 
-    /**
-     * @name MessagingQos.DEFAULT_TTL
-     * @type Number
-     * @default 60000
-     * @static
-     * @readonly
-     */
-    MessagingQos.DEFAULT_TTL = defaultSettings.ttl;
+                /**
+                 * custom message headers
+                 *
+                 * @name MessagingQos#customHeaders
+                 * @type Object
+                 */
+                this.customHeaders = settings.customHeaders;
 
-    return MessagingQos;
+                /**
+                 *
+                 * @param {String} key
+                 *            may contain ascii alphanumeric or hyphen.
+                 * @param {String} value
+                 *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
+                 *            dot, star, forward slash and back slash.
+                 */
+                function checkKeyAndValue(key, value) {
+                    var keyPattern = /^[a-zA-Z0-9\-]*$/;
+                    var valuePattern = /^[a-zA-Z0-9 ;:,+&\?\-\.\*\/\\]*$/;
+                    var keyOk = keyPattern.test(key);
+                    var valueOk = valuePattern.test(value);
+                    if (!keyOk) {
+                        throw new Error(
+                                "custom header key may only contain alphanumeric characters");
+                    }
+                    if (!valueOk) {
+                        throw new Error(
+                                "custom header value contains illegal character. See JSDoc for allowed characters");
+                    }
+                    return true;
+                }
 
-});
+                /**
+                 * @name MessagingQos#putCustomHeader
+                 * @function
+                 *
+                 * @param {String} key
+                 *            may contain ascii alphanumeric or hyphen.
+                 * @param {String} value
+                 *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
+                 *            dot, star, forward slash and back slash.
+                 * @returns {JoynrMessage}
+                 */
+                Object.defineProperty(this, "putCustomMessageHeader", {
+                    enumerable : false,
+                    configurable : false,
+                    writable : false,
+                    value : function(key, value) {
+                        checkKeyAndValue(key, value);
+                        this.customHeaders[key] = value;
+                    }
+                });
+            }
+
+            /**
+             * @name MessagingQos.DEFAULT_TTL
+             * @type Number
+             * @default 60000
+             * @static
+             * @readonly
+             */
+            MessagingQos.DEFAULT_TTL = defaultSettings.ttl;
+
+            return MessagingQos;
+
+        });

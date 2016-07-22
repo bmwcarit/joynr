@@ -38,9 +38,12 @@ transport middleware.
 * joynr defines programming interfaces to existing Public Key Infrastructure, in order to reuse infrastructure
 already in place for other personalisation and security use cases.
 
-### Language Bindings for C++, Java
+### Language Bindings for C++, Java and JavaScript
 
-* joynr supports the C++ and Java to target a wide range of possible endpoints, from backend servlet-based systems, to ECUs in vehicles or other embedded platforms.
+* joynr supports the C++, Java and JavaScript languages in order to enable
+  developers to target a wide range of platforms, all the way from backend
+  servlet-based or even full-stack JEE systems, down to ECUs running in
+  vehicles or other embedded platforms.
 
 ### Remote Procedure Call (RPC), Publish/Subscribe (pub/sub), Filtered Broadcasts
 

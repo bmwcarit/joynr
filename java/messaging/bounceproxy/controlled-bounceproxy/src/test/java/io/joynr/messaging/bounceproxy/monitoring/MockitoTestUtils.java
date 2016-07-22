@@ -59,6 +59,7 @@ public class MockitoTestUtils {
             this.assignedChannels = assignedChannels;
         }
 
+        @Override
         public boolean matches(Object arg) {
 
             try {
@@ -89,7 +90,6 @@ public class MockitoTestUtils {
                 return true;
 
             } catch (/* URISyntax */Exception e) {
-                e.printStackTrace();
                 return false;
             }
         }
@@ -129,6 +129,7 @@ public class MockitoTestUtils {
 
     public static Answer<Void> createAnswerForHttpResponse(final int httpStatus) {
         Answer<Void> answerForHttpResponse = new Answer<Void>() {
+            @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
 
                 // We're replacing the entity by a StringEntity here, because

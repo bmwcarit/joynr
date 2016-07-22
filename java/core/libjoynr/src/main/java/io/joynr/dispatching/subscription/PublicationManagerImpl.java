@@ -427,7 +427,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
     /**
      * Stops all publications for a provider
-     * 
+     *
      * @param providerId provider for which all publication should be stopped
      */
     private void stopPublicationByProviderId(String providerParticipantId) {
@@ -451,7 +451,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     /**
      * Called every time a provider is registered to check whether there are already
      * subscriptionRequests waiting.
-     * 
+     *
      * @param providerId provider id
      * @param providerContainer provider container
      */
@@ -583,14 +583,8 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         try {
             sendSubscriptionPublication(publication, publicationInformation);
             // TODO handle exceptions during publication. See JOYNR-2113
-        } catch (JoynrRuntimeException e) {
-            logger.error("sendPublication error: {}", e.getMessage());
-        } catch (JsonGenerationException e) {
-            logger.error("sendPublication error: {}", e.getMessage());
-        } catch (JsonMappingException e) {
-            logger.error("sendPublication error: {}", e.getMessage());
-        } catch (IOException e) {
-            logger.error("sendPublication error: {}", e.getMessage());
+        } catch (JoynrRuntimeException | IOException e) {
+            logger.error("sendPublication error.", e);
         }
     }
 
@@ -641,11 +635,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     @Override
     public void sendSubscriptionPublication(SubscriptionPublication publication,
                                             PublicationInformation publicationInformation)
-                                                                                          throws JoynrSendBufferFullException,
-                                                                                          JoynrMessageNotSentException,
-                                                                                          JsonGenerationException,
-                                                                                          JsonMappingException,
-                                                                                          IOException {
+                                                    throws JoynrSendBufferFullException,
+                                                    JoynrMessageNotSentException,
+                                                    JsonGenerationException,
+                                                    JsonMappingException,
+                                                    IOException {
         MessagingQos messagingQos = new MessagingQos();
         messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtlMs());
         Set<String> toParticipantIds = new HashSet<>();

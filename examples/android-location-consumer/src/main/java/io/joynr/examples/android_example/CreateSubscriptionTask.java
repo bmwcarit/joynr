@@ -3,7 +3,7 @@ package io.joynr.examples.android_example;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,15 +62,15 @@ class CreateSubscriptionTask extends AsyncTask<GpsProxy, Void, Void> {
     private void subscribeToLocation(GpsProxy proxy) {
 
         long minInterval_ms = 1000; // defines how often an update may be sent
-        long period_ms = 10000; // defines how long to wait before sending an update even if the value did not
+        long periodMs = 10000; // defines how long to wait before sending an update even if the value did not
         // change or when onChange is false
-        long expiryDate_ms = System.currentTimeMillis() + 1 * 60 * 60 * 1000; // subscribe for one hour
-        long alertInterval_ms = 20000; // defines how long to wait for an update before publicationMissed is called
-        long publicationTtl_ms = 20000; // time to live for publication messages
-        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms,
-                                                                      expiryDate_ms,
-                                                                      alertInterval_ms,
-                                                                      publicationTtl_ms);
+        long validityMs = 1 * 60 * 60 * 1000; // subscribe for one hour
+        long alertIntervalMs = 20000; // defines how long to wait for an update before publicationMissed is called
+        long publicationTtlMs = 20000; // time to live for publication messages
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos().setPeriodMs(periodMs)
+                                                                       .setValidityMs(validityMs)
+                                                                       .setAlertAfterIntervalMs(alertIntervalMs)
+                                                                       .setPublicationTtlMs(publicationTtlMs);
         AttributeSubscriptionListener<GpsLocation> listener = new AttributeSubscriptionListener<GpsLocation>() {
 
             @Override

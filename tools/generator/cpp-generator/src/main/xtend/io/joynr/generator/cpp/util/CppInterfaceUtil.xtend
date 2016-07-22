@@ -201,7 +201,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 	def produceSyncMethodDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface).filter[!fireAndForget]»
-        	/**
+		/**
 		* @brief Synchronous operation «method.joynrName».
 		*
 		«FOR outputParam: method.outputParameters»

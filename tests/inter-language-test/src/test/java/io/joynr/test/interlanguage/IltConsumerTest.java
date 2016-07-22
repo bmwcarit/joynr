@@ -84,7 +84,9 @@ public abstract class IltConsumerTest {
     @AfterClass
     public static void generalTearDown() throws InterruptedException {
         LOG.info("generalTearDown: Entering");
-        consumerRuntime.shutdown(true);
+        if (consumerRuntime != null) {
+            consumerRuntime.shutdown(true);
+        }
         LOG.info("generalTearDown: Leaving");
     }
 
@@ -95,44 +97,40 @@ public abstract class IltConsumerTest {
     private static Module getRuntimeModule(Properties joynrConfig) {
         LOG.info("getRuntimeModule: Entering");
         Module runtimeModule;
-        String transport = joynrConfig.getProperty("transport");
-        if (transport != null) {
-            LOG.info("getRuntimeModule: transport = " + transport);
-            if (transport.contains("websocket")) {
-                LOG.info("getRuntimeModule = "
-                        + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST));
-                LOG.info("getRuntimeModule = "
-                        + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT));
-                LOG.info("getRuntimeModule = "
-                        + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL));
-                LOG.info("getRuntimeModule = "
-                        + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH));
-                LOG.info("getRuntimeModule: selecting LibjoynrWebSocketRuntimeModule");
-                runtimeModule = new LibjoynrWebSocketRuntimeModule();
-            } else {
-                LOG.info("getRuntimeModule: selecting CCInProcessRuntimeModule");
-                runtimeModule = new CCInProcessRuntimeModule();
-            }
-
-            Module backendTransportModules = Modules.EMPTY_MODULE;
-            if (transport.contains("http")) {
-                LOG.info("getRuntimeModule: using AtmosphereMessagingModule");
-                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
-            }
-
-            if (transport.contains("mqtt")) {
-                LOG.info("getRuntimeModule: using MqttPahoModule");
-                backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
-            }
-
-            LOG.info("getRuntimeModule: Leaving");
-            return Modules.override(runtimeModule).with(backendTransportModules);
+        String transport = System.getProperty("transport");
+        if (transport == null) {
+            throw new IllegalArgumentException("property \"transport\" not set");
+        }
+        LOG.info("getRuntimeModule: transport = " + transport);
+        if (transport.contains("websocket")) {
+            LOG.info("getRuntimeModule: websocket host = "
+                    + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST));
+            LOG.info("getRuntimeModule: websocket port = "
+                    + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT));
+            LOG.info("getRuntimeModule: websocket protocol = "
+                    + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL));
+            LOG.info("getRuntimeModule: websocket path = "
+                    + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH));
+            LOG.info("getRuntimeModule: selecting LibjoynrWebSocketRuntimeModule");
+            runtimeModule = new LibjoynrWebSocketRuntimeModule();
         } else {
-            LOG.info("getRuntimeModule: transport = null");
+            LOG.info("getRuntimeModule: selecting CCInProcessRuntimeModule");
+            runtimeModule = new CCInProcessRuntimeModule();
+        }
+
+        Module backendTransportModules = Modules.EMPTY_MODULE;
+        if (transport.contains("http")) {
+            LOG.info("getRuntimeModule: using AtmosphereMessagingModule");
+            backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
+        }
+
+        if (transport.contains("mqtt")) {
+            LOG.info("getRuntimeModule: using MqttPahoModule");
+            backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
         }
 
         LOG.info("getRuntimeModule: Leaving");
-        return Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        return Modules.override(runtimeModule).with(backendTransportModules);
     }
 
     protected static JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
@@ -161,7 +159,7 @@ public abstract class IltConsumerTest {
         try {
             resourceStream = new FileInputStream("src/main/resources/" + configFileName);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("setupConsumerRuntime: Error", e);
             resourceStream = null;
         }
 
@@ -182,8 +180,8 @@ public abstract class IltConsumerTest {
         consumerRuntime = getRuntime(joynrConfig);
 
         DiscoveryQos discoveryQos = new DiscoveryQos();
-        discoveryQos.setDiscoveryTimeout(10000);
-        discoveryQos.setCacheMaxAge(Long.MAX_VALUE);
+        discoveryQos.setDiscoveryTimeoutMs(10000);
+        discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
 
         ProxyBuilder<TestInterfaceProxy> proxyBuilder = consumerRuntime.getProxyBuilder(providerDomain,

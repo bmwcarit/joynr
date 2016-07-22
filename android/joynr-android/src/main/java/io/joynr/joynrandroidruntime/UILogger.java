@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.util.Log;
 
 public class UILogger {
     public static final int MSG_APPEND_LOG = 1;
@@ -62,7 +63,7 @@ public class UILogger {
             try {
                 currentClient.send(msg);
             } catch (RemoteException e) {
-                e.printStackTrace();
+                Log.e("JAS", e.getMessage(), e);
                 mClients.remove(currentClient);
             }
         }

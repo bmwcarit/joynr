@@ -10,5 +10,10 @@ target_link_libraries(performance-consumer-app
     ${Boost_LIBRARIES}
 )
 
+install(
+    TARGETS performance-consumer-app
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
 AddClangFormat(performance-consumer-app)
 

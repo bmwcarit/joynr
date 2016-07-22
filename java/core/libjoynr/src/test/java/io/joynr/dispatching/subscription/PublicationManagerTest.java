@@ -47,7 +47,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,10 +66,8 @@ import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.Deferred;
-import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderContainer;
-import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.BroadcastFilter;
 import joynr.BroadcastFilterParameters;
@@ -431,9 +428,15 @@ public class PublicationManagerTest {
         int period = 200;
         String subscriptionId1 = "subscriptionid1";
         String subscriptionId2 = "subscriptionid2";
-        long expiryDate = System.currentTimeMillis() + 3000;
-        SubscriptionQos qosNoExpiry = new PeriodicSubscriptionQos(100, SubscriptionQos.NO_EXPIRY_DATE, 500, 1000);
-        SubscriptionQos qosExpires = new PeriodicSubscriptionQos(100, expiryDate, 500, 1000);
+        long validityMs = 3000;
+        SubscriptionQos qosNoExpiry = new PeriodicSubscriptionQos().setPeriodMs(100)
+                                                                   .setExpiryDateMs(SubscriptionQos.NO_EXPIRY_DATE)
+                                                                   .setAlertAfterIntervalMs(500)
+                                                                   .setPublicationTtlMs(1000);
+        SubscriptionQos qosExpires = new PeriodicSubscriptionQos().setPeriodMs(100)
+                                                                  .setValidityMs(validityMs)
+                                                                  .setAlertAfterIntervalMs(500)
+                                                                  .setPublicationTtlMs(1000);
         SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(subscriptionId1, "location", qosNoExpiry);
         SubscriptionRequest subscriptionRequest2 = new SubscriptionRequest(subscriptionId2, "location", qosExpires);
 
@@ -460,7 +463,10 @@ public class PublicationManagerTest {
     public void removeQueuedSubscriptionsProperly() throws Exception {
         int period = 200;
         String subscriptionId1 = "subscriptionid_removeQueuedSubscriptionsProperly";
-        SubscriptionQos qosNoExpiry = new PeriodicSubscriptionQos(100, SubscriptionQos.NO_EXPIRY_DATE, 500, 1000);
+        SubscriptionQos qosNoExpiry = new PeriodicSubscriptionQos().setPeriodMs(100)
+                                                                   .setExpiryDateMs(SubscriptionQos.NO_EXPIRY_DATE)
+                                                                   .setAlertAfterIntervalMs(500)
+                                                                   .setPublicationTtlMs(1000);
         SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(subscriptionId1, "location", qosNoExpiry);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
@@ -487,7 +493,10 @@ public class PublicationManagerTest {
         long minInterval_ms = 0;
         long ttl = 1000;
         testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters();
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
+                                                                   .setExpiryDateMs(SubscriptionQos.NO_EXPIRY_DATE)
+                                                                   .setPublicationTtlMs(ttl);
+        ;
 
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
                                                                                    "subscribedToName",
@@ -537,7 +546,9 @@ public class PublicationManagerTest {
         filterParameters.setCountry("Germany");
         filterParameters.setStartTime("4:00");
 
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
+                                                                   .setExpiryDateMs(SubscriptionQos.NO_EXPIRY_DATE)
+                                                                   .setPublicationTtlMs(ttl);
 
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
                                                                                    "subscribedToName",
@@ -589,7 +600,9 @@ public class PublicationManagerTest {
         long minInterval_ms = 0;
         long ttl = 1000;
         testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters();
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
+                                                                   .setExpiryDateMs(SubscriptionQos.NO_EXPIRY_DATE)
+                                                                   .setPublicationTtlMs(ttl);
 
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
                                                                                    "subscribedToName",
@@ -638,7 +651,9 @@ public class PublicationManagerTest {
         long minInterval_ms = 0;
         long ttl = 1000;
         testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters();
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
+                                                                   .setExpiryDateMs(SubscriptionQos.NO_EXPIRY_DATE)
+                                                                   .setPublicationTtlMs(ttl);
 
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
                                                                                    "subscribedToName",
@@ -681,9 +696,11 @@ public class PublicationManagerTest {
                                                         cleanupScheduler);
         int period = 200;
         int testLengthMax = 3000;
-        long expiryDate = System.currentTimeMillis() + testLengthMax;
+        long validityMs = testLengthMax;
         long publicationTtl = testLengthMax;
-        SubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, publicationTtl);
+        SubscriptionQos qos = new PeriodicSubscriptionQos().setPeriodMs(period)
+                                                           .setValidityMs(validityMs)
+                                                           .setPublicationTtlMs(publicationTtl);
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
@@ -696,7 +713,9 @@ public class PublicationManagerTest {
                                                                                      any(SubscriptionPublication.class),
                                                                                      any(MessagingQos.class));
 
-        qos = new OnChangeSubscriptionQos(0, expiryDate, publicationTtl);
+        qos = new OnChangeSubscriptionQos().setMinIntervalMs(0)
+                                           .setValidityMs(validityMs)
+                                           .setPublicationTtlMs(publicationTtl);
         subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);

@@ -21,11 +21,11 @@ package io.joynr.arbitration;
 
 /**
  * Interface to receive arbitration results.
- * 
+ *
  */
 public interface ArbitrationCallback {
 
-    void notifyArbitrationStatusChanged(ArbitrationStatus arbitrationStatus);
+    void onError(Throwable throwable);
 
-    void setArbitrationResult(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult);
+    void onSuccess(ArbitrationResult arbitrationResult);
 }

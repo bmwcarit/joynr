@@ -18,27 +18,36 @@
  */
 #ifndef INPROCESSDISPATCHER_H
 #define INPROCESSDISPATCHER_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrExport.h"
+#include <string>
+#include <memory>
+
 #include "joynr/IDispatcher.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/InProcessAddress.h"
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrExport.h"
 
-#include <string>
-#include <memory>
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
 
 namespace joynr
 {
 
+class IReplyCaller;
 class MessagingQos;
 
 class JOYNR_EXPORT InProcessDispatcher : public IDispatcher, public IRequestCallerDirectory
 {
 public:
-    InProcessDispatcher();
+    explicit InProcessDispatcher(boost::asio::io_service& ioService);
     ~InProcessDispatcher() override;
 
     void addReplyCaller(const std::string& requestReplyId,

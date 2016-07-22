@@ -25,6 +25,7 @@
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
+#include "joynr/SingleThreadedIOService.h"
 
 #include "libjoynr/subscription/SubscriptionBroadcastListener.h"
 
@@ -48,6 +49,7 @@ public:
         publicationManager(nullptr),
         publicationSender(nullptr),
         request(),
+        singleThreadedIOService(),
         provider(new MockTestProvider),
         requestCaller(new testRequestCaller(provider)),
         filter1(new MockLocationUpdatedSelectiveFilter),
@@ -57,8 +59,8 @@ public:
 
     void SetUp(){
         //remove stored subscriptions
-        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
-        publicationManager = new PublicationManager();
+        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+        publicationManager = new PublicationManager(singleThreadedIOService.getIOService());
         subscriptionBroadcastListener =
                 new SubscriptionBroadcastListener(subscriptionId, *publicationManager);
         publicationSender = new MockPublicationSender();
@@ -109,6 +111,7 @@ protected:
     MockPublicationSender* publicationSender;
     BroadcastSubscriptionRequest request;
     SubscriptionBroadcastListener* subscriptionBroadcastListener;
+    SingleThreadedIOService singleThreadedIOService;
 
     std::shared_ptr<MockTestProvider> provider;
     std::shared_ptr<RequestCaller> requestCaller;
@@ -171,7 +174,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
                 "broadcastWithSingleArrayParameter",
                 subscriptionBroadcastListener);
 
-    auto mockMessageRouter = std::make_shared<MockMessageRouter>();
+    auto mockMessageRouter = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
     JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
     publicationManager->add(
                 proxyParticipantId,

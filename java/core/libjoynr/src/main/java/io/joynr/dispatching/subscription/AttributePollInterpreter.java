@@ -31,6 +31,10 @@ import javax.annotation.Nonnull;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
 
+import io.joynr.JoynrVersion;
+import io.joynr.util.AnnotationUtil;
+import joynr.types.Version;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,30 +53,36 @@ public class AttributePollInterpreter {
                                            method.getName(),
                                            interfaceName,
                                            e.toString());
-            logger.error(message);
-            throw new MethodInvocationException(message);
+            logger.error(message, e);
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getRequestCaller().getClass(),
+                                                                     JoynrVersion.class);
+            throw new MethodInvocationException(message, new Version(joynrVersion.major(), joynrVersion.minor()));
         } catch (IllegalArgumentException e) {
             String message = String.format("Provider of interface \"%s\" does not declare method \"%s\" (exception: \"%s\")",
                                            interfaceName,
                                            method.getName(),
                                            e.toString());
-            logger.error(message);
-            throw new MethodInvocationException(message);
+            logger.error(message, e);
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getRequestCaller().getClass(),
+                                                                     JoynrVersion.class);
+            throw new MethodInvocationException(message, new Version(joynrVersion.major(), joynrVersion.minor()));
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             String message = String.format("Calling method \"%s\" on \"%s\" provider threw an exception: \"%s\"",
                                            method.getName(),
                                            interfaceName,
                                            cause == null ? e.toString() : cause.toString());
-            logger.error(message);
+            logger.error(message, e);
             throw new ProviderRuntimeException(cause == null ? e.toString() : cause.toString());
         } catch (Exception e) {
             String message = String.format("Calling method \"%s\" on \"%s\" provider threw an unexpected exception: \"%s\"",
                                            method.getName(),
                                            interfaceName,
                                            e.toString());
-            logger.error(message);
-            throw new MethodInvocationException(message);
+            logger.error(message, e);
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getRequestCaller().getClass(),
+                                                                     JoynrVersion.class);
+            throw new MethodInvocationException(message, new Version(joynrVersion.major(), joynrVersion.minor()));
         }
 
         if (returnValueFromProvider == null) {

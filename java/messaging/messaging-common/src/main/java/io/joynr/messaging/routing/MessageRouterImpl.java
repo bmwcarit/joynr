@@ -18,6 +18,7 @@ package io.joynr.messaging.routing;
  * limitations under the License.
  * #L%
  */
+
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -25,9 +26,6 @@ import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
-import io.joynr.provider.DeferredVoid;
-import io.joynr.provider.Promise;
-
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -40,21 +38,13 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import joynr.JoynrMessage;
-import joynr.system.RoutingAbstractProvider;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.BrowserAddress;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.CommonApiDbusAddress;
-import joynr.system.RoutingTypes.MqttAddress;
-import joynr.system.RoutingTypes.WebSocketAddress;
-import joynr.system.RoutingTypes.WebSocketClientAddress;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.name.Named;
 
-public class MessageRouterImpl extends RoutingAbstractProvider implements MessageRouter {
+public class MessageRouterImpl implements MessageRouter {
     private static final long TERMINATION_TIMEOUT = 5000;
 
     private Logger logger = LoggerFactory.getLogger(MessageRouterImpl.class);
@@ -77,61 +67,19 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         this.messagingStubFactory = messagingStubFactory;
     }
 
-    protected Promise<DeferredVoid> addNextHopInternal(String participantId, Address address) {
-        routingTable.put(participantId, address);
-        final DeferredVoid deferred = new DeferredVoid();
-        deferred.resolve();
-        return new Promise<DeferredVoid>(deferred);
-    }
-
     @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, ChannelAddress channelAddress) {
-        return addNextHopInternal(participantId, channelAddress);
-    }
-
-    @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, MqttAddress mqttAddress) {
-        return addNextHopInternal(participantId, mqttAddress);
-    }
-
-    @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, CommonApiDbusAddress commonApiDbusAddress) {
-        return addNextHopInternal(participantId, commonApiDbusAddress);
-    }
-
-    @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, BrowserAddress browserAddress) {
-        return addNextHopInternal(participantId, browserAddress);
-    }
-
-    @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, WebSocketAddress webSocketAddress) {
-        return addNextHopInternal(participantId, webSocketAddress);
-    }
-
-    @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, WebSocketClientAddress webSocketClientAddress) {
-        return addNextHopInternal(participantId, webSocketClientAddress);
-    }
-
-    @Override
-    public Promise<DeferredVoid> removeNextHop(String participantId) {
+    public void removeNextHop(String participantId) {
         routingTable.remove(participantId);
-        DeferredVoid deferred = new DeferredVoid();
-        deferred.resolve();
-        return new Promise<DeferredVoid>(deferred);
     }
 
     @Override
-    public Promise<ResolveNextHopDeferred> resolveNextHop(String participantId) {
-        ResolveNextHopDeferred deferred = new ResolveNextHopDeferred();
-        deferred.resolve(routingTable.containsKey(participantId));
-        return new Promise<ResolveNextHopDeferred>(deferred);
+    public boolean resolveNextHop(String participantId) {
+        return routingTable.containsKey(participantId);
     }
 
     @Override
     public void addNextHop(String participantId, Address address) {
-        addNextHopInternal(participantId, address);
+        routingTable.put(participantId, address);
     }
 
     @CheckForNull
@@ -145,7 +93,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
     }
 
     @Override
-    public void route(final JoynrMessage message) throws JoynrSendBufferFullException, JoynrMessageNotSentException {
+    public void route(final JoynrMessage message) {
         checkExpiry(message);
         routeInternal(message, 0, 0);
     }
@@ -188,7 +136,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
                         IMessaging messagingStub = messagingStubFactory.create(address);
                         messagingStub.transmit(message, createFailureAction(message, retriesCount));
-                    } catch (Throwable error) {
+                    } catch (Exception error) {
                         logger.error("error in scheduled message router thread: {}", error.getMessage());
                         FailureAction failureAction = createFailureAction(message, retriesCount);
                         failureAction.execute(error);
@@ -258,6 +206,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                         Thread.sleep(delayMs);
                         this.execute(e);
                     } catch (InterruptedException e1) {
+                        Thread.currentThread().interrupt();
                         return;
                     }
                 }
@@ -272,6 +221,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         try {
             scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             logger.error("Message Scheduler did not shut down in time: {}", e.getMessage());
         }
     }

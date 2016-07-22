@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <tuple>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
@@ -29,9 +30,9 @@ namespace joynr
 
 INIT_LOGGER(InProcessDispatcher);
 
-InProcessDispatcher::InProcessDispatcher()
-        : requestCallerDirectory("InProcessDispatcher-RequestCallerDirectory"),
-          replyCallerDirectory("InProcessDispatcher-ReplyCallerDirectory"),
+InProcessDispatcher::InProcessDispatcher(boost::asio::io_service& ioService)
+        : requestCallerDirectory("InProcessDispatcher-RequestCallerDirectory", ioService),
+          replyCallerDirectory("InProcessDispatcher-ReplyCallerDirectory", ioService),
           publicationManager(),
           subscriptionManager()
 

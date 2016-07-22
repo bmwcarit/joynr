@@ -44,10 +44,6 @@
 namespace joynr
 {
 
-class Reply;
-class MessagingQos;
-class IReplyCaller;
-
 class JOYNRCLUSTERCONTROLLER_EXPORT CapabilitiesClient : public ICapabilitiesClient
 {
 

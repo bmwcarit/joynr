@@ -34,6 +34,7 @@ import joynr.types.ProviderQos;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Messenger;
+import android.util.Log;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Module;
@@ -68,12 +69,8 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
         JoynrRuntime runtime;
         try {
             runtime = runtimeInitTask.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            uiLogger.logText(e.getMessage());
-            return null;
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        } catch (ExecutionException | InterruptedException e) {
+            Log.e("JAS", "joynr runtime not started", e);
             uiLogger.logText(e.getMessage());
             return null;
         }

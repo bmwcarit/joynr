@@ -21,6 +21,7 @@ package io.joynr.dispatching;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -31,6 +32,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderContainer;
+import io.joynr.exceptions.JoynrException;
+import joynr.exceptions.MethodInvocationException;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -60,11 +63,13 @@ import com.google.inject.Injector;
 import com.google.inject.name.Names;
 
 import io.joynr.common.ExpiryDate;
+import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
@@ -93,6 +98,7 @@ public class RequestReplyManagerTest {
 
     private Request request1;
     private Request request2;
+    private Request request3;
     private OneWayRequest oneWay1;
 
     private ObjectMapper objectMapper;
@@ -118,6 +124,7 @@ public class RequestReplyManagerTest {
 
             @Override
             protected void configure() {
+                install(new JoynrMessageScopeModule());
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
@@ -152,6 +159,7 @@ public class RequestReplyManagerTest {
         Method method = TestRequestCaller.class.getMethod("respond", new Class[]{ String.class });
         request1 = new Request(method.getName(), params1, method.getParameterTypes());
         request2 = new Request(method.getName(), params2, method.getParameterTypes());
+        request3 = new Request("unknownMethodName", params2, method.getParameterTypes());
 
         Method fireAndForgetMethod = TestOneWayRecipient.class.getMethod("receive", new Class[]{ String.class });
         oneWay1 = new OneWayRequest(fireAndForgetMethod.getName(),
@@ -181,7 +189,7 @@ public class RequestReplyManagerTest {
         requestReplyManager.sendOneWayRequest(testSenderParticipantId,
                                               testOneWayRecipientParticipantIds,
                                               oneWay1,
-                                              TIME_TO_LIVE);
+                                              new MessagingQos(TIME_TO_LIVE));
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
         verify(messageRouterMock, times(1)).route(messageCapture.capture());
@@ -198,7 +206,7 @@ public class RequestReplyManagerTest {
         requestReplyManager.sendRequest(testSenderParticipantId,
                                         testMessageResponderParticipantId,
                                         request1,
-                                        TIME_TO_LIVE);
+                                        new MessagingQos(TIME_TO_LIVE));
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
         verify(messageRouterMock, times(1)).route(messageCapture.capture());
@@ -229,6 +237,29 @@ public class RequestReplyManagerTest {
         verify(testRequestCallerSpy).respond(eq(payload1));
         verify(replyCallbackMock).onSuccess(replyCapture.capture());
         assertEquals(reply, replyCapture.getValue().getResponse()[0]);
+    }
+
+    @Test
+    public void requestCallerRejectsForIncomingRequest() throws Exception {
+        TestRequestCaller testRequestCallerSpy = spy(new TestRequestCaller(1));
+
+        when(providerContainer.getRequestCaller()).thenReturn(testRequestCallerSpy);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
+        providerDirectory.add(testMessageResponderParticipantId, providerContainer);
+        ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
+        requestReplyManager.handleRequest(replyCallbackMock, testMessageResponderParticipantId, request3, TIME_TO_LIVE);
+
+        String reply = (String) testRequestCallerSpy.getSentPayloadFor(request1);
+
+        ArgumentCaptor<JoynrException> exceptionCapture = ArgumentCaptor.forClass(JoynrException.class);
+        verify(replyCallbackMock).onFailure(exceptionCapture.capture());
+        assertTrue(exceptionCapture.getValue() instanceof MethodInvocationException);
+        assertEquals(((MethodInvocationException) (exceptionCapture.getValue())).getProviderVersion()
+                                                                                .getMajorVersion()
+                                                                                .intValue(), 6);
+        assertEquals(((MethodInvocationException) (exceptionCapture.getValue())).getProviderVersion()
+                                                                                .getMinorVersion()
+                                                                                .intValue(), 16);
     }
 
     @Test

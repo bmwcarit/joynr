@@ -107,7 +107,7 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
             return runtime;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("JAS", "joynr runtime not started", e);
             publishProgress(e.getMessage());
         }
         return null;

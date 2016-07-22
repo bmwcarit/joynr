@@ -21,7 +21,7 @@ RUN cd /tmp/ \
     && tar -xf clang+llvm-3.5.0-x86_64-fedora20.tar.xz \
     clang+llvm-3.5.0-x86_64-fedora20/bin/clang-format \
     --strip-components=2 \
-    && mv clang-format /usr/bin/ \
+    && mv clang-format /usr/local/bin/ \
     && rm -f clang+llvm-3.5.0-x86_64-fedora20.tar.xz
 
 ###################################################

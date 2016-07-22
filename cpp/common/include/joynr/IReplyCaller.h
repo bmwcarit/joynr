@@ -19,8 +19,6 @@
 #ifndef IREPLYCALLER_H
 #define IREPLYCALLER_H
 
-#include <memory>
-
 #include "joynr/ITimeoutListener.h"
 
 namespace joynr
@@ -55,7 +53,7 @@ public:
 
     virtual void returnError(const exceptions::JoynrException& error) = 0;
 
-    virtual void execute(const Reply& reply) = 0;
+    virtual void execute(Reply&& reply) = 0;
 
     /**
      * @brief This method will be called by the directory when

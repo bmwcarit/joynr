@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
 #include "joynr/Settings.h"
+#include "joynr/SingleThreadedIOService.h"
 
 namespace joynr
 {
@@ -85,13 +86,14 @@ void LibJoynrRuntime::init(
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
     // create message router
-    messageRouter = std::make_shared<MessageRouter>(
-            std::move(messagingStubFactory), libjoynrMessagingAddress);
+    messageRouter = std::make_shared<MessageRouter>(std::move(messagingStubFactory),
+                                                    libjoynrMessagingAddress,
+                                                    singleThreadIOService->getIOService());
 
-    startLibJoynrMessagingSkeleton(*messageRouter);
+    startLibJoynrMessagingSkeleton(messageRouter);
 
     joynrMessageSender = new JoynrMessageSender(messageRouter);
-    joynrDispatcher = new Dispatcher(joynrMessageSender);
+    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     // create the inprocess skeleton for the dispatcher
@@ -99,9 +101,13 @@ void LibJoynrRuntime::init(
             std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = new PublicationManager();
-    subscriptionManager = new SubscriptionManager();
-    inProcessDispatcher = new InProcessDispatcher();
+    publicationManager = new PublicationManager(singleThreadIOService->getIOService());
+    publicationManager->loadSavedAttributeSubscriptionRequestsMap(
+            libjoynrSettings->getSubscriptionRequestPersistenceFilename());
+    publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
+            libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
+    subscriptionManager = new SubscriptionManager(singleThreadIOService->getIOService());
+    inProcessDispatcher = new InProcessDispatcher(singleThreadIOService->getIOService());
 
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
     inProcessConnectorFactory = new InProcessConnectorFactory(
@@ -167,7 +173,7 @@ void LibJoynrRuntime::init(
     std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder(
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain));
     joynr::system::IDiscoverySync* proxy =
-            discoveryProxyBuilder->setMessagingQos(MessagingQos(10000))
+            discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
                     ->setCached(false)
                     ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                     ->build();

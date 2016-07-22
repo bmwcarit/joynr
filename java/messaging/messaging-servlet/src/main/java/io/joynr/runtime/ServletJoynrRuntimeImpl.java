@@ -26,14 +26,14 @@ import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.ProxyBuilderFactory;
 
 import javax.inject.Named;
 
+import joynr.system.RoutingProvider;
 import joynr.system.RoutingTypes.Address;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,13 +52,12 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
                                    MessagingSkeletonFactory messagingSkeletonFactory,
                                    LocalDiscoveryAggregator localDiscoveryAggregator,
                                    LocalCapabilitiesDirectory localCapabilitiesDirectory,
+                                   RoutingTable routingTable,
                                    @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
                                    @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                    CapabilitiesRegistrar capabilitiesRegistrar,
                                    @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
-                                   MessageRouter messageRouter) {
+                                   RoutingProvider routingProvider) {
         // CHECKSTYLE:ON
         super(objectMapper,
               builderFactory,
@@ -68,14 +67,13 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
               messagingStubFactory,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
+              routingTable,
               systemServicesDomain,
               dispatcherAddress,
-              capabilitiesDirectoryAddress,
-              domainAccessControllerAddress,
               discoveryProviderAddress,
               capabilitiesRegistrar,
               localCapabilitiesDirectory,
-              messageRouter);
+              routingProvider);
         // CHECKSTYLE:ON
     }
 

@@ -33,6 +33,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import io.joynr.JoynrVersion;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
@@ -70,7 +71,7 @@ public class CapabilitiesRegistrarTest {
     private Dispatcher dispatcher;
 
     @Mock
-    private TestProvider provider;
+    private TestProvider testProvider;
 
     @Mock
     private RequestCaller requestCaller;
@@ -90,6 +91,7 @@ public class CapabilitiesRegistrarTest {
     private ProviderQos providerQos = new ProviderQos();
 
     @JoynrInterface(provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
+    @JoynrVersion(major = 1337, minor = 42)
     interface TestProvider extends JoynrProvider {
         public static String INTERFACE_NAME = "interfaceName";
     }
@@ -109,20 +111,22 @@ public class CapabilitiesRegistrarTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerWithCapRegistrar() {
+        JoynrVersion currentJoynrVersion = (JoynrVersion) TestProvider.class.getAnnotation(JoynrVersion.class);
+        Version testVersion = new Version(currentJoynrVersion.major(), currentJoynrVersion.minor());
 
         when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
         RequestCaller requestCallerMock = mock(RequestCaller.class);
         when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
-        when(providerContainerFactory.create(provider)).thenReturn(providerContainer);
+        when(providerContainerFactory.create(testProvider)).thenReturn(providerContainer);
 
         ArgumentCaptor<DiscoveryEntry> discoveryEntryCaptor = ArgumentCaptor.forClass(DiscoveryEntry.class);
 
-        registrar.registerProvider(domain, provider, providerQos);
+        registrar.registerProvider(domain, testProvider, providerQos);
         verify(localDiscoveryAggregator).add(any(Callback.class), discoveryEntryCaptor.capture());
         DiscoveryEntry actual = discoveryEntryCaptor.getValue();
-        Assert.assertEquals(actual.getProviderVersion(), new Version(0, 0));
+        Assert.assertEquals(actual.getProviderVersion(), testVersion);
         Assert.assertEquals(actual.getDomain(), domain);
         Assert.assertEquals(actual.getInterfaceName(), TestProvider.INTERFACE_NAME);
         Assert.assertEquals(actual.getParticipantId(), participantId);
@@ -139,10 +143,9 @@ public class CapabilitiesRegistrarTest {
     public void unregisterProvider() {
         when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
-        registrar.unregisterProvider(domain, provider);
+        registrar.unregisterProvider(domain, testProvider);
 
         verify(localDiscoveryAggregator).remove(any(Callback.class), eq(participantId));
         verify(providerDirectory).remove(eq(participantId));
     }
-
 }

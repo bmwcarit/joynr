@@ -20,20 +20,21 @@ package io.joynr.generator.util;
  */
 
 import io.joynr.generator.IJoynrGenerator;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.reflections.Reflections;
 
 public class InvocationArguments {
+    private static Logger logger = Logger.getLogger(InvocationArguments.class);
 
     public static final String OUTPUT_PATH = "outputPath";
 
     // A lookup of language to root generator
-    protected static Map<String, String> languages = new HashMap<String, String>();
+    protected static Map<String, String> languages = new HashMap<>();
     static {
         Reflections reflections = new Reflections("io", "com", "de", "org");
         Set<Class<? extends IJoynrGenerator>> generators = reflections.getSubTypesOf(IJoynrGenerator.class);
@@ -42,6 +43,7 @@ public class InvocationArguments {
                 IJoynrGenerator instance = generator.newInstance();
                 languages.put(instance.getLanguageId(), generator.getName());
             } catch (Exception e) {
+                logger.error("unable to load language generator:" + generator.getName(), e);
             }
         }
     }
@@ -61,9 +63,10 @@ public class InvocationArguments {
     private boolean clean = false;
 
     public InvocationArguments() {
+        // allows setting args programmatically
     }
 
-    public InvocationArguments(String[] args) throws IllegalArgumentException {
+    public InvocationArguments(String[] args) {
         if (args.length == 0) {
             throw new IllegalArgumentException("No parameters provided!" + dumpCorrectInvocation());
         }
@@ -72,8 +75,8 @@ public class InvocationArguments {
     }
 
     private static String getLanguages(String seperator) {
-        assert (seperator != null);
-        StringBuffer appender = new StringBuffer();
+        assert seperator != null;
+        StringBuilder appender = new StringBuilder();
         for (String language : languages.keySet()) {
             appender.append(language + seperator);
         }
@@ -171,7 +174,7 @@ public class InvocationArguments {
 
     private void setParameterElement(String key, String value) {
         if (parameter == null) {
-            parameter = new HashMap<String, String>();
+            parameter = new HashMap<>();
         }
 
         parameter.put(key, value);
@@ -186,11 +189,11 @@ public class InvocationArguments {
         return clean;
     }
 
-    public void checkArguments() throws IllegalArgumentException {
+    public void checkArguments() {
         checkArguments(false);
     }
 
-    public void checkArguments(boolean checkIfModelPathIsValid) throws IllegalArgumentException {
+    public void checkArguments(boolean checkIfModelPathIsValid) {
         StringBuilder errorMessages = new StringBuilder();
         String newLine = System.getProperty("line.separator");
         if (outputPath == null) {
@@ -236,7 +239,7 @@ public class InvocationArguments {
 
     public void setGenerationLanguage(String generationLanguage) {
         if (rootGenerator == null && generationLanguage != null) {
-            this.rootGenerator = languages.get(generationLanguage);
+            rootGenerator = languages.get(generationLanguage);
             if (rootGenerator == null) {
                 throw new IllegalArgumentException("The generation language \""
                         + generationLanguage
@@ -258,7 +261,7 @@ public class InvocationArguments {
 
     public Map<String, String> getParameter() {
         if (parameter == null) {
-            parameter = new HashMap<String, String>();
+            parameter = new HashMap<>();
         }
         if (!parameter.containsKey(OUTPUT_PATH)) {
             parameter.put(OUTPUT_PATH, getOutputPath());

@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,37 @@ define(
             "global/Promise",
             "joynr/types/DiscoveryQos",
             "joynr/util/UtilInternal",
+            "joynr/exceptions/DiscoveryException",
+            "joynr/exceptions/NoCompatibleProviderFoundException",
             "joynr/util/LongTimer"
         ],
-        function(Promise, DiscoveryQos, Util, LongTimer) {
+        function(Promise, DiscoveryQos, Util, DiscoveryException, NoCompatibleProviderFoundException, LongTimer) {
+
+            /**
+             * checks if the provided discoveryEntry supports onChange subscriptions if required
+             *
+             * @name Arbitrator#checkSupportsOnChangeSubscriptions
+             * @function
+             *
+             * @param {DiscoveryEntry} discoveryEntry - the discovery entry to check
+             * @param {Boolean} providerMustSupportOnChange - filter only entries supporting onChange subscriptions
+             */
+            function checkSupportsOnChangeSubscriptions(discoveryEntry, providerMustSupportOnChange) {
+                if (providerMustSupportOnChange === undefined || !providerMustSupportOnChange) {
+                    return true;
+                }
+                if (discoveryEntry.qos === undefined) {
+                    return false;
+                }
+                return discoveryEntry.qos.supportsOnChangeSubscriptions;
+            }
+
             function discoverStaticCapabilities(
                     capabilities,
                     domains,
                     interfaceName,
                     discoveryQos,
+                    proxyVersion,
                     deferred) {
                 try {
                     var i, capability, arbitratedCaps = [];
@@ -44,7 +67,10 @@ define(
                         for (i = 0; i < capabilities.length; ++i) {
                             capability = capabilities[i];
                             if (domains.indexOf(capability.domain) !== -1
-                                    && interfaceName === capability.interfaceName) {
+                                    && interfaceName === capability.interfaceName &&
+                                capability.providerVersion.MAJOR_VERSION === proxyVersion.MAJOR_VERSION &&
+                                capability.providerVersion.MINOR_VERSION === proxyVersion.MINOR_VERSION &&
+                                checkSupportsOnChangeSubscriptions(capability, discoveryQos.providerMustSupportOnChange)) {
                                 arbitratedCaps.push(capability);
                             }
                         }
@@ -71,39 +97,69 @@ define(
                     domains,
                     interfaceName,
                     applicationDiscoveryQos,
+                    proxyVersion,
                     deferred) {
                 // discover caps from local capabilities directory
                 capabilityDiscoveryStub.lookup(domains, interfaceName, new DiscoveryQos({
                     discoveryScope : applicationDiscoveryQos.discoveryScope,
-                    cacheMaxAge : applicationDiscoveryQos.cacheMaxAgeMs
+                    cacheMaxAge : applicationDiscoveryQos.cacheMaxAgeMs,
+                    discoveryTimeout : applicationDiscoveryQos.discoveryTimeoutMs,
+                    providerMustSupportOnChange : applicationDiscoveryQos.providerMustSupportOnChange
                 })).then(
-                        function(discoveredCaps) {
-                            // filter caps according to chosen arbitration strategy
-                            var arbitratedCaps =
-                                    applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
-                            // if deferred is still pending => discoveryTimeoutMs is not expired yet
-                            if (deferred.pending) {
-                                // if there are caps found
-                                if (arbitratedCaps.length > 0) {
-                                    // report the discovered & arbitrated caps
-                                    deferred.pending = false;
-                                    deferred.resolve(arbitratedCaps);
+                    function(discoveredCaps) {
+                        // filter caps according to chosen arbitration strategy
+                        var arbitratedCaps =
+                                applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
+                        var versionCompatibleArbitratedCaps = [];
+                        var i;
+                        // if deferred is still pending => discoveryTimeoutMs is not expired yet
+                        if (deferred.pending) {
+                            // if there are caps found
+                            deferred.incompatibleVersionsFound = [];
+                            var providerVersion;
+
+                            var addtoListIfNotExisting = function(list, providerVersion) {
+                                var j;
+                                for (j = 0; j < list.length; ++j) {
+                                    if (list[j].majorVersion === providerVersion.majorVersion &&
+                                        list[j].minorVersion === providerVersion.minorVersion) {
+                                        return;
+                                    }
+                                }
+                                list.push(providerVersion);
+                            };
+
+                            for (i = 0; i < arbitratedCaps.length; i++) {
+                                providerVersion = arbitratedCaps[i].providerVersion;
+                                if (providerVersion.majorVersion === proxyVersion.majorVersion &&
+                                    providerVersion.minorVersion >= proxyVersion.minorVersion &&
+                                    checkSupportsOnChangeSubscriptions(arbitratedCaps[i], applicationDiscoveryQos.providerMustSupportOnChange)) {
+                                    versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
                                 } else {
-                                    // retry discovery in discoveryRetryDelayMs ms
-                                    LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
-                                        discoverCapabilities(
-                                                capabilityDiscoveryStub,
-                                                domains,
-                                                interfaceName,
-                                                applicationDiscoveryQos,
-                                                deferred);
-                                    }, applicationDiscoveryQos.discoveryRetryDelayMs);
+                                    addtoListIfNotExisting(deferred.incompatibleVersionsFound, providerVersion);
                                 }
                             }
-                        }).catch(function(error) {
-                            deferred.pending = false;
-                            deferred.reject(error);
-                        });
+                            if (versionCompatibleArbitratedCaps.length > 0) {
+                                // report the discovered & arbitrated caps
+                                deferred.pending = false;
+                                deferred.resolve(versionCompatibleArbitratedCaps);
+                            } else {
+                                // retry discovery in discoveryRetryDelayMs ms
+                                LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
+                                    discoverCapabilities(
+                                            capabilityDiscoveryStub,
+                                            domains,
+                                            interfaceName,
+                                            applicationDiscoveryQos,
+                                            proxyVersion,
+                                            deferred);
+                                }, applicationDiscoveryQos.discoveryRetryDelayMs);
+                            }
+                        }
+                }).catch(function(error) {
+                    deferred.pending = false;
+                    deferred.reject(error);
+                });
             }
 
             /**
@@ -134,6 +190,7 @@ define(
                  * @param {String} settings.interfaceName the interfaceName to discover the provider
                  * @param {DiscoveryQos} settings.discoveryQos
                  * @param {Boolean} [settings.staticArbitration] shall the arbitrator use staticCapabilities or contact the discovery provider
+                 * @param {Version} [settings.proxyVersion] the version of the proxy object
                  * @returns {Object} a A+ Promise object, that will provide asynchronously an array of arbitrated capabilities
                  */
                 this.startArbitration =
@@ -144,6 +201,7 @@ define(
                                         var deferred = {
                                             resolve : resolve,
                                             reject : reject,
+                                            incompatibleVersionsFound : [],
                                             pending : true
                                         };
                                         if (settings.staticArbitration && staticCapabilities) {
@@ -152,6 +210,7 @@ define(
                                                     settings.domains,
                                                     settings.interfaceName,
                                                     settings.discoveryQos,
+                                                    settings.proxyVersion,
                                                     deferred);
                                         } else {
                                             var discoveryTimeoutMsId =
@@ -159,15 +218,31 @@ define(
                                                             .setTimeout(
                                                                     function discoveryCapabilitiesTimeOut() {
                                                                         deferred.pending = false;
-                                                                        reject(new Error(
+
+                                                                        if (deferred.incompatibleVersionsFound.length > 0) {
+                                                                            var message =
+                                                                                "no compatible provider found within discovery timeout for domains \""
+                                                                                    + JSON.stringify(settings.domains)
+                                                                                    + "\", interface \""
+                                                                                    + settings.interfaceName
+                                                                                    + "\" with discoveryQos \""
+                                                                                    + JSON.stringify(settings.discoveryQos)
+                                                                                    + "\"";
+                                                                            reject(new NoCompatibleProviderFoundException({
+                                                                                detailMessage: message,
+                                                                                discoveredVersions: deferred.incompatibleVersionsFound,
+                                                                                interfaceName: settings.interfaceName
+                                                                            }));
+                                                                        } else {
+                                                                            reject(new DiscoveryException({ detailMessage:
                                                                                 "no provider found within discovery timeout for domains \""
                                                                                     + JSON.stringify(settings.domains)
                                                                                     + "\", interface \""
                                                                                     + settings.interfaceName
                                                                                     + "\" with discoveryQos \""
-                                                                                    + JSON
-                                                                                            .stringify(settings.discoveryQos)
-                                                                                    + "\""));
+                                                                                    + JSON.stringify(settings.discoveryQos)
+                                                                                    + "\"" }));
+                                                                        }
                                                                     },
                                                                     settings.discoveryQos.discoveryTimeoutMs);
                                             var resolveWrapper = function(args) {
@@ -180,6 +255,7 @@ define(
                                                     settings.domains,
                                                     settings.interfaceName,
                                                     settings.discoveryQos,
+                                                    settings.proxyVersion,
                                                     deferred);
                                         }
                                     });
