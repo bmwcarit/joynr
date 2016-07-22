@@ -637,14 +637,17 @@ else(USE_PLATFORM_MUESLI)
     ExternalProject_Get_Property(muesli BINARY_DIR)
 
     # add import target for mosquitto library
-    add_library(muesli::muesli SHARED IMPORTED GLOBAL)
+    add_library(muesli::muesli INTERFACE IMPORTED GLOBAL)
     add_dependencies(muesli::muesli muesli)
+    set(includeDirs "${SOURCE_DIR}/include" "${BINARY_DIR}/ThirdParty/src/rapidjson/include")
+    # need to create include dirs manually at cmake time to prevent cmake warning (non existing path
+    # in INTERFACE_INCLUDE_DIRECTORIES), since otherwise they are created at make time when cloning
+    # the source repositories
+    file(MAKE_DIRECTORY ${includeDirs})
     set_property(
         TARGET muesli::muesli
         APPEND
-        PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-            "${SOURCE_DIR}/include"
-            "${BINARY_DIR}/ThirdParty/src/rapidjson/include"
+        PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${includeDirs}
     )
     set_property(
         TARGET muesli::muesli
@@ -766,6 +769,7 @@ set(
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
+    ${muesli_INCLUDE_DIRECTORIES}
     ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
