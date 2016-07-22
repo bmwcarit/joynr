@@ -45,24 +45,29 @@ void KeywordArbitrator::attemptArbitration()
         discoveryProxy.lookup(result, domains, interfaceName, systemDiscoveryQos);
         receiveCapabilitiesLookupResults(result);
     } catch (const exceptions::JoynrException& e) {
-        JOYNR_LOG_ERROR(
-                logger,
-                "Unable to lookup provider (domain: {}, interface: {}from discovery. Error: {}",
-                domains.size() > 0 ? domains.at(0) : "EMPTY",
-                interfaceName,
-                e.getMessage());
+        std::string errorMsg = "Unable to lookup provider (domain: " +
+                               (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                               ", interface: " + interfaceName + ") from discovery. Error: " +
+                               e.getMessage();
+        JOYNR_LOG_ERROR(logger, errorMsg);
+        arbitrationError.setMessage(errorMsg);
     }
 }
 
 void KeywordArbitrator::receiveCapabilitiesLookupResults(
         const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
-    // Check for an empty list of results
-    if (discoveryEntries.size() == 0) {
-        return;
-    }
     discoveredIncompatibleVersions.clear();
 
+    // Check for an empty list of results
+    if (discoveryEntries.size() == 0) {
+        arbitrationError.setMessage("No entries found for domain: " +
+                                    (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                                    ", interface: " + interfaceName);
+        return;
+    }
+    std::size_t providersWithoutSupportOnChange = 0;
+    std::size_t providersWithIncompatibleVersion = 0;
     // Loop through the result list
     joynr::types::Version providerVersion;
     for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
@@ -73,6 +78,18 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
         // Check that the provider supports onChange subscriptions if this was requested
         if (discoveryQos.getProviderMustSupportOnChange() &&
             !providerQos.getSupportsOnChangeSubscriptions()) {
+            ++providersWithoutSupportOnChange;
+            continue;
+        }
+
+        if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
+            providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
+            JOYNR_LOG_TRACE(logger,
+                            "Skipping capabilitiesEntry with incompatible version, expected: " +
+                                    std::to_string(interfaceVersion.getMajorVersion()) + "." +
+                                    std::to_string(interfaceVersion.getMinorVersion()));
+            discoveredIncompatibleVersions.insert(providerVersion);
+            ++providersWithIncompatibleVersion;
             continue;
         }
 
@@ -82,9 +99,6 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
             std::string name = parameter.getName();
             if (!(name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue())) {
                 continue;
-            } else if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
-                       providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
-                discoveredIncompatibleVersions.insert(providerVersion);
             } else {
                 std::string res = discoveryEntry.getParticipantId();
                 JOYNR_LOG_TRACE(logger, "setting res to {}", res);
@@ -95,6 +109,24 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
     }
 
     // If this point is reached, no provider with the keyword was found
+    std::string errorMsg;
+    if (providersWithoutSupportOnChange == discoveryEntries.size()) {
+        errorMsg = "There was more than one entries in capabilitiesEntries, but none supported "
+                   "on change subscriptions.";
+        JOYNR_LOG_WARN(logger, errorMsg);
+        arbitrationError.setMessage(errorMsg);
+    } else if ((providersWithoutSupportOnChange + providersWithIncompatibleVersion) <
+               discoveryEntries.size()) {
+        errorMsg = "There was more than one entries in capabilitiesEntries, but none of the "
+                   "compatible entries had the correct keyword.";
+        JOYNR_LOG_WARN(logger, errorMsg);
+        arbitrationError.setMessage(errorMsg);
+    } else {
+        errorMsg = "There was more than one entries in capabilitiesEntries, but none "
+                   "was compatible.";
+        JOYNR_LOG_WARN(logger, errorMsg);
+        arbitrationError.setMessage(errorMsg);
+    }
 }
 
 } // namespace joynr

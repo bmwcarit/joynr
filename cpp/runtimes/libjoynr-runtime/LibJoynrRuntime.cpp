@@ -37,6 +37,7 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
 #include "joynr/Settings.h"
+#include "joynr/SingleThreadedIOService.h"
 
 namespace joynr
 {
@@ -87,12 +88,12 @@ void LibJoynrRuntime::init(
     // create message router
     messageRouter = std::make_shared<MessageRouter>(std::move(messagingStubFactory),
                                                     libjoynrMessagingAddress,
-                                                    singleThreadIOService.getIOService());
+                                                    singleThreadIOService->getIOService());
 
     startLibJoynrMessagingSkeleton(messageRouter);
 
     joynrMessageSender = new JoynrMessageSender(messageRouter);
-    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService.getIOService());
+    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     // create the inprocess skeleton for the dispatcher
@@ -100,13 +101,13 @@ void LibJoynrRuntime::init(
             std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = new PublicationManager(singleThreadIOService.getIOService());
+    publicationManager = new PublicationManager(singleThreadIOService->getIOService());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
             libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
-    subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService());
-    inProcessDispatcher = new InProcessDispatcher(singleThreadIOService.getIOService());
+    subscriptionManager = new SubscriptionManager(singleThreadIOService->getIOService());
+    inProcessDispatcher = new InProcessDispatcher(singleThreadIOService->getIOService());
 
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
     inProcessConnectorFactory = new InProcessConnectorFactory(

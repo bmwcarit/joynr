@@ -23,6 +23,7 @@
 #include <sstream>
 #include <chrono>
 #include <mutex>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/PublicationManager.h"
 #include "joynr/RequestCaller.h"

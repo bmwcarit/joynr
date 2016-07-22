@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <functional>
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/placeholders.hpp>
 #include <boost/bind.hpp>
 
@@ -307,8 +308,8 @@ void MessageRouter::scheduleMessage(
 
 void MessageRouter::activateMessageCleanerTimer()
 {
-    messageQueueCleanerTimer.expires_from_now(messageQueueCleanerTimerPeriodMs);
-    messageQueueCleanerTimer.async_wait(
+    messageQueueCleanerTimer.expiresFromNow(messageQueueCleanerTimerPeriodMs);
+    messageQueueCleanerTimer.asyncWait(
             std::bind(&MessageRouter::onMessageCleanerTimerExpired, this, std::placeholders::_1));
 }
 

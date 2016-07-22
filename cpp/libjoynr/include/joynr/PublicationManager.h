@@ -32,9 +32,16 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <boost/asio/io_service.hpp>
 
 #include "joynr/Variant.h"
+
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
 
 namespace joynr
 {

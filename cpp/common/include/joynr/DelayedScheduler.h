@@ -24,13 +24,20 @@
 #include <mutex>
 #include <chrono>
 #include <functional>
-#include <boost/asio/io_service.hpp>
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
 #include "joynr/Runnable.h"
 #include "joynr/DelayedRunnable.h"
+
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
 
 namespace joynr
 {

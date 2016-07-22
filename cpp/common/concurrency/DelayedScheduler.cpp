@@ -18,9 +18,10 @@
  */
 #include "joynr/DelayedScheduler.h"
 
-#include <boost/system/error_code.hpp>
 #include <cassert>
 #include <utility>
+#include <boost/asio/io_service.hpp>
+#include <boost/system/error_code.hpp>
 
 namespace joynr
 {

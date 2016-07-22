@@ -22,7 +22,6 @@
 #include <chrono>
 #include <atomic>
 #include <mutex>
-#include <boost/asio/io_service.hpp>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
@@ -30,6 +29,14 @@
 #include "joynr/DelayedScheduler.h"
 #include "joynr/Thread.h"
 #include "joynr/BlockingQueue.h"
+
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
 
 namespace joynr
 {

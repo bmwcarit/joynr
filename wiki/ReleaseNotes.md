@@ -29,7 +29,6 @@ None.
 * **[JEE]** Fixed bug with multi-out return values not being translated
   between container classes and multi-valued deferred instances in the
   `ProviderWrapper`.
->>>>>>> origin/release/0.18.5
 
 #joynr 0.18.4
 This is a minor bug fix release.

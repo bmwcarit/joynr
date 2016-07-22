@@ -227,6 +227,16 @@ Here's an example of what that could look like for the `MyService` we used above
 
 	}
 
+#### Injecting the calling principal
+
+In order to find out who is calling you, you can inject the `JoynrCallingPrincipal`
+to your EJB. This will only ever be set if your EJB is called via joynr (i.e. if you
+are also calling your EJB via other routes, e.g. JAX-RS, then the principal will not
+be set).
+
+See the
+[System Integration Test](../tests/system-integration-test/sit-jee-app/src/main/java/io/joynr/systemintegrationtest/jee/SystemIntegrationTestBean.java)
+for an example of its usage.
 
 ### Calling services
 
