@@ -44,10 +44,10 @@ define([
         LocalStorage,
         provisioning,
         waitsFor) {
-    var log = LoggerFactory.getLogger("joynr.messaging.TestHttpMessaging");
+    var log = LoggerFactory.getLogger("joynr.messaging.HttpMessagingTest");
     var localStorage = new LocalStorage();
 
-    describe("libjoynr-js.joynr.messaging.TestHttpMessaging", function() {
+    describe("libjoynr-js.joynr.messaging.HttpMessagingTest", function() {
         it("sends and receives messages", function(done) {
             var channelId = "js_testOpenChannelSendMessage" + Date.now();
             var url = provisioning.bounceProxyUrl + "channels/" + channelId + "/";
