@@ -215,6 +215,30 @@ define([
                                 });
 
                         it(
+                                "address can be resolved once known to message router",
+                                function(done) {
+                                    var participantId = "participantId-setToKnown";
+                                    messageRouter =
+                                            createMessageRouter(
+                                                    persistencySpy,
+                                                    messagingStubFactorySpy,
+                                                    messageQueueSpy,
+                                                    incomingAddress,
+                                                    parentMessageRouterAddress);
+
+                                    messageRouter.resolveNextHop(participantId)
+                                        .then(function(address) {
+                                            expect(address).toBe(undefined);
+                                            // it is expected that the given participantId cannot be resolved
+                                            messageRouter.setToKnown(participantId);
+                                            return messageRouter.resolveNextHop(participantId).then(function(address) {
+                                                expect(address).toBe(parentMessageRouterAddress);
+                                                return done();
+                                            }).catch(done.fail);
+                                        });
+                                });
+
+                        it(
                                 "queue Message with unknown destinationParticipant",
                                 function(done) {
                                     messageRouter =
