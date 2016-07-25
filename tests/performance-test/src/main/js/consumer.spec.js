@@ -28,19 +28,20 @@ console.log = function() {};
 
 describe("js consumer performance test", function() {
 
+    var TIMEOUT = 180000;
     beforeEach(function(done) {
         consumerBase.initialize().then(done);
     });
 
     it("EchoString", function(done) {
         consumerBase.echoString().then(done).catch(done.fail);
-    });
+    }, TIMEOUT);
 
     it("EchoComplexStruct", function(done) {
         consumerBase.echoComplexStruct().then(done).catch(done.fail);
-    });
+    }, TIMEOUT);
 
     it("EchoByteArray", function(done) {
         consumerBase.echoByteArray().then(done).catch(done.fail);
-    });
+    }, TIMEOUT);
 });
