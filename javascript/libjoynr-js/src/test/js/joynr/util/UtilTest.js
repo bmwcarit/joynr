@@ -48,7 +48,9 @@ define(
                     var merged, message, subobject, object1, object2, object3;
                     merged = {};
 
-                    message = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                    message = new JoynrMessage({
+                        type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                    });
                     message.payload = {
                         payload1 : 1,
                         payload2 : 2

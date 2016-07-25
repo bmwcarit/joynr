@@ -38,11 +38,15 @@ define(
                     function() {
                         var messageQueue, joynrMessage, joynrMessage2, receiverParticipantId;
                         receiverParticipantId = "TestMessageQueue_participantId_" + Date.now();
-                        joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                        joynrMessage = new JoynrMessage({
+                            type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                        });
                         joynrMessage.to = receiverParticipantId;
                         joynrMessage.from = "senderParticipantId";
                         joynrMessage.payload = "hello";
-                        joynrMessage2 = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                        joynrMessage2 = new JoynrMessage({
+                            type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                        });
                         joynrMessage2.to = receiverParticipantId;
                         joynrMessage2.from = "senderParticipantId2";
                         joynrMessage2.payload = "hello2";
@@ -74,8 +78,9 @@ define(
                                             Math
                                                     .floor((messageQueue.maxQueueSizeInKBytes * 1024 / Util
                                                             .getLengthInBytes(payload)));
-                                    newJoynrMessage =
-                                            new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                                    newJoynrMessage = new JoynrMessage({
+                                        type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                                    });
                                     newJoynrMessage.expiryDate = Date.now() + 1000;
                                     newJoynrMessage.payload = payload;
 

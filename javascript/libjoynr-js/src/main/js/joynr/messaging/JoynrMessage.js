@@ -30,10 +30,14 @@ define(
              * @name JoynrMessage
              * @constructor
              *
+             * @param {Object}
+             *            settings the settings object holding values for the JoynrMessage
              * @param {String}
-             *            messageType the message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
+             *            settings.type the message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
              */
-            function JoynrMessage(messageType) {
+            function JoynrMessage(settings) {
+                settings = settings || {};
+
                 /**
                  * The joynr type name
                  *
@@ -48,7 +52,7 @@ define(
                  * @name JoynrMessage#type
                  * @type String
                  */
-                Util.objectDefineProperty(this, "type", messageType);
+                Util.objectDefineProperty(this, "type", settings.type);
 
                 /**
                  * The message header holding additional values

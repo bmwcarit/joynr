@@ -197,7 +197,7 @@ define(
                                                         // pass the message on
                                                         joynrMessage =
                                                                 Util.extendDeep(new JoynrMessage(
-                                                                        message.type), message);
+                                                                    message), message);
 
                                                         log
                                                                 .info(

@@ -89,14 +89,17 @@ define([
                             receiverParticipantId = "TestMessageRouter_participantId_" + Date.now();
                             receiverParticipantId2 =
                                     "TestMessageRouter_delayedParticipantId_" + Date.now();
-                            joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                            joynrMessage = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                            });
                             joynrMessage.expiryDate = 9360686108031;
                             joynrMessage.to = receiverParticipantId;
                             joynrMessage.from = "senderParticipantId";
                             joynrMessage.payload = "hello";
 
-                            joynrMessage2 =
-                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                            joynrMessage2 = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                            });
                             joynrMessage2.to = receiverParticipantId2;
                             joynrMessage2.from = "senderParticipantId";
                             joynrMessage2.payload = "hello2";

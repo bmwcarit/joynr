@@ -39,7 +39,7 @@ define("joynr/messaging/browser/BrowserMessagingSkeleton", [
 
         settings.webMessagingSkeleton.registerListener(function(message) {
             if (message !== undefined) {
-                var joynrMessage = Util.extendDeep(new JoynrMessage(message.type), message);
+                var joynrMessage = Util.extendDeep(new JoynrMessage(message), message);
 
                 Util.fire(receiverCallbacks, joynrMessage);
             } else {

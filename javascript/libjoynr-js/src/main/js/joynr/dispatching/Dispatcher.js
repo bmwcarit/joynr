@@ -187,8 +187,9 @@ define(
                 this.sendRequest =
                         function sendRequest(settings) {
                             // Create a JoynrMessage with the Request
-                            var requestMessage =
-                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                            var requestMessage = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                            });
                             requestMessage.payload = JSONSerializer.stringify(settings.request);
                             if (settings.messagingQos.customHeaders) {
                                 requestMessage
@@ -226,8 +227,9 @@ define(
                 this.sendOneWayRequest =
                         function sendOneWayRequest(settings) {
                             // Create a JoynrMessage with the OneWayRequest
-                            var oneWayRequestMessage =
-                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY);
+                            var oneWayRequestMessage = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY
+                            });
                             oneWayRequestMessage.payload =
                                     JSONSerializer.stringify(settings.request);
                             if (settings.messagingQos.customHeaders) {
@@ -272,10 +274,9 @@ define(
                                         from : settings.from
                                     }));
 
-                            var requestMessage =
-                                    new JoynrMessage(
-                                            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST);
-                            // requestMessage.setHeader("subscriptionID", settings.subscriptionRequest.subscriptionId);
+                            var requestMessage = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
+                            });
                             requestMessage.payload =
                                     JSONSerializer.stringify(settings.subscriptionRequest);
 
@@ -310,8 +311,9 @@ define(
 
                             var requestMessage =
                                     new JoynrMessage(
-                                            JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
-                            // requestMessage.setHeader("subscriptionID", settings.subscriptionRequest.subscriptionId);
+                                            {
+                                                type : JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST
+                                            });
                             requestMessage.payload =
                                     JSONSerializer.stringify(settings.subscriptionRequest);
 
@@ -343,9 +345,9 @@ define(
                                         from : settings.from
                                     }));
 
-                            var message =
-                                    new JoynrMessage(
-                                            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP);
+                            var message = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP
+                            });
                             message.payload = JSONSerializer.stringify(settings.subscriptionStop);
                             return sendJoynrMessage(message, settings);
                         };
@@ -374,7 +376,9 @@ define(
                     }));
 
                     // Reply with the result in a JoynrMessage
-                    var replyMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REPLY);
+                    var replyMessage = new JoynrMessage({
+                        type : JoynrMessage.JOYNRMESSAGE_TYPE_REPLY
+                    });
 
                     // set reply headers
                     replyMessage.from = settings.from;
@@ -410,26 +414,26 @@ define(
                  *            publication.subscriptionId
                  *
                  */
-                this.sendPublication =
-                        function sendPublication(settings, publication) {
-                            log.info("publication", DiagnosticTags.forPublication({
-                                publication : publication,
-                                to : settings.to,
-                                from : settings.from
-                            }));
+                this.sendPublication = function sendPublication(settings, publication) {
+                    log.info("publication", DiagnosticTags.forPublication({
+                        publication : publication,
+                        to : settings.to,
+                        from : settings.from
+                    }));
 
-                            // Reply with the result in a JoynrMessage
-                            var publicationMessage =
-                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION);
+                    // Reply with the result in a JoynrMessage
+                    var publicationMessage = new JoynrMessage({
+                        type : JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
+                    });
 
-                            // set reply headers
-                            publicationMessage.from = settings.from;
-                            publicationMessage.to = settings.to;
-                            publicationMessage.expiryDate = settings.expiryDate;
+                    // set reply headers
+                    publicationMessage.from = settings.from;
+                    publicationMessage.to = settings.to;
+                    publicationMessage.expiryDate = settings.expiryDate;
 
-                            publicationMessage.payload = JSONSerializer.stringify(publication);
-                            clusterControllerMessagingStub.transmit(publicationMessage);
-                        };
+                    publicationMessage.payload = JSONSerializer.stringify(publication);
+                    clusterControllerMessagingStub.transmit(publicationMessage);
+                };
 
                 /**
                  * receives a new JoynrMessage that has to be routed to one of the managers

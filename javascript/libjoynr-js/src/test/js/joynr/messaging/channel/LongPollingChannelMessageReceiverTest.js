@@ -92,7 +92,9 @@ define([
                                 creationRetryDelay_ms: channelCreationRetryDelay_ms
                             };
 
-                            joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                            joynrMessage = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                            });
                             joynrMessage.setHeader(
                                     JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE,
                                     9360686108031);
