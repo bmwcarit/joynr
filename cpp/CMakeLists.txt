@@ -185,6 +185,7 @@ option(
 )
 message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
 
+
 option(
     BUILD_CLUSTER_CONTROLLER
     "Build ClusterController?"
@@ -880,6 +881,10 @@ macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
     string(CONFIGURE ${FILE_CONTENTS} FILE_CONTENTS @ONLY)
     set(JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES}${FILE_CONTENTS})
 endmacro(FillJoynrConfigDependencies)
+
+if(USE_PLATFORM_MUESLI)
+    FillJoynrConfigDependencies("PlatformMuesli")
+endif(USE_PLATFORM_MUESLI)
 
 if(USE_PLATFORM_MOSQUITTO)
     FillJoynrConfigDependencies("PlatformMosquitto")
