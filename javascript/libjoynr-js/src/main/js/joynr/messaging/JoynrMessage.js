@@ -38,37 +38,60 @@ define(
             function JoynrMessage(settings) {
                 settings = settings || {};
 
-                /**
-                 * The joynr type name
-                 *
-                 * @name JoynrMessage#_typeName
-                 * @type String
-                 */
-                Util.objectDefineProperty(this, "_typeName", "joynr.JoynrMessage");
-
-                /**
-                 * The message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
-                 *
-                 * @name JoynrMessage#type
-                 * @type String
-                 */
-                Util.objectDefineProperty(this, "type", settings.type);
-
-                /**
-                 * The message header holding additional values
-                 *
-                 * @name JoynrMessage#header
-                 * @type Object
-                 */
-                Util.objectDefineProperty(this, "header", settings.header || {});
-
-                /**
-                 * The serialized message payload
-                 *
-                 * @name JoynrMessage#payload
-                 * @type String
-                 */
-                this.payload = settings.payload || "";
+                Object.defineProperties(this, {
+                    /**
+                     * The joynr type name
+                     *
+                     * @name JoynrMessage#_typeName
+                     * @type String
+                     */
+                    "_typeName" : {
+                        value : "joynr.JoynrMessage",
+                        readable : true,
+                        writable : false,
+                        enumerable : true,
+                        configurable : false
+                    },
+                    /**
+                     * The message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
+                     *
+                     * @name JoynrMessage#type
+                     * @type String
+                     */
+                    "type" : {
+                        value : settings.type,
+                        readable : true,
+                        writable : false,
+                        enumerable : true,
+                        configurable : false
+                    },
+                    /**
+                     * The message header holding additional values
+                     *
+                     * @name JoynrMessage#header
+                     * @type Object
+                     */
+                    "header" : {
+                        value : settings.header || {},
+                        readable : true,
+                        writable : false,
+                        enumerable : true,
+                        configurable : false
+                    },
+                    /**
+                     * The serialized message payload
+                     *
+                     * @name JoynrMessage#payload
+                     * @type String
+                     */
+                    "payload" : {
+                        value : settings.payload || "",
+                        readable : true,
+                        writable : false,
+                        enumerable : true,
+                        configurable : false
+                    }
+                });
 
                 this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE, "application/json");
 
