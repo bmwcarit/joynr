@@ -78,7 +78,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithMapParamete
             *mockCaller,
             mapParameters(A<const types::TestTypes::TStringKeyMap&>(),
                           A<std::function<void(const types::TestTypes::TStringKeyMap&)>>(),
-                          A<std::function<void(const exceptions::JoynrException&)>>())
+                          A<std::function<void(const std::shared_ptr<exceptions::JoynrException>&)>>())
     )
             .Times(1);
 
@@ -107,7 +107,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     EXPECT_CALL(
             *mockCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
-                        A<std::function<void(const exceptions::ProviderRuntimeException&)>>())
+                        A<std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)>>())
     )
             .Times(1);
 
@@ -133,7 +133,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithProviderRun
     EXPECT_CALL(
             *mockCaller,
             methodWithProviderRuntimeException(A<std::function<void()>>(),
-                        A<std::function<void(const exceptions::JoynrException&)>>())
+                        A<std::function<void(const std::shared_ptr<exceptions::JoynrException>&)>>())
     )
             .Times(1);
 
@@ -156,7 +156,7 @@ TEST_F(RequestInterpreterTest, execute_callsGetterMethodOnRequestCallerWithProvi
     EXPECT_CALL(
             *mockCaller,
             getAttributeWithProviderRuntimeException(A<std::function<void(const std::int32_t&)>>(),
-                        A<std::function<void(const exceptions::ProviderRuntimeException&)>>())
+                        A<std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)>>())
     )
             .Times(1);
 
