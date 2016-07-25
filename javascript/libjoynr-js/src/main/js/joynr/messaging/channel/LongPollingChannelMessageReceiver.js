@@ -184,7 +184,7 @@ define(
                             // from the bounceproxy.
                             pollRequest.onMessage =
                                     function onMessage(response) {
-                                        var detectedTransport = response.transport, data, jsonParser, message, joynrMessage;
+                                        var detectedTransport = response.transport, data, jsonParser, joynrMessage;
 
                                         try {
                                             if (response.status === 200) {
@@ -193,11 +193,8 @@ define(
                                                 if (data.length > 0) {
                                                     jsonParser = new JsonParser(data);
                                                     while (jsonParser.hasNext) {
-                                                        message = jsonParser.next;
                                                         // pass the message on
-                                                        joynrMessage =
-                                                                Util.extendDeep(new JoynrMessage(
-                                                                    message), message);
+                                                        joynrMessage = new JoynrMessage(jsonParser.next);
 
                                                         log
                                                                 .info(

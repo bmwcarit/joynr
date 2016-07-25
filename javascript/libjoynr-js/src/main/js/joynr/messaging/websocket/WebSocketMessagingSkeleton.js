@@ -40,8 +40,7 @@ define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
         sharedWebSocket.onmessage = function(event) {
             var received = event.data;
             if (typeof event.data === "string") {
-                received = JSON.parse(event.data);
-                var joynrMessage = Util.extendDeep(new JoynrMessage(received), received);
+                var joynrMessage = new JoynrMessage(JSON.parse(event.data));
 
                 Util.fire(receiverCallbacks, joynrMessage);
             }

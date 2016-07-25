@@ -60,7 +60,7 @@ define(
                  * @name JoynrMessage#header
                  * @type Object
                  */
-                Util.objectDefineProperty(this, "header", {});
+                Util.objectDefineProperty(this, "header", settings.header || {});
 
                 /**
                  * The serialized message payload
@@ -68,7 +68,7 @@ define(
                  * @name JoynrMessage#payload
                  * @type String
                  */
-                this.payload = "";
+                this.payload = settings.payload || "";
 
                 this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE, "application/json");
 

@@ -86,8 +86,10 @@ define([ "joynr/messaging/JoynrMessage"
         });
 
         it("has a header that can be set", function(done) {
+            var payload = "hello";
             var joynrMessage = new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : payload
             });
             var fields = getTestMessageFields();
 
@@ -101,8 +103,6 @@ define([ "joynr/messaging/JoynrMessage"
             expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID]).toEqual(
                     fields.replyChannelId);
 
-            var payload = "hello";
-            joynrMessage.payload = payload;
             expect(joynrMessage.payload).toEqual(payload);
             done();
         });
@@ -145,11 +145,11 @@ define([ "joynr/messaging/JoynrMessage"
         });
 
         it("has a payload that can be set", function(done) {
-            var joynrMessage = new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
-            });
             var payload = "hello";
-            joynrMessage.payload = payload;
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : payload
+            });
             expect(joynrMessage.payload).toEqual(payload);
             done();
         });
