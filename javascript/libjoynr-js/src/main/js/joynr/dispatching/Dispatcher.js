@@ -29,6 +29,7 @@ define(
             "joynr/dispatching/types/SubscriptionStop",
             "joynr/dispatching/types/SubscriptionPublication",
             "joynr/messaging/JoynrMessage",
+            "joynr/messaging/MessagingQosEffort",
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/system/DiagnosticTags",
             "joynr/util/UtilInternal",
@@ -45,6 +46,7 @@ define(
                 SubscriptionStop,
                 SubscriptionPublication,
                 JoynrMessage,
+                MessagingQosEffort,
                 InProcessAddress,
                 DiagnosticTags,
                 Util,
@@ -117,6 +119,10 @@ define(
                     var expiryDate = Date.now() + settings.messagingQos.ttl;
                     if (expiryDate > Util.getMaxLongValue()) {
                         expiryDate = Util.getMaxLongValue();
+                    }
+                    var effort = settings.messagingQos.effort;
+                    if (effort !== MessagingQosEffort.NORMAL) {
+                        joynrMessage.effort = effort.value;
                     }
 
                     joynrMessage.expiryDate = expiryDate.toString();

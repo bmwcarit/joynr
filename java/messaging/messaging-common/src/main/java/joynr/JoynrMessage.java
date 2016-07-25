@@ -19,14 +19,13 @@ package joynr;
  * #L%
  */
 
-import io.joynr.common.ExpiryDate;
-import io.joynr.subtypes.JoynrType;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.joynr.common.ExpiryDate;
+import io.joynr.subtypes.JoynrType;
 
 /**
  * Storage class to keep the type, header and payload of a message.
@@ -36,6 +35,7 @@ public class JoynrMessage implements JoynrType {
     public static final String HEADER_NAME_REPLY_CHANNELID = "replyChannelId";
     public static final String HEADER_NAME_CONTENT_TYPE = "contentType";
     public static final String HEADER_NAME_EXPIRY_DATE = "expiryDate";
+    public static final String HEADER_NAME_EFFORT = "effort";
     public static final String HEADER_NAME_MESSAGE_ID = "msgId";
     public static final String HEADER_NAME_CREATOR_USER_ID = "creator";
 

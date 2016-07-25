@@ -1,7 +1,3 @@
-package io.joynr.messaging.mqtt;
-
-import io.joynr.messaging.IMessaging;
-
 /*
  * #%L
  * %%
@@ -21,18 +17,31 @@ import io.joynr.messaging.IMessaging;
  * #L%
  */
 
-public interface JoynrMqttClient {
+#ifndef MESSAGINGQOS_EFFORT_H
+#define MESSAGINGQOS_EFFORT_H
 
-    public void start();
+#include "joynr/exceptions/JoynrException.h"
 
-    public void setMessageListener(IMessaging messaging);
+namespace joynr
+{
 
-    public void shutdown();
+struct MessagingQosEffort
+{
+    enum class Enum { BEST_EFFORT = 0, NORMAL = 1 };
 
-    public void publishMessage(String topic, String serializedMessage);
+    static std::string getLiteral(const MessagingQosEffort::Enum& value)
+    {
+        switch (value) {
+        case Enum::BEST_EFFORT:
+            return "BEST_EFFORT";
+        case Enum::NORMAL:
+            return "NORMAL";
+        default:
+            throw exceptions::JoynrRuntimeException("Invalid messaging QoS effort value");
+        }
+    }
+};
 
-    public void publishMessage(String topic, String serializedMessage, int qosLevel);
+} // namespace joynr
 
-    public void subscribe(String topic);
-
-}
+#endif /* MESSAGINGQOS_EFFORT_H */

@@ -19,6 +19,8 @@ package io.joynr.messaging;
  * #L%
  */
 
+import static io.joynr.messaging.MessagingQosEffort.NORMAL;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +29,7 @@ public class MessagingQos {
     public static final Map<String, String> DEFAULTQOS = new HashMap<String, String>();
     private long ttl_ms;
     private Map<String, String> customHeaders = new HashMap<>();
+    private MessagingQosEffort effort = NORMAL;
 
     /**
      * MessagingQos with default values
@@ -37,14 +40,23 @@ public class MessagingQos {
 
     public MessagingQos(MessagingQos src) {
         ttl_ms = src.getRoundTripTtl_ms();
+        effort = src.getEffort();
     }
 
     /**
-     * @param ttl_ms
-     *            Roundtrip timeout for rpc requests.
+     * @param ttl_ms Roundtrip timeout for rpc requests.
      */
     public MessagingQos(long ttl_ms) {
         this.ttl_ms = ttl_ms;
+    }
+
+    /**
+     * @param ttl_ms Roundtrip timeout for rpc requests.
+     * @param effort the effort to expend in ensuring message delivery.
+     */
+    public MessagingQos(long ttl_ms, MessagingQosEffort effort) {
+        this.ttl_ms = ttl_ms;
+        this.effort = effort;
     }
 
     public long getRoundTripTtl_ms() {
@@ -52,20 +64,25 @@ public class MessagingQos {
     }
 
     /**
-     * @param ttl_ms
-     *            Time to live for a joynr message and the corresponding answer on the complete way from the sender to
-     *            the receiver and back.
+     * @param ttl_ms Time to live for a joynr message and the corresponding answer on the complete way from the sender to
+     *               the receiver and back.
      */
     public void setTtl_ms(final long ttl_ms) {
         this.ttl_ms = ttl_ms;
     }
 
+    public MessagingQosEffort getEffort() {
+        return effort;
+    }
+
+    public void setEffort(MessagingQosEffort effort) {
+        this.effort = effort;
+    }
+
     /**
-     * @param key
-     *            may contain ascii alphanumeric or hyphen.
-     * @param value
-     *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
-     *            dot, star, forward slash and back slash.
+     * @param key   may contain ascii alphanumeric or hyphen.
+     * @param value may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
+     *              dot, star, forward slash and back slash.
      * @Throws {@link IllegalArgumentException} if key or value contain any illegal characters
      */
     public void putCustomMessageHeader(String key, String value) {
@@ -74,12 +91,10 @@ public class MessagingQos {
     }
 
     /**
-     *
-     * @param newCustomHeaders
-     *            map containing custom headers. <br>
-     *            Keys may contain ascii alphanumeric or hyphen. <br>
-     *            Values may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark,
-     *            hyphen, dot, star, forward slash and back slash.
+     * @param newCustomHeaders map containing custom headers. <br>
+     *                         Keys may contain ascii alphanumeric or hyphen. <br>
+     *                         Values may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark,
+     *                         hyphen, dot, star, forward slash and back slash.
      * @Throws {@link IllegalArgumentException} if key or value contain any illegal characters
      */
     public void putAllCustomMessageHeaders(Map<String, String> newCustomHeaders) {
@@ -91,12 +106,9 @@ public class MessagingQos {
     }
 
     /**
-     *
-     * @param key
-     *            may contain ascii alphanumeric or hyphen.
-     * @param value
-     *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
-     *            dot, star, forward slash and back slash.
+     * @param key   may contain ascii alphanumeric or hyphen.
+     * @param value may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
+     *              dot, star, forward slash and back slash.
      */
     private void checkKeyAndValue(String key, String value) {
         String keyPattern = "^[a-zA-Z0-9\\-]*$";

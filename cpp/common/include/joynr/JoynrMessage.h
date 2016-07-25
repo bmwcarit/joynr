@@ -91,6 +91,13 @@ public:
      * @return
      */
     static const std::string& HEADER_REPLY_ADDRESS();
+    /**
+     * @brief HEADER_EFFOR The "effort" header is set when the effort spent on delivering the
+     * message
+     * should be changed.
+     * @return
+     */
+    static const std::string& HEADER_EFFORT();
 
     static const std::string VALUE_MESSAGE_TYPE_ONE_WAY;
     static const std::string VALUE_MESSAGE_TYPE_REQUEST;
@@ -330,6 +337,31 @@ public:
      * @see JoynrMessage::HEADER_REPLY_ADDRESS()
      */
     void setHeaderReplyAddress(const std::string& replyAddress);
+
+    /**
+     * @brief containsHeaderEffort Tests whether the "effort" header of the
+     * message is set or not.
+     * @return true, if the "effort" header is set; false, otherwise.
+     * @see JoynrMessage::HEADER_EFFORT()
+     */
+    bool containsHeaderEffort() const;
+    /**
+     * @brief getHeaderEffort Gets the effort which should be expent delivering the message.
+     * Use JoynrMessage::containsHeaderEffort() to check whether the header is available or not.
+     * @return the "effort" header of the message, if the header is set; A
+     * default-constructed value, otherwise.
+     * @see JoynrMessage::HEADER_EFFORT()
+     */
+    std::string getHeaderEffort() const;
+    /**
+     * @brief setHeaderEffort Sets the effort to be expent on delivering the message.
+     * If the header is already set, its value is replaced with the new one.
+     * Use JoynrMessage::containsHeaderEffort() to check whether the header is
+     * already set or not.
+     * @param effort the "effort" header to be set on the message.
+     * @see JoynrMessage::HEADER_EFFORT()
+     */
+    void setHeaderEffort(const std::string& effort);
 
 private:
     /**

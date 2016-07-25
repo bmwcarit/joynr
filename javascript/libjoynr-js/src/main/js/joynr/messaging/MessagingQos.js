@@ -22,9 +22,10 @@ define(
         [
             "joynr/start/settings/defaultMessagingSettings",
             "joynr/system/LoggerFactory",
-            "joynr/util/UtilInternal"
+            "joynr/util/UtilInternal",
+            "joynr/messaging/MessagingQosEffort"
         ],
-        function(defaultMessagingSettings, LoggerFactory, Util) {
+        function(defaultMessagingSettings, LoggerFactory, Util, MessagingQosEffort) {
 
             var defaultSettings = {
                 ttl : 60000,
@@ -38,6 +39,7 @@ define(
              *
              * @param {Object} [settings] the settings object for the constructor call
              * @param {Number} [settings.ttl] Roundtrip timeout for rpc requests, if missing default value is 60 seconds
+             * @param {MessagingQosEffort} [settings.effort] effort to expend on ensuring message delivery
              *
              * @returns {MessagingQos} a messaging Qos Object
              */
@@ -51,6 +53,10 @@ define(
                 }
 
                 settings = Util.extend({}, defaultSettings, settings);
+
+                if (!MessagingQosEffort.isValid(settings.effort)) {
+                    settings.effort = MessagingQosEffort.NORMAL;
+                }
 
                 /**
                  * The time to live for messages
@@ -77,6 +83,14 @@ define(
                  * @type Object
                  */
                 this.customHeaders = settings.customHeaders;
+
+                /**
+                 * messaging qos effort
+                 *
+                 * @name MessagingQos#effort
+                 * @type MessagingQosEffort
+                 */
+                this.effort = settings.effort;
 
                 /**
                  *

@@ -164,6 +164,11 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
     // add content type and class
     msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
 
+    // if the effort has been set to best effort, then activate that in the headers
+    if (qos.getEffort() != MessagingQosEffort::Enum::NORMAL) {
+        msg.setHeaderEffort(MessagingQosEffort::getLiteral(qos.getEffort()));
+    }
+
     // set payload
     msg.setPayload(payload);
 }

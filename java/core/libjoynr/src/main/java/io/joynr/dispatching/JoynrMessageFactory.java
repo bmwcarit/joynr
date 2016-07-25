@@ -19,12 +19,15 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.common.ExpiryDate;
-
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import io.joynr.common.ExpiryDate;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.MessagingQosEffort;
 import joynr.JoynrMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
@@ -32,13 +35,8 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
-import com.google.inject.Inject;
 
 public class JoynrMessageFactory {
 
@@ -55,74 +53,54 @@ public class JoynrMessageFactory {
                                        String fromParticipantId,
                                        String toParticipantId,
                                        Object payload,
-                                       ExpiryDate ttlExpirationDate,
-                                       Map<String, String> customHeaders) {
+                                       MessagingQos messagingQos) {
+        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
         JoynrMessage message = new JoynrMessage();
         message.setType(joynrMessageType);
         Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
-        header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(ttlExpirationDate.getValue()));
+        header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(expiryDate.getValue()));
+        if (messagingQos.getEffort() != null && !MessagingQosEffort.NORMAL.equals(messagingQos.getEffort())) {
+            header.put(JoynrMessage.HEADER_NAME_EFFORT, String.valueOf(messagingQos.getEffort()));
+        }
         message.setHeader(header);
         message.setPayload(serializePayload(payload));
-        message.setCustomHeaders(customHeaders);
+        message.setCustomHeaders(messagingQos.getCustomMessageHeaders());
         return message;
-    }
-
-    private JoynrMessage createMessage(String messageType,
-                                       String fromParticipantId,
-                                       String toParticipantId,
-                                       Object payload,
-                                       ExpiryDate expiryDate) {
-        return createMessage(messageType,
-                             fromParticipantId,
-                             toParticipantId,
-                             payload,
-                             expiryDate,
-                             Collections.<String, String> emptyMap());
     }
 
     public JoynrMessage createOneWayRequest(final String fromParticipantId,
                                             final String toParticipantId,
                                             OneWayRequest request,
-                                            ExpiryDate ttlExpirationDate,
-                                            final Map<String, String> customHeaders) {
+                                            MessagingQos messagingQos) {
         return createMessage(JoynrMessage.MESSAGE_TYPE_ONE_WAY,
                              fromParticipantId,
                              toParticipantId,
                              request,
-                             ttlExpirationDate,
-                             customHeaders);
+                             messagingQos);
     }
 
     public JoynrMessage createRequest(final String fromParticipantId,
                                       final String toParticipantId,
                                       Request request,
-                                      ExpiryDate expiryDate,
-                                      final Map<String, String> customHeaders) {
+                                      MessagingQos messagingQos) {
         return createMessage(JoynrMessage.MESSAGE_TYPE_REQUEST,
                              fromParticipantId,
                              toParticipantId,
                              request,
-                             expiryDate,
-                             customHeaders);
+                             messagingQos);
     }
 
     public JoynrMessage createReply(final String fromParticipantId,
                                     final String toParticipantId,
                                     Reply reply,
-                                    ExpiryDate expiryDate,
-                                    final Map<String, String> customHeaders) {
-        return createMessage(JoynrMessage.MESSAGE_TYPE_REPLY,
-                             fromParticipantId,
-                             toParticipantId,
-                             reply,
-                             expiryDate,
-                             customHeaders);
+                                    MessagingQos messagingQos) {
+        return createMessage(JoynrMessage.MESSAGE_TYPE_REPLY, fromParticipantId, toParticipantId, reply, messagingQos);
     }
 
     public JoynrMessage createSubscriptionRequest(String fromParticipantId,
                                                   String toParticipantId,
                                                   SubscriptionRequest subscriptionRequest,
-                                                  ExpiryDate expiryDate,
+                                                  MessagingQos messagingQos,
                                                   boolean broadcast) {
         String messageType;
         if (broadcast) {
@@ -130,29 +108,29 @@ public class JoynrMessageFactory {
         } else {
             messageType = JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
         }
-        return createMessage(messageType, fromParticipantId, toParticipantId, subscriptionRequest, expiryDate);
+        return createMessage(messageType, fromParticipantId, toParticipantId, subscriptionRequest, messagingQos);
     }
 
     public JoynrMessage createPublication(String fromParticipantId,
                                           String toParticipantId,
                                           SubscriptionPublication publication,
-                                          ExpiryDate expiryDate) {
+                                          MessagingQos messagingQos) {
         return createMessage(JoynrMessage.MESSAGE_TYPE_PUBLICATION,
                              fromParticipantId,
                              toParticipantId,
                              publication,
-                             expiryDate);
+                             messagingQos);
     }
 
     public JoynrMessage createSubscriptionStop(String fromParticipantId,
                                                String toParticipantId,
                                                SubscriptionStop subscriptionStop,
-                                               ExpiryDate expiryDate) {
+                                               MessagingQos messagingQos) {
         return createMessage(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP,
                              fromParticipantId,
                              toParticipantId,
                              subscriptionStop,
-                             expiryDate);
+                             messagingQos);
     }
 
     private Map<String, String> createHeader(final String fromParticipantId, final String toParticipantId) {
