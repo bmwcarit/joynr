@@ -434,6 +434,34 @@ define([
                                 });
 
                         it(
+                                "check if resolved hop from routing proxy is cached",
+                                function(done) {
+                                    messageRouter =
+                                            createMessageRouter(
+                                                    persistencySpy,
+                                                    messagingStubFactorySpy,
+                                                    messageQueueSpy,
+                                                    incomingAddress,
+                                                    parentMessageRouterAddress);
+                                    routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
+                                        "resolveNextHop"
+                                    ]);
+                                    routingProxySpy.resolveNextHop.and.returnValue(Promise.resolve({ resolved: true }));
+                                    messageRouter.setRoutingProxy(routingProxySpy);
+
+                                    messageRouter.resolveNextHop(joynrMessage.to).then(function(address) {
+                                        expect(address).toBe(parentMessageRouterAddress);
+                                        expect(routingProxySpy.resolveNextHop.calls.count()).toBe(1);
+                                        routingProxySpy.resolveNextHop.calls.reset();
+                                        return messageRouter.resolveNextHop(joynrMessage.to).then(function(address){
+                                            expect(address).toBe(parentMessageRouterAddress);
+                                            expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
+                                            done();
+                                        });
+                                    }).catch(done.fail);
+                                });
+
+                        it(
                                 "check if routing proxy is called with multiple queued hop additions",
                                 function(done) {
                                     messageRouter =

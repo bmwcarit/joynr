@@ -242,6 +242,7 @@ define(
                                 participantId : participantId
                             }).then(function(opArgs) {
                                 if (opArgs.resolved) {
+                                    routingTable[participantId] = parentMessageRouterAddress;
                                     return parentMessageRouterAddress;
                                 }
                                 throw new Error("nextHop cannot be resolved, as participant with id "
