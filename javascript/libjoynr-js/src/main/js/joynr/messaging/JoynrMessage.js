@@ -68,7 +68,7 @@ define(
 
                 this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE, "application/json");
 
-                if (this.JOYNRMESSAGE_HEADER_MESSAGE_ID === undefined) {
+                if (this[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] === undefined) {
                     this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID, uuid());
                 }
             }
