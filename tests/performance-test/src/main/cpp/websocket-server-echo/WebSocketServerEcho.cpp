@@ -70,15 +70,11 @@ int main(int argc, char* argv[])
     std::cout << "connecting on port:" << port << std::endl;
     Server server;
 
-    using websocketpp::lib::placeholders::_1;
-    using websocketpp::lib::placeholders::_2;
-    using websocketpp::lib::bind;
-
     try {
         server.init_asio();
         server.clear_access_channels(websocketpp::log::alevel::all);
         server.set_message_handler(
-                bind(&messageReceived, &server, std::placeholders::_1, std::placeholders::_2));
+                std::bind(&messageReceived, &server, std::placeholders::_1, std::placeholders::_2));
         server.listen(port);
         server.start_accept();
 
