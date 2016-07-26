@@ -53,10 +53,7 @@ public:
         MessagingQos qosSettings = MessagingQos(456000);
         Request request;
         request.setMethodName("methodName");
-        std::vector<Variant> params;
-        params.push_back(Variant::make<int>(42));
-        params.push_back(Variant::make<std::string>("value"));
-        request.setParamsVariant(params);
+        request.setParams(42, std::string("value"));
         std::vector<std::string> paramDatatypes;
         paramDatatypes.push_back("Integer");
         paramDatatypes.push_back("String");
