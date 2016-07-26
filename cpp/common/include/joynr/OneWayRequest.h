@@ -57,14 +57,13 @@ public:
     template <typename... Ts>
     void setParams(Ts&&... values)
     {
-        params.setData(std::make_tuple(std::forward<Ts>(values)...));
+        params.setData(std::forward<Ts>(values)...);
     }
 
     template <typename... Ts>
     void getParams(Ts&... values)
     {
-        assert(params.containsInboundData());
-        params.getData(std::tie(values...));
+        params.getData(values...);
     }
 
     template <typename Archive>

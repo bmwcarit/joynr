@@ -50,14 +50,14 @@ public:
     template <typename... Ts>
     void setResponse(Ts&&... values)
     {
-        response.setData(std::make_tuple(std::forward<Ts>(values)...));
+        response.setData(std::forward<Ts>(values)...);
     }
 
     template <typename... Ts>
-    void getResponse(std::tuple<Ts...>& responseTuple)
+    void getResponse(Ts&... values)
     {
         assert(hasResponse());
-        response.getData(responseTuple);
+        response.getData(values...);
     }
 
     bool hasResponse() const

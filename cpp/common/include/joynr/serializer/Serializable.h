@@ -22,6 +22,8 @@
 #include <type_traits>
 
 #include <boost/variant/apply_visitor.hpp>
+#include <boost/type_index.hpp>
+
 #include <muesli/Registry.h>
 
 namespace joynr
@@ -29,6 +31,7 @@ namespace joynr
 namespace serializer
 {
 
+template <typename Variant>
 class ISerializable
 {
 public:
@@ -37,35 +40,42 @@ public:
     template <typename Archive>
     void save(Archive& ar) const
     {
-        saveImpl(muesli::OutputArchiveVariant(ar));
+        saveImpl(Variant(ar));
     }
 
+    virtual std::string typeName() = 0;
+
 protected:
-    virtual void saveImpl(muesli::OutputArchiveVariant&& ar) const = 0;
+    virtual void saveImpl(Variant&& ar) const = 0;
 };
 
-template <typename T>
-struct Serializable : ISerializable
+template <typename Variant, typename... Ts>
+struct Serializable : ISerializable<Variant>
 {
-    Serializable(T&& data) : storage(std::move(data))
+    template <typename... Xs>
+    Serializable(Xs&&... data)
+            : storage(std::forward<Xs>(data)...)
     {
     }
 
-    Serializable(const T& data) = delete;
-
-    T getData() const
+    const std::tuple<Ts...>& getData() const
     {
         return storage;
     }
 
+    std::string typeName() override
+    {
+        return boost::typeindex::type_id<std::tuple<Ts...>>().pretty_name();
+    }
+
 protected:
-    void saveImpl(muesli::OutputArchiveVariant&& ar) const override
+    void saveImpl(Variant&& ar) const override
     {
         boost::apply_visitor([this](auto& archive) { archive(storage); }, ar);
     }
 
 private:
-    T storage;
+    std::tuple<Ts...> storage;
 };
 
 } // namespace serializer

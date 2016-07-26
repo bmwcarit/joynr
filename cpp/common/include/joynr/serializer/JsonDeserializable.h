@@ -45,12 +45,12 @@ public:
         }
     }
 
-    template <typename T>
-    void get(T&& value)
+    template <typename Tuple>
+    void get(Tuple&& value)
     {
         assert(jsonInputArchive);
         jsonInputArchive->popState();
-        (*jsonInputArchive)(muesli::SkipIntroOutroWrapper<std::decay_t<T>>(&value));
+        (*jsonInputArchive)(muesli::SkipIntroOutroWrapper<std::decay_t<Tuple>>(&value));
         jsonInputArchive.reset();
     }
 

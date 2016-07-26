@@ -25,6 +25,7 @@
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 #include <boost/variant/apply_visitor.hpp>
+#include <boost/type_index.hpp>
 
 #include "joynr/serializer/Serializer.h"
 #include "joynr/serializer/Serializable.h"
@@ -75,22 +76,35 @@ public:
         deserializable = Deserializable(ar);
     }
 
-    template <typename T>
-    void getData(T&& arg)
+    template <typename... Ts>
+    void getData(Ts&... args)
     {
         assert(containsOutboundData() || containsInboundData());
         if (containsOutboundData()) {
-            arg = static_cast<const Serializable<std::decay_t<T>>*>(serializable.get())->getData();
+            using TypedSerializable = Serializable<muesli::OutputArchiveVariant, Ts...>;
+            const TypedSerializable* typedSerializable =
+                    dynamic_cast<const TypedSerializable*>(serializable.get());
+            if (typedSerializable != nullptr) {
+                std::tie(args...) = typedSerializable->getData();
+            } else {
+                using RequestedType = std::tuple<Ts...>;
+                throw std::invalid_argument(
+                        "Serializable mismatch: contains " + serializable->typeName() +
+                        " requested" + boost::typeindex::type_id<RequestedType>().pretty_name());
+            }
         } else if (containsInboundData()) {
             boost::apply_visitor(
-                    [&arg](auto& x) { x.template get<T>(std::forward<T>(arg)); }, *deserializable);
+                    [&args...](auto& x) { x.template get<std::tuple<Ts...>>(std::tie(args...)); },
+                    *deserializable);
         }
     }
 
-    template <typename T>
-    void setData(T&& arg)
+    template <typename... Ts>
+    void setData(Ts&&... arg)
     {
-        serializable = std::make_unique<Serializable<std::decay_t<T>>>(std::forward<T>(arg));
+        serializable =
+                std::make_unique<Serializable<muesli::OutputArchiveVariant, std::decay_t<Ts>...>>(
+                        std::forward<Ts>(arg)...);
     }
 
     bool containsOutboundData() const
@@ -104,7 +118,7 @@ public:
     }
 
 private:
-    std::unique_ptr<ISerializable> serializable;
+    std::unique_ptr<ISerializable<muesli::OutputArchiveVariant>> serializable;
     boost::optional<DeserializableVariant> deserializable;
 };
 

@@ -56,6 +56,16 @@ struct MockOutputArchive : MockBase, muesli::BaseArchive<muesli::tags::OutputArc
 };
 MUESLI_REGISTER_OUTPUT_ARCHIVE(MockOutputArchive, tag::mock)
 
+
+// only tuples of size one are supported in this test
+template <typename Archive, typename T>
+void serialize(Archive& archive, std::tuple<T>& value)
+{
+    // forward the first (and only) element of this tuple
+    archive(std::get<0>(value));
+}
+
+
 template <typename Archive>
 void serialize(Archive& archive, std::string& value)
 {
@@ -76,7 +86,7 @@ struct MockDeserializable
     MockDeserializable(Archive&){}
 
     template <typename T>
-    void get(T&) {}
+    void get(T&&) {}
 };
 
 namespace joynr
@@ -113,7 +123,7 @@ TEST(SerializationPlaceholderTest, outbound)
 
     const std::string payload = "hello world";
     std::string handOverToTest = payload;
-    placeholder.setData(std::move(handOverToTest));
+    placeholder.setData(handOverToTest);
     ASSERT_TRUE(placeholder.containsOutboundData());
     ASSERT_FALSE(placeholder.containsInboundData());
 
