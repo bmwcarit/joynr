@@ -64,6 +64,8 @@ public:
     }
 
 private:
+    // printing SubscriptionPublication with google-test and google-mock
+    friend void PrintTo(const SubscriptionPublication& subscriptionPublication, ::std::ostream* os);
     std::string subscriptionId;
     std::shared_ptr<exceptions::JoynrRuntimeException> error;
     std::vector<Variant> responseVariant;

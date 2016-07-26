@@ -77,4 +77,15 @@ void SubscriptionPublication::setError(std::shared_ptr<exceptions::JoynrRuntimeE
     this->error = std::move(error);
 }
 
+// printing SubscriptionPublication with google-test and google-mock
+void PrintTo(const SubscriptionPublication& subscriptionPublication, ::std::ostream* os)
+{
+    *os << "SubscriptionPublication{";
+    *os << "subscriptionId:" << subscriptionPublication.subscriptionId;
+    *os << ", ";
+    *os << "error:" << subscriptionPublication.error->getMessage();
+    *os << ", SKIPPED printing BaseReply";
+    *os << "}";
+}
+
 } // namespace joynr
