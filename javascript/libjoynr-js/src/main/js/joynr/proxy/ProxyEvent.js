@@ -76,6 +76,8 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
      *            settings.broadcastName the name of the broadcast as modelled in Franca
      * @param {String[]}
      *            settings.broadcastParameter the parameter meta information of the broadcast being subscribed to
+     * @param {Object}
+     *            settings.filterParameters the filter parameters of the broadcast
      * @returns {ProxyEvent}
      */
     function ProxyEvent(parent, settings) {
