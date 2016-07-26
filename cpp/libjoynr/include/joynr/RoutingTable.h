@@ -46,7 +46,7 @@ class RoutingTable : public Directory<std::string, const joynr::system::RoutingT
 {
 public:
     using Directory::Directory;
-    ~RoutingTable() override = default;
+    ~RoutingTable() = default;
 
     std::string serializeToJson() const;
     void deserializeFromJson(const std::string& jsonString);

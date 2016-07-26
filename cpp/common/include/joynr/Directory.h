@@ -48,21 +48,6 @@ namespace joynr
   *     \<Middleware\>RequestCallerDirectory, libjoynr
   *     ReplyCallerDirectory,                 libjoynr
   */
-
-template <typename Key, typename T>
-class IDirectory
-{
-public:
-    virtual ~IDirectory() = default;
-    virtual std::shared_ptr<T> lookup(const Key& keyId) = 0;
-    virtual bool contains(const Key& keyId) = 0;
-
-    virtual void add(const Key& keyId, std::shared_ptr<T> value) = 0;
-
-    virtual void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms) = 0;
-    virtual void remove(const Key& keyId) = 0;
-};
-
 template <typename Key, typename T>
 class Directory;
 
@@ -114,7 +99,7 @@ private:
 };
 
 template <typename Key, typename T>
-class Directory : public IDirectory<Key, T>
+class Directory
 {
 public:
     Directory() = default;
@@ -125,7 +110,7 @@ public:
         std::ignore = directoryName;
     }
 
-    ~Directory() override
+    ~Directory()
     {
         callBackRemoverScheduler.shutdown();
         JOYNR_LOG_TRACE(logger, "destructor: number of entries = {}", callbackMap.size());
@@ -135,7 +120,7 @@ public:
      * Returns the element with the given keyId. In case the element could not be found nullptr is
      * returned.
      */
-    std::shared_ptr<T> lookup(const Key& keyId) override
+    std::shared_ptr<T> lookup(const Key& keyId)
     {
         std::lock_guard<std::mutex> lock(mutex);
         auto found = callbackMap.find(keyId);
@@ -148,7 +133,7 @@ public:
     /*
      * Returns true if an element with the given keyId could be found. False otherwise.
      */
-    bool contains(const Key& keyId) override
+    bool contains(const Key& keyId)
     {
         std::lock_guard<std::mutex> lock(mutex);
         return callbackMap.find(keyId) != callbackMap.cend();
@@ -157,7 +142,7 @@ public:
     /*
      * Adds an element and keeps it until actively removed (using the 'remove' method)
      */
-    void add(const Key& keyId, std::shared_ptr<T> value) override
+    void add(const Key& keyId, std::shared_ptr<T> value)
     {
         std::lock_guard<std::mutex> lock(mutex);
         callbackMap[keyId] = std::move(value);
@@ -166,7 +151,7 @@ public:
     /*
      * Adds an element and removes it automatically after ttl_ms milliseconds have past.
      */
-    void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms) override
+    void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms)
     {
         // Insert the value
         {
@@ -182,7 +167,7 @@ public:
     /*
      * Remove element with key == keyID
      */
-    void remove(const Key& keyId) override
+    void remove(const Key& keyId)
     {
         std::lock_guard<std::mutex> lock(mutex);
         callbackMap.erase(keyId);
