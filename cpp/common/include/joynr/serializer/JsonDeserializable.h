@@ -37,12 +37,12 @@ class JsonDeserializable
 public:
     JsonDeserializable(Archive& archive) : jsonInputArchive()
     {
+        archive.pushNullableNode();
         if (!archive.currentValueIsNull()) {
             jsonInputArchive = archive.shared_from_this();
-            jsonInputArchive->pushNode();
             jsonInputArchive->pushState();
-            jsonInputArchive->popNode();
         }
+        archive.popNode();
     }
 
     template <typename Tuple>
