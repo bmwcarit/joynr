@@ -27,6 +27,7 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_A
 import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITYDIRECTORYURL;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.DISCOVERYDIRECTORYURL;
+import static java.lang.String.format;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -141,7 +142,17 @@ public class LegacyCapabilitiesProvisioning {
                                          String urlForAddress,
                                          String localChannelId,
                                          String domain) {
-        if (isPresent(participantId) && isPresent(urlForAddress) && isPresent(channelId) && isPresent(domain)) {
+        boolean hasUrl = isPresent(urlForAddress);
+        boolean hasParticipantId = isPresent(participantId);
+        if (hasUrl ^ hasParticipantId) {
+            throw new IllegalArgumentException(
+                format("When configuring the discovery directory or domain access controller "
+                        + "via properties, you must provide both a URL and a participant ID per service.%n"
+                        + "You provided the URL '%s' and the participant ID '%s' for the service %s.%n"
+                        + "Please complete the configuration and restart the application.",
+                    urlForAddress, participantId, interfaceName));
+        }
+        if (hasParticipantId && hasUrl && isPresent(channelId) && isPresent(domain)) {
             Address address;
             if (localChannelId.equals(channelId)) {
                 address = new InProcessAddress();
