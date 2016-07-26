@@ -30,6 +30,7 @@
 #include "joynr/ITimeoutListener.h"
 #include "joynr/Logger.h"
 #include "joynr/IReplyCaller.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -171,6 +172,12 @@ public:
     {
         std::lock_guard<std::mutex> lock(mutex);
         callbackMap.erase(keyId);
+    }
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(callbackMap));
     }
 
 protected:
