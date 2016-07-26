@@ -22,6 +22,7 @@
 #include <cassert>
 #include <string>
 #include <memory>
+#include <boost/any.hpp>
 
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
@@ -69,12 +70,12 @@ public:
     void attributeRequest(const std::string& methodName, std::shared_ptr<IReplyCaller> replyCaller)
     {
         std::string attributeID = domain + ":" + interfaceName + ":" + methodName;
-
+        T* entryValue;
         if (cached) {
-            Variant entry = cache->lookUp(attributeID);
-            if (entry.isEmpty()) {
+            boost::any entry = cache->lookUp(attributeID);
+            if (entry.empty()) {
                 JOYNR_LOG_DEBUG(logger, "Cached value for {}  is not valid", methodName);
-            } else if (!entry.is<T>()) {
+            } else if (!(entryValue = boost::any_cast<T>(&entry))) {
                 JOYNR_LOG_DEBUG(
                         logger, "Cached value for {}  cannot be converted to type T", methodName);
                 assert(false);
@@ -82,7 +83,7 @@ public:
                 JOYNR_LOG_DEBUG(logger, "Returning cached value for method {}", methodName);
                 std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
                         std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
-                typedReplyCaller->returnValue(entry.get<T>());
+                typedReplyCaller->returnValue(*entryValue);
             }
         } else {
             Request request;

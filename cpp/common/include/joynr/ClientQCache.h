@@ -22,10 +22,11 @@
 #include <string>
 #include <mutex>
 
+#include <boost/any.hpp>
+
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/IClientCache.h"
 #include "joynr/Cache.h"
-#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -48,17 +49,17 @@ public:
     ~ClientQCache() override = default;
     /**
      * Returns the stored object associated with the key 'attributeId',
-     * or an empty QVariant() if the object is either not present
+     * or an empty boost::any if the object is either not present
      */
-    Variant lookUp(const std::string& attributeId) override;
+    boost::any lookUp(const std::string& attributeId) override;
     /**
       * Inserts 'value' into the cache under the key 'attributeId'.
       * The entry is associated with a time stamp guranteed to be valid for 24hrs.
       */
-    void insert(std::string attributeId, Variant value) override;
+    void insert(std::string attributeId, boost::any value) override;
 
 private:
-    Cache<std::string, CachedValue<Variant>> cache;
+    Cache<std::string, CachedValue<boost::any>> cache;
     std::mutex mutex;
 };
 

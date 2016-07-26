@@ -27,6 +27,8 @@
 #include <condition_variable>
 #include <functional>
 
+#include <boost/any.hpp>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -84,7 +86,6 @@
 #include "joynr/IMessageSender.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/Directory.h"
-#include "joynr/Variant.h"
 #include "joynr/Settings.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
@@ -495,8 +496,8 @@ public:
 
 class MockClientCache : public joynr::IClientCache {
 public:
-   MOCK_METHOD1(lookUp, joynr::Variant(const std::string& attributeId));
-   MOCK_METHOD2(insert, void(std::string attributeId, joynr::Variant value));
+   MOCK_METHOD1(lookUp, boost::any(const std::string& attributeId));
+   MOCK_METHOD2(insert, void(std::string attributeId, boost::any value));
 };
 
 class MockDiscovery : public joynr::system::IDiscovery {
