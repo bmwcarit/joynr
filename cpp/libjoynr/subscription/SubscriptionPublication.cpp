@@ -48,8 +48,19 @@ void SubscriptionPublication::setSubscriptionId(const std::string& subscriptionI
 
 bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const
 {
-    return subscriptionId == other.getSubscriptionId() && error == other.getError() &&
-           BaseReply::operator==(other);
+    // if error ptr do not point to the same object
+    if (error != other.getError()) {
+        // if exactly one of error and other.getError() is a nullptr
+        if (error == nullptr || other.getError() == nullptr) {
+            return false;
+        }
+        // compare actual objects
+        if (!(*error.get() == *other.getError().get())) {
+            return false;
+        }
+    }
+
+    return subscriptionId == other.getSubscriptionId() && BaseReply::operator==(other);
 }
 
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const

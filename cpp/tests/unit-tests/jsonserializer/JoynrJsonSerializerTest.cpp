@@ -238,6 +238,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationW
 {
     // Create a Publication
     SubscriptionPublication publication;
+    publication.setSubscriptionId("testSubscriptionId");
     publication.setError(std::make_shared<exceptions::ProviderRuntimeException>("Message of ProviderRuntimeException"));
 
     // Serialize into JSON
