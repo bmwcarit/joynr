@@ -26,9 +26,9 @@ var consumerBase = require("./consumer.base.js");
 console.log = function() {};
 
 consumerBase.initialize().then(function() {
-    return Promise.all([consumerBase.echoString(),
-                        consumerBase.echoComplexStruct(),
-                        consumerBase.echoByteArray()])
+    return consumerBase.echoString()
+        .then(consumerBase.echoComplexStruct)
+        .then(consumerBase.echoByteArray)
         .then(function() {
             console.log("SUCCEEDED");
             process.exit(0);
