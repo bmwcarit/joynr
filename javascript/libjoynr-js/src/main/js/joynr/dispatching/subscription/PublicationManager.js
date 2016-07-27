@@ -976,10 +976,10 @@ define(
                                     }, 0);
                                     return;
                                 }
-                                    // call the get method on the provider at the set interval
-                                    subscriptionInfo.subscriptionInterval =
-                                            triggerPublicationTimer(subscriptionInfo, periodMs);
-                                }
+                                // call the get method on the provider at the set interval
+                                subscriptionInfo.subscriptionInterval =
+                                        triggerPublicationTimer(subscriptionInfo, periodMs);
+                            }
 
                             // save subscriptionInfo to subscriptionId => subscription and
                             // ProviderAttribute => subscription map
@@ -1024,7 +1024,8 @@ define(
                         function handleEventSubscriptionRequest(
                                 proxyParticipantId,
                                 providerParticipantId,
-                                subscriptionRequest) {
+                                subscriptionRequest,
+                                callbackDispatcher) {
                             var subscriptionInterval;
                             var provider = participantIdToProvider[providerParticipantId];
                             // construct subscriptionInfo from subscriptionRequest and participantIds
@@ -1036,6 +1037,7 @@ define(
                                             subscriptionRequest);
 
                             var subscriptionId = subscriptionInfo.subscriptionId;
+                            var exception;
 
                             // in case the subscriptionId is already used in a previous
                             // subscription, remove this one
@@ -1063,12 +1065,22 @@ define(
                             var eventName = subscriptionRequest.subscribedToName;
                             var event = provider[eventName];
                             if (event === undefined) {
-                                log.error("Provider: "
-                                    + providerParticipantId
-                                    + " misses event "
-                                    + eventName);
-                                // TODO: proper error handling when the provider does not contain
-                                // the event with the given name
+                                exception = new SubscriptionException({
+                                    detailMessage: "error handling broadcast subscription request: "
+                                        + JSONSerializer.stringify(subscriptionRequest)
+                                        + ". Provider: "
+                                        + providerParticipantId
+                                        + " misses event "
+                                        + eventName,
+                                    subscriptionId : subscriptionId
+                                });
+                                log.error(exception.detailMessage);
+                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                    callbackDispatcher(new SubscriptionReply({
+                                        error : exception,
+                                        subscriptionId : subscriptionId
+                                    }));
+                                }, 0);
                                 return;
                             }
 
@@ -1076,13 +1088,23 @@ define(
                             var subscriptions =
                                     getSubscriptionsForProviderEvent(provider.id, eventName);
                             if (subscriptions === undefined) {
-                                log.error("ProviderEvent "
-                                    + eventName
-                                    + " for providerId "
-                                    + provider.id
-                                    + " is not registered");
-                                // TODO: proper error handling for empty subscription map =>
-                                // ProviderEvent is not registered
+                                exception = new SubscriptionException({
+                                    detailMessage: "error handling broadcast subscription request: "
+                                        + JSONSerializer.stringify(subscriptionRequest)
+                                        + ". ProviderEvent "
+                                        + eventName
+                                        + " for providerId "
+                                        + provider.id
+                                        + " is not registered",
+                                    subscriptionId : subscriptionId
+                                });
+                                log.error(exception.detailMessage);
+                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                    callbackDispatcher(new SubscriptionReply({
+                                        error : exception,
+                                        subscriptionId : subscriptionId
+                                    }));
+                                }, 0);
                                 return;
                             }
 
@@ -1094,9 +1116,25 @@ define(
 
                                 // if endDate lies in the past => don't add the subscription
                                 if (timeToEndDate <= 0) {
-                                    // log.warn("endDate lies in the past, discarding subscription
-                                    // with id " + subscriptionId);
-                                    // TODO: how should this warning be handled properly?
+                                    exception = new SubscriptionException({
+                                        detailMessage: "error handling subscription request: "
+                                            + JSONSerializer.stringify(subscriptionRequest)
+                                            + ". expiryDateMs "
+                                            + subscriptionRequest.qos.expiryDateMs
+                                            + "for ProviderEvent "
+                                            + eventName
+                                            + " for providerId "
+                                            + provider.id
+                                            + " lies in the past",
+                                        subscriptionId : subscriptionId
+                                    });
+                                    log.error(exception.detailMessage);
+                                    LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                        callbackDispatcher(new SubscriptionReply({
+                                            error : exception,
+                                            subscriptionId : subscriptionId
+                                        }));
+                                    }, 0);
                                     return;
                                 }
 
@@ -1114,6 +1152,11 @@ define(
 
                             persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
                             storeSubscriptions();
+                            LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                callbackDispatcher(new SubscriptionReply({
+                                    subscriptionId : subscriptionId
+                                }));
+                            }, 0);
                         };
 
                 /**

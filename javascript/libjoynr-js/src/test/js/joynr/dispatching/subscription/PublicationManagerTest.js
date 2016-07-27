@@ -1630,7 +1630,8 @@ define(
                                     publicationManager.handleEventSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            onChangeBroadcastSubscriptionRequest);
+                                            onChangeBroadcastSubscriptionRequest,
+                                            callbackDispatcher);
 
                                     expect(
                                             publicationManager
@@ -1855,6 +1856,68 @@ define(
                                 expect(error.subscriptionId).toBeDefined();
                                 expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
                                 expect(error.detailMessage).toMatch(/is smaller than PeriodicSubscriptionQos/);
+                                done();
+                                return null;
+                            }).catch(fail);
+                            increaseFakeTime(1);
+                        });
+
+                        it("rejects broadcast subscription if expiryDateMs lies in the past", function(done) {
+                            var request = new BroadcastSubscriptionRequest({
+                                subscriptionId : "subscriptionId" + uuid(),
+                                subscribedToName : testBroadcastName,
+                                qos : new OnChangeSubscriptionQos({
+                                    expiryDateMs : Date.now() - 10000
+                                }),
+                                filterParameters : {}
+                            });
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleEventSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    request,
+                                    callbackDispatcher);
+
+                            waitsFor(function() {
+                                return callbackDispatcher.calls.count() === 1;
+                            }, "callbackDispatcher got called", 1000).then(function() {
+                                expect(callbackDispatcher).toHaveBeenCalled();
+                                var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                                expect(error.detailMessage).toMatch(/lies in the past/);
+                                done();
+                                return null;
+                            }).catch(fail);
+                            increaseFakeTime(1);
+                        });
+
+                        it("rejects broadcast subscription if broadcast does not exist", function(done) {
+                            var request = new BroadcastSubscriptionRequest({
+                                subscriptionId : "subscriptionId" + uuid(),
+                                subscribedToName : "nonExistingBroadcast",
+                                qos : new OnChangeSubscriptionQos(),
+                                filterParameters : {}
+                            });
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleEventSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    request,
+                                    callbackDispatcher);
+
+                            waitsFor(function() {
+                                return callbackDispatcher.calls.count() === 1;
+                            }, "callbackDispatcher got called", 1000).then(function() {
+                                expect(callbackDispatcher).toHaveBeenCalled();
+                                var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                                expect(error.detailMessage).toMatch(/misses event/);
                                 done();
                                 return null;
                             }).catch(fail);
