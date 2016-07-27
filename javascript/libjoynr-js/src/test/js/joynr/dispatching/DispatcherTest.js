@@ -428,6 +428,70 @@ define(
                                             headerValue);
                                     done();
                                 });
+
+                        it(
+                                "sends subscription reply on subscription request",
+                                function(done) {
+                                    var payload = {
+                                        subscribedToName : "attributeName",
+                                        subscriptionId : subscriptionId
+                                    };
+                                    var joynrMessage = new JoynrMessage({
+                                        type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
+                                        payload : JSON.stringify(payload)
+                                    });
+                                    joynrMessage.setHeader(
+                                            JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
+                                            proxyId);
+                                    joynrMessage.setHeader(
+                                            JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
+                                            providerId);
+
+                                    var subscriptionReplyPayload = {
+                                            subscriptionId : subscriptionId
+                                    };
+                                    var subscriptionReply = new SubscriptionReply(payload);
+
+                                    /*
+                                     * The dispatcher.receive() based on the message type calls
+                                     * publicationManager.handleSubscriptionRequest()
+                                     * and hands over a callback that invokes sendSubscriptionReply().
+                                     * The resulting message is finally sent out using
+                                     * clusterControllerMessagingStub.transmit().
+                                     */
+
+                                    publicationManager.handleSubscriptionRequest.and.callFake(function(proxyId, providerId, subscriptionRequest, callback) {
+                                        callback(subscriptionReply);
+                                    });
+
+                                    dispatcher.receive(joynrMessage);
+
+                                    /*
+                                     * Note: We can directly expect stuff here only just because
+                                     * the jasmine spies do not emulate async action which would
+                                     * otherwise occur in real code.
+                                     */
+                                    expect(publicationManager.handleSubscriptionRequest)
+                                            .toHaveBeenCalled();
+                                    expect(publicationManager.handleSubscriptionRequest)
+                                            .toHaveBeenCalledWith(
+                                                    proxyId,
+                                                    providerId,
+                                                    new SubscriptionRequest(payload),
+                                                    jasmine.any(Function));
+
+                                    expect(clusterControllerMessagingStub.transmit)
+                                            .toHaveBeenCalled();
+                                    var sentMessage =
+                                            clusterControllerMessagingStub.transmit.calls
+                                                    .mostRecent().args[0];
+                                    expect(sentMessage.type).toEqual(
+                                            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY);
+                                    expect(sentMessage.payload).toEqual(
+                                            JSON.stringify(subscriptionReply));
+
+                                    done();
+                                });
                     });
 
         }); // require

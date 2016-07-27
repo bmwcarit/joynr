@@ -26,13 +26,16 @@ define(
             "joynr/proxy/SubscriptionQos",
             "joynr/proxy/PeriodicSubscriptionQos",
             "joynr/dispatching/types/SubscriptionPublication",
+            "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionStop",
             "joynr/dispatching/types/SubscriptionInformation",
             "joynr/dispatching/types/Reply",
             "joynr/provider/ProviderEvent",
             "joynr/util/Typing",
             "joynr/dispatching/subscription/util/SubscriptionUtil",
+            "joynr/exceptions/SubscriptionException",
             "joynr/exceptions/ProviderRuntimeException",
+            "joynr/util/JSONSerializer",
             "joynr/util/LongTimer",
             "joynr/util/UtilInternal",
             "joynr/system/LoggerFactory"
@@ -42,13 +45,16 @@ define(
                 SubscriptionQos,
                 PeriodicSubscriptionQos,
                 SubscriptionPublication,
+                SubscriptionReply,
                 SubscriptionStop,
                 SubscriptionInformation,
                 Reply,
                 ProviderEvent,
                 Typing,
                 SubscriptionUtil,
+                SubscriptionException,
                 ProviderRuntimeException,
+                JSONSerializer,
                 LongTimer,
                 Util,
                 LoggerFactory) {
@@ -802,7 +808,8 @@ define(
                         function handleSubscriptionRequest(
                                 proxyParticipantId,
                                 providerParticipantId,
-                                subscriptionRequest) {
+                                subscriptionRequest,
+                                callbackDispatcher) {
                             var subscriptionInterval;
                             var provider = participantIdToProvider[providerParticipantId];
                             // construct subscriptionInfo from subscriptionRequest and participantIds
@@ -812,6 +819,7 @@ define(
                                             proxyParticipantId,
                                             providerParticipantId,
                                             subscriptionRequest);
+                            var exception;
 
                             var subscriptionId = subscriptionInfo.subscriptionId;
 
@@ -841,21 +849,45 @@ define(
                             var attributeName = subscriptionRequest.subscribedToName;
                             var attribute = provider[attributeName];
                             if (attribute === undefined) {
-                                log.error("Provider: "
-                                    + providerParticipantId
-                                    + " misses attribute "
-                                    + attributeName);
-                                // TODO: proper error handling when the provider does not contain
-                                // the attribute with the given name
+                                exception = new SubscriptionException({
+                                    detailMessage: "error handling subscription request: "
+                                        + JSONSerializer.stringify(subscriptionRequest)
+                                        + ".Provider: "
+                                        + providerParticipantId
+                                        + " misses attribute "
+                                        + attributeName,
+                                    subscriptionId : subscriptionId
+                                });
+                                log.error(exception.detailMessage);
+                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                    callbackDispatcher(new SubscriptionReply({
+                                        error : exception,
+                                        subscriptionId : subscriptionId
+                                    }));
+                                }, 0);
                                 return;
                             }
 
                             // make sure the provider attribute is a notifiable provider attribute
                             // (e.g.: ProviderAttributeNotify[Read][Write])
                             if (!providerAttributeIsNotifiable(attribute)) {
-                                log.error("Attribute " + attributeName + " is not notifiable");
-                                // TODO: proper error handling when the provider does not
-                                // contain the attribute with the given name
+                                exception = new SubscriptionException({
+                                    detailMessage: "error handling subscription request: "
+                                        + JSONSerializer.stringify(subscriptionRequest)
+                                        + ". Provider: "
+                                        + providerParticipantId
+                                        + " attribute "
+                                        + attributeName
+                                        + " is not notifiable",
+                                    subscriptionId : subscriptionId
+                                });
+                                log.error(exception.detailMessage);
+                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                    callbackDispatcher(new SubscriptionReply({
+                                        error : exception,
+                                        subscriptionId : subscriptionId
+                                    }));
+                                }, 0);
                                 return;
                             }
 
@@ -863,13 +895,23 @@ define(
                             var subscriptions =
                                     getSubscriptionsForProviderAttribute(provider.id, attributeName);
                             if (subscriptions === undefined) {
-                                log.error("ProviderAttribute "
-                                    + attributeName
-                                    + " for providerId "
-                                    + provider.id
-                                    + " is not registered or notifiable");
-                                // TODO: proper error handling for empty subscription map =>
-                                // ProviderAttribute is not notifiable or not registered
+                                exception = new SubscriptionException({
+                                    detailMessage: "error handling subscription request: "
+                                        + JSONSerializer.stringify(subscriptionRequest)
+                                        + ". ProviderAttribute "
+                                        + attributeName
+                                        + " for providerId "
+                                        + provider.id
+                                        + " is not registered or notifiable",
+                                    subscriptionId : subscriptionId
+                                });
+                                log.error(exception.detailMessage);
+                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                    callbackDispatcher(new SubscriptionReply({
+                                        error : exception,
+                                        subscriptionId : subscriptionId
+                                    }));
+                                }, 0);
                                 return;
                             }
 
@@ -881,9 +923,25 @@ define(
 
                                 // if endDate lies in the past => don't add the subscription
                                 if (timeToEndDate <= 0) {
-                                    // log.warn("endDate lies in the past, discarding subscription
-                                    // with id " + subscriptionId);
-                                    // TODO: how should this warning be handled properly?
+                                    exception = new SubscriptionException({
+                                        detailMessage: "error handling subscription request: "
+                                            + JSONSerializer.stringify(subscriptionRequest)
+                                            + ". expiryDateMs "
+                                            + subscriptionRequest.qos.expiryDateMs
+                                            + "for ProviderAttribute "
+                                            + attributeName
+                                            + " for providerId "
+                                            + provider.id
+                                            + " lies in the past",
+                                        subscriptionId : subscriptionId
+                                    });
+                                    log.error(exception.detailMessage);
+                                    LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                        callbackDispatcher(new SubscriptionReply({
+                                            error : exception,
+                                            subscriptionId : subscriptionId
+                                        }));
+                                    }, 0);
                                     return;
                                 }
 
@@ -900,18 +958,28 @@ define(
 
                             if (!isNaN(periodMs)) {
                                 if (periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS) {
-                                    log.error("SubscriptionRequest error: periodMs: "
-                                        + periodMs
-                                        + "is smaller than PeriodicSubscriptionQos.MIN_PERIOD_MS: "
-                                        + PeriodicSubscriptionQos.MIN_PERIOD_MS);
-                                    // TODO: proper error handling when maxIntervalMs is smaller than
-                                    // PeriodicSubscriptionQos.MIN_PERIOD_MS
-                                } else {
+                                    exception = new SubscriptionException({
+                                        detailMessage: "error handling subscription request: "
+                                            + JSONSerializer.stringify(subscriptionRequest)
+                                            + ". periodMs "
+                                            + periodMs
+                                            + " is smaller than PeriodicSubscriptionQos.MIN_PERIOD_MS "
+                                            + PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                                        subscriptionId : subscriptionId
+                                    });
+                                    log.error(exception.detailMessage);
+                                    LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                        callbackDispatcher(new SubscriptionReply({
+                                            error : exception,
+                                            subscriptionId : subscriptionId
+                                        }));
+                                    }, 0);
+                                    return;
+                                }
                                     // call the get method on the provider at the set interval
                                     subscriptionInfo.subscriptionInterval =
                                             triggerPublicationTimer(subscriptionInfo, periodMs);
                                 }
-                            }
 
                             // save subscriptionInfo to subscriptionId => subscription and
                             // ProviderAttribute => subscription map
@@ -933,6 +1001,11 @@ define(
                                     sendPublication(subscriptionInfo, undefined, exception);
                                     return exception;
                                 });
+                            LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                callbackDispatcher(new SubscriptionReply({
+                                    subscriptionId : subscriptionId
+                                }));
+                            }, 0);
                         };
 
                 /**
