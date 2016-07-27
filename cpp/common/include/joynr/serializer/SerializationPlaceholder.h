@@ -45,9 +45,8 @@ class SerializationPlaceholder
         using type = typename SerializerTraits<Tag>::template Deserializable<Archive>;
     };
 
-    using DeserializableVariant = muesli::MakeArchiveVariant<muesli::RegisteredInputArchives,
-                                                             muesli::RegisteredInputStreams,
-                                                             GetDeserializable>;
+    using DeserializableVariant =
+            muesli::MakeArchiveVariant<muesli::InputArchiveTypeVector, GetDeserializable>;
 
 public:
     SerializationPlaceholder() = default;
