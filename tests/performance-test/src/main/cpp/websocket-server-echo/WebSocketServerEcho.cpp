@@ -77,7 +77,8 @@ int main(int argc, char* argv[])
     try {
         server.init_asio();
         server.clear_access_channels(websocketpp::log::alevel::all);
-        server.set_message_handler(bind(&messageReceived, &server, ::_1, ::_2));
+        server.set_message_handler(
+                bind(&messageReceived, &server, std::placeholders::_1, std::placeholders::_2));
         server.listen(port);
         server.start_accept();
 

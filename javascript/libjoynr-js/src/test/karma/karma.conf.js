@@ -17,6 +17,13 @@
  * #L%
  */
 
+var preProcessorList = [];
+
+// Skip code instrumentation, if karma is called with '--debug' option
+if (process.argv.indexOf("--debug") == -1) {
+    preProcessorList = [ 'coverage' ];
+}
+
 module.exports = function(config) {
   config.set({
       plugins: [
@@ -62,10 +69,10 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'classes/joynr.js' : [ 'coverage' ],
-      'classes/global/*.js' : [ 'coverage' ],
-      'classes/joynr/**/*.js' : [ 'coverage' ],
-      'classes/joynr.js' : [ 'coverage' ]
+      'classes/joynr.js' : preProcessorList,
+      'classes/global/*.js' : preProcessorList,
+      'classes/joynr/**/*.js' : preProcessorList,
+      'classes/joynr.js' : preProcessorList
     },
 
 
@@ -118,4 +125,4 @@ module.exports = function(config) {
       properties: {}
     }
   })
-}
+};
