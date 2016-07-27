@@ -18,7 +18,6 @@
  */
 #include "HttpMessagingSkeleton.h"
 
-#include "joynr/JsonSerializer.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
@@ -44,8 +43,8 @@ void HttpMessagingSkeleton::transmit(
         try {
             using system::RoutingTypes::ChannelAddress;
 
-            ChannelAddress channelAddress =
-                    JsonSerializer::deserialize<ChannelAddress>(message.getHeaderReplyAddress());
+            ChannelAddress channelAddress;
+            joynr::serializer::deserializeFromJson(channelAddress, message.getHeaderReplyAddress());
 
             auto address = std::make_shared<const ChannelAddress>(channelAddress);
             messageRouter.addNextHop(message.getHeaderFrom(), address);

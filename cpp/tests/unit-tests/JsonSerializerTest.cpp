@@ -212,7 +212,8 @@ TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
                 R"("possibleRequiredTrustLevels": ["HIGH","MID","LOW"],)"
                 R"("uid": "*"})");
 
-    infrastructure::DacTypes::MasterAccessControlEntry mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
+    infrastructure::DacTypes::MasterAccessControlEntry mac;
+    joynr::serializer::deserializeFromJson(mac, serializedContent);
 
     // Check scalar enums
     EXPECT_EQ(Permission::NO, mac.getDefaultConsumerPermission());
@@ -256,11 +257,12 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
                                                                      possiblePermissions);
 
     // Serialize
-    std::string serializedContent = JsonSerializer::serialize<infrastructure::DacTypes::MasterAccessControlEntry>(expectedMac);
+    std::string serializedContent = joynr::serializer::serializeToJson(expectedMac);
     JOYNR_LOG_DEBUG(logger, "Serialized expectedMac: {}", serializedContent);
 
     // Deserialize the result
-    infrastructure::DacTypes::MasterAccessControlEntry mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
+    infrastructure::DacTypes::MasterAccessControlEntry mac;
+    joynr::serializer::deserializeFromJson(mac, serializedContent);
 
     // Check that the object serialized/deserialized correctly
     EXPECT_EQ(expectedMac, mac);
@@ -269,23 +271,18 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 using namespace infrastructure::DacTypes;
 
 void deserializePermission(const std::string& serializedPermission, const Permission::Enum& expectation) {
-    Variant variant = Variant::make<std::string>(serializedPermission);
-
     // Deserialize the result and compare
-    std::string jsonStr = "{ \"value\" : \"" + serializedPermission + "\" }";
-    JsonTokenizer tokenizer(jsonStr);
     Permission::Enum deserializedEnum;
-    PrimitiveDeserializer<Permission::Enum>::deserialize(deserializedEnum, tokenizer.nextObject().nextField().value());
+    joynr::serializer::deserializeFromJson(deserializedEnum, serializedPermission);
     EXPECT_EQ(expectation, deserializedEnum);
-    EXPECT_EQ(expectation, joynr::util::valueOf<Permission::Enum>(variant));
 }
 
 void serializeAndDeserializePermission(const Permission::Enum& input, const std::string& inputAsString, Logger& logger) {
     // Serialize
-    std::string serializedContent(JsonSerializer::serialize<Permission::Enum>(input));
+    std::string serializedContent = joynr::serializer::serializeToJson(input);
     JOYNR_LOG_DEBUG(logger, "Serialized permission for input: {}, {}", inputAsString, serializedContent);
 
-    deserializePermission(serializedContent.substr(1, serializedContent.size()-2 ), input);
+    deserializePermission(serializedContent, input);
 }
 
 TEST_F(JsonSerializerTest, serializeDeserializeTypeEnum) {
@@ -350,11 +347,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
                 R"(})"
                 );
 
-    std::string serializedContent = JsonSerializer::serialize<types::TestTypes::TStruct>(tStruct);
+    std::string serializedContent = joynr::serializer::serializeToJson(tStruct);
     JOYNR_LOG_DEBUG(logger, serializedContent);
     EXPECT_EQ(expectedTStruct, serializedContent);
 
-    types::TestTypes::TStruct tStructDeserialized = JsonSerializer::deserialize<types::TestTypes::TStruct>(serializedContent);
+    types::TestTypes::TStruct tStructDeserialized;
+    joynr::serializer::deserializeFromJson(tStructDeserialized, serializedContent);
 
     EXPECT_EQ(tStruct, tStructDeserialized);
 }
@@ -379,11 +377,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
                 R"(})"
                 );
 
-    std::string serializedTStructExt = JsonSerializer::serialize<types::TestTypes::TStructExtended>(tStructExt);
+    std::string serializedTStructExt = joynr::serializer::serializeToJson(tStructExt);
     JOYNR_LOG_DEBUG(logger, serializedTStructExt);
 
     EXPECT_EQ(expectedTStructExt, serializedTStructExt);
-    types::TestTypes::TStructExtended deserializedTStructExt = JsonSerializer::deserialize<types::TestTypes::TStructExtended>(serializedTStructExt);
+    types::TestTypes::TStructExtended deserializedTStructExt;
+    joynr::serializer::deserializeFromJson(deserializedTStructExt, serializedTStructExt);
 
     EXPECT_EQ(tStructExt, deserializedTStructExt);
 }
@@ -574,10 +573,11 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
     // Expected literal is:
     types::Localisation::Trip trip1(locations, "trip1_name");
 
-    std::string serializedContent = JsonSerializer::serialize(Variant::make<types::Localisation::Trip>(trip1));
+    std::string serializedContent = joynr::serializer::serializeToJson(trip1);
     EXPECT_EQ(expected, serializedContent);
 
-    types::Localisation::Trip trip2 = JsonSerializer::deserialize<types::Localisation::Trip>(serializedContent);
+    types::Localisation::Trip trip2;
+    joynr::serializer::deserializeFromJson(trip2, serializedContent);
     EXPECT_EQ(trip1, trip2) << "trips \n trip1: " << trip1.toString().c_str()
                             << " and \n trip2: " << trip2.toString().c_str()
                             << "\n are not the same";
@@ -665,10 +665,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     joynr::system::RoutingTypes::WebSocketClientAddress wsClient("TEST_clientId");
 
     // serialize
-    std::string joynrSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::ChannelAddress>(joynr);
-    std::string dbusSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::CommonApiDbusAddress>(dbus);
-    std::string wsServerSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::WebSocketAddress>(wsServer);
-    std::string wsClientSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::WebSocketClientAddress>(wsClient);
+    std::string joynrSerialized = joynr::serializer::serializeToJson(joynr);
+    std::string dbusSerialized = joynr::serializer::serializeToJson(dbus);
+    std::string wsServerSerialized = joynr::serializer::serializeToJson(wsServer);
+    std::string wsClientSerialized = joynr::serializer::serializeToJson(wsClient);
 
     JOYNR_LOG_DEBUG(logger, "serialized Joynr address: {}", joynrSerialized);
     JOYNR_LOG_DEBUG(logger, "serialized Dbus address: {}", dbusSerialized);
@@ -676,10 +676,14 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     JOYNR_LOG_DEBUG(logger, "serialized WS client address: {}", wsClientSerialized);
 
     // deserialize
-    joynr::system::RoutingTypes::ChannelAddress joynrDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::ChannelAddress>(joynrSerialized);
-    joynr::system::RoutingTypes::CommonApiDbusAddress dbusDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::CommonApiDbusAddress>(dbusSerialized);
-    joynr::system::RoutingTypes::WebSocketAddress wsServerDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketAddress>(wsServerSerialized);
-    joynr::system::RoutingTypes::WebSocketClientAddress wsClientDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketClientAddress>(wsClientSerialized);
+    joynr::system::RoutingTypes::ChannelAddress joynrDeserialized;
+    joynr::serializer::deserializeFromJson(joynrDeserialized, joynrSerialized);
+    joynr::system::RoutingTypes::CommonApiDbusAddress dbusDeserialized;
+    joynr::serializer::deserializeFromJson(dbusDeserialized, dbusSerialized);
+    joynr::system::RoutingTypes::WebSocketAddress wsServerDeserialized;
+    joynr::serializer::deserializeFromJson(wsServerDeserialized, wsServerSerialized);
+    joynr::system::RoutingTypes::WebSocketClientAddress wsClientDeserialized;
+    joynr::serializer::deserializeFromJson(wsClientDeserialized, wsClientSerialized);
 
     EXPECT_EQ(joynr, joynrDeserialized);
     EXPECT_EQ(dbus, dbusDeserialized);
@@ -720,11 +724,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
     globalDiscoveryEntry.setPublicKeyId("publicKeyId");
     JOYNR_LOG_DEBUG(logger, "GlobalDiscoveryEntry {}", globalDiscoveryEntry.toString());
 
-    std::string serialized = JsonSerializer::serialize<types::GlobalDiscoveryEntry>(globalDiscoveryEntry);
+    std::string serialized = joynr::serializer::serializeToJson(globalDiscoveryEntry);
     JOYNR_LOG_DEBUG(logger, "serialized GlobalDiscoveryEntry {} ",serialized);
     EXPECT_EQ(expected, serialized);
 
-    types::GlobalDiscoveryEntry deserializedGDE = JsonSerializer::deserialize<types::GlobalDiscoveryEntry>(serialized);
+    types::GlobalDiscoveryEntry deserializedGDE;
+    joynr::serializer::deserializeFromJson(deserializedGDE, serialized);
 
     EXPECT_EQ(globalDiscoveryEntry, deserializedGDE);
     JOYNR_LOG_DEBUG(logger, "deserialized GlobalDiscoveryEntry {}", deserializedGDE.toString());
@@ -772,7 +777,8 @@ TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
                 R"("time": 17})"
                 );
 
-    joynr::types::Localisation::GpsLocation receivedGps = JsonSerializer::deserialize<joynr::types::Localisation::GpsLocation>(jsonGPS);
+    joynr::types::Localisation::GpsLocation receivedGps;
+    joynr::serializer::deserializeFromJson(receivedGps, jsonGPS);
     EXPECT_EQ(3.3, receivedGps.getAltitude());
 }
 

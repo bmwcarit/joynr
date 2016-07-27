@@ -19,7 +19,6 @@
 #include <gtest/gtest.h>
 #include "PrettyPrint.h"
 
-#include "joynr/JsonSerializer.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
@@ -33,25 +32,25 @@ using namespace joynr;
 namespace joynr {
 namespace types {
     void PrintTo(const joynr::types::TestTypes::TStruct& value, ::std::ostream* os) {
-        *os << joynr::JsonSerializer::serialize(value);
+        *os << joynr::serializer::serializeToJson(value);
     }
 
     void PrintTo(const joynr::types::Localisation::GpsLocation& value, ::std::ostream* os) {
-        *os << joynr::JsonSerializer::serialize(value);
+        *os << joynr::serializer::serializeToJson(value);
     }
 
     void PrintTo(const joynr::types::Localisation::Trip& value, ::std::ostream* os) {
-        *os << JsonSerializer::serialize(value) << std::endl;
+        *os << joynr::serializer::serializeToJson(value) << std::endl;
     }
 }
 namespace types {
     void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os) {
-        *os << JsonSerializer::serialize(value) << std::endl;
+        *os << joynr::serializer::serializeToJson(value) << std::endl;
     }
 }
 namespace system {
     void PrintTo(const joynr::system::RoutingTypes::WebSocketAddress& value, ::std::ostream* os) {
-        *os << JsonSerializer::serialize(value) << std::endl;
+        *os << joynr::serializer::serializeToJson(value) << std::endl;
     }
 }
 }

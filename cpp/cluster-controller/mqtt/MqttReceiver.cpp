@@ -19,8 +19,8 @@
 #include "MqttReceiver.h"
 
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -42,7 +42,7 @@ MqttReceiver::MqttReceiver(const MessagingSettings& settings)
             "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
             std::to_string(settings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
     system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, channelIdForMqttTopic);
-    globalClusterControllerAddress = JsonSerializer::serialize(receiveMqttAddress);
+    globalClusterControllerAddress = joynr::serializer::serializeToJson(receiveMqttAddress);
     receiverId = persist.getReceiverId();
 
     mosquittoSubscriber.registerChannelId(channelIdForMqttTopic);

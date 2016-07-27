@@ -26,7 +26,6 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/Util.h"
 #include "joynr/MessageRouter.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/IWebSocketSendInterface.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/WebSocketProtocol.h"
@@ -114,8 +113,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
                         message.toStdString());
         // register client with messaging stub factory
         try {
-            WebSocketClientAddress clientAddress =
-                    JsonSerializer::deserialize<WebSocketClientAddress>(message.toStdString());
+            WebSocketClientAddress clientAddress;
+            joynr::serializer::deserializeFromJson(clientAddress, message.toStdString());
             std::shared_ptr<IWebSocketSendInterface> clientWrapper =
                     std::make_shared<QWebSocketSendWrapper>(client);
             messagingStubFactory->addClient(clientAddress, clientWrapper);

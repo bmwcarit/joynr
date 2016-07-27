@@ -32,13 +32,12 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
-#include "joynr/JsonSerializer.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/Util.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -501,8 +500,8 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
             foundTypeNameValue != std::string::npos && foundTypeNameKey < foundTypeNameValue) {
             try {
                 using system::RoutingTypes::MqttAddress;
-                MqttAddress joynrAddress =
-                        JsonSerializer::deserialize<MqttAddress>(serializedAddress);
+                MqttAddress joynrAddress;
+                joynr::serializer::deserializeFromJson(joynrAddress, serializedAddress);
                 auto addressPtr = std::make_shared<MqttAddress>(joynrAddress);
                 messageRouter.addNextHop(currentEntry.getParticipantId(), addressPtr);
             } catch (const std::invalid_argument& e) {
@@ -515,8 +514,8 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
             try {
                 using system::RoutingTypes::ChannelAddress;
 
-                ChannelAddress channelAddress =
-                        JsonSerializer::deserialize<ChannelAddress>(serializedAddress);
+                ChannelAddress channelAddress;
+                joynr::serializer::deserializeFromJson(channelAddress, serializedAddress);
                 auto channelAddressPtr = std::make_shared<const ChannelAddress>(channelAddress);
 
                 messageRouter.addNextHop(currentEntry.getParticipantId(), channelAddressPtr);
@@ -640,12 +639,7 @@ std::string LocalCapabilitiesDirectory::serializeLocalCapabilitiesToJson() const
                 toBeSerialized.end(), capEntriesAtKey.cbegin(), capEntriesAtKey.cend());
     }
 
-    std::stringstream outputJson;
-    outputJson << "{";
-    outputJson << "\"listOfCapabilities\":";
-    outputJson << JsonSerializer::serialize<std::vector<CapabilityEntry>>(toBeSerialized);
-    outputJson << "}";
-    return outputJson.str();
+    return joynr::serializer::serializeToJson(toBeSerialized);
 }
 
 void LocalCapabilitiesDirectory::loadPersistedFile()
@@ -663,8 +657,8 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
         return;
     }
 
-    std::vector<CapabilityEntry> persistedCapabilities =
-            JsonSerializer::deserialize<std::vector<CapabilityEntry>>(jsonString);
+    std::vector<CapabilityEntry> persistedCapabilities;
+    joynr::serializer::deserializeFromJson(persistedCapabilities, jsonString);
 
     if (persistedCapabilities.empty()) {
         return;
@@ -697,9 +691,8 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
         return;
     }
 
-    std::vector<joynr::types::GlobalDiscoveryEntry> injectedGlobalCapabilities =
-            JsonSerializer::deserialize<std::vector<joynr::types::GlobalDiscoveryEntry>>(
-                    jsonString);
+    std::vector<joynr::types::GlobalDiscoveryEntry> injectedGlobalCapabilities;
+    joynr::serializer::deserializeFromJson(injectedGlobalCapabilities, jsonString);
 
     if (injectedGlobalCapabilities.empty()) {
         return;

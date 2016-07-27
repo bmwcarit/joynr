@@ -25,8 +25,8 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
-
 #include "joynr/system/RoutingProxy.h"
+#include "joynr/serializer/Serializer.h"
 
 using namespace joynr;
 
@@ -63,10 +63,9 @@ public:
         using system::RoutingTypes::ChannelAddress;
         using system::RoutingTypes::MqttAddress;
 
-        std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
-        std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
+        std::string serializedChannelAddress = joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
+        std::string serializedMqttAddress = joynr::serializer::serializeToJson(MqttAddress(mqttBrokerUrl, mqttTopic));
 
-        
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())

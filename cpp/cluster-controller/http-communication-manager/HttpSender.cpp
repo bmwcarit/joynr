@@ -27,7 +27,6 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/Util.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
-#include "joynr/JsonSerializer.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/QtTypeUtil.h"

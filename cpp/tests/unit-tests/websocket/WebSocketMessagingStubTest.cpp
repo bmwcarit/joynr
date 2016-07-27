@@ -30,7 +30,6 @@
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/exceptions/JoynrException.h"
