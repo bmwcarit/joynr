@@ -183,7 +183,8 @@ define(
                                             .toHaveBeenCalledWith(
                                                     proxyId,
                                                     providerId,
-                                                    new SubscriptionRequest(payload));
+                                                    new SubscriptionRequest(payload),
+                                                    jasmine.any(Function));
                                     done();
                                 });
 

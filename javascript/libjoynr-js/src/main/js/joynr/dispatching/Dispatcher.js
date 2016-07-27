@@ -355,32 +355,80 @@ define("joynr/dispatching/Dispatcher", [
          *            settings.expiryDate time-to-live
          * @param {Object}
          *            settings.customHeaders custom headers from request
+         * @param {Reply|SubscriptionReply}
+         *            settings.reply the reply to be transmitted. It can either be a Reply or a SubscriptionReply object
+         */
+        function sendReply(settings) {
+            // reply with the result in a JoynrMessage
+            var message = new JoynrMessage({
+                type : settings.messageType,
+                payload : settings.reply
+            });
+
+            // set headers
+            message.from = settings.from;
+            message.to = settings.to;
+            message.expiryDate = settings.expiryDate;
+            message.setCustomHeaders(settings.customHeaders);
+
+            clusterControllerMessagingStub.transmit(message);
+        }
+        /**
+         * @private
+         *
+         * @param {Object}
+         *            settings
+         * @param {String}
+         *            settings.from participantId of the sender
+         * @param {String}
+         *            settings.to participantId of the receiver
+         * @param {Number}
+         *            settings.expiryDate time-to-live
+         * @param {Object}
+         *            settings.customHeaders custom headers from request
          * @param {Reply}
          *            reply
          */
-        function sendReply(settings, reply) {
+        function sendRequestReply(settings, reply) {
             log.info("replying", DiagnosticTags.forReply({
                 reply : reply,
                 to : settings.to,
                 from : settings.from
             }));
 
-            // Reply with the result in a JoynrMessage
-            var replyMessage = new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_REPLY,
-                /*
-                 * in case the reply contains an error, do not perform any special string replacement
-                 */
-                payload : JSONSerializer.stringify(reply, reply.error !== undefined)
-            });
+            settings.reply = JSONSerializer.stringify(reply, reply.error !== undefined);
+            settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_REPLY;
+            sendReply(settings);
+        }
+        /**
+         * @private
+         *
+         * @param {Object}
+         *            settings
+         * @param {String}
+         *            settings.from participantId of the sender
+         * @param {String}
+         *            settings.to participantId of the receiver
+         * @param {Number}
+         *            settings.expiryDate time-to-live
+         * @param {Object}
+         *            settings.customHeaders custom headers from request
+         * @param {SubscriptionReply}
+         *            subscriptionReply
+         */
+        function sendSubscriptionReply(settings, subscriptionReply) {
+            log.info("replying", DiagnosticTags.forSubscriptionReply({
+                subscriptionReply : subscriptionReply,
+                to : settings.to,
+                from : settings.from
+            }));
 
-            // set reply headers
-            replyMessage.from = settings.from;
-            replyMessage.to = settings.to;
-            replyMessage.expiryDate = settings.expiryDate;
-            replyMessage.setCustomHeaders(settings.customHeaders);
-
-            clusterControllerMessagingStub.transmit(replyMessage);
+            settings.reply =
+                    JSONSerializer.stringify(
+                            subscriptionReply,
+                            subscriptionReply.error !== undefined);
+            settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY;
+            sendReply(settings);
         }
 
         /**
@@ -446,7 +494,7 @@ define("joynr/dispatching/Dispatcher", [
                                         joynrMessage.to,
                                         request,
                                         function(reply) {
-                                            sendReply({
+                                            sendRequestReply({
                                                 from : joynrMessage.to,
                                                 to : joynrMessage.from,
                                                 expiryDate : joynrMessage.expiryDate,
@@ -488,7 +536,16 @@ define("joynr/dispatching/Dispatcher", [
                                                 joynrMessage.from,
                                                 joynrMessage.to,
                                                 new SubscriptionRequest(
-                                                        parsePayload(joynrMessage.payload)));
+                                                        parsePayload(joynrMessage.payload)),
+                                                function(subscriptionReply) {
+                                                    sendSubscriptionReply({
+                                                        from : joynrMessage.to,
+                                                        to : joynrMessage.from,
+                                                        expiryDate : joynrMessage.expiryDate,
+                                                        customHeaders : joynrMessage
+                                                                .getCustomHeaders()
+                                                    }, subscriptionReply);
+                                                });
                             } catch (errorInSubscriptionRequest) {
                                 // TODO handle error in handling the subscriptionRequest
                                 log.error("error handling subscriptionRequest: "
@@ -503,7 +560,16 @@ define("joynr/dispatching/Dispatcher", [
                                                 joynrMessage.from,
                                                 joynrMessage.to,
                                                 new SubscriptionRequest(
-                                                        parsePayload(joynrMessage.payload)));
+                                                        parsePayload(joynrMessage.payload)),
+                                                function(subscriptionReply) {
+                                                    sendSubscriptionReply({
+                                                        from : joynrMessage.to,
+                                                        to : joynrMessage.from,
+                                                        expiryDate : joynrMessage.expiryDate,
+                                                        customHeaders : joynrMessage
+                                                                .getCustomHeaders()
+                                                    }, subscriptionReply);
+                                                });
                             } catch (errorInEventSubscriptionRequest) {
                                 // TODO handle error in handling the subscriptionRequest
                                 log.error("error handling eventSubscriptionRequest: "
