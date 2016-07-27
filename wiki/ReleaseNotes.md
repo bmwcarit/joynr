@@ -3,6 +3,10 @@
 * **[JS]** The SubscriptionListener is now able to get informed about succeeded
   subscription requests. For this purpose, he can implement a callback having
   the following signature: void onSubscribed(subscribeId) 
+* **[JS]** The consumer is able to synchronise to subscription requests.
+  The promise returned by <Interface>Proxy.subscribeTo<Attribute|Broadcast> is
+  resolved, once the subscription request has been successfully delivered to the
+  interface provider. 
 
 ##Other changes
 None.

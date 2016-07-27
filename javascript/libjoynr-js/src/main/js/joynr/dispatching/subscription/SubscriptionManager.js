@@ -72,9 +72,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         var subscriptionInfos = {};
         // stores subscriptionId - SubscriptionListener
         var subscriptionListeners = {};
-        var subscriptionResolvedMap = {};
         // stores the object which is returned by setTimeout mapped to the subscriptionId
         var publicationCheckTimerIds = {};
+        var subscriptionReplyCallers = {};
 
         /**
          * @param {String}
@@ -264,18 +264,18 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                             ttl : calculateTtl(subscriptionRequest.qos)
                         });
 
-                        subscriptionResolvedMap[subscriptionId] = resolve;
+                        subscriptionReplyCallers[subscriptionId] = {
+                            resolve : resolve,
+                            reject : reject
+                        };
+
                         dispatcher.sendSubscriptionRequest({
                             from : settings.proxyId,
                             to : settings.providerId,
                             messagingQos : messagingQos,
                             subscriptionRequest : subscriptionRequest
-                        }).then(function() {
-                            // TODO once 1319: this can be removed
-                            delete subscriptionResolvedMap[subscriptionId];
-                            resolve(subscriptionId);
                         }).catch(function(error) {
-                            delete subscriptionResolvedMap[subscriptionId];
+                            delete subscriptionReplyCallers[subscriptionId];
                             reject(error);
                         });
 
@@ -351,25 +351,23 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 });
                 storeSubscriptionRequest(parameters, subscriptionRequest);
 
-                subscriptionResolvedMap[subscriptionRequest.subscriptionId] = resolve;
-
                 messagingQos = new MessagingQos({
                     ttl : calculateTtl(subscriptionRequest.qos)
                 });
+
+                subscriptionReplyCallers[subscriptionRequest.subscriptionId] = {
+                    resolve : resolve,
+                    reject : reject
+                };
 
                 dispatcher.sendBroadcastSubscriptionRequest({
                     from : parameters.proxyId,
                     to : parameters.providerId,
                     messagingQos : messagingQos,
                     subscriptionRequest : subscriptionRequest
-                }).then(function() {
-                    // TODO 1319: this can be removed later. Will be done on subscriptionreply
-                    // instead of here.
-                    delete subscriptionResolvedMap[subscriptionRequest.subscriptionId];
-                    resolve(subscriptionRequest.subscriptionId);
                 }).catch(function(error) {
+                    delete subscriptionReplyCallers[subscriptionRequest.subscriptionId];
                     reject(error);
-                    delete subscriptionResolvedMap[subscriptionRequest.subscriptionId];
                 });
             });
         };
@@ -380,13 +378,45 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param subscriptionReply
          *            {SubscriptionReply} incoming subscriptionReply
          */
-        this.handleSubscriptionReply = function handleSubscriptionReply(subscriptionResponse) {
-            // TODO Will be done on subscriptionreply instead of here.
-            var subscriptionId = subscriptionResponse.subscriptionId;
-            if (subscriptionResolvedMap[subscriptionId] !== undefined) {
-                subscriptionResolvedMap[subscriptionId](subscriptionId);
-                delete subscriptionResolvedMap[subscriptionId];
+        this.handleSubscriptionReply = function handleSubscriptionReply(subscriptionReply) {
+            var subscriptionReplyCaller = subscriptionReplyCallers[subscriptionReply.subscriptionId];
+            var subscriptionListener = subscriptionListeners[subscriptionReply.subscriptionId];
+
+            if (subscriptionReplyCaller === undefined && subscriptionListener === undefined) {
+                log
+                        .error("error handling subscription reply, because subscriptionReplyCaller and subscriptionListener could not be found: "
+                            + JSONSerializer.stringify(subscriptionReply, undefined, 4));
+                return;
             }
+
+            try {
+                if (subscriptionReply.error) {
+                    if (!(subscriptionReply.error instanceof Error)) {
+                        subscriptionReply.error = Typing.augmentTypes(
+                                subscriptionReply.error,
+                                typeRegistry);
+                    }
+                    if (subscriptionReplyCaller !== undefined) {
+                        subscriptionReplyCaller.reject(subscriptionReply.error);
+                    }
+                    if (subscriptionListener !== undefined && subscriptionListener.onError !== undefined) {
+                        subscriptionListener.onError(subscriptionReply.error);
+                    }
+                } else {
+                    if (subscriptionReplyCaller !== undefined) {
+                        subscriptionReplyCaller.resolve(subscriptionReply.subscriptionId);
+                    }
+                    if (subscriptionListener !== undefined && subscriptionListener.onSubscribed !== undefined) {
+                        subscriptionListener.onSubscribed(subscriptionReply.subscriptionId);
+                    }
+                }
+            } catch (e) {
+                log.error("exception thrown during handling subscription reply "
+                    + JSONSerializer.stringify(subscriptionReply, undefined, 4)
+                    + ":\n"
+                    + e.stack);
+            }
+            delete subscriptionReplyCallers[subscriptionReply.subscriptionId];
         };
 
         /**
@@ -458,7 +488,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 
             delete subscriptionInfos[settings.subscriptionId];
             delete subscriptionListeners[settings.subscriptionId];
-            delete subscriptionResolvedMap[settings.subscriptionId];
+            if (subscriptionReplyCallers[settings.subscriptionId] !== undefined) {
+                delete subscriptionReplyCallers[settings.subscriptionId];
+            }
 
             return promise;
         };

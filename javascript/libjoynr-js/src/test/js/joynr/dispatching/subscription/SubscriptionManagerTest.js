@@ -24,6 +24,7 @@ define([
             "joynr/dispatching/subscription/SubscriptionManager",
             "joynr/messaging/MessagingQos",
             "joynr/start/settings/defaultMessagingSettings",
+            "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/SubscriptionStop",
             "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
@@ -43,6 +44,7 @@ define([
                 SubscriptionManager,
                 MessagingQos,
                 defaultMessagingSettings,
+                SubscriptionReply,
                 SubscriptionRequest,
                 SubscriptionStop,
                 OnChangeWithKeepAliveSubscriptionQos,
@@ -196,18 +198,7 @@ define([
                                 }),
                                 onReceive : publicationReceivedSpy,
                                 onError : publicationMissedSpy
-                            }).then(function(returnedSubscriptionId) {
-                                subscriptionId = returnedSubscriptionId;
-                                return null;
-                            }).catch(function(error) {
-                                log.error("Error in sendSubscriptionRequest :" + error);
-                                return null;
-                            });
-                            increaseFakeTime(1);
-
-                            waitsFor(function() {
-                                return subscriptionId !== undefined;
-                            }, "subscription to be registered", 500).then(function() {
+                            }).then(function(subscriptionId) {
                                 expect(publicationMissedSpy).not.toHaveBeenCalled();
                                 increaseFakeTime(alertAfterIntervalMs + 1);
                                 expect(publicationMissedSpy).toHaveBeenCalled();
@@ -220,9 +211,14 @@ define([
                                 expect(publicationMissedSpy.calls.count()).toEqual(2);
                                 increaseFakeTime(alertAfterIntervalMs + 1);
                                 expect(publicationMissedSpy.calls.count()).toEqual(2);
-                                done();
-                                return null;
-                            }).catch(fail);
+                                return done();
+                            }).catch(function(error) {
+                                log.error("Error in sendSubscriptionRequest :" + error);
+                                fail();
+                            });
+
+                            increaseFakeTime(1);
+
 
                         });
 
@@ -472,7 +468,6 @@ define([
                                             jasmine.createSpy('publicationReceivedSpy');
                                     var publicationMissedSpy =
                                             jasmine.createSpy('publicationMissedSpy');
-                                    var subscriptionId;
                                     var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
 
                                     //log.debug("registering subscription");
@@ -486,21 +481,7 @@ define([
                                         }),
                                         onReceive : publicationReceivedSpy,
                                         onError : publicationMissedSpy
-                                    }).then(
-                                            function(returnedSubscriptionId) {
-                                                subscriptionId = returnedSubscriptionId;
-                                            }).catch(function(error) {
-                                                log.error("Error in sendSubscriptionRequest :"
-                                                    + error);
-                                            });
-                                    increaseFakeTime(1);
-
-                                    waitsFor(
-                                            function() {
-                                                return subscriptionId !== undefined;
-                                            },
-                                            "SubscriptionId should be set by the SubscriptionManager",
-                                    500).then(function() {
+                                    }).then(function(subscriptionId) {
                                         increaseFakeTime(alertAfterIntervalMs / 2);
                                         expect(publicationMissedSpy).not.toHaveBeenCalled();
                                         increaseFakeTime((alertAfterIntervalMs / 2) + 1);
@@ -534,8 +515,12 @@ define([
                                         increaseFakeTime(alertAfterIntervalMs + 1);
                                         expect(publicationMissedSpy.calls.count()).toEqual(2);
                                         done();
-                                        return null;
-                                    }).catch(fail);
+                                    }).catch(function(error) {
+                                        log.error("Error in sendSubscriptionRequest :"
+                                            + error);
+                                        fail();
+                                    });
+                                    increaseFakeTime(1);
                                 });
 
                     it(
