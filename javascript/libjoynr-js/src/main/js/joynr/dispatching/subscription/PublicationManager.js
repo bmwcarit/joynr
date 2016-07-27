@@ -24,6 +24,7 @@ define(
         [
             "global/Promise",
             "joynr/proxy/SubscriptionQos",
+            "joynr/proxy/PeriodicSubscriptionQos",
             "joynr/dispatching/types/SubscriptionPublication",
             "joynr/dispatching/types/SubscriptionStop",
             "joynr/dispatching/types/SubscriptionInformation",
@@ -39,6 +40,7 @@ define(
         function(
                 Promise,
                 SubscriptionQos,
+                PeriodicSubscriptionQos,
                 SubscriptionPublication,
                 SubscriptionStop,
                 SubscriptionInformation,
@@ -51,8 +53,6 @@ define(
                 Util,
                 LoggerFactory) {
 
-            // TODO make MIN_PUBLICATION_INTERVAL configurable
-            var MIN_PUBLICATION_INTERVAL = 50;
 
             /**
              * The PublicationManager is responsible for handling subscription requests.
@@ -899,13 +899,13 @@ define(
                             var periodMs = getPeriod(subscriptionInfo);
 
                             if (!isNaN(periodMs)) {
-                                if (periodMs < MIN_PUBLICATION_INTERVAL) {
+                                if (periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS) {
                                     log.error("SubscriptionRequest error: periodMs: "
                                         + periodMs
-                                        + "is smaller than MIN_PUBLICATION_INTERVAL: "
-                                        + MIN_PUBLICATION_INTERVAL);
+                                        + "is smaller than PeriodicSubscriptionQos.MIN_PERIOD_MS: "
+                                        + PeriodicSubscriptionQos.MIN_PERIOD_MS);
                                     // TODO: proper error handling when maxIntervalMs is smaller than
-                                    // MIN_PUBLICATION_INTERVAL
+                                    // PeriodicSubscriptionQos.MIN_PERIOD_MS
                                 } else {
                                     // call the get method on the provider at the set interval
                                     subscriptionInfo.subscriptionInterval =
