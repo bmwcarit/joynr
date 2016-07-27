@@ -93,7 +93,10 @@ define(
                             reject : reject
                         }, settings.messagingQos.ttl);
                         // resolve will be called upon successful response
-                        dispatcher.sendRequest(settings).catch(reject);
+                        dispatcher.sendRequest(settings).catch(function(error) {
+                            delete replyCallers[settings.request.requestReplyId];
+                            reject(error);
+                        });
                     });
                 };
 
