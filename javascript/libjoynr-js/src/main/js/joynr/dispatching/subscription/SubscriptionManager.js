@@ -241,14 +241,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         this.registerSubscription =
                 function registerSubscription(settings) {
                     return new Promise(function(resolve, reject) {
-                        var subscriptionId;
-                        if (settings.subscriptionId === undefined) {
-                            // create a new subscriptionId
-                            subscriptionId = uuid();
-                        } else {
-                            // reuse a preexisting subscriptionId
-                            subscriptionId = settings.subscriptionId;
-                        }
+                        var subscriptionId = settings.subscriptionId || uuid();
                         // log.debug("Registering Subscription Id " + subscriptionId);
 
                         if (settings.onError === undefined){
