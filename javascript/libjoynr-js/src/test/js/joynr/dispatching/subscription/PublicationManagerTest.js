@@ -199,7 +199,6 @@ define(
                          * Called before each test.
                          */
                         beforeEach(function(done) {
-                            //jasmine.getEnv().currentSpec.description;
                             callbackDispatcher = jasmine.createSpy("callbackDispatcher");
                             proxyId = "proxy" + uuid();
                             providerId = "provider" + uuid();
