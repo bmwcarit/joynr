@@ -480,7 +480,8 @@ void MessageRouter::loadRoutingTable(std::string fileName)
 
     WriteLocker lock(routingTableLock);
     try {
-        routingTable.deserializeFromJson(joynr::util::loadStringFromFile(routingTableFileName));
+        joynr::serializer::deserializeFromJson(
+                routingTable, joynr::util::loadStringFromFile(routingTableFileName));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }
@@ -490,7 +491,8 @@ void MessageRouter::saveRoutingTable()
 {
     WriteLocker lock(routingTableLock);
     try {
-        joynr::util::saveStringToFile(routingTableFileName, routingTable.serializeToJson());
+        joynr::util::saveStringToFile(
+                routingTableFileName, joynr::serializer::serializeToJson(routingTable));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }

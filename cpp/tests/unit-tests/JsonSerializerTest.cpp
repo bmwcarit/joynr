@@ -50,9 +50,9 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/MapSerializer.h"
-#include "joynr/RoutingTable.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
+#include "joynr/Directory.h"
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 
@@ -794,6 +794,7 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
 
 TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
 {
+    using RoutingTable = Directory<std::string, const joynr::system::RoutingTypes::Address>;
     RoutingTable routingTable("routingTable");
     routingTable.add("WebSocketAddress", std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>());
     routingTable.add("ChannelAddress", std::make_shared<joynr::system::RoutingTypes::ChannelAddress>());
@@ -802,14 +803,15 @@ TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
     routingTable.add("CommonApiDbusAddress", std::make_shared<joynr::system::RoutingTypes::CommonApiDbusAddress>());
     routingTable.add("WebSocketClientAddress", std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>());
 
-    const std::string serializedRoutingTable = routingTable.serializeToJson();
+    const std::string serializedRoutingTable = joynr::serializer::serializeToJson(routingTable);
     JOYNR_LOG_TRACE(logger, serializedRoutingTable);
 
-    routingTable.deserializeFromJson(serializedRoutingTable);
-    EXPECT_TRUE(boost::starts_with(routingTable.lookup("WebSocketAddress")->toString(), "WebSocketAddress"));
-    EXPECT_TRUE(boost::starts_with(routingTable.lookup("ChannelAddress")->toString(), "ChannelAddress"));
-    EXPECT_TRUE(boost::starts_with(routingTable.lookup("MqttAddress")->toString(), "MqttAddress"));
-    EXPECT_TRUE(boost::starts_with(routingTable.lookup("BrowserAddress")->toString(), "BrowserAddress"));
-    EXPECT_TRUE(boost::starts_with(routingTable.lookup("CommonApiDbusAddress")->toString(), "CommonApiDbusAddress"));
-    EXPECT_TRUE(boost::starts_with(routingTable.lookup("WebSocketClientAddress")->toString(), "WebSocketClientAddress"));
+    RoutingTable deserializedRoutingTable("deserializedRoutingTable");
+    joynr::serializer::deserializeFromJson(deserializedRoutingTable, serializedRoutingTable);
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketAddress")->toString(), "WebSocketAddress"));
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("ChannelAddress")->toString(), "ChannelAddress"));
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("MqttAddress")->toString(), "MqttAddress"));
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("BrowserAddress")->toString(), "BrowserAddress"));
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("CommonApiDbusAddress")->toString(), "CommonApiDbusAddress"));
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketClientAddress")->toString(), "WebSocketClientAddress"));
 }

@@ -26,6 +26,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
+#include "joynr/Directory.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/JoynrMessage.h"
@@ -33,7 +34,6 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingAbstractProvider.h"
-#include "joynr/RoutingTable.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Timer.h"
@@ -155,6 +155,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
+    using RoutingTable = Directory<std::string, const joynr::system::RoutingTypes::Address>;
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     ThreadPoolDelayedScheduler messageScheduler;
