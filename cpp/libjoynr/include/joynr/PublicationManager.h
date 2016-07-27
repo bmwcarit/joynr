@@ -231,8 +231,8 @@ private:
     // Helper functions
     bool publicationExists(const std::string& subscriptionId) const;
     void createPublishRunnable(const std::string& subscriptionId);
-    void saveAttributeSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
-    void saveBroadcastSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
+    void saveAttributeSubscriptionRequestsMap();
+    void saveBroadcastSubscriptionRequestsMap();
 
     void reschedulePublication(const std::string& subscriptionId, std::int64_t nextPublication);
 
@@ -250,8 +250,8 @@ private:
     std::int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
                                              const std::shared_ptr<SubscriptionQos> qos);
 
-    void saveSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList,
-                                     const std::string& storageFilename);
+    template <typename Map>
+    void saveSubscriptionRequestsMap(const Map& map, const std::string& storageFilename);
 
     template <class RequestInformationType>
     void loadSavedSubscriptionRequestsMap(
@@ -259,10 +259,6 @@ private:
             std::mutex& mutex,
             std::multimap<std::string, std::shared_ptr<RequestInformationType>>&
                     queuedSubscriptions);
-
-    template <class RequestInformationType>
-    std::vector<Variant> subscriptionMapToVectorCopy(
-            const ThreadSafeMap<std::string, std::shared_ptr<RequestInformationType>>& map);
 
     bool isShuttingDown();
     std::int64_t getPublicationTtlMs(

@@ -27,7 +27,6 @@
 #include "joynr/PublicationManager.h"
 #include "joynr/RequestCaller.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/DelayedScheduler.h"
@@ -44,6 +43,7 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionQos.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -91,10 +91,8 @@ PublicationManager::~PublicationManager()
 {
     JOYNR_LOG_DEBUG(logger, "Destructor, saving subscriptionsMap...");
 
-    saveAttributeSubscriptionRequestsMap(
-            subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
-    saveBroadcastSubscriptionRequestsMap(
-            subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
+    saveAttributeSubscriptionRequestsMap();
+    saveBroadcastSubscriptionRequestsMap();
 
     // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true, so we
     // call it first then set shuttingDown to true
@@ -199,8 +197,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
     // Make note of the publication
     publications.insert(subscriptionId, publication);
 
-    std::vector<Variant> subscriptionVector(
-            subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
+    saveAttributeSubscriptionRequestsMap();
 
     JOYNR_LOG_DEBUG(logger, "added subscription: {}", requestInfo->toString());
 
@@ -234,7 +231,6 @@ void PublicationManager::handleAttributeSubscriptionRequest(
             JOYNR_LOG_WARN(logger, "publication end is in the past");
         }
     }
-    saveAttributeSubscriptionRequestsMap(subscriptionVector);
 }
 
 void PublicationManager::addOnChangePublication(
@@ -296,10 +292,7 @@ void PublicationManager::add(const std::string& proxyParticipantId,
     }
 
     subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
-    std::vector<Variant> subscriptionList(
-            subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
-
-    saveAttributeSubscriptionRequestsMap(subscriptionList);
+    saveAttributeSubscriptionRequestsMap();
 }
 
 void PublicationManager::add(const std::string& proxyParticipantId,
@@ -338,8 +331,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
     publications.insert(subscriptionId, publication);
     JOYNR_LOG_DEBUG(logger, "added subscription: {}", requestInfo->toString());
 
-    std::vector<Variant> subscriptionList(
-            subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
+    saveBroadcastSubscriptionRequestsMap();
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -364,7 +356,6 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
             JOYNR_LOG_WARN(logger, "publication end is in the past");
         }
     }
-    saveBroadcastSubscriptionRequestsMap(subscriptionList);
 }
 
 void PublicationManager::add(const std::string& proxyParticipantId,
@@ -384,10 +375,7 @@ void PublicationManager::add(const std::string& proxyParticipantId,
 
     subscriptionId2BroadcastSubscriptionRequest.insert(
             requestInfo->getSubscriptionId(), requestInfo);
-    std::vector<Variant> subscriptionList(
-            subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
-
-    saveBroadcastSubscriptionRequestsMap(subscriptionList);
+    saveBroadcastSubscriptionRequestsMap();
 }
 
 void PublicationManager::removeAllSubscriptions(const std::string& providerId)
@@ -529,45 +517,24 @@ void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap(const std::st
 }
 
 // This function assumes that subscriptionList is a copy that is exclusively used by this function
-void PublicationManager::saveBroadcastSubscriptionRequestsMap(
-        const std::vector<Variant>& subscriptionVector)
+void PublicationManager::saveBroadcastSubscriptionRequestsMap()
 {
     JOYNR_LOG_DEBUG(logger, "Saving active broadcastSubscriptionRequests to file.");
 
-    saveSubscriptionRequestsMap(subscriptionVector, broadcastSubscriptionRequestStorageFileName);
+    saveSubscriptionRequestsMap(subscriptionId2BroadcastSubscriptionRequest,
+                                broadcastSubscriptionRequestStorageFileName);
 }
 
-// This function assumes that subscriptionList is a copy that is exclusively used by this function
-void PublicationManager::saveAttributeSubscriptionRequestsMap(
-        const std::vector<Variant>& subscriptionVector)
+void PublicationManager::saveAttributeSubscriptionRequestsMap()
 {
     JOYNR_LOG_DEBUG(logger, "Saving active attribute subscriptionRequests to file.");
 
-    saveSubscriptionRequestsMap(subscriptionVector, subscriptionRequestStorageFileName);
+    saveSubscriptionRequestsMap(
+            subscriptionId2SubscriptionRequest, subscriptionRequestStorageFileName);
 }
 
-template <class RequestInformationType>
-std::vector<Variant> PublicationManager::subscriptionMapToVectorCopy(
-        const ThreadSafeMap<std::string, std::shared_ptr<RequestInformationType>>& map)
-{
-    std::vector<Variant> subscriptionVector;
-    {
-        for (typename ThreadSafeMap<std::string,
-                                    std::shared_ptr<RequestInformationType>>::MapIterator iterator =
-                     map.begin();
-             iterator != map.end();
-             ++iterator) {
-            if (!isSubscriptionExpired((iterator->second)->getQos())) {
-                subscriptionVector.push_back(
-                        Variant::make<RequestInformationType>(*iterator->second.get()));
-            }
-        }
-    }
-    return subscriptionVector;
-}
-
-// This function assumes that subscriptionVector is a copy that is exclusively used by this function
-void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>& subscriptionVector,
+template <typename Map>
+void PublicationManager::saveSubscriptionRequestsMap(const Map& map,
                                                      const std::string& storageFilename)
 {
     if (isShuttingDown()) {
@@ -576,8 +543,7 @@ void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>&
     }
 
     try {
-        joynr::util::saveStringToFile(
-                storageFilename, JsonSerializer::serializeVector(subscriptionVector));
+        joynr::util::saveStringToFile(storageFilename, joynr::serializer::serializeToJson(map));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }
@@ -605,25 +571,26 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
         return;
     }
 
-    // Deserialize the JSON into a list of subscription requests
-    std::vector<RequestInformationType*> subscriptionVector =
-            JsonSerializer::deserializeVector<RequestInformationType>(jsonString);
-
-    // Loop through the saved subscriptions
     std::lock_guard<std::mutex> queueLocker(queueMutex);
 
-    while (!subscriptionVector.empty()) {
-        std::shared_ptr<RequestInformationType> requestInfo(*(subscriptionVector.begin()));
-        subscriptionVector.erase(subscriptionVector.begin());
+    // Deserialize the JSON into the multimap of subscription requests
+    joynr::serializer::deserializeFromJson(queuedSubscriptions, jsonString);
 
-        // Add the subscription if it is still valid
-        if (!isSubscriptionExpired(requestInfo->getQos())) {
-            std::string providerId = requestInfo->getProviderId();
-            queuedSubscriptions.insert(std::make_pair(providerId, requestInfo));
+    // Loop through the saved subscriptions
+
+    auto it = queuedSubscriptions.begin();
+    const auto end = queuedSubscriptions.end();
+
+    while (it != end) {
+        std::shared_ptr<RequestInformationType> requestInfo = it->second;
+        if (isSubscriptionExpired(requestInfo->getQos())) {
             JOYNR_LOG_DEBUG(logger,
-                            "Queuing subscription Request: {}  : {}",
-                            providerId,
+                            "Removing subscription Request: {}  : {}",
+                            it->first,
                             requestInfo->toString());
+            it = queuedSubscriptions.erase(it);
+        } else {
+            ++it;
         }
     }
 }
@@ -644,8 +611,7 @@ void PublicationManager::removeAttributePublication(const std::string& subscript
     }
 
     if (updatePersistenceFile) {
-        saveAttributeSubscriptionRequestsMap(
-                subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
+        saveAttributeSubscriptionRequestsMap();
     }
 }
 
@@ -671,8 +637,7 @@ void PublicationManager::removeBroadcastPublication(const std::string& subscript
     }
 
     if (updatePersistenceFile) {
-        saveBroadcastSubscriptionRequestsMap(
-                subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
+        saveBroadcastSubscriptionRequestsMap();
     }
 }
 

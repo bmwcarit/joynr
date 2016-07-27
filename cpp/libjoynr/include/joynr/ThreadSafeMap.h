@@ -24,6 +24,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ReadWriteLock.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -163,6 +164,20 @@ public:
     MapIterator end() const
     {
         return map.end();
+    }
+
+    template <typename Archive>
+    void load(Archive& archive)
+    {
+        WriteLocker locker(lock);
+        archive(MUESLI_NVP(map));
+    }
+
+    template <typename Archive>
+    void save(Archive& archive)
+    {
+        ReadLocker locker(lock);
+        archive(MUESLI_NVP(map));
     }
 
 private:
