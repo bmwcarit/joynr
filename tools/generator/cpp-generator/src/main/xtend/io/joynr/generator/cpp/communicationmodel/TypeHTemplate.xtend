@@ -78,7 +78,7 @@ class TypeHTemplate extends CompoundTypeTemplate {
 «appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «typeName» «IF hasExtendsDeclaration(type)»: public «getExtendedType(type).joynrName»«ENDIF»{
+class «getDllExportMacro()» «typeName» «IF hasExtendsDeclaration(type)»: public «getExtendedType(type).typeName»«ENDIF»{
 
 public:
 	/**
