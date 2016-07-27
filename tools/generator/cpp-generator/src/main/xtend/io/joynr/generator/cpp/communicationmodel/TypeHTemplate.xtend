@@ -317,7 +317,12 @@ struct hash<«type.typeName»> {
 };
 } // namespace std
 
-MUESLI_REGISTER_TYPE(«type.typeName», "«type.typeName.replace("::", ".")»")
+«val typeNameString = type.typeName.replace("::", ".")»
+«IF type.hasExtendsDeclaration»
+MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.typeName», «getExtendedType(type).typeName», "«typeNameString»")
+«ELSE»
+MUESLI_REGISTER_TYPE(«type.typeName», "«typeNameString»")
+«ENDIF»
 
 #endif // «headerGuard»
 '''
