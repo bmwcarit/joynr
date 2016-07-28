@@ -17,6 +17,8 @@
  * #L%
  */
 
+#include <cassert>
+#include <limits>
 #include <string>
 #include <stdint.h>
 #include <memory>
@@ -28,10 +30,9 @@
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include <cassert>
-#include <limits>
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
+#include "joynr/Future.h"
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
@@ -45,6 +46,14 @@ public:
     RadioStationListener() = default;
 
     ~RadioStationListener() = default;
+
+    void onSubscribed(const std::string& subscriptionId)
+    {
+        MyRadioHelper::prettyLog(
+                logger,
+                "ATTRIBUTE SUBSCRIPTION current station successful, subscriptionId: " +
+                        subscriptionId);
+    }
 
     void onReceive(const vehicle::RadioStation& value)
     {
@@ -77,6 +86,13 @@ public:
 
     ~WeakSignalBroadcastListener() = default;
 
+    void onSubscribed(const std::string& subscriptionId)
+    {
+        MyRadioHelper::prettyLog(
+                logger,
+                "BROADCAST SUBSCRIPTION weak signal successful, subscriptionId: " + subscriptionId);
+    }
+
     void onReceive(const vehicle::RadioStation& value)
     {
         MyRadioHelper::prettyLog(logger, "BROADCAST SUBSCRIPTION weak signal: " + value.toString());
@@ -96,6 +112,14 @@ public:
     NewStationDiscoveredBroadcastListener() = default;
 
     ~NewStationDiscoveredBroadcastListener() = default;
+
+    void onSubscribed(const std::string& subscriptionId)
+    {
+        MyRadioHelper::prettyLog(
+                logger,
+                "BROADCAST SUBSCRIPTION new station discovered successful, subscriptionId: " +
+                        subscriptionId);
+    }
 
     void onReceive(const vehicle::RadioStation& discoveredStation,
                    const vehicle::GeoPosition& geoPosition)
@@ -220,7 +244,7 @@ int main(int argc, char* argv[])
             new RadioStationListener());
 
     // Subscribe to the radio station.
-    std::string currentStationSubscriptionId =
+    std::shared_ptr<Future<std::string>> currentStationSubscriptionIdFuture =
             proxy->subscribeToCurrentStation(listener, subscriptionQos);
 
     // broadcast subscription
@@ -243,8 +267,9 @@ int main(int argc, char* argv[])
     weakSignalBroadcastSubscriptionQos->setValidityMs(60 * 1000);
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
             new WeakSignalBroadcastListener());
-    std::string weakSignalBroadcastSubscriptionId = proxy->subscribeToWeakSignalBroadcast(
-            weakSignalBroadcastListener, weakSignalBroadcastSubscriptionQos);
+    std::shared_ptr<Future<std::string>> weakSignalBroadcastSubscriptionIdFuture =
+            proxy->subscribeToWeakSignalBroadcast(
+                    weakSignalBroadcastListener, weakSignalBroadcastSubscriptionQos);
 
     // selective broadcast subscription
 
@@ -260,7 +285,7 @@ int main(int argc, char* argv[])
     std::string positionOfInterestJson(joynr::serializer::serializeToJson(positionOfInterest));
     newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
     newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
-    std::string newStationDiscoveredBroadcastSubscriptionId =
+    std::shared_ptr<Future<std::string>> newStationDiscoveredBroadcastSubscriptionIdFuture =
             proxy->subscribeToNewStationDiscoveredBroadcast(
                     newStationDiscoveredBroadcastFilterParams,
                     newStationDiscoveredBroadcastListener,
@@ -339,10 +364,33 @@ int main(int argc, char* argv[])
     }
 
     // unsubscribe
-    proxy->unsubscribeFromCurrentStation(currentStationSubscriptionId);
-    proxy->unsubscribeFromWeakSignalBroadcast(weakSignalBroadcastSubscriptionId);
-    proxy->unsubscribeFromNewStationDiscoveredBroadcast(
-            newStationDiscoveredBroadcastSubscriptionId);
+    std::string currentStationSubscriptionId;
+    try {
+        currentStationSubscriptionIdFuture->get(2000, currentStationSubscriptionId);
+        proxy->unsubscribeFromCurrentStation(currentStationSubscriptionId);
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(
+                logger, "UNSUBSCRIBE from ATTRIBUTE current station FAILED: {}", e.getMessage());
+    }
+    std::string weakSignalBroadcastSubscriptionId;
+    try {
+        weakSignalBroadcastSubscriptionIdFuture->get(2000, weakSignalBroadcastSubscriptionId);
+        proxy->unsubscribeFromWeakSignalBroadcast(weakSignalBroadcastSubscriptionId);
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(
+                logger, "UNSUBSCRIBE from BROADCAST weak signal FAILED: {}", e.getMessage());
+    }
+    std::string newStationDiscoveredBroadcastSubscriptionId;
+    try {
+        newStationDiscoveredBroadcastSubscriptionIdFuture->get(
+                2000, newStationDiscoveredBroadcastSubscriptionId);
+        proxy->unsubscribeFromNewStationDiscoveredBroadcast(
+                newStationDiscoveredBroadcastSubscriptionId);
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "UNSUBSCRIBE from BROADCAST new station discovered FAILED: {}",
+                        e.getMessage());
+    }
 
     delete proxy;
     delete proxyBuilder;

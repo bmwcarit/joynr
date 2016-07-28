@@ -468,6 +468,7 @@ public:
 class MockGpsFloatSubscriptionListener
         : public joynr::ISubscriptionListener<joynr::types::Localisation::GpsLocation, float> {
 public:
+    MOCK_METHOD1(onSubscribed, void(const std::string& subscriptionId));
     MOCK_METHOD2(onReceive, void(const joynr::types::Localisation::GpsLocation& value, const float&));
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };

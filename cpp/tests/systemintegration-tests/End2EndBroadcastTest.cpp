@@ -23,6 +23,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "JoynrTest.h"
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
@@ -35,6 +36,7 @@
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Future.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -500,11 +502,10 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
-    std::string subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
+    auto future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
-    // This wait is necessary, because subcriptions are async, and a broadcast could occur
-    // before the subscription has started.
-    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
+    std::string subscriptionId;
+    future->get(subscriptionId);
 
     testProvider->fireLocationUpdate(
                 gpsLocation2);
@@ -523,9 +524,9 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     // update subscription, much longer minInterval_ms
     subscriptionQos->setMinIntervalMs(5000);
-    testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
+    future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
+    future->get(subscriptionId);
     testProvider->fireLocationUpdate(gpsLocation2);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
@@ -566,11 +567,10 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
-    std::string subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
+    auto future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
-    // This wait is necessary, because subcriptions are async, and a broadcast could occur
-    // before the subscription has started.
-    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
+    std::string subscriptionId;
+    future->get(subscriptionId);
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
@@ -639,7 +639,90 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation4);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+}
 
+TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
+
+    MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    std::string subscriptionIdFromListener;
+    std::string subscriptionIdFromFuture;
+    EXPECT_CALL(*mockListener, onSubscribed(_))
+            .WillRepeatedly(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
+                    mockListener);
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
+
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdate");
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+}
+
+TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
+
+    MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    std::string subscriptionIdFromListener;
+    std::string subscriptionIdFromFuture;
+    EXPECT_CALL(*mockListener, onSubscribed(_))
+            .WillRepeatedly(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
+                    mockListener);
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
+
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdate");
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+
+    // update subscription
+    subscriptionIdFuture = nullptr;
+    std::string subscriptionId = subscriptionIdFromFuture;
+    subscriptionIdFromFuture.clear();
+    subscriptionIdFromListener.clear();
+    subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos, subscriptionId);
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+    // subscription id from update is the same as the original subscription id
+    EXPECT_EQ(subscriptionId, subscriptionIdFromFuture);
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {

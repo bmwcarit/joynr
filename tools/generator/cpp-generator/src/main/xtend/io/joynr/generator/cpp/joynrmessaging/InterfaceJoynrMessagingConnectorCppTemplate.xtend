@@ -245,7 +245,7 @@ bool «className»::usesClusterController() const{
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
-		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
+		std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
@@ -255,7 +255,9 @@ bool «className»::usesClusterController() const{
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
 			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
 
-			auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnType»>>(subscriptionListener);
+			auto future = std::make_shared<Future<std::string>>();
+			auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnType»>
+			>(subscriptionListener, future, subscriptionManager);
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -268,7 +270,7 @@ bool «className»::usesClusterController() const{
 						clonedMessagingQos,
 						subscriptionRequest
 			);
-			return subscriptionRequest.getSubscriptionId();
+			return future;
 		}
 
 		«produceUnsubscribeFromAttributeSignature(attribute, className)» {
@@ -367,7 +369,7 @@ bool «className»::usesClusterController() const{
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
 
-	std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+	std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest
@@ -377,7 +379,9 @@ bool «className»::usesClusterController() const{
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
 
-		auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnTypes»>>(subscriptionListener);
+		auto future = std::make_shared<Future<std::string>>();
+		auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnTypes»>
+		>(subscriptionListener, future, subscriptionManager);
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
@@ -390,7 +394,7 @@ bool «className»::usesClusterController() const{
 					clonedMessagingQos,
 					subscriptionRequest
 		);
-		return subscriptionRequest.getSubscriptionId();
+		return future;
 	}
 
 	«produceUnsubscribeFromBroadcastSignature(broadcast, className)» {

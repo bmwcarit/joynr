@@ -234,7 +234,7 @@ bool «className»::usesClusterController() const{
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
-		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
+		std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 				joynr::SubscriptionRequest& subscriptionRequest)
@@ -247,14 +247,15 @@ bool «className»::usesClusterController() const{
 				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 				// Visual C++ requires a return value
-				return std::string();
+				return std::make_shared<Future<std::string>>();
 			«ELSE»
 				JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
 				assert(subscriptionManager != nullptr);
 				std::string attributeName("«attributeName»");
+				auto future = std::make_shared<Future<std::string>>();
 				auto subscriptionCallback = std::make_shared<
 						joynr::SubscriptionCallback<«returnType»>
-				>(subscriptionListener);
+				>(subscriptionListener, future, subscriptionManager);
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -265,9 +266,8 @@ bool «className»::usesClusterController() const{
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
 				std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-				std::string subscriptionId(subscriptionRequest.getSubscriptionId());
 
-				if(!caller) {
+				if(!requestCaller) {
 					assert(publicationManager != nullptr);
 					/**
 					* Provider not registered yet
@@ -278,7 +278,7 @@ bool «className»::usesClusterController() const{
 				} else {
 					publicationManager->add(proxyParticipantId, providerParticipantId, caller, subscriptionRequest, inProcessPublicationSender);
 				}
-				return subscriptionId;
+				return future;
 			«ENDIF»
 		}
 
@@ -375,7 +375,6 @@ bool «className»::usesClusterController() const{
 	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
 		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != nullptr);
-		std::string broadcastName("«broadcastName»");
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
 			subscriptionRequest.setFilterParameters(filterParameters);
@@ -398,7 +397,7 @@ bool «className»::usesClusterController() const{
 					subscriptionRequest);
 	}
 
-	std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+	std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			joynr::BroadcastSubscriptionRequest& subscriptionRequest
@@ -407,9 +406,10 @@ bool «className»::usesClusterController() const{
 		assert(subscriptionManager != nullptr);
 		std::string broadcastName("«broadcastName»");
 
+		auto future = std::make_shared<Future<std::string>>();
 		auto subscriptionCallback = std::make_shared<
 				joynr::SubscriptionCallback<«returnTypes»>
-		>(subscriptionListener);
+		>(subscriptionListener, future, subscriptionManager);
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
@@ -420,9 +420,8 @@ bool «className»::usesClusterController() const{
 		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 		assert(caller);
 		std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-		std::string subscriptionId(subscriptionRequest.getSubscriptionId());
 
-		if(!caller) {
+		if(!requestCaller) {
 			assert(publicationManager != nullptr);
 			/**
 			* Provider not registered yet
@@ -438,7 +437,7 @@ bool «className»::usesClusterController() const{
 						subscriptionRequest,
 						inProcessPublicationSender);
 		}
-		return subscriptionId;
+		return future;
 	}
 
 	«produceUnsubscribeFromBroadcastSignature(broadcast, className)» {

@@ -88,7 +88,7 @@ class «interfaceName»InProcessConnector : public I«interfaceName»Connector {
 private:
 «FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 	«val returnType = attribute.typeName»
-	std::string subscribeTo«attribute.joynrName.toFirstUpper»(
+	std::shared_ptr<joynr::Future<std::string>> subscribeTo«attribute.joynrName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 				SubscriptionRequest& subscriptionRequest);
@@ -96,7 +96,7 @@ private:
 «FOR broadcast: francaIntf.broadcasts»
 «val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 «val broadcastName = broadcast.joynrName»
-	std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+	std::shared_ptr<joynr::Future<std::string>> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			BroadcastSubscriptionRequest& subscriptionRequest);

@@ -21,6 +21,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include "JoynrTest.h"
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
@@ -199,6 +200,93 @@ protected:
 
 } // namespace joynr
 
+TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration) {
+    auto mockListener = new MockSubscriptionListenerOneType<int32_t>();
+
+    // Use a semaphore to wait for calls to the mock listener
+    std::string subscriptionIdFromListener;
+    std::string subscriptionIdFromFuture;
+    ON_CALL(*mockListener, onSubscribed(_))
+            .WillByDefault(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+
+    std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
+
+    std::shared_ptr<tests::DefaulttestProvider> testProvider = registerProvider();
+
+    testProvider->setTestAttribute(42, [](){}, [](const joynr::exceptions::ProviderRuntimeException& error) {
+        ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage(); });
+
+    tests::testProxy* testProxy = buildProxy();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
+
+    waitForAttributeSubscriptionArrivedAtProvider(testProvider, "testAttribute");
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+
+    delete testProxy;
+}
+
+TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
+    auto mockListener = new MockSubscriptionListenerOneType<int32_t>();
+
+    // Use a semaphore to wait for calls to the mock listener
+    std::string subscriptionIdFromListener;
+    std::string subscriptionIdFromFuture;
+    ON_CALL(*mockListener, onSubscribed(_))
+            .WillByDefault(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+
+    std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
+
+    std::shared_ptr<tests::DefaulttestProvider> testProvider = registerProvider();
+
+    testProvider->setTestAttribute(42, [](){}, [](const joynr::exceptions::ProviderRuntimeException& error) {
+        ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage(); });
+
+    tests::testProxy* testProxy = buildProxy();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
+
+    waitForAttributeSubscriptionArrivedAtProvider(testProvider, "testAttribute");
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+
+    // update subscription
+    subscriptionIdFuture = nullptr;
+    std::string subscriptionId = subscriptionIdFromFuture;
+    subscriptionIdFromFuture.clear();
+    subscriptionIdFromListener.clear();
+    subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos, subscriptionId);
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+    // subscription id from update is the same as the original subscription id
+    EXPECT_EQ(subscriptionId, subscriptionIdFromFuture);
+
+    delete testProxy;
+}
 
 TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute) {
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;

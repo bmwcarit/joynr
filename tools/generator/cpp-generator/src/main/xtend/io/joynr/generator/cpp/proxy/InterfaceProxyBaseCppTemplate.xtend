@@ -88,37 +88,42 @@ void «className»::handleArbitrationFinished(
 		if (!connector){
 			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
 					 because the communication end partner is not (yet) known");
+			return;
 		}
-		else{
-			connector->unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
-		}
+		connector->unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 	}
 
 	«produceUpdateAttributeSubscriptionSignature(attribute, className)» {
 		if (!connector){
-			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
-					 because the communication end partner is not (yet) known");
-			return "";
+			std::string errorMsg = "proxy cannot subscribe to «className».«attributeName», \
+					 because the communication end partner is not (yet) known";
+			JOYNR_LOG_WARN(logger, errorMsg);
+			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
+			auto future = std::make_shared<Future<std::string>>();
+			future->onError(error);
+			subscriptionListener->onError(*error);
+			return future;
 		}
-		else{
-			return connector->subscribeTo«attributeName.toFirstUpper»(
-						subscriptionListener,
-						subscriptionQos,
-						subscriptionId);
-		}
+		return connector->subscribeTo«attributeName.toFirstUpper»(
+					subscriptionListener,
+					subscriptionQos,
+					subscriptionId);
 	}
 
 	«produceSubscribeToAttributeSignature(attribute, className)» {
 		if (!connector){
-			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
-					 because the communication end partner is not (yet) known");
-			return "";
+			std::string errorMsg = "proxy cannot subscribe to «className».«attributeName», \
+					 because the communication end partner is not (yet) known";
+			JOYNR_LOG_WARN(logger, errorMsg);
+			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
+			auto future = std::make_shared<Future<std::string>>();
+			future->onError(error);
+			subscriptionListener->onError(*error);
+			return future;
 		}
-		else{
-			return connector->subscribeTo«attributeName.toFirstUpper»(
-						subscriptionListener,
-						subscriptionQos);
-		}
+		return connector->subscribeTo«attributeName.toFirstUpper»(
+					subscriptionListener,
+					subscriptionQos);
 	}
 
 «ENDFOR»
@@ -132,51 +137,55 @@ void «className»::handleArbitrationFinished(
 					 because the communication end partner is not (yet) known");
 			return;
 		}
-		else{
-			connector->unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
-		}
+		connector->unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
 	}
 
 	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
 		if (!connector){
-			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-					 because the communication end partner is not (yet) known");
-			return "";
+			std::string errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
+					 because the communication end partner is not (yet) known";
+			JOYNR_LOG_WARN(logger, errorMsg);
+			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
+			auto future = std::make_shared<Future<std::string>>();
+			future->onError(error);
+			subscriptionListener->onError(*error);
+			return future;
 		}
-		else{
-			«IF isSelective(broadcast)»
-				return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						filterParameters,
-						subscriptionListener,
-						subscriptionQos);
-			«ELSE»
-				return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						subscriptionListener,
-						subscriptionQos);
-			«ENDIF»
-		}
+		«IF isSelective(broadcast)»
+			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+					filterParameters,
+					subscriptionListener,
+					subscriptionQos);
+		«ELSE»
+			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+					subscriptionListener,
+					subscriptionQos);
+		«ENDIF»
 	}
 
 	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className)» {
 		if (!connector){
-			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-					 because the communication end partner is not (yet) known");
-			return "";
+			std::string errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
+					 because the communication end partner is not (yet) known";
+			JOYNR_LOG_WARN(logger, errorMsg);
+			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
+			auto future = std::make_shared<Future<std::string>>();
+			future->onError(error);
+			subscriptionListener->onError(*error);
+			return future;
 		}
-		else{
-			«IF isSelective(broadcast)»
-				return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
-							filterParameters,
-							subscriptionListener,
-							subscriptionQos,
-							subscriptionId);
-			«ELSE»
-				return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
-							subscriptionListener,
-							subscriptionQos,
-							subscriptionId);
-			«ENDIF»
-		}
+		«IF isSelective(broadcast)»
+			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						filterParameters,
+						subscriptionListener,
+						subscriptionQos,
+						subscriptionId);
+		«ELSE»
+			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						subscriptionListener,
+						subscriptionQos,
+						subscriptionId);
+		«ENDIF»
 	}
 «ENDFOR»
 

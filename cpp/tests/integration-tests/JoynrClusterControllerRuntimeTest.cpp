@@ -349,7 +349,9 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                     200, // max interval
                     200  // alert after interval
                 );
-    std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
+    auto future = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
+    std::string subscriptionId;
+    future->get(subscriptionId);
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     testProxy->unsubscribeFromLocation(subscriptionId);
     delete testProxy;
@@ -404,8 +406,10 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     ON_CALL(*mockSubscriptionListener, onReceive(Eq(gpsLocation)))
             .WillByDefault(ReleaseSemaphore(&semaphore));
 
-    std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
+    auto future = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
 
+    std::string subscriptionId;
+    future->get(subscriptionId);
     ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
 
     testProxy->unsubscribeFromLocation(subscriptionId);

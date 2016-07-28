@@ -39,7 +39,9 @@ class InterfaceSubscriptionUtil {
  * @brief creates a new subscription to attribute «attribute.joynrName.toFirstUpper»
  * @param subscriptionListener The listener callback providing methods to call on publication and failure
  * @param subscriptionQos The subscription quality of service settings
- * @return the subscription id as string
+ * @return a future representing the result (subscription id) as string. It provides methods to wait for
+ * completion, to get the subscription id or the request status object. The subscription id will be available
+ * when the subscription is successfully registered at the provider.
  */
 '''
 
@@ -50,7 +52,9 @@ class InterfaceSubscriptionUtil {
  * @param subscriptionListener The listener callback providing methods to call on publication and failure
  * @param subscriptionQos The subscription quality of service settings
  * @param subscriptionId The subscription id returned earlier on creation of the subscription
- * @return the subscription id as string
+ * @return a future representing the result (subscription id) as string. It provides methods to wait for
+ * completion, to get the subscription id or the request status object. The subscription id will be available
+ * when the subscription is successfully registered at the provider.
  */
 '''
 
@@ -69,7 +73,9 @@ class InterfaceSubscriptionUtil {
  * @param filterParameters The filter parameters for selection of suitable broadcasts«ENDIF»
  * @param subscriptionListener The listener callback providing methods to call on publication and failure
  * @param subscriptionQos The subscription quality of service settings
- * @return the subscription id as string
+ * @return a future representing the result (subscription id) as string. It provides methods to wait for
+ * completion, to get the subscription id or the request status object. The subscription id will be available
+ * when the subscription is successfully registered at the provider.
  */
 '''
 
@@ -81,7 +87,9 @@ class InterfaceSubscriptionUtil {
  * @param subscriptionListener The listener callback providing methods to call on publication and failure
  * @param subscriptionQos The subscription quality of service settings
  * @param subscriptionId The subscription id returned earlier on creation of the subscription
- * @return the subscription id as string
+ * @return a future representing the result (subscription id) as string. It provides methods to wait for
+ * completion, to get the subscription id or the request status object. The subscription id will be available
+ * when the subscription is successfully updated at the provider.
  */
 '''
 
@@ -96,7 +104,7 @@ class InterfaceSubscriptionUtil {
 	def produceSubscribeToAttributeSignature(FAttribute attribute, boolean updateSubscription, String className)
 '''
 «val returnType = attribute.typeName»
-std::string «IF className != null»«className»::«ENDIF»subscribeTo«attribute.joynrName.toFirstUpper»(
+std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className»::«ENDIF»subscribeTo«attribute.joynrName.toFirstUpper»(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 			std::shared_ptr<joynr::SubscriptionQos> subscriptionQos«IF updateSubscription»,
 			std::string& subscriptionId«ENDIF»)
@@ -130,7 +138,7 @@ void «IF className != null»«className»::«ENDIF»unsubscribeFrom«attribute.
 	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean updateSubscription, String className)
 '''
 «val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
-std::string «IF className != null»«className»::«ENDIF»subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(«IF isSelective(broadcast)»
+std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className»::«ENDIF»subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(«IF isSelective(broadcast)»
 			const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,«ENDIF»
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos«IF updateSubscription»,

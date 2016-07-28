@@ -568,8 +568,10 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
                                     minInterval_ms,
                                     maxInterval_ms,
                                     3000);  // alertInterval_ms
-    std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    std::shared_ptr<Future<std::string>> future = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
+    std::string subscriptionId;
+    future->get(subscriptionId);
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
@@ -667,11 +669,10 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange) {
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                                     500000,   // validity_ms
                                     minInterval_ms);  // minInterval_ms
-    std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    auto future = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
-    //This wait is necessary, because subcriptions are async, and an attribute could be changed before
-    // before the subscription has started.
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::string subscriptionId;
+    future->get(subscriptionId);
 
     // Change the location once
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
@@ -740,7 +741,10 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute) {
                                     1000,   // minInterval_ms
                                     2000,    // maxInterval_ms
                                     3000);   // alertInterval_ms
-    std::string subscriptionId = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
+    auto future = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
+
+    std::string subscriptionId;
+    future->get(subscriptionId);
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
@@ -789,7 +793,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
                                         2000,    //  maxInterval_ms
                                         3000);   // alertInterval_ms
 
-        std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+        testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
 	} catch (const exceptions::DiscoveryException& e) {
         haveDiscoveryException = true;
@@ -846,7 +850,10 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
                                     1000,    // minInterval_ms
                                     2000,   //  maxInterval_ms
                                     10000);  // alertInterval_ms
-    std::string subscriptionId = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    auto future = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+
+    std::string subscriptionId;
+    future->get(subscriptionId);
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
@@ -928,7 +935,8 @@ void subscribeToLocation(std::shared_ptr<ISubscriptionListener<types::Localisati
                                     1000,    // minInterval_ms
                                     2000,   //  maxInterval_ms
                                     3000);  // alertInterval_ms
-    testSuite->registeredSubscriptionId = testProxy->subscribeToLocation(listener, subscriptionQos);
+    auto future = testProxy->subscribeToLocation(listener, subscriptionQos);
+    future->get(testSuite->registeredSubscriptionId);
 }
 
 // A function that subscribes to a GpsPosition - to be run in a background thread

@@ -94,9 +94,11 @@ private:
 			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
 			 * @param subscriptionQos The subscription quality of service settings
 			 * @param subscriptionRequest The subscription request
-			 * @return the subscription id as string
+			 * @return a future representing the result (subscription id) as string. It provides methods to wait for
+			 			 * completion, to get the subscription id or the request status object. The subscription id will be available
+			 			 * when the subscription is successfully registered at the provider.
 			 */
-			std::string subscribeTo«attributeName.toFirstUpper»(
+			std::shared_ptr<joynr::Future<std::string>> subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest);
@@ -110,9 +112,11 @@ private:
 		 * @param subscriptionListener The listener callback providing methods to call on publication and failure
 		 * @param subscriptionQos The subscription quality of service settings
 		 * @param subscriptionRequest The subscription request
-		 * @return the subscription id as string
+		 * @return a future representing the result (subscription id) as string. It provides methods to wait for
+		 			 * completion, to get the subscription id or the request status object. The subscription id will be available
+		 			 * when the subscription is successfully registered at the provider.
 		 */
-		std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		std::shared_ptr<joynr::Future<std::string>> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest);

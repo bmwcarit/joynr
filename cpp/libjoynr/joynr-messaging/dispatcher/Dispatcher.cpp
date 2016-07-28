@@ -366,6 +366,36 @@ void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
     publicationManager->stopPublication(subscriptionId);
 }
 
+void Dispatcher::handleSubscriptionReplyReceived(const JoynrMessage& message)
+{
+    std::string jsonSubscriptionReply = message.getPayload();
+    try {
+        SubscriptionReply subscriptionReply;
+        joynr::serializer::deserializeFromJson(subscriptionReply, jsonSubscriptionReply);
+
+        const std::string subscriptionId = subscriptionReply.getSubscriptionId();
+
+        assert(subscriptionManager != nullptr);
+
+        std::shared_ptr<ISubscriptionCallback> callback =
+                subscriptionManager->getSubscriptionCallback(subscriptionId);
+        if (!callback) {
+            JOYNR_LOG_ERROR(logger,
+                            "Dropping subscription reply for non/no more existing subscription "
+                            "with id = {}",
+                            subscriptionId);
+            return;
+        }
+
+        callback->execute(std::move(subscriptionReply));
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to deserialize subscription reply object from: {} - error: {}",
+                        jsonSubscriptionReply,
+                        e.what());
+    }
+}
+
 void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
 {
     std::string jsonSubscriptionPublication = message.getPayload();
