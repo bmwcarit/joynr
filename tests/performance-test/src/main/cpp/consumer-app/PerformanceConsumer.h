@@ -26,6 +26,7 @@
 #include <limits>
 #include <numeric>
 #include <exception>
+#include <random>
 
 #include "joynr/JoynrRuntime.h"
 #include "joynr/DiscoveryQos.h"
@@ -125,7 +126,21 @@ protected:
 
     std::string getFilledString() const
     {
-        return std::string(stringLength, '#');
+        const char characters[] = "abcdefghijklmnopqrstuvwxyz"
+                                  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                  "0123456789"
+                                  "!\"$%&/()=?@,.-;:_";
+        //                          "°§€ÄÖÜäöüß";
+
+        std::random_device randomDevice;
+        std::default_random_engine rng(randomDevice());
+        std::uniform_int_distribution<std::default_random_engine::result_type> distribution(
+                0, sizeof(characters) - 2);
+        std::string s;
+        for (int i = 0; i < stringLength; i++) {
+            s += characters[distribution(rng)];
+        }
+        return s;
     }
 
     ByteArray getFilledByteArray() const
