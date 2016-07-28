@@ -1,3 +1,12 @@
+#joynr 0.20.0
+##API relevant changes
+* **[JS]** The SubscriptionListener is now able to get informed about succeeded
+  subscription requests. For this purpose, he can implement a callback having
+  the following signature: void onSubscribed(subscribeId) 
+
+##Other changes
+None.
+
 #joynr 0.19.0
 
 ##API relevant changes

@@ -184,7 +184,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     }
                     parameters.onReceive(response);
                 },
-                onError : parameters.onError
+                onError : parameters.onError,
+                onSubscribed : parameters.onSubscribed
             });
 
             var alertAfterIntervalMs = subscriptionRequest.qos.alertAfterIntervalMs;
@@ -235,6 +236,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param {SubscriptionManager~onError}
          *            settings.onError the callback for missing publication alerts or when an
          *            error occurs.
+         * @param {SubscriptionManager~onSubscribed}
+         *            settings.onSubscribed the callback to inform once the subscription request has
+         *            been delivered successfully
          * @returns an A promise object which provides the subscription token upon success and
          *          an error upon failure
          */
@@ -286,7 +290,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                             onReceive : function(response) {
                                             settings.onReceive(Typing.augmentTypes(response[0], typeRegistry, settings.attributeType));
                                         },
-                            onError : settings.onError
+                            onError : settings.onError,
+                            onSubscribed : settings.onSubscribed
                         });
                         var alertAfterIntervalMs = settings.qos.alertAfterIntervalMs;
                         if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
@@ -328,6 +333,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            parameters.onReceive is called when a broadcast is received.
          * @param {SubscriptionManager~onError}
          *            parameters.onError is called when an error occurs with the broadcast
+         * @param {SubscriptionManager~onSubscribed}
+         *            parameters.onSubscribed the callback to inform once the subscription request has
+         *            been delivered successfully
          * @returns a promise object which provides the subscription token upon success and an error
          *          upon failure
          */
