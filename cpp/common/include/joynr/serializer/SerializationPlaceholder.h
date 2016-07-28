@@ -94,7 +94,7 @@ public:
             }
         } else if (containsInboundData()) {
             boost::apply_visitor(
-                    [&args...](auto& x) { x.template get<std::tuple<Ts...>>(std::tie(args...)); },
+                    [&args...](auto& x) { x.template get<std::tuple<Ts&...>>(std::tie(args...)); },
                     *deserializable);
         }
     }
