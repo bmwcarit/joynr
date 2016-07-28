@@ -20,15 +20,15 @@ package io.joynr.accesscontrol.broadcastlistener;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastListener;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastAdapter;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LdacMasterAccessControlEntryChangedBroadcastListener implements
-        MasterAccessControlEntryChangedBroadcastListener {
+public class LdacMasterAccessControlEntryChangedBroadcastListener extends
+        MasterAccessControlEntryChangedBroadcastAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(LdacMasterAccessControlEntryChangedBroadcastListener.class);
 
     private DomainAccessControlStore localDomainAccessStore;

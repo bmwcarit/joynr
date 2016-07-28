@@ -29,17 +29,21 @@ import javax.annotation.CheckForNull;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import io.joynr.accesscontrol.broadcastlistener.LdacDomainRoleEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMasterAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.primarykey.UserDomainInterfaceOperationKey;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.OnChangeSubscriptionQos;
+import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
@@ -57,6 +61,7 @@ import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.Owner
 import joynr.system.Discovery;
 import joynr.system.Routing;
 import joynr.types.GlobalDiscoveryEntry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,26 +86,31 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
     // Class that holds subscription ids.
     static class AceSubscription {
-        private final String masterSubscriptionId;
-        private final String mediatorSubscriptionId;
-        private final String ownerSubscriptionId;
+        private final Future<String> masterSubscriptionFuture;
+        private final Future<String> mediatorSubscriptionFuture;
+        private final Future<String> ownerSubscriptionFuture;
 
-        public AceSubscription(String masterSubscriptionId, String mediatorSubscriptionId, String ownerSubscriptionId) {
-            this.masterSubscriptionId = masterSubscriptionId;
-            this.mediatorSubscriptionId = mediatorSubscriptionId;
-            this.ownerSubscriptionId = ownerSubscriptionId;
+        public AceSubscription(Future<String> masterSubscriptionFuture,
+                               Future<String> mediatorSubscriptionFuture,
+                               Future<String> ownerSubscriptionFuture) {
+            this.masterSubscriptionFuture = masterSubscriptionFuture;
+            this.mediatorSubscriptionFuture = mediatorSubscriptionFuture;
+            this.ownerSubscriptionFuture = ownerSubscriptionFuture;
         }
 
-        public String getMasterSubscriptionId() {
-            return masterSubscriptionId;
+        public String getMasterSubscriptionId() throws JoynrWaitExpiredException, JoynrRuntimeException,
+                                               InterruptedException, ApplicationException {
+            return masterSubscriptionFuture.get(1337);
         }
 
-        public String getMediatorSubscriptionId() {
-            return mediatorSubscriptionId;
+        public String getMediatorSubscriptionId() throws JoynrWaitExpiredException, JoynrRuntimeException,
+                                                 InterruptedException, ApplicationException {
+            return mediatorSubscriptionFuture.get(1337);
         }
 
-        public String getOwnerSubscriptionId() {
-            return ownerSubscriptionId;
+        public String getOwnerSubscriptionId() throws JoynrWaitExpiredException, JoynrRuntimeException,
+                                              InterruptedException, ApplicationException {
+            return ownerSubscriptionFuture.get(1337);
         }
     }
 
@@ -476,14 +486,19 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                                                                               null);
         AceSubscription subscriptions = subscriptionsMap.get(subscriptionKey);
         if (subscriptions != null) {
-            globalDomainAccessControllerClient.unsubscribeFromMasterAccessControlEntryChangedBroadcast(subscriptions.getMasterSubscriptionId());
-            globalDomainAccessControllerClient.unsubscribeFromMediatorAccessControlEntryChangedBroadcast(subscriptions.getMediatorSubscriptionId());
-            globalDomainAccessControllerClient.unsubscribeFromOwnerAccessControlEntryChangedBroadcast(subscriptions.getOwnerSubscriptionId());
+            try {
+                globalDomainAccessControllerClient.unsubscribeFromMasterAccessControlEntryChangedBroadcast(subscriptions.getMasterSubscriptionId());
+                globalDomainAccessControllerClient.unsubscribeFromMediatorAccessControlEntryChangedBroadcast(subscriptions.getMediatorSubscriptionId());
+                globalDomainAccessControllerClient.unsubscribeFromOwnerAccessControlEntryChangedBroadcast(subscriptions.getOwnerSubscriptionId());
+            } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
+                LOG.warn("unsubscribe from AceChanges failed due to the following error: {}", e.getMessage());
+                return;
+            }
         } else {
             /*
              * This can be the case, when no consumer request has been performed during the lifetime of the provider
              */
-            LOG.debug("Subscription for ace subscription for interface '{}' domain '{}'", interfaceName, domain);
+            LOG.debug("Subscription for ace subscription for interface '{}' domain '{}' not found", interfaceName, domain);
         }
     }
 
@@ -509,25 +524,25 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         MasterAccessControlEntryChangedBroadcastFilterParameters masterAcefilterParameters = new MasterAccessControlEntryChangedBroadcastFilterParameters();
         masterAcefilterParameters.setDomainOfInterest(domain);
         masterAcefilterParameters.setInterfaceOfInterest(interfaceName);
-        String masterSubscriptionId = globalDomainAccessControllerClient.subscribeToMasterAccessControlEntryChangedBroadcast(new LdacMasterAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
-                                                                                                                             broadcastSubscriptionQos,
-                                                                                                                             masterAcefilterParameters);
+        Future<String> mastersubscriptionId = globalDomainAccessControllerClient.subscribeToMasterAccessControlEntryChangedBroadcast(new LdacMasterAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
+                                                                                                                                     broadcastSubscriptionQos,
+                                                                                                                                     masterAcefilterParameters);
 
         MediatorAccessControlEntryChangedBroadcastFilterParameters mediatorAceFilterParameters = new MediatorAccessControlEntryChangedBroadcastFilterParameters();
         mediatorAceFilterParameters.setDomainOfInterest(domain);
         mediatorAceFilterParameters.setInterfaceOfInterest(interfaceName);
-        String mediatorSubscriptionId = globalDomainAccessControllerClient.subscribeToMediatorAccessControlEntryChangedBroadcast(new LdacMediatorAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
-                                                                                                                                 broadcastSubscriptionQos,
-                                                                                                                                 mediatorAceFilterParameters);
+        Future<String> mediatorsubscriptionId = globalDomainAccessControllerClient.subscribeToMediatorAccessControlEntryChangedBroadcast(new LdacMediatorAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
+                                                                                                                                         broadcastSubscriptionQos,
+                                                                                                                                         mediatorAceFilterParameters);
 
         OwnerAccessControlEntryChangedBroadcastFilterParameters ownerAceFilterParameters = new OwnerAccessControlEntryChangedBroadcastFilterParameters();
         ownerAceFilterParameters.setDomainOfInterest(domain);
         ownerAceFilterParameters.setInterfaceOfInterest(interfaceName);
-        String ownerSubscriptionId = globalDomainAccessControllerClient.subscribeToOwnerAccessControlEntryChangedBroadcast(new LdacOwnerAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
-                                                                                                                           broadcastSubscriptionQos,
-                                                                                                                           ownerAceFilterParameters);
+        Future<String> ownersubscriptionId = globalDomainAccessControllerClient.subscribeToOwnerAccessControlEntryChangedBroadcast(new LdacOwnerAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
+                                                                                                                                   broadcastSubscriptionQos,
+                                                                                                                                   ownerAceFilterParameters);
 
-        return new AceSubscription(masterSubscriptionId, mediatorSubscriptionId, ownerSubscriptionId);
+        return new AceSubscription(mastersubscriptionId, mediatorsubscriptionId, ownersubscriptionId);
     }
 
     private void initializeLocalDomainAccessStore(String userId, String domain, String interfaceName) {

@@ -37,6 +37,7 @@ import org.junit.Test;
 import static org.junit.Assert.fail;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import io.joynr.proxy.Future;
 
 public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
@@ -48,7 +49,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
     @SuppressWarnings("checkstyle:methodlength")
     @Test
     public void callSubscribeBroadcastWithFiltering() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -218,7 +219,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
 
             // try to unsubscribe
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
+                testInterfaceProxy.unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());

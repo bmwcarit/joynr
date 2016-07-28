@@ -33,6 +33,7 @@ import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import org.slf4j.Logger;
@@ -95,6 +96,17 @@ public class JoynrMessageFactory {
                                     Reply reply,
                                     MessagingQos messagingQos) {
         return createMessage(JoynrMessage.MESSAGE_TYPE_REPLY, fromParticipantId, toParticipantId, reply, messagingQos);
+    }
+
+    public JoynrMessage createSubscriptionReply(final String fromParticipantId,
+                                                final String toParticipantId,
+                                                SubscriptionReply subscriptionReply,
+                                                MessagingQos messagingQos) {
+        return createMessage(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REPLY,
+                             fromParticipantId,
+                             toParticipantId,
+                             subscriptionReply,
+                             messagingQos);
     }
 
     public JoynrMessage createSubscriptionRequest(String fromParticipantId,

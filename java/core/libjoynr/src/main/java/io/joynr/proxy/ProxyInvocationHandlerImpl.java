@@ -286,7 +286,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                     queuedSubscriptionInvocationList.offer(attributeSubscription);
                     // TODO Bug: [Java] subscribeTo<Attribute> does not return correct value in case connector is not
                     // available
-                    return attributeSubscription.getSubscriptionId();
+                    return future;
                 }
             } finally {
                 connectorStatusLock.unlock();
@@ -301,7 +301,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 logger.error("error executing attribute subscription: {} : {}", method.getName(), e.getMessage());
                 setFutureErrorState(attributeSubscription, new JoynrRuntimeException(e));
             }
-            return attributeSubscription.getSubscriptionId();
+            return future;
 
         } else if (method.getName().startsWith("unsubscribeFrom")) {
             return unsubscribe(new UnsubscribeInvocation(method, args, future)).getSubscriptionId();
@@ -315,9 +315,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         Future<String> future = new Future<String>();
         if (method.getName().startsWith("subscribeTo")) {
 
-            BroadcastSubscribeInvocation broadcastSubscription = new BroadcastSubscribeInvocation(method,
-                                                                                                  args,
-                                                                                                  new Future<String>());
+            BroadcastSubscribeInvocation broadcastSubscription = new BroadcastSubscribeInvocation(method, args, future);
             connectorStatusLock.lock();
             try {
                 if (!isConnectorReady()) {
@@ -325,7 +323,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                     queuedSubscriptionInvocationList.offer(broadcastSubscription);
                     // TODO Bug: [Java] subscribeTo<Attribute> does not return correct value in case connector is not
                     // available
-                    return broadcastSubscription.getSubscriptionId();
+                    return future;
                 }
             } finally {
                 connectorStatusLock.unlock();
@@ -340,7 +338,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
                 setFutureErrorState(broadcastSubscription, new JoynrRuntimeException(e));
             }
-            return broadcastSubscription.getSubscriptionId();
+            return future;
         } else if (method.getName().startsWith("unsubscribeFrom")) {
             return unsubscribe(new UnsubscribeInvocation(method, args, future)).getSubscriptionId();
         } else {

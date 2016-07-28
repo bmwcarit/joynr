@@ -20,24 +20,6 @@ package io.joynr.dispatching.subscription;
  */
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
-import io.joynr.dispatcher.rpc.ReflectionUtils;
-import io.joynr.dispatching.DirectoryListener;
-import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.exceptions.JoynrException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.provider.Promise;
-import io.joynr.provider.PromiseListener;
-import io.joynr.provider.ProviderContainer;
-import io.joynr.provider.SubscriptionPublisherObservable;
-import io.joynr.pubsub.HeartbeatSubscriptionInformation;
-import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.publication.AttributeListener;
-import io.joynr.pubsub.publication.BroadcastFilter;
-import io.joynr.pubsub.publication.BroadcastListener;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -52,9 +34,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.HashMultimap;
@@ -63,13 +42,34 @@ import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-
+import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.dispatching.DirectoryListener;
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.ProviderDirectory;
+import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.exceptions.SubscriptionException;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Promise;
+import io.joynr.provider.PromiseListener;
+import io.joynr.provider.ProviderContainer;
+import io.joynr.provider.SubscriptionPublisherObservable;
+import io.joynr.pubsub.HeartbeatSubscriptionInformation;
+import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilter;
+import io.joynr.pubsub.publication.BroadcastListener;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.exceptions.ProviderRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class PublicationManagerImpl implements PublicationManager, DirectoryListener<ProviderContainer> {
@@ -189,6 +189,13 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
 
+        MessagingQos messagingQos = new MessagingQos();
+        if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
+            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
+        } else {
+            messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
+        }
+
         try {
             Method method = findGetterForAttributeName(providerContainer.getRequestCaller().getClass(),
                                                        subscriptionRequest.getSubscribedToName());
@@ -200,6 +207,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             boolean isOnChangeSubscription = subscriptionQos instanceof OnChangeSubscriptionQos;
 
             if (hasSubscriptionHeartBeat || isOnChangeSubscription) {
+                // TODO: send error subscription reply is periodMs < MIN_PERIOD_MS or periodMs > MAX_PERIOD_MS?
                 final PublicationTimer timer = new PublicationTimer(publicationInformation,
                                                                     method,
                                                                     providerContainer,
@@ -220,26 +228,31 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                                                                  attributeName,
                                                                                                  attributeListener));
             }
+
+            SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId);
+
+            dispatcher.sendSubscriptionReply(publicationInformation.providerParticipantId,
+                                             publicationInformation.proxyParticipantId,
+                                             subscriptionReply,
+                                             messagingQos);
         } catch (NoSuchMethodException e) {
             cancelPublicationCreation(subscriptionId);
             logger.error("Error subscribing: {}. The provider does not have the requested attribute",
                          subscriptionRequest);
-            throw new JoynrRuntimeException("Error subscribing: The provider does not have the requested attribute: "
-                    + e);
-        } catch (IllegalArgumentException e) {
-            cancelPublicationCreation(subscriptionId);
-            logger.error("Error subscribing: " + subscriptionRequest, e);
-            throw new JoynrRuntimeException("Error subscribing: " + e);
-
+            SubscriptionException subscriptionException = new SubscriptionException(e.getMessage());
+            SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, subscriptionException);
+            dispatcher.sendSubscriptionReply(publicationInformation.providerParticipantId,
+                                             publicationInformation.proxyParticipantId,
+                                             subscriptionReply,
+                                             messagingQos);
         }
-
     }
 
     private void handleBroadcastSubscriptionRequest(String proxyParticipantId,
                                                     String providerParticipantId,
                                                     BroadcastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
-        logger.debug("adding broadcast publication: " + subscriptionRequest.toString());
+        logger.debug("adding broadcast publication: {}", subscriptionRequest);
 
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
@@ -248,6 +261,21 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                          new UnregisterBroadcastListener(providerContainer.getSubscriptionPublisher(),
                                                                          broadcastName,
                                                                          broadcastListener));
+
+        final String subscriptionId = subscriptionRequest.getSubscriptionId();
+
+        SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
+
+        MessagingQos messagingQos = new MessagingQos();
+        if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
+            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
+        } else {
+            messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
+        }
+
+        SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId);
+
+        dispatcher.sendSubscriptionReply(providerParticipantId, proxyParticipantId, subscriptionReply, messagingQos);
     }
 
     private void addSubscriptionRequest(String proxyParticipantId,
@@ -266,8 +294,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                     : subscriptionQos.getExpiryDateMs() - System.currentTimeMillis();
 
             if (subscriptionEndDelay < 0) {
-                logger.error("Not adding subscription which ends in {} ms", subscriptionEndDelay);
-                return;
+                throw new SubscriptionException(subscriptionRequest.getSubscriptionId(), "Subscription expired.");
             }
 
             // See if the publications for this subscription are already handled
@@ -304,11 +331,27 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                 subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
             }
             logger.debug("publication added: " + subscriptionRequest.toString());
-        } catch (Exception e) {
-            JoynrRuntimeException error = new JoynrRuntimeException("Error processing subscription request ("
-                    + subscriptionRequest + "): " + e);
-            sendPublicationError(error, publicationInformation);
+        } catch (SubscriptionException e) {
+            sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
         }
+    }
+
+    private void sendSubscriptionReplyWithError(SubscriptionException e,
+                                                PublicationInformation publicationInformation,
+                                                SubscriptionRequest subscriptionRequest) {
+        SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
+        MessagingQos messagingQos = new MessagingQos();
+        if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
+            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
+        } else {
+            messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
+        }
+
+        SubscriptionReply subscriptionReply = new SubscriptionReply(publicationInformation.getSubscriptionId(), e);
+        dispatcher.sendSubscriptionReply(publicationInformation.providerParticipantId,
+                                         publicationInformation.proxyParticipantId,
+                                         subscriptionReply,
+                                         messagingQos);
     }
 
     private void cancelPublicationCreation(String subscriptionId) {
@@ -428,7 +471,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     /**
      * Stops all publications for a provider
      *
-     * @param providerId provider for which all publication should be stopped
+     * @param providerParticipantId provider for which all publication should be stopped
      */
     private void stopPublicationByProviderId(String providerParticipantId) {
         for (PublicationInformation publicationInformation : subscriptionId2PublicationInformation.values()) {
@@ -494,7 +537,6 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
         } else {
             logger.error("subscription {} has expired but attributeValueChanged has been called", subscriptionId);
-            return;
         }
 
     }
@@ -521,7 +563,6 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
         } else {
             logger.error("subscription {} has expired but eventOccurred has been called", subscriptionId);
-            return;
         }
 
     }

@@ -45,8 +45,9 @@ class InterfaceSubscriptionTemplate extends InterfaceTemplate {
 
 		import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 
-		«IF getAttributes(francaIntf).size > 0 && hasReadAttribute(francaIntf)»
+		«IF francaIntf.hasNotifiableAttribute»
 		import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
+		import io.joynr.proxy.Future;
 		import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 		import io.joynr.pubsub.SubscriptionQos;
 		«ENDIF»
@@ -63,10 +64,10 @@ class InterfaceSubscriptionTemplate extends InterfaceTemplate {
 			«IF isNotifiable(attribute)»
 
 				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «attributeType».class)
-				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
+				public Future<String> subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
 
 				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «attributeType».class)
-				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
+				public Future<String> subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
 
 				public void unsubscribeFrom«attributeName.toFirstUpper»(String subscriptionId);
 			«ENDIF»

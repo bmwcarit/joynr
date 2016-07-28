@@ -25,8 +25,9 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
@@ -38,6 +39,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.exceptions.ApplicationException;
 import joynr.types.Localisation.GpsLocation;
 import joynr.vehicle.GpsProxy;
 
@@ -60,7 +62,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
     @Named(APP_CONFIG_PROVIDER_DOMAIN)
     private String providerDomain;
     private GpsProxy gpsProxy;
-    private String subscriptionIdLocation;
+    private Future<String> subscriptionFuture;
 
     /**
      * Main method. This method is responsible for: 1. Instantiating the consumer application. 2. Injecting the instance
@@ -140,8 +142,13 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
     @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
         if (gpsProxy != null) {
-            if (subscriptionIdLocation != null) {
-                gpsProxy.unsubscribeFromLocation(subscriptionIdLocation);
+            if (subscriptionFuture != null) {
+                try {
+                    String subscriptionIdLocation = subscriptionFuture.get();
+                    gpsProxy.unsubscribeFromLocation(subscriptionIdLocation);
+                } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
+                    LOG.error(e.toString());
+                }
             }
         }
 
@@ -210,7 +217,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // reading an attribute value
         gpsProxy = proxyBuilder.setMessagingQos(new MessagingQos()).setDiscoveryQos(discoveryQos).build();
 
-        subscriptionIdLocation = gpsProxy.subscribeToLocation(new AttributeSubscriptionListener<GpsLocation>() {
+        subscriptionFuture = gpsProxy.subscribeToLocation(new AttributeSubscriptionAdapter<GpsLocation>() {
 
             @Override
             public void onReceive(GpsLocation value) {

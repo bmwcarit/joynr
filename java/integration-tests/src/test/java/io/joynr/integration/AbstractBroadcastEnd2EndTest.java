@@ -19,12 +19,23 @@ package io.joynr.integration;
  * #L%
  */
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
 import com.google.inject.Module;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.ProviderAnnotations;
@@ -41,10 +52,9 @@ import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilter
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
 import joynr.tests.testTypes.TestEnum;
-import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
-
+import joynr.types.ProviderQos;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -53,16 +63,6 @@ import org.junit.rules.TestName;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractBroadcastEnd2EndTest.class);
@@ -211,7 +211,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         final TestEnum expectedTestEnum = TestEnum.TWO;
 
         OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
-        proxy.subscribeToBroadcastWithEnumOutputBroadcast(new testBroadcastInterface.BroadcastWithEnumOutputBroadcastListener() {
+        proxy.subscribeToBroadcastWithEnumOutputBroadcast(new testBroadcastInterface.BroadcastWithEnumOutputBroadcastAdapter() {
 
                                                               @Override
                                                               public void onReceive(TestEnum testEnum) {
@@ -237,7 +237,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         final Byte[] expectedByteBuffer = { 1, 2, 3 };
 
         OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
-        proxy.subscribeToBroadcastWithByteBufferParameterBroadcast(new testBroadcastInterface.BroadcastWithByteBufferParameterBroadcastListener() {
+        proxy.subscribeToBroadcastWithByteBufferParameterBroadcast(new testBroadcastInterface.BroadcastWithByteBufferParameterBroadcastAdapter() {
 
                                                                        @Override
                                                                        public void onError() {
@@ -267,20 +267,20 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void subscribeAndUnsubscribeFromEmptyBroadcast() throws InterruptedException {
+    public void subscribeAndUnsubscribeFromEmptyBroadcast() throws InterruptedException, ApplicationException {
 
         final Semaphore broadcastReceived = new Semaphore(0);
 
         OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
 
-        String subscriptionId = proxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+        Future<String> subscriptionId = proxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
 
-                                                                             @Override
-                                                                             public void onReceive() {
-                                                                                 broadcastReceived.release();
-                                                                             }
-                                                                         },
-                                                                         subscriptionQos);
+                                                                                     @Override
+                                                                                     public void onReceive() {
+                                                                                         broadcastReceived.release();
+                                                                                     }
+                                                                                 },
+                                                                                 subscriptionQos);
 
         Thread.sleep(300);
 
@@ -293,7 +293,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         broadcastReceived.acquire();
 
         //unsubscribe correct subscription -> now, no more broadcast shall be received
-        proxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionId);
+        proxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionId.get());
         Thread.sleep(300);
         provider.fireEmptyBroadcast();
         assertFalse(broadcastReceived.tryAcquire(300, TimeUnit.MILLISECONDS));
@@ -305,7 +305,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         final Semaphore broadcastReceived = new Semaphore(0);
 
         OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
-        String subscriptionId = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter() {
+        Future<String> subscriptionId = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter() {
 
                                                                                       @Override
                                                                                       public void onReceive(GpsLocation location,
@@ -330,7 +330,11 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         broadcastReceived.acquire();
 
         //unsubscribe correct subscription -> now, no more broadcast shall be received
-        proxy.unsubscribeFromLocationUpdateWithSpeedBroadcast(subscriptionId);
+        try {
+            proxy.unsubscribeFromLocationUpdateWithSpeedBroadcast(subscriptionId.get());
+        } catch (JoynrRuntimeException | ApplicationException e) {
+            logger.error(e.getMessage());
+        }
         Thread.sleep(300);
         provider.fireLocationUpdateWithSpeed(expectedLocation, expectedSpeed);
         assertFalse(broadcastReceived.tryAcquire(300, TimeUnit.MILLISECONDS));

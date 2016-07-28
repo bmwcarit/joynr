@@ -38,16 +38,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -59,7 +49,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
-
 import io.joynr.Async;
 import io.joynr.JoynrVersion;
 import io.joynr.Sync;
@@ -101,6 +90,15 @@ import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListene
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastListener;
 import joynr.vehicle.NavigationProxy;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 public class ProxyTest {
     private static final int ONE_MINUTE_IN_MS = 60 * 1000;
@@ -227,20 +225,23 @@ public class ProxyTest {
                 if (request.getSubscriptionId() == null) {
                     request.setSubscriptionId(UUID.randomUUID().toString());
                 }
+                request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
         }).when(subscriptionManager).registerAttributeSubscription(any(String.class),
                                                                    (Set<String>) argThat(contains(toParticipantId)),
                                                                    Mockito.any(AttributeSubscribeInvocation.class));
 
-        Mockito.doAnswer(new Answer<Object>() {
+        Mockito.doAnswer(new Answer<Object>() { //TODO simulate resolve here ! subscription reply bastern ... handle subscriptionreply ausführen.. 
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
                 BroadcastSubscribeInvocation request = (BroadcastSubscribeInvocation) args[2];
                 if (request.getSubscriptionId() == null) {
                     request.setSubscriptionId(UUID.randomUUID().toString());
+
                 }
+                request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
         }).when(subscriptionManager).registerBroadcastSubscription(any(String.class),
@@ -501,9 +502,9 @@ public class ProxyTest {
                                                                                .setPublicationTtlMs(publicationTtl_ms);
 
         LocationUpdateSelectiveBroadcastFilterParameters filterParameter = new LocationUpdateSelectiveBroadcastFilterParameters();
-        String subscriptionId = proxy.subscribeToLocationUpdateSelectiveBroadcast(mock(LocationUpdateSelectiveBroadcastListener.class),
-                                                                                  subscriptionQos,
-                                                                                  filterParameter);
+        Future<String> subscriptionId = proxy.subscribeToLocationUpdateSelectiveBroadcast(mock(LocationUpdateSelectiveBroadcastListener.class),
+                                                                                          subscriptionQos,
+                                                                                          filterParameter);
 
         ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
@@ -514,10 +515,10 @@ public class ProxyTest {
         assertEquals("locationUpdateSelective", subscriptionRequest.getValue().getBroadcastName());
 
         // now, let's remove the previous subscriptionRequest
-        proxy.unsubscribeFromGuidanceActive(subscriptionId);
+        proxy.unsubscribeFromGuidanceActive(subscriptionId.get(100L));
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
                                                                      (Set<String>) argThat(contains(toParticipantId)),
-                                                                     eq(subscriptionId),
+                                                                     eq(subscriptionId.get()),
                                                                      any(MessagingQos.class));
     }
 
@@ -534,8 +535,8 @@ public class ProxyTest {
                                                                                .setExpiryDateMs(expiryDate)
                                                                                .setPublicationTtlMs(publicationTtl_ms);
 
-        String subscriptionId = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
-                                                                         subscriptionQos);
+        Future<String> subscriptionId = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
+                                                                                 subscriptionQos);
 
         ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
@@ -546,10 +547,10 @@ public class ProxyTest {
         assertEquals("locationUpdate", subscriptionRequest.getValue().getBroadcastName());
 
         // now, let's remove the previous subscriptionRequest
-        proxy.unsubscribeFromGuidanceActive(subscriptionId);
+        proxy.unsubscribeFromGuidanceActive(subscriptionId.get(100L));
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
                                                                      (Set<String>) argThat(contains(toParticipantId)),
-                                                                     eq(subscriptionId),
+                                                                     eq(subscriptionId.get()),
                                                                      any(MessagingQos.class));
     }
 
@@ -567,11 +568,11 @@ public class ProxyTest {
                                                                                .setPublicationTtlMs(publicationTtl_ms);
 
         String subscriptionId = UUID.randomUUID().toString();
-        String subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
-                                                                          subscriptionQos,
-                                                                          subscriptionId);
+        Future<String> subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
+                                                                                  subscriptionQos,
+                                                                                  subscriptionId);
 
-        assertEquals(subscriptionId, subscriptionId2);
+        assertEquals(subscriptionId, subscriptionId2.get());
 
         ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
@@ -599,8 +600,8 @@ public class ProxyTest {
         abstract class BooleanSubscriptionListener implements AttributeSubscriptionListener<Boolean> {
         }
         ;
-        String subscriptionId = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
-                                                                subscriptionQos);
+        Future<String> subscriptionId = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
+                                                                        subscriptionQos);
 
         ArgumentCaptor<AttributeSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(AttributeSubscribeInvocation.class);
 
@@ -609,13 +610,12 @@ public class ProxyTest {
                                                                             subscriptionRequest.capture());
 
         assertEquals("guidanceActive", subscriptionRequest.getValue().getAttributeName());
-        assertEquals(subscriptionId, subscriptionRequest.getValue().getSubscriptionId());
-
+        assertEquals(subscriptionId.get(), subscriptionRequest.getValue().getSubscriptionId());
         // now, let's remove the previous subscriptionRequest
-        proxy.unsubscribeFromGuidanceActive(subscriptionId);
+        proxy.unsubscribeFromGuidanceActive(subscriptionId.get());
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
                                                                      (Set<String>) argThat(contains(toParticipantId)),
-                                                                     eq(subscriptionId),
+                                                                     eq(subscriptionId.get()),
                                                                      any(MessagingQos.class));
     }
 
@@ -636,11 +636,11 @@ public class ProxyTest {
         }
         ;
         String subscriptionId = UUID.randomUUID().toString();
-        String subscriptionId2 = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
-                                                                 subscriptionQos,
-                                                                 subscriptionId);
+        Future<String> subscriptionId2 = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
+                                                                         subscriptionQos,
+                                                                         subscriptionId);
 
-        assertEquals(subscriptionId, subscriptionId2);
+        assertEquals(subscriptionId, subscriptionId2.get());
 
         ArgumentCaptor<AttributeSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(AttributeSubscribeInvocation.class);
 
