@@ -69,6 +69,10 @@ function build
     docker build -t ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base/
     docker tag -f ${repository}joynr-runtime-environment-base${version} ${repository}joynr-runtime-environment-base:latest
     docker tag -f ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base:latest
+
+    docker build -t ${repository}joynr-ilt-gcc${version} joynr-ilt-gcc/
+    docker tag -f ${repository}joynr-ilt-gcc${version} ${repository}joynr-ilt-gcc:latest
+    docker tag -f ${repository}joynr-ilt-gcc${version} joynr-ilt-gcc:latest
 }
 
 function pull
@@ -98,6 +102,9 @@ function pull
 
     docker pull ${repository}joynr-runtime-environment-base${version}
     docker tag -f ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base
+
+    docker pull ${repository}joynr-ilt-gcc${version}
+    docker tag -f ${repository}joynr-ilt-gcc${version} joynr-ilt-gcc
 }
 
 function push
@@ -112,6 +119,7 @@ function push
     docker push ${repository}joynr-cpp-gcc${version}
     docker push ${repository}joynr-cpp-clang${version}
     docker push ${repository}joynr-runtime-environment-base${version}
+    docker push ${repository}joynr-ilt-gcc${version}
 }
 
 
