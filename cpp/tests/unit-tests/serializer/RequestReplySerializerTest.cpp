@@ -50,9 +50,9 @@
 #include "joynr/serializer/Serializer.h"
 
 template <typename Serializer>
-class SerializerTest : public ::testing::Test {
+class RequestReplySerializerTest : public ::testing::Test {
 public:
-    SerializerTest()
+    RequestReplySerializerTest()
         : Test(),
           complexParametersDatatypes({
             "joynr.types.TestTypes.TEverythingStruct",
@@ -234,11 +234,11 @@ protected:
     std::tuple<std::string, int, float, bool> primitiveParametersValues;
 
     std::tuple<std::string, int, float, bool, std::vector<int32_t>> responseValues;
-    ADD_LOGGER(SerializerTest);
+    ADD_LOGGER(RequestReplySerializerTest);
 };
 
 template <typename Serializer>
-INIT_LOGGER(SerializerTest<Serializer>);
+INIT_LOGGER(RequestReplySerializerTest<Serializer>);
 
 
 struct JsonSerializer
@@ -253,9 +253,9 @@ struct JsonSerializer
 // typelist of serializers which shall be tested in the following tests
 using Serializers = ::testing::Types<JsonSerializer>;
 
-TYPED_TEST_CASE(SerializerTest, Serializers);
+TYPED_TEST_CASE(RequestReplySerializerTest, Serializers);
 
-TYPED_TEST(SerializerTest, exampleDeserializerJoynrReplyWithProviderRuntimeException)
+TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReplyWithProviderRuntimeException)
 {
     auto error = std::make_shared<joynr::exceptions::ProviderRuntimeException>("Message of ProviderRuntimeException");
 
@@ -266,7 +266,7 @@ TYPED_TEST(SerializerTest, exampleDeserializerJoynrReplyWithProviderRuntimeExcep
     ASSERT_EQ(deserializedError->getMessage(), error->getMessage());
 }
 
-TYPED_TEST(SerializerTest, exampleDeserializerJoynrReplyWithApplicationException)
+TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReplyWithApplicationException)
 {
     using namespace joynr::tests;
     std::string literal = test::MethodWithErrorEnumExtendedErrorEnum::getLiteral(
@@ -286,27 +286,27 @@ TYPED_TEST(SerializerTest, exampleDeserializerJoynrReplyWithApplicationException
     ASSERT_EQ(deserializedApplicationException, error);
 }
 
-TYPED_TEST(SerializerTest, exampleDeserializerJoynrReply)
+TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReply)
 {
     joynr::Reply reply = this->initReply("000-10000-01100", this->responseValues);
     this->compareReplyWithExpectedResponse(reply);
 }
 
-TYPED_TEST(SerializerTest, exampleSerializerTestWithJoynrRequestOfPrimitiveParameters)
+TYPED_TEST(RequestReplySerializerTest, exampleSerializerTestWithJoynrRequestOfPrimitiveParameters)
 {
     // Create, initialize & check request with primitive parameters
     joynr::Request request = this->initializeRequestWithPrimitiveValues();
     this->compareRequestWithPrimitiveValues(request);
 }
 
-TYPED_TEST(SerializerTest, exampleSerializerTestWithJoynrRequestOfComplexParameters)
+TYPED_TEST(RequestReplySerializerTest, exampleSerializerTestWithJoynrRequestOfComplexParameters)
 {
     // Create, initialize & check request with complex parameters
     joynr::Request request = this->initializeRequestWithComplexValues();
     this->compareRequestWithComplexValues(request);
 }
 
-TYPED_TEST(SerializerTest, serializeJoynrMessage)
+TYPED_TEST(RequestReplySerializerTest, serializeJoynrMessage)
 {
     // Create a Request
     joynr::Request outgoingRequest = this->initializeRequestWithPrimitiveValues();
@@ -325,7 +325,7 @@ TYPED_TEST(SerializerTest, serializeJoynrMessage)
     this->compareRequestWithPrimitiveValues(incomingRequest);
 }
 
-TYPED_TEST(SerializerTest, serialize_deserialize_RequestWithGpsLocationList)
+TYPED_TEST(RequestReplySerializerTest, serialize_deserialize_RequestWithGpsLocationList)
 {
     using joynr::types::Localisation::GpsLocation;
     using joynr::types::Localisation::GpsFixEnum;
@@ -347,7 +347,7 @@ TYPED_TEST(SerializerTest, serialize_deserialize_RequestWithGpsLocationList)
     this->compareRequestData(request, requestParamTuple, this->getIndicesForTuple(requestParamTuple));
 }
 
-TYPED_TEST(SerializerTest, serialize_deserialize_ReplyWithArrayAsResponse)
+TYPED_TEST(RequestReplySerializerTest, serialize_deserialize_ReplyWithArrayAsResponse)
 {
     using joynr::types::GlobalDiscoveryEntry;
     using joynr::types::ProviderQos;
