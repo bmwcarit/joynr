@@ -1,3 +1,12 @@
+#joynr <nextVersion>
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Added ability to use the dlt-daemon for logging. The corresponding option 'JOYNR_ENABLE_DLT_LOGGING' defaults to 'Off'.
+
 #joynr 0.19.0
 
 ##API relevant changes
