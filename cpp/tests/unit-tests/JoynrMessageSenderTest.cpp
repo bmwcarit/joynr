@@ -89,10 +89,7 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
 
     Request request;
     request.setMethodName("methodName");
-    std::vector<Variant> params;
-    params.push_back(Variant::make<int>(42));
-    params.push_back(Variant::make<std::string>("value"));
-    request.setParamsVariant(params);
+    request.setParams(42, std::string("value"));
     std::vector<std::string> paramDatatypes;
     paramDatatypes.push_back("java.lang.Integer");
     paramDatatypes.push_back("java.lang.String");
@@ -120,10 +117,7 @@ TEST_F(JoynrMessageSenderTest, sendOneWayRequest_normal){
 
     OneWayRequest oneWayRequest;
     oneWayRequest.setMethodName("methodName");
-    std::vector<Variant> params;
-    params.push_back(Variant::make<int>(42));
-    params.push_back(Variant::make<std::string>("value"));
-    oneWayRequest.setParamsVariant(params);
+    oneWayRequest.setParams(42, std::string("value"));
     std::vector<std::string> paramDatatypes;
     paramDatatypes.push_back("java.lang.Integer");
     paramDatatypes.push_back("java.lang.String");
@@ -168,9 +162,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     Reply reply;
     reply.setRequestReplyId(util::createUuid());
-    std::vector<Variant> response;
-    response.push_back(Variant::make<std::string>("response"));
-    reply.setResponseVariant(std::move(response));
+    reply.setResponse(std::string("response"));
 
     JoynrMessage message = messageFactory.createReply(
                 senderID,
@@ -276,9 +268,7 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     SubscriptionPublication publication;
     publication.setSubscriptionId("ignoresubscriptionid");
-    std::vector<Variant> response;
-    response.push_back(Variant::make<std::string>("publication"));
-    publication.setResponseVariant(response);
+    publication.setResponse(std::string("publication"));
     JoynrMessage message = messageFactory.createSubscriptionPublication(
                 senderID,
                 receiverID,

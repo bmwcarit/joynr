@@ -241,10 +241,8 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionStop)
 TEST_F(JoynrMessageFactoryTest, testRequestContentType)
 {
     Request request;
-    std::vector<Variant> params;
-    params.push_back(Variant::make<std::string>("test"));
     request.setMethodName("methodName");
-    request.setParamsVariant(params);
+    request.setParams(std::string("test"));
 
     JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request);
     EXPECT_EQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON, message.getHeaderContentType());

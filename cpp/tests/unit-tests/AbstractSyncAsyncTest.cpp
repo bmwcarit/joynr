@@ -242,10 +242,7 @@ public:
         MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
 
         setExpectationsForSendRequestCall("getLocation").Times(0);
-
-        Variant variant = Variant::make<types::Localisation::GpsLocation>(expectedGpsLocation);
-
-        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(variant));
+        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(expectedGpsLocation));
 
         asyncTestFixture->getLocationAsync(
                 [callback] (const types::Localisation::GpsLocation& location) {
@@ -258,8 +255,7 @@ public:
 
         setExpectationsForSendRequestCall("getLocation").Times(0);
 
-        Variant variant = Variant::make<types::Localisation::GpsLocation>(expectedGpsLocation);
-        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(variant));
+        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(expectedGpsLocation));
 
         types::Localisation::GpsLocation gpsLocation;
         try {
