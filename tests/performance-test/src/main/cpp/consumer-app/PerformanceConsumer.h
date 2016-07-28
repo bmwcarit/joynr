@@ -40,6 +40,7 @@ namespace joynr
 struct IPerformanceConsumer
 {
     virtual void runByteArray() = 0;
+    virtual void runByteArrayWithSizeTimesK() = 0;
     virtual void runString() = 0;
     virtual void runStruct() = 0;
 };
@@ -98,6 +99,11 @@ public:
         run(&Impl::loopByteArray, getFilledByteArray());
     }
 
+    void runByteArrayWithSizeTimesK() override
+    {
+        run(&Impl::loopByteArray, getFilledByteArrayWithSizeTimesK());
+    }
+
     void runString() override
     {
         run(&Impl::loopString, getFilledString());
@@ -143,11 +149,24 @@ protected:
         return s;
     }
 
-    ByteArray getFilledByteArray() const
+    static void fillByteArray(ByteArray& data)
     {
-        ByteArray data(byteArraySize);
         // fill data with sequentially increasing numbers
         std::iota(data.begin(), data.end(), 0);
+    }
+
+    ByteArray getFilledByteArray() const
+    {
+        std::cout << byteArraySize << std::endl << std::endl;
+        ByteArray data(byteArraySize);
+        fillByteArray(data);
+        return data;
+    }
+
+    ByteArray getFilledByteArrayWithSizeTimesK() const
+    {
+        ByteArray data(byteArraySize * 1000);
+        fillByteArray(data);
         return data;
     }
 
