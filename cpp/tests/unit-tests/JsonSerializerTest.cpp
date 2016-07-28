@@ -344,9 +344,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
     std::string expectedTStruct(
                 R"({)"
                 R"("_typeName":"joynr.types.TestTypes.TStruct",)"
-                R"("tDouble": 0.123456789,)"
-                R"("tInt64": 64,)"
-                R"("tString": "myTestString")"
+                R"("tDouble":0.123456789,)"
+                R"("tInt64":64,)"
+                R"("tString":"myTestString")"
                 R"(})"
                 );
 
@@ -372,11 +372,11 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
     std::string expectedTStructExt(
                 R"({)"
                 R"("_typeName":"joynr.types.TestTypes.TStructExtended",)"
-                R"("tDouble": 0.123456789,)"
-                R"("tInt64": 64,)"
-                R"("tString": "myTestString",)"
-                R"("tEnum": "TLITERALA",)"
-                R"("tInt32": 32)"
+                R"("tDouble":0.123456789,)"
+                R"("tInt64":64,)"
+                R"("tString":"myTestString",)"
+                R"("tEnum":"TLITERALA",)"
+                R"("tInt32":32)"
                 R"(})"
                 );
 
