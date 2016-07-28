@@ -117,9 +117,7 @@ public:
                                       std::shared_ptr<SubscriptionQos> qos,
                                       SubscriptionRequest& subscriptionRequest) {
         std::ignore = subscribeToName;
-        std::ignore = qos;
-        std::ignore = subscriptionRequest;
-
+        subscriptionRequest.setQos(qos);
         std::shared_ptr<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>> typedCallback =
                 std::dynamic_pointer_cast<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>>(callback);
 
