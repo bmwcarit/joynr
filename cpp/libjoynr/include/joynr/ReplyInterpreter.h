@@ -52,7 +52,7 @@ public:
 
         ResponseTuple responseTuple;
         try {
-            reply.getResponse(responseTuple);
+            callGetResponse(responseTuple, std::move(reply), std::index_sequence_for<Ts...>{});
         } catch (const std::exception& exception) {
             caller.returnError(
                     std::make_shared<exceptions::JoynrRuntimeException>(exception.what()));
@@ -68,6 +68,14 @@ private:
                                 std::index_sequence<Indices...>)
     {
         caller.returnValue(std::move(std::get<Indices>(response))...);
+    }
+
+    template <std::size_t... Indices>
+    static void callGetResponse(ResponseTuple& response,
+                                Reply&& reply,
+                                std::index_sequence<Indices...>)
+    {
+        reply.getResponse(std::get<Indices>(response)...);
     }
 };
 

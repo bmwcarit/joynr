@@ -54,7 +54,9 @@ public:
 
         ResponseTuple responseTuple;
         try {
-            subscriptionPublication.getResponse(responseTuple);
+            callGetResponse(responseTuple,
+                            std::move(subscriptionPublication),
+                            std::index_sequence_for<Ts...>{});
         } catch (const std::exception& exception) {
             callback.onError(exceptions::JoynrRuntimeException(exception.what()));
             return;
@@ -70,6 +72,14 @@ private:
                              std::index_sequence<Indices...>)
     {
         callback.onSuccess(std::move(std::get<Indices>(response))...);
+    }
+
+    template <std::size_t... Indices>
+    static void callGetResponse(ResponseTuple& response,
+                                SubscriptionPublication&& subscriptionPublication,
+                                std::index_sequence<Indices...>)
+    {
+        subscriptionPublication.getResponse(std::get<Indices>(response)...);
     }
 };
 

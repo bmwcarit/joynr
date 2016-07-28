@@ -429,13 +429,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
 
     EXPECT_TRUE(receivedReply.hasResponse());
 
-    using ResponseTuple = std::tuple<types::Localisation::GpsLocation>;
-    ResponseTuple responseTuple;
-    receivedReply.getResponse(responseTuple);
+    types::Localisation::GpsLocation receivedGps;
+    receivedReply.getResponse(receivedGps);
 
-    EXPECT_EQ(gps1, std::get<0>(responseTuple))
-            << "Gps locations gps1 " << gps1.toString()
-            << " and gps2 " << std::get<0>(responseTuple).toString() << " are not the same";
+    EXPECT_EQ(gps1, receivedGps);
 }
 
 TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
@@ -516,11 +513,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     joynr::Reply receivedReply;
     joynr::serializer::deserializeFromJson(receivedReply, jsonReply);
 
-    using ResponseTuple = std::tuple<GpsLocationList>;
-    ResponseTuple responseTuple;
-    receivedReply.getResponse(responseTuple);
+    GpsLocationList receivedLocList;
+    receivedReply.getResponse(receivedLocList);
 
-    GpsLocationList receivedLocList = std::get<0>(responseTuple);
     EXPECT_EQ(locList, receivedLocList);
 }
 
