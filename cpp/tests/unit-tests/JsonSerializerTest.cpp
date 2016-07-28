@@ -291,7 +291,7 @@ void serializeAndDeserializePermission(const Permission::Enum& input, const std:
 TEST_F(JsonSerializerTest, serializeDeserializeTypeEnum) {
     using namespace infrastructure::DacTypes;
 
-    JOYNR_ASSERT_NO_THROW(serializeAndDeserializePermission(Permission::NO, "Permission::NO", logger));
+    JOYNR_ASSERT_NO_THROW(serializeAndDeserializePermission(Permission::NO, R"("NO")", logger));
 
     ASSERT_ANY_THROW(serializeAndDeserializePermission(static_cast<Permission::Enum>(999), "999", logger));
 }
@@ -299,7 +299,7 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeEnum) {
 TEST_F(JsonSerializerTest, deserializeTypeEnum) {
     using namespace infrastructure::DacTypes;
 
-    JOYNR_ASSERT_NO_THROW(deserializePermission("NO", Permission::NO));
+    JOYNR_ASSERT_NO_THROW(deserializePermission(R"("NO")", Permission::NO));
 
     ASSERT_ANY_THROW(deserializePermission("999", static_cast<Permission::Enum>(999)));
 }
@@ -527,43 +527,43 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
 
     std::string expected(
                         R"({"_typeName":"joynr.types.Localisation.Trip",)"
-                        R"("locations": [{"_typeName":"joynr.types.Localisation.GpsLocation",)"
-                        R"("longitude": 1.1,)"
-                        R"("latitude": 2.2,)"
-                        R"("altitude": 3.3,)"
-                        R"("gpsFix": "MODE3D",)"
-                        R"("heading": 0.0,)"
-                        R"("quality": 0.0,)"
-                        R"("elevation": 0.0,)"
-                        R"("bearing": 0.0,)"
-                        R"("gpsTime": 0,)"
-                        R"("deviceTime": 0,)"
-                        R"("time": 17},)"
+                        R"("locations":[{"_typeName":"joynr.types.Localisation.GpsLocation",)"
+                        R"("longitude":1.1,)"
+                        R"("latitude":2.2,)"
+                        R"("altitude":3.3,)"
+                        R"("gpsFix":"MODE3D",)"
+                        R"("heading":0.0,)"
+                        R"("quality":0.0,)"
+                        R"("elevation":0.0,)"
+                        R"("bearing":0.0,)"
+                        R"("gpsTime":0,)"
+                        R"("deviceTime":0,)"
+                        R"("time":17},)"
                         R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
-                        R"("longitude": 4.4,)"
-                        R"("latitude": 5.5,)"
-                        R"("altitude": 6.6,)"
-                        R"("gpsFix": "MODE3D",)"
-                        R"("heading": 0.0,)"
-                        R"("quality": 0.0,)"
-                        R"("elevation": 0.0,)"
-                        R"("bearing": 0.0,)"
-                        R"("gpsTime": 0,)"
-                        R"("deviceTime": 0,)"
-                        R"("time": 317},)"
+                        R"("longitude":4.4,)"
+                        R"("latitude":5.5,)"
+                        R"("altitude":6.6,)"
+                        R"("gpsFix":"MODE3D",)"
+                        R"("heading":0.0,)"
+                        R"("quality":0.0,)"
+                        R"("elevation":0.0,)"
+                        R"("bearing":0.0,)"
+                        R"("gpsTime":0,)"
+                        R"("deviceTime":0,)"
+                        R"("time":317},)"
                         R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
-                        R"("longitude": 7.7,)"
-                        R"("latitude": 8.8,)"
-                        R"("altitude": 9.9,)"
-                        R"("gpsFix": "MODE3D",)"
-                        R"("heading": 0.0,)"
-                        R"("quality": 0.0,)"
-                        R"("elevation": 0.0,)"
-                        R"("bearing": 0.0,)"
-                        R"("gpsTime": 0,)"
-                        R"("deviceTime": 0,)"
-                        R"("time": 3317}],)"
-                        R"("tripTitle": "trip1_name"})"
+                        R"("longitude":7.7,)"
+                        R"("latitude":8.8,)"
+                        R"("altitude":9.9,)"
+                        R"("gpsFix":"MODE3D",)"
+                        R"("heading":0.0,)"
+                        R"("quality":0.0,)"
+                        R"("elevation":0.0,)"
+                        R"("bearing":0.0,)"
+                        R"("gpsTime":0,)"
+                        R"("deviceTime":0,)"
+                        R"("time":3317}],)"
+                        R"("tripTitle":"trip1_name"})"
                 );
 
     // Expected literal is:
@@ -691,20 +691,20 @@ TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
 
     std::string expected(
                 R"({"_typeName":"joynr.types.GlobalDiscoveryEntry",)"
-                R"("providerVersion": {"_typeName":"joynr.types.Version","majorVersion": -1,"minorVersion": -1},)"
-                R"("domain": "domain",)"
-                R"("interfaceName": "testInterface",)"
-                R"("participantId": "someParticipant",)"
-                R"("qos": {)"
+                R"("providerVersion":{"_typeName":"joynr.types.Version","majorVersion":-1,"minorVersion":-1},)"
+                R"("domain":"domain",)"
+                R"("interfaceName":"testInterface",)"
+                R"("participantId":"someParticipant",)"
+                R"("qos":{)"
                 R"("_typeName":"joynr.types.ProviderQos",)"
-                R"("customParameters": [],)"
-                R"("priority": 2,)"
-                R"("scope": "GLOBAL",)"
-                R"("supportsOnChangeSubscriptions": false},)"
-                R"("lastSeenDateMs": 123,)"
-                R"("expiryDateMs": 1234,)"
-                R"("publicKeyId": "publicKeyId",)"
-                R"("address": "serialized_address"})"
+                R"("customParameters":[],)"
+                R"("priority":2,)"
+                R"("scope":"GLOBAL",)"
+                R"("supportsOnChangeSubscriptions":false},)"
+                R"("lastSeenDateMs":123,)"
+                R"("expiryDateMs":1234,)"
+                R"("publicKeyId":"publicKeyId",)"
+                R"("address":"serialized_address"})"
                 );
 
     types::ProviderQos qos;
@@ -748,7 +748,7 @@ TEST_F(JsonSerializerTest, serialize_ProviderQos) {
     qos.setScope(joynr::types::ProviderScope::LOCAL);
     qos.setPriority(5);
 
-    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\": [],\"priority\": 5,\"scope\": \"LOCAL\",\"supportsOnChangeSubscriptions\": false}");
+    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
 
     std::string result = joynr::serializer::serializeToJson(qos);
 
