@@ -21,6 +21,7 @@
 
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Request.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 #include "tests/utils/MockObjects.h"
@@ -66,6 +67,9 @@ public:
                 qosSettings,
                 request
                 );
+        joynr::system::RoutingTypes::MqttAddress replyAddress;
+        replyAddressSerialized = joynr::serializer::serializeToJson(replyAddress);
+        message.setHeaderReplyAddress(replyAddressSerialized);
     }
 
     void TearDown(){
@@ -73,6 +77,7 @@ public:
 protected:
     MockMessageRouter mockMessageRouter;
     JoynrMessage message;
+    std::string replyAddressSerialized;
 };
 
 MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "") {
@@ -88,12 +93,11 @@ MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "") {
 
 TEST_F(MqttMessagingSkeletonTest, transmitTest) {
     MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter);
-    std::string replyAddress = message.getHeaderReplyAddress();
     EXPECT_CALL(mockMessageRouter, addNextHop(
         _,
         AnyOf(
             Pointee(A<joynr::system::RoutingTypes::Address>()),
-            pointerToMqttAddressWithChannelId(replyAddress)
+            pointerToMqttAddressWithChannelId(replyAddressSerialized)
         ),
         _)
     ).Times(1);
