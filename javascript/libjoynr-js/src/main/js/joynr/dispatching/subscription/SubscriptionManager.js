@@ -164,29 +164,37 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             return ttl;
         }
 
-        function storeSubscriptionRequest(parameters, subscriptionRequest) {
-            var subscriptionInfo = Util.extend({
-                proxyId : parameters.proxyId,
-                providerId : parameters.providerId,
-                lastPublicationTime_ms : 0
-            }, subscriptionRequest);
-
-            subscriptionInfos[subscriptionRequest.subscriptionId] = subscriptionInfo;
-            subscriptionListeners[subscriptionRequest.subscriptionId] = new SubscriptionListener({
-                onReceive : function(response) {
+        function storeSubscriptionRequest(settings, subscriptionRequest) {
+            var onReceiveWrapper;
+            if (settings.attributeType !== undefined) {
+                onReceiveWrapper = function(response) {
+                    settings.onReceive(Typing.augmentTypes(response[0], typeRegistry, settings.attributeType));
+                };
+            } else {
+                onReceiveWrapper = function(response) {
                     var responseKey;
                     for (responseKey in response) {
                         if (response.hasOwnProperty(responseKey)) {
                             response[responseKey] = Typing.augmentTypes(response[responseKey],
                                                                         typeRegistry,
-                                                                        parameters.broadcastParameter[responseKey].type);
+                                                                        settings.broadcastParameter[responseKey].type);
                         }
                     }
-                    parameters.onReceive(response);
-                },
-                onError : parameters.onError,
-                onSubscribed : parameters.onSubscribed
+                    settings.onReceive(response);
+                };
+            }
+            subscriptionListeners[subscriptionRequest.subscriptionId] = new SubscriptionListener({
+                onReceive : onReceiveWrapper,
+                onError : settings.onError,
+                onSubscribed : settings.onSubscribed
             });
+            var subscriptionInfo = Util.extend({
+                proxyId : settings.proxyId,
+                providerId : settings.providerId,
+                lastPublicationTime_ms : 0
+            }, subscriptionRequest);
+
+            subscriptionInfos[subscriptionRequest.subscriptionId] = subscriptionInfo;
 
             var alertAfterIntervalMs = subscriptionRequest.qos.alertAfterIntervalMs;
             if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
@@ -277,34 +285,10 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                         }).catch(function(error) {
                             delete subscriptionReplyCallers[subscriptionId];
                             reject(error);
+                            return;
                         });
 
-                        var subscriptionInfo = Util.extend({
-                            proxyId : settings.proxyId,
-                            providerId : settings.providerId,
-                            lastPublicationTime_ms : 0
-                        }, subscriptionRequest);
-
-                        subscriptionInfos[subscriptionId] = subscriptionInfo;
-                        subscriptionListeners[subscriptionId] = new SubscriptionListener({
-                            onReceive : function(response) {
-                                            settings.onReceive(Typing.augmentTypes(response[0], typeRegistry, settings.attributeType));
-                                        },
-                            onError : settings.onError,
-                            onSubscribed : settings.onSubscribed
-                        });
-                        var alertAfterIntervalMs = settings.qos.alertAfterIntervalMs;
-                        if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
-                            publicationCheckTimerIds[subscriptionId] =
-                                    LongTimer
-                                            .setTimeout(
-                                                    function checkPublicationAlertAfterInterval() {
-                                                        checkPublication(
-                                                                subscriptionId,
-                                                                alertAfterIntervalMs);
-                                                    },
-                                                    alertAfterIntervalMs);
-                        }
+                        storeSubscriptionRequest(settings, subscriptionRequest);
                     });
                 };
 
@@ -349,7 +333,6 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     qos : parameters.subscriptionQos,
                     filterParameters : parameters.filterParameters
                 });
-                storeSubscriptionRequest(parameters, subscriptionRequest);
 
                 messagingQos = new MessagingQos({
                     ttl : calculateTtl(subscriptionRequest.qos)
@@ -368,7 +351,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 }).catch(function(error) {
                     delete subscriptionReplyCallers[subscriptionRequest.subscriptionId];
                     reject(error);
+                    return;
                 });
+                storeSubscriptionRequest(parameters, subscriptionRequest);
             });
         };
 
