@@ -114,7 +114,7 @@ public:
 
     void invokeSubscriptionCallback(const std::string& subscribeToName,
                                       std::shared_ptr<ISubscriptionCallback> callback,
-                                      std::shared_ptr<SubscriptionQos>& qos,
+                                      std::shared_ptr<SubscriptionQos> qos,
                                       SubscriptionRequest& subscriptionRequest) {
         std::ignore = subscribeToName;
         std::ignore = qos;
