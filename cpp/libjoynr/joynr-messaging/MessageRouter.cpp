@@ -482,7 +482,7 @@ void MessageRouter::loadRoutingTable(std::string fileName)
     try {
         joynr::serializer::deserializeFromJson(
                 routingTable, joynr::util::loadStringFromFile(routingTableFileName));
-    } catch (const std::runtime_error& ex) {
+    } catch (const std::exception& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }
 }

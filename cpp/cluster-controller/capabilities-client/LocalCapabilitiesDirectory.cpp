@@ -657,7 +657,11 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
     }
 
     std::vector<CapabilityEntry> persistedCapabilities;
-    joynr::serializer::deserializeFromJson(persistedCapabilities, jsonString);
+    try {
+        joynr::serializer::deserializeFromJson(persistedCapabilities, jsonString);
+    } catch (const std::invalid_argument& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+    }
 
     if (persistedCapabilities.empty()) {
         return;
