@@ -286,7 +286,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     EXPECT_CALL(
             *mockRequestCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
-                        A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
+                        A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>())
     )
             .WillOnce(DoAll(
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
