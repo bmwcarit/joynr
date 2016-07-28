@@ -284,6 +284,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                             subscriptionRequest : subscriptionRequest
                         }).catch(function(error) {
                             delete subscriptionReplyCallers[subscriptionId];
+                            if (settings.onError) {
+                                settings.onError(error);
+                            }
                             reject(error);
                             return;
                         });
@@ -350,6 +353,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     subscriptionRequest : subscriptionRequest
                 }).catch(function(error) {
                     delete subscriptionReplyCallers[subscriptionRequest.subscriptionId];
+                    if (parameters.onError) {
+                        parameters.onError(error);
+                    }
                     reject(error);
                     return;
                 });
