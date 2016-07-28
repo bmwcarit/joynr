@@ -62,7 +62,6 @@ public:
           primitiveParametersDatatypes({
               "String",
               "Integer",
-              "SomeOtherType",
               "Float",
               "Bool"
           }),
@@ -102,8 +101,8 @@ protected:
     {
         JOYNR_LOG_TRACE(logger, "trying to deserialize from JSON: {}", str);
         InputStream stream(std::move(str));
-        InputArchive iarchive(stream);
-        iarchive(value);
+        auto iarchive = std::make_shared<InputArchive>(stream);
+        (*iarchive)(value);
     }
 
     // we need to serialize, then deserialize the request/reply to get it in a state to get the data out again
@@ -139,7 +138,7 @@ protected:
         outgoingRequest.setParamDatatypes(std::move(paramDataTypes));
         setRequestParamsFromTuple(outgoingRequest, paramValues, std::index_sequence_for<Ts...>{});
 
-        return initOutgoingIncoming(outgoingRequest);
+        return outgoingRequest;
     }
 
     template <typename T>
@@ -189,10 +188,10 @@ protected:
     }
 
     template <typename Tuple, std::size_t... Indices>
-    void compareReplyData(joynr::Reply& reply, Tuple expectedData)
+    void compareReplyData(joynr::Reply& reply, Tuple expectedData, std::index_sequence<Indices...>)
     {
         Tuple extractedData;
-        reply.getResponse(extractedData);
+        reply.getResponse(std::get<Indices>(extractedData)...);
         EXPECT_EQ(expectedData, extractedData);
     }
 
@@ -220,7 +219,7 @@ protected:
     void compareReplyWithExpectedResponse(joynr::Reply& reply)
     {
         ASSERT_TRUE(reply.hasResponse());
-        compareReplyData(reply, responseValues);
+        compareReplyData(reply, responseValues, this->getIndicesForTuple(responseValues));
     }
 
     std::vector<std::string> complexParametersDatatypes;
@@ -283,7 +282,7 @@ TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReplyWithApplicat
 
     auto deserializedApplicationException = std::dynamic_pointer_cast<joynr::exceptions::ApplicationException>(deserializedError);
     ASSERT_TRUE(deserializedApplicationException != nullptr);
-    ASSERT_EQ(deserializedApplicationException, error);
+    ASSERT_EQ(*deserializedApplicationException, *error);
 }
 
 TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReply)
@@ -370,5 +369,5 @@ TYPED_TEST(RequestReplySerializerTest, serialize_deserialize_ReplyWithArrayAsRes
     using ResponseTuple = std::tuple<std::vector<GlobalDiscoveryEntry>>;
     ResponseTuple responseTuple {globalDiscoveryEntries};
     joynr::Reply reply = this->initReply(requestReplyId, responseTuple);
-    this->compareReplyData(reply, responseTuple);
+    this->compareReplyData(reply, responseTuple, this->getIndicesForTuple(responseTuple));
 }
