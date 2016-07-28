@@ -54,7 +54,7 @@ MULTICONSUMER_NUMINSTANCES=5
 MULTICONSUMER_RUNS=200
 
 # If a test case has to transmit a string, the length will be determined by this constant
-INPUTDATA_STRINGLENGTH=10
+INPUTDATA_STRINGLENGTH=100
 
 # If a test case has to transmit a byte array, the length will be determined by this constant
 INPUTDATA_BYTEARRAYSIZE=100
