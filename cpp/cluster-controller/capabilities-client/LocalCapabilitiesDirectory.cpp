@@ -28,7 +28,6 @@
 #include "common/InterfaceAddress.h"
 
 #include "joynr/CapabilityEntry.h"
-#include "joynr/CapabilityEntrySerializer.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
