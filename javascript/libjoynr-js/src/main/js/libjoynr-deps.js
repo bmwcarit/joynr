@@ -56,6 +56,7 @@ define("libjoynr-deps", [
     "joynr/exceptions/NoCompatibleProviderFoundException",
     "joynr/exceptions/ProviderRuntimeException",
     "joynr/exceptions/PublicationMissedException",
+    "joynr/exceptions/SubscriptionException",
     "joynr/types/ProviderQos",
     "joynr/types/ProviderScope",
     "joynr/types/CustomParameter",
