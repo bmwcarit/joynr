@@ -657,7 +657,7 @@ else(USE_PLATFORM_MUESLI)
 endif(USE_PLATFORM_MUESLI)
 get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
 
-message(STATUS "variable muesli_INCLUDE_DIRECTORIES=" ${muesli_INCLUDE_DIRECTORIES})
+message(STATUS "variable muesli_INCLUDE_DIRECTORIES= ${muesli_INCLUDE_DIRECTORIES}")
 
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
