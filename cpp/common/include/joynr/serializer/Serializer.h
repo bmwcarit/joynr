@@ -31,7 +31,9 @@
 #include <muesli/archives/json/JsonOutputArchive.h>
 #include <muesli/streams/StringIStream.h>
 #include <muesli/streams/StringOStream.h>
+#include <muesli/ArchiveRegistry.h>
 #include <muesli/TypeRegistry.h>
+#include <muesli/Registry.h>
 
 #include "joynr/Util.h"
 #include "joynr/serializer/JsonDeserializable.h"
@@ -40,6 +42,76 @@ namespace joynr
 {
 namespace serializer
 {
+
+template <typename ArchiveTypeVector, template <typename> class Postprocess = boost::mpl::identity>
+using MakeArchiveVariant = typename boost::make_variant_over<
+        typename boost::mpl::transform<ArchiveTypeVector, Postprocess<boost::mpl::_1>>::type>::type;
+
+using OutputArchiveRefVariant =
+        MakeArchiveVariant<muesli::OutputArchiveTypeVector, std::add_lvalue_reference>;
+
+template <typename T>
+struct AddSharedPtr
+{
+    using type = std::shared_ptr<T>;
+};
+
+template <typename Variant>
+class ArchiveVariantWrapper
+{
+public:
+    ArchiveVariantWrapper(Variant&& archiveVariant) : archiveVariant(std::move(archiveVariant))
+    {
+    }
+
+    template <typename... Ts>
+    void operator()(Ts&&... args)
+    {
+        boost::apply_visitor([&args...](auto&& archive) { (*archive)(std::forward<Ts>(args)...); },
+                             archiveVariant);
+    }
+
+private:
+    Variant archiveVariant;
+};
+
+template <typename ArchiveVariant, typename RegisteredArchives, typename Stream>
+auto getArchive(const std::string& id, Stream& stream)
+{
+    ArchiveVariant archive;
+
+    auto fun = [&id, &archive, &stream](auto&& archiveHolder) {
+        using ArchiveInTemplateHolder = std::decay_t<decltype(archiveHolder)>;
+        using ArchiveImpl = typename ArchiveInTemplateHolder::template type<Stream>;
+        using ArchiveTag = typename muesli::TagTraits<ArchiveImpl>::type;
+        if (id == SerializerTraits<ArchiveTag>::id()) {
+            archive = std::make_shared<ArchiveImpl>(stream);
+            return false;
+        }
+        return true;
+    };
+
+    bool foundSerializer = util::InvokeOn<RegisteredArchives>(fun);
+    if (!foundSerializer) {
+        throw std::invalid_argument("no serializer registered for id " + id);
+    }
+
+    return ArchiveVariantWrapper<ArchiveVariant>(std::move(archive));
+}
+
+template <typename OutputStream>
+inline auto getOutputArchive(const std::string& id, OutputStream& stream)
+{
+    using OutputArchiveVariant = MakeArchiveVariant<muesli::OutputArchiveTypeVector, AddSharedPtr>;
+    return getArchive<OutputArchiveVariant, muesli::RegisteredOutputArchives>(id, stream);
+}
+
+template <typename InputStream>
+inline auto getInputArchive(const std::string& id, InputStream& stream)
+{
+    using InputArchiveVariant = MakeArchiveVariant<muesli::InputArchiveTypeVector, AddSharedPtr>;
+    return getArchive<InputArchiveVariant, muesli::RegisteredInputArchives>(id, stream);
+}
 
 template <typename T>
 void deserializeFromJson(T& value, std::string str)
@@ -62,102 +134,8 @@ std::string serializeToJson(const T& value)
     oarchive(value);
     return ostream.getString();
 }
-} // namespace serializer
-} // namespace joynr
-
-/*
-namespace joynr
-{
-namespace serializer
-{
-
-template <typename Serializer>
-struct ExtractInputArchive
-{
-    using type = typename Serializer::InputArchive;
-};
-
-template <typename Serializer>
-struct ExtractOutputArchive
-{
-    using type = typename Serializer::OutputArchive;
-};
-
-template <typename Serializer>
-struct ExtractDeserializable
-{
-    using type = typename Serializer::Deserializable;
-};
-
-template <typename T>
-struct AddUniquePtr
-{
-    using type = std::unique_ptr<T>;
-};
-
-template <template <typename> class Extractor,
-          template <typename> class Postprocess = boost::mpl::identity>
-using MakeSerializerVariant = typename boost::make_variant_over<
-        typename boost::mpl::transform<RegisteredSerializers,
-                                       Postprocess<Extractor<boost::mpl::_1>>>::type>::type;
-
-template <typename Variant>
-class ArchiveVariantWrapper
-{
-public:
-    ArchiveVariantWrapper(Variant&& archiveVariant) : archiveVariant(std::move(archiveVariant))
-    {
-    }
-
-    template <typename T>
-    void operator()(T&& arg)
-    {
-        boost::apply_visitor(
-                [&arg](auto& archive) { (*archive)(std::forward<T>(arg)); }, archiveVariant);
-    }
-
-private:
-    Variant archiveVariant;
-};
-
-using OutputArchiveVariant = MakeSerializerVariant<ExtractOutputArchive, AddUniquePtr>;
-using InputArchiveVariant = MakeSerializerVariant<ExtractInputArchive, AddUniquePtr>;
-using DeserializableVariant = MakeSerializerVariant<ExtractDeserializable>;
-
-template <typename ArchiveVariant, template <typename> class Extractor, typename Stream>
-auto getArchive(const std::string& id, Stream& stream)
-{
-    ArchiveVariant archive;
-
-    auto fun = [&id, &archive, &stream](auto serializer) {
-        using Serializer = decltype(serializer);
-        if (id == Serializer::id()) {
-            using Archive = typename Extractor<Serializer>::type;
-            archive = std::make_unique<Archive>(stream);
-            return false;
-        }
-        return true;
-    };
-
-    bool foundSerializer = util::InvokeOn<RegisteredSerializers>(fun);
-    if (!foundSerializer) {
-        throw std::invalid_argument("no serializer registered for id " + id);
-    }
-
-    return ArchiveVariantWrapper<ArchiveVariant>(std::move(archive));
-}
-
-inline auto getOutputArchive(const std::string& id, std::ostream& stream)
-{
-    return getArchive<OutputArchiveVariant, ExtractOutputArchive>(id, stream);
-}
-
-inline auto getInputArchive(const std::string& id, std::istream& stream)
-{
-    return getArchive<InputArchiveVariant, ExtractInputArchive>(id, stream);
-}
 
 } // namespace serializer
 } // namespace joynr
-*/
+
 #endif // SERIALIZER_H

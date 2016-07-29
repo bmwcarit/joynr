@@ -47,7 +47,7 @@ class SerializationPlaceholder
     };
 
     using DeserializableVariant =
-            muesli::MakeArchiveVariant<muesli::InputArchiveTypeVector, GetDeserializable>;
+            MakeArchiveVariant<muesli::InputArchiveTypeVector, GetDeserializable>;
 
 public:
     SerializationPlaceholder() = default;
@@ -81,7 +81,7 @@ public:
     {
         assert(containsOutboundData() || containsInboundData());
         if (containsOutboundData()) {
-            using TypedSerializable = Serializable<muesli::OutputArchiveVariant, Ts...>;
+            using TypedSerializable = Serializable<OutputArchiveRefVariant, Ts...>;
             const TypedSerializable* typedSerializable =
                     dynamic_cast<const TypedSerializable*>(serializable.get());
             if (typedSerializable != nullptr) {
@@ -102,9 +102,8 @@ public:
     template <typename... Ts>
     void setData(Ts&&... arg)
     {
-        serializable =
-                std::make_unique<Serializable<muesli::OutputArchiveVariant, std::decay_t<Ts>...>>(
-                        std::forward<Ts>(arg)...);
+        serializable = std::make_unique<Serializable<OutputArchiveRefVariant, std::decay_t<Ts>...>>(
+                std::forward<Ts>(arg)...);
     }
 
     bool containsOutboundData() const
@@ -118,7 +117,7 @@ public:
     }
 
 private:
-    std::unique_ptr<ISerializable<muesli::OutputArchiveVariant>> serializable;
+    std::unique_ptr<ISerializable<OutputArchiveRefVariant>> serializable;
     boost::optional<DeserializableVariant> deserializable;
 };
 
