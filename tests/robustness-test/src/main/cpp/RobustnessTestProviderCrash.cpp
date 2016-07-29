@@ -61,8 +61,8 @@ TEST_F(RobustnessTestProviderCrash, subscribeTo_broadcastWithSingleStringParamet
     // Use a semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*mockListener, onReceive(_)).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    OnChangeSubscriptionQos subscriptionQos;
-    subscriptionQos.setValidityMs(600000);
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    subscriptionQos->setValidityMs(600000);
     proxy->subscribeToBroadcastWithSingleStringParameterBroadcast(mockListener, subscriptionQos);
     // This wait is necessary, because subcriptions are async, and a broadcast could occur
     // before the subscription has started.
@@ -96,10 +96,10 @@ TEST_F(RobustnessTestProviderCrash, subscribeToAttributeString)
     // Use a semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*mockListener, onReceive(_)).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos;
-    subscriptionQos.setMinIntervalMs(5 * 1000);
-    subscriptionQos.setMaxIntervalMs(30 * 1000);
-    subscriptionQos.setValidityMs(120 * 1000);
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>();
+    subscriptionQos->setMinIntervalMs(5 * 1000);
+    subscriptionQos->setMaxIntervalMs(30 * 1000);
+    subscriptionQos->setValidityMs(120 * 1000);
     proxy->subscribeToAttributeString(mockListener, subscriptionQos);
 
     // the first publication should arrive immediately after subscription is done
