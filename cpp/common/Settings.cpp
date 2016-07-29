@@ -26,6 +26,8 @@ namespace ptree = boost::property_tree;
 namespace joynr
 {
 
+INIT_LOGGER(Settings);
+
 Settings::Settings() : filename(), propertyTree(), loaded(false)
 {
 }
@@ -61,7 +63,14 @@ bool Settings::contains(const std::string& path) const
 
 void Settings::sync()
 {
-    ptree::write_ini(filename, propertyTree);
+    try {
+        ptree::write_ini(filename, propertyTree);
+    } catch (const ptree::ini_parser_error& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "settings file \"{}\" cannot be written due to the following error: {})",
+                        filename,
+                        e.message());
+    }
 }
 
 void Settings::merge(const Settings& from, Settings& to, bool overwrite)
