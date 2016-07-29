@@ -19,10 +19,12 @@ package io.joynr.discovery.jee;
  * #L%
  */
 
+import javax.ejb.Singleton;
 import javax.enterprise.inject.Produces;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+@Singleton
 public class EntityManagerProducer {
 
     @PersistenceContext(unitName = "joynr-discovery-directory")

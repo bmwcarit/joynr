@@ -26,18 +26,22 @@ import javax.enterprise.inject.Produces;
 
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.runtime.GlobalAddressProvider;
 
 @Singleton
 public class JoynrConfigurationProvider {
 
-    @JoynrProperties
     @Produces
+    @JoynrProperties
     public Properties getJoynrProperties() {
         Properties joynrProperties = new Properties();
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         joynrProperties.setProperty(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
+                                    "/io.joynr.discovery.jee/messaging");
+        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost");
         return joynrProperties;
     }
 
