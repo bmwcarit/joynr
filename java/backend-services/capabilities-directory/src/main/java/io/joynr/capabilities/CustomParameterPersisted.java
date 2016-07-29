@@ -20,6 +20,8 @@ package io.joynr.capabilities;
  */
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -32,22 +34,22 @@ public class CustomParameterPersisted extends CustomParameter {
     public CustomParameterPersisted() {
     }
 
-    public CustomParameterPersisted(String participantId, CustomParameter parameter) {
+    public CustomParameterPersisted(CustomParameter parameter) {
         super(parameter);
-        this.participantId = participantId;
     }
 
     private static final long serialVersionUID = 1L;
 
-    private String participantId;
+    private Long id;
 
     @Id
-    protected final String getParticipantId() {
-        return participantId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    protected final Long getId() {
+        return id;
     }
 
-    protected final void setParticipantId(String participantId) {
-        this.participantId = participantId;
+    protected final void setId(Long id) {
+        this.id = id;
     }
 
     @Override
@@ -74,7 +76,7 @@ public class CustomParameterPersisted extends CustomParameter {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
         return result;
     }
 
@@ -90,11 +92,11 @@ public class CustomParameterPersisted extends CustomParameter {
             return false;
         }
         CustomParameterPersisted other = (CustomParameterPersisted) obj;
-        if (participantId == null) {
-            if (other.participantId != null) {
+        if (id == null) {
+            if (other.id != null) {
                 return false;
             }
-        } else if (!participantId.equals(other.participantId)) {
+        } else if (!id.equals(other.id)) {
             return false;
         }
         return true;
