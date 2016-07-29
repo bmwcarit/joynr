@@ -26,6 +26,7 @@ import static com.google.inject.util.Modules.override;
 import static java.lang.String.format;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,9 +36,15 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.annotation.Resource;
 import javax.ejb.Singleton;
+import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
+import io.joynr.dispatching.JoynrMessageProcessor;
+import io.joynr.dispatching.JoynrMessageProcessorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +90,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     private final String joynrLocalDomain;
 
+    private BeanManager beanManager;
+
     /**
      * The scheduled executor service to use for providing to the joynr runtime.
      */
@@ -100,14 +109,13 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
      * methods also need to be declared in that interface, otherwise CDI won't recognise the method implementations as
      * producers.
      *
-     * @param joynrProperties
-     *            the joynr properties, if present, to override the {@link #getJoynrProperties() defaults} with.
-     * @param joynrLocalDomain
-     *            the joynr local domain name to use for the application.
+     * @param joynrProperties  the joynr properties, if present, by {@link #prepareJoynrProperties(Properties)} to prepare the properties with which the injector is created.
+     * @param joynrLocalDomain the joynr local domain name to use for the application.
      */
     @Inject
     public DefaultJoynrRuntimeFactory(@JoynrProperties Instance<Properties> joynrProperties,
-                                      @JoynrLocalDomain Instance<String> joynrLocalDomain) {
+                                      @JoynrLocalDomain Instance<String> joynrLocalDomain,
+                                      BeanManager beanManager) {
         if (!joynrLocalDomain.isUnsatisfied() && !joynrLocalDomain.isAmbiguous()) {
             this.joynrLocalDomain = joynrLocalDomain.get();
         } else {
@@ -123,6 +131,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             configuredProperties = new Properties();
         }
         this.joynrProperties = prepareJoynrProperties(configuredProperties);
+        this.beanManager = beanManager;
     }
 
     @Override
@@ -142,8 +151,23 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             fInjector = new JoynrInjectorFactory(joynrProperties,
                                                  new StaticDomainAccessControlProvisioningModule(),
                                                  override(new CCInProcessRuntimeModule()).with(new JeeJoynrIntegrationModule(scheduledExecutorService))).getInjector();
+            addMessageProcessors();
         }
         return fInjector;
+    }
+
+    private void addMessageProcessors() {
+        Set<Bean<?>> joynrMessageProcessorBeans = beanManager.getBeans(JoynrMessageProcessor.class,
+                                                                       new AnnotationLiteral<Any>() {
+                                                                       });
+        JoynrMessageProcessorProvider joynrMessageProcessorProvider = fInjector.getInstance(JoynrMessageProcessorProvider.class);
+        for (Bean<?> bean : joynrMessageProcessorBeans) {
+            joynrMessageProcessorProvider.addProcessors((JoynrMessageProcessor) Proxy.newProxyInstance(getClass().getClassLoader(),
+                                                                                                       new Class[]{ JoynrMessageProcessor.class },
+                                                                                                       new BeanCallingProxy<JoynrMessageProcessor>((Bean<JoynrMessageProcessor>) bean,
+                                                                                                                                                   beanManager)));
+        }
+
     }
 
     private Properties prepareJoynrProperties(Properties configuredProperties) {
@@ -186,23 +210,25 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         List<MasterAccessControlEntry> allEntries = new ArrayList<>();
         for (String interfaceName : interfaceNames) {
             MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
-                                                                                                domain,
-                                                                                                interfaceName,
-                                                                                                TrustLevel.LOW,
-                                                                                                new TrustLevel[]{ TrustLevel.LOW },
-                                                                                                TrustLevel.LOW,
-                                                                                                new TrustLevel[]{ TrustLevel.LOW },
-                                                                                                "*",
-                                                                                                Permission.YES,
-                                                                                                new Permission[]{ joynr.infrastructure.DacTypes.Permission.YES });
+                domain,
+                interfaceName,
+                TrustLevel.LOW,
+                new TrustLevel[]{TrustLevel.LOW},
+                TrustLevel.LOW,
+                new TrustLevel[]{TrustLevel.LOW},
+                "*",
+                Permission.YES,
+                new Permission[]{joynr.infrastructure.DacTypes.Permission.YES});
             allEntries.add(newMasterAccessControlEntry);
         }
-        MasterAccessControlEntry[] provisionedAccessControlEntries = allEntries.toArray(new MasterAccessControlEntry[allEntries.size()]);
+        MasterAccessControlEntry[] provisionedAccessControlEntries = allEntries.toArray(
+            new MasterAccessControlEntry[allEntries.size()]);
         String provisionedAccessControlEntriesAsJson;
         try {
             provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
-            properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
-                                   provisionedAccessControlEntriesAsJson);
+            properties.setProperty(
+                StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
+                provisionedAccessControlEntriesAsJson);
         } catch (JsonProcessingException e) {
             LOG.error("Error parsing JSON.", e);
         }
