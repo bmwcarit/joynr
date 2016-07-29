@@ -1,3 +1,12 @@
+#joynr 0.19.3
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JS]** Support attributes starting with capital letters. 
+
 #joynr 0.19.2
 This is a minor bug fix release.
 
