@@ -20,10 +20,12 @@ package io.joynr.integration.websocket;
  */
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.joynr.dispatching.JoynrMessageFactory;
+import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
@@ -82,7 +84,7 @@ public class WebSocketTest {
                 return null;
             }
         }).when(messageRouterMock).route(Mockito.any(JoynrMessage.class));
-        joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper());
+        joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new ArrayList<JoynrMessageProcessor>());
     }
 
     private void configure(int maxMessageSize, long reconnectDelay, long websocketIdleTimeout) {

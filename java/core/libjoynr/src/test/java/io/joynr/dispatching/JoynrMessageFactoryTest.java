@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
@@ -60,6 +62,7 @@ public class JoynrMessageFactoryTest {
     private ExpiryDate expiryDate;
     private MessagingQos messagingQos;
     private SubscriptionRequest subscriptionRequest;
+    private JoynrMessageProcessorProvider joynrMessageProcessorProvider;
 
     private SubscriptionPublication publication;
     private ObjectMapper objectMapper;
@@ -69,12 +72,14 @@ public class JoynrMessageFactoryTest {
 
         fromParticipantId = "sender";
         toParticipantId = "receiver";
+        joynrMessageProcessorProvider = new JoynrMessageProcessorProvider();
         Injector injector = Guice.createInjector(new JsonMessageSerializerModule(), new AbstractModule() {
 
             @Override
             protected void configure() {
                 requestStaticInjection(Request.class);
-
+                bind(new TypeLiteral<List<JoynrMessageProcessor>>() {
+                }).toProvider(joynrMessageProcessorProvider);
             }
 
         });
@@ -230,5 +235,22 @@ public class JoynrMessageFactoryTest {
 
         assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
+    }
+
+    @Test
+    public void testMessageProcessorUsed() {
+        joynrMessageProcessorProvider.addProcessors(new JoynrMessageProcessor() {
+            @Override
+            public JoynrMessage process(JoynrMessage joynrMessage) {
+                joynrMessage.getHeader().put("test", "test");
+                return joynrMessage;
+            }
+        });
+        JoynrMessage joynrMessage = joynrMessageFactory.createRequest("from",
+                                                                      "to",
+                                                                      new Request("name", new Object[0], new Class[0]),
+                                                                      new MessagingQos());
+        assertNotNull(joynrMessage.getHeader().get("test"));
+        assertEquals("test", joynrMessage.getHeader().get("test"));
     }
 }

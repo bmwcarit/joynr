@@ -27,6 +27,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -42,6 +43,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.PublicationManager;
@@ -94,6 +96,8 @@ public class DispatcherImplTest {
                 bind(PublicationManager.class).toInstance(publicationManagerMock);
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(MessageReceiver.class).toInstance(messageReceiverMock);
+                bind(new TypeLiteral<List<JoynrMessageProcessor>>() {
+                }).toProvider(new JoynrMessageProcessorProvider());
 
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
 

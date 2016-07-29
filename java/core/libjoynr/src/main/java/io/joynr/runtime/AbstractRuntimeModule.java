@@ -21,6 +21,7 @@ package io.joynr.runtime;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -49,6 +50,8 @@ import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.DispatcherImpl;
+import io.joynr.dispatching.JoynrMessageProcessor;
+import io.joynr.dispatching.JoynrMessageProcessorProvider;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.RequestReplyManagerImpl;
 import io.joynr.dispatching.rpc.RpcUtils;
@@ -140,6 +143,10 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
+        JoynrMessageProcessorProvider joynrMessageProcessorProvider = new JoynrMessageProcessorProvider();
+        bind(JoynrMessageProcessorProvider.class).toInstance(joynrMessageProcessorProvider);
+        bind(new TypeLiteral<List<JoynrMessageProcessor>>() {
+        }).toProvider(joynrMessageProcessorProvider);
     }
 
     @Provides
