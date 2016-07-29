@@ -35,7 +35,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <cassert>
 #include <limits>
-#include "joynr/JsonSerializer.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
 
 using namespace joynr;
@@ -2288,7 +2288,7 @@ bool callSubscribeBroadcastWithSinglePrimitiveParameter(
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeBroadcastWithSinglePrimitiveParameter");
     try {
@@ -2419,7 +2419,7 @@ bool callSubscribeBroadcastWithMultiplePrimitiveParameters(
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeBroadcastWithMultiplePrimitiveParameters");
     try {
@@ -2546,7 +2546,7 @@ bool callSubscribeBroadcastWithSingleArrayParameter(
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeBroadcastWithSingleArrayParameter");
     try {
@@ -2676,7 +2676,7 @@ bool callSubscribeBroadcastWithMultipleArrayParameters(
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeBroadcastWithMultipleArrayParameters");
     try {
@@ -2808,7 +2808,7 @@ bool callSubscribeBroadcastWithSingleEnumerationParameter(
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeBroadcastWithSingleEnumerationParameter");
     try {
@@ -2951,7 +2951,7 @@ bool callSubscribeBroadcastWithMultipleEnumerationParameters(
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeBroadcastWithMultipleEnumerationParameters");
     try {
@@ -3087,7 +3087,7 @@ bool callSubscribeBroadcastWithSingleStructParameter(
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeBroadcastWithSingleStructParameter");
     try {
@@ -3220,7 +3220,7 @@ bool callSubscribeBroadcastWithMultipleStructParameters(
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeBroadcastWithMultipleStructParameters");
     try {
@@ -3375,7 +3375,7 @@ bool callSubscribeBroadcastWithFiltering(interlanguagetest::TestInterfaceProxy* 
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeBroadcastWithFiltering");
     try {
@@ -3393,7 +3393,7 @@ bool callSubscribeBroadcastWithFiltering(interlanguagetest::TestInterfaceProxy* 
         std::string filterStringOfInterest = "fireBroadcast";
         std::vector<std::string> filterStringArrayOfInterest = IltUtil::createStringArray();
         std::string filterStringArrayOfInterestJson(
-                JsonSerializer::serialize(filterStringArrayOfInterest));
+                joynr::serializer::serializeToJson(filterStringArrayOfInterest));
 
         joynr::interlanguagetest::namedTypeCollection2::
                 ExtendedTypeCollectionEnumerationInTypeCollection::Enum filterEnumOfInterest =
@@ -3409,12 +3409,12 @@ bool callSubscribeBroadcastWithFiltering(interlanguagetest::TestInterfaceProxy* 
         joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray
                 filterStructWithStringArray = IltUtil::createStructWithStringArray();
         std::string filterStructWithStringArrayJson(
-                JsonSerializer::serialize(filterStructWithStringArray));
+                joynr::serializer::serializeToJson(filterStructWithStringArray));
 
         std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>
                 filterStructWithStringArrayArray = IltUtil::createStructWithStringArrayArray();
         std::string filterStructWithStringArrayArrayJson(
-                JsonSerializer::serialize(filterStructWithStringArrayArray));
+                joynr::serializer::serializeToJson(filterStructWithStringArrayArray));
 
         filterParameters.setStringOfInterest(filterStringOfInterest);
         filterParameters.setStringArrayOfInterest(filterStringArrayOfInterestJson);
@@ -3555,7 +3555,7 @@ bool callSubscribeAttributeEnumeration(interlanguagetest::TestInterfaceProxy* te
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeAttributeEnumeration");
     try {
@@ -3664,7 +3664,7 @@ bool callSubscribeAttributeWithExceptionFromGetter(
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithExceptionFromGetter");
     try {

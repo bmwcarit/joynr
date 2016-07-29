@@ -20,6 +20,7 @@
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/interlanguagetest/TestInterfaceBroadcastWithFilteringBroadcastFilterParameters.h"
 
 using namespace ::testing;
@@ -127,7 +128,8 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     bool result;
     typedef std::shared_ptr<ISubscriptionListener<
             std::string,
@@ -145,7 +147,7 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
         std::string filterStringOfInterest = "fireBroadcast";
         std::vector<std::string> filterStringArrayOfInterest = IltUtil::createStringArray();
         std::string filterStringArrayOfInterestJson(
-                JsonSerializer::serialize(filterStringArrayOfInterest));
+                joynr::serializer::serializeToJson(filterStringArrayOfInterest));
 
         joynr::interlanguagetest::namedTypeCollection2::
                 ExtendedTypeCollectionEnumerationInTypeCollection::Enum filterEnumOfInterest =
@@ -161,12 +163,12 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
         joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray
                 filterStructWithStringArray = IltUtil::createStructWithStringArray();
         std::string filterStructWithStringArrayJson(
-                JsonSerializer::serialize(filterStructWithStringArray));
+                joynr::serializer::serializeToJson(filterStructWithStringArray));
 
         std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>
                 filterStructWithStringArrayArray = IltUtil::createStructWithStringArrayArray();
         std::string filterStructWithStringArrayArrayJson(
-                JsonSerializer::serialize(filterStructWithStringArrayArray));
+                joynr::serializer::serializeToJson(filterStructWithStringArrayArray));
 
         filterParameters.setStringOfInterest(filterStringOfInterest);
         filterParameters.setStringArrayOfInterest(filterStringArrayOfInterestJson);

@@ -18,7 +18,7 @@
  */
 #include "IltStringBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
-#include "joynr/JsonSerializer.h"
+#include "joynr/serializer/Serializer.h"
 #include "IltUtil.h"
 #include <string>
 
@@ -87,9 +87,9 @@ bool IltStringBroadcastFilter::filter(
             logger, "IltStringBroadcastFilter::filter: stringOfInterest = {}", stringOfInterest);
     JOYNR_LOG_WARN(logger, "IltStringBroadcastFilter::filter: stringOut = {}", stringOut);
 
-    std::vector<std::string*> stringArrayOfInterest =
-            JsonSerializer::deserializeVector<std::string>(
-                    filterParameters.getStringArrayOfInterest());
+    std::vector<std::string> stringArrayOfInterest;
+    joynr::serializer::deserializeFromJson(
+            stringArrayOfInterest, filterParameters.getStringArrayOfInterest());
 
     std::string enumerationOfInterestJson = filterParameters.getEnumerationOfInterest();
     std::string enumerationOfInterestLiteral =
@@ -103,14 +103,16 @@ bool IltStringBroadcastFilter::filter(
     try {
         using joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray;
 
-        StructWithStringArray structWithStringArrayOfInterest =
-                JsonSerializer::deserialize<StructWithStringArray>(
-                        filterParameters.getStructWithStringArrayOfInterest());
+        StructWithStringArray structWithStringArrayOfInterest;
+        joynr::serializer::deserializeFromJson(
+                structWithStringArrayOfInterest,
+                filterParameters.getStructWithStringArrayOfInterest());
 
-        std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray*>
-                structWithStringArrayArrayOfInterest = JsonSerializer::deserializeVector<
-                        joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>(
-                        filterParameters.getStructWithStringArrayArrayOfInterest());
+        std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>
+                structWithStringArrayArrayOfInterest;
+        joynr::serializer::deserializeFromJson(
+                structWithStringArrayArrayOfInterest,
+                filterParameters.getStructWithStringArrayArrayOfInterest());
 
         if (!IltUtil::checkStringArray(stringArrayOfInterest)) {
             return false;
