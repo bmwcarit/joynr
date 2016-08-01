@@ -543,8 +543,21 @@ void PublicationManager::saveSubscriptionRequestsMap(const Map& map,
         return;
     }
 
+    std::unordered_map<std::string, typename Map::mapped_type> mapToBeSerialized;
+
+    auto fun = [&mapToBeSerialized](auto&& map) {
+        for (auto&& entry : map) {
+            auto&& mtype = entry.second;
+            mapToBeSerialized.insert({mtype->getProviderId(), mtype});
+        }
+    };
+    map.applyReadFun(fun);
+
     try {
-        joynr::util::saveStringToFile(storageFilename, joynr::serializer::serializeToJson(map));
+        joynr::util::saveStringToFile(
+                storageFilename, joynr::serializer::serializeToJson(mapToBeSerialized));
+    } catch (const std::invalid_argument& ex) {
+        JOYNR_LOG_ERROR(logger, "serializing subscription map to JSON failed: {}", ex.what());
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }

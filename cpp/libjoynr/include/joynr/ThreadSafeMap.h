@@ -24,7 +24,6 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ReadWriteLock.h"
-#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -39,6 +38,7 @@ class ThreadSafeMap
 {
 public:
     using MapIterator = typename Map<Key, T>::const_iterator;
+    using mapped_type = T;
 
     /**
      * @brief ThreadSafeMap
@@ -116,6 +116,13 @@ public:
         return aValue;
     }
 
+    template <typename Fun>
+    void applyReadFun(Fun&& f) const
+    {
+        ReadLocker locker(lock);
+        f(map);
+    }
+
     /**
      * @brief contains check if map contains element with given key
      * @param key
@@ -164,20 +171,6 @@ public:
     MapIterator end() const
     {
         return map.end();
-    }
-
-    template <typename Archive>
-    void load(Archive& archive)
-    {
-        WriteLocker locker(lock);
-        archive(MUESLI_NVP(map));
-    }
-
-    template <typename Archive>
-    void save(Archive& archive)
-    {
-        ReadLocker locker(lock);
-        archive(MUESLI_NVP(map));
     }
 
 private:
