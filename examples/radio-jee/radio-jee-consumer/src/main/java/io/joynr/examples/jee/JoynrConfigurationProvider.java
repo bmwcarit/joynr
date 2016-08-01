@@ -24,9 +24,9 @@ import java.util.Properties;
 import javax.ejb.Singleton;
 import javax.enterprise.inject.Produces;
 
-import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
 
@@ -42,11 +42,14 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.examples.jee.consumer");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
+        joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8383/bounceproxy/");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
                                     "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
-        joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8383/bounceproxy/");
-        joynrProperties.setProperty(JeeIntegrationPropertyKeys.JEE_INTEGRATION_ENDPOINTREGISTRY_URI,
-                                    "http://localhost:8080");
+        joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID,
+                                    "capabilitiesdirectory_participantid");
+        joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID,
+                                    "domainaccesscontroller_participantid");
+        joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "jee-consumer-joynr.properties");
 
         return joynrProperties;
     }
