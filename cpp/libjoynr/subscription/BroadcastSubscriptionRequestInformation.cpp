@@ -39,10 +39,7 @@ bool BroadcastSubscriptionRequestInformation::operator==(
 
 std::string BroadcastSubscriptionRequestInformation::toString()
 {
-    // TODO fixme
-    /*return joynr::serializer::serializeToJson(
-            static_cast<BroadcastSubscriptionRequestInformation&>(*this));*/
-    return std::string();
+    return joynr::serializer::serializeToJson(*this);
 }
 
 } // namespace joynr
