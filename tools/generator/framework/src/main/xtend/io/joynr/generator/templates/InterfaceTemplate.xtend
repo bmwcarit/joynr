@@ -21,12 +21,15 @@ import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 import org.franca.core.franca.FInterface
+import io.joynr.generator.templates.util.BroadcastUtil
+import org.franca.core.franca.FBroadcast
 
 /*
  * This is the base class used by all generation templates which process a Franca interface type
  */
 abstract class InterfaceTemplate {
 	@Inject protected extension JoynrGeneratorExtensions
+	@Inject protected extension BroadcastUtil
 	protected FInterface francaIntf
 	protected var majorVersion = 0
 	protected var minorVersion = 0
@@ -48,5 +51,9 @@ abstract class InterfaceTemplate {
 
 	def hasSelectiveBroadcast() {
 		francaIntf.broadcasts.exists[selective]
+	}
+
+	def getBroadcastFilterClassName(FBroadcast broadcast) {
+		getBroadcastFilterClassName(francaIntf, broadcast)
 	}
 }

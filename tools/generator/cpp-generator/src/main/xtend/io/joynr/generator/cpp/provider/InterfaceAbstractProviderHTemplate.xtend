@@ -23,7 +23,6 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 
 class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
@@ -32,7 +31,6 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
-	@Inject private extension BroadcastUtil
 
 	override generate()
 '''
@@ -61,9 +59,7 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 
 // forward declare broadcast filter classes
 «FOR broadcast: francaIntf.broadcasts.filter[selective]»
-	«val broadcastName = broadcast.joynrName»
-	«val broadCastFilterClassName = interfaceName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
-	class «broadCastFilterClassName»;
+	class «getBroadcastFilterClassName(broadcast)»;
 «ENDFOR»
 
 /** @brief Abstract provider class for interface «interfaceName» */
@@ -140,12 +136,9 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»AbstractProvider);
 
-	«FOR broadcast: francaIntf.broadcasts»
-		«IF broadcast.selective»
-			«val broadcastName = broadcast.joynrName»
-			«val broadCastFilterClassName = interfaceName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
-			std::vector<std::shared_ptr<«broadCastFilterClassName»>> «broadcastName»Filters;
-		«ENDIF»
+	«FOR broadcast: francaIntf.broadcasts.filter[selective]»
+		«val broadcastName = broadcast.joynrName»
+		std::vector<std::shared_ptr<«getBroadcastFilterClassName(broadcast)»>> «broadcastName»Filters;
 	«ENDFOR»
 };
 «getNamespaceEnder(francaIntf)»

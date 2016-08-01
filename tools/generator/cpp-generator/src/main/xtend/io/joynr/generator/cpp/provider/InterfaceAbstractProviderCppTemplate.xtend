@@ -23,7 +23,6 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 
 class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
@@ -33,7 +32,6 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
-	@Inject private extension BroadcastUtil
 
 	override generate()
 '''
@@ -49,9 +47,7 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 «ENDFOR»
 
 «FOR broadcast: francaIntf.broadcasts.filter[selective]»
-	«val broadcastName = broadcast.joynrName»
-	«val broadCastFilterClassName = interfaceName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
-	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«broadCastFilterClassName».h"
+	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«getBroadcastFilterClassName(broadcast)».h"
 «ENDFOR»
 
 «getNamespaceStarter(francaIntf)»
