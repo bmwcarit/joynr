@@ -45,8 +45,8 @@ class End2EndSubscriptionTest : public TestWithParam< std::tuple<std::string, st
 public:
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
-    Settings *settings1;
-    Settings *settings2;
+    std::unique_ptr<Settings> settings1;
+    std::unique_ptr<Settings> settings2;
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
@@ -58,8 +58,8 @@ public:
     End2EndSubscriptionTest() :
         runtime1(nullptr),
         runtime2(nullptr),
-        settings1(new Settings(std::get<0>(GetParam()))),
-        settings2(new Settings(std::get<1>(GetParam()))),
+        settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
+        settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
         baseUuid(util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppEnd2EndSubscriptionTest_Domain" + uuid),
@@ -71,12 +71,12 @@ public:
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = new JoynrClusterControllerRuntime(nullptr, settings1);
+        runtime1 = new JoynrClusterControllerRuntime(nullptr, std::move(settings1));
 
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = new JoynrClusterControllerRuntime(nullptr, settings2);
+        runtime2 = new JoynrClusterControllerRuntime(nullptr, std::move(settings2));
     }
 
     void SetUp() {

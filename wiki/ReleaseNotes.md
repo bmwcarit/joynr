@@ -2,7 +2,7 @@
 This is a minor bug fix release.
 
 ##API relevant changes
-None.
+* **[C++]** Add new API to create joynr runtime with settings object. 
 
 ##Other changes
 * **[JS]** Support attributes starting with capital letters. 

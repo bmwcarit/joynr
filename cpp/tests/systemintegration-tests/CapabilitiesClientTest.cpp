@@ -16,10 +16,12 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
+#include <string>
+
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <string>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
@@ -44,12 +46,12 @@ class CapabilitiesClientTest : public TestWithParam< std::string > {
 public:
     ADD_LOGGER(CapabilitiesClientTest);
     JoynrClusterControllerRuntime* runtime;
-    Settings *settings;
+    std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
 
     CapabilitiesClientTest() :
         runtime(nullptr),
-        settings(new Settings(GetParam())),
+        settings(std::make_unique<Settings>(GetParam())),
         messagingSettings(*settings)
     {
         messagingSettings.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName);
@@ -57,7 +59,7 @@ public:
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
-        runtime = new JoynrClusterControllerRuntime(nullptr, settings);
+        runtime = new JoynrClusterControllerRuntime(nullptr, std::move(settings));
     }
 
     void SetUp() {
