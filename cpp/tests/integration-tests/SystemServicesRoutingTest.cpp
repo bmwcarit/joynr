@@ -16,9 +16,10 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
+#include <string>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <string>
 #include "JoynrTest.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
@@ -34,7 +35,7 @@ class SystemServicesRoutingTest : public ::testing::Test {
 public:
     SystemServicesRoutingTest() :
             settingsFilename("test-resources/SystemServicesRoutingTest.settings"),
-            settings(new Settings(settingsFilename)),
+            settings(std::make_unique<Settings>(settingsFilename)),
             routingDomain(),
             routingProviderParticipantId(),
             runtime(nullptr),
@@ -76,7 +77,7 @@ public:
         //a channelId for getReceiveChannelId.
         runtime = new JoynrClusterControllerRuntime(
                 nullptr,
-                settings,
+                std::move(settings),
                 mockMessageReceiverHttp,
                 mockMessageSender,
                 mockMessageReceiverMqtt,
@@ -110,7 +111,7 @@ public:
 
 protected:
     std::string settingsFilename;
-    Settings* settings;
+    std::unique_ptr<Settings> settings;
     std::string routingDomain;
     std::string routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;

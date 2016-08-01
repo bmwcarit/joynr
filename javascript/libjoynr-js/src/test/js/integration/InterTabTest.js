@@ -273,6 +273,7 @@ define([
                                      *   (due to missing provider)
                                      */
                                     var isOn = true;
+                                    var startWithCapitalLetterValue = true;
                                     var enumAttribute = Country.GERMANY;
                                     var enumArrayAttribute = [Country.GERMANY];
                                     var byteBufferAttribute = null;
@@ -338,6 +339,13 @@ define([
                                     });
                                     radioProvider.isOn.registerSetter(function(value) {
                                         isOn = value;
+                                    });
+
+                                    radioProvider.StartWithCapitalLetter.registerGetter(function() {
+                                        return startWithCapitalLetterValue;
+                                    });
+                                    radioProvider.StartWithCapitalLetter.registerSetter(function(value) {
+                                        startWithCapitalLetterValue = value;
                                     });
 
                                     radioProvider.enumAttribute.registerGetter(function() {

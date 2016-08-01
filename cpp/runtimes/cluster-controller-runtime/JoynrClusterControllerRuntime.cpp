@@ -94,7 +94,7 @@ INIT_LOGGER(JoynrClusterControllerRuntime);
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         QCoreApplication* app,
-        Settings* settings,
+        std::unique_ptr<Settings> settings,
         std::shared_ptr<IMessageReceiver> httpMessageReceiver,
         std::shared_ptr<IMessageSender> httpMessageSender,
         std::shared_ptr<IMessageReceiver> mqttMessageReceiver,
@@ -122,13 +122,13 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           inProcessPublicationSender(nullptr),
           joynrMessagingConnectorFactory(nullptr),
           connectorFactory(nullptr),
-          settings(settings),
-          libjoynrSettings(*settings),
+          settings(std::move(settings)),
+          libjoynrSettings(*(this->settings)),
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
           dbusSettings(nullptr),
           ccDbusMessageRouterAdapter(nullptr),
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-          wsSettings(*settings),
+          wsSettings(*(this->settings)),
           wsCcMessagingSkeleton(nullptr),
           httpMessagingIsRunning(false),
           mqttMessagingIsRunning(false),
@@ -515,7 +515,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     delete ccDbusMessageRouterAdapter;
     delete dbusSettings;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-    delete settings;
 
     JOYNR_LOG_TRACE(logger, "leaving ~JoynrClusterControllerRuntime");
 }
@@ -564,7 +563,7 @@ void JoynrClusterControllerRuntime::runForever()
 }
 
 JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(
-        Settings* settings,
+        std::unique_ptr<Settings> settings,
         const std::string& discoveryEntriesFile)
 {
     // Only allow one QCoreApplication instance
@@ -574,7 +573,7 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(
             (QCoreApplication::instance() == nullptr) ? new QCoreApplication(argc, argv) : nullptr;
 
     JoynrClusterControllerRuntime* runtime =
-            new JoynrClusterControllerRuntime(coreApplication, settings);
+            new JoynrClusterControllerRuntime(coreApplication, std::move(settings));
 
     assert(runtime->localCapabilitiesDirectory);
     runtime->localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);

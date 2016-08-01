@@ -206,6 +206,67 @@ define(
                                     }
                                 ];
 
+                        function testHandleRequestForGetterSetterMethod(attributeName, params, promiseChain) {
+                            var providerParticipantId = "providerParticipantId";
+                            var provider = {};
+                            provider[attributeName] = {
+                                get : jasmine.createSpy("getSpy"),
+                                set : jasmine.createSpy("setSpy")
+                            };
+
+                            provider[attributeName].get.and.returnValue([]);
+                            provider[attributeName].set.and.returnValue([]);
+
+                            return promiseChain.then(function() {
+                                var request = new Request({
+                                    methodName : "get" + UtilInternal.firstUpper(attributeName),
+                                    paramDatatypes : [],
+                                    params : []
+                                });
+
+                                requestReplyManager.addRequestCaller(
+                                        providerParticipantId,
+                                        provider);
+
+                                requestReplyManager.handleRequest(
+                                        providerParticipantId,
+                                        request,
+                                        jasmine.createSpy);
+
+                                return waitsFor(function() {
+                                    return provider[attributeName].get.calls.count() > 0;
+                                }, "getAttribute to be called", 100);
+                            }).then(function() {
+                                var request = new Request({
+                                    methodName : "set" + UtilInternal.firstUpper(attributeName),
+                                    paramDatatypes : [],
+                                    // untype objects through serialization and deserialization
+                                    params : JSON.parse(JSON.stringify(params))
+                                });
+
+                                requestReplyManager.addRequestCaller(
+                                        providerParticipantId,
+                                        provider);
+
+                                requestReplyManager.handleRequest(
+                                        providerParticipantId,
+                                        request,
+                                        jasmine.createSpy);
+
+                                return waitsFor(function() {
+                                    return provider[attributeName].set.calls.count() > 0;
+                                }, "setAttribute to be called", 100);
+                            }).then(function() {
+                                expect(provider[attributeName].get).toHaveBeenCalledWith();
+
+                                expect(provider[attributeName].set).toHaveBeenCalledWith(params[0]);
+
+                                var result =
+                                        provider[attributeName].set.calls.argsFor(0)[0];
+                                expect(result).toEqual(params[0]);
+                            });
+                        }
+
                         function testHandleRequestWithExpectedType(paramDatatypes, params, promiseChain) {
                             var providerParticipantId = "providerParticipantId";
                             var provider = {
@@ -248,6 +309,16 @@ define(
                                         Typing.getObjectType(params));
                             });
                         }
+
+                        it("calls registered requestCaller for attribute", function(done) {
+                            var promiseChain = Promise.resolve();
+                            testHandleRequestForGetterSetterMethod("attributeA", [ "attributeA"], promiseChain);
+                            testHandleRequestForGetterSetterMethod("AttributeWithStartingCapitalLetter", [ "AttributeWithStartingCapitalLetter"], promiseChain);
+                            promiseChain.then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
 
                         it(
                                 "calls registered requestCaller with correctly typed object",

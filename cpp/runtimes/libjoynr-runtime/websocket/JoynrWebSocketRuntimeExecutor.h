@@ -21,18 +21,18 @@
 #define JOYNRWEBSOCKETRUNTIMEEXECUTOR_H
 
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Settings.h"
 #include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 
 namespace joynr
 {
 
 class LibJoynrRuntime;
-class Settings;
 
 class JoynrWebSocketRuntimeExecutor : public JoynrRuntimeExecutor
 {
 public:
-    explicit JoynrWebSocketRuntimeExecutor(Settings* settings);
+    explicit JoynrWebSocketRuntimeExecutor(std::unique_ptr<Settings> settings);
     ~JoynrWebSocketRuntimeExecutor() override = default;
 
 private:
