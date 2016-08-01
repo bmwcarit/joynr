@@ -152,10 +152,8 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         auto onSuccess =
                 [requestReplyId, requestExpiryDate, this, senderId, receiverId](Reply&& reply) {
             reply.setRequestReplyId(requestReplyId);
-            // reply.setResponseVariant(std::move(returnValueVar));
             // send reply back to the original sender (ie. sender and receiver ids are reversed
-            // on
-            // purpose)
+            // on purpose)
             JOYNR_LOG_DEBUG(logger,
                             "Got reply from RequestInterpreter for requestReplyId {}",
                             requestReplyId);
