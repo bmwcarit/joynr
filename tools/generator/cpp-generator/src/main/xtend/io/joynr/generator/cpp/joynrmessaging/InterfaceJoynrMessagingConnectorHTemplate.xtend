@@ -48,7 +48,7 @@ class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 #define «headerGuard»
 
 «getDllExportIncludeStatement()»
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 

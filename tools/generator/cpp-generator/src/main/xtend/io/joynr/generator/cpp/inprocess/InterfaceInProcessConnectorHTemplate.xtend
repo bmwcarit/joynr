@@ -60,7 +60,7 @@ class InterfaceInProcessConnectorHTemplate extends InterfaceTemplate{
 #include "joynr/Logger.h"
 #include "joynr/TypeUtil.h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include <memory>

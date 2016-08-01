@@ -66,7 +66,7 @@ class InterfaceCppTemplate extends InterfaceTemplate {
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 

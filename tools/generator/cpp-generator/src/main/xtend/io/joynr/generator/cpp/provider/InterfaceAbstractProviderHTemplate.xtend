@@ -51,7 +51,7 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 #include "joynr/AbstractJoynrProvider.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 

@@ -48,7 +48,7 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include "joynr/system/RoutingTypes/Address.h"

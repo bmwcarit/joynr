@@ -46,7 +46,7 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 #include <functional>
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
-«FOR datatype: getRequiredIncludesFor(francaIntf)»
+«FOR datatype: getDataTypeIncludesFor(francaIntf)»
 	#include «datatype»
 «ENDFOR»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"

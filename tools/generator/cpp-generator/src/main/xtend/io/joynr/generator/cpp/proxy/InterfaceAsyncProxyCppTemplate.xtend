@@ -45,7 +45,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«asyncClassName».h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 

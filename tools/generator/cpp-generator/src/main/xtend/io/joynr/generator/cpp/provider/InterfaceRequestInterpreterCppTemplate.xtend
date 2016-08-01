@@ -54,7 +54,7 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 

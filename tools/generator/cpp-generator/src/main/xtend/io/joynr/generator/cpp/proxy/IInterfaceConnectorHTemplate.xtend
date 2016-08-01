@@ -43,7 +43,7 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 «getDllExportIncludeStatement()»
-«FOR parameterType: cppStdTypeUtil.getRequiredIncludesFor(francaIntf)»
+«FOR parameterType: cppStdTypeUtil.getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 

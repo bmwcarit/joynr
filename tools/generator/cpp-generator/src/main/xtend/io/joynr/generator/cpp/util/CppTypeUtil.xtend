@@ -275,7 +275,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		return super.getDatatype(type)
 	}
 
-	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
+	def Set<String> getDataTypeIncludesFor(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
 		val selector = TypeSelector::defaultTypeSelector
 		selector.errorTypes(true)

@@ -54,7 +54,7 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 #include "joynr/types/Version.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include "joynr/Logger.h"

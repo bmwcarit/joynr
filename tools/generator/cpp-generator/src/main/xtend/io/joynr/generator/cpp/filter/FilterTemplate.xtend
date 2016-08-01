@@ -54,7 +54,7 @@ class FilterTemplate implements BroadcastTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getDataTypeIncludesFor(serviceInterface)»
 #include «parameterType»
 «ENDFOR»
 
