@@ -1,3 +1,12 @@
+#joynr 0.19.3
+This is a minor bug fix release.
+
+##API relevant changes
+* **[C++]** Add new API to create joynr runtime with settings object. 
+
+##Other changes
+* **[JS]** Support attributes starting with capital letters. 
+
 #joynr 0.19.2
 This is a minor bug fix release.
 
