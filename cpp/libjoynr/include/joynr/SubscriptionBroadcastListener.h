@@ -23,7 +23,6 @@
 #include <memory>
 #include <vector>
 
-#include "joynr/Variant.h"
 #include "joynr/JoynrExport.h"
 
 namespace joynr

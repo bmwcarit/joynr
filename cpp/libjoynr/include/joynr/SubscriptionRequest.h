@@ -24,7 +24,6 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionQos.h"
-#include "joynr/Variant.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr

@@ -22,17 +22,14 @@
 namespace joynr
 {
 
-static bool isSubscriptionPublicationRegistered =
-        Variant::registerType<SubscriptionPublication>("joynr.SubscriptionPublication");
-
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
-SubscriptionPublication::SubscriptionPublication() : subscriptionId(), error(), responseVariant()
+SubscriptionPublication::SubscriptionPublication() : subscriptionId(), error()
 {
 }
 
 SubscriptionPublication::SubscriptionPublication(BaseReply&& baseReply)
-        : BaseReply::BaseReply(std::move(baseReply)), subscriptionId(), error(), responseVariant()
+        : BaseReply::BaseReply(std::move(baseReply)), subscriptionId(), error()
 {
 }
 
@@ -66,16 +63,6 @@ bool SubscriptionPublication::operator==(const SubscriptionPublication& other) c
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const
 {
     return !(*this == other);
-}
-
-std::vector<Variant> SubscriptionPublication::getResponseVariant() const
-{
-    return responseVariant;
-}
-
-void SubscriptionPublication::setResponseVariant(const std::vector<Variant>& response)
-{
-    this->responseVariant = response;
 }
 
 std::shared_ptr<exceptions::JoynrRuntimeException> SubscriptionPublication::getError() const

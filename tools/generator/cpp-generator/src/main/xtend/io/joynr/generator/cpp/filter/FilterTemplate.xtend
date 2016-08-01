@@ -35,13 +35,6 @@ class FilterTemplate implements BroadcastTemplate {
 	@Inject extension NamingUtil
 	@Inject extension BroadcastUtil
 
-	def getCommaSeperatedEventArgumentListFromVariantList(Iterable<FArgument> arguments)'''
-		«var i = 0»
-		«FOR FArgument argument : arguments SEPARATOR ","»
-			util::valueOf<«argument.typeName»>(eventValues[«i++»])
-		«ENDFOR»
-'''
-
 	override generate(FInterface serviceInterface, FBroadcast broadcast)
 '''
 «val broadcastName =  broadcast.joynrName»

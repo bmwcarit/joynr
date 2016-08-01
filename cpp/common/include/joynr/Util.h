@@ -32,7 +32,6 @@
 #include <boost/mpl/deref.hpp>
 #include <boost/mpl/next_prior.hpp>
 
-#include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
 
 namespace joynr
@@ -62,65 +61,6 @@ void saveStringToFile(const std::string& fileName, const std::string& strToSave)
 
 // If the file is not open log the reason why. fileName is required for logging
 bool isFileOpen(const std::fstream& file, const std::string& fileName);
-
-template <typename T>
-typename T::Enum convertVariantToEnum(const Variant& v)
-{
-    if (v.is<std::string>()) {
-        std::string enumValueName = v.get<std::string>();
-        return T::getEnum(enumValueName);
-    } else {
-        return v.get<typename T::Enum>();
-    }
-}
-
-template <typename T>
-std::vector<typename T::Enum> convertVariantVectorToEnumVector(
-        const std::vector<Variant>& variantVector)
-{
-    std::vector<typename T::Enum> enumVector;
-    enumVector.reserve(variantVector.size());
-    for (const Variant& variant : variantVector) {
-        enumVector.push_back(convertVariantToEnum<T>(variant));
-    }
-    return enumVector;
-}
-
-template <typename T>
-std::vector<Variant> convertEnumVectorToVariantVector(
-        const std::vector<typename T::Enum>& enumVector)
-{
-    std::vector<Variant> variantVector;
-    variantVector.reserve(enumVector.size());
-    for (const typename T::Enum& enumValue : enumVector) {
-        variantVector.push_back(Variant::make<typename T::Enum>(enumValue));
-    }
-    return variantVector;
-}
-
-template <class T>
-std::vector<Variant> convertVectorToVariantVector(const std::vector<T>& inputVector)
-{
-    std::vector<Variant> variantVector;
-    variantVector.reserve(inputVector.size());
-    for (const T& element : inputVector) {
-        variantVector.push_back(Variant::make<T>(element));
-    }
-    return variantVector;
-}
-
-template <class T>
-std::vector<T> convertVariantVectorToVector(const std::vector<Variant>& variantVector)
-{
-    std::vector<T> typeVector;
-    typeVector.reserve(variantVector.size());
-
-    for (Variant variant : variantVector) {
-        typeVector.push_back(variant.get<T>());
-    }
-
-    return typeVector;
-}
 
 template <class T>
 std::vector<T> convertIntListToEnumList(const std::vector<int>& inputList)
@@ -178,54 +118,6 @@ template <>
 inline int getTypeId<>()
 {
     return 0;
-}
-
-// this level of indirection is necessary to allow partial specialization
-template <typename T>
-struct ValueOfImpl
-{
-    static T valueOf(const Variant& variant)
-    {
-        return variant.get<T>();
-    }
-};
-
-// partial specilization for lists of datatypes
-template <typename T>
-struct ValueOfImpl<std::vector<T>>
-{
-    static std::vector<T> valueOf(const Variant& variant)
-    {
-        return convertVariantVectorToVector<T>(variant.get<std::vector<Variant>>());
-    }
-};
-
-template <typename T>
-T valueOf(const Variant& variant)
-{
-    return ValueOfImpl<T>::valueOf(variant);
-}
-
-template <>
-inline float valueOf<float>(const Variant& variant)
-{
-    return ValueOfImpl<double>::valueOf(variant);
-}
-
-template <>
-inline std::string valueOf<std::string>(const Variant& variant)
-{
-    return removeEscapeFromSpecialChars(ValueOfImpl<std::string>::valueOf(variant));
-}
-
-template <>
-inline std::vector<float> valueOf<std::vector<float>>(const Variant& variant)
-{
-    std::vector<double> doubles =
-            convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
-    std::vector<float> floats(doubles.size());
-    std::copy(doubles.cbegin(), doubles.cend(), floats.begin());
-    return floats;
 }
 
 template <typename T>

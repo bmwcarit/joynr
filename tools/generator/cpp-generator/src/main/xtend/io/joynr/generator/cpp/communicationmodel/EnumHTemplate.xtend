@@ -59,7 +59,6 @@ class EnumHTemplate extends EnumTemplate {
 #include <string>
 
 #include "joynr/Util.h"
-#include "joynr/Variant.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -158,24 +157,6 @@ struct «getDllExportMacro()»«typeName» : public joynr::exceptions::Applicati
 void PrintTo(const «type.typeName»& «typeName.toFirstLower»Value, ::std::ostream* os);
 
 «getNamespaceEnder(type, true)»
-
-namespace «joynrGenerationPrefix» {
-namespace util {
-
-template <>
-inline «type.typeName» valueOf<«type.typeName»>(const Variant& variant)
-{
-	return convertVariantToEnum<«type.typeNameOfContainingClass»>(variant);
-}
-
-template <>
-inline std::vector<«type.typeName»> valueOf<std::vector<«type.typeName»>>(const Variant& variant)
-{
-	return convertVariantVectorToEnumVector<«type.typeNameOfContainingClass»>(variant.get<std::vector<Variant>>());
-}
-
-} // namespace util
-} // namespace «joynrGenerationPrefix»
 
 namespace std {
 

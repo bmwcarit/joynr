@@ -35,7 +35,6 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/ThreadSafeMap.h"
-#include "joynr/Variant.h"
 #include "joynr/TypeUtil.h"
 
 namespace boost

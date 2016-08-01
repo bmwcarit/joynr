@@ -24,7 +24,6 @@
 #include "joynr/BaseReply.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/Variant.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
@@ -51,9 +50,6 @@ public:
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
 
-    std::vector<Variant> getResponseVariant() const;
-    void setResponseVariant(const std::vector<Variant>& response);
-
     std::shared_ptr<exceptions::JoynrRuntimeException> getError() const;
     void setError(std::shared_ptr<exceptions::JoynrRuntimeException> error);
 
@@ -68,7 +64,6 @@ private:
     friend void PrintTo(const SubscriptionPublication& subscriptionPublication, ::std::ostream* os);
     std::string subscriptionId;
     std::shared_ptr<exceptions::JoynrRuntimeException> error;
-    std::vector<Variant> responseVariant;
 };
 
 } // namespace joynr

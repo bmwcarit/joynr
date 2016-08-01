@@ -19,13 +19,9 @@
 #include "joynr/SubscriptionQos.h"
 #include <limits>
 #include <chrono>
-#include "joynr/Variant.h"
 
 namespace joynr
 {
-
-static const bool isSubscriptionQosRegistered =
-        Variant::registerType<SubscriptionQos>("joynr.SubscriptionQos");
 
 const std::int64_t& SubscriptionQos::DEFAULT_PUBLICATION_TTL_MS()
 {

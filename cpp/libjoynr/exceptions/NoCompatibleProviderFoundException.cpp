@@ -27,10 +27,6 @@ namespace exceptions
 const std::string NoCompatibleProviderFoundException::TYPE_NAME =
         "io.joynr.exceptions.NoCompatibleProviderFoundException";
 
-static const bool isNoCompatibleProviderFoundExceptionRegistered =
-        Variant::registerType<joynr::exceptions::NoCompatibleProviderFoundException>(
-                NoCompatibleProviderFoundException::TYPE_NAME);
-
 NoCompatibleProviderFoundException::NoCompatibleProviderFoundException(
         const std::unordered_set<joynr::types::Version>& discoveredIncompatibleVersions) noexcept
         : DiscoveryException(),

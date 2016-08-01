@@ -23,10 +23,6 @@ namespace joynr
 
 INIT_LOGGER(BroadcastSubscriptionRequest);
 
-// Register the BroadcastSubscriptionRequest type id
-static const bool isBroadcastSubscriptionRequestRegistered =
-        Variant::registerType<BroadcastSubscriptionRequest>("joynr.BroadcastSubscriptionRequest");
-
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters()
 {
 }

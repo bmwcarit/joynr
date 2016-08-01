@@ -31,8 +31,6 @@
 #include <cstdint>
 #include <chrono>
 
-#include "joynr/Variant.h"
-
 namespace joynr
 {
 

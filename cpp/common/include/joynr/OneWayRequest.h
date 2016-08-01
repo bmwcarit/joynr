@@ -25,7 +25,6 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/serializer/SerializationPlaceholder.h"
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -45,11 +44,6 @@ public:
 
     const std::string& getMethodName() const;
     void setMethodName(const std::string& methodName);
-
-    std::vector<Variant> getParamsVariant() const;
-    void setParamsVariant(std::vector<Variant> variantParams);
-
-    void addParam(Variant value, std::string datatype);
 
     std::vector<std::string> getParamDatatypes() const;
     void setParamDatatypes(std::vector<std::string> paramDatatypes);
@@ -74,7 +68,6 @@ public:
 
 private:
     std::string methodName;
-    std::vector<Variant> variantParams;
     std::vector<std::string> paramDatatypes;
     joynr::serializer::SerializationPlaceholder params;
 };

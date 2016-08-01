@@ -18,8 +18,6 @@
  */
 #include "joynr/exceptions/JoynrException.h"
 
-#include "joynr/Variant.h"
-
 namespace joynr
 {
 
@@ -80,33 +78,6 @@ const std::string& ApplicationException::TYPE_NAME()
     static const std::string TYPE_NAME = "joynr.exceptions.ApplicationException";
     return TYPE_NAME;
 }
-
-static const bool isJoynrExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrException>(JoynrException::TYPE_NAME());
-static const bool isJoynrRuntimeExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrRuntimeException>(
-                JoynrRuntimeException::TYPE_NAME());
-static const bool isJoynrTimeOutExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrTimeOutException>(
-                JoynrTimeOutException::TYPE_NAME());
-static const bool isJoynrMessageNotSentExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrMessageNotSentException>(
-                JoynrMessageNotSentException::TYPE_NAME());
-static const bool isJoynrJoynrDelayMessageExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrDelayMessageException>(
-                JoynrDelayMessageException::TYPE_NAME());
-static const bool isDiscoveryExceptionRegistered =
-        Variant::registerType<joynr::exceptions::DiscoveryException>(
-                DiscoveryException::TYPE_NAME());
-static const bool isProviderRuntimeExceptionRegistered =
-        Variant::registerType<joynr::exceptions::ProviderRuntimeException>(
-                ProviderRuntimeException::TYPE_NAME());
-static const bool isPublicationMissedExceptionRegistered =
-        Variant::registerType<joynr::exceptions::PublicationMissedException>(
-                PublicationMissedException::TYPE_NAME());
-static const bool isApplicationExceptionRegistered =
-        Variant::registerType<joynr::exceptions::ApplicationException>(
-                ApplicationException::TYPE_NAME());
 
 JoynrException::JoynrException() noexcept : message()
 {

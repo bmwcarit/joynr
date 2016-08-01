@@ -24,8 +24,6 @@
 #include <string>
 
 #include "joynr/serializer/Serializer.h"
-
-#include "joynr/Variant.h"
 #include "joynr/JoynrCommonExport.h"
 
 namespace joynr

@@ -60,8 +60,6 @@ class TypeCppTemplate extends CompoundTypeTemplate {
 
 «getNamespaceStarter(type, true)»
 
-static const bool is«typeName»Registered = Variant::registerType<«type.typeName»>("«type.typeName.replace("::", ".")»");
-
 const std::uint32_t «typeName»::MAJOR_VERSION = «majorVersion»;
 const std::uint32_t «typeName»::MINOR_VERSION = «minorVersion»;
 

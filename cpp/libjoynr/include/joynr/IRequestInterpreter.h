@@ -22,8 +22,6 @@
 #include <functional>
 #include <memory>
 
-#include "joynr/Variant.h"
-
 namespace joynr
 {
 

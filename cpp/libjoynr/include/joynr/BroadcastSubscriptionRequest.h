@@ -27,7 +27,6 @@
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
-#include "joynr/Variant.h"
 #include "joynr/Logger.h"
 #include "joynr/serializer/Serializer.h"
 

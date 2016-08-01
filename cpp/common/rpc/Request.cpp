@@ -22,8 +22,6 @@
 namespace joynr
 {
 
-bool isRequestTypeRegistered = Variant::registerType<Request>("joynr.Request");
-
 Request::Request() : OneWayRequest(), requestReplyId(util::createUuid())
 {
 }

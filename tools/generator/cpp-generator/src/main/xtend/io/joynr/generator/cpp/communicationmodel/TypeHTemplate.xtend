@@ -63,7 +63,6 @@ class TypeHTemplate extends CompoundTypeTemplate {
 
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
-#include "joynr/Variant.h"
 
 // include complex Datatype headers.
 «FOR member: type.typeDependencies»

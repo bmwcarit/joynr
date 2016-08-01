@@ -24,7 +24,6 @@
 #include <initializer_list>
 #include <functional>
 
-#include "joynr/Variant.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/Logger.h"

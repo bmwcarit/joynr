@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 
-#include "joynr/Variant.h"
 #include "joynr/BaseReply.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrCommonExport.h"
@@ -59,17 +58,9 @@ public:
     std::shared_ptr<exceptions::JoynrException> getError() const;
     void setError(std::shared_ptr<exceptions::JoynrException> error);
 
-    // ====== START /// TO BE DELETED
-    const std::vector<Variant>& getResponseVariant() const;
-    void setResponseVariant(std::vector<Variant> response);
-    // ====== END /// TO BE DELETED
-
 private:
     std::string requestReplyId;
     std::shared_ptr<exceptions::JoynrException> error;
-    // ====== START /// TO BE DELETED
-    std::vector<Variant> responseVariant;
-    // ====== END /// TO BE DELETED
 };
 
 } // namespace joynr

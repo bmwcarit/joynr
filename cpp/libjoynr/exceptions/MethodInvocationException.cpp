@@ -24,10 +24,6 @@ namespace joynr
 namespace exceptions
 {
 
-static const bool isMethodInvocationExceptionRegistered =
-        Variant::registerType<joynr::exceptions::MethodInvocationException>(
-                MethodInvocationException::TYPE_NAME());
-
 MethodInvocationException::MethodInvocationException() noexcept : JoynrRuntimeException(),
                                                                   providerVersion()
 {

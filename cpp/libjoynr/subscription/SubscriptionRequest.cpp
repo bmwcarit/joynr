@@ -26,9 +26,6 @@
 namespace joynr
 {
 
-static const bool isSubscriptionRequestRegistered =
-        Variant::registerType<SubscriptionRequest>("joynr.SubscriptionRequest");
-
 SubscriptionRequest::SubscriptionRequest() : subscriptionId(), subscribedToName(), qos()
 {
     subscriptionId = util::createUuid();

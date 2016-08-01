@@ -22,14 +22,12 @@
 namespace joynr
 {
 
-bool isReplyRegistered = Variant::registerType<Reply>("joynr.Reply");
-
-Reply::Reply() : requestReplyId(), error(), responseVariant()
+Reply::Reply() : requestReplyId(), error()
 {
 }
 
 Reply::Reply(BaseReply&& baseReply)
-        : BaseReply::BaseReply(std::move(baseReply)), requestReplyId(), error(), responseVariant()
+        : BaseReply::BaseReply(std::move(baseReply)), requestReplyId(), error()
 {
 }
 
@@ -64,15 +62,4 @@ bool Reply::operator!=(const Reply& other) const
     return !(*this == other);
 }
 
-// ====== START /// TO BE DELETED
-const std::vector<Variant>& Reply::getResponseVariant() const
-{
-    return responseVariant;
-}
-
-void Reply::setResponseVariant(std::vector<Variant> response)
-{
-    this->responseVariant = std::move(response);
-}
-// ====== END /// TO BE DELETED
 } // namespace joynr
