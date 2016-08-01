@@ -49,7 +49,7 @@ const std::map<std::string, std::string>& BroadcastFilterParameters::getFilterPa
 
 std::string BroadcastFilterParameters::getFilterParameter(const std::string& parameter) const
 {
-    auto it = filterParameters.find(parameter);
+    std::map<std::string, std::string>::const_iterator it = filterParameters.find(parameter);
     if (it != filterParameters.cend()) {
         return it->second;
     } else {
