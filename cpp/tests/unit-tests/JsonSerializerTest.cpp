@@ -179,7 +179,7 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
 
     tests::testTypes::TestEnum::Enum expectedEnumParam = tests::testTypes::TestEnum::ONE;
     double expectedDoubleParam = 2.2;
-    
+
     // Deserialize a request containing a Java style enum parameter
     std::string serializedContent(R"({"_typeName":"joynr.Request",)"
                                   R"("methodName":"methodEnumDoubleParameters",)"
