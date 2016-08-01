@@ -95,7 +95,8 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithMapParamete
     auto onError = [] (const std::shared_ptr<exceptions::JoynrException>&) {
         ADD_FAILURE()<< "unexpected call of onError function";
     };
-    // since Google Mock does not support r-value references, the call to onSuccess(Reply&&) is proxied to onSuccess(const Reply&)
+    // since Google Mock does not support r-value references,
+    // the call to onSuccess(Reply&&) is proxied to onSuccess(const Reply&)
     EXPECT_CALL(*callback, onSuccess(A<const Reply&>())).Times(1);
 
     Request request = initRequest(methodName, paramDatatypes, inputMap);
@@ -115,13 +116,13 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     std::string methodName = "getLocation";
     auto callback = std::make_shared<MockCallback<Reply&&>>();
     auto onSuccess = [callback] (Reply&& response) {
-        // EXPECT_EQ(types::Localisation::GpsLocation(), response.at(0).get<types::Localisation::GpsLocation>());
         callback->onSuccess(std::move(response));
     };
     auto onError = [] (const std::shared_ptr<exceptions::JoynrException>&) {
         ADD_FAILURE()<< "unexpected call of onError function";
     };
-    // since Google Mock does not support r-value references, the call to onSuccess(Reply&&) is proxied to onSuccess(const Reply&)
+    // since Google Mock does not support r-value references,
+    //the call to onSuccess(Reply&&) is proxied to onSuccess(const Reply&)
     EXPECT_CALL(*callback, onSuccess(A<const Reply&>())).Times(1);
 
     Request request = initRequest(methodName, {});
