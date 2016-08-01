@@ -91,7 +91,7 @@ auto getArchive(const std::string& id, Stream& stream)
         return true;
     };
 
-    bool foundSerializer = util::InvokeOn<RegisteredArchives>(fun);
+    bool foundSerializer = util::invokeOn<RegisteredArchives>(fun);
     if (!foundSerializer) {
         throw std::invalid_argument("no serializer registered for id " + id);
     }

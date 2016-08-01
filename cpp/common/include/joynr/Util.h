@@ -273,19 +273,19 @@ public:
 };
 
 template <typename CurrentIterator, typename EndIterator, typename Fun>
-std::enable_if_t<std::is_same<CurrentIterator, EndIterator>::value, bool> InvokeOnImpl(const Fun&)
+std::enable_if_t<std::is_same<CurrentIterator, EndIterator>::value, bool> invokeOnImpl(const Fun&)
 {
     return false;
 }
 
 template <typename CurrentIterator, typename EndIterator, typename Fun>
-std::enable_if_t<!std::is_same<CurrentIterator, EndIterator>::value, bool> InvokeOnImpl(
+std::enable_if_t<!std::is_same<CurrentIterator, EndIterator>::value, bool> invokeOnImpl(
         const Fun& fun)
 {
     using CurrentType = typename boost::mpl::deref<CurrentIterator>::type;
     using NextIterator = typename boost::mpl::next<CurrentIterator>::type;
     if (fun(CurrentType{})) {
-        return InvokeOnImpl<NextIterator, EndIterator>(fun);
+        return invokeOnImpl<NextIterator, EndIterator>(fun);
     }
     return true;
 }
@@ -297,11 +297,11 @@ std::enable_if_t<!std::is_same<CurrentIterator, EndIterator>::value, bool> Invok
  * The iteration can be exited early by returning false from fun.
  */
 template <typename Sequence, typename Fun>
-bool InvokeOn(const Fun& fun)
+bool invokeOn(const Fun& fun)
 {
     using BeginIterator = typename boost::mpl::begin<Sequence>::type;
     using EndIterator = typename boost::mpl::end<Sequence>::type;
-    return InvokeOnImpl<BeginIterator, EndIterator>(fun);
+    return invokeOnImpl<BeginIterator, EndIterator>(fun);
 }
 
 } // namespace util
