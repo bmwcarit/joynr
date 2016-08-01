@@ -273,7 +273,7 @@ TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReplyWithApplicat
     // Create a ApplicationException
     auto error = std::make_shared<joynr::exceptions::ApplicationException>(
                 literal,
-                std::make_shared<test::MethodWithErrorEnumExtendedErrorEnum::ApplicationExceptionErrorImpl>());
+                std::make_shared<test::MethodWithErrorEnumExtendedErrorEnum>());
 
     joynr::Reply reply = this->initReply("does-not-matter", error);
     auto deserializedError = reply.getError();

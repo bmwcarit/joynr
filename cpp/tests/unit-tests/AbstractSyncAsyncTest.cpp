@@ -536,7 +536,7 @@ public:
         std::string typeName = ErrorEnumBase::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected (typeName + "::" + literal,
-                                                   std::make_shared<ErrorEnumBase::ApplicationExceptionErrorImpl>(literal));
+                                                   std::make_shared<ErrorEnumBase>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         EXPECT_CALL(*callback, onSuccess()).Times(0);
@@ -564,7 +564,7 @@ public:
         std::string typeName = ErrorEnumBase::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  std::make_shared<ErrorEnumBase::ApplicationExceptionErrorImpl>(literal));
+                                                  std::make_shared<ErrorEnumBase>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         try {
@@ -590,7 +590,7 @@ public:
         std::string typeName = MethodWithErrorEnumExtendedErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  std::make_shared<MethodWithErrorEnumExtendedErrorEnum::ApplicationExceptionErrorImpl>(literal));
+                                                  std::make_shared<MethodWithErrorEnumExtendedErrorEnum>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         EXPECT_CALL(*callback, onSuccess()).Times(0);
@@ -617,7 +617,7 @@ public:
         std::string typeName = MethodWithErrorEnumExtendedErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  std::make_shared<MethodWithErrorEnumExtendedErrorEnum::ApplicationExceptionErrorImpl>(literal));
+                                                  std::make_shared<MethodWithErrorEnumExtendedErrorEnum>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         try {
@@ -644,7 +644,7 @@ public:
         std::string typeName = MethodWithImplicitErrorEnumErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  std::make_shared<MethodWithImplicitErrorEnumErrorEnum::ApplicationExceptionErrorImpl>(literal));
+                                                  std::make_shared<MethodWithImplicitErrorEnumErrorEnum>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         EXPECT_CALL(*callback, onSuccess()).Times(0);
@@ -672,7 +672,7 @@ public:
         std::string typeName = MethodWithImplicitErrorEnumErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  std::make_shared<MethodWithImplicitErrorEnumErrorEnum::ApplicationExceptionErrorImpl>(literal));
+                                                  std::make_shared<MethodWithImplicitErrorEnumErrorEnum>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         try {

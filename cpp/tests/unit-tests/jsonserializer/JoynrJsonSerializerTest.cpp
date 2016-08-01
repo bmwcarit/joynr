@@ -73,7 +73,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerAplicationException)
     // Create a ApplicationException
     exceptions::ApplicationException exception(
                 literal,
-                std::make_shared<test::MethodWithErrorEnumExtendedErrorEnum::ApplicationExceptionErrorImpl>(literal));
+                std::make_shared<test::MethodWithErrorEnumExtendedErrorEnum>(literal));
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(exception);

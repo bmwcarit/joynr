@@ -74,10 +74,15 @@ class EnumHTemplate extends EnumTemplate {
  *
  * @version «majorVersion».«minorVersion»
  */
-struct «getDllExportMacro()»«typeName» {
+struct «getDllExportMacro()»«typeName» : public joynr::exceptions::ApplicationExceptionError {
 	«IF type.hasExtendsDeclaration»
 		// This enum inherits enumeration values from «type.extendedType.typeName».
 	«ENDIF»
+
+	using ApplicationExceptionError::ApplicationExceptionError;
+	«typeName»() = default;
+	~«typeName»() override = default;
+
 	/**
 	«appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
 	 * @version «majorVersion».«minorVersion»
@@ -109,9 +114,6 @@ struct «getDllExportMacro()»«typeName» {
 	 * type collection or interface in the Franca model.
 	 */
 	static const std::uint32_t MINOR_VERSION;
-
-	/** @brief Constructor */
-	«typeName»() = delete;
 
 	/**
 	 * @brief Copy constructor
@@ -145,12 +147,6 @@ struct «getDllExportMacro()»«typeName» {
 	 * @return The typeName of the enumeration type
 	 */
 	static std::string getTypeName();
-
-    struct ApplicationExceptionErrorImpl : public joynr::exceptions::ApplicationExceptionError
-    {
-        using ApplicationExceptionError::ApplicationExceptionError;
-        ~ApplicationExceptionErrorImpl() override = default;
-    };
 };
 
 // Printing «typeName» with google-test and google-mock.
@@ -203,7 +199,7 @@ struct hash<«type.buildPackagePath("::", true)»::«typeName»::«getNestedEnum
 };
 } // namespace std
 
-MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.typeNameOfContainingClass»::ApplicationExceptionErrorImpl, joynr::exceptions::ApplicationExceptionError, "«type.typeNameOfContainingClass.replace("::", ".")»")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.typeNameOfContainingClass», joynr::exceptions::ApplicationExceptionError, "«type.typeNameOfContainingClass.replace("::", ".")»")
 
 namespace muesli
 {
