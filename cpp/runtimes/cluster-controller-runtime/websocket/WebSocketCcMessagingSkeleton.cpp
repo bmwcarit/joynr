@@ -39,7 +39,7 @@ namespace joynr
 INIT_LOGGER(WebSocketCcMessagingSkeleton);
 
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
-        MessageRouter& messageRouter,
+        std::shared_ptr<MessageRouter> messageRouter,
         std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
         const system::RoutingTypes::WebSocketAddress& serverAddress)
         : webSocketServer(nullptr),
@@ -80,7 +80,7 @@ void WebSocketCcMessagingSkeleton::transmit(
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     try {
-        messageRouter.route(message);
+        messageRouter->route(message);
     } catch (exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }
