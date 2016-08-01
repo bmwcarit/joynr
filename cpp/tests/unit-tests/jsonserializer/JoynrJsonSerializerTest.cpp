@@ -25,9 +25,6 @@
 #include <functional>
 
 #include "joynr/Variant.h"
-#include "joynr/SerializerRegistry.h"
-#include "joynr/JsonTokenizer.h"
-#include "ExampleTypes.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/Logger.h"
@@ -67,41 +64,6 @@ private:
 };
 
 INIT_LOGGER(JoynrJsonSerializerTest);
-
-
-std::string convertPermission(ExamplePermission::Enum e)
-{
-    switch (e) {
-    case ExamplePermission::YES:
-        return "YES";
-    case ExamplePermission::ASK:
-        return "ASK";
-    case ExamplePermission::NO:
-        return "NO";
-    default:
-        return "UNKNOWN";
-    }
-}
-
-TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrType)
-{
-    std::string json(R"({"_typeName":"joynr.infrastructure.ExampleMasterAccessControlEntry","defaultConsumerPermission":"YES","operation":"*","possibleConsumerPermissions":["YES","NO"]})");
-    JsonTokenizer tokenizer(json);
-
-    if (tokenizer.hasNextObject()) {
-        auto variant = deserialize(tokenizer.nextObject());
-        assert(variant.is<ExampleMasterAccessControlEntry>());
-        ExampleMasterAccessControlEntry& entry = variant.get<ExampleMasterAccessControlEntry>();
-        JOYNR_LOG_TRACE(logger, "ExampleMasterAccessControlEntry JSON: {}",json);
-        JOYNR_LOG_TRACE(logger, "ExampleMasterAccessControlEntry operation: {}",entry.getOperation());
-        JOYNR_LOG_TRACE(logger, "ExampleMasterAccessControlEntry defaultConsumerPermission: {}",convertPermission(entry.getDefaultConsumerPermission()));
-        std::stringstream strStream;
-        for (auto& i : entry.getPossibleConsumerPermissions()) {
-            strStream << convertPermission(i) << " ";
-        }
-        JOYNR_LOG_TRACE(logger, "ExampleMasterAccessControlEntry possibleConsumerPermissions: {}",strStream.str());
-    }
-}
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerAplicationException)
 {
@@ -257,11 +219,10 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
     SubscriptionPublication expectedPublication;
     std::string someString{"Hello World"};
     const std::int32_t expectedInt = 101;
-    SomeOtherType expectedSomeOtherType(2);
     const float expectedFloat = 9.99f;
     bool expectedBool = true;
 
-    expectedPublication.setResponse(someString, expectedInt, expectedSomeOtherType, expectedFloat, expectedBool);
+    expectedPublication.setResponse(someString, expectedInt, expectedFloat, expectedBool);
     expectedPublication.setSubscriptionId("000-10000-01101");
 
     // Serialize into JSON
@@ -473,13 +434,4 @@ void JoynrJsonSerializerTest::testSerializationOfTStruct(joynr::types::TestTypes
 
     // Check that the object serialized/deserialized correctly
     EXPECT_EQ(expectedStruct, actualStruct);
-}
-
-// test with TEverythingStruct
-TEST_F(JoynrJsonSerializerTest, correctEscapingOfStrings)
-{
-    EXPECT_EQ(addEscapeForSpecialCharacters("normalString"), "normalString");
-    EXPECT_EQ(addEscapeForSpecialCharacters(R"(\stringWithBackSlash)"), R"(\\stringWithBackSlash)");
-    EXPECT_EQ(addEscapeForSpecialCharacters(R"("stringWithQuotas")"), R"(\"stringWithQuotas\")");
-    EXPECT_EQ(addEscapeForSpecialCharacters(R"(\"stringWithBackSlashAndQuotas\")"), R"(\\\"stringWithBackSlashAndQuotas\\\")");
 }

@@ -20,7 +20,6 @@
 
 #include "WebSocketMessagingStubFactory.h"
 #include "joynr/IWebSocketSendInterface.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/exceptions/JoynrException.h"

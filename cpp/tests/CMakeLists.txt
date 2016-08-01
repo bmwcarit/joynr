@@ -257,7 +257,6 @@ endif(${GENERATE_SOURCES})
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -269,7 +268,6 @@ set(
     test_TARGET_LIBRARIES
     JoynrCommon
     Joynr
-    JoynrJsonSerializer
 )
 
 set(
@@ -279,7 +277,6 @@ set(
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -409,32 +406,6 @@ set(
     ${JoynrTest_GENHEADERS}
 )
 
-file(
-    GLOB_RECURSE JsonSerializerTest_GENSOURCES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    #"gen/*.cpp" uncomment this when generate-test-sources prepared for jsonserializer
-    "unit-tests/jsonserializer/generated/*.cpp" #remove this when generate-test-sources prepared for jsonserializer
-)
-
-file(
-    GLOB_RECURSE JsonSerializerTest_GENHEADERS
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    #"gen/*.h" uncomment this when generate-test-sources prepared for jsonserializer
-    "unit-tests/jsonserializer/generated/*.h" #remove this when generate-test-sources prepared for jsonserializer
-)
-
-set(
-    libjsonserializer_test_HEADERS
-    "unit-tests/jsonserializer/ExampleTypes.h"
-    ${JsonSerializerTest_GENHEADERS}
-)
-
-set(
-    libjsonserializer_test_SOURCES
-    "unit-tests/jsonserializer/ExampleTypes.cpp"
-    ${JsonSerializerTest_GENSOURCES}
-)
-
 set(
     libjoynr_test_HEADERS
     "PrettyPrint.h"
@@ -486,8 +457,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
             $<TARGET_OBJECTS:JoynrTestGenerated>
             ${cluster_controller_test_HEADERS}
             ${cluster_controller_test_SOURCES}
-            ${libjsonserializer_test_HEADERS}
-            ${libjsonserializer_test_SOURCES}
             ${g_UnitTests_SOURCES}
         )
 

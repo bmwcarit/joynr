@@ -681,7 +681,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     add_subdirectory(common-api)
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 add_subdirectory(common)
-add_subdirectory(jsonserializer)
 add_subdirectory(libjoynr)
 if(${BUILD_CLUSTER_CONTROLLER})
     add_subdirectory(cluster-controller)
@@ -708,7 +707,6 @@ set(
     JoynrCommon
     Joynr
     JoynrWsRuntime
-    JoynrJsonSerializer
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -751,7 +749,6 @@ set(
     JoynrConfig_LIB_COMMON_LIBRARIES
     JoynrCommon
     Joynr
-    JoynrJsonSerializer
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -778,8 +775,6 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 # ... for the build tree
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
-message(STATUS "variable JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY=" ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY})
 
 set(
     JoynrConfig_LIB_COMMON_INCLUDE_DIRS
@@ -787,7 +782,6 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
     ${muesli_INCLUDE_DIRECTORIES}
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
@@ -806,7 +800,6 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
     ${muesli_INCLUDE_DIRECTORIES}
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
 )
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -816,7 +809,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_INCLUDE_DIRS}
         ${muesli_INCLUDE_DIRECTORIES}
-        ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
         ${jsmn_INCLUDE_DIR}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
