@@ -30,7 +30,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <cassert>
 #include <limits>
-#include "joynr/JsonSerializer.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
 
 using namespace joynr;
@@ -184,27 +184,27 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <attribute>Changed method of the <interface>Provider class whenever the
     //       <attribute> value changes.
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos;
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>();
     // The provider will maintain at least a minimum interval idle time in milliseconds between
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    subscriptionQos.setMinIntervalMs(5 * 1000);
+    subscriptionQos->setMinIntervalMs(5 * 1000);
     // The provider will send notifications every maximum interval in milliseconds, even if the
     // value didn't change. It will send notifications more often if on-change notifications are
     // enabled, the value changes more often, and the minimum interval QoS does not prevent it. The
     // maximum interval can thus be seen as a sort of heart beat.
-    subscriptionQos.setMaxIntervalMs(8 * 1000);
+    subscriptionQos->setMaxIntervalMs(8 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
     // setValidityMs will set the end date to current time millis + validity
-    subscriptionQos.setValidityMs(60 * 1000);
+    subscriptionQos->setValidityMs(60 * 1000);
     // Notification messages will be sent with this time-to-live. If a notification message can not
     // be delivered within its TTL, it will be deleted from the system.
     // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
     //       missed publication notification (depending on the value of the alert interval QoS).
-    subscriptionQos.setAlertAfterIntervalMs(10 * 1000);
+    subscriptionQos->setAlertAfterIntervalMs(10 * 1000);
 
     // Subscriptions go to a listener object
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> listener(
@@ -221,17 +221,17 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <broadcast>EventOccurred method of the <interface>Provider class whenever
     //       the <broadcast> should be triggered.
-    OnChangeSubscriptionQos weakSignalBroadcastSubscriptionQos;
+    auto weakSignalBroadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
     // The provider will maintain at least a minimum interval idle time in milliseconds between
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    weakSignalBroadcastSubscriptionQos.setMinIntervalMs(1 * 1000);
+    weakSignalBroadcastSubscriptionQos->setMinIntervalMs(1 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
     // setValidityMs will set the end date to current time millis + validity
-    weakSignalBroadcastSubscriptionQos.setValidityMs(60 * 1000);
+    weakSignalBroadcastSubscriptionQos->setValidityMs(60 * 1000);
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
             new WeakSignalBroadcastListener());
     std::string weakSignalBroadcastSubscriptionId = proxy->subscribeToWeakSignalBroadcast(
@@ -239,16 +239,16 @@ int main(int argc, char* argv[])
 
     // selective broadcast subscription
 
-    OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
-    newStationDiscoveredBroadcastSubscriptionQos.setMinIntervalMs(2 * 1000);
-    newStationDiscoveredBroadcastSubscriptionQos.setValidityMs(180 * 1000);
+    auto newStationDiscoveredBroadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    newStationDiscoveredBroadcastSubscriptionQos->setMinIntervalMs(2 * 1000);
+    newStationDiscoveredBroadcastSubscriptionQos->setValidityMs(180 * 1000);
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation, vehicle::GeoPosition>>
             newStationDiscoveredBroadcastListener(new NewStationDiscoveredBroadcastListener());
     vehicle::RadioNewStationDiscoveredBroadcastFilterParameters
             newStationDiscoveredBroadcastFilterParams;
     newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
     vehicle::GeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
-    std::string positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
+    std::string positionOfInterestJson(joynr::serializer::serializeToJson(positionOfInterest));
     newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
     newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
     std::string newStationDiscoveredBroadcastSubscriptionId =
