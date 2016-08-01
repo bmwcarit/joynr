@@ -45,4 +45,8 @@ abstract class InterfaceTemplate {
 	}
 
 	def CharSequence generate()
+
+	def hasSelectiveBroadcast() {
+		francaIntf.broadcasts.exists[selective]
+	}
 }

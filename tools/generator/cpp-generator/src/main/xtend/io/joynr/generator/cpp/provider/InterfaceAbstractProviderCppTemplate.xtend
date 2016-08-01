@@ -25,7 +25,6 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 
 class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 
@@ -35,7 +34,6 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension BroadcastUtil
-	@Inject private extension InterfaceUtil
 
 	override generate()
 '''
@@ -58,7 +56,7 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 «interfaceName»AbstractProvider::«interfaceName»AbstractProvider()
-«IF hasSelectiveBroadcast(francaIntf)»
+«IF hasSelectiveBroadcast»
 	:
 	«FOR broadcast: francaIntf.broadcasts.filter[selective] SEPARATOR ','»
 		«val broadcastName = broadcast.joynrName»
