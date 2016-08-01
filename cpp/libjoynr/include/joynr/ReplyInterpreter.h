@@ -32,7 +32,6 @@ namespace joynr
 template <class... Ts>
 class ReplyInterpreter
 {
-    using ResponseTuple = std::tuple<Ts...>;
 
 public:
     template <typename Caller>
@@ -50,7 +49,7 @@ public:
             return;
         }
 
-        ResponseTuple responseTuple;
+        std::tuple<Ts...> responseTuple;
         try {
             callGetResponse(responseTuple, std::move(reply), std::index_sequence_for<Ts...>{});
         } catch (const std::exception& exception) {
@@ -62,18 +61,14 @@ public:
     }
 
 private:
-    template <std::size_t... Indices, typename Caller>
-    static void callReturnValue(ResponseTuple&& response,
-                                Caller& caller,
-                                std::index_sequence<Indices...>)
+    template <std::size_t... Indices, typename Tuple, typename Caller>
+    static void callReturnValue(Tuple&& response, Caller& caller, std::index_sequence<Indices...>)
     {
         caller.returnValue(std::move(std::get<Indices>(response))...);
     }
 
-    template <std::size_t... Indices>
-    static void callGetResponse(ResponseTuple& response,
-                                Reply&& reply,
-                                std::index_sequence<Indices...>)
+    template <std::size_t... Indices, typename Tuple>
+    static void callGetResponse(Tuple& response, Reply&& reply, std::index_sequence<Indices...>)
     {
         reply.getResponse(std::get<Indices>(response)...);
     }
