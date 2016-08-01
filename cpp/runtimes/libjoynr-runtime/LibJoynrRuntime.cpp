@@ -68,7 +68,6 @@ LibJoynrRuntime::~LibJoynrRuntime()
     delete joynrDispatcher;
     delete libjoynrSettings;
     libjoynrSettings = nullptr;
-    delete settings;
 }
 
 void LibJoynrRuntime::init(
