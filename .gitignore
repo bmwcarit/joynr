@@ -9,7 +9,7 @@ src/main/generated/
 bounceproxy.build-.log
 /java/messaging/messaging-service/logs
 THIRD-PARTY.properties
-/*-build/
+/*-build*/
 .DS_Store
 .idea/
 *.iml
@@ -22,4 +22,4 @@ javascript/joynr.properties
 javascript/apps/radio/joynr.properties
 java/core/clustercontroller-standalone/joynr.properties
 node_modules
-/build-*/
+build-*

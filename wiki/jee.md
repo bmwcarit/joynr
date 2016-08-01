@@ -16,7 +16,7 @@ document for a description of the example.
 ## Installation
 
 If you're building from source, then you can build and install the artifact to
-your local maven repo with:  
+your local maven repo with:
 `mvn install`
 
 ## Usage
@@ -36,13 +36,13 @@ For Maven, use the following dependency:
       <version>${joynr.version}</version>
     </dependency>
 
-For Gradle, in your build.gradle dependencies add:  
+For Gradle, in your build.gradle dependencies add:
 `compile 'io.joynr.java:jeeintegration:${joynr.version}'`
 
 ### Application configuration
 
 Create a `@Singleton` EJB which has no business interface (i.e. does not
-implement any interfaces) and provide methods annotated with:  
+implement any interfaces) and provide methods annotated with:
 * `@JoynrProperties`
 	* The method decorated with this annotation must return a `Properties`
 	  object which contains the joynr properties which the application
@@ -66,21 +66,27 @@ reached, e.g. `https://myapp.mycompany.net`.
 * `MessagingpropertyKeys.CHANNELID` - this property should be set to the
 application's unique DNS entry, e.g. `myapp.mycompany.net`. This is important,
 so that all nodes of the cluster are identified by the same channel ID.
-* `JeeIntegrationPropertyKeys.JEE_INTEGRATION_ENDPOINTREGISTRY_URI` -
-this property needs to
-point to the endpoint registration service's URL with which the
-JEE Integration will register itself for its channel's topic.
-E.g. `http://endpointregistry.mycompany.net:8080`.
-* `joynr.messaging.mqtt.brokeruri` - use this to configure the URL for
+* `MqttModule.PROPERTY_KEY_MQTT_BROKER_URI` - use this to configure the URL for
 connecting to the MQTT broker being used for communication.
 E.g. `tcp://mqtt.mycompany.net:1883`.
 
 #### Optional Properties
 
 * `JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS` - enables the [HiveMQ](http://www.hivemq.com) specific 'shared subscription' feature, which allows clustering of JEE applications using just MQTT for communication. Set this to `true` to enable the feature. Defaults to `false`.
+* `JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY` -
+set this property to `true` if you want to use the HTTP Bridge functionality. In this
+configuration incoming messages are communicated via HTTP and can then be load-balanced
+accross a cluster via, e.g. nginx, and outgoing messages are communicated directly
+via MQTT. If you activate this mode, then you must also provide an endpoint registry
+(see next property).
+* `JeeIntegrationPropertyKeys.JEE_INTEGRATION_ENDPOINTREGISTRY_URI` -
+this property needs to
+point to the endpoint registration service's URL with which the
+JEE Integration will register itself for its channel's topic.
+E.g. `http://endpointregistry.mycompany.net:8080`.
 
 You are principally free to provide any other valid joynr properties via these
-configuration methods. See the [official joynr documentation](http://joynr.io)
+configuration methods. See the [official joynr documentation](./JavaSettings.md)
 for details.
 
 #### Example
@@ -100,9 +106,9 @@ An example of a configuration EJB is:
 			"http://myapp.com:8080");
 		joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
 			"provider.domain");
-		joynrProperties.setProperty("joynr.jeeintegration.endpointregistry.uri",
-			"http://endpointregistry:8080/registry/endpoint");
-		joynrProperties.setProperty("joynr.messaging.mqtt.brokeruri",
+		joynrProperties.setProperty(JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS,
+			Boolean.TRUE.toString());
+		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI,
 			"tcp://mqttbroker.com:1883");
 		joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
 			"http://joynrbackend/discovery/channels/discoverydirectory_channelid/");
@@ -126,11 +132,13 @@ An example of a configuration EJB is:
 Configure your container runtime with a `ManagedScheduledExecutorService`
 resource which has the name `'concurrent/joynrMessagingScheduledExecutor'`.
 
-For example for Glassfish/Payara:  
+For example for Glassfish/Payara:
 `asadmin create-managed-scheduled-executor-service --corepoolsize=10 concurrent/joynrMessagingScheduledExecutor`
 
 Note the `--corepoolsize=10` option. The default will only create one thread,
-which can lead to blocking.
+which can lead to blocking, so you should use at least 10 threads. Depending on your
+load, you can experiment with higher values to enable more concurrency when
+communicating joynr messages.
 
 ### Generating the interfaces
 
@@ -172,6 +180,8 @@ Here's an example of what the plugin configuration might look like:
 		</dependencies>
 	</plugin>
 
+Note the `<parameter><jee>true</jee></parameter>` part. This is essential for
+generating artefacts which are compatible with the JEE integration.
 
 ### Implementing services
 
@@ -197,6 +207,36 @@ be asked, so it's safer to just provide one factory for a given service
 interface type. If no factory is found to provide the QoS information,
 then the default values are used.
 
+Here's an example of what that could look like for the `MyService` we used above:
+
+	@Singleton
+	public class MyServiceQosProviderFactory implements ProviderQosFactory {
+
+	    @Override
+	    public ProviderQos create() {
+	        ProviderQos providerQos = new ProviderQos();
+	        providerQos.setCustomParameters(new CustomParameter[]{ new CustomParameter("name", "value") });
+	        providerQos.setPriority(1L);
+	        return providerQos;
+	    }
+
+	    @Override
+	    public boolean providesFor(Class<?> serviceInterface) {
+	        return MyServiceSync.class.equals(serviceInterface);
+	    }
+
+	}
+
+#### Injecting the calling principal
+
+In order to find out who is calling you, you can inject the `JoynrCallingPrincipal`
+to your EJB. This will only ever be set if your EJB is called via joynr (i.e. if you
+are also calling your EJB via other routes, e.g. JAX-RS, then the principal will not
+be set).
+
+See the
+[System Integration Test](../tests/system-integration-test/sit-jee-app/src/main/java/io/joynr/systemintegrationtest/jee/SystemIntegrationTestBean.java)
+for an example of its usage.
 
 ### Calling services
 
@@ -234,6 +274,50 @@ this by either spcifying a set of domains during lookup, or a custom
 `ArbitrationStrategyFunction` in the `DiscoveryQos`, or combine both approaches.
 See the [Java Developer Guide](java.md) for details.
 
+## Clustering
+
+The joynr JEE integration currently supports two forms of enabling clustering.
+We recommend using the 'shared subscription' model, as this provides the most
+functionality and best performance. It does, however, rely on a proprietary
+feature from the [HiveMQ](http://www.hivemq.com) MQTT broker.
+
+The other alternative is to use the so-called 'HTTP Bridge' mode. This requires
+implementing a plugin for an MQTT broker which forwards incoming messages
+to clustered applications which have previously registered themselves to an
+endpoint registry application. The application will register a URL and a topic
+which it is interested in. The plugin must then forward all incoming messages
+on that topic to the given URL. See also
+`io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient`.
+The joynr project only provides the hook-in points as part of the project. The
+plugin for the MQTT broker and the endpoint registry must be implemented
+separately.
+
+### Shared Subscriptions
+
+This solution offers load balancing on incoming messages via HiveMQ shared
+subscriptions across all nodes in the cluster, and enables reply messages
+for requests originating from inside the cluster to be routed directly
+to the correct node.
+
+Activate this mode with the
+`JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS`
+property.
+
+### HTTP Bridge
+
+The HTTP Bridge solution to clustering requires an HTTP load balancer to be
+in front of the cluster (which will probably be the case anyway), as well as
+an MQTT broker with a suitable plugin installed to perform the forwarding of
+the MQTT messages to the cluster and also an endpoint registry application
+which holds the mappings between application URLs and the topics for which
+they are interested in.
+
+A limitation of this solution is that replies for requests which originated
+from a clustered application are not guarateed to be received by the cluster
+node which sent the request. A possible solution could be to provide extra
+logic on the load balancer. However, without this you should only use
+fire-and-forget semantics for outgoing messages.
+
 ## Overriding Jackson library used at runtime
 
 joynr ships with a newer version of Jackson than is used by Glassfish / Payara 4.1.
@@ -241,7 +325,7 @@ Generally, this shouldn't be a problem. If, however, you observe errors relating
 to the JSON serialisation, try setting up your WAR to use the Jackson libraries
 shipped with joynr.
 
-In order to do this, you must provide the following content in the 
+In order to do this, you must provide the following content in the
 `glassfish-web.xml` file (situated in the `WEB-INF` folder of your WAR):
 
 	<?xml version="1.0" encoding="UTF-8"?>

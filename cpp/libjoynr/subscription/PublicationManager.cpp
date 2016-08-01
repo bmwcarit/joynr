@@ -23,6 +23,7 @@
 #include <sstream>
 #include <chrono>
 #include <mutex>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/PublicationManager.h"
 #include "joynr/RequestCaller.h"
@@ -138,12 +139,12 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler)
 {
 }
 
-PublicationManager::PublicationManager(int maxThreads)
+PublicationManager::PublicationManager(boost::asio::io_service& ioService, int maxThreads)
         : publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
           fileWriteLock(),
-          delayedScheduler(new ThreadPoolDelayedScheduler(maxThreads, "PubManager")),
+          delayedScheduler(new ThreadPoolDelayedScheduler(maxThreads, "PubManager", ioService)),
           shutDownMutex(),
           shuttingDown(false),
           subscriptionRequestStorageFileName(),
@@ -564,7 +565,7 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
     try {
         jsonString = joynr::util::loadStringFromFile(storageFilename);
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
+        JOYNR_LOG_INFO(logger, ex.what());
     }
 
     if (jsonString.empty()) {

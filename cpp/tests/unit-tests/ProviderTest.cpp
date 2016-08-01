@@ -26,6 +26,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/TestWithoutVersionProvider.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using namespace joynr;
 

@@ -38,6 +38,7 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
 #include "joynr/Semaphore.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
 
 using ::testing::Property;
@@ -60,7 +61,8 @@ public:
         messagingSettings(settings),
         libjoynrsettings(settings),
         capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
-        mockMessageRouter(),
+        singleThreadedIOService(),
+        mockMessageRouter(singleThreadedIOService.getIOService()),
         localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings,
                                                                   capabilitiesClient,
                                                                   LOCAL_ADDRESS,
@@ -263,6 +265,7 @@ protected:
     MessagingSettings messagingSettings;
     LibjoynrSettings libjoynrsettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
+    SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
     std::int64_t lastSeenDateMs;

@@ -1,3 +1,30 @@
+#joynr 0.19.3
+This is a minor bug fix release.
+
+##API relevant changes
+* **[C++]** Add new API to create joynr runtime with settings object. 
+
+##Other changes
+* **[JS]** Support attributes starting with capital letters. 
+
+#joynr 0.19.2
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Do not crash joynr runtime if writing persistency files fails. 
+
+#joynr 0.19.1
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Fix issue in the generated JoynrTargets-release.cmake in relation with boost::thread
+
 #joynr 0.19.0
 
 ##API relevant changes
@@ -12,6 +39,27 @@
   (`USE_PLATFORM_<DEPENDENCY>=OFF`) to turn system resolution off. In this case, joynr downloads
   and builds individual dependencies during the joynr build using CMake's ExternalProject_Add
   mechanism.
+* **[JS]** The unit-, integration-, system-integration- and intertab-tests are now using the
+  [Jasmine](http://jasmine.github.io) 2.4.1 test framework.
+  [Karma](https://karma-runner.github.io) is now used as test runner.
+* **[Java]** The way in which the global capabilities and domain access control directories are
+  provisioned has changed. See `StaticCapabilitiesProvisioning` as well as its entry in the
+  [Java Settings documentation](JavaSettings.md) for details.
+* **[JEE]** You can now inject the calling principal in providers in order to see who performed
+  the call currently being executed.
+* **[JEE]** Support for HiveMQ shared subscriptions, which enables clustering using only
+  MQTT for communication.
+
+#joynr 0.18.5
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JEE]** Fixed bug with multi-out return values not being translated
+  between container classes and multi-valued deferred instances in the
+  `ProviderWrapper`.
 
 #joynr 0.18.4
 This is a minor bug fix release.

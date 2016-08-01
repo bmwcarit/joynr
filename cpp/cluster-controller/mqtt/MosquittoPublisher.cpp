@@ -46,6 +46,11 @@ bool MosquittoPublisher::isInterrupted()
     return !isRunning;
 }
 
+uint16_t MosquittoPublisher::getMqttQos() const
+{
+    return joynr::MosquittoConnection::getMqttQos();
+}
+
 void MosquittoPublisher::stop()
 {
     interrupt();
@@ -96,6 +101,7 @@ void MosquittoPublisher::run()
 void MosquittoPublisher::publishMessage(
         const std::string& channelId,
         const std::string& participantId,
+        const int qosLevel,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
         uint32_t payloadlen = 0,
         const void* payload = nullptr)
@@ -105,7 +111,7 @@ void MosquittoPublisher::publishMessage(
     JOYNR_LOG_DEBUG(logger, "Publish to {}", topic);
 
     int mid;
-    int rc = publish(&mid, topic.c_str(), payloadlen, payload, getMqttQos(), isMqttRetain());
+    int rc = publish(&mid, topic.c_str(), payloadlen, payload, qosLevel, isMqttRetain());
     if (!(rc == MOSQ_ERR_SUCCESS)) {
         if (rc == MOSQ_ERR_INVAL || rc == MOSQ_ERR_PAYLOAD_SIZE) {
             onFailure(exceptions::JoynrMessageNotSentException(

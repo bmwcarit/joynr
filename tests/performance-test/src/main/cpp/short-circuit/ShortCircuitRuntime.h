@@ -24,6 +24,7 @@
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/types/ProviderQos.h"
+#include "joynr/SingleThreadedIOService.h"
 
 namespace joynr
 {
@@ -120,6 +121,7 @@ public:
     }
 
 private:
+    SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MessageRouter> messageRouter;
     std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy;
     std::unique_ptr<JoynrMessageSender> joynrMessageSender;

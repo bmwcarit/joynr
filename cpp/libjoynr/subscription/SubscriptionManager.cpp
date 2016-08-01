@@ -18,9 +18,10 @@
  */
 #include "joynr/SubscriptionManager.h"
 
+#include <chrono>
 #include <cstdint>
 #include <mutex>
-#include <chrono>
+#include <boost/asio/io_service.hpp>
 
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
@@ -60,9 +61,10 @@ SubscriptionManager::~SubscriptionManager()
 
 INIT_LOGGER(SubscriptionManager);
 
-SubscriptionManager::SubscriptionManager()
+SubscriptionManager::SubscriptionManager(boost::asio::io_service& ioService)
         : subscriptions(),
-          missedPublicationScheduler(new SingleThreadedDelayedScheduler("MissedPublications"))
+          missedPublicationScheduler(
+                  new SingleThreadedDelayedScheduler("MissedPublications", ioService))
 {
 }
 

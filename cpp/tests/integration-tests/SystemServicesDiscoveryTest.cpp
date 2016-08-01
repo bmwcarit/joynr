@@ -40,7 +40,7 @@ using namespace joynr;
 class SystemServicesDiscoveryTest : public ::testing::Test {
 public:
     std::string settingsFilename;
-    Settings* settings;
+    std::unique_ptr<Settings> settings;
     std::string discoveryDomain;
     std::string discoveryProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
@@ -55,7 +55,7 @@ public:
 
     SystemServicesDiscoveryTest() :
         settingsFilename("test-resources/SystemServicesDiscoveryTest.settings"),
-        settings(new Settings(settingsFilename)),
+        settings(std::make_unique<Settings>(settingsFilename)),
         discoveryDomain(),
         discoveryProviderParticipantId(),
         runtime(nullptr),
@@ -98,7 +98,7 @@ public:
         //a channelId for getReceiveChannelId.
         runtime = new JoynrClusterControllerRuntime(
                 nullptr,
-                settings,
+                std::move(settings),
                 mockMessageReceiverHttp,
                 nullptr,
                 mockMessageReceiverMqtt);

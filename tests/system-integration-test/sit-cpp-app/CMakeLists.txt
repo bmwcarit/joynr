@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(jsit-0.19.0-SNAPSHOT)
+project(jsit-0.20.0-SNAPSHOT)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -19,7 +19,7 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.19.0 REQUIRED)
+find_package(Joynr 0.20.0 REQUIRED)
 message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_WS_INCLUDE_DIRS=${Joynr_LIB_WS_INCLUDE_DIRS}")
@@ -34,7 +34,7 @@ if(${GENERATE_SOURCES})
     message(STATUS "variable JoynrGenerator_JAR=${JoynrGenerator_JAR}")
     JoynrGenerator(
         OUTPUTPATH ${CMAKE_SOURCE_DIR}/src/main/generated-sources
-        MODELPATH ${CMAKE_SOURCE_DIR}/src/main/model/SystemIntegrationTest.fidl
+        MODELPATH ${CMAKE_SOURCE_DIR}/../src/main/model/SystemIntegrationTest.fidl
         GENERATION_LANGUAGE "cpp"
     )
 endif(${GENERATE_SOURCES})

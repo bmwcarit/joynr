@@ -36,6 +36,14 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
+
 namespace joynr
 {
 class SubscriptionQos;
@@ -56,8 +64,7 @@ class JOYNR_EXPORT SubscriptionManager : public ISubscriptionManager
 public:
     ~SubscriptionManager() override;
 
-    SubscriptionManager();
-
+    explicit SubscriptionManager(boost::asio::io_service& ioService);
     explicit SubscriptionManager(DelayedScheduler* scheduler);
     /**
      * @brief Subscribe to an attribute. Modifies the subscription request to include all

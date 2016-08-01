@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     }
 
     // Object that holds all the settings
-    Settings settings;
+    auto settings = std::make_unique<Settings>();
 
     // Discovery entry file name
     std::string discoveryEntriesFile;
@@ -79,12 +79,12 @@ int main(int argc, char* argv[])
         }
 
         // Merge
-        Settings::merge(currentSettings, settings, true);
+        Settings::merge(currentSettings, *settings, true);
     }
 
     // create the cluster controller runtime
     JoynrClusterControllerRuntime* clusterControllerRuntime =
-            JoynrClusterControllerRuntime::create(&settings, discoveryEntriesFile);
+            JoynrClusterControllerRuntime::create(std::move(settings), discoveryEntriesFile);
 
     // run the cluster controller forever
     clusterControllerRuntime->runForever();

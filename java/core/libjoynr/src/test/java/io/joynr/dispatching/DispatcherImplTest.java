@@ -27,7 +27,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -39,25 +38,17 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
-
-import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.AbstractSubscriptionPublisher;
@@ -66,6 +57,12 @@ import io.joynr.proxy.JoynrMessagingConnectorFactory;
 import joynr.JoynrMessage;
 import joynr.OneWayRequest;
 import joynr.Request;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DispatcherImplTest {
@@ -164,12 +161,11 @@ public class DispatcherImplTest {
     public void testHandleOneWayRequest() throws IOException {
         OneWayRequest request = new OneWayRequest("method", new Object[0], new Class<?>[0]);
         String toParticipantId = "toParticipantId";
-        ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(1000L);
+        MessagingQos messagingQos = new MessagingQos(1000L);
         JoynrMessage joynrMessage = joynrMessageFactory.createOneWayRequest("fromParticipantId",
                                                                             toParticipantId,
                                                                             request,
-                                                                            expiryDate,
-                                                                            Collections.<String, String> emptyMap());
+                                                                            messagingQos);
 
         fixture.messageArrived(joynrMessage);
 

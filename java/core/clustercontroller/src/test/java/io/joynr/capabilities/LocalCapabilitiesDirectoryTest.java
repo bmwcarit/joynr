@@ -60,6 +60,7 @@ import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -76,6 +77,8 @@ import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrRuntime;
+import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
@@ -107,6 +110,8 @@ public class LocalCapabilitiesDirectoryTest {
     private DiscoveryEntryStore globalDiscoveryEntryCacheMock;
     @Mock
     private GlobalAddressProvider globalAddressProvider;
+    @Mock
+    private CapabilitiesProvisioning capabilitiesProvisioning;
 
     @Captor
     ArgumentCaptor<Collection<DiscoveryEntry>> capabilitiesCaptor;
@@ -150,20 +155,38 @@ public class LocalCapabilitiesDirectoryTest {
         String capabiltitiesDirectoryChannelId = "dirchannelId";
         String domainAccessControllerParticipantId = "domainAccessControllerParticipantId";
         String domainAccessControllerChannelId = "domainAccessControllerChannelId";
+        DiscoveryEntry globalCapabilitiesDirectoryDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0,
+                                                                                                                       1),
+                                                                                                           discoveryDirectoriesDomain,
+                                                                                                           GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                                                           capabilitiesDirectoryParticipantId,
+                                                                                                           new ProviderQos(),
+                                                                                                           System.currentTimeMillis(),
+                                                                                                           expiryDateMs,
+                                                                                                           domainAccessControllerChannelId,
+                                                                                                           new ChannelAddress(TEST_URL,
+                                                                                                                              capabiltitiesDirectoryChannelId));
 
-        localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(discoveryDirectoriesDomain,
-                                                                        capabilitiesDirectoryParticipantId,
-                                                                        new ChannelAddress(TEST_URL,
-                                                                                           capabiltitiesDirectoryChannelId),
-                                                                        domainAccessControllerParticipantId,
-                                                                        new ChannelAddress(TEST_URL,
-                                                                                           domainAccessControllerChannelId),
+        DiscoveryEntry domainAccessControllerDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
+                                                                                                      discoveryDirectoriesDomain,
+                                                                                                      GlobalDomainAccessController.INTERFACE_NAME,
+                                                                                                      domainAccessControllerParticipantId,
+                                                                                                      new ProviderQos(),
+                                                                                                      System.currentTimeMillis(),
+                                                                                                      expiryDateMs,
+                                                                                                      domainAccessControllerChannelId,
+                                                                                                      new ChannelAddress(TEST_URL,
+                                                                                                                         domainAccessControllerChannelId));
+
+        when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(Sets.newHashSet(globalCapabilitiesDirectoryDiscoveryEntry,
+                                                                                        domainAccessControllerDiscoveryEntry));
+
+        localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
                                                                         globalAddressProvider,
                                                                         localDiscoveryEntryStoreMock,
                                                                         globalDiscoveryEntryCacheMock,
                                                                         messageRouter,
-                                                                        globalCapabilitiesClient,
-                                                                        new ObjectMapper());
+                                                                        globalCapabilitiesClient);
 
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] parameterList = { new CustomParameter("key1", "value1"),

@@ -36,10 +36,22 @@
 #include "joynr/system/RoutingAbstractProvider.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
-#include "joynr/Timer.h"
 #include "joynr/Runnable.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Logger.h"
+#include "joynr/SteadyTimer.h"
+
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+namespace system
+{
+class error_code;
+} // namespace system
+} // namespace boost
 
 namespace joynr
 {
@@ -73,11 +85,13 @@ public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                   std::unique_ptr<IPlatformSecurityManager> securityManager,
+                  boost::asio::io_service& ioService,
                   int maxThreads = 6,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                   std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
+                  boost::asio::io_service& ioService,
                   int maxThreads = 6,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
@@ -165,12 +179,14 @@ private:
     ADD_LOGGER(MessageRouter);
 
     std::unique_ptr<MessageQueue> messageQueue;
-    Timer messageQueueCleanerTimer;
     std::unordered_set<std::string> runningParentResolves;
     std::shared_ptr<IAccessController> accessController;
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     mutable std::mutex parentResolveMutex;
     std::string routingTableFileName;
+
+    SteadyTimer messageQueueCleanerTimer;
+    const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
 
     void addNextHopToParent(std::string participantId,
                             std::function<void(void)> callbackFct = nullptr,
@@ -195,6 +211,9 @@ private:
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
                          std::uint32_t tryCount,
                          std::chrono::milliseconds delay = std::chrono::milliseconds(0));
+
+    void activateMessageCleanerTimer();
+    void onMessageCleanerTimerExpired(const boost::system::error_code& errorCode);
 };
 
 /**

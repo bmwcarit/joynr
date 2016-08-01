@@ -50,6 +50,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/MapSerializer.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/Directory.h"
@@ -797,7 +798,8 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
 TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
 {
     using RoutingTable = Directory<std::string, const joynr::system::RoutingTypes::Address>;
-    RoutingTable routingTable("routingTable");
+    SingleThreadedIOService singleThreadedIoService;    
+    RoutingTable routingTable("routingTable", singleThreadedIoService.getIOService());
     routingTable.add("WebSocketAddress", std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>());
     routingTable.add("ChannelAddress", std::make_shared<joynr::system::RoutingTypes::ChannelAddress>());
     routingTable.add("MqttAddress", std::make_shared<joynr::system::RoutingTypes::MqttAddress>());
@@ -808,7 +810,7 @@ TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
     const std::string serializedRoutingTable = joynr::serializer::serializeToJson(routingTable);
     JOYNR_LOG_TRACE(logger, serializedRoutingTable);
 
-    RoutingTable deserializedRoutingTable("deserializedRoutingTable");
+    RoutingTable deserializedRoutingTable("deserializedRoutingTable", singleThreadedIoService.getIOService());
     joynr::serializer::deserializeFromJson(deserializedRoutingTable, serializedRoutingTable);
     EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketAddress")->toString(), "WebSocketAddress"));
     EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("ChannelAddress")->toString(), "ChannelAddress"));

@@ -20,11 +20,12 @@ package io.joynr.integration.util;
  */
 
 import static io.joynr.integration.matchers.MonitoringServiceResponseMatchers.containsBounceProxy;
-import io.joynr.integration.setup.SystemPropertyServletConfiguration;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.servlet.ServletUtil;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -48,10 +49,27 @@ import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.common.io.Resources;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+
+import io.joynr.capabilities.CapabilityUtils;
+import io.joynr.capabilities.StaticCapabilitiesProvisioning;
+import io.joynr.integration.setup.SystemPropertyServletConfiguration;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.servlet.ServletUtil;
+import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.GlobalDomainAccessController;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.types.DiscoveryEntry;
+import joynr.types.GlobalDiscoveryEntry;
+import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 public class ServersUtil {
     public static final String BOUNCEPROXY_CONTEXT = "/bounceproxy";
@@ -77,27 +95,69 @@ public class ServersUtil {
     }
 
     private static void setDirectoriesUrl() {
-        if (System.getProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) != null) {
-            // use existing discovery
-            return;
-        }
-
-        // deprecated: will be removed by 2016-12-31
-        String deprecatedCapabilityUrl = System.getProperty(MessagingPropertyKeys.CAPABILITYDIRECTORYURL);
-        if (deprecatedCapabilityUrl != null && deprecatedCapabilityUrl.length() > 0) {
-            logger.warn("Deprecated setting: " + MessagingPropertyKeys.CAPABILITYDIRECTORYURL + ". Please use "
-                    + MessagingPropertyKeys.DISCOVERYDIRECTORYURL + " instead");
-            System.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, deprecatedCapabilityUrl);
-            return;
-        }
-
         String serverUrl = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
         if (serverUrl.endsWith("/")) {
             serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
         }
         String directoriesUrl = serverUrl + DISCOVERY_CONTEXT + "/channels/discoverydirectory_channelid/";
+        try {
+            File tmpFile = File.createTempFile("provisioned_capabilities", ".json");
+            tmpFile.deleteOnExit();
+            try (FileWriter writer = new FileWriter(tmpFile)) {
+                String provisionedCapabilitiesJson = createJsonFor(directoriesUrl);
+                logger.debug("Writing capabilities JSON:\n{}\nto file: {}",
+                             provisionedCapabilitiesJson,
+                             tmpFile.getAbsolutePath());
+                writer.write(provisionedCapabilitiesJson);
+                writer.flush();
+            }
+            System.setProperty(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES_FILE,
+                               tmpFile.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error("Unable to create temporary file with provisioned capabilities JSON.", e);
+        }
+    }
 
-        System.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, directoriesUrl);
+    private static String createJsonFor(String directoriesUrl) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
+        setObjectMapperOnCapabilitiesUtils(objectMapper);
+        String channelId = "discoverydirectory_channelid";
+        String participantId = "capabilitiesdirectory_participantid";
+        GlobalDiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
+                                                                             "io.joynr",
+                                                                             GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                             participantId,
+                                                                             new ProviderQos(),
+                                                                             System.currentTimeMillis(),
+                                                                             Long.MAX_VALUE,
+                                                                             "",
+                                                                             new ChannelAddress(directoriesUrl,
+                                                                                                channelId));
+        String accessParticipantId = "domainaccesscontroller_participantid";
+        GlobalDiscoveryEntry accessControlEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
+                                                                                          "io.joynr",
+                                                                                          GlobalDomainAccessController.INTERFACE_NAME,
+                                                                                          accessParticipantId,
+                                                                                          new ProviderQos(),
+                                                                                          System.currentTimeMillis(),
+                                                                                          Long.MAX_VALUE,
+                                                                                          "",
+                                                                                          new InProcessAddress());
+        List<DiscoveryEntry> entries = new ArrayList<>();
+        entries.add(discoveryEntry);
+        entries.add(accessControlEntry);
+        return objectMapper.writeValueAsString(entries);
+    }
+
+    private static void setObjectMapperOnCapabilitiesUtils(ObjectMapper objectMapper) {
+        try {
+            Field objectMapperField = CapabilityUtils.class.getDeclaredField("objectMapper");
+            objectMapperField.setAccessible(true);
+            objectMapperField.set(CapabilityUtils.class, objectMapper);
+        } catch (Exception e) {
+            logger.error("Unable to set object mapper on CapabilitiesUtils class.", e);
+        }
     }
 
     public static Server startServers() throws Exception {
@@ -196,6 +256,8 @@ public class ServersUtil {
 
         jettyServer.setHandler(contexts);
         jettyServer.start();
+
+        logger.trace("Started jetty server:\n{}", jettyServer.dump());
 
         return jettyServer;
     }

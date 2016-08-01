@@ -26,6 +26,7 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/types/Version.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using namespace joynr;
 
@@ -40,7 +41,8 @@ public:
             mockProvider(new MockProvider()),
             domain("testDomain"),
             expectedParticipantId("testParticipantId"),
-            mockMessageRouter(new MockMessageRouter()),
+            singleThreadedIOService(),
+            mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION)
     {
     }
@@ -72,6 +74,7 @@ protected:
     std::shared_ptr<MockProvider> mockProvider;
     std::string domain;
     std::string expectedParticipantId;
+    SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     const types::Version expectedProviderVersion;
 };

@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.19.0-SNAPSHOT)
+project(joynr-0.20.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 19)
+set(JOYNR_MINOR_VERSION 20)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -68,6 +68,23 @@ message(STATUS "CMAKE_INSTALL_SYSCONFDIR      = ${CMAKE_INSTALL_SYSCONFDIR}")
 message(STATUS "CMAKE_INSTALL_FULL_SYSCONFDIR = ${CMAKE_INSTALL_FULL_SYSCONFDIR}")
 message(STATUS "JOYNR_INSTALL_FULL_SYSCONFDIR = ${JOYNR_INSTALL_FULL_SYSCONFDIR}")
 message(STATUS "-----------------------------------------------------")
+
+option(
+    ENABLE_CCACHE
+    "Should ccache be used?"
+    OFF
+)
+message(STATUS "option ENABLE_CCACHE=" ${ENABLE_CCACHE})
+
+if(ENABLE_CCACHE)
+    find_program(CCACHE_FOUND ccache)
+    if(CCACHE_FOUND)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+    else(CCACHE_FOUND)
+        message(WARNING "ccache was not found. Fall-back to default compiler.")
+    endif(CCACHE_FOUND)
+endif(ENABLE_CCACHE)
 
 option(
     GENERATE_SOURCES

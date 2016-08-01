@@ -29,8 +29,7 @@
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/Version.h"
-
-
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
 
 using namespace ::testing;
@@ -95,13 +94,14 @@ private:
 class AccessControllerTest : public ::testing::Test {
 public:
     AccessControllerTest() :
+        singleThreadedIOService(),
         localDomainAccessControllerMock(new LocalDomainAccessStore(
                         true // start with clean database
         )),
         accessControllerCallback(new MockConsumerPermissionCallback()),
         settings(),
         messagingSettingsMock(settings),
-        localCapabilitiesDirectoryMock(messagingSettingsMock, settings),
+        localCapabilitiesDirectoryMock(messagingSettingsMock, settings, singleThreadedIOService.getIOService()),
         accessController(
                 localCapabilitiesDirectoryMock,
                 localDomainAccessControllerMock
@@ -165,6 +165,7 @@ public:
     }
 
 protected:
+    SingleThreadedIOService singleThreadedIOService;
     MockLocalDomainAccessController localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;
     Settings settings;

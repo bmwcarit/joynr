@@ -23,6 +23,7 @@
 #include "utils/MockObjects.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -48,7 +49,8 @@ class TestJoynrMessagingConnectorTest : public AbstractSyncAsyncTest {
 public:
 
     TestJoynrMessagingConnectorTest():
-        mockSubscriptionManager(new MockSubscriptionManager()),
+        singleThreadedIOService(),
+        mockSubscriptionManager(new MockSubscriptionManager(singleThreadedIOService.getIOService())),
         gpsLocation(types::Localisation::GpsLocation(
                         9.0,
                         51.0,
@@ -91,6 +93,7 @@ public:
         );
     }
 
+    SingleThreadedIOService singleThreadedIOService;
     MockSubscriptionManager* mockSubscriptionManager;
     joynr::types::Localisation::GpsLocation gpsLocation;
     float floatValue;

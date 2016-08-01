@@ -34,7 +34,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <string>
 #include "joynr/LibjoynrSettings.h"
-
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 
 using namespace ::testing;
@@ -52,7 +52,8 @@ ACTION_P(ReleaseSemaphore,semaphore)
 class BroadcastSubscriptionTest : public ::testing::Test {
 public:
     BroadcastSubscriptionTest() :
-        mockMessageRouter(new MockMessageRouter()),
+        singleThreadIOService(),
+        mockMessageRouter(new MockMessageRouter(singleThreadIOService.getIOService())),
         mockRequestCaller(new MockTestRequestCaller()),
         mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double>()),
@@ -63,7 +64,7 @@ public:
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
         messageSender(mockMessageRouter),
-        dispatcher(&messageSender),
+        dispatcher(&messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
     }
@@ -71,7 +72,7 @@ public:
     void SetUp(){
         //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        subscriptionManager = new SubscriptionManager();
+        subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService());
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
@@ -81,6 +82,7 @@ public:
     }
 
 protected:
+    SingleThreadedIOService singleThreadIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListenerOne;

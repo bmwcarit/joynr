@@ -22,15 +22,35 @@ source /data/src/docker/joynr-base/scripts/global.sh
 
 log "CPP RUN END TO END TEST"
 
+CC_BINDIR=/data/build/tests/bin
+
+function usage
+{
+    echo "usage: cpp-build-tests.sh [--cluster-controller-bin-dir <bin directory to cluster-controller>]"
+}
+
+while [ "$1" != "" ]; do
+    case $1 in
+        --cluster-controller-bin-dir )                shift
+                                CC_BINDIR=$1
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
 log "ENVIRONMENT"
 env
 
+log "CC_BINDIR" $CC_BINDIR
 # fail on first error
 set -e
 
-cd /data/build/tests/bin
-
+cd $CC_BINDIR
 ./cluster-controller & CLUSTER_CONTROLLER_PID=$!
+
+cd /data/build/tests/bin
 
 ./jsit-provider-ws testDomain & PROVIDER_PID=$!
 

@@ -27,6 +27,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
+import joynr.types.GlobalDiscoveryEntry;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.config.Configuration;
 
@@ -46,8 +47,8 @@ public class GlobalDomainAccessControllerModule extends AbstractModule {
 
     @Provides
     @Named(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL)
-    String provideAccessControlDomain(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String aclDomain) {
-        return aclDomain;
+    String provideAccessControlDomain(@Named(MessagingPropertyKeys.DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY) GlobalDiscoveryEntry aclEntry) {
+        return aclEntry.getDomain();
     }
 
     @Provides

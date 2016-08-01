@@ -30,6 +30,14 @@
 #include "joynr/Thread.h"
 #include "joynr/BlockingQueue.h"
 
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
+
 namespace joynr
 {
 
@@ -50,6 +58,7 @@ public:
      */
     explicit SingleThreadedDelayedScheduler(
             const std::string& threadName,
+            boost::asio::io_service& ioService,
             std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
     /**

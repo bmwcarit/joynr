@@ -439,6 +439,7 @@ set(
     libjoynr_test_HEADERS
     "PrettyPrint.h"
     "utils/TimeUtils.h"
+    "utils/TestRunnable.h"
     "utils/LibJoynrMockObjects.h"
     ${JoynrTest_GENHEADERS}
 )
@@ -447,6 +448,7 @@ set(
     cluster_controller_test_SOURCES
     "PrettyPrint.cpp"
     "utils/MockObjects.cpp"
+    "utils/TestRunnable.cpp"
     "utils/MockLocalCapabilitiesDirectoryCallback.cpp"
     "TestMain.cpp"
 )

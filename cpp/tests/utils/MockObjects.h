@@ -28,6 +28,7 @@
 #include <functional>
 
 #include <boost/any.hpp>
+#include <boost/asio.hpp>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -189,8 +190,8 @@ public:
 class MockDelayedScheduler : public joynr::DelayedScheduler
 {
 public:
-    MockDelayedScheduler()
-        : DelayedScheduler([](joynr::Runnable*){ assert(false); }, std::chrono::milliseconds::zero())
+    MockDelayedScheduler(boost::asio::io_service& ioService)
+        : DelayedScheduler([](joynr::Runnable*){ assert(false); }, ioService, std::chrono::milliseconds::zero())
     {
     }
 
@@ -330,8 +331,8 @@ public:
         }
     }
 
-    MockMessageRouter():
-        MessageRouter(std::unique_ptr<joynr::IMessagingStubFactory>(), std::unique_ptr<joynr::IPlatformSecurityManager>(), 0)
+    MockMessageRouter(boost::asio::io_service& ioService):
+        MessageRouter(std::unique_ptr<joynr::IMessagingStubFactory>(), std::unique_ptr<joynr::IPlatformSecurityManager>(), ioService, 0)
     {
         EXPECT_CALL(
                 *this,
@@ -782,9 +783,10 @@ public:
     MOCK_METHOD1(containsRequestCaller, bool(const std::string& participantId));
 };
 
-
 class MockSubscriptionManager : public joynr::SubscriptionManager {
 public:
+    using SubscriptionManager::SubscriptionManager;
+
     MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& subscriptionId));
     MOCK_METHOD4(registerSubscription,void(const std::string& subscribeToName,
                                                     std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller, // SubMgr gets ownership of ptr
@@ -960,8 +962,8 @@ public:
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
-    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings):
-        messageRouter(),
+    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings, boost::asio::io_service& ioService):
+        messageRouter(ioService),
         libjoynrMockSettings(settings),
         LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter, libjoynrMockSettings){}
 
