@@ -104,9 +104,10 @@ void WebSocketCcMessagingSkeleton::onNewConnection()
 
 void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
 {
-    QWebSocket* client = qobject_cast<QWebSocket*>(sender());
-
     if (isInitializationMessage(message)) {
+
+        QWebSocket* client = qobject_cast<QWebSocket*>(sender());
+
         using joynr::system::RoutingTypes::WebSocketClientAddress;
         JOYNR_LOG_DEBUG(logger,
                         "received initialization message from websocket client: {}",
