@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FAttribute
+import org.franca.core.franca.FBroadcast
 
 class InterfaceSubscriptionUtil {
 	@Inject	extension InterfaceUtil
@@ -31,97 +33,157 @@ class InterfaceSubscriptionUtil {
 	@Inject	extension NamingUtil
 	@Inject	extension CppStdTypeUtil
 
-	def produceSubscribeUnsubscribeMethods(FInterface serviceInterface, boolean pure)
+	def produceSubscribeToAttributeComments(FAttribute attribute)
+'''
+/**
+ * @brief creates a new subscription to attribute «attribute.joynrName.toFirstUpper»
+ * @param subscriptionListener The listener callback providing methods to call on publication and failure
+ * @param subscriptionQos The subscription quality of service settings
+ * @return the subscription id as string
+ */
+'''
+
+	def produceUpdateAttributeSubscriptionComments(FAttribute attribute)
+'''
+/**
+ * @brief updates an existing subscription to attribute «attribute.joynrName.toFirstUpper»
+ * @param subscriptionListener The listener callback providing methods to call on publication and failure
+ * @param subscriptionQos The subscription quality of service settings
+ * @param subscriptionId The subscription id returned earlier on creation of the subscription
+ * @return the subscription id as string
+ */
+'''
+
+	def produceUnsubscribeFromAttributeComments(FAttribute attribute)
+'''
+/**
+ * @brief unsubscribes from attribute «attribute.joynrName.toFirstUpper»
+ * @param subscriptionId The subscription id returned earlier on creation of the subscription
+ */
+'''
+
+	def produceSubscribeToBroadcastComments(FBroadcast broadcast)
+'''
+/**
+ * @brief subscribes to «IF isSelective(broadcast)»selective «ENDIF»broadcast «broadcast.joynrName.toFirstUpper»«IF isSelective(broadcast)» with filter parameters
+ * @param filterParameters The filter parameters for selection of suitable broadcasts«ENDIF»
+ * @param subscriptionListener The listener callback providing methods to call on publication and failure
+ * @param subscriptionQos The subscription quality of service settings
+ * @return the subscription id as string
+ */
+'''
+
+	def produceUpdateBroadcastSubscriptionComments(FBroadcast broadcast)
+'''
+/**
+ * @brief updates an existing subscription to «IF isSelective(broadcast)»selective «ENDIF»broadcast «broadcast.joynrName.toFirstUpper»«IF isSelective(broadcast)» with filter parameters
+ * @param filterParameters The filter parameters for selection of suitable broadcasts«ENDIF»
+ * @param subscriptionListener The listener callback providing methods to call on publication and failure
+ * @param subscriptionQos The subscription quality of service settings
+ * @param subscriptionId The subscription id returned earlier on creation of the subscription
+ * @return the subscription id as string
+ */
+'''
+
+	def produceUnsubscribeFromBroadcastComments(FBroadcast broadcast)
+'''
+/**
+ * @brief unsubscribes from broadcast «broadcast.joynrName.toFirstUpper»
+ * @param subscriptionId The subscription id returned earlier on creation of the subscription
+ */
+'''
+
+	def produceSubscribeToAttributeSignature(FAttribute attribute, boolean updateSubscription, String className)
+'''
+«val returnType = attribute.typeName»
+std::string «IF className != null»«className»::«ENDIF»subscribeTo«attribute.joynrName.toFirstUpper»(
+			std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+			std::shared_ptr<joynr::SubscriptionQos> subscriptionQos«IF updateSubscription»,
+			std::string& subscriptionId«ENDIF»)
+'''
+
+	def produceSubscribeToAttributeSignature(FAttribute attribute) {
+		return produceSubscribeToAttributeSignature(attribute, false, null)
+	}
+
+	def produceSubscribeToAttributeSignature(FAttribute attribute, String className) {
+		return produceSubscribeToAttributeSignature(attribute, false, className)
+	}
+
+	def produceUpdateAttributeSubscriptionSignature(FAttribute attribute) {
+		return produceSubscribeToAttributeSignature(attribute, true, null)
+	}
+
+	def produceUpdateAttributeSubscriptionSignature(FAttribute attribute, String className) {
+		return produceSubscribeToAttributeSignature(attribute, true, className)
+	}
+
+	def produceUnsubscribeFromAttributeSignature(FAttribute attribute, String className)
+'''
+void «IF className != null»«className»::«ENDIF»unsubscribeFrom«attribute.joynrName.toFirstUpper»(std::string& subscriptionId)
+'''
+
+	def produceUnsubscribeFromAttributeSignature(FAttribute attribute) {
+		return produceUnsubscribeFromAttributeSignature(attribute, null)
+	}
+
+	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean updateSubscription, String className)
+'''
+«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
+std::string «IF className != null»«className»::«ENDIF»subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(«IF isSelective(broadcast)»
+			const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,«ENDIF»
+			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos«IF updateSubscription»,
+			std::string& subscriptionId«ENDIF»)
+'''
+
+	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, null)
+	}
+
+	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, String className) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, className)
+	}
+
+	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, null)
+	}
+
+	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface, String className) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, className)
+	}
+
+	def produceUnsubscribeFromBroadcastSignature(FBroadcast broadcast, String className)
+'''
+void «IF className != null»«className»::«ENDIF»unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(std::string& subscriptionId)
+'''
+
+	def produceUnsubscribeFromBroadcastSignature(FBroadcast broadcast) {
+		produceUnsubscribeFromBroadcastSignature(broadcast, null)
+	}
+
+	def produceSubscribeUnsubscribeMethodDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
-		«val returnType = attribute.typeName»
-		/**
-		 * @brief creates a new subscription to attribute «attribute.joynrName.toFirstUpper»
-		 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-		 * @param subscriptionQos The subscription quality of service settings
-		 * @return the subscription id as string
-		 */
-		«IF pure»virtual «ENDIF»std::string subscribeTo«attribute.joynrName.toFirstUpper»(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
+		«produceSubscribeToAttributeComments(attribute)»
+		«IF pure»virtual «ENDIF»«produceSubscribeToAttributeSignature(attribute)» «IF pure»= 0«ELSE»override«ENDIF»;
 
-		/**
-		 * @brief updates an existing subscription to attribute «attribute.joynrName.toFirstUpper»
-		 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-		 * @param subscriptionQos The subscription quality of service settings
-		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
-		 * @return the subscription id as string
-		 */
-		«IF pure»virtual «ENDIF»std::string subscribeTo«attribute.joynrName.toFirstUpper»(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
-					std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
+		«produceUpdateAttributeSubscriptionComments(attribute)»
+		«IF pure»virtual «ENDIF»«produceUpdateAttributeSubscriptionSignature(attribute)» «IF pure»= 0«ELSE»override«ENDIF»;
 
-		/**
-		 * @brief unsubscribes from attribute «attribute.joynrName.toFirstUpper»
-		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
-		 */
-		«IF pure»virtual «ENDIF»void unsubscribeFrom«attribute.joynrName.toFirstUpper»(std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
+		«produceUnsubscribeFromAttributeComments(attribute)»
+		«IF pure»virtual «ENDIF»«produceUnsubscribeFromAttributeSignature(attribute)» «IF pure»= 0«ELSE»override«ENDIF»;
 
 	«ENDFOR»
 	«FOR broadcast: serviceInterface.broadcasts»
-		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
-		«IF isSelective(broadcast)»
-			/**
-			 * @brief subscribes to selective broadcast «broadcast.joynrName.toFirstUpper» with filter parameters
-			 * @param filterParameters The filter parameters for selection of suitable broadcasts
-			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-			 * @param subscriptionQos The subscription quality of service settings
-			 * @return the subscription id as string
-			 */
-			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
-						const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
-						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
+		«produceSubscribeToBroadcastComments(broadcast)»
+		«IF pure»virtual «ENDIF»«produceSubscribeToBroadcastSignature(broadcast, serviceInterface)» «IF pure»= 0«ELSE»override«ENDIF»;
 
-			/**
-			 * @brief updates an existing subscription to selective broadcast «broadcast.joynrName.toFirstUpper» with filter parameters
-			 * @param filterParameters The filter parameters for selection of suitable broadcasts
-			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-			 * @param subscriptionQos The subscription quality of service settings
-			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
-			 * @return the subscription id as string
-			 */
-			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
-						const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
-						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
-						std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
-		«ELSE»
-			/**
-			 * @brief subscribes to broadcast «broadcast.joynrName.toFirstUpper»
-			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-			 * @param subscriptionQos The subscription quality of service settings
-			 * @return the subscription id as string
-			 */
-			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
-						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
+		«produceUpdateBroadcastSubscriptionComments(broadcast)»
+		«IF pure»virtual «ENDIF»«produceUpdateBroadcastSubscriptionSignature(broadcast, serviceInterface)» «IF pure»= 0«ELSE»override«ENDIF»;
 
-			/**
-			 * @brief updates an existing subscription to broadcast «broadcast.joynrName.toFirstUpper»
-			 * @param filterParameters The filter parameters for selection of suitable broadcasts
-			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-			 * @param subscriptionQos The subscription quality of service settings
-			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
-			 * @return the subscription id as string
-			 */
-			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
-						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
-						std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
-		«ENDIF»
-
-		/**
-		 * @brief unsubscribes from broadcast «broadcast.joynrName.toFirstUpper»
-		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
-		 */
-		«IF pure»virtual «ENDIF»void unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
+		«produceUnsubscribeFromBroadcastComments(broadcast)»
+		«IF pure»virtual «ENDIF»«produceUnsubscribeFromBroadcastSignature(broadcast)» «IF pure»= 0«ELSE»override«ENDIF»;
 
 	«ENDFOR»
 '''

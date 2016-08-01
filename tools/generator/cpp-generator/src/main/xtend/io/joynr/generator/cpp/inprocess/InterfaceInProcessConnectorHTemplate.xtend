@@ -135,7 +135,7 @@ public:
 	«produceAsyncSetterDeclarations(francaIntf, false)»
 	«produceAsyncMethodDeclarations(francaIntf, false, true)»
 	«produceFireAndForgetMethodDeclarations(francaIntf, false)»
-	«produceSubscribeUnsubscribeMethods(francaIntf, false)»
+	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false)»
 
 private:
 	ADD_LOGGER(«interfaceName»InProcessConnector);
