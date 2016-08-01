@@ -91,7 +91,9 @@ void «interfaceName»RequestInterpreter::execute(
 								reply.setResponse(std::move(«attributeName»));
 								onSuccess(std::move(reply));
 							};
-					«requestCallerName»->get«attributeName.toFirstUpper»(std::move(requestCallerOnSuccess), std::move(onError));
+					«requestCallerName»->get«attributeName.toFirstUpper»(
+						std::move(requestCallerOnSuccess),
+						std::move(onError));
 					return;
 				}
 			«ENDIF»
@@ -104,9 +106,15 @@ void «interfaceName»RequestInterpreter::execute(
 								[onSuccess = std::move(onSuccess)] () {
 									onSuccess(BaseReply());
 								};
-						«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», std::move(requestCallerOnSuccess), onError);
+						«requestCallerName»->set«attributeName.toFirstUpper»(
+																			typedInput«attributeName.toFirstUpper»,
+																			std::move(requestCallerOnSuccess),
+																			onError);
 					} catch (const std::exception&) {
-						onError(std::make_shared<exceptions::MethodInvocationException>("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)", requestCaller->getProviderVersion()));
+						onError(
+							std::make_shared<exceptions::MethodInvocationException>(
+								"Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)",
+								requestCaller->getProviderVersion()));
 					}
 					return;
 				}
@@ -165,7 +173,10 @@ void «interfaceName»RequestInterpreter::execute(
 	«ENDIF»
 
 	JOYNR_LOG_WARN(logger, "unknown method name for interface «interfaceName»: {}", request.getMethodName());
-	onError(std::make_shared<exceptions::MethodInvocationException>("unknown method name for interface «interfaceName»: " + request.getMethodName(), requestCaller->getProviderVersion()));
+	onError(
+		std::make_shared<exceptions::MethodInvocationException>(
+			"unknown method name for interface «interfaceName»: " + request.getMethodName(),
+			requestCaller->getProviderVersion()));
 }
 
 void «interfaceName»RequestInterpreter::execute(
