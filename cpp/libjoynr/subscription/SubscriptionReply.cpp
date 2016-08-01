@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ namespace joynr
 
 const SubscriptionReply SubscriptionReply::NULL_RESPONSE = SubscriptionReply();
 
-SubscriptionReply::SubscriptionReply() : subscriptionId()
+SubscriptionReply::SubscriptionReply() : subscriptionId(), error(nullptr)
 {
 }
 SubscriptionReply::SubscriptionReply(const SubscriptionReply& other)
@@ -48,8 +48,30 @@ void SubscriptionReply::setSubscriptionId(const std::string& subscriptionId)
     this->subscriptionId = subscriptionId;
 }
 
+std::shared_ptr<exceptions::SubscriptionException> SubscriptionReply::getError() const
+{
+    return error;
+}
+
+void SubscriptionReply::setError(std::shared_ptr<exceptions::SubscriptionException> error)
+{
+    this->error = std::move(error);
+}
+
 bool SubscriptionReply::operator==(const SubscriptionReply& other) const
 {
+    // if error ptr do not point to the same object
+    if (error != other.getError()) {
+        // if exactly one of error and other.getError() is a nullptr
+        if (error == nullptr || other.getError() == nullptr) {
+            return false;
+        }
+        // compare actual objects
+        if (!(*error.get() == *other.getError().get())) {
+            return false;
+        }
+    }
+
     return subscriptionId == other.getSubscriptionId();
 }
 
