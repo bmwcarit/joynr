@@ -211,7 +211,8 @@ define([
                                 expect(publicationMissedSpy.calls.count()).toEqual(2);
                                 increaseFakeTime(alertAfterIntervalMs + 1);
                                 expect(publicationMissedSpy.calls.count()).toEqual(2);
-                                return done();
+                                done();
+                                return null;
                             }).catch(function(error) {
                                 log.error("Error in sendSubscriptionRequest :" + error);
                                 fail();
@@ -515,6 +516,7 @@ define([
                                         increaseFakeTime(alertAfterIntervalMs + 1);
                                         expect(publicationMissedSpy.calls.count()).toEqual(2);
                                         done();
+                                        return null;
                                     }).catch(function(error) {
                                         log.error("Error in sendSubscriptionRequest :"
                                             + error);
