@@ -47,10 +47,12 @@ public:
     void run() override;
     void interrupt();
     bool isInterrupted();
+    std::uint16_t getMqttQos() const override;
 
     void publishMessage(
             const std::string& channelId,
             const std::string& participantId,
+            const int qosLevel,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
             uint32_t payloadlen,
             const void* payload);

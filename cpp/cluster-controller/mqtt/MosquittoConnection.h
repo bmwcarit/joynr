@@ -40,7 +40,7 @@ public:
 
     ~MosquittoConnection() override = default;
 
-    uint16_t getMqttQos() const;
+    virtual uint16_t getMqttQos() const;
     std::string getMqttPrio() const;
     bool isMqttRetain() const;
 

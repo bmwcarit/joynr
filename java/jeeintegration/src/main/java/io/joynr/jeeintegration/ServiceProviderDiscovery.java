@@ -61,8 +61,9 @@ public class ServiceProviderDiscovery {
         for (Bean<?> bean : beanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
         })) {
             ServiceProvider serviceProvider = bean.getBeanClass().getAnnotation(ServiceProvider.class);
-            if (serviceProvider != null
-                && getProvidedByAnnotation(serviceProvider.serviceInterface()) != null) {
+            if (serviceProvider != null) {
+                ProvidedBy providedBy = getProvidedByAnnotation(serviceProvider.serviceInterface());
+                verifyProvidedBy(providedBy, serviceProvider.serviceInterface(), bean);
                 result.add(bean);
                 if (LOG.isTraceEnabled()) {
                     LOG.trace(format("Bean %s is a service provider. Adding to result.", bean));
@@ -75,6 +76,18 @@ public class ServiceProviderDiscovery {
             LOG.debug(format("Found the following service provider beans:%n%s", result));
         }
         return result;
+    }
+
+    private void verifyProvidedBy(ProvidedBy providedBy, Class<?> serviceInterface, Bean<?> bean) {
+        if (providedBy == null) {
+            throw new IllegalArgumentException(format("The bean %s is annotated with ServiceProvider, but the"
+                    + " specified service interface %s is not annotated with @ProvidedBy."
+                    + "%nMake sure that you implement a *Sync interface and"
+                    + " that you specify that same *Sync interface as the serviceInterface."
+                    + "%nNote that you have to set the 'jee' parameter to 'true' "
+                    + "in the Franca code generator in order to correctly generate "
+                    + "the @ProvidedBy annotation on the Sync interfaces.", bean, serviceInterface));
+        }
     }
 
     /**

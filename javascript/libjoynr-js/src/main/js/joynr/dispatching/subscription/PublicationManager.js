@@ -999,6 +999,15 @@ define(
                                 return;
                             }
 
+                            var checkResult = event.checkFilterParameters(subscriptionRequest.filterParameters);
+                            if (checkResult.caughtErrors.length !== 0) {
+                                log.error("The incoming subscription request does not contain the expected filter parameters to subscribe to broadcast "
+                                        + eventName
+                                        + " for providerId "
+                                        + provider.id + ": "
+                                        + JSON.stringify(checkResult.caughtErrors));
+                                    return;
+                            }
                             // make sure a ProviderEvent is registered
                             var subscriptions =
                                     getSubscriptionsForProviderEvent(provider.id, eventName);

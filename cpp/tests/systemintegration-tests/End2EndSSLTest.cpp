@@ -47,12 +47,12 @@ public:
         domain(),
         runtime(nullptr)
     {
-        Settings* settings = new Settings("test-resources/integrationtest.settings");
+        auto settings = std::make_unique<Settings>("test-resources/integrationtest.settings");
         Settings sslSettings{"test-resources/sslintegrationtest.settings"};
         Settings integrationTestSettings{"test-resources/libjoynrintegrationtest.settings"};
         Settings::merge(sslSettings, *settings, false);
         Settings::merge(integrationTestSettings, *settings, false);
-        runtime = new JoynrClusterControllerRuntime(nullptr, settings);
+        runtime = new JoynrClusterControllerRuntime(nullptr, std::move(settings));
         std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
     }

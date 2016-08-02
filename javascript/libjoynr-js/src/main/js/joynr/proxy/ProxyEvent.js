@@ -17,8 +17,11 @@
  * #L%
  */
 
-define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
-], function(BroadcastFilterParameters) {
+define("joynr/proxy/ProxyEvent", [
+    "global/Promise",
+    "joynr/proxy/BroadcastFilterParameters",
+    "joynr/dispatching/subscription/util/SubscriptionUtil"
+], function(Promise, BroadcastFilterParameters, SubscriptionUtil) {
 
     /**
      * Checks if the given datatypes and values match the given broadcast parameters
@@ -76,6 +79,8 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
      *            settings.broadcastName the name of the broadcast as modelled in Franca
      * @param {String[]}
      *            settings.broadcastParameter the parameter meta information of the broadcast being subscribed to
+     * @param {Object}
+     *            settings.filterParameters the filter parameters of the broadcast
      * @returns {ProxyEvent}
      */
     function ProxyEvent(parent, settings) {
@@ -108,6 +113,15 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
          */
         this.subscribe =
                 function subscribe(subscribeParameters) {
+                    var checkResult =
+                            SubscriptionUtil.checkFilterParameters(
+                                    settings.filterParameters,
+                                    subscribeParameters.filterParameters,
+                                    settings.broadcastName);
+                    if (checkResult.caughtErrors.length !== 0) {
+                        var errorMessage = JSON.stringify(checkResult.caughtErrors);
+                        return Promise.reject(new Error(errorMessage));
+                    }
                     return settings.dependencies.subscriptionManager
                             .registerBroadcastSubscription({
                                 proxyId : parent.proxyParticipantId,

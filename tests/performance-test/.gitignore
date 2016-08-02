@@ -3,6 +3,7 @@ generated-javascript/
 generated-cpp/
 localStorageStorage
 node_modules
+npm-debug.log
 reports
 /joynr_participantIds.properties
 /joynr.properties

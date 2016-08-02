@@ -26,6 +26,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/TestWithoutVersionProvider.h"
+#include "joynr/SingleThreadedIOService.h"
 
 using namespace joynr;
 
@@ -48,8 +49,14 @@ public:
     }
 };
 
-TEST(ProviderTest, register_attributeListener) {
-    MockPublicationManager publicationManager;
+class ProviderTest : public testing::Test
+{
+protected:
+    SingleThreadedIOService singleThreadedIOService;
+};
+
+TEST_F(ProviderTest, register_attributeListener) {
+    MockPublicationManager publicationManager(singleThreadedIOService.getIOService());
     std::string attributeName("testAttribute");
     std::string subscriptionId("test-subscription-id");
     Variant attributeValue(Variant::make<int>(42));
@@ -66,8 +73,8 @@ TEST(ProviderTest, register_attributeListener) {
     provider.onAttributeValueChanged(attributeName, attributeValue);
 }
 
-TEST(ProviderTest, unregister_attributeListener) {
-    MockPublicationManager publicationManager;
+TEST_F(ProviderTest, unregister_attributeListener) {
+    MockPublicationManager publicationManager(singleThreadedIOService.getIOService());
     std::string attributeName("testAttribute");
     std::string subscriptionId("test-subscription-id");
     Variant attributeValue(Variant::make<int>(42));
@@ -92,14 +99,14 @@ TEST(ProviderTest, unregister_attributeListener) {
     provider.onAttributeValueChanged(attributeName, attributeValue);
 }
 
-TEST(ProviderTest, versionIsSetCorrectly) {
+TEST_F(ProviderTest, versionIsSetCorrectly) {
     std::uint32_t expectedMajorVersion = 47;
     std::uint32_t expectedMinorVersion = 11;
     EXPECT_EQ(expectedMajorVersion, tests::testProvider::MAJOR_VERSION);
     EXPECT_EQ(expectedMinorVersion, tests::testProvider::MINOR_VERSION);
 }
 
-TEST(ProviderTest, defaultVersionIsSetCorrectly) {
+TEST_F(ProviderTest, defaultVersionIsSetCorrectly) {
     std::uint32_t expectedDefaultMajorVersion = 0;
     std::uint32_t expectedDefaultMinorVersion = 0;
     EXPECT_EQ(expectedDefaultMajorVersion, tests::TestWithoutVersionProvider::MAJOR_VERSION);

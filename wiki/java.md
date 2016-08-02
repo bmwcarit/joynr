@@ -68,6 +68,9 @@ the application in a single Java process. Use a ```CCInProcessRuntimeModule``` i
 See the Radio example, in particular ```MyRadioConsumerApplication```, for a detailed example of how
 this is done.
 
+See the [Java Configuration Reference](JavaSettings.md) for a complete listing of all available
+configuration properties available to use in joynr Java applications.
+
 ## The external transport middlewares
 joynr is able to communicate to other clusters via HTTP using Atmosphere, or MQTT using Eclipe Paho,
 both of which can be in operation at the same time. Guice is also used to inject the required

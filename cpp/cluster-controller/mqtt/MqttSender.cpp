@@ -21,6 +21,7 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/MessagingQosEffort.h"
 
 namespace joynr
 {
@@ -62,8 +63,19 @@ void MqttSender::sendMessage(
 
     util::logSerializedMessage(logger, "Sending Message: ", serializedMessage);
 
-    mosquittoPublisher.publishMessage(
-            mqttAddress.getTopic(), message.getHeaderTo(), onFailure, payloadLength, payload);
+    int qosLevel = mosquittoPublisher.getMqttQos();
+    if (message.containsHeaderEffort() &&
+        message.getHeaderEffort() ==
+                MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT)) {
+        qosLevel = 0;
+    }
+
+    mosquittoPublisher.publishMessage(mqttAddress.getTopic(),
+                                      message.getHeaderTo(),
+                                      qosLevel,
+                                      onFailure,
+                                      payloadLength,
+                                      payload);
 }
 
 void MqttSender::registerReceiveQueueStartedCallback(

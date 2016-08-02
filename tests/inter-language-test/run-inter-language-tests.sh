@@ -71,6 +71,7 @@ fi
 
 # process ids for background stuff
 JETTY_PID=""
+MOSQUITTO_PID=""
 CLUSTER_CONTROLLER_PID=""
 PROVIDER_PID=""
 
@@ -90,6 +91,24 @@ trap stopall INT
 SUCCESS=0
 FAILED_TESTS=0
 DOMAIN="joynr-inter-language-test-domain"
+
+function killProcessHierarchy {
+	PID=$1
+	type pstree > /dev/null 2>&1
+	if [ "$?" -eq 0 ]
+	then
+		# find PIDs of hierarchy using pstree, excluding thread ids
+		PIDS=`pstree -p $PID | perl -n -e '{ @pids = /[^\}]\((\d+)/g; foreach (@pids) { print $_ . " "; } ; }'`
+		echo "Killing $PIDS"
+		kill -9 $PIDS > /dev/null 2>&1
+	else
+		# kill any direct children, if any
+		echo "Killing direct children of $PID"
+		pkill -9 -P $PID > /dev/null 2>&1
+		echo "Killing $PID"
+		kill -9 $PID > /dev/null 2>&1
+	fi
+}
 
 function prechecks {
 	if [ ! -f "$ILT_BUILD_DIR/bin/cluster-controller" ]
@@ -136,6 +155,13 @@ function start_services {
 	echo '####################################################'
 	echo '# starting services'
 	echo '####################################################'
+
+	echo "Starting mosquitto"
+	mosquitto -c /etc/mosquitto/mosquitto.conf > $ILT_RESULTS_DIR/mosquitt-$1.log 2>&1 &
+	MOSQUITTO_PID=$!
+	echo "Mosquitto started with PID $MOSQUITTO_PID"
+	sleep 2
+
 	mvn $SPECIAL_MAVEN_OPTIONS jetty:run-war --quiet > $ILT_RESULTS_DIR/jetty-$1.log 2>&1 &
 	JETTY_PID=$!
 	echo "Starting Jetty with PID $JETTY_PID"
@@ -159,16 +185,26 @@ function start_services {
 }
 
 function stop_services {
+	echo '####################################################'
+	echo '# stopping services'
+	echo '####################################################'
+
 	if [ -n "$JETTY_PID" ]
 	then
 		cd $ILT_DIR
-		echo '####################################################'
-		echo '# stopping services'
-		echo '####################################################'
 		mvn $SPECIAL_MAVEN_OPTIONS jetty:stop --quiet
 		wait $JETTY_PID
 		echo "Stopped Jetty with PID $JETTY_PID"
 		JETTY_PID=""
+	fi
+
+	if [ -n "$MOSQUITTO_PID" ]
+	then
+		echo "Stopping mosquitto with PID $MOSQUITTO_PID"
+		disown $MOSQUITTO_PID
+		killProcessHierarchy $MOSQUITTO_PID
+		wait $MOSQUITTO_PID
+		MOSQUITTO_PID=""
 	fi
 }
 
@@ -210,7 +246,7 @@ function stop_cluster_controller {
 		echo '# stopping clustercontroller'
 		echo '####################################################'
 		disown $CLUSTER_CONTROLLER_PID
-		kill -9 $CLUSTER_CONTROLLER_PID
+		killProcessHierarchy $CLUSTER_CONTROLLER_PID
 		wait $CLUSTER_CONTROLLER_PID
 		echo "Stopped external cluster controller with PID $CLUSTER_CONTROLLER_PID"
 		CLUSTER_CONTROLLER_PID=""
@@ -229,7 +265,6 @@ function start_java_provider_cc {
 	echo '####################################################'
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
-	rm -f java-consumer.persistence_file
 	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport=mqtt > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider cc with PID $PROVIDER_PID"
@@ -244,7 +279,6 @@ function start_java_provider_ws {
 	echo '####################################################'
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
-	rm -f java-consumer.persistence_file
 	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN websocket" > $ILT_RESULTS_DIR/provider-java-ws.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider ws with PID $PROVIDER_PID"
@@ -260,7 +294,7 @@ function stop_provider {
 		echo '####################################################'
 		cd $ILT_DIR
 		disown $PROVIDER_PID
-		kill -9 $PROVIDER_PID
+		killProcessHierarchy $PROVIDER_PID
 		wait $PROVIDER_PID
 		echo "Stopped provider with PID $PROVIDER_PID"
 		PROVIDER_PID=""

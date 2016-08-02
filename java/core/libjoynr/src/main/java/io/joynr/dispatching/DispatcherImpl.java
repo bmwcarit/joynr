@@ -27,14 +27,9 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-
-import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
@@ -42,7 +37,6 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
-
 import joynr.JoynrMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
@@ -50,6 +44,8 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DispatcherImpl implements Dispatcher {
 
@@ -90,7 +86,7 @@ public class DispatcherImpl implements Dispatcher {
             JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                                  toParticipantId,
                                                                                  subscriptionRequest,
-                                                                                 ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()),
+                                                                                 messagingQos,
                                                                                  broadcast);
 
             messageRouter.route(message);
@@ -106,7 +102,7 @@ public class DispatcherImpl implements Dispatcher {
             JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
                                                                               toParticipantId,
                                                                               subscriptionStop,
-                                                                              ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
+                                                                              messagingQos);
             messageRouter.route(message);
         }
 
@@ -122,7 +118,7 @@ public class DispatcherImpl implements Dispatcher {
             JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
                                                                          toParticipantId,
                                                                          publication,
-                                                                         ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
+                                                                         messagingQos);
             messageRouter.route(message);
         }
     }
@@ -132,11 +128,9 @@ public class DispatcherImpl implements Dispatcher {
                           Reply reply,
                           long expiryDateMs,
                           Map<String, String> customHeaders) throws IOException {
-        JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId,
-                                                               toParticipantId,
-                                                               reply,
-                                                               ExpiryDate.fromAbsolute(expiryDateMs),
-                                                               customHeaders);
+        MessagingQos messagingQos = new MessagingQos(expiryDateMs);
+        messagingQos.getCustomMessageHeaders().putAll(customHeaders);
+        JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, reply, messagingQos);
         messageRouter.route(message);
     }
 

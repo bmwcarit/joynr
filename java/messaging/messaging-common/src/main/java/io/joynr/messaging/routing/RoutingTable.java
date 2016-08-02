@@ -29,4 +29,12 @@ public interface RoutingTable {
     public boolean containsKey(String participantId);
 
     public void remove(String participantId);
+
+    /**
+     * Apply the specified operation to all addresses currently held in the routing table.
+     *
+     * @param addressOperation
+     *            the address operation to perform.
+     */
+    void apply(AddressOperation addressOperation);
 }

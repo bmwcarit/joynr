@@ -1,4 +1,4 @@
-joynr is a web-based communication framework for Java and C++ applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure.
+joynr is a web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure.
 
 This package provides a [joynr](http://joynr.io) client for Node.js.
 

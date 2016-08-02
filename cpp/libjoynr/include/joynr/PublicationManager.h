@@ -35,6 +35,14 @@
 
 #include "joynr/Variant.h"
 
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
+
 namespace joynr
 {
 
@@ -63,7 +71,7 @@ class SubscriptionQos;
 class JOYNR_EXPORT PublicationManager
 {
 public:
-    explicit PublicationManager(int maxThreads = 2);
+    explicit PublicationManager(boost::asio::io_service& ioService, int maxThreads = 2);
     explicit PublicationManager(DelayedScheduler* scheduler);
     virtual ~PublicationManager();
     /**

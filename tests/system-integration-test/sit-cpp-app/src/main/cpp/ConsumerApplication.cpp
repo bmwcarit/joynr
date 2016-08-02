@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 
     // Get the provider domain
     std::string providerDomain(argv[1]);
-    JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
+    JOYNR_LOG_INFO(logger, "Create proxy for domain {}", providerDomain);
 
     JoynrRuntime* runtime = JoynrRuntime::createRuntime("");
 

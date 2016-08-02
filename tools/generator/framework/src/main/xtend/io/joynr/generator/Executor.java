@@ -127,6 +127,7 @@ public class Executor {
                     errorMsg.append(error.getMessage());
                 }
                 logger.log(Level.SEVERE, errorMsg.toString());
+                System.exit(-1);
             } else {
                 generator.doGenerate(resource, outputFileSystem);
             }

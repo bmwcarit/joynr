@@ -19,11 +19,22 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.provider.ProviderAnnotations;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.PropertyLoader;
+import io.joynr.runtime.SystemServicesSettings;
+import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
+import joynr.infrastructure.GlobalDomainAccessControllerProvider;
+import joynr.system.DiscoveryProvider;
+import joynr.system.RoutingProvider;
+import joynr.types.GlobalDiscoveryEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,41 +42,28 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.UUID;
 
-import io.joynr.runtime.SystemServicesSettings;
-import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-import joynr.infrastructure.GlobalDomainAccessControllerProvider;
-
-import joynr.system.DiscoveryProvider;
-import joynr.system.RoutingProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
 @Singleton
 public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage {
     private static final Logger logger = LoggerFactory.getLogger(PropertiesFileParticipantIdStorage.class);
+    private final GlobalDiscoveryEntry capabilitiesDirectoryEntry;
+    private final GlobalDiscoveryEntry domainAccessControllerEntry;
     Properties persistedParticipantIds;
     private String persistenceFileName;
     private Properties joynrProperties;
-    private String capabilitiesDirectoryParticipantId;
-    private String domainAccessControllerParticipantId;
     private String discoveryProviderParticipantId;
     private String routingProviderParticipantId;;
 
     @Inject
     public PropertiesFileParticipantIdStorage(@Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties joynrProperties,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE) String persistenceFileName,
-                                              @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
-                                              @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
                                               @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
-                                              @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
+                                              @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId,
+                                              @Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry,
+                                              @Named(MessagingPropertyKeys.DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY) GlobalDiscoveryEntry domainAccessControllerEntry) {
         this.joynrProperties = joynrProperties;
         this.persistenceFileName = persistenceFileName;
-        this.capabilitiesDirectoryParticipantId = capabilitiesDirectoryParticipantId;
-        this.domainAccessControllerParticipantId = domainAccessControllerParticipantId;
+        this.capabilitiesDirectoryEntry = capabilitiesDirectoryEntry;
+        this.domainAccessControllerEntry = domainAccessControllerEntry;
         this.discoveryProviderParticipantId = discoveryProviderParticipantId;
         this.routingProviderParticipantId = routingProviderParticipantId;
         File persistenceFile = new File(persistenceFileName);
@@ -95,10 +93,10 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
             // if no default value, generate one and save it to the persistence file
         } else if (ProviderAnnotations.getInterfaceName(GlobalCapabilitiesDirectoryProvider.class)
                                       .equals(interfaceName)) {
-            participantId = capabilitiesDirectoryParticipantId;
+            participantId = capabilitiesDirectoryEntry.getParticipantId();
         } else if (ProviderAnnotations.getInterfaceName(GlobalDomainAccessControllerProvider.class)
                                       .equals(interfaceName)) {
-            participantId = domainAccessControllerParticipantId;
+            participantId = domainAccessControllerEntry.getParticipantId();
         } else if (ProviderAnnotations.getInterfaceName(DiscoveryProvider.class).equals(interfaceName)) {
             participantId = discoveryProviderParticipantId;
         } else if (ProviderAnnotations.getInterfaceName(RoutingProvider.class).equals(interfaceName)) {

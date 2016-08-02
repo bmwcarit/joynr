@@ -29,6 +29,7 @@ import com.google.inject.Provides;
 import com.google.inject.name.Named;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.util.Modules;
+import joynr.types.GlobalDiscoveryEntry;
 
 public class DiscoveryDirectoriesModule extends AbstractModule {
 
@@ -43,8 +44,8 @@ public class DiscoveryDirectoriesModule extends AbstractModule {
 
             @Provides
             @Named(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL)
-            String provideCapabilitiesDirectoryDomain(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoryDomain) {
-                return discoveryDirectoryDomain;
+            String provideCapabilitiesDirectoryDomain(@Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry) {
+                return capabilitiesDirectoryEntry.getDomain();
             }
 
             @Provides

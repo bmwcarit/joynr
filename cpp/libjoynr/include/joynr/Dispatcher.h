@@ -29,6 +29,14 @@
 #include "joynr/Logger.h"
 #include "joynr/ThreadPool.h"
 
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
+
 namespace joynr
 {
 
@@ -45,7 +53,9 @@ public:
     // ownership of messageSender is not passed to dispatcher, so dispatcher is not responsible for
     // deleting it.
     // Todo: should be changed to a std::shared_ptr or reference.
-    explicit Dispatcher(JoynrMessageSender* messageSender, int maxThreads = 4);
+    Dispatcher(JoynrMessageSender* messageSender,
+               boost::asio::io_service& ioService,
+               int maxThreads = 4);
 
     ~Dispatcher() override;
 

@@ -56,12 +56,12 @@ void FixedParticipantArbitrator::attemptArbitration()
             notifyArbitrationListener(participantId);
         }
     } catch (const exceptions::JoynrException& e) {
-        JOYNR_LOG_ERROR(logger,
-                        "Unable to lookup provider (domain: {}, interface: {}) "
-                        "from discovery. Error: {}",
-                        domains.size() > 0 ? domains.at(0) : "EMPTY",
-                        interfaceName,
-                        e.getMessage());
+        std::string errorMsg = "Unable to lookup provider (domain: " +
+                               (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                               ", interface: " + interfaceName + ") from discovery. Error: " +
+                               e.getMessage();
+        JOYNR_LOG_ERROR(logger, errorMsg);
+        arbitrationError.setMessage(errorMsg);
     }
 }
 

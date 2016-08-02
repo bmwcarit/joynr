@@ -101,5 +101,37 @@ define("joynr/dispatching/subscription/util/SubscriptionUtil", [], function() {
         return result;
     };
 
+    /**
+     * @param {Array} expectedFilterParameters - the expected filter parameters of a broadcast subscription
+     * @param {Array} actualFilterParameters - the actual filter parameters of a broadcast subscription
+     * @param {String} broadcastName - the name of the checked broadcast
+     *
+     * @returns {Object} an object containing possible caughtErrors if the actualFilterParameters do not match
+     *                   the expected filter parameters
+     */
+    SubscriptionUtil.checkFilterParameters =
+            function(expectedFilterParameters, actualFilterParameters, broadcastName) {
+                var i, result = {
+                    caughtErrors : []
+                };
+                if (actualFilterParameters === undefined
+                    || actualFilterParameters === null
+                    || Object.keys(actualFilterParameters).length === 0) {
+                    return result;
+                }
+                var targetKeys = Object.keys(expectedFilterParameters);
+                var sourceKeys = Object.keys(actualFilterParameters);
+                for (i = 0; i < targetKeys.length; i++) {
+                    if (sourceKeys.indexOf(targetKeys[i]) === -1) {
+                        result.caughtErrors.push("Filter parameter "
+                            + targetKeys[i]
+                            + " for broadcast \""
+                            + broadcastName
+                            + "\" is not provided");
+                    }
+                }
+                return result;
+            };
+
     return SubscriptionUtil;
 });

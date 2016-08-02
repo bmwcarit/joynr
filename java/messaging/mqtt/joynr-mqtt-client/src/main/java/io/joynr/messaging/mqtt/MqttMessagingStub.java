@@ -22,6 +22,7 @@ package io.joynr.messaging.mqtt;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JoynrMessageSerializer;
+import io.joynr.messaging.MessagingQosEffort;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -29,6 +30,9 @@ import joynr.system.RoutingTypes.MqttAddress;
  * Messaging stub used to send messages to a MQTT Broker
  */
 public class MqttMessagingStub implements IMessaging {
+
+    public static final int DEFAULT_QOS_LEVEL = 1;
+    public static final int BEST_EFFORT_QOS_LEVEL = 0;
 
     private static final String PRIORITY_LOW = "/low/";
     private static final String RAW = PRIORITY_LOW + "raw";
@@ -52,8 +56,13 @@ public class MqttMessagingStub implements IMessaging {
         mqttMessageReplyToAddressCalculator.setReplyTo(message);
         String topic = address.getTopic() + PRIORITY_LOW + message.getTo();
         String serializedMessage = messageSerializer.serialize(message);
+        int qosLevel = DEFAULT_QOS_LEVEL;
+        String effortHeaderValue = message.getHeaderValue(JoynrMessage.HEADER_NAME_EFFORT);
+        if (effortHeaderValue != null && String.valueOf(MessagingQosEffort.BEST_EFFORT).equals(effortHeaderValue)) {
+            qosLevel = BEST_EFFORT_QOS_LEVEL;
+        }
         try {
-            mqttClient.publishMessage(topic, serializedMessage);
+            mqttClient.publishMessage(topic, serializedMessage, qosLevel);
         } catch (Exception error) {
             failureAction.execute(error);
         }

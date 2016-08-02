@@ -31,6 +31,7 @@ define(
             "joynr/messaging/inprocess/InProcessMessagingSkeleton",
             "joynr/messaging/JoynrMessage",
             "joynr/messaging/MessagingQos",
+            "joynr/messaging/MessagingQosEffort",
             "joynr/dispatching/types/OneWayRequest",
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/Reply",
@@ -51,6 +52,7 @@ define(
                 InProcessMessagingSkeleton,
                 JoynrMessage,
                 MessagingQos,
+                MessagingQosEffort,
                 OneWayRequest,
                 Request,
                 Reply,
@@ -328,6 +330,30 @@ define(
                                                     .mostRecent().args[0];
                                     expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(
                                             headerValue);
+                                    done();
+                                });
+
+                        it(
+                                "enriches requests with effort header",
+                                function(done) {
+                                    var sentMessage;
+                                    var request = new Request({
+                                        methodName : "methodName"
+                                    });
+                                    var messagingQos = new MessagingQos();
+                                    messagingQos.effort = MessagingQosEffort.BEST_EFFORT;
+                                    dispatcher.sendRequest({
+                                        from : "from",
+                                        to : "to",
+                                        messagingQos : messagingQos,
+                                        request : request
+                                    });
+                                    expect(clusterControllerMessagingStub.transmit)
+                                            .toHaveBeenCalled();
+                                    sentMessage =
+                                            clusterControllerMessagingStub.transmit.calls
+                                                    .mostRecent().args[0];
+                                    expect(sentMessage.effort).toEqual(MessagingQosEffort.BEST_EFFORT.value);
                                     done();
                                 });
 

@@ -25,7 +25,8 @@
 namespace joynr
 {
 
-MessagingQos::MessagingQos(std::uint64_t ttl) : ttl(ttl), messageHeaders()
+MessagingQos::MessagingQos(std::uint64_t ttl, MessagingQosEffort::Enum effort)
+        : ttl(ttl), effort(effort), messageHeaders()
 {
 }
 
@@ -37,6 +38,16 @@ std::uint64_t MessagingQos::getTtl() const
 void MessagingQos::setTtl(const std::uint64_t& ttl)
 {
     this->ttl = ttl;
+}
+
+MessagingQosEffort::Enum MessagingQos::getEffort() const
+{
+    return effort;
+}
+
+void MessagingQos::setEffort(const MessagingQosEffort::Enum effort)
+{
+    this->effort = effort;
 }
 
 void MessagingQos::putCustomMessageHeader(const std::string& key, const std::string& value)
@@ -81,6 +92,7 @@ std::string MessagingQos::toString() const
     std::ostringstream msgQosAsString;
     msgQosAsString << "MessagingQos{";
     msgQosAsString << "ttl:" << getTtl();
+    msgQosAsString << "effort:" << MessagingQosEffort::getLiteral(this->getEffort());
     msgQosAsString << "}";
     return msgQosAsString.str();
 }

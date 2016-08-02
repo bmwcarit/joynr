@@ -35,7 +35,7 @@ void LibjoynrSettings::checkSettings()
 {
     // set default values
     if (!settings.contains(SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME())) {
-        setLocalCapabilitiesDirectoryPersistenceFilename(
+        setBroadcastSubscriptionRequestPersistenceFilename(
                 DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
     }
 
@@ -53,7 +53,7 @@ void LibjoynrSettings::checkSettings()
     }
 
     if (!settings.contains(SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME())) {
-        setLocalCapabilitiesDirectoryPersistenceFilename(
+        setSubscriptionRequestPersistenceFilename(
                 DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
     }
 }

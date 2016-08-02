@@ -44,6 +44,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.integration.util.DummyJoynrApplication;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
@@ -102,6 +103,7 @@ public class ProxyErrorsTest {
         domain = "domain-" + UUID.randomUUID().toString();
         domain2 = "domain2-" + UUID.randomUUID().toString();
         Properties joynrConfig = new Properties();
+        joynrConfig.setProperty(MessagingPropertyKeys.CHANNELID, "discoverydirectory_channelid");
 
         // provider and proxy using same runtime to allow local-only communications
         runtime = getRuntime(joynrConfig);

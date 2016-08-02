@@ -30,6 +30,14 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
+
 namespace joynr
 {
 
@@ -39,7 +47,7 @@ class MessagingQos;
 class JOYNR_EXPORT InProcessDispatcher : public IDispatcher, public IRequestCallerDirectory
 {
 public:
-    InProcessDispatcher();
+    explicit InProcessDispatcher(boost::asio::io_service& ioService);
     ~InProcessDispatcher() override;
 
     void addReplyCaller(const std::string& requestReplyId,

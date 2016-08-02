@@ -30,6 +30,7 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.CustomParameter;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 
 import com.google.inject.AbstractModule;
@@ -49,8 +50,8 @@ public class CapabilitiesDirectoryModule extends AbstractModule {
 
     @Provides
     @Named(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL)
-    String provideCapabilitiesDirectoryDomain(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String capDirDomain) {
-        return capDirDomain;
+    String provideCapabilitiesDirectoryDomain(@Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry) {
+        return capabilitiesDirectoryEntry.getDomain();
     }
 
     @Provides

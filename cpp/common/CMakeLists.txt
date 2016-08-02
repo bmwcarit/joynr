@@ -29,6 +29,7 @@ set(
 
 set(
     JoynrCommon_TARGET_LIBRARIES
+    Boost::system
 )
 
 if(JOYNR_ENABLE_DLT_LOGGING)

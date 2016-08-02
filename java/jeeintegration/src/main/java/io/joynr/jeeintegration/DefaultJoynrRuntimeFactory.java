@@ -150,13 +150,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         Properties defaultJoynrProperties = new Properties();
         defaultJoynrProperties.setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, joynrLocalDomain);
         defaultJoynrProperties.setProperty(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, MQTT);
-
-        // allow use of deprecated CAPABILITYDIRECTORYURL until 2016-12-31
-        String defaultDiscoveryDirectoryUrl = getEnvWithDefault("CAPABILITYDIRECTORYURL", LOCALHOST_URL
-                + "discovery/channels/discoverydirectory_channelid/");
-        defaultJoynrProperties.setProperty("joynr.messaging.discoverydirectoryurl",
-                                           getEnvWithDefault("DISCOVERYDIRECTORYURL", defaultDiscoveryDirectoryUrl));
-
         defaultJoynrProperties.putAll(configuredProperties);
         return defaultJoynrProperties;
     }

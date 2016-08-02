@@ -26,6 +26,7 @@
 #include "joynr/types/Version.h"
 #include <tuple>
 #include <string>
+#include "joynr/SingleThreadedIOService.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -78,13 +79,14 @@ private:
 class AccessControllerTest : public ::testing::Test {
 public:
     AccessControllerTest() :
+        singleThreadedIOService(),
         localDomainAccessControllerMock(new LocalDomainAccessStore(
                         true // start with clean database
         )),
         accessControllerCallback(new MockConsumerPermissionCallback()),
         settings(),
         messagingSettingsMock(settings),
-        localCapabilitiesDirectoryMock(messagingSettingsMock, settings),
+        localCapabilitiesDirectoryMock(messagingSettingsMock, settings, singleThreadedIOService.getIOService()),
         accessController(
                 localCapabilitiesDirectoryMock,
                 localDomainAccessControllerMock
@@ -149,6 +151,7 @@ public:
     }
 
 protected:
+    SingleThreadedIOService singleThreadedIOService;
     MockLocalDomainAccessController localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;
     Settings settings;

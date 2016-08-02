@@ -252,3 +252,18 @@ TEST_F(JoynrMessageFactoryTest, testRequestContentType)
     JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request);
     EXPECT_EQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON, message.getHeaderContentType());
 }
+
+TEST_F(JoynrMessageFactoryTest, testSetNoEffortHeader)
+{
+    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request);
+    EXPECT_FALSE(message.containsHeaderEffort());
+}
+
+TEST_F(JoynrMessageFactoryTest, testSetBestEffortHeader)
+{
+    qos.setEffort(MessagingQosEffort::Enum::BEST_EFFORT);
+    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request);
+    EXPECT_TRUE(message.containsHeaderEffort());
+    EXPECT_EQ(MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT),
+              message.getHeaderEffort());
+}

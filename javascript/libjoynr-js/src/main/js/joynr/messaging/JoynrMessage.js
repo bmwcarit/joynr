@@ -151,7 +151,8 @@ define(
                     JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
                     JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
                     JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID,
-                    JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE
+                    JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE,
+                    JoynrMessage.JOYNRMESSAGE_HEADER_EFFORT
                 ];
 
                 function constructGetter(header, property) {
@@ -194,6 +195,12 @@ define(
                  * The expiry date of the message
                  *
                  * @name JoynrMessage#expiryDate
+                 * @type String
+                 */
+                /**
+                 * The effort to be expent while delivering the message
+                 *
+                 * @name JoynrMessage#effort
                  * @type String
                  */
                 for (i = 0; i < headerProperties.length; ++i) {
@@ -288,6 +295,13 @@ define(
              * @name JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE
              */
             JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE = "expiryDate";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_HEADER_EFFORT
+             */
+            JoynrMessage.JOYNRMESSAGE_HEADER_EFFORT = "effort";
             /**
              * @static
              * @readonly

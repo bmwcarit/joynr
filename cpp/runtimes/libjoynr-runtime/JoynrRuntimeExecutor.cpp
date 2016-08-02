@@ -25,8 +25,8 @@
 namespace joynr
 {
 
-JoynrRuntimeExecutor::JoynrRuntimeExecutor(Settings* settings)
-        : settings(settings), runtime(), runtimeSemaphore(0)
+JoynrRuntimeExecutor::JoynrRuntimeExecutor(std::unique_ptr<Settings> settings)
+        : settings(std::move(settings)), runtime(), runtimeSemaphore(0)
 {
 }
 

@@ -426,10 +426,10 @@ define([
 
                         it("sets the enumArrayAttribute", function(done) {
                             var value = [];
-                            value = [Country.GERMANY, Country.AUSTRIA, Country.AUSTRALIA, Country.CANADA, Country.ITALY];
                             setAttribute("enumArrayAttribute", value).then(function() {
                                 return getAttribute("enumArrayAttribute", value);
                             }).then(function() {
+                                value = [Country.GERMANY, Country.AUSTRIA, Country.AUSTRALIA, Country.CANADA, Country.ITALY];
                                 return setAttribute("enumArrayAttribute", value);
                             }).then(function() {
                                 return getAttribute("enumArrayAttribute", value);
@@ -451,6 +451,19 @@ define([
                                 return setAttribute("typeDefForPrimitive", value);
                             }).then(function() {
                                 return getAttribute("typeDefForPrimitive", value);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        it("get/sets the attribute with starting capital letter", function(done) {
+                            setAttribute("StartWithCapitalLetter", true).then(function() {
+                                return getAttribute("StartWithCapitalLetter", true);
+                            }).then(function() {
+                                return setAttribute("StartWithCapitalLetter", false);
+                            }).then(function() {
+                                return getAttribute("StartWithCapitalLetter", false);
                             }).then(function() {
                                 done();
                                 return null;

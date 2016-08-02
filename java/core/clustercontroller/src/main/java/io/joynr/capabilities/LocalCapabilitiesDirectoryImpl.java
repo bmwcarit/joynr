@@ -19,9 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,21 +33,17 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.DeferredVoid;
@@ -60,14 +53,9 @@ import io.joynr.proxy.Future;
 import io.joynr.runtime.GlobalAddressProvider;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
-import joynr.infrastructure.GlobalCapabilitiesDirectory;
-import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-import joynr.infrastructure.GlobalDomainAccessController;
-import joynr.infrastructure.GlobalDomainAccessControllerProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
-import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
 @Singleton
@@ -90,7 +78,6 @@ TransportReadyListener {
         INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.LOCAL_THEN_GLOBAL);
     }
 
-    private static final long NO_EXPIRY = Long.MAX_VALUE;
     private DiscoveryEntryStore localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
     private DiscoveryEntryStore globalDiscoveryEntryCache;
@@ -99,8 +86,6 @@ TransportReadyListener {
     private MessageRouter messageRouter;
 
     private GlobalAddressProvider globalAddressProvider;
-
-    private ObjectMapper objectMapper;
 
     private Address globalAddress;
     private Object globalAddressLock = new Object();
@@ -127,45 +112,19 @@ TransportReadyListener {
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public LocalCapabilitiesDirectoryImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabiltitiesDirectoryAddress,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
+    public LocalCapabilitiesDirectoryImpl(CapabilitiesProvisioning capabilitiesProvisioning,
                                           GlobalAddressProvider globalAddressProvider,
                                           DiscoveryEntryStore localDiscoveryEntryStore,
                                           DiscoveryEntryStore globalDiscoveryEntryCache,
                                           MessageRouter messageRouter,
-                                          GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient,
-                                          ObjectMapper objectMapper) {
+                                          GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient) {
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.messageRouter = messageRouter;
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
-        this.objectMapper = objectMapper;
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
-
-        String defaultPublicKeyId = "";
-
-        this.globalDiscoveryEntryCache.add(CapabilityUtils.newGlobalDiscoveryEntry(getVersionFromAnnotation(GlobalCapabilitiesDirectoryProvider.class),
-                                                                                   discoveryDirectoriesDomain,
-                                                                                   GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                                   capabilitiesDirectoryParticipantId,
-                                                                                   new ProviderQos(),
-                                                                                   System.currentTimeMillis(),
-                                                                                   NO_EXPIRY,
-                                                                                   defaultPublicKeyId,
-                                                                                   capabiltitiesDirectoryAddress));
-        this.globalDiscoveryEntryCache.add(CapabilityUtils.newGlobalDiscoveryEntry(getVersionFromAnnotation(GlobalDomainAccessControllerProvider.class),
-                                                                                   discoveryDirectoriesDomain,
-                                                                                   GlobalDomainAccessController.INTERFACE_NAME,
-                                                                                   domainAccessControllerParticipantId,
-                                                                                   new ProviderQos(),
-                                                                                   System.currentTimeMillis(),
-                                                                                   NO_EXPIRY,
-                                                                                   defaultPublicKeyId,
-                                                                                   domainAccessControllerAddress));
+        this.globalDiscoveryEntryCache.add(capabilitiesProvisioning.getDiscoveryEntries());
     }
 
     /**
@@ -460,12 +419,7 @@ TransportReadyListener {
         for (GlobalDiscoveryEntry ce : caps) {
             // TODO when are entries purged from the messagingEndpointDirectory?
             if (ce.getParticipantId() != null && ce.getAddress() != null) {
-                Address address;
-                try {
-                    address = objectMapper.readValue(ce.getAddress(), Address.class);
-                } catch (IOException e) {
-                    throw new JoynrRuntimeException(e);
-                }
+                Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(ce);
                 messageRouter.addNextHop(ce.getParticipantId(), address);
             }
         }

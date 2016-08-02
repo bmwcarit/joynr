@@ -175,7 +175,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
-    public void reconnect() {
+    public synchronized void reconnect() {
 
         try {
             if (sessionFuture != null && sessionFuture.get().isOpen()) {

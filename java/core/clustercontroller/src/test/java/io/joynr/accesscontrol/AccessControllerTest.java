@@ -25,13 +25,16 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.messaging.JsonMessageSerializerModule;
+import io.joynr.messaging.MessagingQos;
 import joynr.JoynrMessage;
 import joynr.Request;
 import joynr.infrastructure.DacTypes.Permission;
@@ -39,18 +42,12 @@ import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * Test the AccessController
@@ -79,7 +76,8 @@ public class AccessControllerTest {
     private String testInterface = "testInterface";
     private String testOperation = "testOperation";
     private String testPublicKeyId = "testPublicKeyId";
-    private ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(1000);
+    private MessagingQos messagingQos = new MessagingQos(1000);
+    private ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
 
     @BeforeClass
     public static void initialize() {
@@ -104,11 +102,7 @@ public class AccessControllerTest {
 
         // Create a dummy message
         request = new Request(testOperation, new String[]{}, new Class<?>[]{});
-        message = messageFactory.createRequest(fromParticipantId,
-                                               toParticipantId,
-                                               request,
-                                               expiryDate,
-                                               Collections.<String, String> emptyMap());
+        message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, messagingQos);
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),

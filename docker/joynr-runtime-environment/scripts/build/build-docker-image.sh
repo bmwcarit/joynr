@@ -68,7 +68,7 @@ cp tests/performance-test/package.json ${FILE_DIR}/performance-test/package.json
 cp tests/performance-test/run-performance-tests.sh ${FILE_DIR}/performance-test/run-performance-tests.sh
 cp tests/resources/mosquitto.conf ${FILE_DIR}/mosquitto.conf
 
-# We need to remove the version string (example: performance-test-0.19.0-SNAPSHOT.jar)
+# We need to remove the version string (example: performance-test-<JOYNR_VERSION>.jar)
 # from the consumer and provider jar file
 find tests/performance-test/target/ -iregex ".*performance-test-consumer.*jar" -exec cp {} ${FILE_DIR}/performance-test/performance-test-consumer.jar \;
 find tests/performance-test/target/ -iregex ".*performance-test-provider.*jar" -exec cp {} ${FILE_DIR}/performance-test/performance-test-provider.jar \;
