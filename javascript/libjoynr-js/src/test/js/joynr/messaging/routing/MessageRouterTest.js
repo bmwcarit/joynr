@@ -453,11 +453,12 @@ define([
                                         expect(address).toBe(parentMessageRouterAddress);
                                         expect(routingProxySpy.resolveNextHop.calls.count()).toBe(1);
                                         routingProxySpy.resolveNextHop.calls.reset();
-                                        return messageRouter.resolveNextHop(joynrMessage.to).then(function(address){
-                                            expect(address).toBe(parentMessageRouterAddress);
-                                            expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
-                                            done();
-                                        });
+                                        return messageRouter.resolveNextHop(joynrMessage.to);
+                                    }).then(function(address){
+                                        expect(address).toBe(parentMessageRouterAddress);
+                                        expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
+                                        done();
+                                        return null;
                                     }).catch(done.fail);
                                 });
 
