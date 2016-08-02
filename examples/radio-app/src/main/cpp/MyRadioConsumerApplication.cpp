@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@
 #include <limits>
 #include "joynr/JsonSerializer.h"
 #include "joynr/Logger.h"
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 using namespace joynr;
 
@@ -114,6 +117,12 @@ INIT_LOGGER(NewStationDiscoveredBroadcastListener);
 int main(int argc, char* argv[])
 {
     using joynr::vehicle::Radio::AddFavoriteStationErrorEnum;
+
+// Register app at the dlt-daemon for logging
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+    DLT_REGISTER_APP("JOYT", argv[0]);
+#endif // JOYNR_ENABLE_DLT_LOGGING
+
     // Get a logger
     joynr::Logger logger("MyRadioConsumerApplication");
 

@@ -32,6 +32,13 @@ set(
     Boost::system
 )
 
+if(JOYNR_ENABLE_DLT_LOGGING)
+    list(
+        APPEND JoynrCommon_TARGET_LIBRARIES
+        DLT::DLT
+    )
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
         APPEND JoynrCommon_TARGET_LIBRARIES
@@ -121,6 +128,20 @@ add_library(
     ${JoynrCommon_SOURCES}
 )
 
+if(JOYNR_ENABLE_STDOUT_LOGGING)
+    target_compile_definitions(
+        JoynrCommon
+        PUBLIC
+        JOYNR_ENABLE_STDOUT_LOGGING)
+endif(JOYNR_ENABLE_STDOUT_LOGGING)
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+    target_compile_definitions(
+        JoynrCommon
+        PUBLIC
+        JOYNR_ENABLE_DLT_LOGGING)
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
 set_target_properties(
     JoynrCommon
     PROPERTIES
@@ -131,7 +152,19 @@ set_target_properties(
 )
 
 # make spdlog system directory to avoid compiler warnings
-target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>")
+target_include_directories(
+    JoynrCommon
+    SYSTEM PUBLIC
+    "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>"
+)
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+target_include_directories(
+    JoynrCommon
+    SYSTEM PUBLIC
+    "$<BUILD_INTERFACE:${dlt_INCLUDE_DIRS}>"
+)
+endif(JOYNR_ENABLE_DLT_LOGGING)
 
 target_include_directories(
     JoynrCommon
@@ -150,6 +183,10 @@ target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
 if(NOT USE_PLATFORM_SPDLOG)
     add_dependencies(JoynrCommon spdlog)
 endif(NOT USE_PLATFORM_SPDLOG)
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+add_dependencies(JoynrCommon DLT::DLT)
+endif(JOYNR_ENABLE_DLT_LOGGING)
 
 AddClangFormat(JoynrCommon)
 

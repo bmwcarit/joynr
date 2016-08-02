@@ -24,6 +24,12 @@
 #include <boost/type_index.hpp>
 #include <boost/algorithm/string/erase.hpp>
 #include <spdlog/spdlog.h>
+#ifdef JOYNR_ENABLE_STDOUT_LOGGING
+#include <spdlog/sinks/stdout_sinks.h>
+#endif // JOYNR_ENABLE_STDOUT_LOGGING
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <joynr/DltSink.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 namespace joynr
 {
@@ -89,11 +95,21 @@ enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
 
 namespace joynr
 {
-
 struct Logger
 {
-    Logger(const std::string& prefix) : spdlog(spdlog::stdout_logger_mt(prefix))
+    Logger(const std::string& prefix) : spdlog()
     {
+        std::vector<spdlog::sink_ptr> sinks;
+
+#ifdef JOYNR_ENABLE_STDOUT_LOGGING
+        sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
+#endif // JOYNR_ENABLE_STDOUT_LOGGING
+
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+        sinks.push_back(std::make_shared<joynr::DltSink>());
+#endif // JOYNR_ENABLE_DLT_LOGGING
+
+        spdlog = std::make_shared<spdlog::logger>(prefix, begin(sinks), end(sinks));
         spdlog->set_level(spdlog::level::trace);
         spdlog->set_pattern("%Y-%m-%d %H:%M:%S.%e [thread ID:%t] [%l] %n %v");
     }
@@ -105,7 +121,6 @@ struct Logger
         boost::algorithm::erase_all(prefix, "joynr::");
         return prefix;
     }
-
     std::shared_ptr<spdlog::logger> spdlog;
 };
 
