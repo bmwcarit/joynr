@@ -283,7 +283,6 @@ set(
 set(
     JoynrTest_SYSTEM_INCLUDE_DIRECTORIES
     ${spdlog_INCLUDE_DIRS}
-    ${jsmn_INCLUDE_DIR}
 )
 
 file(

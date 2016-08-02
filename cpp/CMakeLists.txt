@@ -1,4 +1,4 @@
-
+# Parts of this file are inspired by a CMake tutorial (http://www.cmake.org/Wiki/CMake/)
 # that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/).
 # There are no attributions specified by the author.
 
@@ -113,13 +113,6 @@ option(
 message(STATUS "option USE_PLATFORM_MUESLI=" ${USE_PLATFORM_MUESLI})
 
 option(
-    USE_PLATFORM_JSMN
-    "Resolve dependency to jsmn from the system?"
-    ON
-)
-message(STATUS "option USE_PLATFORM_JSMN=" ${USE_PLATFORM_JSMN})
-
-option(
     USE_PLATFORM_MOSQUITTO
     "Resolve dependency to mosquitto from the system?"
     ON
@@ -211,7 +204,7 @@ set (CHECK_DLT (JOYNR_ENABLE_DLT_LOGGING AND USE_PLATFORM_DLT OR NOT JOYNR_ENABL
 if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_JSMN AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
     set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
     set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
-    set(codeMsg "${codeMsg} USE_PLATFORM_DLT, USE_PLATFORM_JSMN and USE_PLATFORM_MOSQUITTO.\")")
+    set(codeMsg "${codeMsg} USE_PLATFORM_DLT and USE_PLATFORM_MOSQUITTO.\")")
     install(CODE "${codeMsg}")
 endif()
 
@@ -845,7 +838,6 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
     ${muesli_INCLUDE_DIRECTORIES}
-    ${jsmn_INCLUDE_DIR}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -863,7 +855,6 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
     ${muesli_INCLUDE_DIRECTORIES}
-    ${jsmn_INCLUDE_DIR}
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -873,7 +864,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_INCLUDE_DIRS}
         ${muesli_INCLUDE_DIRECTORIES}
-        ${jsmn_INCLUDE_DIR}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
@@ -891,10 +881,6 @@ macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
     set(JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES}${FILE_CONTENTS})
 endmacro(FillJoynrConfigDependencies)
 
-if(USE_PLATFORM_JSMN)
-    FillJoynrConfigDependencies("PlatformJsmn")
-endif(USE_PLATFORM_JSMN)
-
 if(USE_PLATFORM_MOSQUITTO)
     FillJoynrConfigDependencies("PlatformMosquitto")
 else(USE_PLATFORM_MOSQUITTO)
@@ -904,7 +890,6 @@ endif(USE_PLATFORM_MOSQUITTO)
 if(USE_PLATFORM_SPDLOG)
     FillJoynrConfigDependencies("PlatformSpdlog")
 endif(USE_PLATFORM_SPDLOG)
-
 
 if(JOYNR_ENABLE_DLT_LOGGING)
 if(USE_PLATFORM_DLT)

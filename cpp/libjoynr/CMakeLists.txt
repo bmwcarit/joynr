@@ -32,11 +32,6 @@ set(
 )
 
 set(
-    JoynrLib_SYS_INCLUDE_DIRS
-    ${jsmn_INCLUDE_DIR}
-)
-
-set(
     JoynrLib_TARGET_LIBRARIES
     JoynrCommon
 )
@@ -138,7 +133,6 @@ target_include_directories(
 target_include_directories(
     Joynr
     SYSTEM
-    PRIVATE ${JoynrLib_SYS_INCLUDE_DIRS}
     PUBLIC
         "$<BUILD_INTERFACE:${WEBSOCKETPP_INCLUDE_DIR}>"
         "$<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>" # necessary, because requirements are not propagated properly in cmake 2.8.x

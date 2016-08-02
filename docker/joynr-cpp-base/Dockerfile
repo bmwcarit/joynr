@@ -33,20 +33,6 @@ RUN dnf update -y \
 	&& dnf clean all
 
 ###################################################
-# install jsmn
-###################################################
-
-RUN cd /opt \
-    && git clone https://github.com/zserge/jsmn.git \
-    && cd jsmn \
-    && git checkout 572ace5 \
-    && CFLAGS=-fPIC make \
-    && cp libjsmn.a /usr/local/lib \
-    && cp jsmn.h /usr/local/include \
-    && cd /opt/ \
-    && rm -rf jsmn
-
-###################################################
 # install spdlog
 ###################################################
 

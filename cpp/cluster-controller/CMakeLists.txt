@@ -62,7 +62,6 @@ set(
 
 set(
     JoynrClusterController_SYS_INCLUDE_DIRECTORIES
-    ${jsmn_INCLUDE_DIR}
     ${Qt5Core_INCLUDE_DIRS}
     ${CURL_INCLUDE_DIRS}
     ${MOSQUITTO_INCLUDE_DIRS}
