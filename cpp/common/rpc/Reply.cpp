@@ -53,8 +53,19 @@ void Reply::setError(std::shared_ptr<exceptions::JoynrException> error)
 
 bool Reply::operator==(const Reply& other) const
 {
-    return requestReplyId == other.getRequestReplyId() && error == other.getError() &&
-           BaseReply::operator==(other);
+    // if error ptr do not point to the same object
+    if (error != other.getError()) {
+        // if exactly one of error and other.getError() is a nullptr
+        if (error == nullptr || other.getError() == nullptr) {
+            return false;
+        }
+        // compare actual objects
+        if (!(*error.get() == *other.getError().get())) {
+            return false;
+        }
+    }
+
+    return requestReplyId == other.getRequestReplyId() && BaseReply::operator==(other);
 }
 
 bool Reply::operator!=(const Reply& other) const
