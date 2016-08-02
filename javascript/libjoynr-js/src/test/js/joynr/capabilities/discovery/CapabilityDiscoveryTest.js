@@ -864,8 +864,12 @@ define([
                                                     messageRouterSpy,
                                                     proxyBuilderSpy,
                                                     "io.joynr");
-                                    expect(capabilityDiscovery.lookup([domain, domain], interfaceName, discoveryQos).isRejected()).toBe(true);
-                                    done();
+                                    capabilityDiscovery.lookup([domain, domain], interfaceName, discoveryQos).then(function() {
+                                        fail("unexpected success");
+                                    }).catch(function(error) {
+                                        done();
+                                        return null;
+                                    });
                                 });
 
                     });
