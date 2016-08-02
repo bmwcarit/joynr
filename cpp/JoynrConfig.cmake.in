@@ -130,6 +130,18 @@ set(
     @JoynrConfig_LIB_WS_LIBRARIES@
 )
 
+# DLT logger configuration
+set(
+     JOYNR_ENABLE_DLT_LOGGING
+    @JOYNR_ENABLE_DLT_LOGGING@
+)
+
+# STDOUT SPD logger configuration
+set(
+    JOYNR_ENABLE_STDOUT_LOGGING
+    @JOYNR_ENABLE_STDOUT_LOGGING@
+)
+
 # Dbus configuration
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(

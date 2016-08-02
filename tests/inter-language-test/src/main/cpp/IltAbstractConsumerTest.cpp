@@ -17,6 +17,9 @@
  * #L%
  */
 #include "IltAbstractConsumerTest.h"
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 INIT_LOGGER(IltAbstractConsumerTest);
 
@@ -29,6 +32,11 @@ std::string IltAbstractConsumerTest::programName;
 
 int main(int argc, char** argv)
 {
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+    // Register app at the dlt-daemon for logging
+    DLT_REGISTER_APP("JOYT", argv[0]);
+#endif // JOYNR_ENABLE_DLT_LOGGING
+
     ::testing::InitGoogleTest(&argc, argv);
     IltAbstractConsumerTest::setProgramName(std::string(argv[0]));
 

@@ -37,6 +37,9 @@
 #include <limits>
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 using namespace joynr;
 
@@ -3729,6 +3732,12 @@ bool callSubscribeAttributeWithExceptionFromGetter(
 
 int main(int argc, char* argv[])
 {
+
+    // Register app at the dlt-daemon for logging
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+    DLT_REGISTER_APP("JOYT", argv[0]);
+#endif // JOYNR_ENABLE_DLT_LOGGING
+
     int exitCode;
 
     // Check the usage

@@ -1,7 +1,7 @@
 FROM fedora:24
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2016-02-16
+ENV REFRESHED_AT 2016-07-20
 
 ###################################################
 # set timezone
@@ -64,13 +64,8 @@ RUN dnf update -y \
 # use settings in /etc/mosquitto/mosquitto.conf
 ###################################################
 RUN dnf update -y \
-    && dnf install -y c-ares-devel libuuid-devel\
-    && cd /opt \
-    && git clone https://git.eclipse.org/r/mosquitto/org.eclipse.mosquitto.git \
-    && cd org.eclipse.mosquitto \
-    && git checkout v1.4.7 \
-    && make DOCDIRS= install -j"$(nproc)" \
-    && mv /etc/mosquitto/mosquitto.conf.example /etc/mosquitto/mosquitto.conf \
+    && dnf install -y mosquitto \
+    mosquitto-devel \
     && sed -i "s/#max_queued_messages 100/max_queued_messages 0/" /etc/mosquitto/mosquitto.conf \
     && sed -i "s/#user mosquitto/user joynr/" /etc/mosquitto/mosquitto.conf \
     && dnf clean all
