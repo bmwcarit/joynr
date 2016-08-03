@@ -151,7 +151,7 @@ public class LegacyCapabilitiesProvisioning {
                                          String domain) {
         boolean hasUrl = isPresent(urlForAddress);
         boolean hasParticipantId = isPresent(participantId);
-        if (hasUrl ^ hasParticipantId) {
+        if (hasUrl && !hasParticipantId) {
             throw new IllegalArgumentException(
                 format("When configuring the discovery directory or domain access controller "
                         + "via properties, you must provide both a URL and a participant ID per service.%n"

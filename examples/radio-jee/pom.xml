@@ -224,14 +224,6 @@
                   <value>http://localhost:8383/discovery/channels/discoverydirectory_channelid/</value>
                 </systemProperty>
                 <systemProperty>
-                  <name>joynr.messaging.capabilitiesdirectoryparticipantid</name>
-                  <value>capabilitiesdirectory_participantid</value>
-                </systemProperty>
-                <systemProperty>
-                  <name>joynr.messaging.domainaccesscontrollerparticipantid</name>
-                  <value>domainaccesscontroller_participantid</value>
-                </systemProperty>
-                <systemProperty>
                   <name>joynr.messaging.bounceproxyurl</name>
                   <value>http://localhost:8383/bounceproxy/</value>
                 </systemProperty>
