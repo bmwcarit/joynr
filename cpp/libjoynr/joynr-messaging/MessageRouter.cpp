@@ -497,13 +497,14 @@ void MessageRouter::loadRoutingTable(std::string fileName)
         routingTableFileName = std::move(fileName);
     }
 
-    std::string jsonString;
     WriteLocker lock(routingTableLock);
     try {
         joynr::serializer::deserializeFromJson(
                 routingTable, joynr::util::loadStringFromFile(routingTableFileName));
-    } catch (const std::exception& ex) {
+    } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
+    } catch (const std::invalid_argument& ex) {
+        JOYNR_LOG_ERROR(logger, "could not deserialize from JSON: {}", ex.what());
     }
 }
 
