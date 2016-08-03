@@ -67,7 +67,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private DiscoveryQos discoveryQos;
     private ConnectorInvocationHandler connector;
     private final String proxyParticipantId;
-    private ConcurrentLinkedQueue<MethodInvocation> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation>();
+    private ConcurrentLinkedQueue<MethodInvocation<?>> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation<?>>();
     private ConcurrentLinkedQueue<SubscriptionInvocation> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionInvocation>();
     private String interfaceName;
     private Set<String> domains;
@@ -222,7 +222,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         }
     }
 
-    private void setFutureErrorState(Invocation invocation, JoynrRuntimeException e) {
+    private void setFutureErrorState(Invocation<?> invocation, JoynrRuntimeException e) {
         invocation.getFuture().onFailure(e);
     }
 
@@ -231,7 +231,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      */
     private void sendQueuedInvocations() {
         while (true) {
-            MethodInvocation currentRPC = queuedRpcList.poll();
+            MethodInvocation<?> currentRPC = queuedRpcList.poll();
             if (currentRPC == null) {
                 return;
             }
@@ -356,7 +356,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         try {
             if (!isConnectorReady()) {
                 // waiting for arbitration -> queue invocation
-                queuedRpcList.offer(new MethodInvocation(method, args, future));
+                queuedRpcList.offer(new MethodInvocation<T>(method, args, future));
                 return future;
             }
         } finally {
@@ -424,8 +424,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     public void abort(JoynrRuntimeException exception) {
         setThrowableForInvoke(exception);
 
-        for (Iterator<MethodInvocation> iterator = queuedRpcList.iterator(); iterator.hasNext();) {
-            MethodInvocation invocation = iterator.next();
+        for (Iterator<MethodInvocation<?>> iterator = queuedRpcList.iterator(); iterator.hasNext();) {
+            MethodInvocation<?> invocation = iterator.next();
             try {
                 MethodMetaInformation metaInfo = new MethodMetaInformation(invocation.getMethod());
                 int callbackIndex = metaInfo.getCallbackIndex();

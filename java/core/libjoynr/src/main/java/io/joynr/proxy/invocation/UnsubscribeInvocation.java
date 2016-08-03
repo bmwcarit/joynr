@@ -28,7 +28,7 @@ public class UnsubscribeInvocation extends SubscriptionInvocation {
 
     private final String subscriptionId;
 
-    public UnsubscribeInvocation(Method method, Object[] args, Future<?> future) {
+    public UnsubscribeInvocation(Method method, Object[] args, Future<String> future) {
         super(future);
         if (args[0] == null || !String.class.isAssignableFrom(args[0].getClass())) {
             throw new JoynrIllegalStateException("First parameter of unsubscribe... has to be a String containing the subscriptionId");

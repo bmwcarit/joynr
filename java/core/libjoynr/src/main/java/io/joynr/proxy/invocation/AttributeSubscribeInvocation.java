@@ -39,7 +39,7 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
     private final SubscriptionQos qos;
     private final String attributeName;
 
-    public AttributeSubscribeInvocation(Method method, Object[] args, Future<?> future) {
+    public AttributeSubscribeInvocation(Method method, Object[] args, Future<String> future) {
         super(future);
         JoynrRpcSubscription subscriptionAnnotation = method.getAnnotation(JoynrRpcSubscription.class);
         if (subscriptionAnnotation == null) {
@@ -71,7 +71,7 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
                                         Class<? extends TypeReference<?>> attributeTypeReference,
                                         AttributeSubscriptionListener<?> attributeSubscriptionListener,
                                         SubscriptionQos qos,
-                                        Future<?> future) {
+                                        Future<String> future) {
         super(future);
         this.attributeTypeReference = attributeTypeReference;
         this.attributeSubscriptionListener = attributeSubscriptionListener;
