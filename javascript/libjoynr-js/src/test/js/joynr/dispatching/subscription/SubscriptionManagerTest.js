@@ -34,6 +34,7 @@ define([
             "global/Promise",
             "joynr/dispatching/types/Reply",
             "joynr/exceptions/PublicationMissedException",
+            "joynr/exceptions/SubscriptionException",
             "joynr/system/LoggerFactory",
             "Date",
             "global/WaitsFor",
@@ -54,6 +55,7 @@ define([
                 Promise,
                 Reply,
                 PublicationMissedException,
+                SubscriptionException,
                 LoggerFactory,
                 Date,
                 waitsFor,
@@ -64,11 +66,14 @@ define([
                     "libjoynr-js.joynr.dispatching.subscription.SubscriptionManager",
                     function() {
                         var subscriptionManager;
+                        var subscriptionManagerOnError;
                         var log =
                                 LoggerFactory
                                         .getLogger("joynr.dispatching.TestSubscriptionManager");
                         var fakeTime = 1371553100000;
                         var dispatcherSpy;
+                        var dispatcherSpyOnError;
+                        var storedSubscriptionId;
 
                         /**
                          * Called before each test.
@@ -82,23 +87,60 @@ define([
 
                             dispatcherSpy.sendBroadcastSubscriptionRequest
                                     .and.callFake(function(settings) {
+                                        storedSubscriptionId = settings.subscriptionRequest.subscriptionId;
                                         subscriptionManager
                                                 .handleSubscriptionReply({
                                                     subscriptionId : settings.subscriptionRequest.subscriptionId
                                                 });
-                                        return Promise.resolve(settings.subscriptionRequest.subscriptionId);
+                                        return Promise.resolve();
                                     });
 
                             dispatcherSpy.sendSubscriptionRequest
                                     .and.callFake(function(settings) {
+                                        storedSubscriptionId = settings.subscriptionRequest.subscriptionId;
                                         subscriptionManager
                                                 .handleSubscriptionReply({
                                                     subscriptionId : settings.subscriptionRequest.subscriptionId
                                                 });
-                                        return Promise.resolve(settings.subscriptionRequest.subscriptionId);
+                                        return Promise.resolve();
                                     });
 
                             subscriptionManager = new SubscriptionManager(dispatcherSpy);
+
+                            dispatcherSpyOnError = jasmine.createSpyObj("DispatcherSpyOnError", [
+                                "sendSubscriptionRequest",
+                                "sendBroadcastSubscriptionRequest",
+                                "sendSubscriptionStop"
+                            ]);
+
+                            dispatcherSpyOnError.sendBroadcastSubscriptionRequest
+                                    .and.callFake(function(settings) {
+                                        storedSubscriptionId = settings.subscriptionRequest.subscriptionId;
+                                        subscriptionManagerOnError
+                                                .handleSubscriptionReply({
+                                                    subscriptionId : settings.subscriptionRequest.subscriptionId,
+                                                    error : new SubscriptionException({
+                                                        subscriptionId : settings.subscriptionRequest.subscriptionId
+                                                    })
+                                                });
+                                        return Promise.resolve();
+                                    });
+
+                            dispatcherSpyOnError.sendSubscriptionRequest
+                                    .and.callFake(function(settings) {
+                                        storedSubscriptionId = settings.subscriptionRequest.subscriptionId;
+                                        subscriptionManagerOnError
+                                                .handleSubscriptionReply({
+                                                    subscriptionId : settings.subscriptionRequest.subscriptionId,
+                                                    error : new SubscriptionException({
+                                                        subscriptionId : settings.subscriptionRequest.subscriptionId
+                                                    })
+                                                });
+                                        return Promise.resolve();
+                                    });
+
+                            subscriptionManagerOnError = new SubscriptionManager(dispatcherSpyOnError);
+
                             jasmine.clock().install();
                             spyOn(Date, 'now').and.callFake(function() {
                                 return fakeTime;
@@ -525,18 +567,155 @@ define([
                                     increaseFakeTime(1);
                                 });
 
-                    it(
-                    "returns a rejected promise when unsubscribing with a non-existant subscriptionId",
-                    function(done) {
-                            subscriptionManager.unregisterSubscription({
-                                subscriptionId : "non-existant"
-                            }).then().catch(function(value){
-                                expect(value).toBeDefined();
-                                var className = Object.prototype.toString.call(value).slice(8, -1);
-                                expect(className).toMatch("Error");
+                        it(
+                        "returns a rejected promise when unsubscribing with a non-existant subscriptionId",
+                        function(done) {
+                                subscriptionManager.unregisterSubscription({
+                                    subscriptionId : "non-existant"
+                                }).then().catch(function(value){
+                                    expect(value).toBeDefined();
+                                    var className = Object.prototype.toString.call(value).slice(8, -1);
+                                    expect(className).toMatch("Error");
+                                    done();
+                                    return null;
+                                });
+                        });
+
+                        it("registers subscription, resolves with subscriptionId and calls onSubscribed callback", function(done) {
+                            var publicationReceivedSpy =
+                                    jasmine.createSpy('publicationReceivedSpy');
+                            var publicationErrorSpy = jasmine.createSpy('publicationErrorSpy');
+                            var publicationSubscribedSpy = jasmine.createSpy('publicationSubscribedSpy');
+
+                            subscriptionManager.registerSubscription({
+                                proxyId : "subscriber",
+                                providerId : "provider",
+                                attributeName : "testAttribute",
+                                qos : new OnChangeSubscriptionQos(),
+                                onReceive : publicationReceivedSpy,
+                                onError : publicationErrorSpy,
+                                onSubscribed : publicationSubscribedSpy
+                            }).then(function(receivedSubscriptionId) {
+                                expect(receivedSubscriptionId).toBeDefined();
+                                expect(receivedSubscriptionId).toEqual(storedSubscriptionId);
+                                return waitsFor(function() {
+                                    return publicationSubscribedSpy.calls.count() === 1;
+                                }, "publicationSubscribedSpy called", 1000);
+                            }).then(function() {
+                                expect(publicationReceivedSpy).not.toHaveBeenCalled();
+                                expect(publicationErrorSpy).not.toHaveBeenCalled();
+                                expect(publicationSubscribedSpy).toHaveBeenCalled();
+                                expect(publicationSubscribedSpy.calls.argsFor(0)[0]).toEqual(storedSubscriptionId);
                                 done();
                                 return null;
-                            });
-                    });
+                            }).catch(fail);
+
+                            increaseFakeTime(1);
+                        });
+
+                        it("registers broadcast subscription, resolves with subscriptionId and calls onSubscribed callback", function(done) {
+                            var publicationReceivedSpy =
+                                    jasmine.createSpy('publicationReceivedSpy');
+                            var publicationErrorSpy = jasmine.createSpy('publicationErrorSpy');
+                            var publicationSubscribedSpy = jasmine.createSpy('publicationSubscribedSpy');
+
+                            subscriptionManager.registerBroadcastSubscription({
+                                proxyId : "subscriber",
+                                providerId : "provider",
+                                broadcastName : "broadcastName",
+                                qos : new OnChangeSubscriptionQos(),
+                                onReceive : publicationReceivedSpy,
+                                onError : publicationErrorSpy,
+                                onSubscribed : publicationSubscribedSpy
+                            }).then(function(receivedSubscriptionId) {
+                                expect(receivedSubscriptionId).toBeDefined();
+                                expect(receivedSubscriptionId).toEqual(storedSubscriptionId);
+                                return waitsFor(function() {
+                                    return publicationSubscribedSpy.calls.count() === 1;
+                                }, "publicationSubscribedSpy called", 1000);
+                            }).then(function() {
+                                expect(publicationReceivedSpy).not.toHaveBeenCalled();
+                                expect(publicationErrorSpy).not.toHaveBeenCalled();
+                                expect(publicationSubscribedSpy).toHaveBeenCalled();
+                                expect(publicationSubscribedSpy.calls.argsFor(0)[0]).toEqual(storedSubscriptionId);
+                                done();
+                                return null;
+                            }).catch(fail);
+
+                            increaseFakeTime(1);
+                        });
+
+                        it("rejects on subscription registration failures and calls onError callback", function(done) {
+                            var publicationReceivedSpy =
+                                    jasmine.createSpy('publicationReceivedSpy');
+                            var publicationErrorSpy = jasmine.createSpy('publicationErrorSpy');
+                            var publicationSubscribedSpy = jasmine.createSpy('publicationSubscribedSpy');
+
+                            subscriptionManagerOnError.registerSubscription({
+                                proxyId : "subscriber",
+                                providerId : "provider",
+                                attributeName : "testAttribute",
+                                qos : new OnChangeSubscriptionQos(),
+                                onReceive : publicationReceivedSpy,
+                                onError : publicationErrorSpy,
+                                onSubscribed : publicationSubscribedSpy
+                            }).then(function(subscriptionId) {
+                                fail("unexpected success");
+                            }).catch(function(error) {
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(storedSubscriptionId);
+
+                                return waitsFor(function() {
+                                    return publicationErrorSpy.calls.count() === 1;
+                                }, "publicationErrorSpy called", 1000);
+                            }).then(function() {
+                                expect(publicationReceivedSpy).not.toHaveBeenCalled();
+                                expect(publicationSubscribedSpy).not.toHaveBeenCalled();
+                                expect(publicationErrorSpy).toHaveBeenCalled();
+                                expect(publicationErrorSpy.calls.argsFor(0)[0] instanceof SubscriptionException);
+                                expect(publicationErrorSpy.calls.argsFor(0)[0].subscriptionId).toEqual(storedSubscriptionId);
+                                done();
+                                return null;
+                            }).catch(fail);
+
+                            increaseFakeTime(1);
+                        });
+
+                        it("rejects on broadcast subscription registration failures and calls onError callback", function(done) {
+                            var publicationReceivedSpy = jasmine.createSpy('publicationReceivedSpy');
+                            var publicationErrorSpy = jasmine.createSpy('publicationErrorSpy');
+                            var publicationSubscribedSpy = jasmine.createSpy('publicationSubscribedSpy');
+
+                            subscriptionManagerOnError.registerBroadcastSubscription({
+                                proxyId : "subscriber",
+                                providerId : "provider",
+                                broadcastName : "broadcastName",
+                                qos : new OnChangeSubscriptionQos(),
+                                onReceive : publicationReceivedSpy,
+                                onError : publicationErrorSpy,
+                                onSubscribed : publicationSubscribedSpy
+                            }).then(function(subscriptionId) {
+                                fail("unexpected success");
+                            }).catch(function(error) {
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(storedSubscriptionId);
+
+                                return waitsFor(function() {
+                                    return publicationErrorSpy.calls.count() === 1;
+                                }, "publicationErrorSpy called", 1000);
+                            }).then(function() {
+                                expect(publicationReceivedSpy).not.toHaveBeenCalled();
+                                expect(publicationSubscribedSpy).not.toHaveBeenCalled();
+                                expect(publicationErrorSpy).toHaveBeenCalled();
+                                expect(publicationErrorSpy.calls.argsFor(0)[0] instanceof SubscriptionException);
+                                expect(publicationErrorSpy.calls.argsFor(0)[0].subscriptionId).toEqual(storedSubscriptionId);
+                                done();
+                                return null;
+                            }).catch(fail);
+
+                            increaseFakeTime(1);
+                        });
               });
         });
