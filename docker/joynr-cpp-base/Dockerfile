@@ -3,6 +3,11 @@ FROM joynr-base:latest
 ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 
 ###################################################
+# enable gold linker
+###################################################
+RUN  update-alternatives  --set ld /usr/bin/ld.gold
+
+###################################################
 # install qt
 ###################################################
 RUN dnf update -y \
