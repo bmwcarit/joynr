@@ -23,6 +23,8 @@
 #include <exception>
 #include <string>
 
+#include <boost/optional.hpp>
+
 #include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrCommonExport.h"
 
@@ -86,7 +88,7 @@ protected:
     /**
      * @brief the detail message of the exception.
      */
-    std::string message;
+    boost::optional<std::string> message;
     /**
      * @brief Constructor for a JoynrException without detail message.
      */

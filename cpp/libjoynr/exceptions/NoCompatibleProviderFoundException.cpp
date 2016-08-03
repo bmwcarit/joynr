@@ -32,12 +32,13 @@ NoCompatibleProviderFoundException::NoCompatibleProviderFoundException(
         : DiscoveryException(),
           discoveredIncompatibleVersions(discoveredIncompatibleVersions)
 {
-    message = "Unable to find a provider with a compatible version. " +
-              std::to_string(discoveredIncompatibleVersions.size()) +
-              " incompabible versions found:";
+    std::string messageStr = "Unable to find a provider with a compatible version. " +
+                             std::to_string(discoveredIncompatibleVersions.size()) +
+                             " incompabible versions found:";
     for (const auto& version : discoveredIncompatibleVersions) {
-        message += " " + version.toString();
+        messageStr += " " + version.toString();
     }
+    message = messageStr;
 }
 
 const std::string& NoCompatibleProviderFoundException::getTypeName() const

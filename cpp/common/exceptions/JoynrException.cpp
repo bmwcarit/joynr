@@ -89,12 +89,12 @@ JoynrException::JoynrException(const std::string& message) noexcept : message(me
 
 const char* JoynrException::what() const noexcept
 {
-    return message.c_str();
+    return message.is_initialized() ? message->c_str() : std::exception::what();
 }
 
 const std::string JoynrException::getMessage() const noexcept
 {
-    return message;
+    return message.is_initialized() ? *message : std::string(std::exception::what());
 }
 
 void JoynrException::setMessage(const std::string& message)
