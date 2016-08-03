@@ -295,7 +295,6 @@ public class ProxyTest {
         assertTrue(proxyBuilder.messagingQos.getRoundTripTtl_ms() == messageTtl);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
     public void createProxyAndCallSyncMethodSuccess() throws Exception {
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
@@ -313,7 +312,6 @@ public class ProxyTest {
 
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void createProxyAndCallSyncMethodFailWithApplicationError() throws Exception {
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
@@ -338,7 +336,6 @@ public class ProxyTest {
                                                      "syncMethodCallApplicationException"), exception);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
     public void createProxyAndCallAsyncMethodSuccess() throws Exception {
         ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
