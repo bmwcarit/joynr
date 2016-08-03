@@ -87,6 +87,8 @@ public:
             }
         } else {
             Request request;
+            // explicitly set to no parameters
+            request.setParams();
             request.setMethodName(methodName);
             sendRequest(request, replyCaller);
             // TODO the retrieved values are never stored into the cache.

@@ -104,7 +104,9 @@ void «interfaceName»RequestInterpreter::execute(
 						request.getParams(typedInput«attributeName.toFirstUpper»);
 						auto requestCallerOnSuccess =
 								[onSuccess = std::move(onSuccess)] () {
-									onSuccess(BaseReply());
+									BaseReply reply;
+									reply.setResponse();
+									onSuccess(std::move(reply));
 								};
 						«requestCallerName»->set«attributeName.toFirstUpper»(
 																			typedInput«attributeName.toFirstUpper»,

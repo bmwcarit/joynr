@@ -50,19 +50,16 @@ joynr::OneWayRequest internalRequestObject;
 «ENDIF»
 
 internalRequestObject.setMethodName("«method.joynrName»");
-«IF getInputParameters(method).size > 0»
-	internalRequestObject.setParamDatatypes({
-		«FOR param : getInputParameters(method) SEPARATOR ','»
-			"«param.joynrTypeName»"
-		«ENDFOR»
-		}
-	);
-	internalRequestObject.setParams(
-		«FOR param : getInputParameters(method) SEPARATOR ','»
-			«param.name»
-		«ENDFOR»
-	);
-«ENDIF»
+internalRequestObject.setParamDatatypes({
+	«FOR param : getInputParameters(method) SEPARATOR ','»
+	"«param.joynrTypeName»"
+	«ENDFOR»
+	});
+internalRequestObject.setParams(
+	«FOR param : getInputParameters(method) SEPARATOR ','»
+		«param.name»
+	«ENDFOR»
+);
 '''
 
 	override generate()
