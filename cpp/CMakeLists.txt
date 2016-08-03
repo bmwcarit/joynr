@@ -698,7 +698,7 @@ else(USE_PLATFORM_MUESLI)
     AddExternalProject(
         muesli
         GIT_REPOSITORY https://github.com/bmwcarit/muesli
-        GIT_TAG develop
+        GIT_TAG 0.1.0
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
