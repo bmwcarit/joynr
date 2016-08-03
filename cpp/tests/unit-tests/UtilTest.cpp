@@ -17,15 +17,12 @@
  * #L%
  */
 #include <vector>
-#include <tuple>
-#include <functional>
 #include <string>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 #include "joynr/Util.h"
-#include "joynr/types/TestTypes/TEverythingStruct.h"
 
 using namespace joynr;
 
@@ -92,31 +89,4 @@ TEST(UtilTest, splitIntoJsonObjects)
     result = util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
     EXPECT_EQ(result.at(0), R"({"mes\\"sa{ge":{one:two}})");
-}
-
-TEST(UtilTest, typeIdSingleType) {
-    EXPECT_EQ(0, util::getTypeId<void>());
-    EXPECT_GT(util::getTypeId<std::string>(), 0);
-    EXPECT_NE(util::getTypeId<std::string>(), util::getTypeId<std::int32_t>());
-}
-
-TEST(UtilTest, typeIdCompositeType){
-    int typeId1 = util::getTypeId<std::string, std::int32_t, float>();
-    EXPECT_GT(typeId1, 0);
-
-    int typeId2 = util::getTypeId<std::int32_t, std::string, float>();
-    EXPECT_NE(typeId1, typeId2);
-    int typeIdTEverythingStruct = util::getTypeId<joynr::types::TestTypes::TEverythingStruct>();
-    EXPECT_GT(typeIdTEverythingStruct, 0);
-    EXPECT_NE(typeId1, typeIdTEverythingStruct);
-    EXPECT_NE(typeId2, typeIdTEverythingStruct);
-}
-
-TEST(UtilTest, typeIdVector){
-    int typeIdVectorOfInt = util::getTypeId<std::vector<std::int32_t>>();
-    EXPECT_NE(typeIdVectorOfInt, 0);
-
-    int typeIdVectorOfTEverythingStruct = util::getTypeId<std::vector<joynr::types::TestTypes::TEverythingStruct>>();
-    EXPECT_NE(typeIdVectorOfTEverythingStruct, 0);
-    EXPECT_NE(typeIdVectorOfInt, typeIdVectorOfTEverythingStruct);
 }

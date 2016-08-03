@@ -32,8 +32,6 @@
 #include <boost/mpl/deref.hpp>
 #include <boost/mpl/next_prior.hpp>
 
-#include "joynr/JoynrTypeId.h"
-
 namespace joynr
 {
 
@@ -97,28 +95,6 @@ std::string createUuid();
 void logSerializedMessage(Logger& logger,
                           const std::string& explanation,
                           const std::string& message);
-
-template <typename... Ts>
-int getTypeId();
-
-template <typename T, typename... Ts>
-int getTypeId_split()
-{
-    int prime = 31;
-    return JoynrTypeId<T>::getTypeId() + prime * getTypeId<Ts...>();
-}
-
-template <typename... Ts>
-int getTypeId()
-{
-    return getTypeId_split<Ts...>();
-}
-
-template <>
-inline int getTypeId<>()
-{
-    return 0;
-}
 
 template <typename T>
 std::set<T> vectorToSet(const std::vector<T>& v)
