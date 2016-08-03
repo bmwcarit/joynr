@@ -58,7 +58,7 @@ public:
 
     std::shared_ptr<SubscriptionQos> getQos() const;
 
-    void setQos(std::shared_ptr<SubscriptionQos> qos);
+    virtual void setQos(std::shared_ptr<SubscriptionQos> qos);
 
     template <typename Archive>
     void serialize(Archive& archive)

@@ -118,11 +118,9 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     //register the subscription on the consumer side
     std::string subscribeToName = "locationUpdate";
-    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
-                100, // minInterval_ms
-                200, // maxInterval_ms
-                80 // alertInterval_ms
+                100 // minInterval_ms
     );
 
     BroadcastSubscriptionRequest subscriptionRequest;
@@ -167,11 +165,9 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     //register the subscription on the consumer side
     std::string subscribeToName = "locationUpdateWithSpeed";
-    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
-                100, // minInterval_ms
-                200, // maxInterval_ms
-                80 // alertInterval_ms
+                100 // minInterval_ms
     );
 
     BroadcastSubscriptionRequest subscriptionRequest;

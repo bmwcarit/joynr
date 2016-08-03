@@ -68,11 +68,9 @@ public:
         request.setSubscribeToName("locationUpdateSelective");
         request.setSubscriptionId(subscriptionId);
 
-        auto qos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
+        auto qos = std::make_shared<OnChangeSubscriptionQos>(
                     80, // validity_ms
-                    100, // minInterval_ms
-                    200, // maxInterval_ms
-                    80 // alertInterval_ms
+                    100 // minInterval_ms
         );
         request.setQos(qos);
         request.setFilterParameters(filterParameters);

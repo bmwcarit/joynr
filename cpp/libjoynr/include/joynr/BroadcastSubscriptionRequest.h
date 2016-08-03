@@ -56,30 +56,11 @@ public:
     BroadcastFilterParameters getFilterParameters() const;
     void setFilterParameters(const BroadcastFilterParameters& filterParameters);
 
-    template <typename Archive>
-    void load(Archive& archive)
-    {
-        archive(muesli::BaseClass<SubscriptionRequest>(this), MUESLI_NVP(filterParameters));
-        const bool correctQosType = (typeid(*qos) == typeid(OnChangeSubscriptionQos));
-        assert(correctQosType);
-        if (!correctQosType) {
-            JOYNR_LOG_ERROR(logger,
-                            "expected OnChangeSubscriptionQos, instead got {}",
-                            boost::typeindex::type_id_runtime(*qos).pretty_name());
-        }
-    }
+    void setQos(std::shared_ptr<SubscriptionQos> qos) override;
 
     template <typename Archive>
-    void save(Archive& archive)
+    void serialize(Archive& archive)
     {
-        const bool correctQosType = (typeid(*qos) == typeid(OnChangeSubscriptionQos));
-        assert(correctQosType);
-        if (!correctQosType) {
-            JOYNR_LOG_ERROR(logger,
-                            "expected OnChangeSubscriptionQos, instead got {}",
-                            boost::typeindex::type_id_runtime(*qos).pretty_name());
-            return;
-        }
         archive(muesli::BaseClass<SubscriptionRequest>(this), MUESLI_NVP(filterParameters));
     }
 

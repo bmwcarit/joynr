@@ -81,7 +81,8 @@ void PrintTo(const SubscriptionPublication& subscriptionPublication, ::std::ostr
     *os << "SubscriptionPublication{";
     *os << "subscriptionId:" << subscriptionPublication.subscriptionId;
     *os << ", ";
-    *os << "error:" << subscriptionPublication.error->getMessage();
+    *os << "error:" << subscriptionPublication.error ? "null"
+                                                     : subscriptionPublication.error->getMessage();
     *os << ", SKIPPED printing BaseReply";
     *os << "}";
 }

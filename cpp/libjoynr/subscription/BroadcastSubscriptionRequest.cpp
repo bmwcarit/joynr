@@ -53,4 +53,13 @@ void BroadcastSubscriptionRequest::setFilterParameters(
     this->filterParameters = filterParameters;
 }
 
+void BroadcastSubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
+{
+    std::shared_ptr<OnChangeSubscriptionQos> onChangeQos =
+            std::dynamic_pointer_cast<OnChangeSubscriptionQos>(qos);
+    assert(onChangeQos);
+    // force object slicing
+    this->qos = std::make_shared<OnChangeSubscriptionQos>(*onChangeQos);
+}
+
 } // namespace joynr
