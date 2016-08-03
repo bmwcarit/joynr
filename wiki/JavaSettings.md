@@ -153,10 +153,22 @@ channel in the backend. The cluster controller polls the channel to download the
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
 appropriate entry in the local capabilities directory.
+See also the static capabilities provisioning documentation below.
 
-* **REQUIRED if using the AtmosphereMessagingModule**
+* **OPTIONAL** (see static capabilities provisioning)
 * **Type**: String
 * **User property**: `joynr.messaging.capabilitiesdirectoryurl`
+* **Default value**: `http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
+
+### `DOMAINACCESSCONTROLLERURL`
+The URL of the receive channel (incoming message queue) of the global domain access
+controller service. To connect to the global domain access controller directory
+the cluster controller creates an appropriate entry in the local capabilities directory.
+See also the static capabilities provisioning documentation below.
+
+* **OPTIONAL** (see static capabilities provisioning)
+* **Type**: String
+* **User property**: `joynr.messaging.domainaccesscontrollerurl`
 * **Default value**: `http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
 
 ### `PROPERTY_SERVLET_HOST_PATH`
