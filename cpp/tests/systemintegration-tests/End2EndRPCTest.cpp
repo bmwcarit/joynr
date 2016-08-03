@@ -52,7 +52,7 @@ public:
     {
         runtime = new JoynrClusterControllerRuntime(
                     nullptr,
-                    new Settings(GetParam())
+                    std::make_unique<Settings>(GetParam())
         );
         domain = "cppEnd2EndRPCTest_Domain_" + util::createUuid();
     }

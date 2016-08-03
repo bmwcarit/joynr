@@ -87,6 +87,11 @@ define([
                 messagingQos : new MessagingQos(),
                 dependencies : {
                     subscriptionManager : subscriptionManagerSpy
+                },
+                filterParameters: {
+                    "a": "reservedForTypeInfo",
+                    "b": "reservedForTypeInfo",
+                    "c": "reservedForTypeInfo"
                 }
             });
             done();
@@ -181,6 +186,40 @@ define([
                 expect(spyUnsubscribePromise.onRejected).not.toHaveBeenCalled();
                 done();
                 return null;
+            }).catch(fail);
+        });
+
+        it("subscribe rejects if filter parameters are only partially filled", function(done) {
+            subscriptionManagerSpy.registerBroadcastSubscription.and.returnValue(Promise.resolve());
+
+            //subscribing without filter parameters should work
+            weakSignal.subscribe({
+                subscriptionQos : subscriptionQos,
+                receive : function(value) {}
+            }).then(function() {
+                //subscribing with empty filter parameters should work
+                return weakSignal.subscribe({
+                    subscriptionQos : subscriptionQos,
+                    receive : function(value) {},
+                    filterParameters : {}
+                });
+            }).then(function() {
+                //subscribing with filter parameters having value null should work
+                return weakSignal.subscribe({
+                    subscriptionQos : subscriptionQos,
+                    receive : function(value) {},
+                    filterParameters : null
+                });
+            }).then(function() {
+                //subscribing with partially defined filter parameters should fail
+                return weakSignal.subscribe({
+                    subscriptionQos : subscriptionQos,
+                    receive : function(value) {},
+                    filterParameters : {
+                        a : "a",
+                        b : "b"
+                    }
+                }).then(fail).catch(done);
             }).catch(fail);
         });
 

@@ -10,11 +10,8 @@ message(STATUS "option USE_PLATFORM_WEBSOCKETPP=" ${USE_PLATFORM_WEBSOCKETPP})
 ### Add websocketpp ###########################################################
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../cpp/CMake")
+include(AddWebSocketPP)
 
-include(AddExternalProject)
-find_package(OpenSSL REQUIRED)
-include(CheckOpenSSLImportTargets)
-include(CheckWebSocketPPImportTargets)
 include(AddClangFormat)
 find_package(Boost REQUIRED COMPONENTS system thread program_options)
 
@@ -27,7 +24,6 @@ target_include_directories(
     websocket-server-echo
     PUBLIC
         "$<BUILD_INTERFACE:${WEBSOCKETPP_INCLUDE_DIR}>"
-        "$<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>" # necessary, because requirements are not propagated properly in cmake 2.8.x
 )
 
 target_link_libraries(

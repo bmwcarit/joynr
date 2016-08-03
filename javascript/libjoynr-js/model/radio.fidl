@@ -53,6 +53,8 @@ interface Radio {
 	 */
 	attribute Boolean isOn
 
+	attribute Boolean StartWithCapitalLetter
+
 	attribute Int32 numberOfStations
 
 	attribute String mixedSubscriptions

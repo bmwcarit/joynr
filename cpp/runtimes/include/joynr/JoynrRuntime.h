@@ -166,6 +166,13 @@ public:
     static JoynrRuntime* createRuntime(const std::string& pathToLibjoynrSettings,
                                        const std::string& pathToMessagingSettings = "");
 
+    /**
+     * @brief Create a JoynrRuntime object
+     * @param settings settings object
+     * @return pointer to a JoynrRuntime instance
+     */
+    static JoynrRuntime* createRuntime(std::unique_ptr<Settings> settings);
+
 protected:
     // NOTE: The implementation of the constructor and destructor must be inside this
     // header file because there are multiple implementations (cpp files) in folder

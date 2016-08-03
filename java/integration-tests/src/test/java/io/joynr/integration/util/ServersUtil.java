@@ -95,30 +95,11 @@ public class ServersUtil {
     }
 
     private static void setDirectoriesUrl() {
-        if (System.getProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) != null) {
-            // use existing discovery
-            System.setProperty(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES_FILE, "");
-            return;
-        }
-
-        // deprecated: will be removed by 2016-12-31
-        String deprecatedCapabilityUrl = System.getProperty(MessagingPropertyKeys.CAPABILITYDIRECTORYURL);
-        if (deprecatedCapabilityUrl != null && deprecatedCapabilityUrl.length() > 0) {
-            logger.warn("Deprecated setting: " + MessagingPropertyKeys.CAPABILITYDIRECTORYURL + ". Please use "
-                    + MessagingPropertyKeys.DISCOVERYDIRECTORYURL + " instead");
-            System.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, deprecatedCapabilityUrl);
-            System.setProperty(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES_FILE, "");
-            return;
-        }
-
         String serverUrl = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
         if (serverUrl.endsWith("/")) {
             serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
         }
         String directoriesUrl = serverUrl + DISCOVERY_CONTEXT + "/channels/discoverydirectory_channelid/";
-
-        System.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, directoriesUrl);
-
         try {
             File tmpFile = File.createTempFile("provisioned_capabilities", ".json");
             tmpFile.deleteOnExit();

@@ -77,6 +77,27 @@ RUN cd /opt \
     && rm -rf websocketpp
 
 ###################################################
+# install DLT
+###################################################
+
+RUN cd /opt \
+    && git clone http://git.projects.genivi.org/dlt-daemon.git \
+    && cd dlt-daemon \
+    && git checkout v2.15.0 \
+    && sed -i 's/libdir=${exec_prefix}\/lib/libdir=@CMAKE_INSTALL_FULL_LIBDIR@/' automotive-dlt.pc.in \
+    && sed -i 's/includedir=${exec_prefix}\/include/includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@/' automotive-dlt.pc.in \
+    && mkdir build \
+    && cd build \
+    && cmake .. -DWITH_DLT_DBUS=OFF -DWITH_DLT_TESTS=OFF -DWITH_DLT_EXAMPLES=OFF \
+    && make install -j"$(nproc)" \
+    && cd /opt/ \
+    && rm -rf dlt-daemon \
+    && echo '/usr/local/lib64' > /etc/ld.so.conf.d/dlt.conf
+
+# DLT installs itself in /usr/local/lib64
+ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib64/pkgconfig
+
+###################################################
 # Copy build scripts
 ###################################################
 COPY scripts /data/scripts

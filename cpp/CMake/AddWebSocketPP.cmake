@@ -1,7 +1,6 @@
-
-if(NOT TARGET websocketpp)
-    message(STATUS "websocketpp target not defined. Creating IMPORTED target.")
-
+if(USE_PLATFORM_WEBSOCKETPP)
+    find_package(websocketpp REQUIRED)
+else(USE_PLATFORM_WEBSOCKETPP)
     include(AddExternalProject)
     AddExternalProject(
         websocketpp
@@ -13,8 +12,7 @@ if(NOT TARGET websocketpp)
         # Disable build step
         BUILD_COMMAND ""
     )
-
     ExternalProject_Get_Property(websocketpp SOURCE_DIR)
     set(WEBSOCKETPP_INCLUDE_DIR "${SOURCE_DIR}")
-endif(NOT TARGET websocketpp)
+endif(USE_PLATFORM_WEBSOCKETPP)
 

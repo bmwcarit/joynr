@@ -65,7 +65,7 @@ public:
      * @param serverAddress Address of the server
      */
     WebSocketCcMessagingSkeleton(
-            MessageRouter& messageRouter,
+            std::shared_ptr<MessageRouter> messageRouter,
             std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
             const system::RoutingTypes::WebSocketAddress& serverAddress);
 
@@ -94,7 +94,7 @@ private:
     /*! List of client connections */
     std::vector<QWebSocket*> clients;
     /*! Router for incoming messages */
-    MessageRouter& messageRouter;
+    std::shared_ptr<MessageRouter> messageRouter;
     /*! Factory to build outgoing messaging stubs */
     std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
 };

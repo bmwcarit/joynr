@@ -178,6 +178,18 @@ public class StaticCapabilitiesProvisioningTest {
                                properties.domainAccessControllerParticipantId);
     }
 
+    @Test(expected = CreationException.class)
+    public void testIncompleteLegacySettings() throws IOException {
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
+        properties.capabilitiesDirectoryParticipantId = "";
+        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
+        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
+        fail("Expecting legacy capabilities provisioning to fail fast.");
+    }
+
     private void assertContainsEntryFor(Collection<DiscoveryEntry> entries, String interfaceName) {
         assertContainsEntryFor(entries, interfaceName, null);
     }
