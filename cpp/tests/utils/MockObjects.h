@@ -484,6 +484,16 @@ public:
             )
     );
 
+    MOCK_METHOD4(
+            sendSubscriptionReply,
+            void(
+                const std::string& senderParticipantId,
+                const std::string& receiverParticipantId,
+                const joynr::MessagingQos& qos,
+                const joynr::SubscriptionReply& subscriptionReply
+            )
+    );
+
     void sendSubscriptionPublication(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,

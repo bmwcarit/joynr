@@ -35,9 +35,7 @@ class Reply;
 class MessagingQos;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
-class SubscriptionReply;
 class SubscriptionStop;
-class SubscriptionPublication;
 
 /**
   * The interface JoynrMessageSender enables the exchange of JoynrMessages
@@ -108,11 +106,6 @@ public:
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
             const BroadcastSubscriptionRequest& subscriptionRequest) = 0;
-
-    virtual void sendSubscriptionReply(const std::string& senderParticipantId,
-                                       const std::string& receiverParticipantId,
-                                       const MessagingQos& qos,
-                                       const SubscriptionReply& subscriptionReply) = 0;
 
     virtual void sendSubscriptionStop(const std::string& senderParticipantId,
                                       const std::string& receiverParticipantId,

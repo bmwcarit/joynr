@@ -39,6 +39,7 @@
 #include "joynr/ReadWriteLock.h"
 #include "joynr/ThreadSafeMap.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/SubscriptionReply.h"
 
 namespace boost
 {
@@ -62,6 +63,7 @@ class SubscriptionQos;
 namespace exceptions
 {
 class JoynrException;
+class SubscriptionException;
 } // namespace exceptions
 class SubscriptionQos;
 
@@ -239,6 +241,22 @@ private:
                                     const bool updatePersistenceFile = true);
 
     // Helper functions
+    void sendSubscriptionReply(IPublicationSender* publicationSender,
+                               const std::string& fromParticipantId,
+                               const std::string& toParticipantId,
+                               const std::int64_t& expiryDateMs,
+                               const SubscriptionReply& subscriptionReply);
+    void sendSubscriptionReply(IPublicationSender* publicationSender,
+                               const std::string& fromParticipantId,
+                               const std::string& toParticipantId,
+                               const std::int64_t& expiryDateMs,
+                               const std::string& subscriptionId);
+    void sendSubscriptionReply(IPublicationSender* publicationSender,
+                               const std::string& fromParticipantId,
+                               const std::string& toParticipantId,
+                               const std::int64_t& expiryDateMs,
+                               const std::string& subscriptionId,
+                               const std::shared_ptr<exceptions::SubscriptionException>& error);
     bool publicationExists(const std::string& subscriptionId) const;
     void createPublishRunnable(const std::string& subscriptionId);
     void saveAttributeSubscriptionRequestsMap();

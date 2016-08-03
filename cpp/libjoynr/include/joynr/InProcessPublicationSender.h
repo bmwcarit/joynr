@@ -58,6 +58,11 @@ public:
                                      const MessagingQos& qos,
                                      SubscriptionPublication&& subscriptionPublication) override;
 
+    void sendSubscriptionReply(const std::string& senderParticipantId,
+                               const std::string& receiverParticipantId,
+                               const MessagingQos& qos,
+                               const SubscriptionReply& subscriptionReply) override;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessPublicationSender);
     ISubscriptionManager* subscriptionManager;

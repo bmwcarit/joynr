@@ -67,4 +67,16 @@ void InProcessPublicationSender::sendSubscriptionPublication(
     callback->execute(std::move(subscriptionPublication));
 }
 
+void InProcessPublicationSender::sendSubscriptionReply(const std::string& senderParticipantId,
+                                                       const std::string& receiverParticipantId,
+                                                       const MessagingQos& qos,
+                                                       const SubscriptionReply& subscriptionReply)
+{
+    // NOT YET IMPLEMENTED
+    std::ignore = senderParticipantId;
+    std::ignore = receiverParticipantId;
+    std::ignore = qos;
+    std::ignore = subscriptionReply;
+}
+
 } // namespace joynr

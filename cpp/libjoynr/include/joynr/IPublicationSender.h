@@ -26,6 +26,7 @@ namespace joynr
 {
 
 class SubscriptionPublication;
+class SubscriptionReply;
 class MessagingQos;
 
 /**
@@ -41,6 +42,11 @@ public:
                                              const std::string& receiverParticipantId,
                                              const MessagingQos& qos,
                                              SubscriptionPublication&& subscriptionPublication) = 0;
+
+    virtual void sendSubscriptionReply(const std::string& senderParticipantId,
+                                       const std::string& receiverParticipantId,
+                                       const MessagingQos& qos,
+                                       const SubscriptionReply& subscriptionReply) = 0;
 };
 
 } // namespace joynr
