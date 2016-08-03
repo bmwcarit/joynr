@@ -1,3 +1,13 @@
+#joynr 0.20.0
+TODO
+
+##API relevant changes
+* **[Java]** Static capabilities provisioning can now be specified as a URI.
+  See the [Java Configuration Guide](JavaSettings.md) for details.
+
+##Other changes
+TODO
+
 #joynr 0.19.3
 This is a minor bug fix release.
 
