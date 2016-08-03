@@ -28,7 +28,6 @@
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
@@ -81,7 +80,6 @@ public:
     }
 
     void SetUp(){
-        registerCapabilitiesMetaTypes();
 
         //TODO the participantId should be provided by the provider
         dummyParticipantId1 = util::createUuid();
