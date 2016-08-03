@@ -210,6 +210,18 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 
         }
 
+        function cleanupSubscription(subscriptionId) {
+            if (subscriptionInfos[subscriptionId] !== undefined) {
+                delete subscriptionInfos[subscriptionId];
+            }
+            if (subscriptionListeners[subscriptionId] !== undefined) {
+                delete subscriptionListeners[subscriptionId];
+            }
+            if (subscriptionReplyCallers[subscriptionId] !== undefined) {
+                delete subscriptionReplyCallers[subscriptionId];
+            }
+        }
+
         /**
          * This callback is called when a publication is received
          * @callback SubscriptionManager~onReceive
@@ -277,21 +289,21 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                             reject : reject
                         };
 
+                        storeSubscriptionRequest(settings, subscriptionRequest);
+
                         dispatcher.sendSubscriptionRequest({
                             from : settings.proxyId,
                             to : settings.providerId,
                             messagingQos : messagingQos,
                             subscriptionRequest : subscriptionRequest
                         }).catch(function(error) {
-                            delete subscriptionReplyCallers[subscriptionId];
+                            cleanupSubscription(subscriptionId);
                             if (settings.onError) {
                                 settings.onError(error);
                             }
                             reject(error);
                             return;
                         });
-
-                        storeSubscriptionRequest(settings, subscriptionRequest);
                     });
                 };
 
@@ -346,20 +358,21 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     reject : reject
                 };
 
+                storeSubscriptionRequest(parameters, subscriptionRequest);
+
                 dispatcher.sendBroadcastSubscriptionRequest({
                     from : parameters.proxyId,
                     to : parameters.providerId,
                     messagingQos : messagingQos,
                     subscriptionRequest : subscriptionRequest
                 }).catch(function(error) {
-                    delete subscriptionReplyCallers[subscriptionRequest.subscriptionId];
+                    cleanupSubscription(subscriptionRequest.subscriptionId);
                     if (parameters.onError) {
                         parameters.onError(error);
                     }
                     reject(error);
                     return;
                 });
-                storeSubscriptionRequest(parameters, subscriptionRequest);
             });
         };
 
@@ -393,6 +406,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     if (subscriptionListener !== undefined && subscriptionListener.onError !== undefined) {
                         subscriptionListener.onError(subscriptionReply.error);
                     }
+                    cleanupSubscription(subscriptionReply.subscriptionId);
                 } else {
                     if (subscriptionReplyCaller !== undefined) {
                         subscriptionReplyCaller.resolve(subscriptionReply.subscriptionId);
@@ -400,14 +414,15 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     if (subscriptionListener !== undefined && subscriptionListener.onSubscribed !== undefined) {
                         subscriptionListener.onSubscribed(subscriptionReply.subscriptionId);
                     }
+                    delete subscriptionReplyCallers[subscriptionReply.subscriptionId];
                 }
             } catch (e) {
                 log.error("exception thrown during handling subscription reply "
                     + JSONSerializer.stringify(subscriptionReply, undefined, 4)
                     + ":\n"
                     + e.stack);
+                delete subscriptionReplyCallers[subscriptionReply.subscriptionId];
             }
-            delete subscriptionReplyCallers[subscriptionReply.subscriptionId];
         };
 
         /**
@@ -477,11 +492,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 delete publicationCheckTimerIds[settings.subscriptionId];
             }
 
-            delete subscriptionInfos[settings.subscriptionId];
-            delete subscriptionListeners[settings.subscriptionId];
-            if (subscriptionReplyCallers[settings.subscriptionId] !== undefined) {
-                delete subscriptionReplyCallers[settings.subscriptionId];
-            }
+            cleanupSubscription(settings.subscriptionId);
 
             return promise;
         };
