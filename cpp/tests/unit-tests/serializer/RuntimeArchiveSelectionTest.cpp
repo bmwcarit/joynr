@@ -28,13 +28,13 @@ struct DemoType
 {
     MOCK_METHOD0(expectedCalled, void());
     MOCK_METHOD0(unexpectedCalled, void());
-    
+
     template <typename UnexpectedArchive>
     void serialize(UnexpectedArchive&)
     {
         unexpectedCalled();
     }
-    
+
     void serialize(ExpectedArchive&)
     {
         expectedCalled();
