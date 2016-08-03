@@ -29,7 +29,6 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include "joynr/Logger.h"
-#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {

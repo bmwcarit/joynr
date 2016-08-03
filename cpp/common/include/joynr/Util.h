@@ -37,11 +37,6 @@ namespace joynr
 
 class Logger;
 
-namespace exceptions
-{
-class JoynrException;
-} // namespace exceptions
-
 namespace util
 {
 
@@ -55,9 +50,6 @@ std::string attributeGetterFromName(const std::string& attributeName);
 
 std::string loadStringFromFile(const std::string& fileName);
 void saveStringToFile(const std::string& fileName, const std::string& strToSave);
-
-// If the file is not open log the reason why. fileName is required for logging
-bool isFileOpen(const std::fstream& file, const std::string& fileName);
 
 template <class T>
 std::vector<T> convertIntListToEnumList(const std::vector<int>& inputList)
