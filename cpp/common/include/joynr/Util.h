@@ -44,7 +44,6 @@ class JoynrException;
 
 namespace util
 {
-std::string removeEscapeFromSpecialChars(const std::string& inputStr);
 
 /**
   * Splits a byte array representation of multiple JSON objects into

@@ -120,19 +120,6 @@ std::string createUuid()
     return boost::uuids::to_string(uuidGenerator());
 }
 
-std::string removeEscapeFromSpecialChars(const std::string& inputStr)
-{
-    std::string unEscapedString;
-    std::regex expr(R"((\\)(\\|"))");
-    std::regex_replace(std::back_inserter(unEscapedString),
-                       inputStr.begin(),
-                       inputStr.end(),
-                       expr,
-                       std::string(R"($2)"));
-
-    return unEscapedString;
-}
-
 void logSerializedMessage(Logger& logger,
                           const std::string& explanation,
                           const std::string& message)
