@@ -522,7 +522,7 @@ void MessageRouter::saveRoutingTable()
     try {
         joynr::util::saveStringToFile(routingTableFileName, routingTable.serializeToJson());
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
+        JOYNR_LOG_INFO(logger, ex.what());
     }
 }
 
