@@ -382,9 +382,10 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
         std::shared_ptr<ISubscriptionCallback> callback =
                 subscriptionManager->getSubscriptionCallback(subscriptionId);
         if (!callback) {
-            JOYNR_LOG_ERROR(logger,
-                            "Dropping reply for non/no more existing subscription with id = {}",
-                            subscriptionId);
+            JOYNR_LOG_ERROR(
+                    logger,
+                    "Dropping publication for non/no more existing subscription with id = {}",
+                    subscriptionId);
             return;
         }
 
