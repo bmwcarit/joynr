@@ -8,6 +8,15 @@ TODO
 ##Other changes
 TODO
 
+#joynr 0.19.4
+This is a minor bug fix release.
+
+##API relevant changes
+None. 
+
+##Other changes
+* **[C++]** Correctly load persisted routing table in the LibJoynrRuntime.
+
 #joynr 0.19.3
 This is a minor bug fix release.
 
