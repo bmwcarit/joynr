@@ -25,6 +25,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <QMap>
 
@@ -280,7 +281,7 @@ private:
 class LocalCapabilitiesFuture : public ILocalCapabilitiesCallback
 {
 public:
-    LocalCapabilitiesFuture();
+    LocalCapabilitiesFuture(std::function<void(const std::vector<CapabilityEntry>&)> callback);
     void capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) override;
     std::vector<CapabilityEntry> get();
     std::vector<CapabilityEntry> get(std::chrono::milliseconds timeout);
@@ -290,6 +291,7 @@ private:
     Semaphore futureSemaphore;
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesFuture);
     std::vector<CapabilityEntry> capabilities;
+    std::function<void(const std::vector<CapabilityEntry>&)> callback;
 };
 
 } // namespace joynr

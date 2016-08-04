@@ -575,12 +575,16 @@ void LocalCapabilitiesDirectory::lookup(
                 "LocalCapabilitiesDirectory does not yet support lookup on multiple domains."));
         return;
     }
-    auto future = std::make_shared<LocalCapabilitiesFuture>();
+
+    auto callback = [onSuccess, this](const std::vector<CapabilityEntry>& capabilities) {
+        std::vector<types::DiscoveryEntry> result;
+        this->convertCapabilityEntriesIntoDiscoveryEntries(capabilities, result);
+        onSuccess(result);
+    };
+
+    auto future = std::make_shared<LocalCapabilitiesFuture>(callback);
+
     lookup(domains, interfaceName, future, discoveryQos);
-    std::vector<CapabilityEntry> capabilities = future->get();
-    std::vector<types::DiscoveryEntry> result;
-    convertCapabilityEntriesIntoDiscoveryEntries(capabilities, result);
-    onSuccess(result);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -590,22 +594,27 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    auto future = std::make_shared<LocalCapabilitiesFuture>();
-    lookup(participantId, future);
-    std::vector<CapabilityEntry> capabilities = future->get();
-    if (capabilities.size() > 1) {
-        JOYNR_LOG_ERROR(logger,
-                        "participantId {} has more than 1 capability entry:\n {}\n {}",
-                        participantId,
-                        capabilities[0].toString(),
-                        capabilities[1].toString());
-    }
 
-    types::DiscoveryEntry result;
-    if (!capabilities.empty()) {
-        convertCapabilityEntryIntoDiscoveryEntry(capabilities.front(), result);
-    }
-    onSuccess(result);
+    auto callback =
+            [onSuccess, this, participantId](const std::vector<CapabilityEntry>& capabilities) {
+        if (capabilities.size() > 1) {
+            JOYNR_LOG_ERROR(this->logger,
+                            "participantId {} has more than 1 capability entry:\n {}\n {}",
+                            participantId,
+                            capabilities[0].toString(),
+                            capabilities[1].toString());
+        }
+
+        std::vector<types::DiscoveryEntry> result;
+
+        if (!capabilities.empty()) {
+            this->convertCapabilityEntriesIntoDiscoveryEntries(capabilities, result);
+        }
+        onSuccess(result[0]);
+    };
+
+    auto future = std::make_shared<LocalCapabilitiesFuture>(callback);
+    lookup(participantId, future);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -885,12 +894,15 @@ void LocalCapabilitiesDirectory::informObserversOnRemove(
     }
 }
 
-LocalCapabilitiesFuture::LocalCapabilitiesFuture() : futureSemaphore(0), capabilities()
+LocalCapabilitiesFuture::LocalCapabilitiesFuture(
+        std::function<void(const std::vector<CapabilityEntry>&)> callback)
+        : futureSemaphore(0), capabilities(), callback(callback)
 {
 }
 
 void LocalCapabilitiesFuture::capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities)
 {
+    callback(capabilities);
     this->capabilities = capabilities;
     futureSemaphore.notify();
 }
