@@ -85,7 +85,7 @@ enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
     JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Error, error, logger, __VA_ARGS__)
 
 #define JOYNR_LOG_FATAL(logger, ...)                                                               \
-    JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Fatal, emerg, logger, __VA_ARGS__)
+    JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Fatal, critical, logger, __VA_ARGS__)
 
 #define ADD_LOGGER(T) static joynr::Logger logger
 // this macro allows to pass typenames containing commas (i.e. templates) as a single argument to
