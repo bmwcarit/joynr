@@ -202,7 +202,7 @@ include(AddClangFormat)
 # use a shared object or are included through joynr header files into the user's code.
 # Mosquitto is only required when the cluster controller build is enabled.
 set (CHECK_DLT (JOYNR_ENABLE_DLT_LOGGING AND USE_PLATFORM_DLT OR NOT JOYNR_ENABLE_DLT_LOGGING))
-if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_JSMN AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
+if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
     set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
     set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
     set(codeMsg "${codeMsg} USE_PLATFORM_DLT and USE_PLATFORM_MOSQUITTO.\")")
