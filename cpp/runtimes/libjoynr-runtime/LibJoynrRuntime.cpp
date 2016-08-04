@@ -90,6 +90,7 @@ void LibJoynrRuntime::init(
                                                     libjoynrMessagingAddress,
                                                     singleThreadIOService->getIOService());
 
+    messageRouter->loadRoutingTable(libjoynrSettings->getMessageRouterPersistenceFilename());
     startLibJoynrMessagingSkeleton(messageRouter);
 
     joynrMessageSender = new JoynrMessageSender(messageRouter);
