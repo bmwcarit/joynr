@@ -39,7 +39,7 @@ namespace joynr
 INIT_LOGGER(WebSocketCcMessagingSkeleton);
 
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
-        MessageRouter& messageRouter,
+        std::shared_ptr<MessageRouter> messageRouter,
         std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
         const system::RoutingTypes::WebSocketAddress& serverAddress)
         : webSocketServer(nullptr),
@@ -80,7 +80,7 @@ void WebSocketCcMessagingSkeleton::transmit(
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     try {
-        messageRouter.route(message);
+        messageRouter->route(message);
     } catch (exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }
@@ -104,9 +104,10 @@ void WebSocketCcMessagingSkeleton::onNewConnection()
 
 void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
 {
-    QWebSocket* client = qobject_cast<QWebSocket*>(sender());
-
     if (isInitializationMessage(message)) {
+
+        QWebSocket* client = qobject_cast<QWebSocket*>(sender());
+
         using joynr::system::RoutingTypes::WebSocketClientAddress;
         JOYNR_LOG_DEBUG(logger,
                         "received initialization message from websocket client: {}",

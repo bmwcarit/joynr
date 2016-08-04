@@ -236,8 +236,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     });
     system::RoutingTypes::WebSocketAddress wsAddress =
             wsSettings.createClusterControllerMessagingAddress();
-    wsCcMessagingSkeleton =
-            new WebSocketCcMessagingSkeleton(*messageRouter, wsMessagingStubFactory, wsAddress);
+    wsCcMessagingSkeleton = std::make_unique<WebSocketCcMessagingSkeleton>(
+            messageRouter, wsMessagingStubFactory, wsAddress);
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
     /* LibJoynr */

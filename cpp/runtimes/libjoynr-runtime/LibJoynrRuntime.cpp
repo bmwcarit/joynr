@@ -68,7 +68,6 @@ LibJoynrRuntime::~LibJoynrRuntime()
     delete joynrDispatcher;
     delete libjoynrSettings;
     libjoynrSettings = nullptr;
-    delete settings;
 }
 
 void LibJoynrRuntime::init(
@@ -90,6 +89,7 @@ void LibJoynrRuntime::init(
                                                     libjoynrMessagingAddress,
                                                     singleThreadIOService->getIOService());
 
+    messageRouter->loadRoutingTable(libjoynrSettings->getMessageRouterPersistenceFilename());
     startLibJoynrMessagingSkeleton(messageRouter);
 
     joynrMessageSender = new JoynrMessageSender(messageRouter);
