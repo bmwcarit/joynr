@@ -59,7 +59,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
             subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
         JOYNR_LOG_ERROR(logger,
-                        "Dropping reply for non/no more existing subscription with id={}",
+                        "Dropping subscription publication for non/no more existing subscription with id={}",
                         subscriptionId);
         return;
     }
