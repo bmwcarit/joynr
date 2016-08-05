@@ -68,8 +68,9 @@ void CapabilitiesClient::add(
 
     std::function<void(const exceptions::JoynrException&)> onError =
             [&](const exceptions::JoynrException& error) {
-        std::ignore = error;
-        JOYNR_LOG_ERROR(logger, "Error occured during the execution of capabilitiesProxy->add");
+        JOYNR_LOG_ERROR(logger,
+                        "Error occured during the execution of capabilitiesProxy->add. Error: {}",
+                        error.getMessage());
     };
     assert(defaultCapabilitiesProxy);
     defaultCapabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);
