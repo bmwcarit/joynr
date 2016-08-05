@@ -1,3 +1,12 @@
+#joynr 0.19.5
+This is a minor bug fix release.
+
+##API relevant changes
+None. 
+
+##Other changes
+* **[C++]** Fix multi-threading issue in LocalCapabilitiesDirectory.
+
 #joynr 0.19.4
 This is a minor bug fix release.
 
