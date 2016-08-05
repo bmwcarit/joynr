@@ -103,7 +103,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          * @param {ProviderQos}
          *            providerQos the Quality of Service parameters for provider registration
          * @param {Object}
-         *            loggingContext optional logging context will be appended to logging messages created in the name of this proxy
+         *            [loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
          *
          * @returns {Object} an A+ promise
          */
