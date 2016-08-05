@@ -85,10 +85,6 @@ define(
                     && settings.incomingAddress === undefined) {
                     throw new Error("incoming address is undefined");
                 }
-                if (settings.incomingAddress !== undefined
-                    && settings.parentMessageRouterAddress === undefined) {
-                    throw new Error("parentMessageRouterAddress is undefined");
-                }
                 if (settings.messagingStubFactory === undefined) {
                     throw new Error("messaging stub factory is undefined");
                 }
@@ -246,6 +242,7 @@ define(
                                 participantId : participantId
                             }).then(function(opArgs) {
                                 if (opArgs.resolved) {
+                                    routingTable[participantId] = parentMessageRouterAddress;
                                     return parentMessageRouterAddress;
                                 }
                                 throw new Error("nextHop cannot be resolved, as participant with id "
@@ -370,6 +367,24 @@ define(
                             }
                         };
 
+                /**
+                 * Tell the message router that the given participantId is known. The message router
+                 * checks internally if an address is already present in the routing table. If not,
+                 * it adds the parentMessageRouterAddress to the routing table for this participantId.
+                 * @function MessageRouter#setToKnown
+                 *
+                 * @param {String} participantId
+                 *
+                 * @returns void
+                 */
+                this.setToKnown = function setToKnown(participantId) {
+                    //if not already set
+                    if (routingTable[participantId] === undefined) {
+                        if (parentMessageRouterAddress !== undefined) {
+                            routingTable[participantId] = parentMessageRouterAddress;
+                        }
+                    }
+                };
             }
 
             return MessageRouter;
