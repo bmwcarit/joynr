@@ -79,13 +79,13 @@ void CapabilitiesClient::add(
 void CapabilitiesClient::remove(const std::string& participantId)
 {
     assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->remove(participantId);
+    defaultCapabilitiesProxy->removeAsync(participantId);
 }
 
 void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
 {
     assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->remove(participantIdList);
+    defaultCapabilitiesProxy->removeAsync(participantIdList);
 }
 
 std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
