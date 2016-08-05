@@ -113,14 +113,21 @@ define("joynr/proxy/ProxyEvent", [
          */
         this.subscribe =
                 function subscribe(subscribeParameters) {
-                    var checkResult =
-                            SubscriptionUtil.checkFilterParameters(
-                                    settings.filterParameters,
-                                    subscribeParameters.filterParameters,
-                                    settings.broadcastName);
-                    if (checkResult.caughtErrors.length !== 0) {
-                        var errorMessage = JSON.stringify(checkResult.caughtErrors);
-                        return Promise.reject(new Error(errorMessage));
+                    if (subscribeParameters.filterParameters !== undefined
+                        && subscribeParameters.filterParameters !== null) {
+                        var checkResult =
+                                SubscriptionUtil.checkFilterParameters(
+                                        settings.filterParameters,
+                                        subscribeParameters.filterParameters.filterParameters,
+                                        settings.broadcastName);
+                        if (checkResult.caughtErrors.length !== 0) {
+                            var errorMessage = JSON.stringify(checkResult.caughtErrors);
+                            return Promise.reject(new Error(
+                                    "SubscriptionRequest could not be processed, as the filterParameters \""
+                                        + JSON.stringify(subscribeParameters.filterParameters)
+                                        + "\" are wrong: "
+                                        + errorMessage));
+                        }
                     }
                     return settings.dependencies.subscriptionManager
                             .registerBroadcastSubscription({

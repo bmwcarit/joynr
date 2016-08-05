@@ -201,7 +201,13 @@ define([
                 return weakSignal.subscribe({
                     subscriptionQos : subscriptionQos,
                     receive : function(value) {},
-                    filterParameters : {}
+                    filterParameters : weakSignal.createFilterParameters()
+                });
+            }).then(function() {
+                //subscribing with filter parameters having value null should work
+                return weakSignal.subscribe({
+                    subscriptionQos : subscriptionQos,
+                    receive : function(value) {}
                 });
             }).then(function() {
                 //subscribing with filter parameters having value null should work
@@ -212,13 +218,14 @@ define([
                 });
             }).then(function() {
                 //subscribing with partially defined filter parameters should fail
+                var filterParameters = weakSignal.createFilterParameters();
+                filterParameters.setA("a");
+                filterParameters.setB("b");
+                //do not set filter paramter "c", so assuming an error during subscribe
                 return weakSignal.subscribe({
                     subscriptionQos : subscriptionQos,
                     receive : function(value) {},
-                    filterParameters : {
-                        a : "a",
-                        b : "b"
-                    }
+                    filterParameters : filterParameters
                 }).then(fail).catch(done);
             }).catch(fail);
         });

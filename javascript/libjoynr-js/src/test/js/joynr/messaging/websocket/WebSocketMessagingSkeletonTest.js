@@ -69,7 +69,9 @@ define([
             listener2 = jasmine.createSpy("listener2");
             function MessageEvent() {}
             event = new MessageEvent();
-            data = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            data = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
             event.data = JSON.stringify(data);
             done();
         });

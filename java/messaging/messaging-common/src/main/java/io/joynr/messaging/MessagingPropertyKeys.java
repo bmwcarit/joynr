@@ -25,6 +25,7 @@ public final class MessagingPropertyKeys {
     // will be removed by 2016-12-31. Please use joynr.messaging.discoverydirectoryurl instead
     public static final String CAPABILITYDIRECTORYURL = "joynr.messaging.capabilitiesdirectoryurl";
     public static final String DISCOVERYDIRECTORYURL = "joynr.messaging.discoverydirectoryurl";
+    public static final String DOMAINACCESSCONTROLLERURL = "joynr.messaging.domainaccesscontrollerurl";
     public static final String BOUNCE_PROXY_URL = "joynr.messaging.bounceproxyurl";
     public static final String RECEIVERID = "joynr.messaging.receiverid"; //NEVER SET BY THE APPLICATION!
     public static final String PERSISTENCE_FILE = "joynr.messaging.persistence_file";

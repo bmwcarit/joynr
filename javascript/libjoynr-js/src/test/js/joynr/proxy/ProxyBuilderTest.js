@@ -118,7 +118,7 @@ define([
                                     jasmine.createSpyObj("arbitratorSpy", [ "startArbitration"
                                     ]);
                             messageRouterSpy =
-                                    jasmine.createSpyObj("messageRouterSpy", [ "addNextHop"
+                                    jasmine.createSpyObj("messageRouterSpy", [ "addNextHop", "setToKnown"
                                     ]);
                             loggingManagerSpy =
                                     jasmine.createSpyObj("loggingManagerSpy", [ "setLoggingContext"
@@ -373,7 +373,7 @@ define([
                                 });
 
                         it(
-                                "adds a routing table entry",
+                                "adds a routing table entry for proxy and knows provider",
                                 function(done) {
                                     var promise, spy = jasmine.createSpyObj("spy", [
                                         "onFulfilled",
@@ -404,6 +404,8 @@ define([
                                         expect(
                                                 typeof messageRouterSpy.addNextHop.calls.mostRecent().args[0] === "string")
                                                 .toBeTruthy();
+                                        expect(messageRouterSpy.setToKnown.calls.mostRecent().args[0])
+                                        .toEqual(arbitratedCaps[0].participantId);
                                         expect(messageRouterSpy.addNextHop.calls.mostRecent().args[1])
                                                 .toEqual(libjoynrMessagingAddress);
                                         done();
