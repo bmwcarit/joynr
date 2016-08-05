@@ -1,4 +1,4 @@
-/*global fail: true */
+/*global fail: true, xit: true */
 /*jslint es5: true, nomen: true */
 
 /*
@@ -29,6 +29,7 @@ define([
             "joynr/datatypes/exampleTypes/Country",
             "joynr/datatypes/exampleTypes/StringMap",
             "joynr/tests/testTypes/ComplexTestType",
+            "joynr/exceptions/SubscriptionException",
             "integration/IntegrationUtils",
             "joynr/provisioning/provisioning_cc",
             "integration/provisioning_end2end_common",
@@ -43,6 +44,7 @@ define([
                 Country,
                 StringMap,
                 ComplexTestType,
+                SubscriptionException,
                 IntegrationUtils,
                 provisioning,
                 provisioning_end2end,
@@ -99,9 +101,23 @@ define([
                                     workerId = newWorkerId;
                                     return IntegrationUtils.startWebWorker(workerId);
                                 }).then(function() {
+                                    // Prevent freezing of object through proxy build
+                                    // since we need to add faked attribute below
+                                    spyOn(Object, 'freeze').and.callFake(function(obj) {
+                                        return obj;
+                                    });
                                     return IntegrationUtils.buildProxy(RadioProxy);
                                 }).then(function(newRadioProxy) {
                                     radioProxy = newRadioProxy;
+
+                                    // Add an attribute that does not exist on provider side
+                                    // for special subscription test
+                                    radioProxy.nonExistingAttributeOnProviderSide =
+                                        new radioProxy.settings.proxyElementTypes.ProxyAttributeNotifyReadWrite(radioProxy, radioProxy.settings, "nonExistingAttributeOnProviderSide", "Integer");
+
+                                    // restore freeze behavior
+                                    Object.freeze.and.callThrough();
+                                    radioProxy = Object.freeze(radioProxy);
                                     done();
                                     return null;
                                 });
@@ -154,6 +170,7 @@ define([
                                                                 resolve,
                                                                 reject);
                                                     }
+                                                    return null;
                                                 }).catch(function(error) {
                                                     reject(new Error(
                                                             "Failed to retrieve attribute value (recursion index "
@@ -161,6 +178,7 @@ define([
                                                                 + "): "
                                                                 + error));
                                                 });
+                                        return null;
                                     }).catch(function(error) {
                                         reject(new Error(
                                                 "Failed to set attribute value (recursion index "
@@ -168,6 +186,7 @@ define([
                                                     + "): "
                                                     + error));
                                     });
+                                    return null;
                         }
 
                         /**
@@ -793,6 +812,165 @@ define([
                                     expect(call.args[0]).toEqual(value3);
                                 });
                             }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        it("resolves attribute subscription and calls onSubscribed", function(done) {
+                            var spy = jasmine.createSpyObj("spy", [
+                                "onReceive",
+                                "onError",
+                                "onSubscribed"
+                            ]);
+                            var subscriptionId, detailMessage;
+                            var qosSettings = new joynr.proxy.PeriodicSubscriptionQos();
+                            var storedSubscriptionId;
+
+                            radioProxy.numberOfStations.subscribe({
+                                subscriptionQos : qosSettings,
+                                onReceive : spy.onReceive,
+                                onError : spy.onError,
+                                onSubscribed: spy.onSubscribed
+                            }).then(function(subscriptionId) {
+                                storedSubscriptionId = subscriptionId;
+                                return waitsFor(function() {
+                                    return spy.onSubscribed.calls.count() === 1;
+                                }, "onSubscribed to get called", 1000);
+                            }).then(function() {
+                                expect(spy.onError).not.toHaveBeenCalled();
+                                expect(spy.onSubscribed).toHaveBeenCalled();
+                                expect(spy.onSubscribed).toHaveBeenCalledWith(storedSubscriptionId);
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        it("rejects attribute subscription if periodMs is too small", function(done) {
+                            var spy = jasmine.createSpyObj("spy", [
+                                "onReceive",
+                                "onError",
+                                "onSubscribed"
+                            ]);
+                            var subscriptionId, detailMessage;
+                            var qosSettings = new joynr.proxy.PeriodicSubscriptionQos({
+                                expiryDateMs : 0,
+                                alertAfterIntervalMs : 0,
+                                publicationTtlMs : 1000
+                            });
+                            // forcibly fake it! The constructor throws, if using this directly
+                            qosSettings.periodMs = joynr.proxy.PeriodicSubscriptionQos.MIN_PERIOD_MS - 1;
+
+                            radioProxy.numberOfStations.subscribe({
+                                subscriptionQos : qosSettings,
+                                onReceive : spy.onReceive,
+                                onError : spy.onError,
+                                onSubscribed : spy.onSubscribed
+                            }).then(function(subscriptionId) {
+                                fail("unexpected success");
+                            }).catch(function(error) {
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.detailMessage).toMatch(/is smaller than PeriodicSubscriptionQos/);
+                                subscriptionId = error.subscriptionId;
+                                detailMessage = error.detailMessage;
+                                return waitsFor(function() {
+                                    return spy.onError.calls.count() === 1;
+                                }, "onError to get called", 1000);
+                            }).then(function() {
+                                expect(spy.onReceive).not.toHaveBeenCalled();
+                                expect(spy.onSubscribed).not.toHaveBeenCalled();
+                                expect(spy.onError).toHaveBeenCalled();
+                                expect(spy.onError.calls.mostRecent().args[0]).toBeDefined();
+                                var error = spy.onError.calls.mostRecent().args[0];
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toEqual(subscriptionId);
+                                expect(error.detailMessage).toEqual(detailMessage);
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        it("rejects subscription to non-existing attribute ", function(done) {
+                            var spy = jasmine.createSpyObj("spy", [
+                                "onReceive",
+                                "onError",
+                                "onSubscribed"
+                            ]);
+                            var subscriptionId, detailMessage;
+
+                            radioProxy.nonExistingAttributeOnProviderSide.subscribe({
+                                subscriptionQos : new joynr.proxy.OnChangeSubscriptionQos(),
+                                onReceive : spy.onReceive,
+                                onError : spy.onError,
+                                onSubscribed : spy.onSubscribed
+                            }).then(function(subscriptionId) {
+                                fail("unexpected success");
+                            }).catch(function(error) {
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.detailMessage).toMatch(/misses attribute/);
+                                subscriptionId = error.subscriptionId;
+                                detailMessage = error.detailMessage;
+                                return waitsFor(function() {
+                                    return spy.onError.calls.count() === 1;
+                                }, "onError to get called", 1000);
+                            }).then(function() {
+                                expect(spy.onReceive).not.toHaveBeenCalled();
+                                expect(spy.onSubscribed).not.toHaveBeenCalled();
+                                expect(spy.onError).toHaveBeenCalled();
+                                expect(spy.onError.calls.mostRecent().args[0]).toBeDefined();
+                                var error = spy.onError.calls.mostRecent().args[0];
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toEqual(subscriptionId);
+                                expect(error.detailMessage).toEqual(detailMessage);
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        // The following test does unfortunately not work, because the expiryDateMs
+                        // is used to shorten the ttl of the message in SubscriptionManager.
+                        // This leads to a negative ttl, which has ChannelMessagingSender
+                        // throwing an Error at us (where it should throw an exception).
+                        // The message is thus not getting send to provider.
+                        // Leaving the test in at the moment so it can be used later
+                        // once exception handling gets fixed.
+                        xit("rejects on subscribe to attribute with bad expiryDateMs", function(done) {
+                            var spy = jasmine.createSpyObj("spy", [
+                                "onReceive",
+                                "onError"
+                            ]);
+                            var subscriptionId, detailMessage;
+
+                            radioProxy.numberOfStations.subscribe({
+                                subscriptionQos : new joynr.proxy.OnChangeSubscriptionQos({
+                                    expiryDateMs : Date.now() - 10000
+                                }),
+                                onReceive : spy.onReceive,
+                                onError : spy.onError
+                            }).then(function(subscriptionId) {
+                                fail("unexpected success");
+                            }).catch(function(error) {
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.detailMessage).toMatch(/lies in the past/);
+                                subscriptionId = error.subscriptionId;
+                                detailMessage = error.detailMessage;
+                                return waitsFor(function() {
+                                    return spy.onError.calls.count() === 1;
+                                }, "onError to get called", 1000);
+                            }).then(function() {
+                                expect(spy.onReceive).not.toHaveBeenCalled();
+                                expect(spy.onError).toHaveBeenCalled();
+                                expect(spy.onError.calls.mostRecent().args[0]).toBeDefined();
+                                var error = spy.onError.calls.mostRecent().args[0];
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toEqual(subscriptionId);
+                                expect(error.detailMessage).toEqual(detailMessage);
                                 done();
                                 return null;
                             }).catch(fail);
