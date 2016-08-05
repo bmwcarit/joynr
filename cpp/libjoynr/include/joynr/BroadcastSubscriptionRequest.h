@@ -21,7 +21,8 @@
 
 #include <string>
 #include <memory>
-#include <boost/type_index.hpp>
+
+#include <boost/optional.hpp>
 
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastFilterParameters.h"
@@ -53,7 +54,7 @@ public:
 
     std::string toString() const;
 
-    BroadcastFilterParameters getFilterParameters() const;
+    const boost::optional<BroadcastFilterParameters>& getFilterParameters() const;
     void setFilterParameters(const BroadcastFilterParameters& filterParameters);
 
     void setQos(std::shared_ptr<SubscriptionQos> qos) override;
@@ -65,7 +66,7 @@ public:
     }
 
 private:
-    BroadcastFilterParameters filterParameters;
+    boost::optional<BroadcastFilterParameters> filterParameters;
 
     ADD_LOGGER(BroadcastSubscriptionRequest);
 };

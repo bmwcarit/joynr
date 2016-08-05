@@ -25,9 +25,12 @@
 #include <map>
 #include <string>
 
+#include <boost/optional.hpp>
+
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionRequestInformation.h"
 #include "joynr/BroadcastSubscriptionRequestInformation.h"
+#include "joynr/BroadcastFilterParameters.h"
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
@@ -504,10 +507,12 @@ bool PublicationManager::processFilterChain(
     std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
 
+    const boost::optional<BroadcastFilterParameters>& filterParameters =
+            subscriptionRequest->getFilterParameters();
+    const BroadcastFilterParameters& bfp =
+            (filterParameters) ? *filterParameters : BroadcastFilterParameters();
     for (auto filterIt = filters.begin(); success && (filterIt != filters.cend()); ++filterIt) {
-        success = success &&
-                  (*filterIt)->filterForward(
-                          broadcastValues..., subscriptionRequest->getFilterParameters());
+        success = success && (*filterIt)->filterForward(broadcastValues..., bfp);
     }
     return success;
 }

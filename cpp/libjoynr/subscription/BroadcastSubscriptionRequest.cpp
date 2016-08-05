@@ -42,7 +42,8 @@ std::string BroadcastSubscriptionRequest::toString() const
     return joynr::serializer::serializeToJson(*this);
 }
 
-BroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
+const boost::optional<BroadcastFilterParameters>& BroadcastSubscriptionRequest::
+        getFilterParameters() const
 {
     return filterParameters;
 }
