@@ -57,14 +57,19 @@ define("joynr/exceptions/SubscriptionException", [
         var log = LoggerFactory.getLogger("joynr.exceptions.SubscriptionException");
         var runtimeException = new JoynrRuntimeException(settings);
 
-        Util.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-
         /**
          * Used for serialization.
          * @name SubscriptionException#_typeName
          * @type String
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.SubscriptionException");
+
+        if (settings) {
+            Util.checkPropertyIfDefined(
+                    settings.subscriptionId,
+                    "String",
+                    "settings.subscriptionId");
+        }
 
         Util.extend(this, defaultSettings, settings, runtimeException);
     }
