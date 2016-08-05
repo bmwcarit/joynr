@@ -4,6 +4,8 @@ TODO
 ##API relevant changes
 * **[Java]** Static capabilities provisioning can now be specified as a URI.
   See the [Java Configuration Guide](JavaSettings.md) for details.
+* **[JS]** Optional expiryDateMs (mills since epoch) can be passed to registerProvider. Default
+  value is one day from now.
 
 ##Other changes
 TODO

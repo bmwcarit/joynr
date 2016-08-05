@@ -296,6 +296,7 @@ define([
                         });
 
                         it("registers logging context with the ContextManager", function(done) {
+                            var expiryDateMs = -1;
                             var loggingContext = {
                                 myContext : "myContext"
                             };
@@ -303,6 +304,7 @@ define([
                                     domain,
                                     provider,
                                     providerQos,
+                                    expiryDateMs,
                                     loggingContext).then(function() {
                                 return null;
                             }).catch(function() {
