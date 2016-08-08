@@ -593,10 +593,14 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = onError;
-
-    auto callback =
-            [onSuccess, this, participantId](const std::vector<CapabilityEntry>& capabilities) {
+    auto callback = [onSuccess, onError, this, participantId](
+            const std::vector<CapabilityEntry>& capabilities) {
+        if (capabilities.size() == 0) {
+            joynr::exceptions::ProviderRuntimeException exception(
+                    "No capabilities found for participandId \"" + participantId + "\"");
+            onError(exception);
+            return;
+        }
         if (capabilities.size() > 1) {
             JOYNR_LOG_ERROR(this->logger,
                             "participantId {} has more than 1 capability entry:\n {}\n {}",
