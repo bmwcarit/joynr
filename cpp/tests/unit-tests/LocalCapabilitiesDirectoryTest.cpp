@@ -16,13 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include <cstdint>
 #include <functional>
 #include <string>
 #include <tuple>
-#include <cstdint>
+#include <unordered_map>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
@@ -39,6 +40,7 @@
 #include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/PrivateCopyAssign.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;
@@ -107,7 +109,7 @@ public:
                                              10000,
                                              10000,
                                              PUBLIC_KEY_ID);
-        globalCapEntryMap.insert(EXTERNAL_ADDRESS, globalCapEntry);
+        globalCapEntryMap.insert({EXTERNAL_ADDRESS, globalCapEntry});
     }
 
     void fakeLookupZeroResultsForInterfaceAddress(
@@ -280,7 +282,7 @@ protected:
     std::string dummyParticipantId2;
     std::string dummyParticipantId3;
     joynr::types::DiscoveryQos discoveryQos;
-    QMap<std::string, types::DiscoveryEntry> globalCapEntryMap;
+    std::unordered_multimap<std::string, types::DiscoveryEntry> globalCapEntryMap;
 
     static const std::string INTERFACE_1_NAME;
     static const std::string DOMAIN_1_NAME;
@@ -1474,10 +1476,10 @@ void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(
                                          addressType, serializedAddress))),
                            _)).Times(0);
 
-    QMap<std::string, types::DiscoveryEntry> capabilitiesMap;
+    std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
     types::DiscoveryEntry capEntry;
     capEntry.setParticipantId(participantId);
-    capabilitiesMap.insertMulti(serializedAddress, capEntry);
+    capabilitiesMap.insert({serializedAddress, capEntry});
     localCapabilitiesDirectory->registerReceivedCapabilities(std::move(capabilitiesMap));
 }
 

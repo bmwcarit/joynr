@@ -27,8 +27,6 @@
 #include <vector>
 #include <functional>
 
-#include <QMap>
-
 #include <boost/asio/steady_timer.hpp>
 
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
@@ -129,7 +127,8 @@ public:
      * original callback with the results, this indirection was needed because we
      * need to convert a CapabilitiesInformation object into a DiscoveryEntry object.
      */
-    void registerReceivedCapabilities(QMap<std::string, types::DiscoveryEntry>&& capabilityEntries);
+    void registerReceivedCapabilities(
+            const std::unordered_multimap<std::string, types::DiscoveryEntry>&& capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
     void add(const joynr::types::DiscoveryEntry& discoveryEntry,

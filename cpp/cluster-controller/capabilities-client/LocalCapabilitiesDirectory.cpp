@@ -333,11 +333,11 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
         std::shared_ptr<ILocalCapabilitiesCallback> callback,
         joynr::types::DiscoveryScope::Enum discoveryScope)
 {
-    QMap<std::string, types::DiscoveryEntry> capabilitiesMap;
+    std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
     std::vector<types::DiscoveryEntry> mergedEntries;
 
     for (types::GlobalDiscoveryEntry globalDiscoveryEntry : results) {
-        capabilitiesMap.insertMulti(globalDiscoveryEntry.getAddress(), globalDiscoveryEntry);
+        capabilitiesMap.insert({globalDiscoveryEntry.getAddress(), globalDiscoveryEntry});
         mergedEntries.push_back(std::move(globalDiscoveryEntry));
     }
     registerReceivedCapabilities(std::move(capabilitiesMap));
@@ -519,15 +519,11 @@ void LocalCapabilitiesDirectory::cleanCache(std::chrono::milliseconds maxAge)
 }
 
 void LocalCapabilitiesDirectory::registerReceivedCapabilities(
-        QMap<std::string, types::DiscoveryEntry>&& capabilityEntries)
+        const std::unordered_multimap<std::string, types::DiscoveryEntry>&& capabilityEntries)
 {
-    QMapIterator<std::string, types::DiscoveryEntry> entryIterator(capabilityEntries);
-    while (entryIterator.hasNext()) {
-        entryIterator.next();
-        types::DiscoveryEntry currentEntry = entryIterator.value();
-
-        std::string serializedAddress = entryIterator.key();
-
+    for (auto it = capabilityEntries.cbegin(); it != capabilityEntries.cend(); ++it) {
+        const std::string& serializedAddress = it->first;
+        const types::DiscoveryEntry& currentEntry = it->second;
         // TODO: check joynrAddress for nullptr instead of string.find after the deserialization
         // works as expected.
         // Currently, JsonDeserializer.deserialize<T> always returns an instance of T
@@ -742,11 +738,11 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
         return;
     }
 
-    QMap<std::string, types::DiscoveryEntry> capabilitiesMap;
+    std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
     for (const auto& globalDiscoveryEntry : injectedGlobalCapabilities) {
         // insert in map for messagerouter
-        capabilitiesMap.insertMulti(
-                globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry));
+        capabilitiesMap.insert(
+                {globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry)});
     }
 
     // insert found capabilities in messageRouter
