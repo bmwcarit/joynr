@@ -18,6 +18,8 @@
  */
 
 #include <algorithm>
+#include <unordered_set>
+
 #include "joynr/LocalCapabilitiesDirectory.h"
 
 #include <boost/algorithm/string/predicate.hpp>
@@ -251,7 +253,10 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
     std::vector<types::DiscoveryEntry> globalCapabilities = searchCache(
             interfaceAddresses, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()), false);
 
-    return callReceiverIfPossible(scope, localCapabilities, globalCapabilities, callback);
+    return callReceiverIfPossible(scope,
+                                  std::move(localCapabilities),
+                                  std::move(globalCapabilities),
+                                  std::move(callback));
 }
 
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
@@ -266,29 +271,32 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
     std::vector<types::DiscoveryEntry> globalCapabilities = searchCache(
             participantId, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()), false);
 
-    return callReceiverIfPossible(scope, localCapabilities, globalCapabilities, callback);
+    return callReceiverIfPossible(scope,
+                                  std::move(localCapabilities),
+                                  std::move(globalCapabilities),
+                                  std::move(callback));
 }
 
 bool LocalCapabilitiesDirectory::callReceiverIfPossible(
         joynr::types::DiscoveryScope::Enum& scope,
-        std::vector<types::DiscoveryEntry>& localCapabilities,
-        std::vector<types::DiscoveryEntry>& globalCapabilities,
+        std::vector<types::DiscoveryEntry>&& localCapabilities,
+        std::vector<types::DiscoveryEntry>&& globalCapabilities,
         std::shared_ptr<ILocalCapabilitiesCallback> callback)
 {
     // return only local capabilities
     if (scope == joynr::types::DiscoveryScope::LOCAL_ONLY) {
-        callback->capabilitiesReceived(localCapabilities);
+        callback->capabilitiesReceived(std::move(localCapabilities));
         return true;
     }
 
     // return local then global capabilities
     if (scope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
         if (!localCapabilities.empty()) {
-            callback->capabilitiesReceived(localCapabilities);
+            callback->capabilitiesReceived(std::move(localCapabilities));
             return true;
         }
         if (!globalCapabilities.empty()) {
-            callback->capabilitiesReceived(globalCapabilities);
+            callback->capabilitiesReceived(std::move(globalCapabilities));
             return true;
         }
     }
@@ -298,18 +306,13 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
         // return if global entries
         if (!globalCapabilities.empty()) {
             // remove duplicates
-            std::vector<types::DiscoveryEntry> result;
-            for (types::DiscoveryEntry entry : localCapabilities) {
-                if (std::find(result.begin(), result.end(), entry) == result.end()) {
-                    result.push_back(entry);
-                }
-            }
-            for (types::DiscoveryEntry entry : globalCapabilities) {
-                if (std::find(result.begin(), result.end(), entry) == result.end()) {
-                    result.push_back(entry);
-                }
-            }
-            callback->capabilitiesReceived(result);
+            std::unordered_set<types::DiscoveryEntry> resultSet(
+                    std::make_move_iterator(localCapabilities.begin()),
+                    std::make_move_iterator(localCapabilities.end()));
+            resultSet.insert(std::make_move_iterator(globalCapabilities.begin()),
+                             std::make_move_iterator(globalCapabilities.end()));
+            std::vector<types::DiscoveryEntry> resultVec(resultSet.begin(), resultSet.end());
+            callback->capabilitiesReceived(std::move(resultVec));
             return true;
         }
     }
@@ -317,7 +320,7 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
     // return the global cached entries
     if (scope == joynr::types::DiscoveryScope::GLOBAL_ONLY) {
         if (!globalCapabilities.empty()) {
-            callback->capabilitiesReceived(globalCapabilities);
+            callback->capabilitiesReceived(std::move(globalCapabilities));
             return true;
         }
     }
@@ -326,7 +329,7 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
 
 void LocalCapabilitiesDirectory::capabilitiesReceived(
         const std::vector<types::GlobalDiscoveryEntry>& results,
-        std::vector<types::DiscoveryEntry> cachedLocalCapabilies,
+        std::vector<types::DiscoveryEntry>&& cachedLocalCapabilies,
         std::shared_ptr<ILocalCapabilitiesCallback> callback,
         joynr::types::DiscoveryScope::Enum discoveryScope)
 {
@@ -335,20 +338,20 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
 
     for (types::GlobalDiscoveryEntry globalDiscoveryEntry : results) {
         capabilitiesMap.insertMulti(globalDiscoveryEntry.getAddress(), globalDiscoveryEntry);
-        mergedEntries.push_back(globalDiscoveryEntry);
+        mergedEntries.push_back(std::move(globalDiscoveryEntry));
     }
-    registerReceivedCapabilities(capabilitiesMap);
+    registerReceivedCapabilities(std::move(capabilitiesMap));
 
     if (discoveryScope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL ||
         discoveryScope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
         // look if in the meantime there are some local providers registered
         // lookup in the local directory to get local providers which were registered in the
         // meantime.
-        for (types::DiscoveryEntry entry : cachedLocalCapabilies) {
-            mergedEntries.push_back(entry);
-        }
+        mergedEntries.insert(mergedEntries.end(),
+                             std::make_move_iterator(cachedLocalCapabilies.begin()),
+                             std::make_move_iterator(cachedLocalCapabilies.end()));
     }
-    callback->capabilitiesReceived(mergedEntries);
+    callback->capabilitiesReceived(std::move(mergedEntries));
 }
 
 void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
@@ -516,7 +519,7 @@ void LocalCapabilitiesDirectory::cleanCache(std::chrono::milliseconds maxAge)
 }
 
 void LocalCapabilitiesDirectory::registerReceivedCapabilities(
-        QMap<std::string, types::DiscoveryEntry> capabilityEntries)
+        QMap<std::string, types::DiscoveryEntry>&& capabilityEntries)
 {
     QMapIterator<std::string, types::DiscoveryEntry> entryIterator(capabilityEntries);
     while (entryIterator.hasNext()) {
@@ -673,8 +676,9 @@ std::string LocalCapabilitiesDirectory::serializeLocalCapabilitiesToJson() const
     // convert each entry with Joynr::serialize
     for (const auto& key : capEntriesKeys) {
         auto capEntriesAtKey = participantId2LocalCapability.lookUpAll(key);
-        toBeSerialized.insert(
-                toBeSerialized.end(), capEntriesAtKey.cbegin(), capEntriesAtKey.cend());
+        toBeSerialized.insert(toBeSerialized.end(),
+                              std::make_move_iterator(capEntriesAtKey.begin()),
+                              std::make_move_iterator(capEntriesAtKey.end()));
     }
 
     return joynr::serializer::serializeToJson(toBeSerialized);
@@ -741,11 +745,12 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
     QMap<std::string, types::DiscoveryEntry> capabilitiesMap;
     for (const auto& globalDiscoveryEntry : injectedGlobalCapabilities) {
         // insert in map for messagerouter
-        capabilitiesMap.insertMulti(globalDiscoveryEntry.getAddress(), globalDiscoveryEntry);
+        capabilitiesMap.insertMulti(
+                globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry));
     }
 
     // insert found capabilities in messageRouter
-    registerReceivedCapabilities(capabilitiesMap);
+    registerReceivedCapabilities(std::move(capabilitiesMap));
 }
 
 /**
@@ -798,7 +803,9 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchCache(
                         ? interfaceAddress2LocalCapabilities.lookUpAll(interfaceAddresses.at(i))
                         : interfaceAddress2GlobalCapabilities.lookUp(
                                   interfaceAddresses.at(i), maxCacheAge);
-        result.insert(result.end(), entries.begin(), entries.end());
+        result.insert(result.end(),
+                      std::make_move_iterator(entries.begin()),
+                      std::make_move_iterator(entries.end()));
     }
     return result;
 }

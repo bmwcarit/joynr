@@ -751,7 +751,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
     localCapabilitiesDirectory->add(entry);
-    localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
+    localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
@@ -786,7 +786,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
                                        PUBLIC_KEY_ID);
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
     localCapabilitiesDirectory->add(entry);
-    localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
+    localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
@@ -864,7 +864,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
     localCapabilitiesDirectory->cleanCache(std::chrono::milliseconds::zero());
 
     discoveryQos.setCacheMaxAge(4000);
-    localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
+    localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(10).size());
 }
@@ -1293,7 +1293,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
     callback->clearResults();
 
     // register the external capability
-    localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
+    localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
     // get the global entry
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
@@ -1334,7 +1334,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
     localCapabilitiesDirectory->add(entry);
-    localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
+    localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
@@ -1365,7 +1365,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
     localCapabilitiesDirectory->add(entry);
-    localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
+    localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
     // get the local entry
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
@@ -1421,7 +1421,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
     callback->clearResults();
 
     // recieve a global entry
-    localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
+    localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(2, callback->getResults(10).size());
@@ -1478,7 +1478,7 @@ void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(
     types::DiscoveryEntry capEntry;
     capEntry.setParticipantId(participantId);
     capabilitiesMap.insertMulti(serializedAddress, capEntry);
-    localCapabilitiesDirectory->registerReceivedCapabilities(capabilitiesMap);
+    localCapabilitiesDirectory->registerReceivedCapabilities(std::move(capabilitiesMap));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerReceivedCapabilites_registerMqttAddress)
@@ -1622,7 +1622,7 @@ TEST_P(LocalCapabilitiesDirectoryPurgeTest, purgeTimedOutEntries)
                                        10,
                                        PUBLIC_KEY_ID);
     localCapabilitiesDirectory->add(entry);
-    localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
+    localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);

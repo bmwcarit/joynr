@@ -23,7 +23,7 @@
 using namespace joynr;
 
 MockLocalCapabilitiesDirectoryCallback::MockLocalCapabilitiesDirectoryCallback()
-        : ILocalCapabilitiesCallback(), results(), semaphore(1)
+        : results(), semaphore(1)
 {
     semaphore.wait();
 }
@@ -31,7 +31,7 @@ MockLocalCapabilitiesDirectoryCallback::MockLocalCapabilitiesDirectoryCallback()
 void MockLocalCapabilitiesDirectoryCallback::capabilitiesReceived(
         const std::vector<joynr::types::DiscoveryEntry>& capabilities)
 {
-    this->results = capabilities;
+    this->results = std::move(capabilities);
     semaphore.notify();
 }
 
