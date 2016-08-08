@@ -25,11 +25,16 @@ namespace joynr
 JoynrRuntime* JoynrRuntime::createRuntime(const std::string& pathToLibjoynrSettings,
                                           const std::string& pathToMessagingSettings)
 {
-    Settings* settings = new Settings(pathToLibjoynrSettings);
+    auto settings = std::make_unique<Settings>(pathToLibjoynrSettings);
     Settings messagingSettings{pathToMessagingSettings};
     Settings::merge(messagingSettings, *settings, false);
 
-    return JoynrClusterControllerRuntime::create(settings);
+    return createRuntime(std::move(settings));
+}
+
+JoynrRuntime* JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
+{
+    return JoynrClusterControllerRuntime::create(std::move(settings));
 }
 
 } // namespace joynr

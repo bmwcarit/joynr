@@ -106,7 +106,7 @@ define([
                                     channelMessageSender.start();
                                     timeStamp = Date.now();
                                     channelMessageSender.send(joynrMessage, channelAddress).then(fail).catch(function(error) {
-                                        expect(Date.now()-timeStamp>=relativeExpiryDate).toEqual(true);
+                                        expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE]).toBeLessThan(Date.now() + 1);
                                         expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
                                         expect(communicationModuleSpy.createXMLHTTPRequest).toHaveBeenCalled();
                                         done();
@@ -120,7 +120,7 @@ define([
                                 function(done) {
                                     joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] = Date.now() + resendDelay_ms;
                                     channelMessageSender.send(joynrMessage, channelAddress).then(fail).catch(function(error) {
-                                        expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] <= Date.now()).toEqual(true);
+                                        expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE]).toBeLessThan(Date.now() + 1);
                                         expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
                                         expect(communicationModuleSpy.createXMLHTTPRequest).not.toHaveBeenCalled();
                                         done();

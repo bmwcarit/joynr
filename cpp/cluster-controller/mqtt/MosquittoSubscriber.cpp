@@ -21,7 +21,6 @@
 #include "MosquittoSubscriber.h"
 
 #include "joynr/JoynrMessage.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/MessageRouter.h"
 
 namespace joynr

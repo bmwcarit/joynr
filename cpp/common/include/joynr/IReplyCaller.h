@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
  */
 #ifndef IREPLYCALLER_H
 #define IREPLYCALLER_H
+
+#include <memory>
 
 #include "joynr/ITimeoutListener.h"
 
@@ -51,7 +53,7 @@ public:
       * This method is not part of the interface, to allow the interface to be untemplated
       **/
 
-    virtual void returnError(const exceptions::JoynrException& error) = 0;
+    virtual void returnError(const std::shared_ptr<exceptions::JoynrException>& error) = 0;
 
     virtual void execute(Reply&& reply) = 0;
 

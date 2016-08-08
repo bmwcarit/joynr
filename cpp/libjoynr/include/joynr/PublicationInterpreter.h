@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,6 @@
 #include <memory>
 #include <functional>
 
-#include "joynr/IPublicationInterpreter.h"
-#include "joynr/Logger.h"
-#include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
@@ -34,156 +31,74 @@ namespace joynr
 {
 
 template <class... Ts>
-class PublicationInterpreter : public IPublicationInterpreter
+class PublicationInterpreter
 {
+    using ResponseTuple = std::tuple<Ts...>;
+
 public:
-    void execute(std::shared_ptr<ISubscriptionCallback> callback,
-                 const SubscriptionPublication& subscriptionPublication) override
+    template <typename Callback>
+    static void execute(Callback& callback, SubscriptionPublication&& subscriptionPublication)
     {
-        assert(callback);
-
-        const Variant& error = subscriptionPublication.getError();
-        if (!error.isEmpty()) {
-            callback->onError(
-                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
+        std::shared_ptr<exceptions::JoynrRuntimeException> error =
+                subscriptionPublication.getError();
+        if (error) {
+            callback.onError(*error);
             return;
         }
 
-        std::vector<Variant> response = subscriptionPublication.getResponse();
-        if (response.empty()) {
-            JOYNR_LOG_ERROR(logger, "Publication object has no response, discarding message");
-            exceptions::JoynrRuntimeException error(
-                    "Publication object had no response, discarded message");
-            callback->onError(error);
+        if (!subscriptionPublication.hasResponse()) {
+            callback.onError(exceptions::JoynrRuntimeException(
+                    "Publication object had no response, discarded message"));
             return;
         }
-        std::shared_ptr<SubscriptionCallback<Ts...>> typedCallback =
-                std::dynamic_pointer_cast<SubscriptionCallback<Ts...>>(callback);
-        callOnSucces(response, typedCallback, std::index_sequence_for<Ts...>{});
+
+        ResponseTuple responseTuple;
+        try {
+            callGetResponse(responseTuple,
+                            std::move(subscriptionPublication),
+                            std::index_sequence_for<Ts...>{});
+        } catch (const std::exception& exception) {
+            callback.onError(exceptions::JoynrRuntimeException(exception.what()));
+            return;
+        }
+
+        callOnSucces(std::move(responseTuple), callback, std::index_sequence_for<Ts...>{});
     }
 
 private:
-    template <std::size_t... Indices>
-    void callOnSucces(const std::vector<Variant>& response,
-                      const std::shared_ptr<SubscriptionCallback<Ts...>>& typedCallback,
-                      std::index_sequence<Indices...>)
+    template <std::size_t... Indices, typename Callback>
+    static void callOnSucces(ResponseTuple&& response,
+                             Callback& callback,
+                             std::index_sequence<Indices...>)
     {
-        typedCallback->onSuccess(util::valueOf<Ts>(response[Indices])...);
+        callback.onSuccess(std::move(std::get<Indices>(response))...);
     }
-    ADD_LOGGER(PublicationInterpreter);
+
+    template <std::size_t... Indices>
+    static void callGetResponse(ResponseTuple& response,
+                                SubscriptionPublication&& subscriptionPublication,
+                                std::index_sequence<Indices...>)
+    {
+        subscriptionPublication.getResponse(std::get<Indices>(response)...);
+    }
 };
 
 template <>
-class PublicationInterpreter<void> : public IPublicationInterpreter
+class PublicationInterpreter<void>
 {
 public:
-    void execute(std::shared_ptr<ISubscriptionCallback> callback,
-                 const SubscriptionPublication& subscriptionPublication) override
+    template <typename Callback>
+    static void execute(Callback& callback, SubscriptionPublication&& subscriptionPublication)
     {
-        assert(callback);
-
-        const Variant& error = subscriptionPublication.getError();
-        if (!error.isEmpty()) {
-            callback->onError(
-                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
+        std::shared_ptr<exceptions::JoynrRuntimeException> error =
+                subscriptionPublication.getError();
+        if (error) {
+            callback.onError(*error);
             return;
         }
-
-        auto typedCallback = std::dynamic_pointer_cast<SubscriptionCallback<void>>(callback);
-        typedCallback->onSuccess();
+        callback.onSuccess();
     }
-    ADD_LOGGER(PublicationInterpreter);
 };
-
-template <class... Ts>
-INIT_LOGGER(PublicationInterpreter<Ts...>);
-
-/**
-  * Class that handles conversion of enum publications
-  * Template parameter T is the Enum wrapper class
-  */
-template <class T>
-class EnumPublicationInterpreter : public IPublicationInterpreter
-{
-public:
-    void execute(std::shared_ptr<ISubscriptionCallback> callback,
-                 const SubscriptionPublication& subscriptionPublication) override
-    {
-        assert(callback);
-
-        const Variant& error = subscriptionPublication.getError();
-        if (!error.isEmpty()) {
-            callback->onError(
-                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
-            return;
-        }
-
-        if (subscriptionPublication.getResponse().empty()) {
-            JOYNR_LOG_ERROR(logger, "Publication object has no response, discarding message");
-            exceptions::JoynrRuntimeException error(
-                    "Publication object had no response, discarded message");
-            callback->onError(error);
-            return;
-        }
-
-        typename T::Enum value =
-                util::convertVariantToEnum<T>(subscriptionPublication.getResponse().front());
-
-        std::shared_ptr<SubscriptionCallback<typename T::Enum>> typedCallback =
-                std::dynamic_pointer_cast<SubscriptionCallback<typename T::Enum>>(callback);
-
-        // value is copied in onSuccess
-        // JOYNR_LOG_TRACE(logger, "Publication received: notifying attribute changed");
-        typedCallback->onSuccess(value);
-    }
-
-private:
-    ADD_LOGGER(EnumPublicationInterpreter);
-};
-
-template <class T>
-INIT_LOGGER(EnumPublicationInterpreter<T>);
-
-template <class T>
-class EnumPublicationInterpreter<std::vector<T>> : public IPublicationInterpreter
-{
-public:
-    void execute(std::shared_ptr<ISubscriptionCallback> callback,
-                 const SubscriptionPublication& subscriptionPublication) override
-    {
-        assert(callback);
-
-        const Variant& error = subscriptionPublication.getError();
-        if (!error.isEmpty()) {
-            callback->onError(
-                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
-            return;
-        }
-
-        std::vector<Variant> qvList = subscriptionPublication.getResponse();
-        if (qvList.empty()) {
-            JOYNR_LOG_ERROR(logger, "Publication object has no response, discarding message");
-            exceptions::JoynrRuntimeException error(
-                    "Publication object had no response, discarded message");
-            callback->onError(error);
-            return;
-        }
-
-        std::shared_ptr<SubscriptionCallback<std::vector<typename T::Enum>>> typedCallback =
-                std::dynamic_pointer_cast<SubscriptionCallback<std::vector<typename T::Enum>>>(
-                        callback);
-        std::vector<typename T::Enum> valueList = util::convertVariantVectorToEnumVector<T>(qvList);
-
-        // value is copied in onSuccess
-        typedCallback->onSuccess(valueList);
-    }
-
-private:
-    ADD_LOGGER(EnumPublicationInterpreter);
-};
-
-template <class T>
-INIT_LOGGER(EnumPublicationInterpreter<std::vector<T>>);
 
 } // namespace joynr
 #endif // PUBLICATIONINTERPRETER_H

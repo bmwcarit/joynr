@@ -54,7 +54,7 @@ protected:
                 providerDomain);
 
         // Messaging Quality of service
-        std::int64_t qosMsgTtl = 30000;
+        std::int64_t qosMsgTtl = 5000;
         std::int64_t qosCacheDataFreshnessMs = 400000; // Only consider data cached for < 400 secs
 
         // Find the provider with the highest priority set in ProviderQos

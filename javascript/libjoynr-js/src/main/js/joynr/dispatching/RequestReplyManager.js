@@ -245,15 +245,15 @@ define(
                                 var match = request.methodName.match(/([gs]et)?(\w+)/);
                                 var getSet = match[1];
                                 if (getSet) {
-                                    var attributeName = Util.firstLower(match[2]);
+                                    var attributeName = match[2];
+                                    var attributeObject = provider[attributeName] || provider[Util.firstLower(attributeName)];
                                     // if the attribute exists in the provider
-                                    if (provider[attributeName]
-                                        && !provider[attributeName].callOperation) {
+                                    if (attributeObject && !attributeObject.callOperation) {
                                         try {
                                             if (getSet === "get") {
-                                                result = provider[attributeName].get();
+                                                result = attributeObject.get();
                                             } else if (getSet === "set") {
-                                                result = provider[attributeName].set(request.params[0]);
+                                                result = attributeObject.set(request.params[0]);
                                             }
                                         } catch(internalGetterSetterException) {
                                             if (internalGetterSetterException instanceof ProviderRuntimeException) {

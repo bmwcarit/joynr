@@ -72,7 +72,11 @@ define([
                 name : "weakSignalStation",
                 type : "String"
             }
-            ], {});
+            ], {
+                "a" : "reservedForTypeInfo",
+                "b" : "reservedForTypeInfo",
+                "c" : "reservedForTypeInfo"
+            });
             done();
         });
 
@@ -86,6 +90,7 @@ define([
 
         it("has correct members", function(done) {
             expect(weakSignal.createBroadcastOutputParameters).toBeDefined();
+            expect(weakSignal.checkFilterParameters).toBeDefined();
             expect(weakSignal.fire).toBeDefined();
             expect(weakSignal.registerObserver).toBeDefined();
             expect(weakSignal.unregisterObserver).toBeDefined();
@@ -217,6 +222,21 @@ define([
             done();
         });
 
+        it("checkFilterParameters works", function(done) {
+            expect(weakSignal.checkFilterParameters).toBeDefined();
+            expect(typeof weakSignal.checkFilterParameters === "function").toBeTruthy();
+            expect(weakSignal.checkFilterParameters({}).caughtErrors.length).toBe(0);
+            expect(weakSignal.checkFilterParameters().caughtErrors.length).toBe(0);
+            expect(weakSignal.checkFilterParameters(null).caughtErrors.length).toBe(0);
+            expect(weakSignal.checkFilterParameters({
+                a : "",
+                b : ""
+            }).caughtErrors.length).toBe(1);
+            expect(weakSignal.checkFilterParameters({
+                a : ""
+            }).caughtErrors.length).toBe(2);
+            done();
+        });
     });
 
 }); // require

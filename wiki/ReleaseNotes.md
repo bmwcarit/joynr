@@ -7,9 +7,31 @@
   The promise returned by <Interface>Proxy.subscribeTo<Attribute|Broadcast> is
   resolved, once the subscription request has been successfully delivered to the
   interface provider. 
+* **[JS]** Optional expiryDateMs (mills since epoch) can be passed to registerProvider. Default
+  value is one day from now.
+* **[Java]** Static capabilities provisioning can now be specified as a URI.
+  See the [Java Configuration Guide](JavaSettings.md) for details.
 
 ##Other changes
-None.
+TODO
+
+#joynr 0.19.4
+This is a minor bug fix release.
+
+##API relevant changes
+None. 
+
+##Other changes
+* **[C++]** Correctly load persisted routing table in the LibJoynrRuntime.
+
+#joynr 0.19.3
+This is a minor bug fix release.
+
+##API relevant changes
+* **[C++]** Add new API to create joynr runtime with settings object. 
+
+##Other changes
+* **[JS]** Support attributes starting with capital letters. 
 
 #joynr 0.19.2
 This is a minor bug fix release.

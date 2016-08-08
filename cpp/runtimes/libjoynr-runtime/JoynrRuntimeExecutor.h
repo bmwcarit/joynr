@@ -35,12 +35,12 @@ class JoynrRuntimeExecutor
 {
 
 protected:
-    Settings* settings;
+    std::unique_ptr<Settings> settings;
     std::unique_ptr<LibJoynrRuntime> runtime;
     Semaphore runtimeSemaphore;
 
 public:
-    explicit JoynrRuntimeExecutor(Settings* settings);
+    explicit JoynrRuntimeExecutor(std::unique_ptr<Settings> settings);
     virtual ~JoynrRuntimeExecutor() = default;
 
     LibJoynrRuntime* getRuntime();

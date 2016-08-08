@@ -27,7 +27,7 @@
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 #include "joynr/SingleThreadedIOService.h"
 
-#include "libjoynr/subscription/SubscriptionBroadcastListener.h"
+#include "joynr/SubscriptionBroadcastListener.h"
 
 using namespace ::testing;
 using ::testing::InSequence;
@@ -68,12 +68,10 @@ public:
         request.setSubscribeToName("locationUpdateSelective");
         request.setSubscriptionId(subscriptionId);
 
-        OnChangeWithKeepAliveSubscriptionQos qos{
+        auto qos = std::make_shared<OnChangeSubscriptionQos>(
                     80, // validity_ms
-                    100, // minInterval_ms
-                    200, // maxInterval_ms
-                    80 // alertInterval_ms
-        };
+                    100 // minInterval_ms
+        );
         request.setQos(qos);
         request.setFilterParameters(filterParameters);
 
@@ -149,12 +147,12 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
     ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
     ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
 
-    EXPECT_CALL(*publicationSender, sendSubscriptionPublication(
+    EXPECT_CALL(*publicationSender, sendSubscriptionPublicationMock(
                     Eq(providerParticipantId),
                     Eq(proxyParticipantId),
                     _,
                     AllOf(
-                        A<SubscriptionPublication>(),
+                        A<const SubscriptionPublication&>(),
                         Property(&SubscriptionPublication::getSubscriptionId, Eq(subscriptionId)))
                     ));
 
@@ -163,10 +161,10 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
 
 TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) {
 
-    OnChangeSubscriptionQos qos{
+    auto qos =  std::make_shared<OnChangeSubscriptionQos>(
                 800, // validity_ms
                 0 // minInterval_ms
-    };
+    );
     request.setQos(qos);
     request.setFilterParameters(filterParameters);
 
@@ -209,12 +207,12 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
     ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
     ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(false));
 
-    EXPECT_CALL(*publicationSender, sendSubscriptionPublication(
+    EXPECT_CALL(*publicationSender, sendSubscriptionPublicationMock(
                     Eq(providerParticipantId),
                     Eq(proxyParticipantId),
                     _,
                     AllOf(
-                        A<SubscriptionPublication>(),
+                        A<const SubscriptionPublication&>(),
                         Property(&SubscriptionPublication::getSubscriptionId, Eq(subscriptionId)))
                     ))
             .Times(Exactly(0));

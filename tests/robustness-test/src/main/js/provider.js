@@ -38,7 +38,7 @@ joynr.load(provisioning).then(function(loadedJoynr) {
         customParameters : [],
         priority : Date.now(),
         scope : joynr.types.ProviderScope.GLOBAL,
-        onChangeSubscriptions : true
+        supportsOnChangeSubscriptions : true
     });
 
     var TestInterfaceProvider = require("../generated-javascript/joynr/tests/robustness/TestInterfaceProvider.js");

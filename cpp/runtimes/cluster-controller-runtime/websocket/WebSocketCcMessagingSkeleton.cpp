@@ -22,10 +22,10 @@
 #include <QtWebSockets/QWebSocketServer>
 #include <QtWebSockets/QWebSocket>
 
+#include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Util.h"
 #include "joynr/MessageRouter.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/IWebSocketSendInterface.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/WebSocketProtocol.h"
@@ -39,7 +39,7 @@ namespace joynr
 INIT_LOGGER(WebSocketCcMessagingSkeleton);
 
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
-        MessageRouter& messageRouter,
+        std::shared_ptr<MessageRouter> messageRouter,
         std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
         const system::RoutingTypes::WebSocketAddress& serverAddress)
         : webSocketServer(nullptr),
@@ -80,7 +80,7 @@ void WebSocketCcMessagingSkeleton::transmit(
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     try {
-        messageRouter.route(message);
+        messageRouter->route(message);
     } catch (exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }
@@ -104,17 +104,18 @@ void WebSocketCcMessagingSkeleton::onNewConnection()
 
 void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
 {
-    QWebSocket* client = qobject_cast<QWebSocket*>(sender());
-
     if (isInitializationMessage(message)) {
+
+        QWebSocket* client = qobject_cast<QWebSocket*>(sender());
+
         using joynr::system::RoutingTypes::WebSocketClientAddress;
         JOYNR_LOG_DEBUG(logger,
                         "received initialization message from websocket client: {}",
                         message.toStdString());
         // register client with messaging stub factory
         try {
-            WebSocketClientAddress clientAddress =
-                    JsonSerializer::deserialize<WebSocketClientAddress>(message.toStdString());
+            WebSocketClientAddress clientAddress;
+            joynr::serializer::deserializeFromJson(clientAddress, message.toStdString());
             std::shared_ptr<IWebSocketSendInterface> clientWrapper =
                     std::make_shared<QWebSocketSendWrapper>(client);
             messagingStubFactory->addClient(clientAddress, clientWrapper);
@@ -145,7 +146,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
 
     // deserialize message and transmit
     try {
-        JoynrMessage joynrMsg = JsonSerializer::deserialize<JoynrMessage>(message.toStdString());
+        JoynrMessage joynrMsg;
+        joynr::serializer::deserializeFromJson(joynrMsg, message.toStdString());
         if (joynrMsg.getType().empty()) {
             JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message.toStdString());
             return;

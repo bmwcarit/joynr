@@ -26,6 +26,9 @@
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Semaphore.h"
 #include "joynr/types/ProviderQos.h"
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 using joynr::JoynrRuntime;
 using joynr::Semaphore;
@@ -42,6 +45,11 @@ int main(int argc, char** argv)
 {
     // handle signal SIGTERM
     signal(SIGTERM, releaseSemaphore);
+
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+    // Register app at the dlt-daemon for logging
+    DLT_REGISTER_APP("JOYT", argv[0]);
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
     // Get a logger
     Logger logger("RobustnessTestProviderApplication");

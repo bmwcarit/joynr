@@ -22,16 +22,17 @@
 #include <string>
 
 #include "joynr/JoynrMessage.h"
-#include "joynr/PrivateCopyAssign.h"
+#include "joynr/IPlatformSecurityManager.h"
 
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/IPlatformSecurityManager.h"
-#include "joynr/OneWayRequest.h"
+
 namespace joynr
 {
 
 class MessagingQos;
+class OneWayRequest;
 class Request;
 class Reply;
 class SubscriptionPublication;
@@ -97,19 +98,7 @@ private:
                  const std::string& senderParticipantId,
                  const std::string& receiverParticipantId,
                  const MessagingQos& qos,
-                 const std::string& payload) const;
-
-    void initReplyMsg(JoynrMessage& msg,
-                      const std::string& senderParticipantId,
-                      const std::string& receiverParticipantId,
-                      const std::int64_t ttl,
-                      const Reply& payload) const;
-
-    void initSubscriptionPublicationMsg(JoynrMessage& msg,
-                                        const std::string& senderParticipantId,
-                                        const std::string& receiverParticipantId,
-                                        const std::int64_t ttl,
-                                        const SubscriptionPublication& payload) const;
+                 std::string&& payload) const;
 
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     ADD_LOGGER(JoynrMessageFactory);

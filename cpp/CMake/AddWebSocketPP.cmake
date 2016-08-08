@@ -1,5 +1,5 @@
 if(USE_PLATFORM_WEBSOCKETPP)
-    find_package(websocketpp)
+    find_package(websocketpp REQUIRED)
 else(USE_PLATFORM_WEBSOCKETPP)
     include(AddExternalProject)
     AddExternalProject(

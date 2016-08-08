@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QTimer>
 #include <QtCore/QThread>
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 class TestRunner : public QObject {
     Q_OBJECT
@@ -54,6 +57,11 @@ private:
 
 int main(int argc, char *argv[])
 {
+    // Register app at the dlt-daemon for logging
+    #ifdef JOYNR_ENABLE_DLT_LOGGING
+        DLT_REGISTER_APP("JOYT", argv[0]);
+    #endif // JOYNR_ENABLE_DLT_LOGGING
+
     // set the name of the main thread, used for logging
     QThread::currentThread()->setObjectName(QString("main"));
 

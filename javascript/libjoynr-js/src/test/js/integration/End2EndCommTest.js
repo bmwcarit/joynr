@@ -476,6 +476,19 @@ define([
                             }).catch(fail);
                         });
 
+                        it("get/sets the attribute with starting capital letter", function(done) {
+                            setAttribute("StartWithCapitalLetter", true).then(function() {
+                                return getAttribute("StartWithCapitalLetter", true);
+                            }).then(function() {
+                                return setAttribute("StartWithCapitalLetter", false);
+                            }).then(function() {
+                                return getAttribute("StartWithCapitalLetter", false);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
                         it("sets the attribute", function(done) {
                             setAttribute("isOn", true).then(function() {
                                 return getAttribute("isOn", true);

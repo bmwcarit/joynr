@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
@@ -27,7 +28,6 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/MetaTypeRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockCallback.h"
@@ -62,7 +62,7 @@ public:
                 [this](const types::Localisation::GpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const exceptions::JoynrException& error){
+                [] (const std::shared_ptr<exceptions::JoynrException>& error){
                 })),
         mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>()),
@@ -88,8 +88,6 @@ public:
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::GpsLocation>();
-        MetaTypeRegistrar::instance().registerEnumMetaType<joynr::tests::testTypes::TestEnum>();
     }
 
     void TearDown(){
@@ -142,12 +140,12 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
                     ReleaseSemaphore(&semaphore)));
 
     std::string attributeName = "Location";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
-    ));
+    );
     std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -186,20 +184,18 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     //register the subscription on the consumer side
     std::string attributeName = "Location";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
-    ));
+    );
 
     SubscriptionRequest subscriptionRequest;
     //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    std::vector<Variant> response;
-    response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
-    subscriptionPublication.setResponse(response);
+    subscriptionPublication.setResponse(gpsLocation1);
 
     auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(mockGpsLocationListener);
 
@@ -241,21 +237,18 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
 
     //register the subscription on the consumer side
     std::string attributeName = "testEnum";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
-    ));
+    );
 
     SubscriptionRequest subscriptionRequest;
     //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    std::vector<Variant> response;
-    response.push_back(Variant::make<joynr::tests::testTypes::TestEnum::Enum>(tests::testTypes::TestEnum::ZERO));
-    subscriptionPublication.setResponse(response);
-
+    subscriptionPublication.setResponse(tests::testTypes::TestEnum::ZERO);
     auto subscriptionCallback = std::make_shared<SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>>(mockTestEnumSubscriptionListener);
 
     // subscriptionRequest is an out param
@@ -291,19 +284,19 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     EXPECT_CALL(
             *mockRequestCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
-                        A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
+                        A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>())
     )
             .WillOnce(DoAll(
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)
             ));
     std::string attributeName = "Location";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
-    ));
+    );
     std::string subscriptionId = "SubscriptionID";
 
     SubscriptionRequest subscriptionRequest;
@@ -328,11 +321,10 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
 
     std::string subscriptionId = "SubscriptionID";
-    Variant subscriptionQos =
-            Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 800, // validity_ms
                 0 // minInterval_ms
-    ));
+    );
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     Semaphore semaphore(0);
@@ -409,12 +401,12 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
                 1100 // alertInterval_ms
-    ));
+    );
     std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -456,12 +448,12 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     std::string attributeName = "Location";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 1200, // validity_ms
                 10, // minInterval_ms
                 500, // maxInterval_ms
                 1100 // alertInterval_ms
-    ));
+    );
     std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);

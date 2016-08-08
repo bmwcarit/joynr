@@ -112,10 +112,6 @@ class CppStdTypeUtil extends CppTypeUtil {
 		return includes;
 	}
 
-	def String getIncludeOfSerializer(FType dataType) {
-		getIncludeOf(dataType, "Serializer")
-	}
-
 	override String getIncludeOf(FType dataType) {
 		getIncludeOf(dataType, "")
 	}

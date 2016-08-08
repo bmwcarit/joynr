@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,15 @@
 
 #include "joynr/Reply.h"
 
-#include "joynr/exceptions/JoynrException.h"
-
 namespace joynr
 {
 
-bool isReplyRegistered = Variant::registerType<Reply>("joynr.Reply");
+Reply::Reply() : requestReplyId(), error()
+{
+}
 
-const Reply Reply::NULL_RESPONSE = Reply();
-
-Reply::Reply() : requestReplyId(), response(), error(Variant::NULL_VARIANT())
+Reply::Reply(BaseReply&& baseReply)
+        : BaseReply::BaseReply(std::move(baseReply)), requestReplyId(), error()
 {
 }
 
@@ -42,30 +41,20 @@ void Reply::setRequestReplyId(const std::string& requestReplyId)
     this->requestReplyId = requestReplyId;
 }
 
-const std::vector<Variant>& Reply::getResponse() const
+std::shared_ptr<exceptions::JoynrException> Reply::getError() const
 {
-    return response;
+    return error;
 }
 
-void Reply::setResponse(std::vector<Variant> response)
+void Reply::setError(std::shared_ptr<exceptions::JoynrException> error)
 {
-    this->response = std::move(response);
-}
-
-const Variant& Reply::getError() const
-{
-    return this->error;
-}
-
-void Reply::setError(const Variant& error)
-{
-    this->error = error;
+    this->error = std::move(error);
 }
 
 bool Reply::operator==(const Reply& other) const
 {
-    return requestReplyId == other.getRequestReplyId() && response == other.getResponse() &&
-           error == other.getError();
+    return requestReplyId == other.getRequestReplyId() && error == other.getError() &&
+           BaseReply::operator==(other);
 }
 
 bool Reply::operator!=(const Reply& other) const

@@ -75,13 +75,13 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : publi
 {
 public:
     JoynrClusterControllerRuntime(QCoreApplication* app,
-                                  Settings* settings,
+                                  std::unique_ptr<Settings> settings,
                                   std::shared_ptr<IMessageReceiver> httpMessageReceiver = nullptr,
                                   std::shared_ptr<IMessageSender> httpMessageSender = nullptr,
                                   std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
                                   std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
 
-    static JoynrClusterControllerRuntime* create(Settings* settings,
+    static JoynrClusterControllerRuntime* create(std::unique_ptr<Settings> settings,
                                                  const std::string& discoveryEntriesFile = "");
 
     ~JoynrClusterControllerRuntime() override;
@@ -138,7 +138,7 @@ protected:
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     ConnectorFactory* connectorFactory;
     // take ownership, so a pointer is used
-    Settings* settings;
+    std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -146,7 +146,7 @@ protected:
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
-    WebSocketCcMessagingSkeleton* wsCcMessagingSkeleton;
+    std::unique_ptr<WebSocketCcMessagingSkeleton> wsCcMessagingSkeleton;
     bool httpMessagingIsRunning;
     bool mqttMessagingIsRunning;
     bool doMqttMessaging;

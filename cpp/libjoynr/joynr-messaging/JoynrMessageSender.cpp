@@ -174,7 +174,7 @@ void JoynrMessageSender::sendSubscriptionPublication(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,
         const MessagingQos& qos,
-        const SubscriptionPublication& subscriptionPublication)
+        SubscriptionPublication&& subscriptionPublication)
 {
     try {
         JoynrMessage message = messageFactory.createSubscriptionPublication(

@@ -132,7 +132,8 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePri
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     JOYNR_ASSERT_NO_THROW({
         std::shared_ptr<ISubscriptionListener<std::string>> listener(
                 new BroadcastWithSinglePrimitiveParameterBroadcastListener());
@@ -209,7 +210,8 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     typedef std::shared_ptr<ISubscriptionListener<double, std::string>> listenerType;
     JOYNR_ASSERT_NO_THROW({
         listenerType listener(new BroadcastWithMultiplePrimitiveParametersBroadcastListener());
@@ -276,7 +278,8 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArr
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     JOYNR_ASSERT_NO_THROW({
         std::shared_ptr<ISubscriptionListener<std::vector<std::string>>> listener(
                 new BroadcastWithSingleArrayParameterBroadcastListener());
@@ -355,7 +358,8 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     typedef std::shared_ptr<ISubscriptionListener<
             std::vector<uint64_t>,
             std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>>>
@@ -433,7 +437,8 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnu
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     typedef std::shared_ptr<ISubscriptionListener<
             joynr::interlanguagetest::namedTypeCollection2::
                     ExtendedTypeCollectionEnumerationInTypeCollection::Enum>> listenerType;
@@ -521,7 +526,8 @@ TEST_F(IltConsumerBroadcastSubscriptionTest,
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     typedef std::shared_ptr<
             ISubscriptionListener<joynr::interlanguagetest::namedTypeCollection2::
                                           ExtendedEnumerationWithPartlyDefinedValues::Enum,
@@ -594,7 +600,8 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     typedef std::shared_ptr<ISubscriptionListener<
             joynr::interlanguagetest::namedTypeCollection2::ExtendedStructOfPrimitives>>
             listenerType;
@@ -677,7 +684,8 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     typedef std::shared_ptr<ISubscriptionListener<
             joynr::interlanguagetest::namedTypeCollection2::BaseStructWithoutElements,
             joynr::interlanguagetest::namedTypeCollection2::ExtendedExtendedBaseStruct>>

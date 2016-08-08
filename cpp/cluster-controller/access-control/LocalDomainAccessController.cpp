@@ -18,9 +18,13 @@
  */
 
 #include "LocalDomainAccessController.h"
+
+#include <cassert>
+#include <atomic>
+#include <tuple>
+
 #include "LocalDomainAccessStore.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
-
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
@@ -28,10 +32,6 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
-
-#include <cassert>
-#include <atomic>
-#include <tuple>
 
 namespace joynr
 {
@@ -741,10 +741,10 @@ void LocalDomainAccessController::processConsumerRequests(
 
 std::string LocalDomainAccessController::subscribeForDreChange(const std::string& userId)
 {
-    OnChangeSubscriptionQos broadcastSubscriptionQos;
-    broadcastSubscriptionQos.setMinIntervalMs(broadcastMinInterval.count());
-    broadcastSubscriptionQos.setValidityMs(broadcastSubscriptionValidity.count());
-    broadcastSubscriptionQos.setPublicationTtlMs(broadcastPublicationTtl.count());
+    auto broadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    broadcastSubscriptionQos->setMinIntervalMs(broadcastMinInterval.count());
+    broadcastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
+    broadcastSubscriptionQos->setPublicationTtlMs(broadcastPublicationTtl.count());
     GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters
             domainRoleFilterParameters;
     domainRoleFilterParameters.setUserIdOfInterest(userId);
@@ -764,11 +764,11 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
         const std::string& domain,
         const std::string& interfaceName)
 {
-    OnChangeSubscriptionQos broadcastSubscriptionQos;
+    auto broadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
 
-    broadcastSubscriptionQos.setMinIntervalMs(broadcastMinInterval.count());
-    broadcastSubscriptionQos.setValidityMs(broadcastSubscriptionValidity.count());
-    broadcastSubscriptionQos.setPublicationTtlMs(broadcastPublicationTtl.count());
+    broadcastSubscriptionQos->setMinIntervalMs(broadcastMinInterval.count());
+    broadcastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
+    broadcastSubscriptionQos->setPublicationTtlMs(broadcastPublicationTtl.count());
 
     AceSubscription subscriptionIds;
 

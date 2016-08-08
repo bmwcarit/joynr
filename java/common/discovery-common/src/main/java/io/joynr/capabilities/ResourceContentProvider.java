@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 
 import com.google.common.io.Files;
@@ -36,33 +39,27 @@ public class ResourceContentProvider {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-    public String readFromFileOrResource(String provisionedCapabilitiesJsonFilename) {
-        logger.debug("Attempting to read statically provisioned capabilities from JSON in file: {}",
+    public String readFromFileOrResourceOrUrl(String provisionedCapabilitiesJsonFilename) {
+        logger.debug("Attempting to read statically provisioned capabilities from JSON in file/resource/URL: {}",
                      provisionedCapabilitiesJsonFilename);
-        File file = new File(provisionedCapabilitiesJsonFilename);
         IOException ioException = null;
-        if (file.exists()) {
-            try {
-                return Files.toString(file, UTF8);
-            } catch (IOException e) {
-                ioException = e;
+        String result = null;
+        try {
+            URI uri = new URI(provisionedCapabilitiesJsonFilename);
+            if (!uri.isAbsolute()) {
+                throw new URISyntaxException(provisionedCapabilitiesJsonFilename, "URI is not aboslute");
             }
-        } else {
-            try (InputStream resourceAsStream = StaticCapabilitiesProvisioning.class.getClassLoader()
-                                                                                    .getResourceAsStream(provisionedCapabilitiesJsonFilename)) {
-                if (resourceAsStream != null) {
-                    try (InputStreamReader reader = new InputStreamReader(resourceAsStream, UTF8);
-                         BufferedReader bufferedReader = new BufferedReader(reader)) {
-                        StringBuilder builder = new StringBuilder();
-                        String line = null;
-                        while ((line = bufferedReader.readLine()) != null) {
-                            builder.append(line);
-                        }
-                        return builder.toString();
-                    } catch (IOException e) {
-                        throw e;
-                    }
-                }
+            result = readFromUri(uri);
+        } catch (URISyntaxException e) {
+            logger.trace("{} is not  URL. Trying to read from filesystem / classpath.",
+                         provisionedCapabilitiesJsonFilename,
+                         e);
+        } catch (IOException e) {
+            ioException = e;
+        }
+        if (result == null && ioException == null) {
+            try {
+                result = readFromFileOrClasspath(provisionedCapabilitiesJsonFilename);
             } catch (IOException e) {
                 ioException = e;
             }
@@ -71,7 +68,49 @@ public class ResourceContentProvider {
             throw new IllegalArgumentException("Unable to read provisioned capabilities from "
                     + provisionedCapabilitiesJsonFilename, ioException);
         }
-        throw new IllegalStateException(provisionedCapabilitiesJsonFilename
-                + " not found in filesystem or on classpath.");
+        if (result == null) {
+            throw new IllegalStateException(provisionedCapabilitiesJsonFilename
+                    + " not found as URL or on filesystem or classpath.");
+        }
+        return result;
+    }
+
+    private String readFromFileOrClasspath(String provisionedCapabilitiesJsonFilename) throws IOException {
+        logger.trace("Attempting to read {} from file / classpath", provisionedCapabilitiesJsonFilename);
+        File file = new File(provisionedCapabilitiesJsonFilename);
+        if (file.exists()) {
+            return Files.toString(file, UTF8);
+        } else {
+            logger.trace("File {} doesn't exist on filesystem, attempting to read from classpath.", provisionedCapabilitiesJsonFilename);
+            try (InputStream resourceAsStream = StaticCapabilitiesProvisioning.class.getClassLoader()
+                                                                                    .getResourceAsStream(
+                                                                                        provisionedCapabilitiesJsonFilename)) {
+                if (resourceAsStream != null) {
+                    return readFromStream(resourceAsStream);
+                }
+            }
+        }
+        return null;
+    }
+
+    private String readFromUri(URI uri) throws IOException {
+        URL url = new URL(uri.toString());
+        logger.trace("Attempting to read from URL {}", url);
+        InputStream inputStream = url.openStream();
+        return readFromStream(inputStream);
+    }
+
+    private String readFromStream(InputStream inputStream) throws IOException {
+        try (InputStreamReader reader = new InputStreamReader(inputStream, UTF8);
+             BufferedReader bufferedReader = new BufferedReader(reader)) {
+            StringBuilder builder = new StringBuilder();
+            String line = null;
+            while ((line = bufferedReader.readLine()) != null) {
+                builder.append(line);
+            }
+            return builder.toString();
+        } catch (IOException e) {
+            throw e;
+        }
     }
 }

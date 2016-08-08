@@ -24,12 +24,16 @@ import java.util.HashSet
 import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBroadcast
+import org.franca.core.franca.FInterface
 
 @Singleton
 public class BroadcastUtil {
 
 	@Inject
 	private extension TypeUtil
+
+	@Inject
+	private extension NamingUtil
 
 	def isSelective(FBroadcast broadcast) {
 		return broadcast.selective
@@ -68,5 +72,11 @@ public class BroadcastUtil {
 			}
 		}
 		return paramList
+	}
+
+	def getBroadcastFilterClassName(FInterface francaIntf, FBroadcast broadcast) {
+		val broadcastName = broadcast.joynrName;
+		val broadCastFilterClassName = francaIntf.joynrName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter";
+		return broadCastFilterClassName
 	}
 }

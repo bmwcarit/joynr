@@ -17,17 +17,12 @@
  * #L%
  */
 #include "joynr/exceptions/MethodInvocationException.h"
-#include "joynr/types/Version.h"
 
 namespace joynr
 {
 
 namespace exceptions
 {
-
-static const bool isMethodInvocationExceptionRegistered =
-        Variant::registerType<joynr::exceptions::MethodInvocationException>(
-                MethodInvocationException::TYPE_NAME());
 
 MethodInvocationException::MethodInvocationException() noexcept : JoynrRuntimeException(),
                                                                   providerVersion()
@@ -40,10 +35,10 @@ MethodInvocationException::MethodInvocationException(const std::string& message)
 {
 }
 
-MethodInvocationException::MethodInvocationException(const std::string& message,
-                                                     const Version& providerVersion) noexcept
-        : JoynrRuntimeException(message),
-          providerVersion(providerVersion)
+MethodInvocationException::MethodInvocationException(
+        const std::string& message,
+        const joynr::types::Version& providerVersion) noexcept : JoynrRuntimeException(message),
+                                                                 providerVersion(providerVersion)
 {
 }
 
@@ -52,12 +47,12 @@ MethodInvocationException::MethodInvocationException(const MethodInvocationExcep
 {
 }
 
-const Version& MethodInvocationException::getProviderVersion() const
+const joynr::types::Version& MethodInvocationException::getProviderVersion() const
 {
     return providerVersion;
 }
 
-void MethodInvocationException::setProviderVersion(const Version& providerVersion)
+void MethodInvocationException::setProviderVersion(const joynr::types::Version& providerVersion)
 {
     this->providerVersion = providerVersion;
 }

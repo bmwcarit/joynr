@@ -19,10 +19,11 @@
 #ifndef INPROCESSMESSAGINGADDRESS_H
 #define INPROCESSMESSAGINGADDRESS_H
 
+#include <memory>
+
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/system/RoutingTypes/Address.h"
-
-#include <memory>
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -32,12 +33,23 @@ class InProcessMessagingSkeleton;
 class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::RoutingTypes::Address
 {
 public:
+    InProcessMessagingAddress() = default;
     explicit InProcessMessagingAddress(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
     std::shared_ptr<InProcessMessagingSkeleton> getSkeleton() const;
+
+    template <typename Archive>
+    void serialize(Archive&)
+    {
+    }
 
 private:
     std::shared_ptr<InProcessMessagingSkeleton> skeleton;
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::InProcessMessagingAddress,
+                                 joynr::system::RoutingTypes::Address,
+                                 "joynr.InProcessMessagingAddress")
+
 #endif // INPROCESSMESSAGINGADDRESS_H

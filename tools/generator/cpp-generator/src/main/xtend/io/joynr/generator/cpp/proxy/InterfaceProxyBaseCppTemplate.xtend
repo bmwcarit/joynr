@@ -97,7 +97,7 @@ void «className»::handleArbitrationFinished(
 
 	std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::SubscriptionQos& subscriptionQos,
+				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 				std::string& subscriptionId) {
 		if (!connector){
 			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
@@ -114,7 +114,7 @@ void «className»::handleArbitrationFinished(
 
 	std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::SubscriptionQos& subscriptionQos) {
+				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos) {
 		if (!connector){
 			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
 					 because the communication end partner is not (yet) known");
@@ -148,11 +148,11 @@ void «className»::handleArbitrationFinished(
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					const «francaIntf.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					const joynr::OnChangeSubscriptionQos& subscriptionQos) {
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos) {
 	«ELSE»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					const joynr::OnChangeSubscriptionQos& subscriptionQos) {
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos) {
 	«ENDIF»
 		if (!connector){
 			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
@@ -177,12 +177,12 @@ void «className»::handleArbitrationFinished(
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					const «francaIntf.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					const joynr::OnChangeSubscriptionQos& subscriptionQos,
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 					std::string& subscriptionId) {
 	«ELSE»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					const joynr::OnChangeSubscriptionQos& subscriptionQos,
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 					std::string& subscriptionId) {
 	«ENDIF»
 		if (!connector){

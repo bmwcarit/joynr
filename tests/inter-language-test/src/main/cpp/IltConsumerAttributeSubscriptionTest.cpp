@@ -88,7 +88,8 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     JOYNR_ASSERT_NO_THROW({
         joynr::interlanguagetest::Enumeration::Enum enumerationArg =
                 joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_2;
@@ -163,7 +164,8 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithException
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     JOYNR_ASSERT_NO_THROW({
         std::shared_ptr<ISubscriptionListener<bool>> listener(
                 new AttributeWithExceptionFromGetterListener());

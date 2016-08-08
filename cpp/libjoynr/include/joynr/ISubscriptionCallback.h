@@ -19,22 +19,24 @@
 #ifndef ISUBSCRIPTIONCALLBACK_H
 #define ISUBSCRIPTIONCALLBACK_H
 
-#include "joynr/exceptions/JoynrException.h"
-
 namespace joynr
 {
-
-/**
-  * @class ISubscriptionCallback
-  * @brief
-  */
+class SubscriptionPublication;
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
+  /**
+    * @class ISubscriptionCallback
+    * @brief
+    */
 
 class ISubscriptionCallback
 {
 public:
     virtual void onError(const exceptions::JoynrRuntimeException& error) = 0;
     virtual ~ISubscriptionCallback() = default;
-    virtual int getTypeId() const = 0;
+    virtual void execute(SubscriptionPublication&& subscriptionPublication) = 0;
 };
 
 } // namespace joynr

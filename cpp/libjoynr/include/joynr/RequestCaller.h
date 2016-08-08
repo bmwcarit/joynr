@@ -19,16 +19,17 @@
 #ifndef REQUESTCALLER_H
 #define REQUESTCALLER_H
 
+#include <string>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/types/Version.h"
-#include "string"
 
 namespace joynr
 {
 
-class IAttributeListener;
-class IBroadcastListener;
+class SubscriptionAttributeListener;
+class SubscriptionBroadcastListener;
 
 class JOYNR_EXPORT RequestCaller
 {
@@ -40,15 +41,15 @@ public:
 
     // Get and set the attribute listeners listening on the provider
     virtual void registerAttributeListener(const std::string& attributeName,
-                                           IAttributeListener* attributeListener) = 0;
+                                           SubscriptionAttributeListener* attributeListener) = 0;
     virtual void unregisterAttributeListener(const std::string& attributeName,
-                                             IAttributeListener* attributeListener) = 0;
+                                             SubscriptionAttributeListener* attributeListener) = 0;
 
     // Get and set the broadcast listeners listening on the provider
     virtual void registerBroadcastListener(const std::string& broadcastName,
-                                           IBroadcastListener* broadcastListener) = 0;
+                                           SubscriptionBroadcastListener* broadcastListener) = 0;
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
-                                             IBroadcastListener* broadcastListener) = 0;
+                                             SubscriptionBroadcastListener* broadcastListener) = 0;
 
     virtual types::Version getProviderVersion() = 0;
 

@@ -22,6 +22,7 @@
 #include <map>
 #include <string>
 
+#include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrCommonExport.h"
 
 namespace joynr
@@ -37,22 +38,33 @@ class JOYNRCOMMON_EXPORT BroadcastFilterParameters
 
 public:
     BroadcastFilterParameters();
-    BroadcastFilterParameters(const BroadcastFilterParameters& filterParameters) = default;
-    BroadcastFilterParameters& operator=(const BroadcastFilterParameters& filterParameters) =
-            default;
-    virtual ~BroadcastFilterParameters() = default;
+
+    BroadcastFilterParameters(const BroadcastFilterParameters&) = default;
+    BroadcastFilterParameters& operator=(const BroadcastFilterParameters&) = default;
+
+    BroadcastFilterParameters(BroadcastFilterParameters&&) = default;
+    BroadcastFilterParameters& operator=(BroadcastFilterParameters&&) = default;
+
     bool operator==(const BroadcastFilterParameters& filterParameters) const;
 
     void setFilterParameter(const std::string& parameter, const std::string& value);
     void setFilterParameters(const std::map<std::string, std::string>& value);
 
-    std::map<std::string, std::string> getFilterParameters() const;
+    const std::map<std::string, std::string>& getFilterParameters() const;
     std::string getFilterParameter(const std::string& parameter) const;
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(filterParameters));
+    }
 
 private:
     std::map<std::string, std::string> filterParameters;
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::BroadcastFilterParameters, "joynr.BroadcastFilterParameters")
 
 #endif // BROADCASTFILTERPARAMETERS_H

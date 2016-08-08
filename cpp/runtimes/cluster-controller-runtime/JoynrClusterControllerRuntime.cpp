@@ -56,7 +56,6 @@
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/MessageRouter.h"
@@ -77,6 +76,7 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/serializer/Serializer.h"
 
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
@@ -94,7 +94,7 @@ INIT_LOGGER(JoynrClusterControllerRuntime);
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         QCoreApplication* app,
-        Settings* settings,
+        std::unique_ptr<Settings> settings,
         std::shared_ptr<IMessageReceiver> httpMessageReceiver,
         std::shared_ptr<IMessageSender> httpMessageSender,
         std::shared_ptr<IMessageReceiver> mqttMessageReceiver,
@@ -122,13 +122,13 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           inProcessPublicationSender(nullptr),
           joynrMessagingConnectorFactory(nullptr),
           connectorFactory(nullptr),
-          settings(settings),
-          libjoynrSettings(*settings),
+          settings(std::move(settings)),
+          libjoynrSettings(*(this->settings)),
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
           dbusSettings(nullptr),
           ccDbusMessageRouterAdapter(nullptr),
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-          wsSettings(*settings),
+          wsSettings(*(this->settings)),
           wsCcMessagingSkeleton(nullptr),
           httpMessagingIsRunning(false),
           mqttMessagingIsRunning(false),
@@ -207,8 +207,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {
         try {
             using system::RoutingTypes::MqttAddress;
-            auto globalCapabilitiesDirectoryAddress = std::make_shared<MqttAddress>(
-                    JsonSerializer::deserialize<MqttAddress>(capabilitiesDirectoryChannelId));
+            MqttAddress address;
+            joynr::serializer::deserializeFromJson(address, capabilitiesDirectoryChannelId);
+            auto globalCapabilitiesDirectoryAddress = std::make_shared<MqttAddress>(address);
             messageRouter->addProvisionedNextHop(
                     capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
         } catch (const std::invalid_argument& e) {
@@ -236,8 +237,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     });
     system::RoutingTypes::WebSocketAddress wsAddress =
             wsSettings.createClusterControllerMessagingAddress();
-    wsCcMessagingSkeleton =
-            new WebSocketCcMessagingSkeleton(*messageRouter, wsMessagingStubFactory, wsAddress);
+    wsCcMessagingSkeleton = std::make_unique<WebSocketCcMessagingSkeleton>(
+            messageRouter, wsMessagingStubFactory, wsAddress);
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
     /* LibJoynr */
@@ -515,7 +516,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     delete ccDbusMessageRouterAdapter;
     delete dbusSettings;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-    delete settings;
 
     JOYNR_LOG_TRACE(logger, "leaving ~JoynrClusterControllerRuntime");
 }
@@ -564,7 +564,7 @@ void JoynrClusterControllerRuntime::runForever()
 }
 
 JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(
-        Settings* settings,
+        std::unique_ptr<Settings> settings,
         const std::string& discoveryEntriesFile)
 {
     // Only allow one QCoreApplication instance
@@ -574,7 +574,7 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(
             (QCoreApplication::instance() == nullptr) ? new QCoreApplication(argc, argv) : nullptr;
 
     JoynrClusterControllerRuntime* runtime =
-            new JoynrClusterControllerRuntime(coreApplication, settings);
+            new JoynrClusterControllerRuntime(coreApplication, std::move(settings));
 
     assert(runtime->localCapabilitiesDirectory);
     runtime->localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);

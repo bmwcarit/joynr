@@ -40,6 +40,7 @@ importScripts("../../classes/lib/bluebird.js");
 var Promise = Promise.Promise;
 // attribute value for provider
 var isOn = true;
+var startWithCapitalLetterValue = true;
 var enumAttribute = Country.GERMANY;
 var enumArrayAttribute = [Country.GERMANY];
 var attrProvidedImpl;
@@ -144,6 +145,13 @@ function initializeTest(provisioningSuffix, providedDomain) {
                         detailMessage: "failure in failingAsyncAttribute getter"
                     }));
                 });
+            });
+
+            radioProvider.StartWithCapitalLetter.registerGetter(function() {
+                return startWithCapitalLetterValue;
+            });
+            radioProvider.StartWithCapitalLetter.registerSetter(function(value) {
+                startWithCapitalLetterValue = value;
             });
 
             radioProvider.isOn.registerGetter(function() {

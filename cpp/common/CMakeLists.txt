@@ -24,13 +24,19 @@ set(
     JoynrCommon_INCLUDE_DIRECTORIES
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
     JoynrCommon_TARGET_LIBRARIES
     Boost::system
 )
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+    list(
+        APPEND JoynrCommon_TARGET_LIBRARIES
+        DLT::DLT
+    )
+endif(JOYNR_ENABLE_DLT_LOGGING)
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
@@ -54,6 +60,7 @@ file(
     GLOB_RECURSE JoynrCommon_PUBLIC_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "include/joynr/*.h"
+    "include/joynr/serializer/*.h"
 )
 
 file(
@@ -121,6 +128,20 @@ add_library(
     ${JoynrCommon_SOURCES}
 )
 
+if(JOYNR_ENABLE_STDOUT_LOGGING)
+    target_compile_definitions(
+        JoynrCommon
+        PUBLIC
+        JOYNR_ENABLE_STDOUT_LOGGING)
+endif(JOYNR_ENABLE_STDOUT_LOGGING)
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+    target_compile_definitions(
+        JoynrCommon
+        PUBLIC
+        JOYNR_ENABLE_DLT_LOGGING)
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
 set_target_properties(
     JoynrCommon
     PROPERTIES
@@ -131,7 +152,26 @@ set_target_properties(
 )
 
 # make spdlog system directory to avoid compiler warnings
-target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>")
+target_include_directories(
+    JoynrCommon
+    SYSTEM PUBLIC
+    "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>"
+)
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+target_include_directories(
+    JoynrCommon
+    SYSTEM PUBLIC
+    "$<BUILD_INTERFACE:${dlt_INCLUDE_DIRS}>"
+)
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
+# add muesli
+add_dependencies(JoynrCommon muesli::muesli)
+get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>")
+get_target_property(muesli_COMPILE_DEFINITIONS muesli::muesli INTERFACE_COMPILE_DEFINITIONS)
+target_compile_definitions(JoynrCommon PUBLIC ${muesli_COMPILE_DEFINITIONS})
 
 target_include_directories(
     JoynrCommon
@@ -150,6 +190,10 @@ target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
 if(NOT USE_PLATFORM_SPDLOG)
     add_dependencies(JoynrCommon spdlog)
 endif(NOT USE_PLATFORM_SPDLOG)
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+add_dependencies(JoynrCommon DLT::DLT)
+endif(JOYNR_ENABLE_DLT_LOGGING)
 
 AddClangFormat(JoynrCommon)
 

@@ -19,10 +19,10 @@
 
 #ifndef SUBSCRIPTIONMANAGER_H
 #define SUBSCRIPTIONMANAGER_H
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
 
-#include "joynr/Logger.h"
+#include <string>
+#include <memory>
+#include <cstdint>
 
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionManager.h"
@@ -32,10 +32,9 @@
 #include "joynr/Runnable.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/ThreadSafeMap.h"
-
-#include <string>
-#include <memory>
-#include <cstdint>
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
 
 namespace boost
 {
@@ -47,7 +46,7 @@ class io_service;
 
 namespace joynr
 {
-
+class SubscriptionQos;
 class DelayedScheduler;
 /**
   * @class SubscriptionManager
@@ -79,7 +78,7 @@ public:
      */
     void registerSubscription(const std::string& subscribeToName,
                               std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-                              const Variant& qosVariant,
+                              std::shared_ptr<SubscriptionQos> qos,
                               SubscriptionRequest& subscriptionRequest) override;
 
     /**

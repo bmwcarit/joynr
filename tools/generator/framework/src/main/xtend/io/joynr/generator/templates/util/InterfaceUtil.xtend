@@ -396,5 +396,4 @@ public class InterfaceUtil {
 	def hasFireAndForgetMethods(FInterface francaInterface) {
 		francaInterface.methods.exists[fireAndForget]
 	}
-
 }

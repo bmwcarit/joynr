@@ -19,19 +19,18 @@
 
 #ifndef ISUBSCRIPTIONMANAGER_H
 #define ISUBSCRIPTIONMANAGER_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrExport.h"
-#include "joynr/SubscriptionRequest.h"
-#include "joynr/ISubscriptionCallback.h"
-#include "joynr/SubscriptionQos.h"
 #include <string>
 #include <memory>
 
-#include "joynr/Variant.h"
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {
+
+class SubscriptionRequest;
+class ISubscriptionCallback;
+class SubscriptionQos;
 
 /**
   * @class ISubscriptionManager
@@ -61,7 +60,7 @@ public:
      */
     virtual void registerSubscription(const std::string& subscribeToName,
                                       std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-                                      const Variant& qos,
+                                      std::shared_ptr<SubscriptionQos> qos,
                                       SubscriptionRequest& subscriptionRequest) = 0;
 
     /**
@@ -95,7 +94,7 @@ public:
      * @param subscriptionQos the subscription QoS defining the subscription.
      * @return the TTL in millis.
      */
-    static std::int64_t convertExpiryDateIntoTtlMs(const joynr::SubscriptionQos& subscriptionQos);
+    static std::int64_t convertExpiryDateIntoTtlMs(const SubscriptionQos& subscriptionQos);
 };
 } // namespace joynr
 #endif // ISUBSCRIPTIONMANAGER_H

@@ -18,7 +18,7 @@
  */
 #include "GeocastBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
-#include "joynr/JsonSerializer.h"
+#include "joynr/serializer/Serializer.h"
 #include <string>
 #include <boost/geometry.hpp>
 
@@ -41,8 +41,8 @@ bool GeocastBroadcastFilter::filter(
 
     joynr::vehicle::GeoPosition positionOfInterest;
     try {
-        positionOfInterest = JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
-                filterParameters.getPositionOfInterest());
+        joynr::serializer::deserializeFromJson(
+                positionOfInterest, filterParameters.getPositionOfInterest());
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize geo position object from: {} - error: {}",
