@@ -16,10 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/httpnetworking/DefaultHttpRequest.h"
-#include "cluster-controller/httpnetworking/HttpResult.h"
+
+#include "DefaultHttpRequest.h"
+
 #include <boost/algorithm/string.hpp>
 #include <curl/curl.h>
+
+#include "cluster-controller/httpnetworking/HttpResult.h"
 
 namespace joynr
 {
@@ -36,10 +39,10 @@ size_t DefaultHttpRequest::writeToQByteArray(void* buffer, size_t size, size_t n
     return numBytes;
 }
 
-size_t DefaultHttpRequest::writeToQMultiMap(void* buffer, size_t size, size_t nmemb, void* userp)
+size_t DefaultHttpRequest::writeToMultiMap(void* buffer, size_t size, size_t nmemb, void* userp)
 {
-    QMultiMap<std::string, std::string>* headers =
-            reinterpret_cast<QMultiMap<std::string, std::string>*>(userp);
+    std::unordered_multimap<std::string, std::string>* headers =
+            reinterpret_cast<std::unordered_multimap<std::string, std::string>*>(userp);
     size_t numBytes = size * nmemb;
     std::string header = std::string(reinterpret_cast<char*>(buffer), numBytes);
     std::string::size_type separatorPosition = header.find(":", 0);
@@ -48,7 +51,7 @@ size_t DefaultHttpRequest::writeToQMultiMap(void* buffer, size_t size, size_t nm
     using boost::algorithm::trim;
     trim(headerName);
     trim(headerValue);
-    headers->insert(headerName, headerValue);
+    headers->insert({std::move(headerName), std::move(headerValue)});
     return numBytes;
 }
 
@@ -56,7 +59,7 @@ DefaultHttpRequest::DefaultHttpRequest(void* handle, const QByteArray& content, 
         : handle(handle), headers(headers), content(content)
 {
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, writeToQByteArray);
-    curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, writeToQMultiMap);
+    curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, writeToMultiMap);
 
     if (headers != nullptr) {
         curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
@@ -84,7 +87,7 @@ HttpResult DefaultHttpRequest::execute()
     curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, body);
 
-    QMultiMap<std::string, std::string>* headers = new QMultiMap<std::string, std::string>;
+    auto headers = new std::unordered_multimap<std::string, std::string>();
     curl_easy_setopt(handle, CURLOPT_WRITEHEADER, headers);
 
     CURLcode curlError;

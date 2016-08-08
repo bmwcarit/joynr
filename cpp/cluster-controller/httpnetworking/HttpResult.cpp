@@ -27,7 +27,7 @@ namespace joynr
 HttpResult::HttpResult(std::int32_t curlError,
                        std::int64_t statusCode,
                        QByteArray* body,
-                       QMultiMap<std::string, std::string>* headers)
+                       std::unordered_multimap<std::string, std::string>* headers)
         : curlError(curlError), statusCode(statusCode), body(body), headers(headers)
 {
 }
@@ -86,7 +86,7 @@ const QByteArray& HttpResult::getBody() const
     return *body;
 }
 
-const QMultiMap<std::string, std::string>& HttpResult::getHeaders() const
+const std::unordered_multimap<std::string, std::string>& HttpResult::getHeaders() const
 {
     return *headers;
 }

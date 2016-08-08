@@ -100,7 +100,10 @@ void LongPollingMessageReceiver::run()
         JOYNR_LOG_DEBUG(logger, "sending create channel request");
         HttpResult createChannelResult = createChannelRequest->execute();
         if (createChannelResult.getStatusCode() == 201) {
-            channelUrl = *createChannelResult.getHeaders().find("Location");
+            const std::unordered_multimap<std::string, std::string>& headers =
+                    createChannelResult.getHeaders();
+            auto it = headers.find("Location");
+            channelUrl = it->second;
             JOYNR_LOG_INFO(logger, "channel creation successfull; channel url: {}", channelUrl);
             channelCreatedSemaphore->notify();
         } else {

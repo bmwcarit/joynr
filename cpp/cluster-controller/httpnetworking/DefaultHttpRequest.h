@@ -18,11 +18,12 @@
  */
 #ifndef DEFAULTHTTPREQUEST_H
 #define DEFAULTHTTPREQUEST_H
-#include "joynr/PrivateCopyAssign.h"
+
+#include <QByteArray>
 
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
-#include <QByteArray>
 
 struct curl_slist;
 
@@ -42,7 +43,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultHttpRequest);
     static size_t writeToQByteArray(void* buffer, size_t size, size_t nmemb, void* userp);
-    static size_t writeToQMultiMap(void* buffer, size_t size, size_t nmemb, void* userp);
+    static size_t writeToMultiMap(void* buffer, size_t size, size_t nmemb, void* userp);
 
     void* handle;
     curl_slist* headers;
