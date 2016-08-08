@@ -164,7 +164,7 @@ public class LegacyCapabilitiesProvisioning {
             if (localChannelId.equals(channelId)) {
                 address = new InProcessAddress();
             } else if (urlForAddress.startsWith("tcp") || urlForAddress.startsWith("mqtt")) {
-                address = new MqttAddress(urlForAddress, channelId + "/+");
+                address = new MqttAddress(urlForAddress, channelId + "/low/" + participantId);
             } else {
                 address = new ChannelAddress(urlForAddress, channelId);
             }
