@@ -19,15 +19,17 @@
 #ifndef BROADCASTSUBSCRIPTIONREQUEST_H
 #define BROADCASTSUBSCRIPTIONREQUEST_H
 
+#include <string>
+#include <memory>
+
+#include <boost/optional.hpp>
+
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
-#include <string>
-#include <memory>
-
-#include "joynr/Variant.h"
 #include "joynr/Logger.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -52,22 +54,27 @@ public:
 
     std::string toString() const;
 
-    // Make sure that broadcast subscriptions are only used with on change qos.
-    // Method from base class is hidden. See below in private section.
-    void setQos(const OnChangeSubscriptionQos& qos);
-
-    BroadcastFilterParameters getFilterParameters() const;
+    const boost::optional<BroadcastFilterParameters>& getFilterParameters() const;
     void setFilterParameters(const BroadcastFilterParameters& filterParameters);
 
-private:
-    // Hide method for setting all kinds of QOS derived from base class
-    void setQos(const Variant& qos);
+    void setQos(std::shared_ptr<SubscriptionQos> qos) override;
 
-    BroadcastFilterParameters filterParameters;
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<SubscriptionRequest>(this), MUESLI_NVP(filterParameters));
+    }
+
+private:
+    boost::optional<BroadcastFilterParameters> filterParameters;
 
     ADD_LOGGER(BroadcastSubscriptionRequest);
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::BroadcastSubscriptionRequest,
+                                 joynr::SubscriptionRequest,
+                                 "joynr.BroadcastSubscriptionRequest")
 
 #endif // BROADCASTSUBSCRIPTIONREQUEST_H

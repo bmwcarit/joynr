@@ -19,10 +19,11 @@
 #ifndef INPROCESSADDRESS_H
 #define INPROCESSADDRESS_H
 
+#include <memory>
+
 #include "joynr/JoynrExport.h"
 #include "joynr/system/RoutingTypes/Address.h"
-
-#include <memory>
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -32,13 +33,24 @@ class RequestCaller;
 class JOYNR_EXPORT InProcessAddress : public joynr::system::RoutingTypes::Address
 {
 public:
-    ~InProcessAddress() override = default;
+    InProcessAddress() = default;
     explicit InProcessAddress(std::shared_ptr<RequestCaller> requestCaller);
+    ~InProcessAddress() override = default;
     std::shared_ptr<RequestCaller> getRequestCaller() const;
+
+    template <typename Archive>
+    void serialize(Archive&)
+    {
+    }
 
 private:
     std::shared_ptr<RequestCaller> requestCaller;
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::InProcessAddress,
+                                 joynr::system::RoutingTypes::Address,
+                                 "joynr.InProcessAddress")
+
 #endif // INPROCESSADDRESS_H

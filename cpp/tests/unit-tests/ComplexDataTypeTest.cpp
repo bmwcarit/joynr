@@ -16,12 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
+
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include "joynr/types/TestTypes/TStructExtended.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include <unordered_map>
+#include "joynr/Logger.h"
 
 using namespace joynr::types;
 

@@ -1,0 +1,10 @@
+###### BEGIN muesli ######
+find_package(muesli 0.1.0 REQUIRED CONFIG)
+
+get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
+
+list(
+    APPEND Joynr_LIB_COMMON_INCLUDE_DIRS
+    "${muesli_INCLUDE_DIRECTORIES}"
+)
+###### END muesli ######

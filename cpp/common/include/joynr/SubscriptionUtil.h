@@ -19,23 +19,23 @@
 #ifndef SUBSCRIPTIONUTIL_H
 #define SUBSCRIPTIONUTIL_H
 
-#include "joynr/JoynrCommonExport.h"
 #include <cstdint>
+#include <memory>
+
+#include "joynr/JoynrCommonExport.h"
 
 namespace joynr
 {
 
-class Variant;
 class SubscriptionQos;
 
 class JOYNRCOMMON_EXPORT SubscriptionUtil
 {
 public:
-    static bool isOnChangeSubscription(const Variant& qos);
-    static std::int64_t getAlertInterval(const Variant& qos);
-    static std::int64_t getMinInterval(const Variant& qos);
-    static std::int64_t getPeriodicPublicationInterval(const Variant& qos);
-    static Variant getVariant(const SubscriptionQos& qos);
+    static bool isOnChangeSubscription(const std::shared_ptr<SubscriptionQos>& qos);
+    static std::int64_t getAlertInterval(const std::shared_ptr<SubscriptionQos>& qos);
+    static std::int64_t getMinInterval(const std::shared_ptr<SubscriptionQos>& qos);
+    static std::int64_t getPeriodicPublicationInterval(const std::shared_ptr<SubscriptionQos>& qos);
 };
 
 } // namespace joynr

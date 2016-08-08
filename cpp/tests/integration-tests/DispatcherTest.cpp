@@ -18,6 +18,7 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include <string>
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
@@ -37,7 +38,6 @@
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/types/Localisation/GpsLocation.h"
-#include "joynr/MetaTypeRegistrar.h"
 #include "joynr/SingleThreadedIOService.h"
 
 using namespace ::testing;
@@ -55,7 +55,7 @@ public:
                 [this] (const joynr::types::Localisation::GpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const exceptions::JoynrException&) {
+                [] (const std::shared_ptr<exceptions::JoynrException>&) {
                 })),
         mockSubscriptionListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
@@ -79,7 +79,7 @@ public:
 
     void invokeOnSuccessWithGpsLocation(
             std::function<void(const joynr::types::Localisation::GpsLocation& location)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+            std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {
         std::ignore = onError;
         onSuccess(gpsLocation1);
     }
@@ -119,7 +119,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                 *mockRequestCaller,
                 getLocation(
                     A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
-                    A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>()
+                    A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>()
                 )
     ).WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 
@@ -128,7 +128,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     Request request;
     request.setRequestReplyId(requestReplyId);
     request.setMethodName("getLocation");
-    request.setParams(std::vector<Variant>());
+    request.setParams();
     request.setParamDatatypes(std::vector<std::string>());
 
 
@@ -141,11 +141,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
 
     // construct the result we expect in messaging.transmit. The JoynrMessage
     // contains a serialized version of the response with the gps location.
-    std::vector<Variant> value;
-
-    value.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     Reply reply;
-    reply.setResponse(std::move(value));
+    reply.setResponse(gpsLocation1);
     reply.setRequestReplyId(requestReplyId);
     JoynrMessage expectedReply = messageFactory.createReply(
                 proxyParticipantId,
@@ -187,9 +184,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     //construct a reply containing a GpsLocation
     Reply reply;
     reply.setRequestReplyId(requestReplyId);
-    std::vector<Variant> response;
-    response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
-    reply.setResponse(std::move(response));
+    reply.setResponse(gpsLocation1);
 
     JoynrMessage msg = messageFactory.createReply(
                 proxyParticipantId,

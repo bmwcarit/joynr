@@ -120,11 +120,10 @@ public:
                               const MessagingQos& qos,
                               const SubscriptionStop& subscriptionStop) override;
 
-    void sendSubscriptionPublication(
-            const std::string& senderParticipantId,
-            const std::string& receiverParticipantId,
-            const MessagingQos& qos,
-            const SubscriptionPublication& subscriptionPublication) override;
+    void sendSubscriptionPublication(const std::string& senderParticipantId,
+                                     const std::string& receiverParticipantId,
+                                     const MessagingQos& qos,
+                                     SubscriptionPublication&& subscriptionPublication) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageSender);

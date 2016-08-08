@@ -29,7 +29,6 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/MetaTypeRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -76,8 +75,6 @@ public:
         subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService());
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::GpsLocation>();
-        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::GpsLocation, double>();
     }
 
     void TearDown(){
@@ -121,20 +118,16 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     //register the subscription on the consumer side
     std::string subscribeToName = "locationUpdate";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
-                100, // minInterval_ms
-                200, // maxInterval_ms
-                80 // alertInterval_ms
-    ));
+                100 // minInterval_ms
+    );
 
     BroadcastSubscriptionRequest subscriptionRequest;
     //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    std::vector<Variant> response;
-    response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
-    subscriptionPublication.setResponse(response);
+    subscriptionPublication.setResponse(gpsLocation1);
 
     auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(mockSubscriptionListenerOne);
 
@@ -172,21 +165,16 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     //register the subscription on the consumer side
     std::string subscribeToName = "locationUpdateWithSpeed";
-    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
-                100, // minInterval_ms
-                200, // maxInterval_ms
-                80 // alertInterval_ms
-    ));
+                100 // minInterval_ms
+    );
 
     BroadcastSubscriptionRequest subscriptionRequest;
     //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    std::vector<Variant> response;
-    response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
-    response.push_back(Variant::make<double>(speed1));
-    subscriptionPublication.setResponse(response);
+    subscriptionPublication.setResponse(gpsLocation1, speed1);
 
     auto subscriptionCallback= std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation, double>>(mockSubscriptionListenerTwo);
 

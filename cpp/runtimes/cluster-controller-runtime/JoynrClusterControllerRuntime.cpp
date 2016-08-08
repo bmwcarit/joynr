@@ -56,7 +56,6 @@
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/MessageRouter.h"
@@ -77,6 +76,7 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/serializer/Serializer.h"
 
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
@@ -207,8 +207,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {
         try {
             using system::RoutingTypes::MqttAddress;
-            auto globalCapabilitiesDirectoryAddress = std::make_shared<MqttAddress>(
-                    JsonSerializer::deserialize<MqttAddress>(capabilitiesDirectoryChannelId));
+            MqttAddress address;
+            joynr::serializer::deserializeFromJson(address, capabilitiesDirectoryChannelId);
+            auto globalCapabilitiesDirectoryAddress = std::make_shared<MqttAddress>(address);
             messageRouter->addProvisionedNextHop(
                     capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
         } catch (const std::invalid_argument& e) {

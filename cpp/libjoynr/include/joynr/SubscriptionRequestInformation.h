@@ -1,0 +1,63 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+#ifndef SUBSCRIPTIONREQUESTINFORMATION_H
+#define SUBSCRIPTIONREQUESTINFORMATION_H
+
+#include <string>
+
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/SubscriptionInformation.h"
+
+namespace joynr
+{
+
+class JOYNR_EXPORT SubscriptionRequestInformation : public SubscriptionRequest,
+                                                    public SubscriptionInformation
+{
+public:
+    SubscriptionRequestInformation() = default;
+    ~SubscriptionRequestInformation() override = default;
+
+    SubscriptionRequestInformation(const SubscriptionRequestInformation&) = default;
+    SubscriptionRequestInformation(SubscriptionRequestInformation&&) = default;
+
+    SubscriptionRequestInformation(const std::string& proxyParticipantId,
+                                   const std::string& providerParticipantId,
+                                   const SubscriptionRequest& subscriptionRequest);
+
+    SubscriptionRequestInformation& operator=(const SubscriptionRequestInformation&) = default;
+    SubscriptionRequestInformation& operator=(SubscriptionRequestInformation&&) = default;
+
+    bool operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const;
+
+    std::string toString() const;
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<SubscriptionRequest>(this),
+                muesli::BaseClass<SubscriptionInformation>(this));
+    }
+};
+
+} // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::SubscriptionRequestInformation, "joynr.SubscriptionRequestInformation")
+
+#endif // SUBSCRIPTIONREQUESTINFORMATION_H

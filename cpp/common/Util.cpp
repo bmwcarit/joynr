@@ -29,7 +29,6 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include "joynr/Logger.h"
-#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -118,19 +117,6 @@ std::string createUuid()
     static std::mutex uuidMutex;
     std::lock_guard<std::mutex> uuidLock(uuidMutex);
     return boost::uuids::to_string(uuidGenerator());
-}
-
-std::string removeEscapeFromSpecialChars(const std::string& inputStr)
-{
-    std::string unEscapedString;
-    std::regex expr(R"((\\)(\\|"))");
-    std::regex_replace(std::back_inserter(unEscapedString),
-                       inputStr.begin(),
-                       inputStr.end(),
-                       expr,
-                       std::string(R"($2)"));
-
-    return unEscapedString;
 }
 
 void logSerializedMessage(Logger& logger,

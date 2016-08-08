@@ -65,7 +65,7 @@ class DefaultInterfaceProviderHTemplate extends InterfaceTemplate{
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include "joynr/Logger.h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 

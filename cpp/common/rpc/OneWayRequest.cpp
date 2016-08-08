@@ -22,16 +22,13 @@
 namespace joynr
 {
 
-bool isOneWayRequestTypeRegistered = Variant::registerType<OneWayRequest>("joynr.OneWayRequest");
-
-OneWayRequest::OneWayRequest() : methodName(), params(), paramDatatypes()
+OneWayRequest::OneWayRequest() : methodName(), paramDatatypes(), params()
 {
 }
 
 bool OneWayRequest::operator==(const OneWayRequest& other) const
 {
-    return methodName == other.getMethodName() && params == other.getParams() &&
-           paramDatatypes == other.paramDatatypes;
+    return methodName == other.getMethodName() && paramDatatypes == other.paramDatatypes;
 }
 
 const std::string& OneWayRequest::getMethodName() const
@@ -42,23 +39,6 @@ const std::string& OneWayRequest::getMethodName() const
 void OneWayRequest::setMethodName(const std::string& methodName)
 {
     this->methodName = methodName;
-}
-
-std::vector<Variant> OneWayRequest::getParams() const
-{
-    return params;
-}
-
-// Set the parameters - called by the json deserializer
-void OneWayRequest::setParams(std::vector<Variant> params)
-{
-    this->params = std::move(params);
-}
-
-void OneWayRequest::addParam(Variant value, std::string datatype)
-{
-    this->params.push_back(std::move(value));
-    this->paramDatatypes.push_back(std::move(datatype));
 }
 
 std::vector<std::string> OneWayRequest::getParamDatatypes() const

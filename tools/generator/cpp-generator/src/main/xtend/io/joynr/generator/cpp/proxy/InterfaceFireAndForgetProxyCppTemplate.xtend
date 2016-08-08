@@ -44,7 +44,7 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«fireAndForgetClassName».h"
 
-«FOR datatype: getRequiredIncludesFor(francaIntf)»
+«FOR datatype: getDataTypeIncludesFor(francaIntf)»
 	#include «datatype»
 «ENDFOR»
 

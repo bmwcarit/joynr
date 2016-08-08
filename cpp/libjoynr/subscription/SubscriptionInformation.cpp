@@ -17,12 +17,9 @@
  * #L%
  */
 #include "joynr/SubscriptionInformation.h"
-#include "joynr/JsonSerializer.h"
 
 namespace joynr
 {
-
-INIT_LOGGER(SubscriptionInformation);
 
 SubscriptionInformation::SubscriptionInformation() : proxyId(), providerId()
 {

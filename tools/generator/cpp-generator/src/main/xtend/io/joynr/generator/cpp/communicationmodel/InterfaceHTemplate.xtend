@@ -89,7 +89,7 @@ namespace exceptions
  */
 class «getDllExportMacro()» I«interfaceName»Base {
 public:
-	I«interfaceName»Base();
+	I«interfaceName»Base() = default;
 	virtual ~I«interfaceName»Base() = default;
 
 	static const std::string& INTERFACE_NAME();

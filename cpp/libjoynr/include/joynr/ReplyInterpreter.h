@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,32 +32,45 @@ namespace joynr
 template <class... Ts>
 class ReplyInterpreter
 {
+
 public:
     template <typename Caller>
-    static void execute(Caller& caller, const Reply& reply)
+    static void execute(Caller& caller, Reply&& reply)
     {
-        const Variant& error = reply.getError();
-        if (!error.isEmpty()) {
-            caller.returnError(error.get<exceptions::JoynrException>());
+        std::shared_ptr<exceptions::JoynrException> error = reply.getError();
+        if (error) {
+            caller.returnError(error);
             return;
         }
 
-        const std::vector<Variant>& response = reply.getResponse();
-        if (response.empty()) {
-            caller.returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
+        if (!reply.hasResponse()) {
+            caller.returnError(std::make_shared<exceptions::JoynrRuntimeException>(
+                    "Reply object had no response."));
             return;
         }
 
-        callReturnValue(response, caller, std::index_sequence_for<Ts...>{});
+        std::tuple<Ts...> responseTuple;
+        try {
+            callGetResponse(responseTuple, std::move(reply), std::index_sequence_for<Ts...>{});
+        } catch (const std::exception& exception) {
+            caller.returnError(
+                    std::make_shared<exceptions::JoynrRuntimeException>(exception.what()));
+            return;
+        }
+        callReturnValue(std::move(responseTuple), caller, std::index_sequence_for<Ts...>{});
     }
 
 private:
-    template <std::size_t... Indices, typename Caller>
-    static void callReturnValue(const std::vector<Variant>& response,
-                                Caller& caller,
-                                std::index_sequence<Indices...>)
+    template <std::size_t... Indices, typename Tuple, typename Caller>
+    static void callReturnValue(Tuple&& response, Caller& caller, std::index_sequence<Indices...>)
     {
-        caller.returnValue(util::valueOf<Ts>(response[Indices])...);
+        caller.returnValue(std::move(std::get<Indices>(response))...);
+    }
+
+    template <std::size_t... Indices, typename Tuple>
+    static void callGetResponse(Tuple& response, Reply&& reply, std::index_sequence<Indices...>)
+    {
+        reply.getResponse(std::get<Indices>(response)...);
     }
 };
 
@@ -66,11 +79,11 @@ class ReplyInterpreter<void>
 {
 public:
     template <typename Caller>
-    static void execute(Caller& caller, const Reply& reply)
+    static void execute(Caller& caller, Reply&& reply)
     {
-        const Variant& error = reply.getError();
-        if (!error.isEmpty()) {
-            caller.returnError(error.get<exceptions::JoynrException>());
+        std::shared_ptr<exceptions::JoynrException> error = reply.getError();
+        if (error) {
+            caller.returnError(error);
             return;
         }
         caller.returnValue();

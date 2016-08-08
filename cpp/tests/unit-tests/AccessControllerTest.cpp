@@ -17,22 +17,37 @@
  * #L%
  */
 
+#include <tuple>
+#include <string>
+
+#include <gtest/gtest.h>
+
+#include "joynr/Request.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/utils/MockObjects.h"
-#include <gtest/gtest.h>
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/Version.h"
-#include <tuple>
-#include <string>
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/serializer/Serializer.h"
 
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr::types;
 using namespace joynr::infrastructure;
 using namespace joynr::infrastructure::DacTypes;
+
+
+template <typename... Ts>
+joynr::Request initOutgoingRequest(std::string methodName, std::vector<std::string> paramDataTypes, Ts... paramValues)
+{
+    Request outgoingRequest;
+    outgoingRequest.setMethodName(methodName);
+    outgoingRequest.setParamDatatypes(std::move(paramDataTypes));
+    outgoingRequest.setParams(std::move(paramValues)...);
+    return outgoingRequest;
+}
 
 // Mock objects cannot make callbacks themselves but can make calls to methods
 // with the same arguments as the mocked method call.
@@ -105,12 +120,11 @@ public:
     }
 
     void SetUp(){
-        request.setMethodName(TEST_OPERATION);
         messagingQos = MessagingQos(5000);
         message = messageFactory.createRequest(fromParticipantId,
                                      toParticipantId,
                                      messagingQos,
-                                     request);
+                                     initOutgoingRequest(TEST_OPERATION, {}));
         message.setHeaderCreatorUserId(DUMMY_USERID);
 
         ON_CALL(
@@ -160,7 +174,6 @@ protected:
     AccessController accessController;
     JoynrMessageFactory messageFactory;
     JoynrMessage message;
-    Request request;
     MessagingQos messagingQos;
     DiscoveryEntry discoveryEntry;
     static const std::string fromParticipantId;

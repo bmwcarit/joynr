@@ -26,8 +26,6 @@
 #include <cstdint>
 #include <chrono>
 
-#include "joynr/Variant.h"
-
 namespace joynr
 {
 
@@ -160,46 +158,6 @@ public:
     {
         std::time_t time = std::chrono::system_clock::to_time_t(timePoint);
         return std::ctime(&time);
-    }
-
-    /**
-      * Converts a vector of typename T objects into a vector of Variant objects
-      */
-    template <typename T>
-    static std::vector<Variant> toVectorOfVariants(const std::vector<T>& values)
-    {
-        std::vector<Variant> variantValues;
-        variantValues.reserve(values.size());
-
-        for (const T& value : values) {
-            variantValues.push_back(Variant::make<T>(value));
-        }
-
-        return variantValues;
-    }
-
-    /**
-      * Converts a vector of typename T objects into a Variant object
-      */
-    template <typename T>
-    static Variant toVariant(const std::vector<T>& values)
-    {
-        std::vector<Variant> variantValues;
-        variantValues.reserve(values.size());
-
-        for (const T& value : values) {
-            variantValues.push_back(Variant::make<T>(value));
-        }
-
-        return toVariant(variantValues);
-    }
-
-    /**
-      * Converts a vector of Variant objects into a Variant object
-      */
-    static Variant toVariant(const std::vector<Variant>& values)
-    {
-        return Variant::make<std::vector<Variant>>(values);
     }
 };
 } // namespace joynr

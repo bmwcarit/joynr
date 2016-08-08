@@ -17,14 +17,10 @@
  * #L%
  */
 #include "joynr/PeriodicSubscriptionQos.h"
-#include "joynr/Variant.h"
 
 using namespace joynr;
 
 INIT_LOGGER(PeriodicSubscriptionQos);
-
-static bool isPeriodicSubscriptionQosRegistered =
-        Variant::registerType<PeriodicSubscriptionQos>("joynr.PeriodicSubscriptionQos");
 
 const std::int64_t& PeriodicSubscriptionQos::MIN_PERIOD_MS()
 {

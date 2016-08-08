@@ -104,7 +104,8 @@ void IltConsumerFireAndForgetMethodTest::subscribeToAttributeFireAndForget(
 {
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
     EXPECT_CALL(*mockInt32SubscriptionListener, onReceive(0)).Times(1);
     EXPECT_CALL(*mockInt32SubscriptionListener, onError(_)).Times(0);
     JOYNR_ASSERT_NO_THROW({

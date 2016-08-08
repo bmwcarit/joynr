@@ -16,20 +16,10 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/JsonSerializer.h"
-#include "joynr/Util.h"
-#include "libjoynr/subscription/SubscriptionRequestInformation.h"
+#include "joynr/SubscriptionRequestInformation.h"
 
 namespace joynr
 {
-
-static bool isSubscriptionRequestInformationRegistered =
-        Variant::registerType<SubscriptionRequestInformation>(
-                "joynr.SubscriptionRequestInformation");
-
-SubscriptionRequestInformation::SubscriptionRequestInformation()
-{
-}
 
 SubscriptionRequestInformation::SubscriptionRequestInformation(
         const std::string& proxyParticipantId,
@@ -37,14 +27,6 @@ SubscriptionRequestInformation::SubscriptionRequestInformation(
         const SubscriptionRequest& subscriptionRequest)
         : SubscriptionRequest(subscriptionRequest),
           SubscriptionInformation(proxyParticipantId, providerParticipantId)
-{
-}
-
-SubscriptionRequestInformation::SubscriptionRequestInformation(
-        const SubscriptionRequestInformation& subscriptionRequestInformation)
-        : SubscriptionRequest(subscriptionRequestInformation),
-          SubscriptionInformation(subscriptionRequestInformation.getProxyId(),
-                                  subscriptionRequestInformation.getProviderId())
 {
 }
 
@@ -57,7 +39,7 @@ bool SubscriptionRequestInformation::operator==(
 
 std::string SubscriptionRequestInformation::toString() const
 {
-    return JsonSerializer::serialize<SubscriptionRequestInformation>(*this);
+    return joynr::serializer::serializeToJson(*this);
 }
 
 } // namespace joynr

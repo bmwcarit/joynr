@@ -35,13 +35,6 @@ class FilterTemplate implements BroadcastTemplate {
 	@Inject extension NamingUtil
 	@Inject extension BroadcastUtil
 
-	def getCommaSeperatedEventArgumentListFromVariantList(Iterable<FArgument> arguments)'''
-		«var i = 0»
-		«FOR FArgument argument : arguments SEPARATOR ","»
-			util::valueOf<«argument.typeName»>(eventValues[«i++»])
-		«ENDFOR»
-'''
-
 	override generate(FInterface serviceInterface, FBroadcast broadcast)
 '''
 «val broadcastName =  broadcast.joynrName»
@@ -54,13 +47,12 @@ class FilterTemplate implements BroadcastTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getDataTypeIncludesFor(serviceInterface)»
 #include «parameterType»
 «ENDFOR»
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«serviceInterface.name».h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Parameters.h"
-#include "joynr/IBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
 «getDllExportIncludeStatement()»
 
@@ -69,16 +61,18 @@ class FilterTemplate implements BroadcastTemplate {
  * @brief Broadcast filter class for interface «serviceInterface.joynrName.toFirstUpper»,
  * broadcast «broadcastName»
  */
-class «getDllExportMacro()» «className» : public IBroadcastFilter {
+class «getDllExportMacro()» «className» {
 public:
 	/** @brief Default constructor */
-	«className»() :
-			IBroadcastFilter("«broadcastName»")
+	«className»() = default;
+
+	static std::string getName()
 	{
+		return "«broadcastName»";
 	}
 
 	/** @brief Destructor */
-	~«className»() override = default;
+	virtual ~«className»() = default;
 
 	/**
 	 * @brief Filter method to decide whether a broadcast should be delivered.
@@ -95,21 +89,23 @@ public:
 			«ENDIF»
 			const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters
 	) = 0;
-private:
-	DISALLOW_COPY_AND_ASSIGN(«className»);
 
-	bool filter (
-			const std::vector<Variant>& eventValues,
+	bool filterForward(
+			«IF !broadcast.outputParameters.empty»
+				«broadcast.commaSeperatedTypedConstOutputParameterList»,
+			«ENDIF»
 			const BroadcastFilterParameters& filterParameters
-	) override {
-		«serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters params;
-		params.setFilterParameters(filterParameters.getFilterParameters());
-
+	)
+	{
 		return filter(
-				«getCommaSeperatedEventArgumentListFromVariantList(getOutputParameters(broadcast))»,
-				params
+		«FOR parameter : broadcast.outputParameters»
+			«parameter.joynrName»,
+		«ENDFOR»
+			static_cast<const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters&>(filterParameters)
 		);
 	}
+private:
+	DISALLOW_COPY_AND_ASSIGN(«className»);
 };
 
 «getNamespaceEnder(serviceInterface)»

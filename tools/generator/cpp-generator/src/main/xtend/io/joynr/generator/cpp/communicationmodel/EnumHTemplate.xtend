@@ -57,9 +57,10 @@ class EnumHTemplate extends EnumTemplate {
 #include <cstdint>
 #include <ostream>
 #include <string>
-#include <cstdint>
+
 #include "joynr/Util.h"
-#include "joynr/Variant.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/serializer/Serializer.h"
 
 «IF type.hasExtendsDeclaration»
 	#include «type.extendedType.includeOf»
@@ -72,10 +73,15 @@ class EnumHTemplate extends EnumTemplate {
  *
  * @version «majorVersion».«minorVersion»
  */
-struct «getDllExportMacro()»«typeName» {
+struct «getDllExportMacro()»«typeName» : public joynr::exceptions::ApplicationExceptionError {
 	«IF type.hasExtendsDeclaration»
 		// This enum inherits enumeration values from «type.extendedType.typeName».
 	«ENDIF»
+
+	using ApplicationExceptionError::ApplicationExceptionError;
+	«typeName»() = default;
+	~«typeName»() override = default;
+
 	/**
 	«appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
 	 * @version «majorVersion».«minorVersion»
@@ -107,9 +113,6 @@ struct «getDllExportMacro()»«typeName» {
 	 * type collection or interface in the Franca model.
 	 */
 	static const std::uint32_t MINOR_VERSION;
-
-	/** @brief Constructor */
-	«typeName»() = delete;
 
 	/**
 	 * @brief Copy constructor
@@ -155,24 +158,6 @@ void PrintTo(const «type.typeName»& «typeName.toFirstLower»Value, ::std::ost
 
 «getNamespaceEnder(type, true)»
 
-namespace «joynrGenerationPrefix» {
-namespace util {
-
-template <>
-inline «type.typeName» valueOf<«type.typeName»>(const Variant& variant)
-{
-	return convertVariantToEnum<«type.typeNameOfContainingClass»>(variant);
-}
-
-template <>
-inline std::vector<«type.typeName»> valueOf<std::vector<«type.typeName»>>(const Variant& variant)
-{
-	return convertVariantVectorToEnumVector<«type.typeNameOfContainingClass»>(variant.get<std::vector<Variant>>());
-}
-
-} // namespace util
-} // namespace «joynrGenerationPrefix»
-
 namespace std {
 
 /**
@@ -194,6 +179,17 @@ struct hash<«type.buildPackagePath("::", true)»::«typeName»::«getNestedEnum
 	}
 };
 } // namespace std
+
+MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.typeNameOfContainingClass», joynr::exceptions::ApplicationExceptionError, "«type.typeNameOfContainingClass.replace("::", ".")»")
+
+namespace muesli
+{
+template <>
+struct EnumTraits<«type.typeName»>
+{
+	using Wrapper = «type.typeNameOfContainingClass»;
+};
+} // namespace muesli
 
 #endif // «headerGuard»
 '''

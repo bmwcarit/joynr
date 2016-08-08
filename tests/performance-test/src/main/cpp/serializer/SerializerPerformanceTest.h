@@ -29,14 +29,18 @@
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/JsonSerializer.h"
 
 #include "joynr/tests/performance/Types/ComplexStruct.h"
-#include "joynr/tests/performance/Types/ComplexStructSerializer.h"
+#include "joynr/serializer/Serializer.h"
 
 template <typename Generator>
 class SerializerPerformanceTest : public PerformanceTest<>
 {
+    using OutputStream = muesli::StringOStream;
+    using OutputArchive = muesli::JsonOutputArchive<OutputStream>;
+    using InputStream = muesli::StringIStream;
+    using InputArchive = muesli::JsonInputArchive<InputStream>;
+
 public:
     SerializerPerformanceTest(std::size_t length)
             : length(length), request(Generator::generateRequest(length)), messageFactory(), qos()
@@ -53,33 +57,56 @@ public:
     {
         auto fun = [this]() {
             joynr::JoynrMessage message = this->createMessage();
-            return joynr::JsonSerializer::serialize(message);
+            OutputStream ostream;
+            OutputArchive oarchive(ostream);
+            oarchive(message);
+            return ostream.getString();
         };
         runAndPrintAverage(getTestName("full message serialization"), fun);
     }
 
+    template <typename ParamType>
     void runDeSerializationBenchmark() const
     {
         joynr::JoynrMessage message = createMessage();
         auto fun = [&message]() {
-            return joynr::JsonSerializer::deserialize<joynr::Request>(message.getPayload());
+            joynr::Request deserializedRequest;
+            InputStream istream(message.getPayload());
+            auto iarchive = std::make_shared<InputArchive>(istream);
+            (*iarchive)(deserializedRequest);
+            ParamType param;
+            deserializedRequest.getParams(param);
+            return param;
         };
 
         runAndPrintAverage(getTestName("deserialization"), fun);
     }
 
+    template <typename ParamType>
     void runFullMessageDeSerializationBenchmark() const
     {
         // create a message, serialize it and then benchmark the deserialization
         joynr::JoynrMessage message = createMessage();
-        std::string serializedMessage = joynr::JsonSerializer::serialize(message);
+
+        OutputStream ostream;
+        muesli::JsonOutputArchive<OutputStream> oarchive(ostream);
+        oarchive(message);
+        std::string serializedMessage = ostream.getString();
 
         auto fun = [&serializedMessage]() {
-            joynr::JoynrMessage msg =
-                    joynr::JsonSerializer::deserialize<joynr::JoynrMessage>(serializedMessage);
-            joynr::Request req =
-                    joynr::JsonSerializer::deserialize<joynr::Request>(msg.getPayload());
-            return req;
+            InputStream msgStream(serializedMessage);
+            joynr::JoynrMessage deserializedMessage;
+            InputArchive messageInputArchive(msgStream);
+            messageInputArchive(deserializedMessage);
+
+            joynr::Request deserializedRequest;
+            InputStream requestStream(deserializedMessage.getPayload());
+            auto requestInputArchive = std::make_shared<InputArchive>(requestStream);
+            (*requestInputArchive)(deserializedRequest);
+
+            ParamType param;
+            deserializedRequest.getParams(param);
+            return param;
         };
 
         runAndPrintAverage(getTestName("full message deserialization"), fun);
@@ -88,8 +115,12 @@ public:
 private:
     joynr::JoynrMessage createMessage() const
     {
-        return messageFactory.createRequest(
-                senderParticipantId, receiverParticipantId, qos, request);
+        OutputStream ostream;
+        muesli::JsonOutputArchive<OutputStream> oarchive(ostream);
+        oarchive(request);
+        joynr::JoynrMessage msg;
+        msg.setPayload(ostream.getString());
+        return msg;
     }
 
     std::string getTestName(const std::string& testType) const
@@ -128,11 +159,12 @@ std::string getFilledString(std::size_t length)
 
 struct ByteArray
 {
+    using type = std::vector<std::int8_t>;
     static joynr::Request generateRequest(std::size_t length)
     {
         joynr::Request request;
-        request.addParam(
-                joynr::TypeUtil::toVariant<std::int8_t>(helper::getFilledVector(length)), "Byte[]");
+        request.setParams(helper::getFilledVector(length));
+        request.setParamDatatypes({"Byte[]"});
         request.setMethodName("echoByteArray");
         return request;
     }
@@ -140,11 +172,13 @@ struct ByteArray
 
 struct String
 {
+    using type = std::string;
+
     static joynr::Request generateRequest(std::size_t length)
     {
         joynr::Request request;
-        request.addParam(
-                joynr::Variant::make<std::string>(helper::getFilledString(length)), "String");
+        request.setParams(helper::getFilledString(length));
+        request.setParamDatatypes({"String"});
         request.setMethodName("echoString");
         return request;
     }
@@ -152,14 +186,16 @@ struct String
 
 struct ComplexStruct
 {
+    using type = joynr::tests::performance::Types::ComplexStruct;
+
     static joynr::Request generateRequest(std::size_t length)
     {
         joynr::Request request;
         using joynr::tests::performance::Types::ComplexStruct;
         ComplexStruct complexStruct(
                 32, 64, helper::getFilledVector(length), helper::getFilledString(length));
-        request.addParam(joynr::Variant::make<ComplexStruct>(complexStruct),
-                         "joynr.tests.performance.Types.ComplexStruct");
+        request.setParams(complexStruct);
+        request.setParamDatatypes({"joynr.tests.performance.Types.ComplexStruct"});
         request.setMethodName("echoComplexStruct");
         return request;
     }

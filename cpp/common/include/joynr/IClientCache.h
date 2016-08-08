@@ -19,7 +19,7 @@
 #ifndef ICLIENTCACHE_H
 #define ICLIENTCACHE_H
 
-#include "joynr/Variant.h"
+#include <boost/any.hpp>
 
 namespace joynr
 {
@@ -34,16 +34,16 @@ public:
 
     /*
      * Returns the value stored for the attributeId. If none exists, it return an invalid
-     * Variant object that can be tested for by using the isValid() method of Variant.
+     * boost::any object that can be tested for by using the emtpy() method of boost::any.
      */
-    virtual Variant lookUp(const std::string& attributeId) = 0;
+    virtual boost::any lookUp(const std::string& attributeId) = 0;
 
     /*
      * Inserts the key (attributeId) and value into the cache.  If the attributeId already
      * has a value, then this overwrites the previous value.
      * Note, this insert does not perform any validation on the value.
      */
-    virtual void insert(std::string attributeId, Variant value) = 0;
+    virtual void insert(std::string attributeId, boost::any value) = 0;
 };
 
 } // namespace joynr

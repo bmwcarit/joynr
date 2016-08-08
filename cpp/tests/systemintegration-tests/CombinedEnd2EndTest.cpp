@@ -563,7 +563,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     std::int64_t minInterval_ms = 1000;
     std::int64_t maxInterval_ms = 2000;
 
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                                     10000,   // validity_ms
                                     minInterval_ms,
                                     maxInterval_ms,
@@ -664,7 +664,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange) {
     // The filtering happens on the provider's side, thus also preventing excessive network traffic.
     // This value is provided in milliseconds. The minimum value for minInterval is 50 ms.
     std::int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                                     500000,   // validity_ms
                                     minInterval_ms);  // minInterval_ms
     std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
@@ -735,7 +735,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                                     500000,  // validity_ms
                                     1000,   // minInterval_ms
                                     2000,    // maxInterval_ms
@@ -783,7 +783,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 												   ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
 												   ->build());
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+        auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                                         500000,  // validity_ms
                                         1000,   // minInterval_ms
                                         2000,    //  maxInterval_ms
@@ -841,7 +841,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                                     9000,   // validity_ms
                                     1000,    // minInterval_ms
                                     2000,   //  maxInterval_ms
@@ -923,7 +923,7 @@ tests::testProxy* createTestProxy(JoynrRuntime *runtime, const std::string& doma
 void subscribeToLocation(std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > listener,
                             tests::testProxy* testProxy,
                             CombinedEnd2EndTest* testSuite) {
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                                     500000,   // validity_ms
                                     1000,    // minInterval_ms
                                     2000,   //  maxInterval_ms

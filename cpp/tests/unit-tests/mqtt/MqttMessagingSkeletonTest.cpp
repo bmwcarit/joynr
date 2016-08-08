@@ -18,6 +18,11 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include "joynr/serializer/Serializer.h"
+#include "joynr/Request.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/SingleThreadedIOService.h"
@@ -52,10 +57,7 @@ public:
         MessagingQos qosSettings = MessagingQos(456000);
         Request request;
         request.setMethodName("methodName");
-        std::vector<Variant> params;
-        params.push_back(Variant::make<int>(42));
-        params.push_back(Variant::make<std::string>("value"));
-        request.setParams(params);
+        request.setParams(42, std::string("value"));
         std::vector<std::string> paramDatatypes;
         paramDatatypes.push_back("Integer");
         paramDatatypes.push_back("String");
@@ -68,6 +70,9 @@ public:
                 qosSettings,
                 request
                 );
+        joynr::system::RoutingTypes::MqttAddress replyAddress;
+        replyAddressSerialized = joynr::serializer::serializeToJson(replyAddress);
+        message.setHeaderReplyAddress(replyAddressSerialized);
     }
 
     void TearDown(){
@@ -76,6 +81,7 @@ protected:
     SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;
     JoynrMessage message;
+    std::string replyAddressSerialized;
 };
 
 MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "") {
@@ -91,12 +97,11 @@ MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "") {
 
 TEST_F(MqttMessagingSkeletonTest, transmitTest) {
     MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter);
-    std::string replyAddress = message.getHeaderReplyAddress();
     EXPECT_CALL(mockMessageRouter, addNextHop(
         _,
         AnyOf(
             Pointee(A<joynr::system::RoutingTypes::Address>()),
-            pointerToMqttAddressWithChannelId(replyAddress)
+            pointerToMqttAddressWithChannelId(replyAddressSerialized)
         ),
         _)
     ).Times(1);
@@ -110,7 +115,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest) {
 
 TEST_F(MqttMessagingSkeletonTest, onTextMessageReceivedTest) {
     MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter);
-    std::string serializedMessage = JsonSerializer::serialize<JoynrMessage>(message);
+    std::string serializedMessage = serializer::serializeToJson(message);
     EXPECT_CALL(mockMessageRouter, route(AllOf(Property(&JoynrMessage::getType, Eq(message.getType())),
                                             Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_)).Times(1);
     mqttMessagingSkeleton.onTextMessageReceived(serializedMessage);

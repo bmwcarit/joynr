@@ -38,6 +38,7 @@ class ThreadSafeMap
 {
 public:
     using MapIterator = typename Map<Key, T>::const_iterator;
+    using mapped_type = T;
 
     /**
      * @brief ThreadSafeMap
@@ -113,6 +114,13 @@ public:
             map.erase(mapElement);
         }
         return aValue;
+    }
+
+    template <typename Fun>
+    void applyReadFun(Fun&& f) const
+    {
+        ReadLocker locker(lock);
+        f(map);
     }
 
     /**
