@@ -20,8 +20,8 @@ package io.joynr.dispatching;
  */
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
@@ -41,13 +41,13 @@ import org.slf4j.LoggerFactory;
 
 public class JoynrMessageFactory {
 
-    private final List<JoynrMessageProcessor> messageProcessors;
+    private final Set<JoynrMessageProcessor> messageProcessors;
     private ObjectMapper objectMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(JoynrMessageFactory.class);
 
     @Inject
-    public JoynrMessageFactory(ObjectMapper objectMapper, List<JoynrMessageProcessor> messageProcessors) {
+    public JoynrMessageFactory(ObjectMapper objectMapper, Set<JoynrMessageProcessor> messageProcessors) {
         this.objectMapper = objectMapper;
         this.messageProcessors = messageProcessors;
     }

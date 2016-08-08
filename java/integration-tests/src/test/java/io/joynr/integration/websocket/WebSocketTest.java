@@ -20,7 +20,7 @@ package io.joynr.integration.websocket;
  */
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,7 +84,7 @@ public class WebSocketTest {
                 return null;
             }
         }).when(messageRouterMock).route(Mockito.any(JoynrMessage.class));
-        joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new ArrayList<JoynrMessageProcessor>());
+        joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new HashSet<JoynrMessageProcessor>());
     }
 
     private void configure(int maxMessageSize, long reconnectDelay, long websocketIdleTimeout) {

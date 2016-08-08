@@ -43,22 +43,20 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
-import io.joynr.dispatching.JoynrMessageProcessor;
-import io.joynr.dispatching.JoynrMessageProcessorProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
-
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
+import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
-import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -68,6 +66,8 @@ import io.joynr.runtime.JoynrRuntime;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation for {@link JoynrRuntimeFactory}, which will use information produced by
@@ -150,24 +150,32 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         if (fInjector == null) {
             fInjector = new JoynrInjectorFactory(joynrProperties,
                                                  new StaticDomainAccessControlProvisioningModule(),
+                                                 getMessageProcessorsModule(),
                                                  override(new CCInProcessRuntimeModule()).with(new JeeJoynrIntegrationModule(scheduledExecutorService))).getInjector();
-            addMessageProcessors();
         }
         return fInjector;
     }
 
-    private void addMessageProcessors() {
-        Set<Bean<?>> joynrMessageProcessorBeans = beanManager.getBeans(JoynrMessageProcessor.class,
-                                                                       new AnnotationLiteral<Any>() {
-                                                                       });
-        JoynrMessageProcessorProvider joynrMessageProcessorProvider = fInjector.getInstance(JoynrMessageProcessorProvider.class);
-        for (Bean<?> bean : joynrMessageProcessorBeans) {
-            joynrMessageProcessorProvider.addProcessors((JoynrMessageProcessor) Proxy.newProxyInstance(getClass().getClassLoader(),
-                                                                                                       new Class[]{ JoynrMessageProcessor.class },
-                                                                                                       new BeanCallingProxy<JoynrMessageProcessor>((Bean<JoynrMessageProcessor>) bean,
-                                                                                                                                                   beanManager)));
-        }
+    private AbstractModule getMessageProcessorsModule() {
+        final Set<Bean<?>> joynrMessageProcessorBeans = beanManager.getBeans(JoynrMessageProcessor.class,
+                                                                             new AnnotationLiteral<Any>() {
+                                                                             });
+        return new AbstractModule() {
+            @Override
+            protected void configure() {
 
+                Multibinder<JoynrMessageProcessor> joynrMessageProcessorMultibinder = Multibinder.newSetBinder(binder(),
+                                                                                                               new TypeLiteral<JoynrMessageProcessor>() {
+                                                                                                               });
+                for (Bean<?> bean : joynrMessageProcessorBeans) {
+                    joynrMessageProcessorMultibinder.addBinding()
+                                                    .toInstance((JoynrMessageProcessor) Proxy.newProxyInstance(getClass().getClassLoader(),
+                                                                                                               new Class[]{ JoynrMessageProcessor.class },
+                                                                                                               new BeanCallingProxy<JoynrMessageProcessor>((Bean<JoynrMessageProcessor>) bean,
+                                                                                                                                                           beanManager)));
+                }
+            }
+        };
     }
 
     private Properties prepareJoynrProperties(Properties configuredProperties) {

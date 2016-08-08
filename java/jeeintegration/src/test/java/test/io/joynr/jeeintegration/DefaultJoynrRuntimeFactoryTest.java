@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -39,10 +40,11 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import com.google.common.collect.Sets;
+import com.google.inject.Binding;
 import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
 import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.dispatching.JoynrMessageProcessor;
-import io.joynr.dispatching.JoynrMessageProcessorProvider;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
@@ -104,8 +106,9 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Test
     public void testJoynrMessageProcessorAdded() {
         Injector injector = fixture.getInjector();
-        JoynrMessageProcessorProvider joynrMessageProcessorProvider = injector.getInstance(JoynrMessageProcessorProvider.class);
-        assertEquals(1, joynrMessageProcessorProvider.get().size());
+        List<Binding<JoynrMessageProcessor>> bindings = injector.findBindingsByType(new TypeLiteral<JoynrMessageProcessor>() {
+        });
+        assertEquals(1, bindings.size());
     }
 
     @Test

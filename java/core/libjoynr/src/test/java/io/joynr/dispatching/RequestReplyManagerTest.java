@@ -33,7 +33,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -50,6 +49,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 import io.joynr.common.ExpiryDate;
 import io.joynr.context.JoynrMessageScopeModule;
@@ -133,8 +133,8 @@ public class RequestReplyManagerTest {
                 ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                                     .toInstance(cleanupExecutor);
-                bind(new TypeLiteral<List<JoynrMessageProcessor>>() {
-                }).toProvider(new JoynrMessageProcessorProvider());
+                Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
+                });
             }
         });
 
