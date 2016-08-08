@@ -405,22 +405,6 @@ define(
                                     if (reply.error instanceof Error) {
                                         replyCaller.reject(reply.error);
                                     } else {
-                                        /*
-                                         * TODO this object sanitizer needs to be removed, by fixing the issue related with
-                                         * PhantomJs
-                                         */
-                                        var cleanObjectFromPhantomJsAddons = function(object) {
-                                            object.sourceId = undefined;
-                                            object.sourceURL= undefined;
-                                            object.stack = undefined;
-                                            object.stackArray = undefined;
-                                            object.line = undefined;
-                                            object.isOperational = undefined;
-                                        };
-                                        cleanObjectFromPhantomJsAddons(reply.error);
-                                        if (reply.error.error) {
-                                            cleanObjectFromPhantomJsAddons(reply.error.error);
-                                        }
                                         replyCaller.reject(Typing.augmentTypes(
                                                 reply.error,
                                                 typeRegistry));
