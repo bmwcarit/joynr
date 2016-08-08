@@ -60,7 +60,8 @@ _sed 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-stand
 java/core/clustercontroller-standalone/README
 
 _sed 's/Version:        '${oldVersionWithoutSnapshot}'/Version:        '${newVersionWithoutSnapshot}'/g' \
-cpp/distribution/joynr.spec
+cpp/distribution/joynr.spec \
+tests/system-integration-test/docker/onboard/joynr-without-test.spec
 
 echo "prepare git patch"
 

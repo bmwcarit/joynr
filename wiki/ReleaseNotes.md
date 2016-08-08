@@ -11,6 +11,24 @@
 ##Other changes
 None.
 
+#joynr 0.19.2
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Do not crash joynr runtime if writing persistency files fails. 
+
+#joynr 0.19.1
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Fix issue in the generated JoynrTargets-release.cmake in relation with boost::thread
+
 #joynr 0.19.0
 
 ##API relevant changes

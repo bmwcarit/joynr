@@ -19,11 +19,12 @@
 #ifndef JOYNR_SETTINGS_H
 #define JOYNR_SETTINGS_H
 
+#include <string>
+#include <boost/property_tree/ptree.hpp>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
-
-#include <boost/property_tree/ptree.hpp>
-#include <string>
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -111,6 +112,7 @@ private:
                       bool overwrite);
 
     static boost::property_tree::path createPath(const std::string& path);
+    ADD_LOGGER(Settings);
 };
 
 //---- Implementation ----------------------------------------------------------
