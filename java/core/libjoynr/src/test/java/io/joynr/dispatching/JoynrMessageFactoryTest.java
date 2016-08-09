@@ -33,6 +33,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
@@ -74,7 +76,16 @@ public class JoynrMessageFactoryTest {
             @Override
             protected void configure() {
                 requestStaticInjection(Request.class);
-
+                Multibinder<JoynrMessageProcessor> joynrMessageProcessorMultibinder = Multibinder.newSetBinder(binder(),
+                                                                                                               new TypeLiteral<JoynrMessageProcessor>() {
+                                                                                                               });
+                joynrMessageProcessorMultibinder.addBinding().toInstance(new JoynrMessageProcessor() {
+                    @Override
+                    public JoynrMessage process(JoynrMessage joynrMessage) {
+                        joynrMessage.getHeader().put("test", "test");
+                        return joynrMessage;
+                    }
+                });
             }
 
         });
@@ -230,5 +241,15 @@ public class JoynrMessageFactoryTest {
 
         assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
+    }
+
+    @Test
+    public void testMessageProcessorUsed() {
+        JoynrMessage joynrMessage = joynrMessageFactory.createRequest("from",
+                                                                      "to",
+                                                                      new Request("name", new Object[0], new Class[0]),
+                                                                      new MessagingQos());
+        assertNotNull(joynrMessage.getHeader().get("test"));
+        assertEquals("test", joynrMessage.getHeader().get("test"));
     }
 }

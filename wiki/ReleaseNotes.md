@@ -1,11 +1,12 @@
 #joynr 0.20.0
-TODO
 
 ##API relevant changes
 * **[Java]** Static capabilities provisioning can now be specified as a URI.
   See the [Java Configuration Guide](JavaSettings.md) for details.
 * **[JS]** Optional expiryDateMs (mills since epoch) can be passed to registerProvider. Default
   value is one day from now.
+* **[JEE]** Added ability to specifiy message processors which can be used to, e.g., add custom
+  headers to outgoing joynr messages. See the [JEE Documentation](jee.md) for details.
 
 ##Other changes
 TODO

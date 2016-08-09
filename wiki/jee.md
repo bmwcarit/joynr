@@ -337,7 +337,35 @@ In order to do this, you must provide the following content in the
 
 ... here, the `<class-loader delegate="false" />` part is the relevant bit.
 
-## Example
+## Message Processors
+
+By providing EJBs (or CDI Beans) which implement the `JoynrMessageProcessor` interface
+you are able to hook into the message creation process. Each filter is called in turn
+after the message has been created an is given the chance to perform any application
+specific customisations, such as adding custom headers, or mutating any existing ones.
+
+Be careful that your processor doesn't perform any changes which render the message
+un-transmittable, such as changing the `to` or the `from` headers! Generally you
+should only be, e.g., adding custom headers (via the `JoynrMessage#setCustomHeaders()`).
+
+Here's an example of a message processor:
+
+```
+@Stateless
+public class MyMessageProcessor implements JoynrMessageProcessor {
+    public JoynrMessage process(JoynrMessage joynrMessage) {
+        Map<String, String> myCustomHeaders = new HashMap<>();
+        myCustomHeaders.put("my-correlation-id", UUID.randomUuid().toString());
+        joynrMessage.setCustomHeaders(myCustomHeaders);
+        return joynrMessage;
+    }
+}
+```
+
+This would add the custom header `my-correlation-id` to the joynr message with a random
+UUID as the value.
+
+## Example Application
 
 Under `examples/radio-jee` you can find an example application which is based on the
 [Radio App example](./Tutorial.md). It uses the same `radio.fidl` file from the tutorial
