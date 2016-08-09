@@ -351,14 +351,14 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     auto mockMessageRouter = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
     JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
 
-    /* ensure the serialization succeeds and the first publication is send to the proxy */
+    /* ensure the serialization succeeds and the first publication and the subscriptionReply are sent to the proxy */
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
                          A<JoynrMessage>(),
                          Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
                          Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId))),
                      _
-                     ));
+                     )).Times(2);
 
     publicationManager->add(
                 proxyParticipantId,
