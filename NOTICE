@@ -18,6 +18,12 @@ under the License.
 This project has dependencies to:
   3rd Party Dependencies - Library under Eclipse Public License - v 1.0
   Accessibility Test Framework under Apache License, Version 2.0
+  Aether API under Eclipse Public License, Version 1.0
+  Aether Connector Basic under Eclipse Public License, Version 1.0
+  Aether Implementation under Eclipse Public License, Version 1.0
+  Aether SPI under Eclipse Public License, Version 1.0
+  Aether Transport Wagon under Eclipse Public License, Version 1.0
+  Aether Utilities under Eclipse Public License, Version 1.0
   android under Apache License, Version 2.0
   ant-launcher under Apache License, Version 2.0
   Antlr 3 Runtime under BSD License
@@ -36,6 +42,10 @@ This project has dependencies to:
   Apache Log4j API under The Apache Software License, Version 2.0
   Apache Log4j Core under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
+  Apache Maven Wagon :: API under The Apache Software License, Version 2.0
+  Apache Maven Wagon :: Providers :: File Provider under The Apache Software License, Version 2.0
+  Apache Maven Wagon :: Providers :: HTTP Shared Library under The Apache Software License, Version 2.0
+  Apache Maven Wagon :: Providers :: Lightweight HTTP Provider under The Apache Software License, Version 2.0
   Apache XBean :: ASM 4 shaded (repackaged) under Apache License, Version 2.0
   Apache XBean :: Reflect under The Apache Software License, Version 2.0
   Arquillian Config API under Apache License, Version 2.0
@@ -59,6 +69,10 @@ This project has dependencies to:
   Arquillian TestEnricher Resource under Apache License, Version 2.0
   Arquillian TestRunner JUnit Container under Apache License, Version 2.0
   Arquillian TestRunner JUnit Core under Apache License, Version 2.0
+  Arquillian Transaction Extension: API under Apache License, Version 2.0
+  Arquillian Transaction Extension: Implementation Base under Apache License, Version 2.0
+  Arquillian Transaction Extension: JTA under Apache License, Version 2.0
+  Arquillian Transaction Extension: SPI under Apache License, Version 2.0
   ASM Analysis under BSD
   ASM Commons under BSD
   ASM Core under BSD License
@@ -98,6 +112,7 @@ This project has dependencies to:
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
+  Embedded Payara All-In-One under CDDL + GPLv2 with classpath exception
   Expression Language 2.2 API under lgpl
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -141,6 +156,7 @@ This project has dependencies to:
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:discovery-directory-jee under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
@@ -288,6 +304,7 @@ This project has dependencies to:
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
   jsonevent-layout under The Apache Software License, Version 2.0
+  jsoup under The MIT License
   JSR-181 Maintenance Release 1 under CDDL+GPLv2
   JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
@@ -295,17 +312,21 @@ This project has dependencies to:
   Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logging under The Apache Software License, Version 2.0
+  Maven Aether Provider under Apache License, Version 2.0
   Maven Ant Tasks under The Apache Software License, Version 2.0
   Maven Artifact under The Apache Software License, Version 2.0
   Maven Artifact Manager under The Apache Software License, Version 2.0
   Maven Error Diagnostics under The Apache Software License, Version 2.0
   Maven Local Settings Model under The Apache Software License, Version 2.0
-  Maven Model under The Apache Software License, Version 2.0
+  Maven Model under Apache License, Version 2.0
+  Maven Model Builder under Apache License, Version 2.0
   Maven Plugin API under The Apache Software License, Version 2.0
   Maven Plugin Registry Model under The Apache Software License, Version 2.0
   Maven Profile Model under The Apache Software License, Version 2.0
   Maven Project Builder under The Apache Software License, Version 2.0
-  Maven Repository Metadata Model under The Apache Software License, Version 2.0
+  Maven Repository Metadata Model under Apache License, Version 2.0
+  Maven Settings under Apache License, Version 2.0
+  Maven Settings Builder under Apache License, Version 2.0
   Maven Wagon API under The Apache Software License, Version 2.0
   Maven Wagon File Provider under The Apache Software License, Version 2.0
   Maven Wagon HTTP Shared Library under The Apache Software License, Version 2.0
@@ -328,10 +349,13 @@ This project has dependencies to:
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
   OSGi resource locator bundle - used by various API providers that rely on META-INF/services mechanism to locate providers. under CDDL + GPLv2 with classpath exception
+  Plexus :: Component Annotations under The Apache Software License, Version 2.0
   Plexus :: Default Container under The Apache Software License, Version 2.0
+  Plexus Cipher: encryption/decryption Component under Apache Public License 2.0
   Plexus Classworlds under The Apache Software License, Version 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
+  Plexus Security Dispatcher Component under Apache Public License 2.0
   radio-jee-api under The Apache Software License, Version 2.0
   radio-jee-consumer under The Apache Software License, Version 2.0
   radio-jee-provider under The Apache Software License, Version 2.0
@@ -349,6 +373,11 @@ This project has dependencies to:
   ShrinkWrap Descriptors API Base under Apache License, Version 2.0
   ShrinkWrap Descriptors SPI under Apache License, Version 2.0
   ShrinkWrap Implementation Base under Apache License, Version 2.0
+  ShrinkWrap Resolver API under Apache License, Version 2.0
+  ShrinkWrap Resolver Maven API under Apache License, Version 2.0
+  ShrinkWrap Resolver Maven Implementation under Apache License, Version 2.0
+  ShrinkWrap Resolver Maven SPI under Apache License, Version 2.0
+  ShrinkWrap Resolver SPI under Apache License, Version 2.0
   ShrinkWrap SPI under Apache License, Version 2.0
   Simple API for CSS under The W3C Software License
   SLF4J API and Google Android Binding under The MIT License
