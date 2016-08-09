@@ -60,6 +60,11 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
 {
 }
 
+LongPollingMessageReceiver::~LongPollingMessageReceiver()
+{
+    stop();
+}
+
 void LongPollingMessageReceiver::interrupt()
 {
     interrupted = true;

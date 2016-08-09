@@ -104,7 +104,7 @@ private:
     std::string globalClusterControllerAddress;
 
     MessagingSettings settings;
-    LongPollingMessageReceiver* messageReceiver;
+    std::unique_ptr<LongPollingMessageReceiver> messageReceiver;
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;
