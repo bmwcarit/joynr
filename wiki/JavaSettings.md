@@ -377,10 +377,11 @@ that the system requires exactly one entry for each to be provisioned. The syste
 fail to start if either one is lacking or duplicate entries have been provisioned.  
 If you want to change either one of those entries from the default, you don't have to
 do so using the JSON format. You can override the entries from the JSON by using the
-properties listed in the `ConfigurableMessagingSettings` section above. If you choose
-this approach, ensure that you specify both the participant ID and the URL for the given
-service, as if you omit one of those properties, the entry will not be considered
-complete and will not be loaded, falling back the value found in the JSON.
+properties listed in the `ConfigurableMessagingSettings` section above.  
+Generally you will simply specifiy one of `DISCOVERYDIRECTORYURL` and/or
+`DOMAINACCESSCONTROLLERURL`, although it is also possible to override all other parts
+of the entry if necessary. Specifying an incomplete entry by, e.g., setting the
+participant ID to an empty value will result in the system failing to start.
 
 * **OPTIONAL**
 * **Type**: String

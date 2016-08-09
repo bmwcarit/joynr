@@ -3,13 +3,26 @@
 ##API relevant changes
 * **[Java]** Static capabilities provisioning can now be specified as a URI.
   See the [Java Configuration Guide](JavaSettings.md) for details.
+* **[Java]** the domain access controller now has it's own property with which one can set its
+  URI rather than it using the discovery directory URI. See the documentation to
+  `DOMAINACCESSCONTROLLERURL` in the [Java Configuration Guide](JavaSettings.md) for details.
+* **[Java]** when specifying the discovery directory or domain access controller URIs via
+  configuration properties, it is now __not__ necessary to specify the participant IDs as well.
 * **[JS]** Optional expiryDateMs (mills since epoch) can be passed to registerProvider. Default
   value is one day from now.
 * **[JEE]** Added ability to specifiy message processors which can be used to, e.g., add custom
   headers to outgoing joynr messages. See the [JEE Documentation](jee.md) for details.
+* **[Java]** the container classes for multi-out return values are now marked with an interface:
+  `MultiReturnValuesContainer`.
 
 ##Other changes
-TODO
+* **[JEE]** a JEE version of the discovery service was added which can be deployed to EE
+  containers like, e.g., Payara.
+* **[JEE]** corrected configuration of Radio App JEE and System Integration Tests sit-jee-app
+  to match the new capabilities provisioning and some other minor fixes.
+* **[Java, JS, C++, JEE]** Ability to specify effort to be expent on ensuring delivery of
+  messages. When set to `best effort` and using MQTT as transport, this results in a QoS 0
+  MQTT message being sent (fire-and-forget). See `MessagingQosEffort` classes in each language.
 
 #joynr 0.19.5
 This is a minor bug fix release.
