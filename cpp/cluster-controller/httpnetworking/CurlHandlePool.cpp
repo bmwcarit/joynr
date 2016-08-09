@@ -26,12 +26,12 @@
 #define NOMINMAX
 #endif
 
+#include <tuple>
+
 #include <QMutableLinkedListIterator>
 #include <QUrl>
-#include <QThread>
 #include <QVector>
 #include <curl/curl.h>
-#include <tuple>
 
 namespace joynr
 {
@@ -69,7 +69,7 @@ void* PerThreadCurlHandlePool::getHandle(const std::string& url)
     std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle;
     std::string host = extractHost(url);
-    pooledHandle = takeOrCreateHandle(QThread::currentThreadId(), host);
+    pooledHandle = takeOrCreateHandle(std::this_thread::get_id(), host);
     pooledHandle->setActiveHost(host);
     outHandleMap.insert(pooledHandle->getHandle(), pooledHandle);
     return pooledHandle->getHandle();
@@ -80,7 +80,7 @@ void PerThreadCurlHandlePool::returnHandle(void* handle)
     std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     pooledHandle->clearHandle();
-    idleHandleMap.insert(QThread::currentThreadId(), pooledHandle);
+    idleHandleMap.insert(std::this_thread::get_id(), pooledHandle);
     // handles most recently used are prepended
     util::removeAll(handleOrderList, pooledHandle);
     handleOrderList.insert(handleOrderList.begin(), pooledHandle);
@@ -89,7 +89,7 @@ void PerThreadCurlHandlePool::returnHandle(void* handle)
         // if the list of idle handles is too big, remove the last item of the ordered list
         std::shared_ptr<PooledCurlHandle> handle2remove = handleOrderList.back();
         handleOrderList.pop_back();
-        for (Qt::HANDLE threadId : idleHandleMap.keys()) {
+        for (const std::thread::id& threadId : idleHandleMap.keys()) {
             int removed = idleHandleMap.remove(threadId, handle2remove);
             if (removed > 0) {
                 break;
@@ -104,7 +104,7 @@ void PerThreadCurlHandlePool::deleteHandle(void* handle)
     std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     if (pooledHandle) {
         util::removeAll(handleOrderList, pooledHandle);
-        idleHandleMap.remove(QThread::currentThreadId(), pooledHandle);
+        idleHandleMap.remove(std::this_thread::get_id(), pooledHandle);
     }
 }
 
@@ -124,7 +124,7 @@ std::string PerThreadCurlHandlePool::extractHost(const std::string& url)
 }
 
 std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
-        const Qt::HANDLE& threadId,
+        const std::thread::id& threadId,
         std::string host)
 {
     if (idleHandleMap.contains(threadId)) {

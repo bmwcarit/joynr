@@ -18,19 +18,20 @@
  */
 #ifndef CURLHANDLEPOOL_H_
 #define CURLHANDLEPOOL_H_
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrClusterControllerExport.h"
-#include "cluster-controller/httpnetworking/HttpNetworking.h"
+#include <cstdint>
+#include <mutex>
+#include <memory>
+#include <string>
+#include <thread>
+#include <vector>
 
 #include <QLinkedList>
-#include <mutex>
 #include <QMap>
 
-#include <memory>
-#include <vector>
-#include <string>
-#include <cstdint>
+#include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "HttpNetworking.h"
 
 namespace joynr
 {
@@ -191,7 +192,7 @@ private:
      * is removed from the list and returned.
       * If no handle is available for the current thread, a new one is created.
       */
-    std::shared_ptr<PooledCurlHandle> takeOrCreateHandle(const Qt::HANDLE& threadId,
+    std::shared_ptr<PooledCurlHandle> takeOrCreateHandle(const std::thread::id& threadId,
                                                          std::string host);
 
     /**
@@ -202,8 +203,8 @@ private:
       * and the size of this map plus the size of outHandleMap is smaller than POOL_SIZE
       */
     // TODO shouldn't the POOL_SIZE define the amount of idle handles?
-    // key of this QMultiMap: Qt::HANDLE == the thread id the handle has been created for.
-    QMultiMap<Qt::HANDLE, std::shared_ptr<PooledCurlHandle>> idleHandleMap;
+    // key of this QMultiMap: std::thread::id == the thread id the handle has been created for.
+    QMultiMap<std::thread::id, std::shared_ptr<PooledCurlHandle>> idleHandleMap;
     // handleOrderList is used to sort the curl handles according to their last use.
     // By deleting the last item of this list, the longest idle curl handle will be deleted.
     std::vector<std::shared_ptr<PooledCurlHandle>> handleOrderList;
