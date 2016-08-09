@@ -24,7 +24,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
     "joynr/capabilities/ParticipantIdStorage",
     "joynr/types/Version"
 ], function(Promise, Util, DiscoveryEntry, ParticipantIdStorage, Version) {
-
+    var ONE_DAY_MS = 24 * 60 * 60 * 1000;
     /**
      * The Capabilities Registrar
      *
@@ -102,13 +102,21 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *            provider.interfaceName
          * @param {ProviderQos}
          *            providerQos the Quality of Service parameters for provider registration
+         * @param {Number}
+         *            [expiryDateMs] date in millis since epoch after which the discovery entry can be purged from all directories.
+         *            Default value is one day.
          * @param {Object}
-         *            loggingContext optional logging context will be appended to logging messages created in the name of this proxy
+         *            [loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
          *
          * @returns {Object} an A+ promise
          */
         this.registerProvider =
-                function registerProvider(domain, provider, providerQos, loggingContext) {
+                function registerProvider(
+                        domain,
+                        provider,
+                        providerQos,
+                        expiryDateMs,
+                        loggingContext) {
 
                     var missingImplementations = provider.checkImplementation();
 
@@ -151,6 +159,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                         participantId : participantId,
                         qos : providerQos,
                         publicKeyId : defaultPublicKeyId,
+                        expiryDateMs : expiryDateMs || Date.now() + ONE_DAY_MS,
                         lastSeenDateMs : Date.now()
                     }));
 

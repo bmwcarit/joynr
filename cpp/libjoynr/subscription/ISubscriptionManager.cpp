@@ -22,6 +22,8 @@
 #include <limits>
 #include <chrono>
 
+#include "joynr/SubscriptionQos.h"
+
 namespace joynr
 {
 

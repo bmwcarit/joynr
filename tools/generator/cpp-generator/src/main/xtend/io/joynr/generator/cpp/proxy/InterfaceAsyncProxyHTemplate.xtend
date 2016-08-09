@@ -63,7 +63,7 @@ namespace exceptions
 } // namespace exceptions
 } // namespace joynr
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 

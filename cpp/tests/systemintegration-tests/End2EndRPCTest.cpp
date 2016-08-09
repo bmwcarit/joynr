@@ -169,7 +169,7 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .Times(AtLeast(2));
 
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 800, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms

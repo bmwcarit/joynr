@@ -1,46 +1,46 @@
-{
-   "listOfGlobalDiscoveryEntries":[
-      {
-         "_typeName":"joynr.types.GlobalDiscoveryEntry",
-         "providerVersion" : {
-            "_typeName":"joynr.types.Version",
-            "majorVersion":1,
-            "minorVersion":0,
-          },
-         "domain":"io.joynr.rocks",
-         "interfaceName":"notReachableInterface/UsedInTestOnly_1",
-         "participantId":"notReachableInterface_Heisenberg",
-         "qos":{
-            "_typeName":"joynr.types.HeisenbergInterface",
-            "customParameters":[],
-            "priority":1,
-            "scope":"GLOBAL",
-            "supportsOnChangeSubscriptions":true
-         },
-         "lastSeenDateMs":556408800,
-         "expiryDateMs":3712168800,
-         "address":"http://youwillnotgetme.example.com"
+[
+  {
+     "_typeName":"joynr.types.GlobalDiscoveryEntry",
+     "providerVersion" : {
+        "_typeName":"joynr.types.Version",
+        "majorVersion":1,
+        "minorVersion":0
       },
-      {
-         "_typeName":"joynr.types.GlobalDiscoveryEntry",
-         "providerVersion" : {
-            "_typeName":"joynr.types.Version",
-            "majorVersion":1,
-            "minorVersion":0,
-          },
-         "domain":"io.joynr.rocks",
-         "interfaceName":"notReachableInterface/UsedInTestOnly_1",
-         "participantId":"notReachableInterface_Schroedinger",
-         "qos":{
-            "_typeName":"joynr.types.SchroedingerInterface",
-            "customParameters":[],
-            "priority":1,
-            "scope":"GLOBAL",
-            "supportsOnChangeSubscriptions":true
-         },
-         "lastSeenDateMs": 556408800,
-         "expiryDateMs": 3712168800,
-         "address":"http://youwillnotgetme.example.com"
+     "domain":"io.joynr.rocks",
+     "interfaceName":"notReachableInterface/UsedInTestOnly_1",
+     "participantId":"notReachableInterface_Heisenberg",
+     "qos":{
+        "_typeName":"joynr.types.HeisenbergInterface",
+        "customParameters":[],
+        "priority":1,
+        "scope":"GLOBAL",
+        "supportsOnChangeSubscriptions":true
+     },
+     "lastSeenDateMs":556408800,
+     "expiryDateMs":3712168800,
+     "address":"http://youwillnotgetme.example.com",
+     "publicKeyId" : ""
+  },
+  {
+     "_typeName":"joynr.types.GlobalDiscoveryEntry",
+     "providerVersion" : {
+        "_typeName":"joynr.types.Version",
+        "majorVersion":1,
+        "minorVersion":0
       },
-   ]
-}
+     "domain":"io.joynr.rocks",
+     "interfaceName":"notReachableInterface/UsedInTestOnly_1",
+     "participantId":"notReachableInterface_Schroedinger",
+     "qos":{
+        "_typeName":"joynr.types.SchroedingerInterface",
+        "customParameters":[],
+        "priority":1,
+        "scope":"GLOBAL",
+        "supportsOnChangeSubscriptions":true
+     },
+     "lastSeenDateMs": 556408800,
+     "expiryDateMs": 3712168800,
+     "address":"http://youwillnotgetme.example.com",
+     "publicKeyId" : ""
+  }
+]

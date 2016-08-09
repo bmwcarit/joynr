@@ -23,3 +23,4 @@ javascript/apps/radio/joynr.properties
 java/core/clustercontroller-standalone/joynr.properties
 node_modules
 build-*
+generated-cpp

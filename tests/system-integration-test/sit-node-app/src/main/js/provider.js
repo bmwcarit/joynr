@@ -55,7 +55,7 @@ joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
         customParameters : [],
         priority : Date.now(),
         scope : joynr.types.ProviderScope.GLOBAL,
-        onChangeSubscriptions : true
+        supportsOnChangeSubscriptions : true
     });
 
     var SystemIntegrationTestProvider = require("../generated-sources/joynr/test/SystemIntegrationTestProvider.js");

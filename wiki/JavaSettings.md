@@ -153,10 +153,22 @@ channel in the backend. The cluster controller polls the channel to download the
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
 appropriate entry in the local capabilities directory.
+See also the static capabilities provisioning documentation below.
 
-* **REQUIRED if using the AtmosphereMessagingModule**
+* **OPTIONAL** (see static capabilities provisioning)
 * **Type**: String
 * **User property**: `joynr.messaging.capabilitiesdirectoryurl`
+* **Default value**: `http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
+
+### `DOMAINACCESSCONTROLLERURL`
+The URL of the receive channel (incoming message queue) of the global domain access
+controller service. To connect to the global domain access controller directory
+the cluster controller creates an appropriate entry in the local capabilities directory.
+See also the static capabilities provisioning documentation below.
+
+* **OPTIONAL** (see static capabilities provisioning)
+* **Type**: String
+* **User property**: `joynr.messaging.domainaccesscontrollerurl`
 * **Default value**: `http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
 
 ### `PROPERTY_SERVLET_HOST_PATH`
@@ -345,9 +357,9 @@ See also `io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient`.
 
 ### `PROPERTY_PROVISIONED_CAPABILITIES_FILE`
 
-This property can be used to determine the name or path of a file which can be read from
-either the local file system, or if not found there the classpath and contains the
-capabilities to be statically provisioned for the runtime.
+This property can be used to determine the name, URI or path of a file / resource which
+can be read from either a remote URI, the local file system, or if not found there the
+classpath and contains the capabilities to be statically provisioned for the runtime.
 
 By default the global capabilities directory and global domain access control directory
 are statically provisioned. But you are not limited to just provisioning those.
@@ -355,6 +367,10 @@ are statically provisioned. But you are not limited to just provisioning those.
 The content of the file is a JSON serialised array of GlobalDiscoveryEntry objects. The
 default file is `provisioned_capabilities.json` and is read from the classpath from the
 `libjoynr.jar`.
+
+When specifying a URI as the source of the provisioning file, then ensure that it is
+an absolute URI (contains the scheme, e.g. `http://` or `file:`) and that the resource
+it points to is available for reading at startup time of the application.
 
 The capabilities directory and domain access control directory have a special status, in
 that the system requires exactly one entry for each to be provisioned. The system will

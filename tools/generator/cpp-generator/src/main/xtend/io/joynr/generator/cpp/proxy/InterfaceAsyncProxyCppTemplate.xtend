@@ -44,7 +44,8 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«asyncClassName».h"
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
@@ -80,9 +81,9 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + getAttribute + ", because the communication end partner is not (yet) known"»
 				JOYNR_LOG_WARN(logger, "«errorMsg»");
-				exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException("«errorMsg»");
+				auto error = std::make_shared<exceptions::JoynrRuntimeException>("«errorMsg»");
 				if (onError) {
-					onError(error);
+					onError(*error);
 				}
 				auto future = std::make_shared<joynr::Future<«attributeType»>>();
 				future->onError(error);
@@ -104,9 +105,9 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + setAttribute + ", because the communication end partner is not (yet) known"»
 				JOYNR_LOG_WARN(logger, "«errorMsg»");
-				exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException("«errorMsg»");
+				auto error = std::make_shared<exceptions::JoynrRuntimeException>("«errorMsg»");
 				if (onError) {
-					onError(error);
+					onError(*error);
 				}
 				auto future = std::make_shared<joynr::Future<void>>();
 				future->onError(error);
@@ -132,9 +133,9 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
 				JOYNR_LOG_WARN(logger, "«errorMsg»");
-				exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException("«errorMsg»");
+				auto error = std::make_shared<exceptions::JoynrRuntimeException>("«errorMsg»");
 				if (onRuntimeError) {
-					onRuntimeError(error);
+					onRuntimeError(*error);
 				}
 				auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 				future->onError(error);

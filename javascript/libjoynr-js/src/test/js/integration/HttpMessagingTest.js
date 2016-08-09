@@ -44,10 +44,10 @@ define([
         LocalStorage,
         provisioning,
         waitsFor) {
-    var log = LoggerFactory.getLogger("joynr.messaging.TestHttpMessaging");
+    var log = LoggerFactory.getLogger("joynr.messaging.HttpMessagingTest");
     var localStorage = new LocalStorage();
 
-    describe("libjoynr-js.joynr.messaging.TestHttpMessaging", function() {
+    describe("libjoynr-js.joynr.messaging.HttpMessagingTest", function() {
         it("sends and receives messages", function(done) {
             var channelId = "js_testOpenChannelSendMessage" + Date.now();
             var url = provisioning.bounceProxyUrl + "channels/" + channelId + "/";
@@ -69,7 +69,9 @@ define([
              * Set up a JoynrMessage to send
              */
             var receivedMessages = 0;
-            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
             joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, 9360686108031);
             joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID, "me");
             joynrMessage.payload = "hello";

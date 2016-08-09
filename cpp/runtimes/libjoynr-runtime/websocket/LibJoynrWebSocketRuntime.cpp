@@ -22,9 +22,9 @@
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "joynr/Util.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/Semaphore.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -45,7 +45,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
                     libjoynrMessagingId);
 
     // send initialization message containing libjoynr messaging address
-    std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
+    std::string initializationMsg = joynr::serializer::serializeToJson(*libjoynrMessagingAddress);
     JOYNR_LOG_TRACE(logger,
                     "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
                     initializationMsg,

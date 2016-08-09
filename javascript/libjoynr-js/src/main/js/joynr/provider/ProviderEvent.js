@@ -49,11 +49,18 @@ define("joynr/provider/ProviderEvent", [
         var callbacks = [];
         var filters = [];
 
+        /**
+         * @name ProviderEvent#checkFilterParameters
+         * @param {BroadcastFilterParameters} filterParameters
+         * @param {Object} filterParameters.filterParameters an object containing a map filterParameters
+         * 
+         */
         this.checkFilterParameters =
-                function checkFilterParameters(filterParameters) {
+                function checkFilterParameters(filterParametersInput) {
+                    var filterParameters = filterParametersInput || {};
                     return SubscriptionUtil.checkFilterParameters(
                             filterSettings,
-                            filterParameters,
+                            filterParameters.filterParameters,
                             eventName);
                 };
 

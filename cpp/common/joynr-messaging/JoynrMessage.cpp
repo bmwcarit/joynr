@@ -25,13 +25,10 @@
 #include <chrono>
 
 #include "joynr/Util.h"
-#include "joynr/Variant.h"
 
 namespace joynr
 {
 INIT_LOGGER(JoynrMessage);
-
-static bool isJoynrMessageRegistered = Variant::registerType<JoynrMessage>("joynr.JoynrMessage");
 
 const std::string& JoynrMessage::HEADER_CONTENT_TYPE()
 {

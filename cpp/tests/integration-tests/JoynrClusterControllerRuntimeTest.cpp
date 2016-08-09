@@ -30,7 +30,6 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 
@@ -38,6 +37,7 @@
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
 #include "QSemaphore"
+#include "joynr/serializer/Serializer.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -96,8 +96,8 @@ public:
         using system::RoutingTypes::ChannelAddress;
         using system::RoutingTypes::MqttAddress;
 
-        std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
-        std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
+        std::string serializedChannelAddress = joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
+        std::string serializedMqttAddress = joynr::serializer::serializeToJson(MqttAddress(mqttBrokerUrl, mqttTopic));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.
@@ -343,7 +343,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
             .Times(AtLeast(1));
 
 
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     480, // validity
                     200, // min interval
                     200, // max interval
@@ -395,7 +395,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
 
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     2000,   // validity
                     100,   // min interval
                     1000,   // max interval

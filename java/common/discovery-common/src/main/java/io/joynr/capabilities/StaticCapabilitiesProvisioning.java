@@ -120,7 +120,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     private void addEntriesFromJson(String provisionedCapabilitiesJsonFilename,
                                     ObjectMapper objectMapper,
                                     String localChannelId) {
-        String provisionedCapabilitiesJsonString = resourceContentProvider.readFromFileOrResource(provisionedCapabilitiesJsonFilename);
+        String provisionedCapabilitiesJsonString = resourceContentProvider.readFromFileOrResourceOrUrl(provisionedCapabilitiesJsonFilename);
         logger.debug("Statically provisioned capabilities JSON read: {}", provisionedCapabilitiesJsonString);
         List<GlobalDiscoveryEntry> newEntries = null;
         try {

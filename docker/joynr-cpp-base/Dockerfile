@@ -3,6 +3,11 @@ FROM joynr-base:latest
 ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 
 ###################################################
+# enable gold linker
+###################################################
+RUN  update-alternatives  --set ld /usr/bin/ld.gold
+
+###################################################
 # install qt
 ###################################################
 RUN dnf update -y \
@@ -33,27 +38,13 @@ RUN dnf update -y \
 	&& dnf clean all
 
 ###################################################
-# install jsmn
-###################################################
-
-RUN cd /opt \
-    && git clone https://github.com/zserge/jsmn.git \
-    && cd jsmn \
-    && git checkout 572ace5 \
-    && CFLAGS=-fPIC make \
-    && cp libjsmn.a /usr/local/lib \
-    && cp jsmn.h /usr/local/include \
-    && cd /opt/ \
-    && rm -rf jsmn
-
-###################################################
 # install spdlog
 ###################################################
 
 RUN cd /opt \
     && git clone https://github.com/gabime/spdlog.git \
     && cd spdlog \
-    && git checkout e91e1b8 \
+    && git checkout v0.9.0 \
     && mkdir build \
     && cd build \
     && cmake .. \

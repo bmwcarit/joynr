@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,20 @@
 
 #include <vector>
 
+#include "joynr/BaseReply.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/Variant.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
 
-class JOYNR_EXPORT SubscriptionPublication
+class JOYNR_EXPORT SubscriptionPublication : public BaseReply
 {
 public:
     SubscriptionPublication();
+
+    explicit SubscriptionPublication(BaseReply&& reply);
 
     SubscriptionPublication(const SubscriptionPublication&) = default;
     SubscriptionPublication& operator=(const SubscriptionPublication&) = default;
@@ -47,18 +50,24 @@ public:
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
 
-    std::vector<Variant> getResponse() const;
-    void setResponse(const std::vector<Variant>& response);
+    std::shared_ptr<exceptions::JoynrRuntimeException> getError() const;
+    void setError(std::shared_ptr<exceptions::JoynrRuntimeException> error);
 
-    const Variant& getError() const;
-    void setError(const Variant& error);
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(subscriptionId), MUESLI_NVP(error));
+    }
 
 private:
+    // printing SubscriptionPublication with google-test and google-mock
+    friend void PrintTo(const SubscriptionPublication& subscriptionPublication, ::std::ostream* os);
     std::string subscriptionId;
-    std::vector<Variant> response;
-    Variant error;
+    std::shared_ptr<exceptions::JoynrRuntimeException> error;
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::SubscriptionPublication, "joynr.SubscriptionPublication")
 
 #endif // SUBSCRIPTIONPUBLICATION_H

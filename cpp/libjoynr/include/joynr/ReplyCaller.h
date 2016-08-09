@@ -20,11 +20,10 @@
 #define REPLYCALLER_H
 
 #include <functional>
+#include <memory>
 
 #include "joynr/IReplyCaller.h"
 #include "joynr/ReplyInterpreter.h"
-#include "joynr/StatusCode.h"
-#include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
@@ -33,14 +32,15 @@ namespace joynr
 class BaseReplyCaller : public IReplyCaller
 {
 public:
-    BaseReplyCaller(std::function<void(const exceptions::JoynrException& error)>&& errorFct)
+    BaseReplyCaller(std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)>&&
+                            errorFct)
             : errorFct(std::move(errorFct)), hasTimeOutOccurred(false)
     {
     }
 
     ~BaseReplyCaller() override = default;
 
-    void returnError(const exceptions::JoynrException& error) override
+    void returnError(const std::shared_ptr<exceptions::JoynrException>& error) override
     {
         errorFct(error);
     }
@@ -48,11 +48,12 @@ public:
     void timeOut() override
     {
         hasTimeOutOccurred = true;
-        errorFct(exceptions::JoynrTimeOutException("timeout waiting for the response"));
+        errorFct(std::make_shared<exceptions::JoynrTimeOutException>(
+                "timeout waiting for the response"));
     }
 
 protected:
-    std::function<void(const exceptions::JoynrException& error)> errorFct;
+    std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> errorFct;
     bool hasTimeOutOccurred;
 };
 
@@ -65,8 +66,9 @@ template <class... Ts>
 class ReplyCaller : public BaseReplyCaller
 {
 public:
-    ReplyCaller(std::function<void(const Ts&...)> callbackFct,
-                std::function<void(const exceptions::JoynrException& error)> errorFct)
+    ReplyCaller(
+            std::function<void(const Ts&...)> callbackFct,
+            std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> errorFct)
             : BaseReplyCaller(std::move(errorFct)), callbackFct(callbackFct)
     {
     }
@@ -97,8 +99,9 @@ template <>
 class ReplyCaller<void> : public BaseReplyCaller
 {
 public:
-    ReplyCaller(std::function<void()> callbackFct,
-                std::function<void(const exceptions::JoynrException& error)> errorFct)
+    ReplyCaller(
+            std::function<void()> callbackFct,
+            std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> errorFct)
             : BaseReplyCaller(std::move(errorFct)), callbackFct(callbackFct)
     {
     }

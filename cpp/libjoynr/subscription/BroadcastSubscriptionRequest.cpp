@@ -17,16 +17,11 @@
  * #L%
  */
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/JsonSerializer.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(BroadcastSubscriptionRequest);
-
-// Register the BroadcastSubscriptionRequest type id
-static const bool isBroadcastSubscriptionRequestRegistered =
-        Variant::registerType<BroadcastSubscriptionRequest>("joynr.BroadcastSubscriptionRequest");
 
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters()
 {
@@ -36,7 +31,7 @@ bool BroadcastSubscriptionRequest::operator==(
         const BroadcastSubscriptionRequest& subscriptionRequest) const
 {
 
-    bool equal = getQos() == subscriptionRequest.getQos() &&
+    bool equal = *(getQos()) == *(subscriptionRequest.getQos()) &&
                  getFilterParameters() == subscriptionRequest.getFilterParameters();
     return getSubscriptionId() == subscriptionRequest.getSubscriptionId() &&
            getSubscribeToName() == subscriptionRequest.getSubscribeToName() && equal;
@@ -44,16 +39,11 @@ bool BroadcastSubscriptionRequest::operator==(
 
 std::string BroadcastSubscriptionRequest::toString() const
 {
-    return JsonSerializer::serialize(*this);
+    return joynr::serializer::serializeToJson(*this);
 }
 
-void BroadcastSubscriptionRequest::setQos(const OnChangeSubscriptionQos& qos)
-{
-    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
-    SubscriptionRequest::setQos(qosVariant);
-}
-
-BroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
+const boost::optional<BroadcastFilterParameters>& BroadcastSubscriptionRequest::
+        getFilterParameters() const
 {
     return filterParameters;
 }
@@ -62,6 +52,15 @@ void BroadcastSubscriptionRequest::setFilterParameters(
         const BroadcastFilterParameters& filterParameters)
 {
     this->filterParameters = filterParameters;
+}
+
+void BroadcastSubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
+{
+    std::shared_ptr<OnChangeSubscriptionQos> onChangeQos =
+            std::dynamic_pointer_cast<OnChangeSubscriptionQos>(qos);
+    assert(onChangeQos);
+    // force object slicing
+    this->qos = std::make_shared<OnChangeSubscriptionQos>(*onChangeQos);
 }
 
 } // namespace joynr

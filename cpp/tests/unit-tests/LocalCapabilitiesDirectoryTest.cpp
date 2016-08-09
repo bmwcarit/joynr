@@ -28,18 +28,17 @@
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
 #include "tests/utils/MockCallback.h"
 #include "joynr/CapabilityEntry.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/Logger.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
 #include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/serializer/Serializer.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;
@@ -81,7 +80,6 @@ public:
     }
 
     void SetUp(){
-        registerCapabilitiesMetaTypes();
 
         //TODO the participantId should be provided by the provider
         dummyParticipantId1 = util::createUuid();
@@ -1205,13 +1203,13 @@ MATCHER_P2(pointerToAddressWithSerializedAddress, addressType, serializedAddress
         if (mqttAddress == nullptr) {
             return false;
         }
-        return JsonSerializer::serialize(*mqttAddress) == serializedAddress;
+        return joynr::serializer::serializeToJson(*mqttAddress) == serializedAddress;
     } else if (addressType == "http") {
         auto httpAddress = std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(arg);
         if (httpAddress == nullptr) {
             return false;
         }
-        return JsonSerializer::serialize(*httpAddress) == serializedAddress;
+        return joynr::serializer::serializeToJson(*httpAddress) == serializedAddress;
     } else {
         return false;
     }
@@ -1246,7 +1244,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerMqttAd
     const std::string addressType = "mqtt";
     const std::string topic = "mqtt_TEST_channelId";
     system::RoutingTypes::MqttAddress mqttAddress("brokerUri", topic);
-    registerReceivedCapabilities(addressType, JsonSerializer::serialize(mqttAddress));
+    registerReceivedCapabilities(addressType, joynr::serializer::serializeToJson(mqttAddress));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerHttpAddress) {
@@ -1254,7 +1252,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerHttpAd
     const std::string channelID = "TEST_channelId";
     const std::string endPointUrl = "TEST_endPointUrl";
     const system::RoutingTypes::ChannelAddress channelAddress(endPointUrl, channelID);
-    registerReceivedCapabilities(addressType, JsonSerializer::serialize(channelAddress));
+    registerReceivedCapabilities(addressType, joynr::serializer::serializeToJson(channelAddress));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,40 +22,49 @@
 #include <string>
 #include <vector>
 
+#include "joynr/BaseReply.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/Variant.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
-
-class JOYNRCOMMON_EXPORT Reply
+class JOYNRCOMMON_EXPORT Reply : public BaseReply
 {
 public:
     Reply();
-    Reply(const Reply&) = default;
-    Reply(Reply&&) = default;
-    ~Reply() = default;
+    virtual ~Reply() = default;
 
-    Reply& operator=(const Reply&) = default;
+    Reply(Reply&) = default;
+    Reply& operator=(Reply&) = default;
+
+    Reply(Reply&&) = default;
     Reply& operator=(Reply&&) = default;
+
+    Reply(BaseReply&& baseReply);
+
     bool operator==(const Reply&) const;
     bool operator!=(const Reply&) const;
 
-    const static Reply NULL_RESPONSE;
     const std::string& getRequestReplyId() const;
     void setRequestReplyId(const std::string& requestReplyId);
 
-    const std::vector<Variant>& getResponse() const;
-    void setResponse(std::vector<Variant> response);
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(requestReplyId), MUESLI_NVP(error));
+    }
 
-    const Variant& getError() const;
-    void setError(const Variant& error);
+    std::shared_ptr<exceptions::JoynrException> getError() const;
+    void setError(std::shared_ptr<exceptions::JoynrException> error);
 
 private:
     std::string requestReplyId;
-    std::vector<Variant> response;
-    Variant error;
+    std::shared_ptr<exceptions::JoynrException> error;
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::Reply, "joynr.Reply")
+
 #endif // REPLY_H

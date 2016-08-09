@@ -52,7 +52,7 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
 	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»FireAndForgetProxy.h"
 «ENDIF»
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 

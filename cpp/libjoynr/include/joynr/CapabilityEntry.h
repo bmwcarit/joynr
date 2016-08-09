@@ -31,6 +31,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/Version.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -75,6 +76,18 @@ public:
     void setGlobal(bool global);
 
     std::string toString() const;
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(providerVersion),
+                MUESLI_NVP(domain),
+                MUESLI_NVP(interfaceName),
+                MUESLI_NVP(qos),
+                MUESLI_NVP(participantId),
+                MUESLI_NVP(publicKeyId),
+                MUESLI_NVP(global));
+    }
 
 private:
     types::Version providerVersion;

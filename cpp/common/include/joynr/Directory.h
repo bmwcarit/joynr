@@ -32,6 +32,7 @@
 #include "joynr/ITimeoutListener.h"
 #include "joynr/Logger.h"
 #include "joynr/IReplyCaller.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/SteadyTimer.h"
 
 namespace boost
@@ -72,7 +73,7 @@ public:
         std::ignore = directoryName;
     }
 
-    virtual ~Directory()
+    ~Directory()
     {
         JOYNR_LOG_TRACE(logger, "destructor: number of entries = {}", callbackMap.size());
     }
@@ -157,6 +158,12 @@ public:
 
         callbackMap.erase(keyId);
         timeoutTimerMap.erase(keyId);
+    }
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(callbackMap));
     }
 
 private:

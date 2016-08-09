@@ -18,6 +18,7 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "JoynrTest.h"
 #include "joynr/Future.h"
 #include "tests/utils/MockObjects.h"
@@ -77,7 +78,7 @@ TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk) {
 }
 
 TEST_F(FutureTest, getStatusAndErrorAfterFailiureReceived) {
-    intFuture.onError(exceptions::ProviderRuntimeException("exceptionMessageIntFuture"));
+    intFuture.onError(std::make_shared<exceptions::ProviderRuntimeException>("exceptionMessageIntFuture"));
     ASSERT_EQ(StatusCodeEnum::ERROR, intFuture.getStatus());
     int actualValue;
 
@@ -128,7 +129,7 @@ TEST_F(FutureTest, getValueAndStatusForVoidAfterResultReceived) {
 }
 
 TEST_F(FutureTest, getStatusAndErrorForVoidAfterFailureReceived) {
-    voidFuture.onError(exceptions::ProviderRuntimeException("exceptionMessageVoidFuture"));
+    voidFuture.onError(std::make_shared<exceptions::ProviderRuntimeException>("exceptionMessageVoidFuture"));
     ASSERT_EQ(StatusCodeEnum::ERROR, voidFuture.getStatus());
 
     // get error without timeout

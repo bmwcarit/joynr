@@ -18,14 +18,13 @@
  */
 #ifndef SUBSCRIPTIONCALLBACK_H
 #define SUBSCRIPTIONCALLBACK_H
-#include "joynr/PrivateCopyAssign.h"
+
 #include <memory>
 
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionListener.h"
-#include "joynr/TrackableObject.h"
-#include "joynr/Logger.h"
-#include "joynr/Util.h"
+#include "joynr/PublicationInterpreter.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -39,14 +38,8 @@ class SubscriptionCallback : public ISubscriptionCallback
 {
 public:
     explicit SubscriptionCallback(std::shared_ptr<ISubscriptionListener<T, Ts...>> listener)
-            : listener(listener)
+            : listener(std::move(listener))
     {
-    }
-
-    ~SubscriptionCallback() override
-    {
-        JOYNR_LOG_TRACE(logger, "destructor: entering...");
-        JOYNR_LOG_TRACE(logger, "destructor: leaving...");
     }
 
     void onError(const exceptions::JoynrRuntimeException& error) override
@@ -67,14 +60,9 @@ public:
         listener->onReceive(value, values...);
     }
 
-    void timeOut()
+    void execute(SubscriptionPublication&& subscriptionPublication) override
     {
-        // TODO
-    }
-
-    int getTypeId() const override
-    {
-        return util::getTypeId<T, Ts...>();
+        PublicationInterpreter<T, Ts...>::execute(*this, std::move(subscriptionPublication));
     }
 
 protected:
@@ -82,11 +70,7 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);
-    ADD_LOGGER(SubscriptionCallback);
 };
-
-template <typename T, typename... Ts>
-INIT_LOGGER(SINGLE_MACRO_ARG(SubscriptionCallback<T, Ts...>));
 
 } // namespace joynr
 #endif // SUBSCRIPTIONCALLBACK_H

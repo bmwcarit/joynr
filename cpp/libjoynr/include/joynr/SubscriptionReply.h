@@ -19,11 +19,10 @@
 #ifndef SUBSCRIPTIONREPLY_H
 #define SUBSCRIPTIONREPLY_H
 
-#include "joynr/JoynrExport.h"
-
 #include <string>
 
-#include <memory>
+#include "joynr/JoynrExport.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -43,10 +42,18 @@ public:
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(subscriptionId));
+    }
+
 private:
     std::string subscriptionId;
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::SubscriptionReply, "joynr.SubscriptionReply");
 
 #endif // SUBSCRIPTIONREPLY_H

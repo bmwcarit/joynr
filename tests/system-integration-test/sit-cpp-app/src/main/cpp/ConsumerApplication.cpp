@@ -24,7 +24,6 @@
 
 #include "joynr/DiscoveryQos.h"
 #include "joynr/JoynrRuntime.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/Logger.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"

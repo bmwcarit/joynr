@@ -24,7 +24,6 @@ set(
     JoynrCommon_INCLUDE_DIRECTORIES
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
@@ -61,6 +60,7 @@ file(
     GLOB_RECURSE JoynrCommon_PUBLIC_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "include/joynr/*.h"
+    "include/joynr/serializer/*.h"
 )
 
 file(
@@ -165,6 +165,13 @@ target_include_directories(
     "$<BUILD_INTERFACE:${dlt_INCLUDE_DIRS}>"
 )
 endif(JOYNR_ENABLE_DLT_LOGGING)
+
+# add muesli
+add_dependencies(JoynrCommon muesli::muesli)
+get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>")
+get_target_property(muesli_COMPILE_DEFINITIONS muesli::muesli INTERFACE_COMPILE_DEFINITIONS)
+target_compile_definitions(JoynrCommon PUBLIC ${muesli_COMPILE_DEFINITIONS})
 
 target_include_directories(
     JoynrCommon
