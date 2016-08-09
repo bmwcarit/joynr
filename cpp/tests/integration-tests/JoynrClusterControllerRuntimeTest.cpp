@@ -38,6 +38,7 @@
 #include "joynr/tests/testProxy.h"
 #include "QSemaphore"
 #include "joynr/serializer/Serializer.h"
+#include "JoynrTest.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -351,7 +352,9 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                 );
     auto future = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     std::string subscriptionId;
-    future->get(subscriptionId);
+    JOYNR_ASSERT_NO_THROW({
+                              future->get(5000, subscriptionId);
+    });
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     testProxy->unsubscribeFromLocation(subscriptionId);
     delete testProxy;
@@ -409,7 +412,9 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     auto future = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
-    future->get(subscriptionId);
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
     ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
 
     testProxy->unsubscribeFromLocation(subscriptionId);

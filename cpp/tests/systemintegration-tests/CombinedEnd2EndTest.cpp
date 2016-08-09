@@ -44,6 +44,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Logger.h"
+#include "JoynrTest.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -571,7 +572,9 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     std::shared_ptr<Future<std::string>> future = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
-    future->get(subscriptionId);
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
@@ -672,7 +675,9 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange) {
     auto future = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
-    future->get(subscriptionId);
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
 
     // Change the location once
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
@@ -744,7 +749,9 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute) {
     auto future = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
-    future->get(subscriptionId);
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
@@ -853,7 +860,9 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     auto future = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
-    future->get(subscriptionId);
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
@@ -936,7 +945,9 @@ void subscribeToLocation(std::shared_ptr<ISubscriptionListener<types::Localisati
                                     2000,   //  maxInterval_ms
                                     3000);  // alertInterval_ms
     auto future = testProxy->subscribeToLocation(listener, subscriptionQos);
-    future->get(testSuite->registeredSubscriptionId);
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, testSuite->registeredSubscriptionId);
+    });
 }
 
 // A function that subscribes to a GpsPosition - to be run in a background thread

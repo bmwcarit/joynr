@@ -84,14 +84,14 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
 
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeEnumeration - register subscription");
-        testInterfaceProxy->subscribeToAttributeEnumeration(listener, subscriptionQos)
-                ->get(subscriptionId);
+        testInterfaceProxy->subscribeToAttributeEnumeration(listener, subscriptionQos)->get(
+                subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(std::chrono::milliseconds(5000)));
+        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeEnumeration - subscription registered");
 
-        ASSERT_TRUE(publicationSemaphore.waitFor(std::chrono::milliseconds(5000)));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromAttributeEnumeration(subscriptionId);
     });
@@ -139,12 +139,12 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithException
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeWithExceptionFromGetter - register subscription");
         testInterfaceProxy->subscribeToAttributeWithExceptionFromGetter(listener, subscriptionQos)
-                ->get(subscriptionId);
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(std::chrono::milliseconds(5000)));
+                ->get(subscriptionIdFutureTimeout, subscriptionId);
+        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeWithExceptionFromGetter - subscription registered");
 
-        ASSERT_TRUE(publicationSemaphore.waitFor(std::chrono::milliseconds(5000)));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromAttributeWithExceptionFromGetter(subscriptionId);
     });

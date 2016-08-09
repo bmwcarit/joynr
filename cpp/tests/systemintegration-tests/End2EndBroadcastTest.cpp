@@ -505,7 +505,9 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     auto future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
-    future->get(subscriptionId);
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
 
     testProvider->fireLocationUpdate(
                 gpsLocation2);
@@ -526,7 +528,9 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     subscriptionQos->setMinIntervalMs(5000);
     future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
-    future->get(subscriptionId);
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
     testProvider->fireLocationUpdate(gpsLocation2);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
@@ -570,7 +574,9 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     auto future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
-    future->get(subscriptionId);
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
@@ -669,7 +675,7 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
 
     // Wait for a subscription reply message to arrive
     JOYNR_EXPECT_NO_THROW(
-        subscriptionIdFuture->get(subscriptionIdFromFuture);
+        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
     );
     EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
@@ -703,7 +709,7 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
 
     // Wait for a subscription reply message to arrive
     JOYNR_EXPECT_NO_THROW(
-        subscriptionIdFuture->get(subscriptionIdFromFuture);
+        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
     );
     EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
@@ -717,7 +723,7 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
 
     // Wait for a subscription reply message to arrive
     JOYNR_EXPECT_NO_THROW(
-        subscriptionIdFuture->get(subscriptionIdFromFuture);
+        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
     );
     EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
