@@ -365,7 +365,10 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                                        callback,
                                        joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         };
-        this->capabilitiesClient->lookup(participantId, onSuccess);
+        this->capabilitiesClient->lookup(
+                participantId,
+                onSuccess,
+                std::bind(&ILocalCapabilitiesCallback::onError, callback, std::placeholders::_1));
     }
 }
 
@@ -400,10 +403,14 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
             callbackCalled(interfaceAddresses, callback);
         };
 
-        auto onError = [this, interfaceAddresses, callback](
+        auto onError = [this, interfaceAddresses, callback, discoveryQos](
                 const exceptions::JoynrRuntimeException& error) {
-            std::ignore = error;
             std::lock_guard<std::mutex> lock(pendingLookupsLock);
+            if (!(discoveryQos.getDiscoveryScope() ==
+                          joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL &&
+                  isCallbackCalled(interfaceAddresses, callback))) {
+                callback->onError(error);
+            }
             callbackCalled(interfaceAddresses, callback);
         };
 
@@ -582,7 +589,7 @@ void LocalCapabilitiesDirectory::lookup(
         onSuccess(result);
     };
 
-    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(callback);
+    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(callback, onError);
 
     lookup(domains, interfaceName, localCapabilitiesCallback, discoveryQos);
 }
@@ -617,7 +624,7 @@ void LocalCapabilitiesDirectory::lookup(
         onSuccess(result[0]);
     };
 
-    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(callback);
+    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(callback, onError);
     lookup(participantId, localCapabilitiesCallback);
 }
 
@@ -899,9 +906,17 @@ void LocalCapabilitiesDirectory::informObserversOnRemove(
 }
 
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(
-        std::function<void(const std::vector<CapabilityEntry>&)> onSuccess)
-        : onSuccess(onSuccess)
+        std::function<void(const std::vector<CapabilityEntry>&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+        : onSuccess(onSuccess), onErrorCallback(onError)
 {
+}
+
+void LocalCapabilitiesCallback::onError(const exceptions::JoynrRuntimeException& error)
+{
+    onErrorCallback(joynr::exceptions::ProviderRuntimeException(
+            "Unable to collect capabilities from global capabilities directory. Error: " +
+            error.getMessage()));
 }
 
 void LocalCapabilitiesCallback::capabilitiesReceived(

@@ -278,13 +278,17 @@ private:
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
 {
 public:
-    LocalCapabilitiesCallback(std::function<void(const std::vector<CapabilityEntry>&)> onSuccess);
+    LocalCapabilitiesCallback(
+            std::function<void(const std::vector<CapabilityEntry>&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
     void capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) override;
+    void onError(const joynr::exceptions::JoynrRuntimeException&) override;
     ~LocalCapabilitiesCallback() override = default;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesCallback);
     std::function<void(const std::vector<CapabilityEntry>&)> onSuccess;
+    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorCallback;
 };
 
 } // namespace joynr

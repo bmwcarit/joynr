@@ -47,6 +47,11 @@ std::vector<CapabilityEntry> MockLocalCapabilitiesDirectoryCallback::getResults(
     return results;
 }
 
+void MockLocalCapabilitiesDirectoryCallback::onError(const joynr::exceptions::JoynrRuntimeException& error) {
+    std::ignore = error;
+    //ignore onError currently
+}
+
 void MockLocalCapabilitiesDirectoryCallback::clearResults(){
     semaphore.waitFor();
     results.clear();
