@@ -130,15 +130,15 @@ void WebSocketMessagingStubFactory::onMessagingStubClosed(
     if (auto webSocketClientAddress =
                 dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&address)) {
         std::lock_guard<std::mutex> lock(clientStubMapMutex);
-        clientStubMap.erase(*webSocketClientAddress);
         addressPtr = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
                 *webSocketClientAddress);
+        clientStubMap.erase(*webSocketClientAddress);
     } else if (auto webSocketServerAddress =
                        dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(&address)) {
         std::lock_guard<std::mutex> lock(serverStubMapMutex);
-        serverStubMap.erase(*webSocketServerAddress);
         addressPtr = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
                 *webSocketServerAddress);
+        serverStubMap.erase(*webSocketServerAddress);
     }
     if (onMessagingStubClosedCallback) {
         onMessagingStubClosedCallback(addressPtr);

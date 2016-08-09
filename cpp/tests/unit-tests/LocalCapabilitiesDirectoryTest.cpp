@@ -380,9 +380,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient) 
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeDelegatesToCapabilitiesClientIfGlobal) {
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    std::vector<std::string> participantIdsToRemove;
-    participantIdsToRemove.push_back(dummyParticipantId1);
-    EXPECT_CALL(*capabilitiesClient, remove(participantIdsToRemove)).Times(1);
+    EXPECT_CALL(*capabilitiesClient, remove(dummyParticipantId1)).Times(1);
     joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry entry(
         providerVersion,
@@ -400,9 +398,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeDelegatesToCapabilitiesClientIfGlob
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeRemovesFromCache) {
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    std::vector<std::string> participantIdsToRemove;
-    participantIdsToRemove.push_back(dummyParticipantId1);
-    EXPECT_CALL(*capabilitiesClient, remove(participantIdsToRemove)).Times(1);
+    EXPECT_CALL(*capabilitiesClient, remove(dummyParticipantId1)).Times(1);
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
                     A<std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& discoveryEntries)>>(),

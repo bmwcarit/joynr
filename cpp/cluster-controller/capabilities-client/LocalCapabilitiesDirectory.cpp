@@ -143,44 +143,50 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
 {
     // TODO does it make sense to remove any capability for a domain/interfaceName
     // without knowing which provider registered the capability
-    std::lock_guard<std::mutex> lock(cacheLock);
-    std::vector<CapabilityEntry> entries =
-            interfaceAddress2GlobalCapabilities.lookUpAll(InterfaceAddress(domain, interfaceName));
-    std::vector<std::string> participantIdsToRemove;
+    std::vector<CapabilityEntry> entries = searchCache(
+            {InterfaceAddress(domain, interfaceName)}, std::chrono::milliseconds(-1), false);
 
+    // first, update cache
+    {
+        std::lock_guard<std::mutex> lock(cacheLock);
+        for (std::size_t i = 0; i < entries.size(); ++i) {
+            CapabilityEntry entry = entries.at(i);
+            if (entry.isGlobal()) {
+                auto compareFunc = [&entry, &domain, &interfaceName, &qos](
+                        const types::GlobalDiscoveryEntry& it) {
+                    return it.getProviderVersion() == entry.getProviderVersion() &&
+                           it.getDomain() == domain && it.getInterfaceName() == interfaceName &&
+                           it.getQos() == qos &&
+                           it.getParticipantId() == entry.getParticipantId() &&
+                           it.getPublicKeyId() == entry.getPublicKeyId();
+                };
+
+                while (registeredGlobalCapabilities.erase(
+                               std::remove_if(registeredGlobalCapabilities.begin(),
+                                              registeredGlobalCapabilities.end(),
+                                              compareFunc),
+                               registeredGlobalCapabilities.end()) !=
+                       registeredGlobalCapabilities.end()) {
+                }
+                participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
+                interfaceAddress2GlobalCapabilities.remove(
+                        InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+            }
+            participantId2LocalCapability.remove(entry.getParticipantId(), entry);
+            interfaceAddress2LocalCapabilities.remove(
+                    InterfaceAddress(domain, interfaceName), entry);
+        }
+    }
+
+    // second, do final cleanup and observer call
     types::DiscoveryEntry discoveryEntry;
-
     for (std::size_t i = 0; i < entries.size(); ++i) {
         CapabilityEntry entry = entries.at(i);
         if (entry.isGlobal()) {
-            auto compareFunc =
-                    [&entry, &domain, &interfaceName, &qos](const types::GlobalDiscoveryEntry& it) {
-                return it.getProviderVersion() == entry.getProviderVersion() &&
-                       it.getDomain() == domain && it.getInterfaceName() == interfaceName &&
-                       it.getQos() == qos && it.getParticipantId() == entry.getParticipantId() &&
-                       it.getPublicKeyId() == entry.getPublicKeyId();
-            };
-
-            while (registeredGlobalCapabilities.erase(
-                           std::remove_if(registeredGlobalCapabilities.begin(),
-                                          registeredGlobalCapabilities.end(),
-                                          compareFunc),
-                           registeredGlobalCapabilities.end()) !=
-                   registeredGlobalCapabilities.end()) {
-            }
-            participantIdsToRemove.push_back(entry.getParticipantId());
-            participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
-            interfaceAddress2GlobalCapabilities.remove(
-                    InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+            capabilitiesClient->remove(entry.getParticipantId());
         }
-        participantId2LocalCapability.remove(entry.getParticipantId(), entry);
-        interfaceAddress2LocalCapabilities.remove(InterfaceAddress(domain, interfaceName), entry);
-
         convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
         informObserversOnRemove(discoveryEntry);
-    }
-    if (!participantIdsToRemove.empty()) {
-        capabilitiesClient->remove(participantIdsToRemove);
     }
 
     updatePersistedFile();
@@ -188,20 +194,36 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
 
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
 {
-    std::lock_guard<std::mutex> lock(cacheLock);
-    CapabilityEntry entry = participantId2LocalCapability.take(participantId);
-    interfaceAddress2LocalCapabilities.remove(
-            InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
-    if (entry.isGlobal()) {
-        participantId2GlobalCapabilities.remove(participantId, entry);
-        interfaceAddress2GlobalCapabilities.remove(
-                InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
-        capabilitiesClient->remove(participantId);
+
+    std::vector<CapabilityEntry> entries =
+            searchCache(participantId, std::chrono::milliseconds(-1), true);
+
+    // first, update cache
+    {
+        for (std::size_t i = 0; i < entries.size(); ++i) {
+            CapabilityEntry entry = entries.at(i);
+            std::lock_guard<std::mutex> lock(cacheLock);
+            participantId2LocalCapability.remove(participantId, entry);
+            interfaceAddress2LocalCapabilities.remove(
+                    InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+            if (entry.isGlobal()) {
+                participantId2GlobalCapabilities.remove(participantId, entry);
+                interfaceAddress2GlobalCapabilities.remove(
+                        InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+            }
+        }
     }
 
-    types::DiscoveryEntry discoveryEntry;
-    convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
-    informObserversOnRemove(discoveryEntry);
+    // second, do final cleanup and observer call
+    for (std::size_t i = 0; i < entries.size(); ++i) {
+        CapabilityEntry entry = entries.at(i);
+        types::DiscoveryEntry discoveryEntry;
+        if (entry.isGlobal()) {
+            capabilitiesClient->remove(participantId);
+        }
+        convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
+        informObserversOnRemove(discoveryEntry);
+    }
 
     updatePersistedFile();
 }
