@@ -275,23 +275,16 @@ private:
     void callPendingLookups(const InterfaceAddress& interfaceAddress);
 };
 
-// NOTE: This future is used to convert the synchronous call of the middleware
-// to an asynchronous call to the local capabilities directory. It could be removed
-// once we have the possibility to call provider asynchronous.
-class LocalCapabilitiesFuture : public ILocalCapabilitiesCallback
+class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
 {
 public:
-    LocalCapabilitiesFuture(std::function<void(const std::vector<CapabilityEntry>&)> callback);
+    LocalCapabilitiesCallback(std::function<void(const std::vector<CapabilityEntry>&)> onSuccess);
     void capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) override;
-    std::vector<CapabilityEntry> get();
-    std::vector<CapabilityEntry> get(std::chrono::milliseconds timeout);
-    ~LocalCapabilitiesFuture() override = default;
+    ~LocalCapabilitiesCallback() override = default;
 
 private:
-    Semaphore futureSemaphore;
-    DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesFuture);
-    std::vector<CapabilityEntry> capabilities;
-    std::function<void(const std::vector<CapabilityEntry>&)> callback;
+    DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesCallback);
+    std::function<void(const std::vector<CapabilityEntry>&)> onSuccess;
 };
 
 } // namespace joynr

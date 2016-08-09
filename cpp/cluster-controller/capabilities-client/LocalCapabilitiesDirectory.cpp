@@ -582,9 +582,9 @@ void LocalCapabilitiesDirectory::lookup(
         onSuccess(result);
     };
 
-    auto future = std::make_shared<LocalCapabilitiesFuture>(callback);
+    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(callback);
 
-    lookup(domains, interfaceName, future, discoveryQos);
+    lookup(domains, interfaceName, localCapabilitiesCallback, discoveryQos);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -617,8 +617,8 @@ void LocalCapabilitiesDirectory::lookup(
         onSuccess(result[0]);
     };
 
-    auto future = std::make_shared<LocalCapabilitiesFuture>(callback);
-    lookup(participantId, future);
+    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(callback);
+    lookup(participantId, localCapabilitiesCallback);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -898,32 +898,16 @@ void LocalCapabilitiesDirectory::informObserversOnRemove(
     }
 }
 
-LocalCapabilitiesFuture::LocalCapabilitiesFuture(
-        std::function<void(const std::vector<CapabilityEntry>&)> callback)
-        : futureSemaphore(0), capabilities(), callback(callback)
+LocalCapabilitiesCallback::LocalCapabilitiesCallback(
+        std::function<void(const std::vector<CapabilityEntry>&)> onSuccess)
+        : onSuccess(onSuccess)
 {
 }
 
-void LocalCapabilitiesFuture::capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities)
+void LocalCapabilitiesCallback::capabilitiesReceived(
+        const std::vector<CapabilityEntry>& capabilities)
 {
-    callback(capabilities);
-    this->capabilities = capabilities;
-    futureSemaphore.notify();
-}
-
-std::vector<CapabilityEntry> LocalCapabilitiesFuture::get()
-{
-    futureSemaphore.wait();
-    futureSemaphore.notify();
-    return capabilities;
-}
-
-std::vector<CapabilityEntry> LocalCapabilitiesFuture::get(std::chrono::milliseconds timeout)
-{
-    if (futureSemaphore.waitFor(timeout)) {
-        futureSemaphore.notify();
-    }
-    return capabilities;
+    onSuccess(capabilities);
 }
 
 } // namespace joynr
