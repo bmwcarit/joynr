@@ -392,9 +392,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
         auto onSuccess = [this, interfaceAddresses, callback, discoveryQos](
                 std::vector<joynr::types::GlobalDiscoveryEntry> capabilities) {
             std::lock_guard<std::mutex> lock(pendingLookupsLock);
-            if (!(discoveryQos.getDiscoveryScope() ==
-                          joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL &&
-                  isCallbackCalled(interfaceAddresses, callback))) {
+            if (!(isCallbackCalled(interfaceAddresses, callback, discoveryQos))) {
                 this->capabilitiesReceived(capabilities,
                                            getCachedLocalCapabilities(interfaceAddresses),
                                            callback,
@@ -406,9 +404,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
         auto onError = [this, interfaceAddresses, callback, discoveryQos](
                 const exceptions::JoynrRuntimeException& error) {
             std::lock_guard<std::mutex> lock(pendingLookupsLock);
-            if (!(discoveryQos.getDiscoveryScope() ==
-                          joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL &&
-                  isCallbackCalled(interfaceAddresses, callback))) {
+            if (!(isCallbackCalled(interfaceAddresses, callback, discoveryQos))) {
                 callback->onError(error);
             }
             callbackCalled(interfaceAddresses, callback);
@@ -457,8 +453,15 @@ bool LocalCapabilitiesDirectory::hasPendingLookups()
 
 bool LocalCapabilitiesDirectory::isCallbackCalled(
         const std::vector<InterfaceAddress>& interfaceAddresses,
-        const std::shared_ptr<ILocalCapabilitiesCallback>& callback)
+        const std::shared_ptr<ILocalCapabilitiesCallback>& callback,
+        const joynr::types::DiscoveryQos& discoveryQos)
 {
+    // only if discovery scope is joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL, the
+    // callback can potentially already be called, as a matching capability has been added
+    // to the local capabilities directory while waiting for capabilitiesclient->lookup result
+    if (discoveryQos.getDiscoveryScope() != joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
+        return false;
+    }
     for (const InterfaceAddress& address : interfaceAddresses) {
         if (pendingLookups.find(address) == pendingLookups.cend()) {
             return true;

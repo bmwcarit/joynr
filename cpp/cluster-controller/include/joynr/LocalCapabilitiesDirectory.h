@@ -269,7 +269,8 @@ private:
     void registerPendingLookup(const std::vector<InterfaceAddress>& interfaceAddresses,
                                const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
     bool isCallbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
-                          const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
+                          const std::shared_ptr<ILocalCapabilitiesCallback>& callback,
+                          const joynr::types::DiscoveryQos& discoveryQos);
     void callbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
                         const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
     void callPendingLookups(const InterfaceAddress& interfaceAddress);
