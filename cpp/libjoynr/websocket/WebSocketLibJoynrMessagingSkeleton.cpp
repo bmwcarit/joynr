@@ -18,7 +18,7 @@
  */
 #include "WebSocketLibJoynrMessagingSkeleton.h"
 
-#include "joynr/JsonSerializer.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/MessageRouter.h"
 
 namespace joynr
@@ -47,7 +47,8 @@ void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const std::string
 {
     // deserialize message and transmit
     try {
-        JoynrMessage joynrMsg = JsonSerializer::deserialize<JoynrMessage>(message);
+        JoynrMessage joynrMsg;
+        joynr::serializer::deserializeFromJson(joynrMsg, message);
         if (joynrMsg.getType().empty()) {
             JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message);
             return;

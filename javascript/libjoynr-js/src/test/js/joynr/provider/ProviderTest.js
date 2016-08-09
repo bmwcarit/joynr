@@ -82,6 +82,15 @@ define(
                                                 this.value = newValue;
                                             }
                                         },
+                                        StartWithCapitalLetter : {
+                                            value : false,
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
                                         numberOfStations : {
                                             value : 0,
                                             get : function() {

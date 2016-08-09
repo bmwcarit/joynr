@@ -21,8 +21,7 @@
 #include <cassert>
 #include <tuple>
 
-#include "joynr/MetaTypeRegistrar.h"
-#include "joynr/IPublicationInterpreter.h"
+#include "joynr/ISubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/ISubscriptionManager.h"
 
@@ -40,7 +39,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,
         const MessagingQos& qos,
-        const SubscriptionPublication& subscriptionPublication)
+        SubscriptionPublication&& subscriptionPublication)
 {
     std::ignore = senderParticipantId; // interface has sourcePartId, because JoynrMessages have a
                                        // source and dest. partId. Those are not necessary for in
@@ -52,7 +51,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       * just call the InProcessDispatcher!
       */
 
-    std::string subscriptionId = subscriptionPublication.getSubscriptionId();
+    const std::string subscriptionId = subscriptionPublication.getSubscriptionId();
     JOYNR_LOG_TRACE(logger, "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);
@@ -65,14 +64,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
         return;
     }
 
-    int typeId = callback->getTypeId();
-
-    // Get the publication interpreter - this has to be a reference to support
-    // PublicationInterpreter polymorphism
-    IPublicationInterpreter& interpreter =
-            MetaTypeRegistrar::instance().getPublicationInterpreter(typeId);
-    JOYNR_LOG_TRACE(logger, "Interpreting publication. id={}", subscriptionId);
-    interpreter.execute(callback, subscriptionPublication);
+    callback->execute(std::move(subscriptionPublication));
 }
 
 } // namespace joynr

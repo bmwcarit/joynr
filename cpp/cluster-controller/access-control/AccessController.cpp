@@ -19,20 +19,17 @@
 
 #include "AccessController.h"
 
+#include <tuple>
+
 #include "LocalDomainAccessController.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
-
-#include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/system/RoutingTypes/Address.h"
-
-#include <tuple>
-
-#include "joynr/JsonSerializer.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -113,32 +110,31 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
 
         try {
-            Request request = JsonSerializer::deserialize<Request>(message.getPayload());
+            Request request;
+            joynr::serializer::deserializeFromJson(request, message.getPayload());
             operation = request.getMethodName();
-
-        } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_ERROR(logger, "could not deserialize Request from {} - error {}", e.what());
+        } catch (const std::exception& e) {
+            JOYNR_LOG_ERROR(logger, "could not deserialize Request - error {}", e.what());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
         try {
-            SubscriptionRequest request =
-                    JsonSerializer::deserialize<SubscriptionRequest>(message.getPayload());
+            SubscriptionRequest request;
+            joynr::serializer::deserializeFromJson(request, message.getPayload());
             operation = request.getSubscribeToName();
 
         } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "could not deserialize SubscriptionRequest from {} - error {}",
-                            e.what());
+            JOYNR_LOG_ERROR(
+                    logger, "could not deserialize SubscriptionRequest - error {}", e.what());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         try {
-            BroadcastSubscriptionRequest request =
-                    JsonSerializer::deserialize<BroadcastSubscriptionRequest>(message.getPayload());
+            BroadcastSubscriptionRequest request;
+            joynr::serializer::deserializeFromJson(request, message.getPayload());
             operation = request.getSubscribeToName();
 
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_ERROR(logger,
-                            "could not deserialize BroadcastSubscriptionRequest from {} - error {}",
+                            "could not deserialize BroadcastSubscriptionRequest - error {}",
                             e.what());
         }
     }

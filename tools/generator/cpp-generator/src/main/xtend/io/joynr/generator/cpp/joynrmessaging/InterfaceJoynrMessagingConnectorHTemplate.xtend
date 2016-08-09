@@ -48,7 +48,7 @@ class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 #define «headerGuard»
 
 «getDllExportIncludeStatement()»
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
@@ -58,7 +58,9 @@ class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 #include "joynr/AbstractJoynrMessagingConnector.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/SubscriptionRequest.h"
+«IF francaIntf.broadcasts.size > 0»
 #include "joynr/BroadcastSubscriptionRequest.h"
+«ENDIF»
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
@@ -96,7 +98,7 @@ private:
 			 */
 			std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos,
+					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest);
 		«ENDIF»
 	«ENDFOR»
@@ -112,7 +114,7 @@ private:
 		 */
 		std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::OnChangeSubscriptionQos& subscriptionQos,
+				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest);
 	«ENDFOR»
 public:
@@ -163,7 +165,7 @@ public:
 			 */
 			std::string subscribeTo«attributeName.toFirstUpper»(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-						const joynr::SubscriptionQos& subscriptionQos) override;
+						std::shared_ptr<joynr::SubscriptionQos> subscriptionQos) override;
 
 			/**
 			 * @brief updates an existing subscription to attribute 
@@ -174,7 +176,7 @@ public:
 			 */
 			std::string subscribeTo«attributeName.toFirstUpper»(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-						const joynr::SubscriptionQos& subscriptionQos,
+						std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 						std::string& subscriptionId) override;
 
 			/**
@@ -204,7 +206,7 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos) override;
+						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos) override;
 
 			/**
 			 * @brief updates an existing subscription to selective broadcast «broadcastName.toFirstUpper» with filter parameters
@@ -217,7 +219,7 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos,
+						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId) override;
 		«ELSE»
 			/**
@@ -228,7 +230,7 @@ public:
 			 */
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos) override;
+						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos) override;
 
 			/**
 			 * @brief updates an existing subscription to broadcast «broadcastName.toFirstUpper»
@@ -240,7 +242,7 @@ public:
 			 */
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos,
+						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId) override;
 		«ENDIF»
 

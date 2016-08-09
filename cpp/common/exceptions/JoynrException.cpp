@@ -18,8 +18,6 @@
  */
 #include "joynr/exceptions/JoynrException.h"
 
-#include "joynr/Variant.h"
-
 namespace joynr
 {
 
@@ -81,33 +79,6 @@ const std::string& ApplicationException::TYPE_NAME()
     return TYPE_NAME;
 }
 
-static const bool isJoynrExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrException>(JoynrException::TYPE_NAME());
-static const bool isJoynrRuntimeExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrRuntimeException>(
-                JoynrRuntimeException::TYPE_NAME());
-static const bool isJoynrTimeOutExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrTimeOutException>(
-                JoynrTimeOutException::TYPE_NAME());
-static const bool isJoynrMessageNotSentExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrMessageNotSentException>(
-                JoynrMessageNotSentException::TYPE_NAME());
-static const bool isJoynrJoynrDelayMessageExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrDelayMessageException>(
-                JoynrDelayMessageException::TYPE_NAME());
-static const bool isDiscoveryExceptionRegistered =
-        Variant::registerType<joynr::exceptions::DiscoveryException>(
-                DiscoveryException::TYPE_NAME());
-static const bool isProviderRuntimeExceptionRegistered =
-        Variant::registerType<joynr::exceptions::ProviderRuntimeException>(
-                ProviderRuntimeException::TYPE_NAME());
-static const bool isPublicationMissedExceptionRegistered =
-        Variant::registerType<joynr::exceptions::PublicationMissedException>(
-                PublicationMissedException::TYPE_NAME());
-static const bool isApplicationExceptionRegistered =
-        Variant::registerType<joynr::exceptions::ApplicationException>(
-                ApplicationException::TYPE_NAME());
-
 JoynrException::JoynrException() noexcept : message()
 {
 }
@@ -118,12 +89,12 @@ JoynrException::JoynrException(const std::string& message) noexcept : message(me
 
 const char* JoynrException::what() const noexcept
 {
-    return message.c_str();
+    return message.is_initialized() ? message->c_str() : std::exception::what();
 }
 
 const std::string JoynrException::getMessage() const noexcept
 {
-    return message;
+    return message.is_initialized() ? *message : std::string(std::exception::what());
 }
 
 void JoynrException::setMessage(const std::string& message)
@@ -134,11 +105,6 @@ void JoynrException::setMessage(const std::string& message)
 const std::string& JoynrException::getTypeName() const
 {
     return JoynrException::TYPE_NAME();
-}
-
-JoynrException* JoynrException::clone() const
-{
-    return new JoynrException(const_cast<JoynrException&>(*this));
 }
 
 bool JoynrException::operator==(const JoynrException& other) const
@@ -308,47 +274,20 @@ bool PublicationMissedException::operator==(const PublicationMissedException& ot
     return message == other.getMessage() && subscriptionId == other.getSubscriptionId();
 }
 
-ApplicationException::ApplicationException() noexcept : JoynrException(),
-                                                        value(Variant::NULL_VARIANT()),
-                                                        name(),
-                                                        typeName()
+ApplicationException::ApplicationException() noexcept : JoynrException(), error()
 {
 }
 
-ApplicationException::ApplicationException(const std::string& message,
-                                           const Variant& value,
-                                           const std::string& name,
-                                           const std::string& typeName) noexcept
-        : JoynrException(message),
-          value(value),
-          name(name),
-          typeName(typeName)
+ApplicationException::ApplicationException(
+        const std::string& message,
+        std::shared_ptr<ApplicationExceptionError> error) noexcept : JoynrException(message),
+                                                                     error(std::move(error))
 {
-}
-
-void ApplicationException::setError(const Variant& value) noexcept
-{
-    this->value = value;
 }
 
 std::string ApplicationException::getName() const noexcept
 {
-    return name;
-}
-
-void ApplicationException::setName(const std::string& value) noexcept
-{
-    this->name = value;
-}
-
-std::string ApplicationException::getErrorTypeName() const noexcept
-{
-    return typeName;
-}
-
-void ApplicationException::setErrorTypeName(const std::string& value) noexcept
-{
-    this->typeName = value;
+    return error->getName();
 }
 
 const std::string& ApplicationException::getTypeName() const
@@ -363,8 +302,8 @@ ApplicationException* ApplicationException::clone() const
 
 bool ApplicationException::operator==(const ApplicationException& other) const
 {
-    return message == other.getMessage() && value == other.value && name == other.name &&
-           typeName == other.typeName;
+    return typeid(*error) == typeid(*(other.error)) && message == other.getMessage() &&
+           error->getName() == other.error->getName();
 }
 
 } // namespace exceptions

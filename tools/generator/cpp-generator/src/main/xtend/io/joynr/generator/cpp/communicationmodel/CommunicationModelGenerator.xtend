@@ -74,20 +74,6 @@ class CommunicationModelGenerator {
 				sourcepath + getGenerationTypeName(type) + ".cpp",
 				typeCppTemplate
 			)
-
-			var typeSerializerHTemplate = templateFactory.createTypeSerializerHTemplate(type)
-			generateFile(
-				headerFileSystem,
-				headerpath + getGenerationTypeName(type) + "Serializer.h",
-				typeSerializerHTemplate
-			)
-
-			var typeSerializerCppTemplate = templateFactory.createTypeSerializerCppTemplate(type)
-			generateFile(
-				sourceFileSystem,
-				sourcepath + getGenerationTypeName(type) + "Serializer.cpp",
-				typeSerializerCppTemplate
-			)
 		}
 
 		for (type : getEnumDataTypes(fModel)) {
@@ -130,19 +116,6 @@ class CommunicationModelGenerator {
 				sourceFileSystem,
 				sourceFilename + ".cpp",
 				mapCppTemplate
-			)
-
-			var mapSerializerHTemplate = templateFactory.createMapSerializerHTemplate(type)
-			generateFile(
-				headerFileSystem,
-				headerFilename + "Serializer.h",
-				mapSerializerHTemplate
-			)
-			var mapSerializerCppTemplate = templateFactory.createMapSerializerCppTemplate(type)
-			generateFile(
-				sourceFileSystem,
-				sourceFilename + "Serializer.cpp",
-				mapSerializerCppTemplate
 			)
 		}
 
@@ -239,19 +212,5 @@ class CommunicationModelGenerator {
 			sourceFilename + ".cpp",
 			enumCppTemplate
 		)
-
-		var enumSerializerHTemplate = templateFactory.createEnumSerializerHTemplate(enumType)
-		generateFile(
-			headerFileSystem,
-			headerFilename + "Serializer.h",
-			enumSerializerHTemplate
-		)
-		var enumSerializerCppTemplate = templateFactory.createEnumSerializerCppTemplate(enumType)
-		generateFile(
-			sourceFileSystem,
-			sourceFilename + "Serializer.cpp",
-			enumSerializerCppTemplate
-		)
-
 	}
 }

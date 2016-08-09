@@ -1,11 +1,42 @@
 #joynr 0.20.0
 
 ##API relevant changes
-
+* **[Java]** Static capabilities provisioning can now be specified as a URI.
+  See the [Java Configuration Guide](JavaSettings.md) for details.
+* **[JS]** Optional expiryDateMs (mills since epoch) can be passed to registerProvider. Default
+  value is one day from now.
 * **[JEE]** Added ability to specifiy message processors which can be used to, e.g., add custom
   headers to outgoing joynr messages. See the [JEE Documentation](jee.md) for details.
 
 ##Other changes
+TODO
+
+#joynr 0.19.4
+This is a minor bug fix release.
+
+##API relevant changes
+None. 
+
+##Other changes
+* **[C++]** Correctly load persisted routing table in the LibJoynrRuntime.
+
+#joynr 0.19.3
+This is a minor bug fix release.
+
+##API relevant changes
+* **[C++]** Add new API to create joynr runtime with settings object. 
+
+##Other changes
+* **[JS]** Support attributes starting with capital letters. 
+
+#joynr 0.19.2
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Do not crash joynr runtime if writing persistency files fails. 
 
 #joynr 0.19.1
 This is a minor bug fix release.

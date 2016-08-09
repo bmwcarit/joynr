@@ -68,7 +68,7 @@ find_package(Qt5WebSockets)
 find_package(Qt5Sql REQUIRED)
 
 # Boost
-find_package(Boost 1.56.0 REQUIRED
+find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
     system
     thread
@@ -128,6 +128,18 @@ set(
     Joynr_LIB_WS_LIBRARIES
     "${Joynr_LIB_COMMON_LIBRARIES}"
     @JoynrConfig_LIB_WS_LIBRARIES@
+)
+
+# DLT logger configuration
+set(
+     JOYNR_ENABLE_DLT_LOGGING
+    @JOYNR_ENABLE_DLT_LOGGING@
+)
+
+# STDOUT SPD logger configuration
+set(
+    JOYNR_ENABLE_STDOUT_LOGGING
+    @JOYNR_ENABLE_STDOUT_LOGGING@
 )
 
 # Dbus configuration

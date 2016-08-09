@@ -43,7 +43,7 @@ class InterfaceSubscriptionUtil {
 		 */
 		«IF pure»virtual «ENDIF»std::string subscribeTo«attribute.joynrName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
+					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
 
 		/**
 		 * @brief updates an existing subscription to attribute «attribute.joynrName.toFirstUpper»
@@ -54,7 +54,7 @@ class InterfaceSubscriptionUtil {
 		 */
 		«IF pure»virtual «ENDIF»std::string subscribeTo«attribute.joynrName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos,
+					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
 
 		/**
@@ -77,7 +77,7 @@ class InterfaceSubscriptionUtil {
 			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
+						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
 
 			/**
 			 * @brief updates an existing subscription to selective broadcast «broadcast.joynrName.toFirstUpper» with filter parameters
@@ -90,7 +90,7 @@ class InterfaceSubscriptionUtil {
 			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos,
+						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
 		«ELSE»
 			/**
@@ -101,7 +101,7 @@ class InterfaceSubscriptionUtil {
 			 */
 			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
+						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
 
 			/**
 			 * @brief updates an existing subscription to broadcast «broadcast.joynrName.toFirstUpper»
@@ -113,7 +113,7 @@ class InterfaceSubscriptionUtil {
 			 */
 			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos,
+						std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
 		«ENDIF»
 

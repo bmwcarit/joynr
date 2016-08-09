@@ -45,7 +45,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«syncClassName».h"
 
-«FOR datatype: getRequiredIncludesFor(francaIntf)»
+«FOR datatype: getDataTypeIncludesFor(francaIntf)»
 	#include «datatype»
 «ENDFOR»
 

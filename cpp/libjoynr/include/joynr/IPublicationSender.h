@@ -37,11 +37,10 @@ class JOYNR_EXPORT IPublicationSender
 public:
     virtual ~IPublicationSender() = default;
 
-    virtual void sendSubscriptionPublication(
-            const std::string& senderParticipantId,
-            const std::string& receiverParticipantId,
-            const MessagingQos& qos,
-            const SubscriptionPublication& subscriptionPublication) = 0;
+    virtual void sendSubscriptionPublication(const std::string& senderParticipantId,
+                                             const std::string& receiverParticipantId,
+                                             const MessagingQos& qos,
+                                             SubscriptionPublication&& subscriptionPublication) = 0;
 };
 
 } // namespace joynr

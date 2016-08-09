@@ -42,7 +42,7 @@ joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
         customParameters : [],
         priority : Date.now(),
         scope : joynr.types.ProviderScope.LOCAL,
-        onChangeSubscriptions : true
+        supportsOnChangeSubscriptions : true
     });
 
     var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");

@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,10 +41,11 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 «val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"RequestCaller_h").toUpperCase»
 «warning()»
-#include <functional>
-
 #ifndef «headerGuard»
 #define «headerGuard»
+
+#include <functional>
+#include <memory>
 
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
@@ -52,12 +53,17 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/Version.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
-#include <memory>
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include "joynr/Logger.h"
+
+namespace joynr
+{
+class SubscriptionBroadcastListener;
+class SubscriptionAttributeListener;
+} // namespace joynr
 
 «getNamespaceStarter(francaIntf)»
 
@@ -92,7 +98,7 @@ public:
 							const «attribute.typeName»&
 					)> onSuccess,
 					std::function<void(
-							const exceptions::ProviderRuntimeException&
+							const std::shared_ptr<exceptions::ProviderRuntimeException>&
 					)> onError
 			);
 		«ENDIF»
@@ -108,7 +114,7 @@ public:
 					const «attribute.typeName»& «attributeName»,
 					std::function<void()> onSuccess,
 					std::function<void(
-							const exceptions::ProviderRuntimeException&
+							const std::shared_ptr<exceptions::ProviderRuntimeException>&
 					)> onError
 			);
 		«ENDIF»
@@ -146,7 +152,7 @@ public:
 						)> onSuccess,
 					«ENDIF»
 					std::function<void(
-							const exceptions::JoynrException&
+							const std::shared_ptr<exceptions::JoynrException>&
 					)> onError
 				«ENDIF»
 		);
@@ -157,28 +163,28 @@ public:
 	 * @param attributeName The name of the attribute for which a listener should be registered
 	 * @param attributeListener The listener to be registered
 	 */
-	void registerAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener) override;
+	void registerAttributeListener(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener) override;
 
 	/**
 	 * @brief Unregister an attribute listener
 	 * @param attributeName The name of the attribute for which a listener should be unregistered
 	 * @param attributeListener The listener to be unregistered
 	 */
-	void unregisterAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener) override;
+	void unregisterAttributeListener(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener) override;
 
 	/**
 	 * @brief Register a broadcast listener
 	 * @param broadcastName The name of the broadcast for which a listener should be registered
 	 * @param broadcastListener The listener to be registered
 	 */
-	void registerBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener) override;
+	void registerBroadcastListener(const std::string& broadcastName, joynr::SubscriptionBroadcastListener* broadcastListener) override;
 
 	/**
 	 * @brief Unregister a broadcast listener
 	 * @param broadcastName The name of the broadcast for which a listener should be unregistered
 	 * @param broadcastListener The listener to be unregistered
 	 */
-	void unregisterBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener) override;
+	void unregisterBroadcastListener(const std::string& broadcastName, joynr::SubscriptionBroadcastListener* broadcastListener) override;
 
 	/**
 	 * @brief Get the version of the provider instance

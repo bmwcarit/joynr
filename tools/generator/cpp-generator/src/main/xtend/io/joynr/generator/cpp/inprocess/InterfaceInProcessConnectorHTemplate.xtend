@@ -52,13 +52,15 @@ class InterfaceInProcessConnectorHTemplate extends InterfaceTemplate{
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/SubscriptionRequest.h"
+«IF francaIntf.broadcasts.size > 0»
 #include "joynr/BroadcastSubscriptionRequest.h"
+«ENDIF»
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Logger.h"
 #include "joynr/TypeUtil.h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include <memory>
@@ -88,7 +90,7 @@ private:
 	«val returnType = attribute.typeName»
 	std::string subscribeTo«attribute.joynrName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::SubscriptionQos& subscriptionQos,
+				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 				SubscriptionRequest& subscriptionRequest);
 «ENDFOR»
 «FOR broadcast: francaIntf.broadcasts»
@@ -96,7 +98,7 @@ private:
 «val broadcastName = broadcast.joynrName»
 	std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			const joynr::OnChangeSubscriptionQos& subscriptionQos,
+			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			BroadcastSubscriptionRequest& subscriptionRequest);
 «ENDFOR»
 public:

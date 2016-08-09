@@ -25,8 +25,8 @@
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -55,7 +55,7 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings)
             settings.getBounceProxyUrl().getBrokerChannelsBaseUrl().toString() + channelId + "/",
             channelId);
 
-    globalClusterControllerAddress = JsonSerializer::serialize(receiverChannelAddress);
+    globalClusterControllerAddress = joynr::serializer::serializeToJson(receiverChannelAddress);
 
     // Remove any existing curl handles
     HttpNetworking::getInstance()->getCurlHandlePool()->reset();

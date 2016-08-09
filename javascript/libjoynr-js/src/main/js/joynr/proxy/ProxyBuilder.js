@@ -207,6 +207,8 @@ define("joynr/proxy/ProxyBuilder", [
                                             dependencies.messageRouter.addNextHop(
                                                     proxy.proxyParticipantId,
                                                     dependencies.libjoynrMessagingAddress);
+                                            dependencies.messageRouter
+                                                    .setToKnown(proxy.providerParticipantId);
 
                                             var freeze =
                                                     settings.freeze === undefined

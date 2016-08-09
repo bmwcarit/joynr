@@ -31,16 +31,16 @@
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/Settings.h"
 #include "joynr/types/Version.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/serializer/Serializer.h"
 
 using namespace joynr;
 
 class SystemServicesDiscoveryTest : public ::testing::Test {
 public:
     std::string settingsFilename;
-    Settings* settings;
+    std::unique_ptr<Settings> settings;
     std::string discoveryDomain;
     std::string discoveryProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
@@ -55,7 +55,7 @@ public:
 
     SystemServicesDiscoveryTest() :
         settingsFilename("test-resources/SystemServicesDiscoveryTest.settings"),
-        settings(new Settings(settingsFilename)),
+        settings(std::make_unique<Settings>(settingsFilename)),
         discoveryDomain(),
         discoveryProviderParticipantId(),
         runtime(nullptr),
@@ -86,9 +86,9 @@ public:
         using system::RoutingTypes::ChannelAddress;
         using system::RoutingTypes::MqttAddress;
 
-        std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
-        std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
-        
+        std::string serializedChannelAddress = joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
+        std::string serializedMqttAddress = joynr::serializer::serializeToJson(MqttAddress(mqttBrokerUrl, mqttTopic));
+
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
@@ -98,7 +98,7 @@ public:
         //a channelId for getReceiveChannelId.
         runtime = new JoynrClusterControllerRuntime(
                 nullptr,
-                settings,
+                std::move(settings),
                 mockMessageReceiverHttp,
                 nullptr,
                 mockMessageReceiverMqtt);

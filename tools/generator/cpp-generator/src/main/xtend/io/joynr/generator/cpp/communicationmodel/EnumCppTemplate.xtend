@@ -56,8 +56,6 @@ class EnumCppTemplate extends EnumTemplate {
 
 «getNamespaceStarter(type, true)»
 
-static const bool is«typeName»Registered = Variant::registerType<«type.typeName»>("«type.typeNameOfContainingClass.replace("::", ".")»");
-
 const std::uint32_t «typeName»::MAJOR_VERSION = «majorVersion»;
 const std::uint32_t «typeName»::MINOR_VERSION = «minorVersion»;
 

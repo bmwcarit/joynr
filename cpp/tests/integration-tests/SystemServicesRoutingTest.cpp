@@ -16,17 +16,18 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
+#include <string>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <string>
 #include "JoynrTest.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
-
 #include "joynr/system/RoutingProxy.h"
+#include "joynr/serializer/Serializer.h"
 
 using namespace joynr;
 
@@ -34,7 +35,7 @@ class SystemServicesRoutingTest : public ::testing::Test {
 public:
     SystemServicesRoutingTest() :
             settingsFilename("test-resources/SystemServicesRoutingTest.settings"),
-            settings(new Settings(settingsFilename)),
+            settings(std::make_unique<Settings>(settingsFilename)),
             routingDomain(),
             routingProviderParticipantId(),
             runtime(nullptr),
@@ -63,10 +64,9 @@ public:
         using system::RoutingTypes::ChannelAddress;
         using system::RoutingTypes::MqttAddress;
 
-        std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
-        std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
+        std::string serializedChannelAddress = joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
+        std::string serializedMqttAddress = joynr::serializer::serializeToJson(MqttAddress(mqttBrokerUrl, mqttTopic));
 
-        
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
@@ -76,7 +76,7 @@ public:
         //a channelId for getReceiveChannelId.
         runtime = new JoynrClusterControllerRuntime(
                 nullptr,
-                settings,
+                std::move(settings),
                 mockMessageReceiverHttp,
                 mockMessageSender,
                 mockMessageReceiverMqtt,
@@ -110,7 +110,7 @@ public:
 
 protected:
     std::string settingsFilename;
-    Settings* settings;
+    std::unique_ptr<Settings> settings;
     std::string routingDomain;
     std::string routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;

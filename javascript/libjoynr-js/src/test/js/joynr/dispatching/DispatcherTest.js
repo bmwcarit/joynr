@@ -166,16 +166,16 @@ define(
                                         subscribedToName : "attributeName",
                                         subscriptionId : subscriptionId
                                     };
-                                    var joynrMessage =
-                                            new JoynrMessage(
-                                                    JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST);
+                                    var joynrMessage = new JoynrMessage({
+                                        type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
+                                        payload : JSON.stringify(payload)
+                                    });
                                     joynrMessage.setHeader(
                                             JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
                                             proxyId);
                                     joynrMessage.setHeader(
                                             JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
                                             providerId);
-                                    joynrMessage.payload = JSON.stringify(payload);
                                     dispatcher.receive(joynrMessage);
                                     expect(publicationManager.handleSubscriptionRequest)
                                             .toHaveBeenCalled();
@@ -191,10 +191,10 @@ define(
                             var payload = {
                                 subscriptionId : subscriptionId
                             };
-                            var joynrMessage =
-                                    new JoynrMessage(
-                                            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY);
-                            joynrMessage.payload = JSON.stringify(payload);
+                            var joynrMessage = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY,
+                                payload : JSON.stringify(payload)
+                            });
                             dispatcher.receive(joynrMessage);
                             expect(subscriptionManager.handleSubscriptionReply).toHaveBeenCalled();
                             expect(subscriptionManager.handleSubscriptionReply)
@@ -208,10 +208,10 @@ define(
                                     var payload = {
                                         subscriptionId : subscriptionId
                                     };
-                                    var joynrMessage =
-                                            new JoynrMessage(
-                                                    JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP);
-                                    joynrMessage.payload = JSON.stringify(payload);
+                                    var joynrMessage = new JoynrMessage({
+                                        type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP,
+                                        payload : JSON.stringify(payload)
+                                    });
                                     dispatcher.receive(joynrMessage);
                                     expect(publicationManager.handleSubscriptionStop)
                                             .toHaveBeenCalled();
@@ -225,9 +225,10 @@ define(
                                 subscriptionId : subscriptionId,
                                 response : "myResponse"
                             };
-                            var joynrMessage =
-                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION);
-                            joynrMessage.payload = JSON.stringify(payload);
+                            var joynrMessage = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION,
+                                payload : JSON.stringify(payload)
+                            });
                             dispatcher.receive(joynrMessage);
                             expect(subscriptionManager.handlePublication).toHaveBeenCalled();
                             expect(subscriptionManager.handlePublication).toHaveBeenCalledWith(
@@ -238,18 +239,19 @@ define(
                         it(
                                 "forwards request to RequestReply Manager",
                                 function(done) {
-                                    var joynrMessage =
-                                            new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                                    var request = new Request({
+                                        methodName : "methodName"
+                                    });
+                                    var joynrMessage = new JoynrMessage({
+                                        type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                                        payload : JSON.stringify(request)
+                                    });
                                     joynrMessage.setHeader(
                                             JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
                                             providerId);
                                     joynrMessage.setHeader(
                                             JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
                                             proxyId);
-                                    var request = new Request({
-                                        methodName : "methodName"
-                                    });
-                                    joynrMessage.payload = JSON.stringify(request);
                                     dispatcher.receive(joynrMessage);
                                     expect(requestReplyManager.handleRequest).toHaveBeenCalled();
                                     expect(
@@ -268,18 +270,19 @@ define(
                         it(
                                 "forwards one-way request to RequestReply Manager",
                                 function(done) {
-                                    var joynrMessage =
-                                            new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY);
+                                    var oneWayRequest = new OneWayRequest({
+                                        methodName : "methodName"
+                                    });
+                                    var joynrMessage = new JoynrMessage({
+                                        type : JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY,
+                                        payload : JSON.stringify(oneWayRequest)
+                                    });
                                     joynrMessage.setHeader(
                                             JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
                                             providerId);
                                     joynrMessage.setHeader(
                                             JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
                                             proxyId);
-                                    var oneWayRequest = new OneWayRequest({
-                                        methodName : "methodName"
-                                    });
-                                    joynrMessage.payload = JSON.stringify(oneWayRequest);
                                     dispatcher.receive(joynrMessage);
                                     expect(requestReplyManager.handleOneWayRequest)
                                             .toHaveBeenCalled();
@@ -293,13 +296,14 @@ define(
                                 });
 
                         it("forwards reply to RequestReply Manager", function(done) {
-                            var joynrMessage =
-                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REPLY);
                             var reply = new Reply({
                                 requestReplyId : requestReplyId,
                                 response : []
                             });
-                            joynrMessage.payload = JSON.stringify(reply);
+                            var joynrMessage = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_REPLY,
+                                payload : JSON.stringify(reply)
+                            });
                             dispatcher.receive(joynrMessage);
                             expect(requestReplyManager.handleReply).toHaveBeenCalled();
                             expect(requestReplyManager.handleReply).toHaveBeenCalledWith(reply);

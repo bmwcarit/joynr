@@ -16,11 +16,18 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
+
+#include <string>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <QVariant>
-#include <string>
+
+#include "joynr/Request.h"
+#include "joynr/Reply.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/SubscriptionStop.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/IReplyCaller.h"
@@ -28,6 +35,8 @@
 #include "utils/MockCallback.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/exceptions/MethodInvocationException.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/serializer/Serializer.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -165,17 +174,14 @@ public:
             const MessagingQos& qos,
             const Request& request,
             std::shared_ptr<IReplyCaller> callback) {
-        callback->returnError(*error);
+        callback->returnError(error);
     }
 
     template <typename T>
     static void checkApplicationException(
             const exceptions::ApplicationException& expected,
             const exceptions::ApplicationException& actual, T expectedEnum) {
-        EXPECT_EQ(expected.getTypeName(), actual.getTypeName());
-        EXPECT_EQ(expected.getMessage(), actual.getMessage());
-        EXPECT_EQ(expected.getErrorTypeName(), actual.getErrorTypeName());
-        EXPECT_EQ(expected.getName(), actual.getName());
+        EXPECT_EQ(expected, actual);
         EXPECT_EQ(expectedEnum, actual.getError<T>());
     }
 
@@ -204,7 +210,7 @@ public:
                         _, // messaging QoS
                         AllOf(
                             Property(&Request::getMethodName, Eq("setLocation")),
-                            Property(&Request::getParams, (Property(&std::vector<Variant>::size, Eq(1))))
+                            Property(&Request::getParamDatatypes, (Property(&std::vector<std::string>::size, Eq(1))))
                         ), // request object to send
                         Property(&std::shared_ptr<IReplyCaller>::get,NotNull()) // reply caller to notify when reply is received
                     )
@@ -236,10 +242,7 @@ public:
         MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
 
         setExpectationsForSendRequestCall("getLocation").Times(0);
-
-        Variant variant = Variant::make<types::Localisation::GpsLocation>(expectedGpsLocation);
-
-        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(variant));
+        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(expectedGpsLocation));
 
         asyncTestFixture->getLocationAsync(
                 [callback] (const types::Localisation::GpsLocation& location) {
@@ -252,8 +255,7 @@ public:
 
         setExpectationsForSendRequestCall("getLocation").Times(0);
 
-        Variant variant = Variant::make<types::Localisation::GpsLocation>(expectedGpsLocation);
-        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(variant));
+        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(expectedGpsLocation));
 
         types::Localisation::GpsLocation gpsLocation;
         try {
@@ -534,9 +536,7 @@ public:
         std::string typeName = ErrorEnumBase::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected (typeName + "::" + literal,
-                                                   Variant::make<ErrorEnumBase::Enum>(expectedErrorEnum),
-                                                   literal,
-                                                   typeName);
+                                                   std::make_shared<ErrorEnumBase>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         EXPECT_CALL(*callback, onSuccess()).Times(0);
@@ -564,9 +564,7 @@ public:
         std::string typeName = ErrorEnumBase::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  Variant::make<ErrorEnumBase::Enum>(expectedErrorEnum),
-                                                  literal,
-                                                  typeName);
+                                                  std::make_shared<ErrorEnumBase>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         try {
@@ -592,9 +590,7 @@ public:
         std::string typeName = MethodWithErrorEnumExtendedErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  Variant::make<MethodWithErrorEnumExtendedErrorEnum::Enum>(expectedErrorEnum),
-                                                  literal,
-                                                  typeName);
+                                                  std::make_shared<MethodWithErrorEnumExtendedErrorEnum>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         EXPECT_CALL(*callback, onSuccess()).Times(0);
@@ -621,9 +617,7 @@ public:
         std::string typeName = MethodWithErrorEnumExtendedErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  Variant::make<MethodWithErrorEnumExtendedErrorEnum::Enum>(error),
-                                                  literal,
-                                                  typeName);
+                                                  std::make_shared<MethodWithErrorEnumExtendedErrorEnum>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         try {
@@ -650,9 +644,7 @@ public:
         std::string typeName = MethodWithImplicitErrorEnumErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  Variant::make<MethodWithImplicitErrorEnumErrorEnum::Enum>(expectedErrorEnum),
-                                                  literal,
-                                                  typeName);
+                                                  std::make_shared<MethodWithImplicitErrorEnumErrorEnum>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         EXPECT_CALL(*callback, onSuccess()).Times(0);
@@ -680,9 +672,7 @@ public:
         std::string typeName = MethodWithImplicitErrorEnumErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  Variant::make<MethodWithImplicitErrorEnumErrorEnum::Enum>(error),
-                                                  literal,
-                                                  typeName);
+                                                  std::make_shared<MethodWithImplicitErrorEnumErrorEnum>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         try {

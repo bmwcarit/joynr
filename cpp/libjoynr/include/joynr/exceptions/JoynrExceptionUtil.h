@@ -21,7 +21,6 @@
 
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/MethodInvocationException.h"
-#include "joynr/Variant.h"
 namespace joynr
 {
 
@@ -34,73 +33,6 @@ namespace exceptions
 class JOYNRCOMMON_EXPORT JoynrExceptionUtil
 {
 public:
-    static Variant createVariant(const exceptions::JoynrException& exception)
-    {
-        if (dynamic_cast<const exceptions::ApplicationException*>(&exception) != nullptr) {
-            return Variant::make<exceptions::ApplicationException>(
-                    static_cast<const exceptions::ApplicationException&>(exception));
-        } else if (dynamic_cast<const exceptions::PublicationMissedException*>(&exception) !=
-                   nullptr) {
-            return Variant::make<exceptions::PublicationMissedException>(
-                    static_cast<const exceptions::PublicationMissedException&>(exception));
-        } else if (dynamic_cast<const exceptions::ProviderRuntimeException*>(&exception) !=
-                   nullptr) {
-            return Variant::make<exceptions::ProviderRuntimeException>(
-                    static_cast<const exceptions::ProviderRuntimeException&>(exception));
-        } else if (dynamic_cast<const exceptions::MethodInvocationException*>(&exception) !=
-                   nullptr) {
-            return Variant::make<exceptions::MethodInvocationException>(
-                    static_cast<const exceptions::MethodInvocationException&>(exception));
-        } else if (dynamic_cast<const exceptions::JoynrTimeOutException*>(&exception) != nullptr) {
-            return Variant::make<exceptions::JoynrTimeOutException>(
-                    static_cast<const exceptions::JoynrTimeOutException&>(exception));
-        } else if (dynamic_cast<const exceptions::JoynrParseError*>(&exception) != nullptr) {
-            return Variant::make<exceptions::JoynrParseError>(
-                    static_cast<const exceptions::JoynrParseError&>(exception));
-        } else if (dynamic_cast<const exceptions::DiscoveryException*>(&exception) != nullptr) {
-            return Variant::make<exceptions::DiscoveryException>(
-                    static_cast<const exceptions::DiscoveryException&>(exception));
-        } else if (dynamic_cast<const exceptions::JoynrRuntimeException*>(&exception) != nullptr) {
-            return Variant::make<exceptions::JoynrRuntimeException>(
-                    static_cast<const exceptions::JoynrRuntimeException&>(exception));
-        } else if (dynamic_cast<const exceptions::JoynrMessageNotSentException*>(&exception) !=
-                   nullptr) {
-            return Variant::make<exceptions::JoynrMessageNotSentException>(
-                    static_cast<const exceptions::JoynrMessageNotSentException&>(exception));
-        } else if (dynamic_cast<const exceptions::JoynrDelayMessageException*>(&exception) !=
-                   nullptr) {
-            return Variant::make<exceptions::JoynrDelayMessageException>(
-                    static_cast<const exceptions::JoynrDelayMessageException&>(exception));
-        }
-        return Variant::make<exceptions::JoynrException>(exception);
-    }
-
-    static const exceptions::JoynrRuntimeException& extractJoynrRuntimeException(
-            const Variant& variant)
-    {
-        if (variant.is<exceptions::PublicationMissedException>()) {
-            return variant.get<exceptions::PublicationMissedException>();
-        } else if (variant.is<exceptions::ProviderRuntimeException>()) {
-            return variant.get<exceptions::ProviderRuntimeException>();
-        } else if (variant.is<exceptions::MethodInvocationException>()) {
-            return variant.get<exceptions::MethodInvocationException>();
-        } else if (variant.is<exceptions::JoynrTimeOutException>()) {
-            return variant.get<exceptions::JoynrTimeOutException>();
-        } else if (variant.is<exceptions::JoynrParseError>()) {
-            return variant.get<exceptions::JoynrParseError>();
-        } else if (variant.is<exceptions::DiscoveryException>()) {
-            return variant.get<exceptions::DiscoveryException>();
-        } else if (variant.is<exceptions::JoynrRuntimeException>()) {
-            return variant.get<exceptions::JoynrRuntimeException>();
-        } else if (variant.is<exceptions::JoynrMessageNotSentException>()) {
-            return variant.get<exceptions::JoynrMessageNotSentException>();
-        } else if (variant.is<exceptions::JoynrDelayMessageException>()) {
-            return variant.get<exceptions::JoynrDelayMessageException>();
-        } else
-            throw exceptions::JoynrRuntimeException(
-                    "Exception type contained in Variant with typeName " + variant.getTypeName());
-    }
-
     static void throwJoynrException(const exceptions::JoynrException& error)
     {
         std::string typeName = error.getTypeName();
@@ -135,17 +67,6 @@ public:
             std::string message = error.getMessage();
             throw exceptions::JoynrRuntimeException("Unknown exception: " + error.getTypeName() +
                                                     ": " + message);
-        }
-    }
-
-    static const exceptions::JoynrException& extractException(const Variant& variant)
-    {
-        if (variant.is<exceptions::ApplicationException>()) {
-            return variant.get<exceptions::ApplicationException>();
-        } else if (variant.is<exceptions::JoynrException>()) {
-            return variant.get<exceptions::JoynrException>();
-        } else {
-            return extractJoynrRuntimeException(variant);
         }
     }
 };

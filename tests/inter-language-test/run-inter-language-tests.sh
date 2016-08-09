@@ -12,13 +12,13 @@ do
 			CC_LANGUAGE=$OPTARG
 			;;
 		b)
-			ILT_BUILD_DIR=$OPTARG
+			ILT_BUILD_DIR=`realpath $OPTARG`
 			;;
 		r)
-			ILT_RESULTS_DIR=$OPTARG
+			ILT_RESULTS_DIR=`realpath $OPTARG`
 			;;
 		s)
-			JOYNR_SOURCE_DIR=$OPTARG
+			JOYNR_SOURCE_DIR=`realpath $OPTARG`
 			if [ ! -d "$JOYNR_SOURCE_DIR" ]
 			then
 				echo "Directory $JOYNR_SOURCE_DIR does not exist!"
@@ -34,6 +34,9 @@ do
 			;;
 	esac
 done
+
+# remove all aliases to get correct return codes
+unalias -a
 
 if [ -z "$CC_LANGUAGE" ]
 then
@@ -231,6 +234,7 @@ function start_cluster_controller {
 		rm -fr $CLUSTER_CONTROLLER_DIR
 		cp -a $ILT_BUILD_DIR/bin $CLUSTER_CONTROLLER_DIR
 		cd $CLUSTER_CONTROLLER_DIR
+		[[ $? == "0" ]] && echo "cd $CLUSTER_CONTROLLER_DIR OK"
 		./cluster-controller > $ILT_RESULTS_DIR/clustercontroller-cpp-$1.log 2>&1 &
 	fi
 	CLUSTER_CONTROLLER_PID=$!
@@ -309,6 +313,7 @@ function start_cpp_provider {
 	rm -fr $PROVIDER_DIR
 	cp -a $ILT_BUILD_DIR/bin $PROVIDER_DIR
 	cd $PROVIDER_DIR
+	[[ $? == "0" ]] && echo "cd $PROVIDER_DIR OK"
 	./ilt-provider-ws $DOMAIN > $ILT_RESULTS_DIR/provider-cpp.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started C++ provider with PID $PROVIDER_PID in directory $PROVIDER_DIR"
@@ -390,7 +395,12 @@ function start_cpp_consumer {
 	echo '####################################################'
 	echo '# starting C++ consumer'
 	echo '####################################################'
-	cd $ILT_BUILD_DIR/bin
+	CONSUMER_DIR=$ILT_BUILD_DIR/consumer-bin
+	cd $ILT_BUILD_DIR
+	rm -fr $CONSUMER_DIR
+	cp -a $ILT_BUILD_DIR/bin $CONSUMER_DIR
+	cd $CONSUMER_DIR
+	[[ $? == "0" ]] && echo "cd $CONSUMER_DIR OK"
 	#./ilt-consumer-cc $DOMAIN >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
 	./ilt-consumer-ws $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
 	SUCCESS=$?

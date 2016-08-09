@@ -29,12 +29,20 @@
 
 #include "../common/Enum.h"
 #include "PerformanceConsumer.h"
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 JOYNR_ENUM(SyncMode, (SYNC)(ASYNC));
 JOYNR_ENUM(TestCase, (SEND_STRING)(SEND_BYTEARRAY)(SEND_STRUCT));
 
 int main(int argc, char* argv[])
 {
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+    // Register app at the dlt-daemon for logging
+    DLT_REGISTER_APP("JOYT", argv[0]);
+#endif // JOYNR_ENABLE_DLT_LOGGING
+
     namespace po = boost::program_options;
 
     std::string domain;

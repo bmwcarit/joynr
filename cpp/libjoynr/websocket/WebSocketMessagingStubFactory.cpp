@@ -106,7 +106,7 @@ void WebSocketMessagingStubFactory::addClient(
 void WebSocketMessagingStubFactory::removeClient(
         const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress)
 {
-    std::lock_guard<std::mutex> lock(serverStubMapMutex);
+    std::lock_guard<std::mutex> lock(clientStubMapMutex);
     clientStubMap.erase(clientAddress);
 }
 

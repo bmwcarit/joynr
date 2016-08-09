@@ -32,12 +32,6 @@ import io.joynr.generator.cpp.communicationmodel.MapCppTemplate;
 import io.joynr.generator.cpp.communicationmodel.MapHTemplate;
 import io.joynr.generator.cpp.communicationmodel.TypeCppTemplate;
 import io.joynr.generator.cpp.communicationmodel.TypeHTemplate;
-import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerCppTemplate;
-import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerHTemplate;
-import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerCppTemplate;
-import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerHTemplate;
-import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerCppTemplate;
-import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerHTemplate;
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderCppTemplate;
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderHTemplate;
 import io.joynr.generator.cpp.inprocess.InterfaceInProcessConnectorCPPTemplate;
@@ -123,24 +117,11 @@ public interface CppTemplateFactory {
 
     TypeCppTemplate createTypeCppTemplate(FCompoundType type);
 
-    TypeSerializerHTemplate createTypeSerializerHTemplate(FCompoundType type);
-
-    TypeSerializerCppTemplate createTypeSerializerCppTemplate(FCompoundType type);
-
     EnumHTemplate createEnumHTemplate(FEnumerationType type);
 
     EnumCppTemplate createEnumCppTemplate(FEnumerationType type);
 
-    EnumSerializerHTemplate createEnumSerializerHTemplate(FEnumerationType type);
-
-    EnumSerializerCppTemplate createEnumSerializerCppTemplate(FEnumerationType type);
-
     MapHTemplate createMapHTemplate(FMapType type);
 
     MapCppTemplate createMapCppTemplate(FMapType type);
-
-    MapSerializerHTemplate createMapSerializerHTemplate(FMapType type);
-
-    MapSerializerCppTemplate createMapSerializerCppTemplate(FMapType type);
-
 }

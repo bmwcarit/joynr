@@ -36,12 +36,16 @@ define([ "joynr/messaging/JoynrMessage"
         }
 
         it("is instantiable", function(done) {
-            expect(new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST)).toBeDefined();
+            expect(new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            })).toBeDefined();
             done();
         });
 
         it("is of correct type", function(done) {
-            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
             expect(joynrMessage).toBeDefined();
             expect(joynrMessage).not.toBeNull();
             expect(typeof joynrMessage === "object").toBeTruthy();
@@ -50,18 +54,20 @@ define([ "joynr/messaging/JoynrMessage"
         });
 
         it("constructs with correct member values", function(done) {
-            var messageType = JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST;
-            var joynrMessage = new JoynrMessage(messageType);
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
             /*jslint newcap: true, nomen: true */
             expect(joynrMessage._typeName).toEqual("joynr.JoynrMessage");
             /*jslint newcap: false, nomen: false */
-            expect(joynrMessage.type).toEqual(messageType);
+            expect(joynrMessage.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
             done();
         });
 
         it("has members that cannot be changed after initialization", function(done) {
-            var messageType = JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST;
-            var joynrMessage = new JoynrMessage(messageType);
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
             var messageHeader;
 
             // the following setting os fields should have no effect. These are not writable.
@@ -71,7 +77,7 @@ define([ "joynr/messaging/JoynrMessage"
             /*jslint newcap: false, nomen: false */
 
             joynrMessage.type = "nonsense";
-            expect(joynrMessage.type).toEqual(messageType);
+            expect(joynrMessage.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
 
             messageHeader = joynrMessage.header;
             joynrMessage.header = "nonsense";
@@ -80,7 +86,11 @@ define([ "joynr/messaging/JoynrMessage"
         });
 
         it("has a header that can be set", function(done) {
-            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            var payload = "hello";
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : payload
+            });
             var fields = getTestMessageFields();
 
             joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, fields.expiryDate);
@@ -93,14 +103,14 @@ define([ "joynr/messaging/JoynrMessage"
             expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID]).toEqual(
                     fields.replyChannelId);
 
-            var payload = "hello";
-            joynrMessage.payload = payload;
             expect(joynrMessage.payload).toEqual(payload);
             done();
         });
 
         it("allows setting custom headers", function(done) {
-            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
             var headerKey = "headerKey";
             var customHeaderKey = "custom-" + headerKey;
             var customHeaders = {};
@@ -119,7 +129,9 @@ define([ "joynr/messaging/JoynrMessage"
             var myCustomHeaders = {};
             myCustomHeaders[headerKey] = "customHeaderValue";
 
-            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
             joynrMessage.setCustomHeaders(myCustomHeaders);
             joynrMessage.setHeader(headerKey, headerValue);
 
@@ -133,15 +145,19 @@ define([ "joynr/messaging/JoynrMessage"
         });
 
         it("has a payload that can be set", function(done) {
-            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
             var payload = "hello";
-            joynrMessage.payload = payload;
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : payload
+            });
             expect(joynrMessage.payload).toEqual(payload);
             done();
         });
 
         it("has comfort functions for setting values", function(done) {
-            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
             var fields = getTestMessageFields();
 
             joynrMessage.to = fields.to;
@@ -152,7 +168,9 @@ define([ "joynr/messaging/JoynrMessage"
         });
 
         it("has members that can be stringified to json", function(done) {
-            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
             var fields = getTestMessageFields();
 
             joynrMessage.to = fields.to;
