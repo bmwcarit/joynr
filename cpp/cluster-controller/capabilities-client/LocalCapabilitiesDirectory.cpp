@@ -917,15 +917,19 @@ LocalCapabilitiesCallback::LocalCapabilitiesCallback(
 
 void LocalCapabilitiesCallback::onError(const exceptions::JoynrRuntimeException& error)
 {
-    onErrorCallback(joynr::exceptions::ProviderRuntimeException(
-            "Unable to collect capabilities from global capabilities directory. Error: " +
-            error.getMessage()));
+    if (onErrorCallback) {
+        onErrorCallback(joynr::exceptions::ProviderRuntimeException(
+                "Unable to collect capabilities from global capabilities directory. Error: " +
+                error.getMessage()));
+    }
 }
 
 void LocalCapabilitiesCallback::capabilitiesReceived(
         const std::vector<CapabilityEntry>& capabilities)
 {
-    onSuccess(capabilities);
+    if (onSuccess) {
+        onSuccess(capabilities);
+    }
 }
 
 } // namespace joynr
