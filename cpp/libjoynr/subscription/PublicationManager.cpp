@@ -281,10 +281,12 @@ void PublicationManager::handleAttributeSubscriptionRequest(
             delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId));
         } else {
             JOYNR_LOG_WARN(logger, "publication end is in the past");
+            std::int64_t expiryDateMs =
+                    DispatcherUtils::convertTtlToAbsoluteTime(60000).time_since_epoch().count();
             sendSubscriptionReply(publicationSender,
                                   requestInfo->getProviderId(),
                                   requestInfo->getProxyId(),
-                                  qos->getExpiryDateMs(),
+                                  expiryDateMs,
                                   subscriptionId,
                                   std::make_shared<exceptions::SubscriptionException>(
                                           "publication end is in the past", subscriptionId));
@@ -417,10 +419,12 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
                                   subscriptionId);
         } else {
             JOYNR_LOG_WARN(logger, "publication end is in the past");
+            std::int64_t expiryDateMs =
+                    DispatcherUtils::convertTtlToAbsoluteTime(60000).time_since_epoch().count();
             sendSubscriptionReply(publicationSender,
                                   requestInfo->getProviderId(),
                                   requestInfo->getProxyId(),
-                                  qos->getExpiryDateMs(),
+                                  expiryDateMs,
                                   subscriptionId,
                                   std::make_shared<exceptions::SubscriptionException>(
                                           "publication end is in the past", subscriptionId));
