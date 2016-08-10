@@ -635,7 +635,7 @@ else(USE_PLATFORM_SPDLOG)
     AddExternalProject(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog
-        GIT_TAG v0.9.0 # there are no version tags, hence a SHA is used
+        GIT_TAG 4fcde3b # there are no version tags, hence a SHA is used
         TIMEOUT 10
         # Disable configure step
         CONFIGURE_COMMAND ""
