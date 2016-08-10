@@ -16,26 +16,25 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/httpnetworking/CurlHandlePool.h"
-#include "joynr/TypedClientMultiCache.h"
-
-#ifdef WIN32
-// qdatetime.h is included by one of the include files below
-// This causes a compiler error with Qt 5.1 and VS2010
-// https://qt-project.org/forums/viewthread/22133
-#define NOMINMAX
-#endif
+#include "CurlHandlePool.h"
 
 #include <algorithm>
 #include <tuple>
 
-#include <QUrl>
 #include <curl/curl.h>
 
+#include "joynr/Url.h"
 #include "joynr/Util.h"
+#include "joynr/TypedClientMultiCache.h"
 
 namespace joynr
 {
+
+std::string extractHost(const std::string& urlString)
+{
+    joynr::Url url(urlString);
+    return url.getHost() + ":" + std::to_string(url.getPort());
+}
 
 void* AlwaysNewCurlHandlePool::getHandle(const std::string& url)
 {
@@ -126,12 +125,6 @@ void PerThreadCurlHandlePool::reset()
     idleHandleMap.clear();
 }
 
-std::string PerThreadCurlHandlePool::extractHost(const std::string& url)
-{
-    QUrl qurl(QString::fromStdString(url));
-    return qurl.host().toStdString() + ":" + std::to_string(qurl.port());
-}
-
 std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
         const std::thread::id& threadId,
         std::string host)
@@ -212,7 +205,7 @@ const int SingleThreadCurlHandlePool::POOL_SIZE = 10;
 
 void* SingleThreadCurlHandlePool::getHandle(const std::string& url)
 {
-    std::string host(extractHost(url));
+    std::string host = extractHost(url);
     std::lock_guard<std::mutex> lock(mutex);
 
     std::shared_ptr<PooledCurlHandle> pooledHandle = takeOrCreateHandle(host);
@@ -253,12 +246,6 @@ void SingleThreadCurlHandlePool::reset()
 
     // Remove all idle handles
     handleList.clear();
-}
-
-std::string SingleThreadCurlHandlePool::extractHost(const std::string& url)
-{
-    QUrl qurl(QString::fromStdString(url));
-    return qurl.host().toStdString() + ":" + std::to_string(qurl.port());
 }
 
 std::shared_ptr<PooledCurlHandle> SingleThreadCurlHandlePool::takeOrCreateHandle(

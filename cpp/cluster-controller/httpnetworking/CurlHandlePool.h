@@ -123,11 +123,6 @@ public:
     void reset() override;
 
 private:
-    /**
-      * Extracts the host in the format <hostName or ip>:<port> from the specified URL.
-      */
-    static std::string extractHost(const std::string& url);
-
     std::shared_ptr<PooledCurlHandle> takeOrCreateHandle(const std::string& host);
 
     /**
@@ -185,7 +180,6 @@ public:
     void reset() override;
 
 private:
-    static std::string extractHost(const std::string& url);
     /**
       * If there already exists a handle for the current thread which is not in use at the moment it
      * is removed from the list and returned.
