@@ -170,8 +170,6 @@ endif(JOYNR_ENABLE_DLT_LOGGING)
 add_dependencies(JoynrCommon muesli::muesli)
 get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>")
-get_target_property(muesli_COMPILE_DEFINITIONS muesli::muesli INTERFACE_COMPILE_DEFINITIONS)
-target_compile_definitions(JoynrCommon PUBLIC ${muesli_COMPILE_DEFINITIONS})
 
 target_include_directories(
     JoynrCommon
