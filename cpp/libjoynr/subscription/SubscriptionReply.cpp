@@ -28,7 +28,7 @@ SubscriptionReply::SubscriptionReply() : subscriptionId(), error(nullptr)
 {
 }
 SubscriptionReply::SubscriptionReply(const SubscriptionReply& other)
-        : subscriptionId(other.getSubscriptionId())
+        : subscriptionId(other.getSubscriptionId()), error(other.getError())
 {
 }
 
