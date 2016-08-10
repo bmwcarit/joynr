@@ -249,6 +249,7 @@ function performCppConsumerTest {
 function performJsConsumerTest {
     STDOUT_PARAM=$1
     REPORTFILE_PARAM=$2
+    VIACC=$3
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
@@ -258,6 +259,7 @@ function performJsConsumerTest {
                        --performance-test:domain=$DOMAINNAME \
                        --performance-test:stringlength=$INPUTDATA_STRINGLENGTH \
                        --performance-test:bytearraylength=$INPUTDATA_BYTEARRAYSIZE \
+                       --performance-test:viacc=$VIACC \
                          jsconsumertest 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
     else
         # This call assumes that the required js dependencies are installed locally
@@ -266,6 +268,7 @@ function performJsConsumerTest {
             --config domain $DOMAINNAME \
             --config stringlength $INPUTDATA_STRINGLENGTH \
             --config bytearraylength $INPUTDATA_BYTEARRAYSIZE \
+            --config viacc $VIACC \
         1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
     fi
 }
@@ -441,7 +444,13 @@ then
     if [ "$TESTCASE" == "JS_ASYNC" ] || [ "$TESTCASE" == "ALL" ]
     then
         echo "Testcase: JS_ASYNC" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE
+        performJsConsumerTest $STDOUT $REPORTFILE true
+    fi
+
+    if [ "$TESTCASE" == "JS_SHORTCIRCUIT" ] || [ "$TESTCASE" == "ALL" ]
+    then
+        echo "Testcase: JS_SHORTCIRCUIT" | tee -a $REPORTFILE
+        performJsConsumerTest $STDOUT $REPORTFILE false
     fi
 
     stopAnyProvider
