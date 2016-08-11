@@ -347,11 +347,14 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:j:p:r:s:t:x:y:m:z:n:" OPTIONS;
+while getopts "c:d:j:p:r:s:t:x:y:m:z:n:" OPTIONS;
 do
     case $OPTIONS in
         c)
             MULTICONSUMER_NUMINSTANCES=$OPTARG
+            ;;
+        d)
+            DOMAINNAME=${OPTARG%/}
             ;;
         j)
             JETTY_PATH=${OPTARG%/}
@@ -473,6 +476,12 @@ then
     if [ "$TESTCASE" == "JS_SHORTCIRCUIT" ] || [ "$TESTCASE" == "ALL" ]
     then
         echo "Testcase: JS_SHORTCIRCUIT" | tee -a $REPORTFILE
+        performJsConsumerTest $STDOUT $REPORTFILE false
+    fi
+
+    if [ "$TESTCASE" == "JS_CONSUMER" ] || [ "$TESTCASE" == "ALL" ]
+    then
+        echo "Testcase: JS_CONSUMER for domain $DOMAINNAME" | tee -a $REPORTFILE
         performJsConsumerTest $STDOUT $REPORTFILE false
     fi
 
