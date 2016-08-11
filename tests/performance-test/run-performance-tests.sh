@@ -427,7 +427,7 @@ then
         if [ "$TESTCASE" == "CPP_$mode" ] || [ "$TESTCASE" == "ALL" ]
         then
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY' 'SEND_BYTEARRAY_WITH_SIZE_TIMES_K'; do
-                echo "Testcase: CPP $testcase" | tee -a $REPORTFILE
+                echo "Testcase: $TESTCASE::$testcase" | tee -a $REPORTFILE
                 performCppConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
             done
         fi
