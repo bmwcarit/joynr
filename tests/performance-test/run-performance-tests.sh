@@ -151,13 +151,6 @@ function startCppPerformanceTestProvider {
     # Wait long enough in order to allow the provider to finish the registration procedure
     sleep 5
 
-    # Workaround: We need to start the provider twice. Otherwise, the registration process
-    # will not succeed.
-    kill $PROVIDER_PID
-    wait $PROVIDER_PID
-    ./performance-provider-app --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
-    sleep 5
-
     echo "C++ performance test provider started"
 }
 
