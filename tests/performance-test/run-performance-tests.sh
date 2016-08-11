@@ -131,6 +131,10 @@ function startCppClusterController {
     CC_STDERR=$PERFORMANCETESTS_RESULTS_DIR/cc_stderr.txt
 
     cd $JOYNR_BIN_DIR
+
+    # ensure previously created persistence files are gone
+    rm -Rf *.persist joynr.settings
+
     ./cluster-controller 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
 
     # Wait long enough in order to allow the cluster controller finish its start procedure
