@@ -184,23 +184,14 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private void handleSubscriptionRequest(PublicationInformation publicationInformation,
                                            SubscriptionRequest subscriptionRequest,
                                            ProviderContainer providerContainer) {
-
         final String subscriptionId = subscriptionRequest.getSubscriptionId();
-
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
-
-        MessagingQos messagingQos = new MessagingQos();
-        if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
-            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
-        } else {
-            messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
-        }
+        MessagingQos messagingQos = createMessagingQos(subscriptionQos);
 
         try {
             Method method = findGetterForAttributeName(providerContainer.getRequestCaller().getClass(),
                                                        subscriptionRequest.getSubscribedToName());
 
-            // Send initial publication
             triggerPublication(publicationInformation, providerContainer, method);
 
             boolean hasSubscriptionHeartBeat = subscriptionQos instanceof HeartbeatSubscriptionInformation;
@@ -218,34 +209,55 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                 publicationTimers.put(subscriptionId, timer);
             }
 
-            // Handle onChange subscriptions
             if (subscriptionQos instanceof OnChangeSubscriptionQos) {
-                AttributeListener attributeListener = new AttributeListenerImpl(subscriptionId, this);
-                String attributeName = subscriptionRequest.getSubscribedToName();
-                SubscriptionPublisherObservable subscriptionPublisher = providerContainer.getSubscriptionPublisher();
-                subscriptionPublisher.registerAttributeListener(attributeName, attributeListener);
-                unregisterAttributeListeners.put(subscriptionId, new UnregisterAttributeListener(subscriptionPublisher,
-                                                                                                 attributeName,
-                                                                                                 attributeListener));
+                handleOnChangeSubscription(subscriptionRequest, providerContainer, subscriptionId);
             }
-
-            SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId);
 
             dispatcher.sendSubscriptionReply(publicationInformation.providerParticipantId,
                                              publicationInformation.proxyParticipantId,
-                                             subscriptionReply,
+                                             new SubscriptionReply(subscriptionId),
                                              messagingQos);
         } catch (NoSuchMethodException e) {
             cancelPublicationCreation(subscriptionId);
             logger.error("Error subscribing: {}. The provider does not have the requested attribute",
                          subscriptionRequest);
-            SubscriptionException subscriptionException = new SubscriptionException(e.getMessage());
-            SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, subscriptionException);
-            dispatcher.sendSubscriptionReply(publicationInformation.providerParticipantId,
-                                             publicationInformation.proxyParticipantId,
-                                             subscriptionReply,
-                                             messagingQos);
+            sendSubscriptionReplyWithError(publicationInformation, subscriptionId, e, messagingQos);
         }
+    }
+
+    private MessagingQos createMessagingQos(SubscriptionQos subscriptionQos) {
+        MessagingQos messagingQos = new MessagingQos();
+        if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
+            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
+        } else {
+            messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
+        }
+        return messagingQos;
+    }
+
+    private void handleOnChangeSubscription(SubscriptionRequest subscriptionRequest,
+                                            ProviderContainer providerContainer,
+                                            String subscriptionId) {
+        AttributeListener attributeListener = new AttributeListenerImpl(subscriptionId, this);
+        String attributeName = subscriptionRequest.getSubscribedToName();
+        SubscriptionPublisherObservable subscriptionPublisher = providerContainer.getSubscriptionPublisher();
+        subscriptionPublisher.registerAttributeListener(attributeName, attributeListener);
+        unregisterAttributeListeners.put(subscriptionId, new UnregisterAttributeListener(subscriptionPublisher,
+                                                                                         attributeName,
+                                                                                         attributeListener));
+    }
+
+    private void sendSubscriptionReplyWithError(PublicationInformation publicationInformation,
+                                                String subscriptionId,
+                                                Exception exception,
+                                                MessagingQos messagingQos) {
+        SubscriptionException subscriptionException = new SubscriptionException(subscriptionId, exception.getMessage());
+        SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, subscriptionException);
+        dispatcher.sendSubscriptionReply(publicationInformation.providerParticipantId,
+                                         publicationInformation.proxyParticipantId,
+                                         subscriptionReply,
+                                         messagingQos);
+
     }
 
     private void handleBroadcastSubscriptionRequest(String proxyParticipantId,
@@ -266,12 +278,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
 
-        MessagingQos messagingQos = new MessagingQos();
-        if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
-            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
-        } else {
-            messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
-        }
+        MessagingQos messagingQos = createMessagingQos(subscriptionQos);
 
         SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId);
 
@@ -286,26 +293,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                    proxyParticipantId,
                                                                                    subscriptionRequest);
-
         try {
-            // Check that this is a valid subscription
-            SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
-            long subscriptionEndDelay = subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE ? SubscriptionQos.NO_EXPIRY_DATE
-                    : subscriptionQos.getExpiryDateMs() - System.currentTimeMillis();
+            long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
+            removePublicationIfItExists(subscriptionRequest);
 
-            if (subscriptionEndDelay < 0) {
-                throw new SubscriptionException(subscriptionRequest.getSubscriptionId(), "Subscription expired.");
-            }
-
-            // See if the publications for this subscription are already handled
             final String subscriptionId = subscriptionRequest.getSubscriptionId();
-            if (publicationExists(subscriptionId)) {
-                logger.debug("updating publication: " + subscriptionRequest.toString());
-                removePublication(subscriptionId);
-            } else {
-                logger.debug("adding publication: " + subscriptionRequest.toString());
-            }
-
             subscriptionId2PublicationInformation.put(subscriptionId, publicationInformation);
 
             if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
@@ -317,19 +309,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                 handleSubscriptionRequest(publicationInformation, subscriptionRequest, providerContainer);
             }
 
-            if (subscriptionQos.getExpiryDateMs() != SubscriptionQos.NO_EXPIRY_DATE) {
-                // Create a runnable to remove the publication when the subscription expires
-                ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        logger.debug("Publication with Id " + subscriptionId + " expired...");
-                        removePublication(subscriptionId);
-                    }
-
-                }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
-                subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
-            }
+            addSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
             logger.debug("publication added: " + subscriptionRequest.toString());
         } catch (SubscriptionException e) {
             sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
@@ -352,6 +332,42 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                          publicationInformation.proxyParticipantId,
                                          subscriptionReply,
                                          messagingQos);
+    }
+
+    private void addSubscriptionCleanupIfNecessary(SubscriptionRequest subscriptionRequest, long subscriptionEndDelay) {
+        if (subscriptionRequest.getQos().getExpiryDateMs() != SubscriptionQos.NO_EXPIRY_DATE) {
+            final String subscriptionId = subscriptionRequest.getSubscriptionId();
+            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
+
+                @Override
+                public void run() {
+                    logger.debug("Publication with Id {} expired...", subscriptionId);
+                    removePublication(subscriptionId);
+                }
+
+            }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
+            subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
+        }
+    }
+
+    private void removePublicationIfItExists(SubscriptionRequest subscriptionRequest) {
+        String subscriptionId = subscriptionRequest.getSubscriptionId();
+        if (publicationExists(subscriptionId)) {
+            logger.debug("updating publication: {}", subscriptionRequest);
+            removePublication(subscriptionId);
+        } else {
+            logger.debug("adding publication: {}", subscriptionRequest);
+        }
+    }
+
+    private long validateAndGetSubscriptionEndDelay(SubscriptionRequest subscriptionRequest) {
+        SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
+        long subscriptionEndDelay = subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE ? SubscriptionQos.NO_EXPIRY_DATE
+                : subscriptionQos.getExpiryDateMs() - System.currentTimeMillis();
+        if (subscriptionEndDelay < 0) {
+            throw new SubscriptionException(subscriptionRequest.getSubscriptionId(), "Subscription expired.");
+        }
+        return subscriptionEndDelay;
     }
 
     private void cancelPublicationCreation(String subscriptionId) {
@@ -502,12 +518,12 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         Collection<PublicationInformation> queuedRequests = queuedSubscriptionRequests.get(providerId);
         Iterator<PublicationInformation> queuedRequestsIterator = queuedRequests.iterator();
         while (queuedRequestsIterator.hasNext()) {
-            PublicationInformation publicInformation = queuedRequestsIterator.next();
+            PublicationInformation publicationInformation = queuedRequestsIterator.next();
             queuedRequestsIterator.remove();
-            if (!isExpired(publicInformation)) {
-                addSubscriptionRequest(publicInformation.getProxyParticipantId(),
-                                       publicInformation.getProviderParticipantId(),
-                                       publicInformation.subscriptionRequest,
+            if (!isExpired(publicationInformation)) {
+                addSubscriptionRequest(publicationInformation.getProxyParticipantId(),
+                                       publicationInformation.getProviderParticipantId(),
+                                       publicationInformation.subscriptionRequest,
                                        providerContainer);
             }
         }
