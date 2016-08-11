@@ -229,15 +229,23 @@ function performCppConsumerTest {
     NUM_INSTANCES=$5
     NUM_RUNS=$6
 
+    CONSUMERARGS="-r $NUM_RUNS -t $TESTCASE_PARAM"
+
     cd $PERFORMANCETESTS_BIN_DIR
-    CONSUMERARGS="-d $DOMAINNAME -r $NUM_RUNS -t $TESTCASE_PARAM\
-                  -s $MODE_PARAM -l $INPUTDATA_STRINGLENGTH -b $INPUTDATA_BYTEARRAYSIZE"
+    if [ "$MODE_PARAM" == "SHORTCIRCUIT" ]
+    then
+        PERFORMCPPBINARY="performance-short-circuit"
+    else
+        CONSUMERARGS+=" -d $DOMAINNAME -s $MODE_PARAM -l $INPUTDATA_STRINGLENGTH \
+                       -b $INPUTDATA_BYTEARRAYSIZE"
+        PERFORMCPPBINARY="performance-consumer-app"
+    fi
 
     TEST_PIDS=()
     for (( i=0; i < $NUM_INSTANCES; ++i ))
     do
         echo "Launching consumer $i ..."
-        ./performance-consumer-app $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+        ./$PERFORMCPPBINARY $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
         TEST_PIDS+=$CUR_PID
         TEST_PIDS+=" "
     done
@@ -423,7 +431,7 @@ then
         done
     fi
 
-    for mode in 'ASYNC' 'SYNC'; do
+    for mode in 'ASYNC' 'SYNC' 'SHORTCIRCUIT'; do
         if [ "$TESTCASE" == "CPP_$mode" ] || [ "$TESTCASE" == "ALL" ]
         then
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY' 'SEND_BYTEARRAY_WITH_SIZE_TIMES_K'; do

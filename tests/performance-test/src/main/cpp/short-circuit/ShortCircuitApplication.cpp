@@ -23,6 +23,9 @@
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
+#include "../common/Enum.h"
+JOYNR_ENUM(TestCase, (SEND_STRING)(SEND_BYTEARRAY)(SEND_STRUCT));
+
 int main(int argc, char* argv[])
 {
 #ifdef JOYNR_ENABLE_DLT_LOGGING
@@ -33,6 +36,7 @@ int main(int argc, char* argv[])
     namespace po = boost::program_options;
 
     std::size_t runs;
+    TestCase testCase;
 
     auto validateRuns = [](std::size_t value) {
         if (value == 0) {
@@ -43,7 +47,10 @@ int main(int argc, char* argv[])
 
     po::options_description desc("Available options");
     desc.add_options()("help,h", "produce help message")(
-            "runs,r", po::value(&runs)->required()->notifier(validateRuns), "number of runs");
+            "runs,r", po::value(&runs)->required()->notifier(validateRuns), "number of runs")(
+            "testCase,t",
+            po::value(&testCase)->required(),
+            "SEND_STRING|SEND_BYTEARRAY|SEND_STRUCT");
 
     try {
         po::variables_map vm;
@@ -56,10 +63,18 @@ int main(int argc, char* argv[])
 
         ShortCircuitTest test(runs);
 
-        test.roundTripByteArray(10000);
-        test.roundTripByteArray(100000);
-        test.roundTripString(36);
-        test.roundTripStruct(29);
+        switch (testCase) {
+        case TestCase::SEND_BYTEARRAY:
+            test.roundTripByteArray(10000);
+            test.roundTripByteArray(100000);
+            break;
+        case TestCase::SEND_STRING:
+            test.roundTripString(36);
+            break;
+        case TestCase::SEND_STRUCT:
+            test.roundTripStruct(29);
+            break;
+        }
 
     } catch (const std::exception& e) {
         std::cerr << e.what();
