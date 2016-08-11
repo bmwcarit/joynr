@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
         boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
         std::string appDirectory =
                 boost::filesystem::system_complete(appFilename).parent_path().string();
-        std::string pathToSettings(appDirectory + "/resources/performancetest-provider.settings");
+        std::string pathToSettings(appDirectory + "/resources/performancetest-consumer.settings");
 
         std::unique_ptr<joynr::JoynrRuntime> runtime(
                 joynr::JoynrRuntime::createRuntime(pathToSettings));
