@@ -426,13 +426,13 @@ rm -f $REPORTFILE
 if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ]
 then
     startCppClusterController
-    startCppPerformanceTestProvider
 
     echo "### Starting performance tests ###"
 
     for mode in 'ASYNC' 'SYNC'; do
         if [ "$TESTCASE" == "JAVA_$mode" ]
         then
+            startCppPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
                 echo "Testcase: JAVA $testcase" | tee -a $REPORTFILE
                 performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
@@ -442,6 +442,7 @@ then
 
     if [ "$TESTCASE" == "JAVA_MULTICONSUMER" ]
     then
+        startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: JAVA $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
             performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS
@@ -451,6 +452,7 @@ then
     for mode in 'ASYNC' 'SYNC' 'SHORTCIRCUIT'; do
         if [ "$TESTCASE" == "CPP_$mode" ]
         then
+            startCppPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY' 'SEND_BYTEARRAY_WITH_SIZE_TIMES_K'; do
                 echo "Testcase: $TESTCASE::$testcase" | tee -a $REPORTFILE
                 performCppConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
@@ -466,6 +468,7 @@ then
 
     if [ "$TESTCASE" == "CPP_MULTICONSUMER" ]
     then
+        startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: CPP $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
             performCppConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS
