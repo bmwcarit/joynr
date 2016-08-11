@@ -290,16 +290,15 @@ function performJsConsumerTest {
                        --performance-test:stringlength=$INPUTDATA_STRINGLENGTH \
                        --performance-test:bytearraylength=$INPUTDATA_BYTEARRAYSIZE \
                        --performance-test:viacc=$VIACC \
-                         jsconsumertest 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+                         startconsumer 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
     else
+        export runs=$SINGLECONSUMER_RUNS
+        export domain=$DOMAINNAME
+        export stringlength=$INPUTDATA_STRINGLENGTH
+        export bytearraylength=$INPUTDATA_BYTEARRAYSIZE
+        export viacc=$VIACC
         # This call assumes that the required js dependencies are installed locally
-        node node_modules/jasmine-node/lib/jasmine-node/cli.js src/main/js/consumer.spec.js \
-            --config runs $SINGLECONSUMER_RUNS \
-            --config domain $DOMAINNAME \
-            --config stringlength $INPUTDATA_STRINGLENGTH \
-            --config bytearraylength $INPUTDATA_BYTEARRAYSIZE \
-            --config viacc $VIACC \
-        1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+        node src/main/js/consumer.js 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
     fi
 }
 
