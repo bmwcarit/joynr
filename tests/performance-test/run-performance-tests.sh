@@ -221,6 +221,15 @@ function performJavaConsumerTest {
     wait $TEST_PIDS
 }
 
+function performCppSerializerTest {
+    STDOUT_PARAM=$1
+    REPORTFILE_PARAM=$2
+
+    cd $PERFORMANCETESTS_BIN_DIR
+
+    ./performance-serializer 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+}
+
 function performCppConsumerTest {
     MODE_PARAM=$1
     TESTCASE_PARAM=$2
@@ -440,6 +449,12 @@ then
             done
         fi
     done
+
+    if [ "$TESTCASE" == "CPP_SERIALIZER" ] || [ "$TESTCASE" == "ALL" ]
+    then
+        echo "Testcase: CPP_SERIALIZER" | tee -a $REPORTFILE
+        performCppSerializerTest $STDOUT $REPORTFILE
+    fi
 
     if [ "$TESTCASE" == "CPP_MULTICONSUMER" ] || [ "$TESTCASE" == "ALL" ]
     then
