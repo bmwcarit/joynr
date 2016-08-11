@@ -19,9 +19,9 @@
 
 #include "ShortCircuitTest.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-    ShortCircuitTest test;
+    ShortCircuitTest test(1000);
 
     test.roundTripByteArray(10000);
     test.roundTripByteArray(100000);

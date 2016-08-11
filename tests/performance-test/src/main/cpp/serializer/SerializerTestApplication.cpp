@@ -30,11 +30,12 @@ int main()
     using namespace generator;
     using Generators = std::tuple<String, ByteArray, ComplexStruct>;
     std::size_t length = 100;
-    auto fun = [length](auto generator) {
+    std::uint64_t runs = 1000;
+    auto fun = [runs, length](auto generator) {
         using Generator = decltype(generator);
         using ParamType = typename Generator::type;
 
-        SerializerPerformanceTest<Generator> test(length);
+        SerializerPerformanceTest<Generator> test(runs, length);
 
         test.runSerializationBenchmark();
         test.template runDeSerializationBenchmark<ParamType>();
