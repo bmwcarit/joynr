@@ -21,12 +21,42 @@
 
 int main(int argc, char* argv[])
 {
-    ShortCircuitTest test(1000);
 
-    test.roundTripByteArray(10000);
-    test.roundTripByteArray(100000);
-    test.roundTripString(36);
-    test.roundTripStruct(29);
+    namespace po = boost::program_options;
 
-    return 0;
+    std::size_t runs;
+
+    auto validateRuns = [](std::size_t value) {
+        if (value == 0) {
+            throw po::validation_error(
+                    po::validation_error::invalid_option_value, "runs", std::to_string(value));
+        }
+    };
+
+    po::options_description desc("Available options");
+    desc.add_options()("help,h", "produce help message")(
+            "runs,r", po::value(&runs)->required()->notifier(validateRuns), "number of runs");
+
+    try {
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+        if (vm.count("help")) {
+            std::cout << desc << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        ShortCircuitTest test(runs);
+
+        test.roundTripByteArray(10000);
+        test.roundTripByteArray(100000);
+        test.roundTripString(36);
+        test.roundTripStruct(29);
+
+    } catch (const std::exception& e) {
+        std::cerr << e.what();
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }
