@@ -400,14 +400,14 @@ do
 done
 
 if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
-   [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && [ "$TESTCASE" != "ALL" ] && \
+   [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && \
    [ "$TESTCASE" != "JS_ASYNC" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
    [ "$TESTCASE" != "CPP_MULTICONSUMER" ]
 then
     echo "\"$TESTCASE\" is not a valid testcase"
     echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
-OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER OR ALL"
+OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER"
     echoUsage
     exit 1
 fi
@@ -423,7 +423,7 @@ STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer-stdout.txt
 rm -f $STDOUT
 rm -f $REPORTFILE
 
-if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] || [ "$TESTCASE" == "ALL" ]
+if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ]
 then
     startCppClusterController
     startCppPerformanceTestProvider
@@ -431,7 +431,7 @@ then
     echo "### Starting performance tests ###"
 
     for mode in 'ASYNC' 'SYNC'; do
-        if [ "$TESTCASE" == "JAVA_$mode" ] || [ "$TESTCASE" == "ALL" ]
+        if [ "$TESTCASE" == "JAVA_$mode" ]
         then
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
                 echo "Testcase: JAVA $testcase" | tee -a $REPORTFILE
@@ -440,7 +440,7 @@ then
         fi
     done
 
-    if [ "$TESTCASE" == "JAVA_MULTICONSUMER" ] || [ "$TESTCASE" == "ALL" ]
+    if [ "$TESTCASE" == "JAVA_MULTICONSUMER" ]
     then
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: JAVA $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
@@ -449,7 +449,7 @@ then
     fi
 
     for mode in 'ASYNC' 'SYNC' 'SHORTCIRCUIT'; do
-        if [ "$TESTCASE" == "CPP_$mode" ] || [ "$TESTCASE" == "ALL" ]
+        if [ "$TESTCASE" == "CPP_$mode" ]
         then
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY' 'SEND_BYTEARRAY_WITH_SIZE_TIMES_K'; do
                 echo "Testcase: $TESTCASE::$testcase" | tee -a $REPORTFILE
@@ -458,13 +458,13 @@ then
         fi
     done
 
-    if [ "$TESTCASE" == "CPP_SERIALIZER" ] || [ "$TESTCASE" == "ALL" ]
+    if [ "$TESTCASE" == "CPP_SERIALIZER" ]
     then
         echo "Testcase: CPP_SERIALIZER" | tee -a $REPORTFILE
         performCppSerializerTest $STDOUT $REPORTFILE
     fi
 
-    if [ "$TESTCASE" == "CPP_MULTICONSUMER" ] || [ "$TESTCASE" == "ALL" ]
+    if [ "$TESTCASE" == "CPP_MULTICONSUMER" ]
     then
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: CPP $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
@@ -472,19 +472,19 @@ then
         done
     fi
 
-    if [ "$TESTCASE" == "JS_ASYNC" ] || [ "$TESTCASE" == "ALL" ]
+    if [ "$TESTCASE" == "JS_ASYNC" ]
     then
         echo "Testcase: JS_ASYNC" | tee -a $REPORTFILE
         performJsConsumerTest $STDOUT $REPORTFILE true ON
     fi
 
-    if [ "$TESTCASE" == "JS_SHORTCIRCUIT" ] || [ "$TESTCASE" == "ALL" ]
+    if [ "$TESTCASE" == "JS_SHORTCIRCUIT" ]
     then
         echo "Testcase: JS_SHORTCIRCUIT" | tee -a $REPORTFILE
         performJsConsumerTest $STDOUT $REPORTFILE false OFF
     fi
 
-    if [ "$TESTCASE" == "JS_CONSUMER" ] || [ "$TESTCASE" == "ALL" ]
+    if [ "$TESTCASE" == "JS_CONSUMER" ]
     then
         echo "Testcase: JS_CONSUMER for domain $DOMAINNAME" | tee -a $REPORTFILE
         performJsConsumerTest $STDOUT $REPORTFILE true OFF
@@ -494,7 +494,7 @@ then
     stopCppClusterController
 fi
 
-if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ] || [ "$TESTCASE" == "ALL" ]
+if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ]
 then
     checkDirExists $JETTY_PATH
     startJetty
