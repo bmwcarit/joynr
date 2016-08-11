@@ -3,4 +3,5 @@ cluster-controller-messaging-address=local:org.genivi.commonapi.joynr:cc.messagi
 cluster-controller-capabilities-address=local:org.genivi.commonapi.joynr:cc.capabilities2
 
 [lib-joynr]
-participantids-persistence-file = joynr_participantIds2.settings
+participantids-persistence-file = joynr_participantIds2.persist
+message-router-persistence-file = message-router-persistence-file2.persist
