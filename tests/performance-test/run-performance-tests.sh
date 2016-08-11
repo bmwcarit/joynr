@@ -405,13 +405,14 @@ done
 
 if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && \
-   [ "$TESTCASE" != "JS_ASYNC" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
+   [ "$TESTCASE" != "JS_ASYNC" ] && [ "$TESTCASE" != "JS_SHORTCIRCUIT" ] && \
+   [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
-   [ "$TESTCASE" != "CPP_MULTICONSUMER" ]
+   [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ]
 then
     echo "\"$TESTCASE\" is not a valid testcase"
     echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
-OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER"
+JS_CONSUMER, JS_SHORTCIRCUIT, OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, CPP_SERIALIZER"
     echoUsage
     exit 1
 fi
