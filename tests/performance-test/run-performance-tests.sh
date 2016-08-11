@@ -267,8 +267,21 @@ function performJsConsumerTest {
     STDOUT_PARAM=$1
     REPORTFILE_PARAM=$2
     VIACC=$3
+    STARTPROVIDER=$4
 
     cd $PERFORMANCETESTS_SOURCE_DIR
+
+    if [ "$STARTPROVIDER" == "ON" ]
+    then
+        if [ "$USE_NPM" == "ON" ]
+        then
+            npm run-script --performance-test:domain=$DOMAINNAME \
+                             startprovider 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & PROVIDER_PID=$!
+        else
+            # This call assumes that the required js dependencies are installed locally
+            node src/main/js/provider.js $DOMAINNAME 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & PROVIDER_PID=$!
+        fi
+    fi
 
     if [ "$USE_NPM" == "ON" ]
     then
@@ -470,19 +483,19 @@ then
     if [ "$TESTCASE" == "JS_ASYNC" ] || [ "$TESTCASE" == "ALL" ]
     then
         echo "Testcase: JS_ASYNC" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE true
+        performJsConsumerTest $STDOUT $REPORTFILE true ON
     fi
 
     if [ "$TESTCASE" == "JS_SHORTCIRCUIT" ] || [ "$TESTCASE" == "ALL" ]
     then
         echo "Testcase: JS_SHORTCIRCUIT" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE false
+        performJsConsumerTest $STDOUT $REPORTFILE false OFF
     fi
 
     if [ "$TESTCASE" == "JS_CONSUMER" ] || [ "$TESTCASE" == "ALL" ]
     then
         echo "Testcase: JS_CONSUMER for domain $DOMAINNAME" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE false
+        performJsConsumerTest $STDOUT $REPORTFILE true OFF
     fi
 
     stopAnyProvider
@@ -500,7 +513,7 @@ then
     echo "### Starting performance tests ###"
 
     echo "Testcase: OAP_TO_BACKEND_MOSQ" | tee -a $REPORTFILE
-    performJsConsumerTest $STDOUT $REPORTFILE
+    performJsConsumerTest $STDOUT $REPORTFILE true OFF
 
     stopAnyProvider
     stopCppClusterController
