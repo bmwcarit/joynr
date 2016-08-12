@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -36,6 +37,7 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/Localisation/GpsLocation.h"
+#include "joynr/Future.h"
 
 using namespace ::testing;
 
@@ -129,7 +131,9 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     subscriptionPublication.setResponse(gpsLocation1);
 
-    auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(mockSubscriptionListenerOne);
+    auto future = std::make_shared<Future<std::string>>();
+    auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
+            >(mockSubscriptionListenerOne, future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -176,7 +180,9 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     subscriptionPublication.setResponse(gpsLocation1, speed1);
 
-    auto subscriptionCallback= std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation, double>>(mockSubscriptionListenerTwo);
+    auto future = std::make_shared<Future<std::string>>();
+    auto subscriptionCallback= std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation, double>
+            >(mockSubscriptionListenerTwo, future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

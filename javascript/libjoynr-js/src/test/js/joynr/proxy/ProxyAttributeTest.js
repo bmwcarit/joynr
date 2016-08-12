@@ -458,15 +458,17 @@ define([
 
                         it("subscribe calls through to SubscriptionManager", function(done) {
                             var spy = jasmine.createSpyObj("spy", [
-                                "publication",
-                                "publicationMissed"
+                                "onReceive",
+                                "onError",
+                                "onSubscribed"
                             ]);
 
                             isOn.subscribe({
                                 messagingQos : messagingQos,
                                 subscriptionQos : subscriptionQos,
-                                onReceive : spy.publication,
-                                onError : spy.publicationMissed
+                                onReceive : spy.onReceive,
+                                onError : spy.onError,
+                                onSubscribed : spy.onSubscribed
                             });
 
                             expect(subscriptionManagerSpy.registerSubscription).toHaveBeenCalled();
@@ -478,8 +480,9 @@ define([
                                         attributeType : "Boolean",
                                         qos : subscriptionQos,
                                         subscriptionId : undefined,
-                                        onReceive : spy.publication,
-                                        onError : spy.publicationMissed
+                                        onReceive : spy.onReceive,
+                                        onError : spy.onError,
+                                        onSubscribed : spy.onSubscribed
                                     });
                             done();
                         });

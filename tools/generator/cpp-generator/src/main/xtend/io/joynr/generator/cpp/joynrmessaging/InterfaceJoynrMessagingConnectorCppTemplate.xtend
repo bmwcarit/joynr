@@ -29,6 +29,7 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.franca.core.franca.FMethod
+import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 
 class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 
@@ -40,6 +41,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 	@Inject private extension MethodUtil
 	@Inject private extension BroadcastUtil
 	@Inject private extension CppInterfaceUtil
+	@Inject private extension InterfaceSubscriptionUtil
 
 	def produceParameterSetters(FMethod method)
 '''
@@ -231,26 +233,19 @@ bool «className»::usesClusterController() const{
 
 	«ENDIF»
 	«IF attribute.notifiable»
-		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
-					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos
-		) {
+		«produceSubscribeToAttributeSignature(attribute, className)» {
 			joynr::SubscriptionRequest subscriptionRequest;
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
-		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
-					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
-					std::string& subscriptionId
-		) {
+		«produceUpdateAttributeSubscriptionSignature(attribute, className)» {
 
 			joynr::SubscriptionRequest subscriptionRequest;
 			subscriptionRequest.setSubscriptionId(subscriptionId);
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
-		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
+		std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
@@ -260,7 +255,9 @@ bool «className»::usesClusterController() const{
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
 			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
 
-			auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnType»>>(subscriptionListener);
+			auto future = std::make_shared<Future<std::string>>();
+			auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnType»>
+			>(subscriptionListener, future, subscriptionManager);
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -273,12 +270,10 @@ bool «className»::usesClusterController() const{
 						clonedMessagingQos,
 						subscriptionRequest
 			);
-			return subscriptionRequest.getSubscriptionId();
+			return future;
 		}
 
-		void «className»::unsubscribeFrom«attributeName.toFirstUpper»(
-				std::string& subscriptionId
-		) {
+		«produceUnsubscribeFromAttributeSignature(attribute, className)» {
 			joynr::SubscriptionStop subscriptionStop;
 			subscriptionStop.setSubscriptionId(subscriptionId);
 
@@ -357,17 +352,7 @@ bool «className»::usesClusterController() const{
 «FOR broadcast: francaIntf.broadcasts»
 	«val returnTypes = getCommaSeparatedOutputParameterTypes(broadcast)»
 	«val broadcastName = broadcast.joynrName»
-	«IF isSelective(broadcast)»
-		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos
-	«ELSE»
-		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos
-	«ENDIF»
-	) {
+	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
 			subscriptionRequest.setFilterParameters(filterParameters);
@@ -375,19 +360,7 @@ bool «className»::usesClusterController() const{
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
 
-	«IF isSelective(broadcast)»
-		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
-					std::string& subscriptionId
-	«ELSE»
-		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
-					std::string& subscriptionId
-	«ENDIF»
-	) {
+	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className)» {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
 			subscriptionRequest.setFilterParameters(filterParameters);
@@ -396,7 +369,7 @@ bool «className»::usesClusterController() const{
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
 
-	std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+	std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest
@@ -406,7 +379,9 @@ bool «className»::usesClusterController() const{
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
 
-		auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnTypes»>>(subscriptionListener);
+		auto future = std::make_shared<Future<std::string>>();
+		auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnTypes»>
+		>(subscriptionListener, future, subscriptionManager);
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
@@ -419,12 +394,10 @@ bool «className»::usesClusterController() const{
 					clonedMessagingQos,
 					subscriptionRequest
 		);
-		return subscriptionRequest.getSubscriptionId();
+		return future;
 	}
 
-	void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
-			std::string& subscriptionId
-	) {
+	«produceUnsubscribeFromBroadcastSignature(broadcast, className)» {
 		joynr::SubscriptionStop subscriptionStop;
 		subscriptionStop.setSubscriptionId(subscriptionId);
 

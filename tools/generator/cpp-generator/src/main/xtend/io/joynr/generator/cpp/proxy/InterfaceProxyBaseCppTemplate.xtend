@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
@@ -26,11 +25,12 @@ import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 
 class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject extension CppStdTypeUtil
+	@Inject extension InterfaceSubscriptionUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension BroadcastUtil
@@ -83,127 +83,109 @@ void «className»::handleArbitrationFinished(
 
 «FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 	«var attributeName = attribute.joynrName»
-	«val returnType = attribute.typeName»
-	void «className»::unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId)
+	«produceUnsubscribeFromAttributeSignature(attribute, className)»
 	{
 		if (!connector){
 			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
 					 because the communication end partner is not (yet) known");
+			return;
 		}
-		else{
-			connector->unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
-		}
+		connector->unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 	}
 
-	std::string «className»::subscribeTo«attributeName.toFirstUpper»(
-				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
-				std::string& subscriptionId) {
+	«produceUpdateAttributeSubscriptionSignature(attribute, className)» {
 		if (!connector){
-			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
-					 because the communication end partner is not (yet) known");
-			return "";
+			std::string errorMsg = "proxy cannot subscribe to «className».«attributeName», \
+					 because the communication end partner is not (yet) known";
+			JOYNR_LOG_WARN(logger, errorMsg);
+			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
+			auto future = std::make_shared<Future<std::string>>();
+			future->onError(error);
+			subscriptionListener->onError(*error);
+			return future;
 		}
-		else{
-			return connector->subscribeTo«attributeName.toFirstUpper»(
-						subscriptionListener,
-						subscriptionQos,
-						subscriptionId);
-		}
+		return connector->subscribeTo«attributeName.toFirstUpper»(
+					subscriptionListener,
+					subscriptionQos,
+					subscriptionId);
 	}
 
-	std::string «className»::subscribeTo«attributeName.toFirstUpper»(
-				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos) {
+	«produceSubscribeToAttributeSignature(attribute, className)» {
 		if (!connector){
-			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
-					 because the communication end partner is not (yet) known");
-			return "";
+			std::string errorMsg = "proxy cannot subscribe to «className».«attributeName», \
+					 because the communication end partner is not (yet) known";
+			JOYNR_LOG_WARN(logger, errorMsg);
+			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
+			auto future = std::make_shared<Future<std::string>>();
+			future->onError(error);
+			subscriptionListener->onError(*error);
+			return future;
 		}
-		else{
-			return connector->subscribeTo«attributeName.toFirstUpper»(
-						subscriptionListener,
-						subscriptionQos);
-		}
+		return connector->subscribeTo«attributeName.toFirstUpper»(
+					subscriptionListener,
+					subscriptionQos);
 	}
 
 «ENDFOR»
 
 «FOR broadcast: francaIntf.broadcasts»
 	«var broadcastName = broadcast.joynrName»
-	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
-	void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId)
+	«produceUnsubscribeFromBroadcastSignature(broadcast, className)»
 	{
 		if (!connector){
 			JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«broadcastName» broadcast, \
 					 because the communication end partner is not (yet) known");
 			return;
 		}
-		else{
-			connector->unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
-		}
+		connector->unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
 	}
 
-	«IF isSelective(broadcast)»
-		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					const «francaIntf.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos) {
-	«ELSE»
-		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos) {
-	«ENDIF»
+	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
 		if (!connector){
-			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-					 because the communication end partner is not (yet) known");
-			return "";
+			std::string errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
+					 because the communication end partner is not (yet) known";
+			JOYNR_LOG_WARN(logger, errorMsg);
+			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
+			auto future = std::make_shared<Future<std::string>>();
+			future->onError(error);
+			subscriptionListener->onError(*error);
+			return future;
 		}
-		else{
-			«IF isSelective(broadcast)»
-				return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		«IF isSelective(broadcast)»
+			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+					filterParameters,
+					subscriptionListener,
+					subscriptionQos);
+		«ELSE»
+			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+					subscriptionListener,
+					subscriptionQos);
+		«ENDIF»
+	}
+
+	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className)» {
+		if (!connector){
+			std::string errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
+					 because the communication end partner is not (yet) known";
+			JOYNR_LOG_WARN(logger, errorMsg);
+			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
+			auto future = std::make_shared<Future<std::string>>();
+			future->onError(error);
+			subscriptionListener->onError(*error);
+			return future;
+		}
+		«IF isSelective(broadcast)»
+			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						filterParameters,
 						subscriptionListener,
-						subscriptionQos);
-			«ELSE»
-				return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						subscriptionQos,
+						subscriptionId);
+		«ELSE»
+			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						subscriptionListener,
-						subscriptionQos);
-			«ENDIF»
-		}
-	}
-
-	«IF isSelective(broadcast)»
-		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					const «francaIntf.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
-					std::string& subscriptionId) {
-	«ELSE»
-		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
-					std::string& subscriptionId) {
-	«ENDIF»
-		if (!connector){
-			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-					 because the communication end partner is not (yet) known");
-			return "";
-		}
-		else{
-			«IF isSelective(broadcast)»
-				return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
-							filterParameters,
-							subscriptionListener,
-							subscriptionQos,
-							subscriptionId);
-			«ELSE»
-				return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
-							subscriptionListener,
-							subscriptionQos,
-							subscriptionId);
-			«ENDIF»
-		}
+						subscriptionQos,
+						subscriptionId);
+		«ENDIF»
 	}
 «ENDFOR»
 

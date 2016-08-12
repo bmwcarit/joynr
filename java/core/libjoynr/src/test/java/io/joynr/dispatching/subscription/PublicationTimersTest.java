@@ -59,6 +59,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -137,6 +138,10 @@ public class PublicationTimersTest {
                                                                                 any(MessagingQos.class));
 
         Thread.sleep(subscriptionLength);
+        verify(dispatcher).sendSubscriptionReply(eq(providerId),
+                                                 eq(proxyId),
+                                                 any(SubscriptionReply.class),
+                                                 any(MessagingQos.class));
         verifyNoMoreInteractions(dispatcher);
     }
 

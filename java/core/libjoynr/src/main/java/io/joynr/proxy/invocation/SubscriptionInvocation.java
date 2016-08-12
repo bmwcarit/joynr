@@ -21,8 +21,8 @@ package io.joynr.proxy.invocation;
 
 import io.joynr.proxy.Future;
 
-public abstract class SubscriptionInvocation extends Invocation {
-    public SubscriptionInvocation(Future<?> future) {
+public abstract class SubscriptionInvocation extends Invocation<String> {
+    public SubscriptionInvocation(Future<String> future) {
         super(future);
     }
 

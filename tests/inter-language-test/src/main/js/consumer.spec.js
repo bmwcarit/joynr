@@ -366,9 +366,9 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             log("callMethodFireAndForgetWithoutParameter");
             var spy = jasmine.createSpyObj("spy", [ "onPublication", "onPublicationError" ]);
             var expected = -1;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50, validity: 60000 });
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             var attributeFireAndForgetValue = -1;
-            var attributeFireAndForgetSubscriptionId = "";
+            var attributeFireAndForgetSubscriptionId;
 
             runs(() => {
                 // set attributeFireAndForget to 0 (it might have been set to the expected value by another test)
@@ -397,6 +397,10 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                     expect("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget - FAILED: " + error).toBeFalsy();
                 });
             });
+
+            waitsFor(() => {
+                return attributeFireAndForgetSubscriptionId !== undefined;
+            }, "callMethodFireAndForgetWithoutParameter - get attributeFireAndForgetSubscriptionId", 5000);
 
             waitsFor(() => {
                 return spy.onPublication.callCount > 0;
@@ -451,9 +455,9 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             log("callMethodFireAndForgetWithInputParameter");
             var spy = jasmine.createSpyObj("spy", [ "onPublication", "onPublicationError" ]);
             var expected = -1;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50, validity: 60000 });
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             var attributeFireAndForgetValue = -1;
-            var attributeFireAndForgetSubscriptionId = "";
+            var attributeFireAndForgetSubscriptionId;
 
             runs(() => {
                 // set attributeFireAndForget to 0 (it might have been set to the expected value by another test)
@@ -482,6 +486,11 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                     expect("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget - FAILED: " + error).toBeFalsy();
                 });
             });
+
+            waitsFor(() => {
+                return attributeFireAndForgetSubscriptionId !== undefined;
+
+            }, "callMethodFireAndForgetWithInputParameter - get attributeFireAndForgetSubscriptionId", 5000);
 
             waitsFor(() => {
                 return spy.onPublication.callCount > 0
@@ -1583,20 +1592,22 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeAttributeEnumeration", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
             spy.onPublicationError.reset();
+            spy.onSubscribed.reset();
 
             runs(function() {
                 log("callSubscribeAttributeEnumeration");
                 testInterfaceProxy.attributeEnumeration.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
-                    "onError": spy.onPublicationError
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
@@ -1612,6 +1623,15 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
                 log("subscriptionId = " + subscriptionId);
+            });
+
+            waitsFor(function() {
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeAttributeEnumeration onSubscribed", 5000);
+
+            runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
             });
 
             waitsFor(function() {
@@ -1647,20 +1667,22 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeAttributeWithExceptionFromGetter", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
             spy.onPublicationError.reset();
+            spy.onSubscribed.reset();
 
             runs(function() {
                 log("callSubscribeAttributeWithExceptionFromGetter");
                 testInterfaceProxy.attributeWithExceptionFromGetter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
-                    "onError": spy.onPublicationError
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
@@ -1676,6 +1698,15 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
                 log("callSubscribeAttributeWithExceptionFromGetter - subscriptionId = " + subscriptionId);
+            });
+
+            waitsFor(function() {
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeAttributeWithExceptionFromGetter onSubscribed", 5000);
+
+            runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
             });
 
             waitsFor(function() {
@@ -1714,21 +1745,23 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeBroadcastWithSinglePrimitiveParameter", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             var sleepDone;
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
             spy.onPublicationError.reset();
+            spy.onSubscribed.reset();
 
             runs(function() {
                 log("callSubscribeBroadcastWithSinglePrimitiveParameter");
                 testInterfaceProxy.broadcastWithSinglePrimitiveParameter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
-                    "onError": spy.onPublicationError
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
@@ -1744,6 +1777,15 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
                 log("subscriptionId = " + subscriptionId);
+            });
+
+            waitsFor(function() {
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeBroadcastWithSinglePrimitiveParameter onSubscribed", 5000);
+
+            runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
                 setTimeout(function() {
                     sleepDone = true;
                 }, 1000);
@@ -1811,21 +1853,22 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeBroadcastWithMultiplePrimitiveParameters", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
-            var sleepDone;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
             spy.onPublicationError.reset();
+            spy.onSubscribed.reset();
 
             runs(function() {
                 log("subscribeBroadcastWithMultiplePrimitiveParameters");
                 testInterfaceProxy.broadcastWithMultiplePrimitiveParameters.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
-                    "onError": spy.onPublicationError
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
@@ -1841,19 +1884,16 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
                 log("subscriptionId = " + subscriptionId);
-                setTimeout(function() {
-                    sleepDone = true;
-                }, 1000);
             });
 
             waitsFor(function() {
-                return sleepDone;
-            }, "subscribeBroadcastWithMultiplePrimitiveParameters sleep done", 2000);
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeBroadcastWithMultiplePrimitiveParameters onSubscribed", 5000);
 
             runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
                 // execute fire method here
-                // note that it can take time, until the broadcast is registered
-                // best if we would wait here for some time, and then fire the broadcast
                 spy.onFulfilled.reset();
                 spy.onError.reset();
                 testInterfaceProxy.methodToFireBroadcastWithMultiplePrimitiveParameters().then(spy.onFulfilled).catch(spy.onError);
@@ -1910,21 +1950,22 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeBroadcastWithSingleArrayParameter", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
-            var sleepDone;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
             spy.onPublicationError.reset();
+            spy.onSubscribed.reset();
 
             runs(function() {
                 log("callSubscribeBroadcastWithSingleArrayParameter");
                 testInterfaceProxy.broadcastWithSingleArrayParameter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
-                    "onError": spy.onPublicationError
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
@@ -1940,19 +1981,16 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
                 log("subscriptionId = " + subscriptionId);
-                setTimeout(function() {
-                    sleepDone = true;
-                }, 1000);
             });
 
             waitsFor(function() {
-                return sleepDone;
-            }, "callSubscribeBroadcastWithSingleArrayParameter sleep done", 2000);
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeBroadcastWithSingleArrayParameter onSubscribed", 5000);
 
             runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
                 // execute fire method here
-                // note that it can take time, until the broadcast is registered
-                // best if we would wait here for some time, and then fire the broadcast
                 spy.onFulfilled.reset();
                 spy.onError.reset();
                 testInterfaceProxy.methodToFireBroadcastWithSingleArrayParameter().then(spy.onFulfilled).catch(spy.onError);
@@ -2007,21 +2045,22 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeBroadcastWithMultipleArrayParameters", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
-            var sleepDone;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
             spy.onPublicationError.reset();
+            spy.onSubscribed.reset();
 
             runs(function() {
                 log("callSubscribeBroadcastWithMultipleArrayParameters");
                 testInterfaceProxy.broadcastWithMultipleArrayParameters.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
-                    "onError": spy.onPublicationError
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
@@ -2038,19 +2077,16 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
                 log("subscriptionId = " + subscriptionId);
                 log("subscriptionId = " + subscriptionId);
-                setTimeout(function() {
-                    sleepDone = true;
-                }, 1000);
             });
 
             waitsFor(function() {
-                return sleepDone;
-            }, "callSubscribeBroadcastWithMultipleArrayParameters sleep done", 2000);
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeBroadcastWithMultipleArrayParameters onSubscribed", 5000);
 
             runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
                 // execute fire method here
-                // note that it can take time, until the broadcast is registered
-                // best if we would wait here for some time, and then fire the broadcast
                 spy.onFulfilled.reset();
                 spy.onError.reset();
                 testInterfaceProxy.methodToFireBroadcastWithMultipleArrayParameters().then(spy.onFulfilled).catch(spy.onError);
@@ -2107,21 +2143,22 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeBroadcastWithSingleEnumerationParameter", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
-            var sleepDone;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
             spy.onPublicationError.reset();
+            spy.onSubscribed.reset();
 
             runs(function() {
                 log("callSubscribeBroadcastWithSingleEnumerationParameter");
                 testInterfaceProxy.broadcastWithSingleEnumerationParameter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
-                    "onError": spy.onPublicationError
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
@@ -2137,20 +2174,16 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
                 log("subscriptionId = " + subscriptionId);
-                setTimeout(function() {
-                    sleepDone = true;
-                }, 1000);
             });
 
             waitsFor(function() {
-                return sleepDone;
-            }, "callSubscribeBroadcastWithSingleEnumerationParameter sleep done", 2000);
-
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeBroadcastWithSingleEnumerationParameter onSubscribed", 5000);
 
             runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
                 // execute fire method here
-                // note that it can take time, until the broadcast is registered
-                // best if we would wait here for some time, and then fire the broadcast
                 spy.onFulfilled.reset();
                 spy.onError.reset();
                 testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter().then(spy.onFulfilled).catch(spy.onError);
@@ -2205,21 +2238,22 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeBroadcastWithMultipleEnumerationParameter", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
-            var sleepDone;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
             spy.onPublicationError.reset();
+            spy.onSubscribed.reset();
 
             runs(function() {
                 log("callSubscribeBroadcastWithMultipleEnumerationParameters");
                 testInterfaceProxy.broadcastWithMultipleEnumerationParameters.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
-                    "onError": spy.onPublicationError
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
@@ -2241,13 +2275,13 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             });
 
             waitsFor(function() {
-                return sleepDone;
-            }, "callSubscribeBroadcastWithMultipleEnumerationParameters sleep done", 2000);
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeBroadcastWithMultipleEnumerationParameters onSubscribed", 5000);
 
             runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
                 // execute fire method here
-                // note that it can take time, until the broadcast is registered
-                // best if we would wait here for some time, and then fire the broadcast
                 spy.onFulfilled.reset();
                 spy.onError.reset();
                 testInterfaceProxy.methodToFireBroadcastWithMultipleEnumerationParameters().then(spy.onFulfilled).catch(spy.onError);
@@ -2303,21 +2337,22 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeBroadcastWithSingleStructParameter", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
-            var sleepDone;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
             spy.onPublicationError.reset();
+            spy.onSubscribed.reset();
 
             runs(function() {
                 log("callSubscribeBroadcastWithSingleStructParameter");
                 testInterfaceProxy.broadcastWithSingleStructParameter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
-                    "onError": spy.onPublicationError
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
@@ -2333,14 +2368,16 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
                 log("subscriptionId = " + subscriptionId);
-                setTimeout(function() {
-                    sleepDone = true;
-                }, 1000);
             });
 
             waitsFor(function() {
-                return sleepDone;
-            }, "callSubscribeBroadcastWithSingleStructParameter sleep done", 2000);
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeBroadcastWithSingleStructParameter onSubscribed", 5000);
+
+            runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
+            });
 
             runs(function() {
                 // execute fire method here
@@ -2400,10 +2437,9 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeBroadcastWithMultipleStructParameter", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
-            var sleepDone;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
@@ -2414,7 +2450,8 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 testInterfaceProxy.broadcastWithMultipleStructParameters.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
-                    "onError": spy.onPublicationError
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
@@ -2430,19 +2467,16 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
                 log("subscriptionId = " + subscriptionId);
-                setTimeout(function() {
-                    sleepDone = true;
-                }, 1000);
             });
 
             waitsFor(function() {
-                return sleepDone;
-            }, "callSubscribeBroadcastWithMultipleStructParameters sleep done", 2000);
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeBroadcastWithMultipleStructParameters onSubscribed", 5000);
 
             runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
                 // execute fire method here
-                // note that it can take time, until the broadcast is registered
-                // best if we would wait here for some time, and then fire the broadcast
                 spy.onFulfilled.reset();
                 spy.onError.reset();
                 testInterfaceProxy.methodToFireBroadcastWithMultipleStructParameters().then(spy.onFulfilled).catch(spy.onError);
@@ -2499,14 +2533,14 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
         });
 
         it("callSubscribeBroadcastWithFiltering", function() {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
-            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
-            var sleepDone;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
             spy.onFulfilled.reset();
             spy.onError.reset();
             spy.onPublication.reset();
             spy.onPublicationError.reset();
+            spy.onSubscribed.reset();
 
             runs(function() {
                 log("callSubscribeBroadcastWithFiltering");
@@ -2526,6 +2560,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed,
                     "filterParameters": filterParameters
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
@@ -2542,19 +2577,16 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
                 log("subscriptionId = " + subscriptionId);
-                setTimeout(function() {
-                    sleepDone = true;
-                }, 1000);
             });
 
             waitsFor(function() {
-                return sleepDone;
-            }, "callSubscribeBroadcastWithFiltering sleep done", 2000);
+                return spy.onSubscribed.callCount > 0;
+            }, "callSubscribeBroadcastWithFiltering onSubscribed", 5000);
 
             runs(function() {
+                expect(spy.onSubscribed.callCount).toEqual(1);
+                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
                 // execute fire method here
-                // note that it can take time, until the broadcast is registered
-                // best if we would wait here for some time, and then fire the broadcast
                 spy.onFulfilled.reset();
                 spy.onError.reset();
                 var args = {

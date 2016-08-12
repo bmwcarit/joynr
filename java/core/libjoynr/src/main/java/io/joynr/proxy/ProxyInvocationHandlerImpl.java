@@ -67,7 +67,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private DiscoveryQos discoveryQos;
     private ConnectorInvocationHandler connector;
     private final String proxyParticipantId;
-    private ConcurrentLinkedQueue<MethodInvocation> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation>();
+    private ConcurrentLinkedQueue<MethodInvocation<?>> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation<?>>();
     private ConcurrentLinkedQueue<SubscriptionInvocation> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionInvocation>();
     private String interfaceName;
     private Set<String> domains;
@@ -222,7 +222,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         }
     }
 
-    private void setFutureErrorState(Invocation invocation, JoynrRuntimeException e) {
+    private void setFutureErrorState(Invocation<?> invocation, JoynrRuntimeException e) {
         invocation.getFuture().onFailure(e);
     }
 
@@ -231,7 +231,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      */
     private void sendQueuedInvocations() {
         while (true) {
-            MethodInvocation currentRPC = queuedRpcList.poll();
+            MethodInvocation<?> currentRPC = queuedRpcList.poll();
             if (currentRPC == null) {
                 return;
             }
@@ -286,7 +286,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                     queuedSubscriptionInvocationList.offer(attributeSubscription);
                     // TODO Bug: [Java] subscribeTo<Attribute> does not return correct value in case connector is not
                     // available
-                    return attributeSubscription.getSubscriptionId();
+                    return future;
                 }
             } finally {
                 connectorStatusLock.unlock();
@@ -301,7 +301,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 logger.error("error executing attribute subscription: {} : {}", method.getName(), e.getMessage());
                 setFutureErrorState(attributeSubscription, new JoynrRuntimeException(e));
             }
-            return attributeSubscription.getSubscriptionId();
+            return future;
 
         } else if (method.getName().startsWith("unsubscribeFrom")) {
             return unsubscribe(new UnsubscribeInvocation(method, args, future)).getSubscriptionId();
@@ -315,9 +315,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         Future<String> future = new Future<String>();
         if (method.getName().startsWith("subscribeTo")) {
 
-            BroadcastSubscribeInvocation broadcastSubscription = new BroadcastSubscribeInvocation(method,
-                                                                                                  args,
-                                                                                                  new Future<String>());
+            BroadcastSubscribeInvocation broadcastSubscription = new BroadcastSubscribeInvocation(method, args, future);
             connectorStatusLock.lock();
             try {
                 if (!isConnectorReady()) {
@@ -325,7 +323,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                     queuedSubscriptionInvocationList.offer(broadcastSubscription);
                     // TODO Bug: [Java] subscribeTo<Attribute> does not return correct value in case connector is not
                     // available
-                    return broadcastSubscription.getSubscriptionId();
+                    return future;
                 }
             } finally {
                 connectorStatusLock.unlock();
@@ -340,7 +338,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
                 setFutureErrorState(broadcastSubscription, new JoynrRuntimeException(e));
             }
-            return broadcastSubscription.getSubscriptionId();
+            return future;
         } else if (method.getName().startsWith("unsubscribeFrom")) {
             return unsubscribe(new UnsubscribeInvocation(method, args, future)).getSubscriptionId();
         } else {
@@ -356,7 +354,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         try {
             if (!isConnectorReady()) {
                 // waiting for arbitration -> queue invocation
-                queuedRpcList.offer(new MethodInvocation(method, args, future));
+                queuedRpcList.offer(new MethodInvocation<T>(method, args, future));
                 return future;
             }
         } finally {
@@ -424,8 +422,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     public void abort(JoynrRuntimeException exception) {
         setThrowableForInvoke(exception);
 
-        for (Iterator<MethodInvocation> iterator = queuedRpcList.iterator(); iterator.hasNext();) {
-            MethodInvocation invocation = iterator.next();
+        for (Iterator<MethodInvocation<?>> iterator = queuedRpcList.iterator(); iterator.hasNext();) {
+            MethodInvocation<?> invocation = iterator.next();
             try {
                 MethodMetaInformation metaInfo = new MethodMetaInformation(invocation.getMethod());
                 int callbackIndex = metaInfo.getCallbackIndex();

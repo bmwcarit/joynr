@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionReply.h"
 #include "joynr/ISubscriptionManager.h"
 
 namespace joynr
@@ -59,12 +60,40 @@ void InProcessPublicationSender::sendSubscriptionPublication(
             subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
         JOYNR_LOG_ERROR(logger,
-                        "Dropping reply for non/no more existing subscription with id={}",
+                        "Dropping subscription publication for non/no more existing subscription "
+                        "with id={}",
                         subscriptionId);
         return;
     }
 
     callback->execute(std::move(subscriptionPublication));
+}
+
+void InProcessPublicationSender::sendSubscriptionReply(const std::string& senderParticipantId,
+                                                       const std::string& receiverParticipantId,
+                                                       const MessagingQos& qos,
+                                                       const SubscriptionReply& subscriptionReply)
+{
+    std::ignore = senderParticipantId; // interface has sourcePartId, because JoynrMessages have a
+                                       // source and dest. partId. Those are not necessary for in
+                                       // process
+    std::ignore = receiverParticipantId;
+    std::ignore = qos;
+
+    const std::string subscriptionId = subscriptionReply.getSubscriptionId();
+    JOYNR_LOG_TRACE(logger, "Sending publication. id={}", subscriptionId);
+    assert(subscriptionManager != nullptr);
+    std::shared_ptr<ISubscriptionCallback> callback =
+            subscriptionManager->getSubscriptionCallback(subscriptionId);
+    if (!callback) {
+        JOYNR_LOG_ERROR(
+                logger,
+                "Dropping subscription reply for non/no more existing subscription with id={}",
+                subscriptionId);
+        return;
+    }
+
+    callback->execute(std::move(subscriptionReply));
 }
 
 } // namespace joynr

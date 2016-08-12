@@ -24,6 +24,7 @@ import java.util.Set;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingQos;
 import joynr.SubscriptionPublication;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 
@@ -43,6 +44,11 @@ public interface Dispatcher extends MessageArrivedListener {
                                             Set<String> toParticipantId,
                                             SubscriptionPublication publication,
                                             MessagingQos qosSettings);
+
+    void sendSubscriptionReply(String fromParticipantId,
+                               String toParticipantId,
+                               SubscriptionReply subscriptionReply,
+                               MessagingQos qosSettings);
 
     /**
      *

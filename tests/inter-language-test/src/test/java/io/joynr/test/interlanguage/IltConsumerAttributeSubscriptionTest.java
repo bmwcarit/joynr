@@ -20,6 +20,7 @@ package io.joynr.test.interlanguage;
  */
 
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -45,7 +46,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeAttributeEnumeration() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -109,7 +110,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromAttributeEnumeration(subscriptionId);
+                testInterfaceProxy.unsubscribeFromAttributeEnumeration(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
@@ -135,7 +136,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeAttributeWithExceptionFromGetter() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -212,7 +213,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromAttributeWithExceptionFromGetter(subscriptionId);
+                testInterfaceProxy.unsubscribeFromAttributeWithExceptionFromGetter(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());

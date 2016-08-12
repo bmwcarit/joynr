@@ -20,15 +20,6 @@ package io.joynr.dispatching.subscription;
  */
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
-import io.joynr.dispatching.Dispatcher;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
-import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
-import io.joynr.pubsub.HeartbeatSubscriptionInformation;
-import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -41,23 +32,33 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Future;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.pubsub.HeartbeatSubscriptionInformation;
+import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.BroadcastSubscriptionRequest;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class SubscriptionManagerImpl implements SubscriptionManager {
 
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> subscriptionListenerDirectory;
     private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionListenerDirectory;
+    private ConcurrentMap<String, Future<String>> subscriptionFutureMap;
     private ConcurrentMap<String, Class<?>> subscriptionTypes;
     private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes;
     private ConcurrentMap<String, PubSubState> subscriptionStates;
@@ -83,7 +84,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.subscriptionEndFutures = Maps.newConcurrentMap();
         this.subscriptionTypes = Maps.newConcurrentMap();
         this.subscriptionBroadcastTypes = Maps.newConcurrentMap();
-
+        this.subscriptionFutureMap = Maps.newConcurrentMap();
     }
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -94,6 +95,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
                                    ConcurrentMap<String, Class<?>> subscriptionAttributeTypes,
                                    ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes,
+                                   ConcurrentMap<String, Future<String>> subscriptionFutureMap,
                                    ScheduledExecutorService cleanupScheduler,
                                    Dispatcher dispatcher) {
         super();
@@ -106,6 +108,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.subscriptionBroadcastTypes = subscriptionBroadcastTypes;
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
+        this.subscriptionFutureMap = subscriptionFutureMap;
     }
 
     private void cancelExistingSubscriptionEndRunnable(String subscriptionId) {
@@ -138,6 +141,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void registerAttributeSubscription(String fromParticipantId,
                                               Set<String> toParticipantIds,
@@ -150,6 +154,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         logger.info("Attribute subscription registered with Id: " + request.getSubscriptionId());
         subscriptionTypes.put(request.getSubscriptionId(), request.getAttributeTypeReference());
         subscriptionListenerDirectory.put(request.getSubscriptionId(), request.getAttributeSubscriptionListener());
+        subscriptionFutureMap.put(request.getSubscriptionId(), request.getFuture());
 
         if (qos instanceof HeartbeatSubscriptionInformation) {
             HeartbeatSubscriptionInformation heartbeat = (HeartbeatSubscriptionInformation) qos;
@@ -188,21 +193,22 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     @Override
     public void registerBroadcastSubscription(String fromParticipantId,
                                               Set<String> toParticipantIds,
-                                              BroadcastSubscribeInvocation subscriptionRequest) {
-        if (!subscriptionRequest.hasSubscriptionId()) {
-            subscriptionRequest.setSubscriptionId(UUID.randomUUID().toString());
+                                              BroadcastSubscribeInvocation request) {
+        if (!request.hasSubscriptionId()) {
+            request.setSubscriptionId(UUID.randomUUID().toString());
         }
-        String subscriptionId = subscriptionRequest.getSubscriptionId();
-        registerSubscription(subscriptionRequest.getQos(), subscriptionId);
-        logger.info("Attribute subscription registered with Id: " + subscriptionId);
-        subscriptionBroadcastTypes.put(subscriptionId, subscriptionRequest.getOutParameterTypes());
-        broadcastSubscriptionListenerDirectory.put(subscriptionId,
-                                                   subscriptionRequest.getBroadcastSubscriptionListener());
+        String subscriptionId = request.getSubscriptionId();
+        subscriptionFutureMap.put(subscriptionId, request.getFuture());
 
-        SubscriptionRequest requestObject = new BroadcastSubscriptionRequest(subscriptionRequest.getSubscriptionId(),
-                                                                             subscriptionRequest.getBroadcastName(),
-                                                                             subscriptionRequest.getFilterParameters(),
-                                                                             subscriptionRequest.getQos());
+        registerSubscription(request.getQos(), subscriptionId);
+        logger.info("Attribute subscription registered with Id: " + subscriptionId);
+        subscriptionBroadcastTypes.put(subscriptionId, request.getOutParameterTypes());
+        broadcastSubscriptionListenerDirectory.put(subscriptionId, request.getBroadcastSubscriptionListener());
+
+        SubscriptionRequest requestObject = new BroadcastSubscriptionRequest(request.getSubscriptionId(),
+                                                                             request.getBroadcastName(),
+                                                                             request.getFilterParameters(),
+                                                                             request.getQos());
         MessagingQos messagingQos = new MessagingQos();
         SubscriptionQos qos = requestObject.getQos();
         if (qos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
@@ -275,6 +281,42 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
+    public void handleSubscriptionReply(final SubscriptionReply subscriptionReply) {
+        String subscriptionId = subscriptionReply.getSubscriptionId();
+
+        if (subscriptionReply.getError() == null) {
+            if (subscriptionFutureMap.containsKey(subscriptionId)) {
+                subscriptionFutureMap.remove(subscriptionId).onSuccess(subscriptionId);
+            }
+
+            if (subscriptionListenerDirectory.containsKey(subscriptionId)) {
+                subscriptionListenerDirectory.get(subscriptionId).onSubscribed(subscriptionId);
+            } else if (broadcastSubscriptionListenerDirectory.containsKey(subscriptionId)) {
+                broadcastSubscriptionListenerDirectory.get(subscriptionId).onSubscribed();
+            } else {
+                logger.warn("No subscription listener found for incoming subscription reply for subscription ID {}!",
+                            subscriptionId);
+            }
+        } else {
+            logger.debug("Handling subscription reply with error: {}", subscriptionReply.getError());
+            if (subscriptionFutureMap.containsKey(subscriptionId)) {
+                subscriptionFutureMap.remove(subscriptionId).onFailure(subscriptionReply.getError());
+            }
+
+            if (subscriptionListenerDirectory.containsKey(subscriptionId)) {
+                subscriptionListenerDirectory.remove(subscriptionId).onError(subscriptionReply.getError());
+            } else if (broadcastSubscriptionListenerDirectory.containsKey(subscriptionId)) {
+                broadcastSubscriptionListenerDirectory.remove(subscriptionId).onError();
+            } else {
+                logger.warn("No subscription listener found for incoming subscription reply for subscription ID {}! Error message: {}",
+                            subscriptionId,
+                            subscriptionReply.getError().getMessage());
+            }
+            subscriptionTypes.remove(subscriptionId);
+        }
+    }
+
+    @Override
     public void touchSubscriptionState(final String subscriptionId) {
         logger.info("Touching subscription state for id=" + subscriptionId);
         if (!subscriptionStates.containsKey(subscriptionId)) {
@@ -333,7 +375,6 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         subscriptionStates.remove(subscriptionId);
         subscriptionListenerDirectory.remove(subscriptionId);
         subscriptionTypes.remove(subscriptionId);
-
     }
 
     private Class<?>[] getParameterTypesForBroadcastPublication(Object[] broadcastValues) {

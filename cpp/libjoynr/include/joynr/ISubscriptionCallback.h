@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 namespace joynr
 {
 class SubscriptionPublication;
+class SubscriptionReply;
 namespace exceptions
 {
 class JoynrRuntimeException;
@@ -37,6 +38,7 @@ public:
     virtual void onError(const exceptions::JoynrRuntimeException& error) = 0;
     virtual ~ISubscriptionCallback() = default;
     virtual void execute(SubscriptionPublication&& subscriptionPublication) = 0;
+    virtual void execute(const SubscriptionReply& subscriptionReply) = 0;
 };
 
 } // namespace joynr

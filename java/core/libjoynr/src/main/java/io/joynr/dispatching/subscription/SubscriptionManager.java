@@ -25,6 +25,7 @@ import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
+import joynr.SubscriptionReply;
 
 import java.util.Set;
 
@@ -45,6 +46,8 @@ public interface SubscriptionManager {
                                 String subscriptionId,
                                 MessagingQos qosSettings);
 
+    void handleSubscriptionReply(SubscriptionReply subscriptionReply);
+
     void touchSubscriptionState(final String subscriptionId);
 
     Class<?> getAttributeType(String subscriptionId);
@@ -63,5 +66,4 @@ public interface SubscriptionManager {
     <T> void handleAttributePublication(String subscriptionId, T attributeValue);
 
     <T> void handleAttributePublicationError(String subscriptionId, JoynrRuntimeException error);
-
 }

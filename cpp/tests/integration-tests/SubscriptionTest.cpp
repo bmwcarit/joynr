@@ -178,9 +178,9 @@ TEST_F(SubscriptionTest, receive_publication ) {
     ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("GpsLocation")));
 
     // Use a semaphore to count and wait on calls to the mockGpsLocationListener
-    Semaphore semaphore(0);
+    Semaphore publicationSemaphore(0);
     EXPECT_CALL(*mockGpsLocationListener, onReceive(A<const types::Localisation::GpsLocation&>()))
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+            .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
 
     //register the subscription on the consumer side
     std::string attributeName = "Location";
@@ -197,7 +197,9 @@ TEST_F(SubscriptionTest, receive_publication ) {
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     subscriptionPublication.setResponse(gpsLocation1);
 
-    auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(mockGpsLocationListener);
+    auto future = std::make_shared<Future<std::string>>();
+    auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
+            >(mockGpsLocationListener, future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -215,8 +217,8 @@ TEST_F(SubscriptionTest, receive_publication ) {
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(publicationSemaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_FALSE(publicationSemaphore.waitFor(std::chrono::seconds(1)));
 }
 
 /**
@@ -249,7 +251,9 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     subscriptionPublication.setResponse(tests::testTypes::TestEnum::ZERO);
-    auto subscriptionCallback = std::make_shared<SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>>(mockTestEnumSubscriptionListener);
+    auto future = std::make_shared<Future<std::string>>();
+    auto subscriptionCallback = std::make_shared<SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>
+            >(mockTestEnumSubscriptionListener, future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -347,14 +351,14 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     auto mockMessageRouter = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
     JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
 
-    /* ensure the serialization succeeds and the first publication is send to the proxy */
+    /* ensure the serialization succeeds and the first publication and the subscriptionReply are sent to the proxy */
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
                          A<JoynrMessage>(),
                          Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
                          Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId))),
                      _
-                     ));
+                     )).Times(2);
 
     publicationManager->add(
                 proxyParticipantId,

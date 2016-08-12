@@ -69,8 +69,7 @@ void ReceivedMessageRunnable::run()
                JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         dispatcher.handleBroadcastSubscriptionRequestReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
-        JOYNR_LOG_FATAL(logger, "subscription reply not yet implemented");
-        assert(false);
+        dispatcher.handleSubscriptionReplyReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
         dispatcher.handlePublicationReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {

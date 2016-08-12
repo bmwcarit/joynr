@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 
@@ -77,8 +78,8 @@ public class SubscriptionTimersTest {
     private long subscriptionLength = period * numberOfPublications + alertAfterInterval;
 
     private String fromParticipantId;
-
     private String toParticipantId;
+    private Future<String> future;
 
     class IntegerReference extends TypeReference<Integer> {
     }
@@ -90,6 +91,7 @@ public class SubscriptionTimersTest {
         attributeName = "testAttribute";
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
+        future = new Future<String>();
     }
 
     @Test(timeout = 3000)
@@ -108,7 +110,7 @@ public class SubscriptionTimersTest {
                                                                                             IntegerReference.class,
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
-                                                                                            null);
+                                                                                            future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
                                                           Sets.newHashSet(toParticipantId),
                                                           subscriptionRequest);
@@ -149,7 +151,7 @@ public class SubscriptionTimersTest {
                                                                                             IntegerReference.class,
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
-                                                                                            null);
+                                                                                            future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
                                                           Sets.newHashSet(toParticipantId),
                                                           subscriptionRequest);

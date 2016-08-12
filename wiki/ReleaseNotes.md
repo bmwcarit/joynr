@@ -1,6 +1,13 @@
 #joynr 0.20.0
 
 ##API relevant changes
+* **[JS]** The SubscriptionListener is now able to get informed about succeeded
+  subscription requests. For this purpose, he can implement a callback having
+  the following signature: void onSubscribed(subscribeId) 
+* **[JS]** The consumer is able to synchronise to subscription requests.
+  The promise returned by <Interface>Proxy.subscribeTo<Attribute|Broadcast> is
+  resolved, once the subscription request has been successfully delivered to the
+  interface provider. 
 * **[Java]** Static capabilities provisioning can now be specified as a URI.
   See the [Java Configuration Guide](JavaSettings.md) for details.
 * **[Java]** the domain access controller now has it's own property with which one can set its
