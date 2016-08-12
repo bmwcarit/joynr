@@ -265,6 +265,8 @@ function performJsConsumerTest {
     REPORTFILE_PARAM=$2
     VIACC=$3
     STARTPROVIDER=$4
+    PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
+    PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
@@ -273,10 +275,10 @@ function performJsConsumerTest {
         if [ "$USE_NPM" == "ON" ]
         then
             npm run-script --performance-test:domain=$DOMAINNAME \
-                             startprovider 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & PROVIDER_PID=$!
+                             startprovider 1>>$PROVIDER_STDOUT 2>>$PROVIDER_STDERR & PROVIDER_PID=$!
         else
             # This call assumes that the required js dependencies are installed locally
-            node src/main/js/provider.js $DOMAINNAME 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & PROVIDER_PID=$!
+            node src/main/js/provider.js $DOMAINNAME 1>>$PROVIDER_STDOUT 2>>$REPORTFILE_PARAM & PROVIDER_PID=$!
         fi
     fi
 
