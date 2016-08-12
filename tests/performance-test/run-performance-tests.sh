@@ -330,15 +330,15 @@ function stopCppClusterController {
 
 function stopAnyProvider {
     echo "Killing provider"
-    # pkill is required if maven is used to start a provider. Maven launches the
-    # provider as a child process, which seems not to be killed automatically along
-    # with the parent process
     if [ "$PROVIDER_PID" != "" ]
     then
         if [ "$USE_MAVEN" != "ON" ]
         then
             echo "do not call pkill for provider id $PROVIDER_ID"
         else
+            # pkill is required if maven is used to start a provider. Maven launches the
+            # provider as a child process, which seems not to be killed automatically along
+            # with the parent process
             pkill -P $PROVIDER_PID
         fi
         kill $PROVIDER_PID
