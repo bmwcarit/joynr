@@ -400,7 +400,9 @@ The project is sub-divided into one multi-module parent project and three subpro
    |- radio-jee-consumer
 ```
 
-In order to build the project, change to the `radio-jee` directory and call `mvn install`.
+In order to build the project you first have to have built the rest of joynr by executing
+`mvn install` from the root of the directory where you checked out joynr to. Next change
+to the `radio-jee` directory and call `mvn install`.
 
 The following describes running the example on [Payara 4.1](http://www.payara.fish). First,
 install the application server and you will also need to install an MQTT broker, e.g.
@@ -433,3 +435,12 @@ Note the `radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBe
 and `radio-jee-consumer/src/main/java/io/joynr/examples/jee/RadioConsumerRestEndpoint.java`
 classes in particular, which represent the implementation of the joynr provider for the
 Radio service, and the consumer thereof.
+
+If you want to use the radio JEE example as a template for building a joynr based JEE application
+don't forget to change the joynr dependency version in the Maven POMs to a release version. If you
+change the parent POM, which is also likely, don't forget to pull the necessary `dependencyManagement`
+entries from the joynr parent POM into your own POM.  
+You'll also likely want to change the way the FIDL file is included in the API project. In this
+example it is obtained from the `radio-app` Maven dependency, but you will probably want to have it
+in, e.g., `${project.root}/my-api/src/main/model/my.fidl`, and then reference that file directly
+in the generator configuration. See the [joynr Generator Documentation](generator.md) for details.
