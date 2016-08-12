@@ -32,6 +32,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -65,6 +66,8 @@ public class BounceProxyStartupReporter {
     private final ControlledBounceProxyUrl controlledBounceProxyUrl;
 
     private ExecutorService execService;
+
+    private final Semaphore startupReportFutureAvailable = new Semaphore(0, true);
 
     @Inject
     public BounceProxyStartupReporter(CloseableHttpClient httpclient,
@@ -127,6 +130,7 @@ public class BounceProxyStartupReporter {
         // don't wait for the callable to end so that shutting down is possible
         // at any time
         startupReportFuture = execService.submit(reportEventCallable);
+        startupReportFutureAvailable.release();
     }
 
     /**
@@ -200,11 +204,20 @@ public class BounceProxyStartupReporter {
 
         // try forever to reach the bounce proxy, as otherwise the bounce proxy
         // isn't useful anyway
-        while (!startupReportFuture.isCancelled()) {
+        while (true) {
+            try {
+                startupReportFutureAvailable.acquire();
+                break;
+            } catch (InterruptedException e) {
+                // ignore & retry
+            }
+        }
+        while (startupReportFuture != null && !startupReportFuture.isCancelled()) {
             try {
                 reportEventAsHttpRequest();
                 // if no exception is thrown, reporting was successful and we
                 // can return here
+                startupReportFutureAvailable.release();
                 return true;
             } catch (Exception e) {
                 // TODO we might have to intercept the JoynrHttpMessage if the
@@ -219,9 +232,11 @@ public class BounceProxyStartupReporter {
             try {
                 Thread.sleep(sendReportRetryIntervalMs);
             } catch (InterruptedException e) {
+                startupReportFutureAvailable.release();
                 return false;
             }
         }
+        startupReportFutureAvailable.release();
         return false;
     }
 
