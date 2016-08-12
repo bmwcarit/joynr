@@ -44,7 +44,7 @@ RUN dnf update -y \
 RUN cd /opt \
     && git clone https://github.com/gabime/spdlog.git \
     && cd spdlog \
-    && git checkout v0.9.0 \
+    && git checkout 4fcde3b \
     && mkdir build \
     && cd build \
     && cmake .. \

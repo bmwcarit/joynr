@@ -127,3 +127,10 @@ The software listed below included in some products is licensed under the "MIT/X
 The software listed below included in some products is licensed under the "W3C® Software Notice and License". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/W3C-Software-Notice.txt".
 - files in WEB-INF/lib/xml-apis-1.4.01.jar:org/w3c/dom
   License: WEB-INF/lib/xml-apis-1.4.01.jar:license/LICENSE.dom-software.txt
+
+The software listed below included in some products is licensed under the "DWTFYWT Public Licence". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/COPYING.txt".
+- org.reflections:reflections:0.9.8
+
+The software listed below included in some products is licensed under the "Public Domain".
+- aopalliance:aopalliance:1.0
+  License: http://aopalliance.sourceforge.net

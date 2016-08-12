@@ -325,11 +325,9 @@ target_include_directories(
 add_dependencies(JoynrTestGenerated muesli::muesli)
 
 # 2. As cmake OBJECT library do not support linking we need to manually set
-# the COMPILE_DEFINITIONS from muesli.
+# the INCLUDE_DIRECTORIES from muesli.
 get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(JoynrTestGenerated SYSTEM PUBLIC "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>")
-get_target_property(muesli_COMPILE_DEFINITIONS muesli::muesli INTERFACE_COMPILE_DEFINITIONS)
-target_compile_definitions(JoynrTestGenerated PUBLIC ${muesli_COMPILE_DEFINITIONS})
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(

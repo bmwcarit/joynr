@@ -26,6 +26,7 @@
 #include <limits>
 #include <numeric>
 #include <exception>
+#include <random>
 
 #include "joynr/JoynrRuntime.h"
 #include "joynr/DiscoveryQos.h"
@@ -39,6 +40,7 @@ namespace joynr
 struct IPerformanceConsumer
 {
     virtual void runByteArray() = 0;
+    virtual void runByteArrayWithSizeTimesK() = 0;
     virtual void runString() = 0;
     virtual void runStruct() = 0;
 };
@@ -97,6 +99,11 @@ public:
         run(&Impl::loopByteArray, getFilledByteArray());
     }
 
+    void runByteArrayWithSizeTimesK() override
+    {
+        run(&Impl::loopByteArray, getFilledByteArrayWithSizeTimesK());
+    }
+
     void runString() override
     {
         run(&Impl::loopString, getFilledString());
@@ -125,14 +132,41 @@ protected:
 
     std::string getFilledString() const
     {
-        return std::string(stringLength, '#');
+        const char characters[] = "abcdefghijklmnopqrstuvwxyz"
+                                  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                  "0123456789"
+                                  "!\"$%&/()=?@,.-;:_";
+        //                          "°§€ÄÖÜäöüß";
+
+        std::random_device randomDevice;
+        std::default_random_engine rng(randomDevice());
+        std::uniform_int_distribution<std::default_random_engine::result_type> distribution(
+                0, sizeof(characters) - 2);
+        std::string s;
+        for (int i = 0; i < stringLength; i++) {
+            s += characters[distribution(rng)];
+        }
+        return s;
+    }
+
+    static void fillByteArray(ByteArray& data)
+    {
+        // fill data with sequentially increasing numbers
+        std::iota(data.begin(), data.end(), 0);
     }
 
     ByteArray getFilledByteArray() const
     {
+        std::cout << byteArraySize << std::endl << std::endl;
         ByteArray data(byteArraySize);
-        // fill data with sequentially increasing numbers
-        std::iota(data.begin(), data.end(), 0);
+        fillByteArray(data);
+        return data;
+    }
+
+    ByteArray getFilledByteArrayWithSizeTimesK() const
+    {
+        ByteArray data(byteArraySize * 1000);
+        fillByteArray(data);
         return data;
     }
 

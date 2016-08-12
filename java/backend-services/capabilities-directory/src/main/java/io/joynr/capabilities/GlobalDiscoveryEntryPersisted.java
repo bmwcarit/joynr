@@ -34,12 +34,14 @@ import joynr.types.Version;
 @Table(name = "discovery_entries")
 public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
     private static final long serialVersionUID = 1L;
+    private ProviderQosPersisted providerQosPersisted;
 
     public GlobalDiscoveryEntryPersisted() {
     }
 
     public GlobalDiscoveryEntryPersisted(GlobalDiscoveryEntry globalDiscoveryEntryObj) {
         super(globalDiscoveryEntryObj);
+        providerQosPersisted = new ProviderQosPersisted(globalDiscoveryEntryObj.getQos());
     }
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -62,6 +64,7 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
               expiryDateMs,
               publicKeyId,
               address);
+        providerQosPersisted = new ProviderQosPersisted(qos);
     }
 
     @Override
@@ -83,11 +86,15 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
         return super.getParticipantId();
     }
 
-    @Override
     @Column
     @Embedded
-    public ProviderQos getQos() {
-        return super.getQos();
+    public ProviderQosPersisted getProviderQosPersisted() {
+        return providerQosPersisted;
+    }
+
+    public void setProviderQosPersisted(ProviderQosPersisted providerQosPersisted) {
+        this.providerQosPersisted = providerQosPersisted;
+        super.setQos(new ProviderQos(providerQosPersisted));
     }
 
     @Override
@@ -133,4 +140,13 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
         getProviderVersion().setMinorVersion(minorVersion);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

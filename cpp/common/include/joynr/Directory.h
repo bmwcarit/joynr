@@ -19,6 +19,8 @@
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
 
+#include <algorithm>
+#include <functional>
 #include <string>
 #include <mutex>
 #include <unordered_map>
@@ -65,10 +67,22 @@ template <typename Key, typename T>
 class Directory
 {
 public:
+    using SaveFilterFunction = std::function<bool(std::shared_ptr<T>)>;
     Directory() = default;
+    Directory(const std::string& directoryName,
+              boost::asio::io_service& ioService,
+              SaveFilterFunction fun)
+            : callbackMap(),
+              timeoutTimerMap(),
+              mutex(),
+              ioService(ioService),
+              saveFilterFunction(std::move(fun))
+    {
+        std::ignore = directoryName;
+    }
 
     Directory(const std::string& directoryName, boost::asio::io_service& ioService)
-            : callbackMap(), timeoutTimerMap(), mutex(), ioService(ioService)
+            : callbackMap(), timeoutTimerMap(), mutex(), ioService(ioService), saveFilterFunction()
     {
         std::ignore = directoryName;
     }
@@ -161,12 +175,39 @@ public:
     }
 
     template <typename Archive>
-    void serialize(Archive& archive)
+    void save(Archive& archive)
+    {
+        if (saveFilterFunction) {
+            saveImplFiltered(archive);
+        } else {
+            saveImplNonFiltered(archive);
+        }
+    }
+
+    template <typename Archive>
+    void load(Archive& archive)
     {
         archive(MUESLI_NVP(callbackMap));
     }
 
 private:
+    template <typename Archive>
+    void saveImplNonFiltered(Archive& archive)
+    {
+        archive(MUESLI_NVP(callbackMap));
+    }
+
+    template <typename Archive>
+    void saveImplFiltered(Archive& archive)
+    {
+        std::unordered_map<Key, std::shared_ptr<T>> tempCallbackMap;
+        std::copy_if(callbackMap.cbegin(),
+                     callbackMap.cend(),
+                     std::inserter(tempCallbackMap, tempCallbackMap.begin()),
+                     [this](auto entry) { return saveFilterFunction(entry.second); });
+        archive(muesli::make_nvp("callbackMap", tempCallbackMap));
+    }
+
     template <typename ValueType, typename KeyType>
     std::enable_if_t<std::is_same<ValueType, IReplyCaller>::value> removeAfterTimeout(
             const KeyType& keyId)
@@ -195,6 +236,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
     std::mutex mutex;
     boost::asio::io_service& ioService;
+    SaveFilterFunction saveFilterFunction;
 };
 
 template <typename Key, typename T>

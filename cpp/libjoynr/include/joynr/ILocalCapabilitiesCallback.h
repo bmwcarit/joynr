@@ -32,6 +32,7 @@ public:
     virtual ~ILocalCapabilitiesCallback() = default;
 
     virtual void capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) = 0;
+    virtual void onError(const joynr::exceptions::JoynrRuntimeException&) = 0;
 };
 
 } // namespace joynr

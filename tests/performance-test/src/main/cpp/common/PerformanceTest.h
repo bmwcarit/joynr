@@ -25,7 +25,6 @@
 #include <chrono>
 #include <utility>
 
-template <std::size_t Runs = 1000>
 struct PerformanceTest
 {
     /**
@@ -33,7 +32,7 @@ struct PerformanceTest
      * @returns average duration of a function call in milliseconds
      */
     template <typename Function, typename... Args>
-    double benchmark(Function&& fun, Args&&... args) const
+    double benchmark(std::uint64_t runs, Function&& fun, Args&&... args) const
     {
         using Clock = std::chrono::steady_clock;
         using ClockResolution = std::chrono::microseconds;
@@ -41,38 +40,42 @@ struct PerformanceTest
 
         const auto start = Clock::now();
 
-        executeBenchmark(std::forward<Function>(fun),
+        executeBenchmark(runs,
+                         std::forward<Function>(fun),
                          std::forward<Args>(args)...,
                          std::is_void<ResultType>{});
 
         return std::chrono::duration_cast<ClockResolution>(Clock::now() - start).count() /
-               static_cast<double>(Runs * 1000);
+               static_cast<double>(runs * 1000);
     }
 
     template <typename Function, typename... Args>
-    void executeBenchmark(Function&& fun, Args&&... args, std::true_type) const
+    void executeBenchmark(std::uint64_t runs, Function&& fun, Args&&... args, std::true_type) const
     {
-        for (std::size_t i = 0; i < Runs; ++i) {
+        for (std::size_t i = 0; i < runs; ++i) {
             fun(std::forward<Args>(args)...);
         }
     }
 
     template <typename Function, typename... Args>
-    void executeBenchmark(Function&& fun, Args&&... args, std::false_type) const
+    void executeBenchmark(std::uint64_t runs, Function&& fun, Args&&... args, std::false_type) const
     {
         using ResultType = decltype(fun(args...));
         // In order to prevent compiler optimization, the result of the function call
         // is stored in a volatile variable.
-        for (std::size_t i = 0; i < Runs; ++i) {
+        for (std::size_t i = 0; i < runs; ++i) {
             volatile ResultType result = fun(std::forward<Args>(args)...);
         }
     }
 
     template <typename Function, typename... Args>
-    void runAndPrintAverage(const std::string& name, Function&& fun, Args&&... args) const
+    void runAndPrintAverage(const std::uint64_t runs,
+                            const std::string& name,
+                            Function&& fun,
+                            Args&&... args) const
     {
         double averageDuration =
-                benchmark(std::forward<Function>(fun), std::forward<Args>(args)...);
+                benchmark(runs, std::forward<Function>(fun), std::forward<Args>(args)...);
         std::cout << std::setprecision(3) << name << " => average time: " << averageDuration
                   << " ms => " << (1000 / averageDuration) << " msg/sec" << std::endl;
     }

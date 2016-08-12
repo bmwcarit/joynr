@@ -42,6 +42,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.PublicationManager;
@@ -94,6 +96,8 @@ public class DispatcherImplTest {
                 bind(PublicationManager.class).toInstance(publicationManagerMock);
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(MessageReceiver.class).toInstance(messageReceiverMock);
+                Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
+                });
 
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
 

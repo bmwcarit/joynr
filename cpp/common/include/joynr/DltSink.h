@@ -78,16 +78,12 @@ protected:
         case spdlog::level::err:
             dltLogLevel = DLT_LOG_ERROR;
             break;
-        case spdlog::level::emerg:
+        case spdlog::level::critical:
             dltLogLevel = DLT_LOG_FATAL;
             break;
         default:
             break;
-
-        // The following cases are never used.
-        case spdlog::level::notice:
-        case spdlog::level::critical:
-        case spdlog::level::alert:
+        // The following case is never used.
         case spdlog::level::off:
             dltLogLevel = DLT_LOG_VERBOSE;
             break;

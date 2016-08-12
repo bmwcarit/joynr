@@ -36,6 +36,7 @@
 #include "joynr/types/ProviderQos.h"
 #include "cluster-controller/access-control/IAccessController.h"
 #include "joynr/IPlatformSecurityManager.h"
+#include "joynr/InProcessMessagingAddress.h"
 
 namespace joynr
 {
@@ -70,6 +71,12 @@ MessageRouter::~MessageRouter()
     messageScheduler.shutdown();
 }
 
+auto filterFun = [](std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress) {
+    const InProcessMessagingAddress* inprocessAddress =
+            dynamic_cast<const InProcessMessagingAddress*>(destAddress.get());
+    return inprocessAddress == nullptr;
+};
+
 MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                              std::unique_ptr<IPlatformSecurityManager> securityManager,
                              boost::asio::io_service& ioService,
@@ -77,7 +84,7 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
                              std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
           messagingStubFactory(std::move(messagingStubFactory)),
-          routingTable("MessageRouter-RoutingTable", ioService),
+          routingTable("MessageRouter-RoutingTable", ioService, filterFun),
           routingTableLock(),
           messageScheduler(maxThreads, "MessageRouter", ioService),
           parentRouter(nullptr),
@@ -103,7 +110,7 @@ MessageRouter::MessageRouter(
         std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
           messagingStubFactory(std::move(messagingStubFactory)),
-          routingTable("MessageRouter-RoutingTable", ioService),
+          routingTable("MessageRouter-RoutingTable", ioService, filterFun),
           routingTableLock(),
           messageScheduler(maxThreads, "MessageRouter", ioService),
           parentRouter(nullptr),

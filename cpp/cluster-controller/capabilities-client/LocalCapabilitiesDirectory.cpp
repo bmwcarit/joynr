@@ -143,44 +143,50 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
 {
     // TODO does it make sense to remove any capability for a domain/interfaceName
     // without knowing which provider registered the capability
-    std::lock_guard<std::mutex> lock(cacheLock);
-    std::vector<CapabilityEntry> entries =
-            interfaceAddress2GlobalCapabilities.lookUpAll(InterfaceAddress(domain, interfaceName));
-    std::vector<std::string> participantIdsToRemove;
+    std::vector<CapabilityEntry> entries = searchCache(
+            {InterfaceAddress(domain, interfaceName)}, std::chrono::milliseconds(-1), false);
 
+    // first, update cache
+    {
+        std::lock_guard<std::mutex> lock(cacheLock);
+        for (std::size_t i = 0; i < entries.size(); ++i) {
+            CapabilityEntry entry = entries.at(i);
+            if (entry.isGlobal()) {
+                auto compareFunc = [&entry, &domain, &interfaceName, &qos](
+                        const types::GlobalDiscoveryEntry& it) {
+                    return it.getProviderVersion() == entry.getProviderVersion() &&
+                           it.getDomain() == domain && it.getInterfaceName() == interfaceName &&
+                           it.getQos() == qos &&
+                           it.getParticipantId() == entry.getParticipantId() &&
+                           it.getPublicKeyId() == entry.getPublicKeyId();
+                };
+
+                while (registeredGlobalCapabilities.erase(
+                               std::remove_if(registeredGlobalCapabilities.begin(),
+                                              registeredGlobalCapabilities.end(),
+                                              compareFunc),
+                               registeredGlobalCapabilities.end()) !=
+                       registeredGlobalCapabilities.end()) {
+                }
+                participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
+                interfaceAddress2GlobalCapabilities.remove(
+                        InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+            }
+            participantId2LocalCapability.remove(entry.getParticipantId(), entry);
+            interfaceAddress2LocalCapabilities.remove(
+                    InterfaceAddress(domain, interfaceName), entry);
+        }
+    }
+
+    // second, do final cleanup and observer call
     types::DiscoveryEntry discoveryEntry;
-
     for (std::size_t i = 0; i < entries.size(); ++i) {
         CapabilityEntry entry = entries.at(i);
         if (entry.isGlobal()) {
-            auto compareFunc =
-                    [&entry, &domain, &interfaceName, &qos](const types::GlobalDiscoveryEntry& it) {
-                return it.getProviderVersion() == entry.getProviderVersion() &&
-                       it.getDomain() == domain && it.getInterfaceName() == interfaceName &&
-                       it.getQos() == qos && it.getParticipantId() == entry.getParticipantId() &&
-                       it.getPublicKeyId() == entry.getPublicKeyId();
-            };
-
-            while (registeredGlobalCapabilities.erase(
-                           std::remove_if(registeredGlobalCapabilities.begin(),
-                                          registeredGlobalCapabilities.end(),
-                                          compareFunc),
-                           registeredGlobalCapabilities.end()) !=
-                   registeredGlobalCapabilities.end()) {
-            }
-            participantIdsToRemove.push_back(entry.getParticipantId());
-            participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
-            interfaceAddress2GlobalCapabilities.remove(
-                    InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+            capabilitiesClient->remove(entry.getParticipantId());
         }
-        participantId2LocalCapability.remove(entry.getParticipantId(), entry);
-        interfaceAddress2LocalCapabilities.remove(InterfaceAddress(domain, interfaceName), entry);
-
         convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
         informObserversOnRemove(discoveryEntry);
-    }
-    if (!participantIdsToRemove.empty()) {
-        capabilitiesClient->remove(participantIdsToRemove);
     }
 
     updatePersistedFile();
@@ -188,20 +194,36 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
 
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
 {
-    std::lock_guard<std::mutex> lock(cacheLock);
-    CapabilityEntry entry = participantId2LocalCapability.take(participantId);
-    interfaceAddress2LocalCapabilities.remove(
-            InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
-    if (entry.isGlobal()) {
-        participantId2GlobalCapabilities.remove(participantId, entry);
-        interfaceAddress2GlobalCapabilities.remove(
-                InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
-        capabilitiesClient->remove(participantId);
+
+    std::vector<CapabilityEntry> entries =
+            searchCache(participantId, std::chrono::milliseconds(-1), true);
+
+    // first, update cache
+    {
+        for (std::size_t i = 0; i < entries.size(); ++i) {
+            CapabilityEntry entry = entries.at(i);
+            std::lock_guard<std::mutex> lock(cacheLock);
+            participantId2LocalCapability.remove(participantId, entry);
+            interfaceAddress2LocalCapabilities.remove(
+                    InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+            if (entry.isGlobal()) {
+                participantId2GlobalCapabilities.remove(participantId, entry);
+                interfaceAddress2GlobalCapabilities.remove(
+                        InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+            }
+        }
     }
 
-    types::DiscoveryEntry discoveryEntry;
-    convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
-    informObserversOnRemove(discoveryEntry);
+    // second, do final cleanup and observer call
+    for (std::size_t i = 0; i < entries.size(); ++i) {
+        CapabilityEntry entry = entries.at(i);
+        types::DiscoveryEntry discoveryEntry;
+        if (entry.isGlobal()) {
+            capabilitiesClient->remove(participantId);
+        }
+        convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
+        informObserversOnRemove(discoveryEntry);
+    }
 
     updatePersistedFile();
 }
@@ -343,7 +365,10 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                                        callback,
                                        joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         };
-        this->capabilitiesClient->lookup(participantId, onSuccess);
+        this->capabilitiesClient->lookup(
+                participantId,
+                onSuccess,
+                std::bind(&ILocalCapabilitiesCallback::onError, callback, std::placeholders::_1));
     }
 }
 
@@ -367,9 +392,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
         auto onSuccess = [this, interfaceAddresses, callback, discoveryQos](
                 std::vector<joynr::types::GlobalDiscoveryEntry> capabilities) {
             std::lock_guard<std::mutex> lock(pendingLookupsLock);
-            if (!(discoveryQos.getDiscoveryScope() ==
-                          joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL &&
-                  isCallbackCalled(interfaceAddresses, callback))) {
+            if (!(isCallbackCalled(interfaceAddresses, callback, discoveryQos))) {
                 this->capabilitiesReceived(capabilities,
                                            getCachedLocalCapabilities(interfaceAddresses),
                                            callback,
@@ -378,10 +401,12 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
             callbackCalled(interfaceAddresses, callback);
         };
 
-        auto onError = [this, interfaceAddresses, callback](
+        auto onError = [this, interfaceAddresses, callback, discoveryQos](
                 const exceptions::JoynrRuntimeException& error) {
-            std::ignore = error;
             std::lock_guard<std::mutex> lock(pendingLookupsLock);
+            if (!(isCallbackCalled(interfaceAddresses, callback, discoveryQos))) {
+                callback->onError(error);
+            }
             callbackCalled(interfaceAddresses, callback);
         };
 
@@ -428,8 +453,15 @@ bool LocalCapabilitiesDirectory::hasPendingLookups()
 
 bool LocalCapabilitiesDirectory::isCallbackCalled(
         const std::vector<InterfaceAddress>& interfaceAddresses,
-        const std::shared_ptr<ILocalCapabilitiesCallback>& callback)
+        const std::shared_ptr<ILocalCapabilitiesCallback>& callback,
+        const joynr::types::DiscoveryQos& discoveryQos)
 {
+    // only if discovery scope is joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL, the
+    // callback can potentially already be called, as a matching capability has been added
+    // to the local capabilities directory while waiting for capabilitiesclient->lookup result
+    if (discoveryQos.getDiscoveryScope() != joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
+        return false;
+    }
     for (const InterfaceAddress& address : interfaceAddresses) {
         if (pendingLookups.find(address) == pendingLookups.cend()) {
             return true;
@@ -553,12 +585,16 @@ void LocalCapabilitiesDirectory::lookup(
                 "LocalCapabilitiesDirectory does not yet support lookup on multiple domains."));
         return;
     }
-    auto future = std::make_shared<LocalCapabilitiesFuture>();
-    lookup(domains, interfaceName, future, discoveryQos);
-    std::vector<CapabilityEntry> capabilities = future->get();
-    std::vector<types::DiscoveryEntry> result;
-    convertCapabilityEntriesIntoDiscoveryEntries(capabilities, result);
-    onSuccess(result);
+
+    auto callback = [onSuccess, this](const std::vector<CapabilityEntry>& capabilities) {
+        std::vector<types::DiscoveryEntry> result;
+        this->convertCapabilityEntriesIntoDiscoveryEntries(capabilities, result);
+        onSuccess(result);
+    };
+
+    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(callback, onError);
+
+    lookup(domains, interfaceName, localCapabilitiesCallback, discoveryQos);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -567,23 +603,32 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = onError;
-    auto future = std::make_shared<LocalCapabilitiesFuture>();
-    lookup(participantId, future);
-    std::vector<CapabilityEntry> capabilities = future->get();
-    if (capabilities.size() > 1) {
-        JOYNR_LOG_ERROR(logger,
-                        "participantId {} has more than 1 capability entry:\n {}\n {}",
-                        participantId,
-                        capabilities[0].toString(),
-                        capabilities[1].toString());
-    }
+    auto callback = [onSuccess, onError, this, participantId](
+            const std::vector<CapabilityEntry>& capabilities) {
+        if (capabilities.size() == 0) {
+            joynr::exceptions::ProviderRuntimeException exception(
+                    "No capabilities found for participandId \"" + participantId + "\"");
+            onError(exception);
+            return;
+        }
+        if (capabilities.size() > 1) {
+            JOYNR_LOG_ERROR(this->logger,
+                            "participantId {} has more than 1 capability entry:\n {}\n {}",
+                            participantId,
+                            capabilities[0].toString(),
+                            capabilities[1].toString());
+        }
 
-    types::DiscoveryEntry result;
-    if (!capabilities.empty()) {
-        convertCapabilityEntryIntoDiscoveryEntry(capabilities.front(), result);
-    }
-    onSuccess(result);
+        std::vector<types::DiscoveryEntry> result;
+
+        if (!capabilities.empty()) {
+            this->convertCapabilityEntriesIntoDiscoveryEntries(capabilities, result);
+        }
+        onSuccess(result[0]);
+    };
+
+    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(callback, onError);
+    lookup(participantId, localCapabilitiesCallback);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -863,29 +908,28 @@ void LocalCapabilitiesDirectory::informObserversOnRemove(
     }
 }
 
-LocalCapabilitiesFuture::LocalCapabilitiesFuture() : futureSemaphore(0), capabilities()
+LocalCapabilitiesCallback::LocalCapabilitiesCallback(
+        std::function<void(const std::vector<CapabilityEntry>&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+        : onSuccess(onSuccess), onErrorCallback(onError)
 {
 }
 
-void LocalCapabilitiesFuture::capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities)
+void LocalCapabilitiesCallback::onError(const exceptions::JoynrRuntimeException& error)
 {
-    this->capabilities = capabilities;
-    futureSemaphore.notify();
-}
-
-std::vector<CapabilityEntry> LocalCapabilitiesFuture::get()
-{
-    futureSemaphore.wait();
-    futureSemaphore.notify();
-    return capabilities;
-}
-
-std::vector<CapabilityEntry> LocalCapabilitiesFuture::get(std::chrono::milliseconds timeout)
-{
-    if (futureSemaphore.waitFor(timeout)) {
-        futureSemaphore.notify();
+    if (onErrorCallback) {
+        onErrorCallback(joynr::exceptions::ProviderRuntimeException(
+                "Unable to collect capabilities from global capabilities directory. Error: " +
+                error.getMessage()));
     }
-    return capabilities;
+}
+
+void LocalCapabilitiesCallback::capabilitiesReceived(
+        const std::vector<CapabilityEntry>& capabilities)
+{
+    if (onSuccess) {
+        onSuccess(capabilities);
+    }
 }
 
 } // namespace joynr
