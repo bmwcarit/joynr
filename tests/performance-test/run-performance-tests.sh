@@ -164,16 +164,16 @@ function startJavaPerformanceTestProvider {
     PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
-    CONSUMERCLASS="io.joynr.performance.EchoProviderApplication"
-    CONSUMERARGS="-d $DOMAINNAME -s GLOBAL -r IN_PROCESS_CC  -b MQTT -mbu $MQTT_BROKER_URI"
+    PROVIDERCLASS="io.joynr.performance.EchoProviderApplication"
+    PROVIDERARGS="-d $DOMAINNAME -s GLOBAL -r IN_PROCESS_CC  -b MQTT -mbu $MQTT_BROKER_URI"
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
     if [ "$USE_MAVEN" != "ON" ]
     then
-        java -jar performance-test-provider.jar $CONSUMERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+        java -jar performance-test-provider.jar $PROVIDERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     else
-        mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" -Dexec.args="$CONSUMERARGS" \
+        mvn exec:java -o -Dexec.mainClass="$PROVIDERCLASS" -Dexec.args="$PROVIDERARGS" \
             1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     fi
 
