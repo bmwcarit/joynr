@@ -180,7 +180,7 @@ protected:
 
 private:
     std::unique_ptr<JoynrRuntime> runtime;
-    std::uint64_t ttl = 10000;
+    std::uint64_t ttl = 600000;
 };
 
 class SyncEchoConsumer : public PerformanceConsumer<SyncEchoConsumer>
