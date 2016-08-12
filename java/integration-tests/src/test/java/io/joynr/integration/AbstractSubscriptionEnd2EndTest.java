@@ -21,6 +21,7 @@ package io.joynr.integration;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
@@ -636,10 +637,13 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         Future<String> subscriptionFuture = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         String subscriptionId = subscriptionFuture.get(FUTURE_SUBSCRIPTION_ID_TIMEOUTMS);
-        proxy.subscribeToTestAttribute(integerListener, subscriptionQos, subscriptionId);
-        verify(integerListener).onSubscribed(eq(subscriptionId));
+        subscriptionFuture = proxy.subscribeToTestAttribute(integerListener, subscriptionQos, subscriptionId);
+        String subscriptionId2 = subscriptionFuture.get(FUTURE_SUBSCRIPTION_ID_TIMEOUTMS);
+        assertEquals(subscriptionId, subscriptionId2);
+        Thread.sleep(EXPECTED_LATENCY_MS);
+        verify(integerListener, times(2)).onSubscribed(eq(subscriptionId));
         verify(integerListener, times(0)).onError(null);
-        verify(integerListener).onReceive(anyInt());
+        verify(integerListener, times(2)).onReceive(anyInt());
         proxy.unsubscribeFromTestAttribute(subscriptionId);
         verifyNoMoreInteractions(integerListener);
         getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
