@@ -334,6 +334,7 @@ function stopAnyProvider {
     echo "Killing provider"
     if [ "$PROVIDER_PID" != "" ]
     then
+        echo "USE_MAVEN: $USE_MAVEN"
         if [ "$USE_MAVEN" != "ON" ]
         then
             echo "do not call pkill for provider id $PROVIDER_ID"
