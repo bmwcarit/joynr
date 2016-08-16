@@ -8,12 +8,15 @@ cd /data/src
 set -e
 
 GOAL='install'
+SKIPTESTS='false'
 
 while [ "$1" != "" ]; do
     case $1 in
         package )               GOAL='package'
                                 ;;
         install )               GOAL='install'
+                                ;;
+        skipTests )             SKIPTESTS='true'
                                 ;;
         * )                     echo "invalid argument"
                                 exit 1
@@ -23,7 +26,7 @@ done
 
 mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle \
 -Dmaven.test.failure.ignore=true \
--DskipTests=false \
+-DskipTests=$SKIPTESTS \
 -Denforcer.skip=true \
 -Dmaven.compile.fork=true \
 -Dmaven.junit.fork=true
