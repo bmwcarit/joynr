@@ -55,23 +55,20 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             System.exit(-1);
         }
 
-        JoynrApplication consumerApp = createConsumerApp(invocationParameters.getDomainName());
+        JoynrApplication consumerApp = createConsumerApp();
 
         consumerApp.run();
         consumerApp.shutdown();
     }
 
-    private static JoynrApplication createConsumerApp(String domainName) {
+    private static JoynrApplication createConsumerApp() {
         Properties appConfig = new Properties();
-        appConfig.setProperty("inter-language-test.provider.domain", domainName);
-
         Properties joynrConfig = new Properties();
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
-        joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "performance_test_consumer_local_domain");
 
         Module runtimeModule = new LibjoynrWebSocketRuntimeModule();
 
