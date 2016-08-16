@@ -118,7 +118,7 @@ var consumerBase = {
             };
             return consumerBase.echoProxy.echoString(args).then(function(returnValues) {
                 if (args.data !== returnValues.responseData) {
-                    throw new Error("Echo " + returnValues.responseData + " does not match input data: " + args.data);
+                    throw new Error("Echo " + JSON.stringify(returnValues.responseData) + " does not match input data: " + JSON.stringify(args.data));
                 }
                 return returnValues;
             });
@@ -137,7 +137,7 @@ var consumerBase = {
             };
             return consumerBase.echoProxy.echoComplexStruct(args).then(function(returnValues) {
                 if (JSON.stringify(args.data) !== JSON.stringify(returnValues.responseData)) {
-                    throw new Error("Echo " + returnValues.responseData + " does not match input data: " + args.data);
+                    throw new Error("Echo " + JSON.stringify(returnValues.responseData) + " does not match input data: " + JSON.stringify(args.data));
                 }
                 return returnValues;
             });
@@ -155,7 +155,7 @@ var consumerBase = {
             return consumerBase.echoProxy.echoByteArray(args).then(function(returnValues) {
                 if (args.data.length !== returnValues.responseData.length ||
                     firstElement !== returnValues.responseData[0]) {
-                    throw new Error("Echo " + returnValues.responseData + " does not match input data: " + args.data);
+                    throw new Error("Echo " + JSON.stringify(returnValues.responseData) + " does not match input data: " + JSON.stringify(args.data));
                 }
 
                 return returnValues;
