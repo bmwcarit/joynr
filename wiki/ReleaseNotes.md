@@ -44,6 +44,8 @@
 * **[Java]** the container classes for multi-out return values are now marked with an interface:
   `MultiReturnValuesContainer`.
 * **[C++]** the QoS parameter has to be passed as std::shared_ptr to the `subscribeTo...` methods
+* **[C++]** Joynr runtime object can be created with a settings object as well as with a path
+  to a settings file.
 
 ##Other changes
 * **[JEE]** a JEE version of the discovery service was added which can be deployed to EE
