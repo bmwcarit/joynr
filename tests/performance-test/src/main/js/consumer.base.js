@@ -136,7 +136,10 @@ var consumerBase = {
                 })
             };
             return consumerBase.echoProxy.echoComplexStruct(args).then(function(returnValues) {
-                if (JSON.stringify(args.data) !== JSON.stringify(returnValues.responseData)) {
+                if (args.data.num32 !== returnValues.responseData.num32 ||
+                    args.data.num64 !== returnValues.responseData.num64 ||
+                    args.data.data.length !== returnValues.responseData.data.length ||
+                    args.data.str.length !== returnValues.responseData.str.length) {
                     throw new Error("Echo " + JSON.stringify(returnValues.responseData) + " does not match input data: " + JSON.stringify(args.data));
                 }
                 return returnValues;
