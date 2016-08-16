@@ -43,6 +43,7 @@
   headers to outgoing joynr messages. See the [JEE Documentation](jee.md) for details.
 * **[Java]** the container classes for multi-out return values are now marked with an interface:
   `MultiReturnValuesContainer`.
+* **[C++]** the QoS parameter has to be passed as std::shared_ptr to the `subscribeTo...` methods
 
 ##Other changes
 * **[JEE]** a JEE version of the discovery service was added which can be deployed to EE
@@ -52,6 +53,7 @@
 * **[Java, JS, C++, JEE]** Ability to specify effort to be expent on ensuring delivery of
   messages. When set to `best effort` and using MQTT as transport, this results in a QoS 0
   MQTT message being sent (fire-and-forget). See `MessagingQosEffort` classes in each language.
+* **[C++]** muesli is now used as serializer; it can be found at https://github.com/bmwcarit/muesli
 
 #joynr 0.19.5
 This is a minor bug fix release.
