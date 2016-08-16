@@ -178,14 +178,31 @@ discoveryQos.setRetryIntervalMs(1000); // optional, default 1000
 
 ## The message quality of service
 
-The ```MesssagingQos``` class defines the roundtrip timeout for RPC requests in milliseconds.
-If no specific setting is given, the default is 60 seconds.
+The ```MesssagingQos``` class defines the roundtrip timeout for RPC requests in milliseconds
+and allows definition of additional custom message headers.
+
+If no specific setting is given, the default roundtrip timeout is 60 seconds.
+The keys of custom message headers may contain ascii alphanumeric or hyphen.
+The values of custom message headers may contain alphanumeric, space, semi-colon, colon,
+comma, plus, ampersand, question mark, hyphen, dot, star, forward slash and back slash.
+If a key or value is invalid, the API method called to introduce the custom message
+header throws a std::invalid_argument exception.
 
 Example:
 
 ```cpp
 long ttl_ms = 60000;
 MessagingQos messagingQos(ttl_ms);
+// optional custom headers
+std::unordered_map<std::string, std::string> customHeaders;
+customHeaders.emplace("key1", "value1");
+...
+customHeaders.emplace("keyN", "valueN");
+messagingQos.putAllCustomMessageHeaders(customHeaders);
+...
+std::string anotherKey("anotherKey");
+std::string anotherValue("anotherValue");
+messagingQos.putCustomMessageHeader(anotherKey, anotherValue);
 ```
 
 ## Creating a proxy

@@ -163,15 +163,31 @@ var discoveryQos = new joynr.proxy.DiscoveryQos({
 
 ## The message quality of service
 
-The ```MesssagingQos``` object defines the roundtrip timeout for RPC requests in milliseconds.
-If no specific setting is given, the default is 60 seconds.
+The ```MesssagingQos``` object defines the roundtrip timeout for RPC requests in milliseconds
+and allows definition of additional custom message headers.
+
+If no specific setting is given, the default roundtrip timeout is 60 seconds.
+The keys of custom message headers may contain ascii alphanumeric or hyphen.
+The values of custom message headers may contain alphanumeric, space, semi-colon, colon,
+comma, plus, ampersand, question mark, hyphen, dot, star, forward slash and back slash.
+If a key or value is invalid, the API method called to introduce the custom message
+header throws an Error.
 
 Example:
 
 ```javascript
 var messagingQos = new joynr.messaging.MessagingQos({
-    ttl: 60000
+    ttl: 60000,
+    // optional custom headers
+    customHeaders: {
+        "key1": "value1",
+        ...
+        "keyN": "valueN"
+    }
 });
+
+// optional
+messaging.putCustomHeader("anotherKey", "anotherValue");
 ```
 
 ## Building a proxy
