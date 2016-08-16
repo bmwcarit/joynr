@@ -148,12 +148,11 @@ var consumerBase = {
         return consumerBase.executeBenchmark("echoComplexStruct", testProcedure);
     },
     echoByteArray : function(echoProxy) {
-        var args = {
-            data : PerformanceUtilities.createByteArray(options.byteArrayLength, 1)
-        };
-
         var testProcedure = function(i) {
-            var firstElement = PerformanceUtilities.createRandomNumber(256) - 128;
+            var args = {
+                data : PerformanceUtilities.createByteArray(options.byteArrayLength, 1)
+            };
+            var firstElement = i % 128;
             args.data[0] = firstElement;
             return consumerBase.echoProxy.echoByteArray(args).then(function(returnValues) {
                 if (args.data.length !== returnValues.responseData.length ||
