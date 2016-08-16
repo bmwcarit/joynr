@@ -61,8 +61,8 @@ void MessagingQos::putAllCustomMessageHeaders(
 {
     for (const auto& it : values) {
         checkCustomHeaderKeyValue(it.first, it.second);
-        messageHeaders[it.first] = it.second;
     }
+    messageHeaders = values;
 }
 
 void MessagingQos::checkCustomHeaderKeyValue(const std::string& key, const std::string& value) const
