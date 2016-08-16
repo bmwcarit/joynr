@@ -807,6 +807,17 @@ public:
     MOCK_METHOD1(touchSubscriptionState,void(const std::string& subscriptionId));
 };
 
+class MockSubscriptionCallback : public joynr::ISubscriptionCallback {
+public:
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
+    MOCK_METHOD1(executePublication, void(joynr::SubscriptionPublication& subscriptionPublication));
+    MOCK_METHOD1(execute, void(const joynr::SubscriptionReply& subscriptionReply));
+
+    void execute(joynr::SubscriptionPublication&& subscriptionPublication) override {
+        executePublication(subscriptionPublication);
+    }
+};
+
 class MockParticipantIdStorage : public joynr::ParticipantIdStorage {
 public:
     MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {

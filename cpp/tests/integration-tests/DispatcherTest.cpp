@@ -31,6 +31,8 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/exceptions/SubscriptionException.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockCallback.h"
 #include "joynr/InterfaceRegistrar.h"
@@ -206,4 +208,34 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     dispatcher.receive(msg);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+}
+
+TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCallback) {
+    joynr::Semaphore semaphore(0);
+    std::string subscriptionId = "testSubscriptionId";
+
+    //construct a subscription reply
+    SubscriptionReply reply;
+    reply.setSubscriptionId(subscriptionId);
+
+    JoynrMessage msg = messageFactory.createSubscriptionReply(
+                proxyParticipantId,
+                providerParticipantId,
+                qos,
+                reply
+    );
+
+    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService());
+    auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
+    EXPECT_CALL(mockSubscriptionManager, getSubscriptionCallback(Eq(subscriptionId))).WillOnce(Return(mockSubscriptionCallback));
+
+    EXPECT_CALL(*mockSubscriptionCallback, execute(Eq(reply))).WillOnce(ReleaseSemaphore(&semaphore));
+
+    // test code: send the subscription reply through the dispatcher.
+    // This should cause our subscription callback to be called
+    dispatcher.registerSubscriptionManager(&mockSubscriptionManager);
+    dispatcher.receive(msg);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    dispatcher.registerSubscriptionManager(nullptr);
 }
