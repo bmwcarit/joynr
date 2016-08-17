@@ -111,7 +111,7 @@ var consumerBase = {
             return null;
         });
     },
-    echoString : function(echoProxy) {
+    echoString : function() {
         var testProcedure = function(i) {
             var args = {
                 data : PerformanceUtilities.createString(options.stringLength-2, "x") + "-" + i
@@ -125,7 +125,7 @@ var consumerBase = {
         }
         return consumerBase.executeBenchmark("echoString", testProcedure);
     },
-    echoComplexStruct : function(echoProxy) {
+    echoComplexStruct : function() {
         var testProcedure = function(i) {
             var args = {
                 data : new ComplexStruct({
@@ -147,7 +147,7 @@ var consumerBase = {
         }
         return consumerBase.executeBenchmark("echoComplexStruct", testProcedure);
     },
-    echoByteArray : function(echoProxy) {
+    echoByteArray : function() {
         var testProcedure = function(i) {
             var args = {
                 data : PerformanceUtilities.createByteArray(options.byteArrayLength, 1)
