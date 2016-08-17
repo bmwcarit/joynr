@@ -33,9 +33,7 @@
 	<modules>
 		<module>inter-language-test-jee-api</module>
 		<module>inter-language-test-jee-provider</module>
-		<!--
-			<module>inter-language-test-jee-consumer</module>
-		-->
+		<module>inter-language-test-jee-consumer</module>
 	</modules>
 
 	<properties>
@@ -44,9 +42,7 @@
 	</properties>
 
 	<dependencyManagement>
-
 		<dependencies>
-
 			<dependency>
 				<groupId>javax</groupId>
 				<artifactId>javaee-api</artifactId>
