@@ -67,6 +67,8 @@ public class ConsumerInvocationParameters {
     private static final String CMDLINE_OPTIONNAME_RUNTIMECFG = "runtimeconfig";
     private static final String CMDLINE_OPTIONNAME_BACKENDCFG = "backendconfig";
     private static final String CMDLINE_OPTIONNAME_MQTTBROKERURI = "mqttbrokeruri";
+    private static final String CMDLINE_OPTIONNAME_CC_HOST = "cchost";
+    private static final String CMDLINE_OPTIONNAME_CC_PORT = "ccport";
 
     private static String domainName = "";
     private static int numberOfRuns = 1;
@@ -79,6 +81,8 @@ public class ConsumerInvocationParameters {
     private RuntimeConfig runtimeConfig = RuntimeConfig.IN_PROCESS_CC;
     private BackendConfig backendConfig = BackendConfig.MQTT;
     private String mqttBrokerUri = "tcp://localhost:1883";
+    private String ccHost = "localhost";
+    private String ccPort = "4242";
 
     public ConsumerInvocationParameters(String[] args) throws Exception {
         CommandLine commandLine = parseCommandLineArgs(args);
@@ -135,6 +139,14 @@ public class ConsumerInvocationParameters {
 
         if (commandLine.hasOption(CMDLINE_OPTIONNAME_RUNTIMECFG)) {
             runtimeConfig = RuntimeConfig.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_RUNTIMECFG));
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_CC_HOST)) {
+            ccHost = commandLine.getOptionValue(CMDLINE_OPTIONNAME_CC_HOST);
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_CC_PORT)) {
+            ccPort = commandLine.getOptionValue(CMDLINE_OPTIONNAME_CC_PORT);
         }
     }
 
@@ -242,6 +254,24 @@ public class ConsumerInvocationParameters {
                                 .desc("MQTT broker URI. Default is " + mqttBrokerUri)
                                 .build());
 
+        options.addOption(Option.builder("ch")
+                                .longOpt(CMDLINE_OPTIONNAME_CC_HOST)
+                                .required(false)
+                                .hasArg()
+                                .argName("cluster-controller host")
+                                .type(String.class)
+                                .desc("Host of the cluster-controller for websocket connections. Default is " + ccHost)
+                                .build());
+
+        options.addOption(Option.builder("cp")
+                                .longOpt(CMDLINE_OPTIONNAME_CC_PORT)
+                                .required(false)
+                                .hasArg()
+                                .argName("cluster-controller port")
+                                .type(String.class)
+                                .desc("Port of the cluster-controller for websocket connections. Default is " + ccPort)
+                                .build());
+
         CommandLineParser parser = new DefaultParser();
 
         try {
@@ -295,5 +325,13 @@ public class ConsumerInvocationParameters {
 
     public BackendConfig getBackendTransportMode() {
         return backendConfig;
+    }
+
+    public String getCcHost() {
+        return ccHost;
+    }
+
+    public String getCcPort() {
+        return ccPort;
     }
 }
