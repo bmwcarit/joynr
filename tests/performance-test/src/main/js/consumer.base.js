@@ -94,20 +94,21 @@ var consumerBase = {
             log("error registering provider: " + error.toString());
         });
     },
-    executeBenchmark : function(benchmarkName, benchmark) {
-        console.log("call " + benchmarkName +" " + options.numRuns + " times");
+    executeBenchmark : function(benchmarkName, benchmark, numRuns) {
+        var numRuns = numRuns ? numRuns : options.numRuns;
+        console.log("call " + benchmarkName +" " + numRuns + " times");
         startTime = Date.now();
         var promises = [];
 
-        for (var i = 1; i <= options.numRuns; i++) {
+        for (var i = 1; i <= numRuns; i++) {
             promises.push(benchmark(i));
         }
 
         return Promise.all(promises).then(function() {
-            console.log("all the options.numRuns were executed");
+            console.log("all the numRuns were executed");
             var elapsedTimeMs = Date.now() - startTime;
 
-            error(benchmarkName + " took " + elapsedTimeMs + " ms. " + options.numRuns / (elapsedTimeMs / 1000) + " msgs/s");
+            error(benchmarkName + " took " + elapsedTimeMs + " ms. " + numRuns / (elapsedTimeMs / 1000) + " msgs/s");
             return null;
         });
     },
@@ -147,10 +148,12 @@ var consumerBase = {
         }
         return consumerBase.executeBenchmark("echoComplexStruct", testProcedure);
     },
-    echoByteArray : function() {
+    echoByteArray : function(byteArraySizeFactor) {
+        var byteArraySizeFactor = byteArraySizeFactor ? byteArraySizeFactor : 1;
+        var byteArraySize = byteArraySizeFactor * options.byteArrayLength;
         var testProcedure = function(i) {
             var args = {
-                data : PerformanceUtilities.createByteArray(options.byteArrayLength, 1)
+                data : PerformanceUtilities.createByteArray(byteArraySize, 1)
             };
             var firstElement = i % 128;
             args.data[0] = firstElement;
@@ -163,7 +166,13 @@ var consumerBase = {
                 return returnValues;
             });
         }
-        return consumerBase.executeBenchmark("echoByteArray", testProcedure);
+        // the larger this byteArraySizeFactor is, the longer this test takes
+        // in order to mitigate that, we scale the numer of runs by byteArraySizeFactor
+        var numRuns = options.numRuns;
+        if (byteArraySizeFactor > 1) {
+            numRuns = numRuns / (Math.sqrt(byteArraySizeFactor));
+        }
+        return consumerBase.executeBenchmark("echoByteArray " + byteArraySize, testProcedure, numRuns);
     }
 };
 module.exports = consumerBase;
