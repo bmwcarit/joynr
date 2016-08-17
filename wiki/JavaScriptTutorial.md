@@ -27,8 +27,10 @@ The joynr JS binding is build using Maven:
 
 # Exploring the JavaScript demo
 
-The JavasciptRadioApp demo is located in `<JOYNR>/javascipt/apps/radio`. We refer to this location as
+The JavasciptRadioApp demo is located in `<JOYNR>/examples/radio-js`. We refer to this location as
 `RADIO_HOME`.
+
+There is also a Node.js version of the radio demo application located in `<JOYNR>/examples/radio-node`.
 
 Have a look into the [Radio Tutorial](Tutorial.md) to get an understading of the communication
 interface and the basic joynr concepts.
@@ -38,13 +40,13 @@ The generated source code from the Radio model is located in `<RADIO_HOME>/src/m
 ## Providers
 
 Have a look into [\<RADIO_HOME\>/src/main/webapp/js/provider.js]
-(/javascript/apps/radio/src/main/webapp/js/provider.js) for provider implementation and
+(/examples/radio-js/src/main/webapp/js/provider.js) for provider implementation and
 registration details.
 
 ## Consumers
 
 Have a look into [\<RADIO_HOME\>/src/main/webapp/js/consumer.js]
-(/javascript/apps/radio/src/main/webapp/js/consumer.js) for consumer implementation details.
+(/examples/radio-js/src/main/webapp/js/consumer.js) for consumer implementation details.
 
 ## In Action
 

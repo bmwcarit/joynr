@@ -29,13 +29,13 @@ The Franca ```<Package>``` will be transformed to the Javascript module ```joynr
 
 ### Type collection name
 
-The Franca ```<TypeCollection>``` is not used in the generated code. It is therefore important that
-all typeNames within a particular package be unique.
+The Franca ```<TypeCollection>``` will be transformed to the Javascript
+module ```joynr.<Package>.<TypeCollection>```.
 
 ### Complex type name
 
 Any Franca complex type ```<TypeCollection>.<Type>``` will result in the creation of an object
-```joynr.<Package>.<Type>``` (see above).
+```joynr.<Package>.<TypeCollection>.<Type>``` (see above).
 
 The same ```<Type>``` will be used for all elements in the event that this type is used as an
 element of other complex types, as a method input or output argument, or as a broadcast output
@@ -136,9 +136,12 @@ function `myFunction` needs additional filter criteria like the arbitration stra
 the result of `myFunction.bind(myParam)` has to be used as arbitration strategy.
 
 **Predefined arbitration strategies:**
-* **ArbitrationStrategyCollection.Nothing**
+* **ArbitrationStrategyCollection.Nothing** use DefaultArbitrator which picks the first discovered
+   entry with compatible version
 * **ArbitrationStrategyCollection.HighestPriority** Highest priority provider will be selected
 * **ArbitrationStrategyCollection.Keyword** Only a Provider that has keyword set will be selected
+
+**Default arbitration strategy:** HighestPriority
 
 The priority used by the arbitration strategy *HighestPriority* is set by the provider in its
 providerQos settings.
@@ -246,7 +249,7 @@ changes. The following sections cover the 4 quality of service objects available
 
 ```SubscriptionQos``` has the following members:
 
-* **expiry dateMs** Absolute Time until notifications will be send (in milliseconds)
+* **expiryDateMs** Absolute Time until notifications will be send (in milliseconds)
 * **publicationTtlMs** Lifespan of a notification (in milliseconds), the notification will be deleted
 afterwards
 
@@ -261,8 +264,8 @@ The default values are as follows:
 
 ```
 {
-    expiryDateMs: SubscriptionQos.NO\_EXPIRY\_DATE,  // 0
-    publicationTtlMs : SubscriptionQos.DEFAULT\_PUBLICATION\_TTL // 10000
+    expiryDateMs: SubscriptionQos.NO_EXPIRY_DATE,  // 0
+    publicationTtlMs : SubscriptionQos.DEFAULT_PUBLICATION_TTL // 10000
 }
 ```
 
@@ -286,8 +289,8 @@ var subscriptionQosPeriodic = new joynr.proxy.PeriodicSubscriptionQos({
 The default values are as follows:
 ```
 {
-    periodMs: PeriodicSubscriptionQos.MIN\_PERIOD // 50
-    alertAfterIntervalMs: PeriodicSubscriptionQos.NEVER\_ALERT // 0
+    periodMs: PeriodicSubscriptionQos.MIN_PERIOD // 50
+    alertAfterIntervalMs: PeriodicSubscriptionQos.NEVER_ALERT // 0
 }
 ```
 
@@ -310,7 +313,7 @@ var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
 The default is as follows:
 ```
 {
-    minIntervalMs: OnChangeSubscriptionQos.MIN\_INTERVAL // 50
+    minIntervalMs: OnChangeSubscriptionQos.MIN_INTERVAL // 50
 }
 ```
 
@@ -340,7 +343,7 @@ The default is as follows:
 ```
 {
     maxIntervalMs : 0
-    alertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.NEVER\_ALERT // 0
+    alertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT // 0
 }
 ```
 
@@ -348,18 +351,32 @@ The default is as follows:
 
 Attribute subscription - depending on the subscription quality of service settings used - informs
 an application either periodically and / or on change of an attribute about the current value.
-The **subscriptionId** returned asynchronously in case of a successful call can be used later to
-update the subscription or to unsubscribe from it.
+
+The **subscriptionId** is returned asynchronously after the subscription is successfully registered
+at the provider. It can be used later to update the subscription or to unsubscribe from it.
+If the subscription failed, a SubscriptionException will be returned via the callback (onError) and
+via the Promise.
+
+To receive the subscription, **callback functions** (onReceive, onSubscribed, onError) have to be
+provided as outlined below.
 
 ```javascript
 <interface>Proxy.<Attribute>.subscribe({
     subscriptionQos : subscriptionQosOnChange,
+    // Gets called on every received publication
     onReceive : function(value) {
-        // handle subscription broadcast
+        // handle subscription publication
     },
+    // Gets called when the subscription is successfully registered at the provider
+    onSubscribed : function(subscriptionId) { // optional
+        // save the subscriptionId for updating the subscription or unsubscribing from it
+        // the subscriptionId can also be taken from the Promise returned by the subscribe call
+    },
+    // Gets called on every error that is detected on the subscription
     onError: function(error) {
-        // handle subscription error
-        // (e.g. JoynrRuntimeException, PublicationMissedException)
+        // handle subscription error, e.g.:
+        // - SubscriptionException if the subscription registration failed at the provider
+        // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
 }).then(function(subscriptionId) {
     // subscription successful, store subscriptionId for later use
@@ -378,12 +395,20 @@ The ```subscribe()``` method can also be used to update an existing subscription
 <interface>Proxy.<Attribute>.subscribe({
     subscriptionQos : subscriptionQosOnChange,
     subscriptionId: subscriptionId,
+    // Gets called on every received publication
     onReceive : function(value) {
-        // handle subscription broadcast
+        // handle subscription publication
     },
+    // Gets called when the subscription is successfully updated at the provider
+    onSubscribed : function(subscriptionId) { // optional
+        // save the subscriptionId for updating the subscription or unsubscribing from it
+        // the subscriptionId can also be taken from the Promise returned by the subscribe call
+    },
+    // Gets called on every error that is detected on the subscription
     onError: function(error) {
-        // handle subscription error
-        // (e.g. JoynrRuntimeException, PublicationMissedException)
+        // handle subscription error, e.g.:
+        // - SubscriptionException if the subscription registration failed at the provider
+        // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
 }).then(function(subscriptionId) {
     // subscription update successful, the subscriptionId should be the same as before
@@ -411,18 +436,32 @@ ealier subscribe call.
 
 Broadcast subscription informs the application in case a broadcast is fired from provider side
 and provides the output values via a callback function.
-The **subscriptionId** returned by the call can be used later to update the subscription or to
-unsubscribe.
+
+The **subscriptionId** is returned asynchronously after the subscription is successfully registered
+at the provider. It can be used later to update the subscription or to unsubscribe from it.
+If the subscription failed, a SubscriptionException will be returned via the callback (onError) and
+via the Promise.
+
+To receive the subscription, **callback functions** (onReceive, onSubscribed, onError) have to be
+provided as outlined below.
 
 ```javascript
 <interface>Proxy.<Broadcast>.subscribe({
     subscriptionQos : subscriptionQosOnChange,
+    // Gets called on every received publication
     onReceive : function(value) {
-        // handle subscription broadcast
+        // handle subscription publication
     },
+    // Gets called when the subscription is successfully registered at the provider
+    onSubscribed : function(subscriptionId) { // optional
+        // save the subscriptionId for updating the subscription or unsubscribing from it
+        // the subscriptionId can also be taken from the Promise returned by the subscribe call
+    },
+    // Gets called on every error that is detected on the subscription
     onError: function(error) {
-        // handle subscription error
-        // (e.g. JoynrRuntimeException)
+        // handle subscription error, e.g.:
+        // - SubscriptionException if the subscription registration failed at the provider
+        // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
 }).then(function(subscriptionId) {
     // subscription successful, store subscriptionId for later use
@@ -439,12 +478,20 @@ The ```subscribe()``` method can also be used to update an existing subscription
 <interface>Proxy.<Broadcast>.subscribe({
     subscriptionQos : subscriptionQosOnChange,
     subscriptionId: subscriptionId,
+    // Gets called on every received publication
     onReceive : function(value) {
-        // handle subscription broadcast
+        // handle subscription publication
     },
+    // Gets called when the subscription is successfully updated at the provider
+    onSubscribed : function(subscriptionId) { // optional
+        // save the subscriptionId for updating the subscription or unsubscribing from it
+        // the subscriptionId can also be taken from the Promise returned by the subscribe call
+    },
+    // Gets called on every error that is detected on the subscription
     onError: function(error) {
-        // handle subscription error
-        // (e.g. JoynrRuntimeException)
+        // handle subscription error, e.g.:
+        // - SubscriptionException if the subscription registration failed at the provider
+        // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
 }).then(function(subscriptionId) {
     // subscription update successful, the subscriptionId should be the same as before
@@ -459,8 +506,19 @@ The ```subscribe()``` method can also be used to update an existing subscription
 Broadcast subscription with a **filter** informs the application in case a **selected broadcast
 which matches filter criteria** is fired from the provider side. The output values are returned
 via callback.
-The **subscriptionId** returned by the call can be used later to update the subscription or to
-unsubscribe.
+
+
+The **subscriptionId** is returned asynchronously after the subscription is successfully registered
+at the provider. It can be used later to update the subscription or to unsubscribe from it.
+If the subscription failed, a SubscriptionException will be returned via the callback (onError) and
+via the Promise.
+
+To receive the subscription, **callback functions** (onReceive, onSubscribed, onError) have to be
+provided as outlined below.
+
+In addition to the normal broadcast subscription, the filter parameters for this broadcast must be
+created and initialized as additional parameters to the ```subscribe``` method. These filter
+parameters are used to receive only those broadcasts matching the provided filter criteria.
 
 ```javascript
 var fParam = <interface>Proxy.<broadcast>.createFilterParameters();
@@ -469,12 +527,20 @@ fParam.set<Parameter>(parameterValue);
 <interface>Proxy.<Broadcast>.subscribe({
     subscriptionQos : subscriptionQosOnChange,
     filterParameters : fParam,
+    // Gets called on every received publication
     onReceive : function(value) {
-        // handle subscription broadcast
+        // handle subscription publication
     },
+    // Gets called when the subscription is successfully registered at the provider
+    onSubscribed : function(subscriptionId) { // optional
+        // save the subscriptionId for updating the subscription or unsubscribing from it
+        // the subscriptionId can also be taken from the Promise returned by the subscribe call
+    },
+    // Gets called on every error that is detected on the subscription
     onError: function(error) {
-        // handle subscription error
-        // (e.g. JoynrRuntimeException)
+        // handle subscription error, e.g.:
+        // - SubscriptionException if the subscription registration failed at the provider
+        // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
 }).then(function(subscriptionId) {
     // subscription successful, store subscriptionId for later use
@@ -497,12 +563,20 @@ fParam.set<Parameter>(parameterValue);
     subscriptionQos : subscriptionQosOnChange,
     subscriptionId: subscriptionId,
     filterParameters : fParam,
+    // Gets called on every received publication
     onReceive : function(value) {
-        // handle subscription broadcast
+        // handle subscription publication
     },
+    // Gets called when the subscription is successfully updated at the provider
+    onSubscribed : function(subscriptionId) { // optional
+        // save the subscriptionId for updating the subscription or unsubscribing from it
+        // the subscriptionId can also be taken from the Promise returned by the subscribe call
+    },
+    // Gets called on every error that is detected on the subscription
     onError: function(error) {
-        // handle subscription error
-        // (e.g. JoynrRuntimeException)
+        // handle subscription error, e.g.:
+        // - SubscriptionException if the subscription registration failed at the provider
+        // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
 }).then(function(subscriptionId) {
     // subscription update successful, the subscriptionId should be the same as before
@@ -722,10 +796,11 @@ this.<attribute> = {
 ```
 
 ## Attribute change broadcast
-The provider implementation must inform about any change of an attribute by calling valueChanged
-on the given attribute.
+The provider implementation must inform about any change of an attribute which is not done via a
+remote setter call by calling valueChanged on the given attribute. If an attribute setter is called
+remotely, an attribute change publication will be triggered automatically.
 ```javascript
-this.<attribute>.valueChanged(newValue);
+self.<attribute>.valueChanged(newValue);
 ```
 ## Sending a broadcast
 For each Franca broadcast, a member of **this** named after the ```<broadcast>```

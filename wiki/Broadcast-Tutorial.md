@@ -189,12 +189,12 @@ provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
 ```c++
 ...
 // create provider instance
-QSharedPointer<MyRadioProvider> provider(new MyRadioProvider(providerQos));
+std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider());
 // add broadcast filters
-QSharedPointer<TrafficServiceBroadcastFilter> trafficServiceBroadcastFilter(
+std::shared_ptr<TrafficServiceBroadcastFilter> trafficServiceBroadcastFilter(
         new TrafficServiceBroadcastFilter());
 provider->addBroadcastFilter(trafficServiceBroadcastFilter);
-QSharedPointer<GeocastBroadcastFilter> geocastBroadcastFilter(new GeocastBroadcastFilter());
+std::shared_ptr<GeocastBroadcastFilter> geocastBroadcastFilter(new GeocastBroadcastFilter());
 provider->addBroadcastFilter(geocastBroadcastFilter);
 ...
 ```
@@ -215,11 +215,10 @@ returning true).
 ...
 OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
 int nsdbMinIntervalMs = 2 * 1000;
-long nsdbExpiryDateMs = System.currentTimeMillis() + 180 * 1000;
+long nsdbValidityMs = 180 * 1000;
 int nsdbPublicationTtlMs = 5 * 1000;
-newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos(nsdbMinIntervalMs,
-                                                                           nsdbExpiryDateMs,
-                                                                           nsdbPublicationTtlMs);
+newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos();
+newStationDiscoveredBroadcastSubscriptionQos.setMinIntervalMs(nsdbMinIntervalMs).setValidityMs(nsdbValidityMs).setPublicationTtlMs(nsdbPublicationTtlMs);
 NewStationDiscoveredBroadcastFilterParameters newStationDiscoveredBroadcastFilterParams = new NewStationDiscoveredBroadcastFilterParameters();
 newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
 GeoPosition positionOfInterest = new GeoPosition(48.1351250, 11.5819810); // Munich
@@ -231,9 +230,9 @@ try {
 }
 newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
 newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
-radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.NewStationDiscoveredBroadcastListener() {
+radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.NewStationDiscoveredBroadcastAdapter() {
                                                         @Override
-                                                        public void receive(RadioStation discoveredStation,
+                                                        public void onReceive(RadioStation discoveredStation,
                                                                             GeoPosition geoPosition) {
                                                             LOG.info(PRINT_BORDER
                                                                     + "BROADCAST SUBSCRIPTION: new station discovered: "
@@ -250,17 +249,16 @@ radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.
 (/examples/radio-app/src/main/cpp/MyRadioConsumerApplication.cpp)**
 ```c++
 ...
-QSharedPointer<OnChangeSubscriptionQos> newStationDiscoveredBroadcastSubscriptionQos(
-        new OnChangeSubscriptionQos());
+auto newStationDiscoveredBroadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
 newStationDiscoveredBroadcastSubscriptionQos->setMinInterval(2 * 1000);
 newStationDiscoveredBroadcastSubscriptionQos->setValidity(180 * 1000);
-QSharedPointer<ISubscriptionListener<vehicle::RadioStation, vehicle::GeoPosition>>
+std::shared_ptr<ISubscriptionListener<vehicle::RadioStation, vehicle::GeoPosition>>
         newStationDiscoveredBroadcastListener(new NewStationDiscoveredBroadcastListener());
 vehicle::RadioNewStationDiscoveredBroadcastFilterParameters
         newStationDiscoveredBroadcastFilterParams;
 newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
 vehicle::GeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
-QString positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
+std::string positionOfInterestJson(joynr::serializer::serializeToJson(positionOfInterest));
 newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
 newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
 proxy->subscribeToNewStationDiscoveredBroadcast(newStationDiscoveredBroadcastFilterParams,
@@ -279,7 +277,7 @@ They must supply the broadcast arguments that are delivered to the consumers.
 
 ```java
 ...
-RadioStation discoveredStation = stationsList.get(currentStationIndex);
+RadioStation discoveredStation = currentStation;
 GeoPosition geoPosition = countryGeoPositionMap.get(discoveredStation.getCountry());
 fireNewStationDiscovered(discoveredStation, geoPosition);
 ...
@@ -291,7 +289,7 @@ fireNewStationDiscovered(discoveredStation, geoPosition);
 ```c++
 ...
 vehicle::RadioStation discoveredStation(stationsList.at(currentStationIndex));
-vehicle::GeoPosition geoPosition(countryGeoPositionMap.value(discoveredStation.getCountry()));
+vehicle::GeoPosition geoPosition(countryGeoPositionMap.at(discoveredStation.getCountry()));
 fireNewStationDiscovered(discoveredStation, geoPosition);
 ...
 ```
