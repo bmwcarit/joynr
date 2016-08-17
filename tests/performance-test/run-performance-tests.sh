@@ -420,12 +420,12 @@ if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
    [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
-   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ]
+   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] 
 then
     echo "\"$TESTCASE\" is not a valid testcase"
     echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
 JS_CONSUMER, JS_SHORTCIRCUIT, OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
-CPP_SERIALIZER, CPP_SHORTCIRCUIT"
+CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER"
     echoUsage
     exit 1
 fi
@@ -509,6 +509,15 @@ then
     then
         echo "Testcase: JS_CONSUMER for domain $DOMAINNAME" | tee -a $REPORTFILE
         performJsConsumerTest $STDOUT $REPORTFILE true OFF
+    fi
+
+    if [ "$TESTCASE" == "CPP_PROVIDER" ]
+    then
+        echo "Testcase: CPP_PROVIDER for domain $DOMAINNAME" | tee -a $REPORTFILE
+        startCppPerformanceTestProvider $STDOUT $REPORTFILE true OFF
+        # this testcase is used to start a provider which is then accessed from an external consumer
+        # in order to keep the provider running, we sleep for a long time here
+        sleep 100000000
     fi
 
     stopAnyProvider
