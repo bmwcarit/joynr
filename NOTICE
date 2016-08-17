@@ -141,6 +141,7 @@ This project has dependencies to:
   ICU4J under ICU License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   inter-language-test-jee-api under The Apache Software License, Version 2.0
+  inter-language-test-jee-provider under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
   io.joynr.android:robolectric-integration-tests under The Apache Software License, Version 2.0
   io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0
