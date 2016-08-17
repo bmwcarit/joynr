@@ -21,6 +21,8 @@
 
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/MethodInvocationException.h"
+#include "joynr/exceptions/SubscriptionException.h"
+
 namespace joynr
 {
 
@@ -53,6 +55,9 @@ public:
                     const_cast<exceptions::JoynrException&>(error));
         } else if (typeName == exceptions::PublicationMissedException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::PublicationMissedException&>(
+                    const_cast<exceptions::JoynrException&>(error));
+        } else if (typeName == exceptions::SubscriptionException::TYPE_NAME()) {
+            throw dynamic_cast<exceptions::SubscriptionException&>(
                     const_cast<exceptions::JoynrException&>(error));
         } else if (typeName == exceptions::ApplicationException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::ApplicationException&>(
