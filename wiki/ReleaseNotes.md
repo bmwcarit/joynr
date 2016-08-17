@@ -3,11 +3,33 @@
 ##API relevant changes
 * **[JS]** The SubscriptionListener is now able to get informed about succeeded
   subscription requests. For this purpose, he can implement a callback having
-  the following signature: void onSubscribed(subscribeId) 
-* **[JS]** The consumer is able to synchronise to subscription requests.
+  the following signature: void onSubscribed(subscriptionId). In case of
+  failure the onError callback can be invoked with a SubscriptionException.
+* **[JS]** The consumer is able to synchronize to subscription requests.
   The promise returned by <Interface>Proxy.subscribeTo<Attribute|Broadcast> is
   resolved, once the subscription request has been successfully delivered to the
-  interface provider. 
+  interface provider. In case of failure, it can be rejected with a
+  SubscriptionException.
+* **[Java]** The AttributeSubscriptionAdapter is now able to get informed about succeeded
+  subscription requests. For this purpose, it implements a callback having
+  the following signature: public void onSubscribed(String subscriptionId).
+  In case of failure the onError callback can be invoked with a SubscriptionException.
+* **[Java]** The consumer is able to synchronize to subscription requests.
+  The subscribeTo<BroadcastName> and subscribeTo<AttributeName> methods
+  now return a Future that is resolved once the subscription request has been
+  successfully delivered to the interface provider. The get() method of the
+  Future returns the subscriptionId on successful execution or can throw
+  a SubscriptionException in case of failure.
+* **[C++]** The ISubscriptionListener interface is now able to get informed about succeeded
+  subscription requests. For this purpose, it can implement a callback having
+  the following signature: virtual void onSubscribed(const std::string& subscriptionId).
+  In case of failure the onError callback can be invoked with a SubscriptionException.
+* **[C++]** The consumer is able to synchronize to subscription requests.
+  The subscribeTo<BroadcastName> and subscribeTo<AttributeName> methods
+  now return a Future that is resolved once the subscription request has been
+  successfully delivered to the interface provider. The get() method of the
+  Future returns the subscriptionId on successful execution or can throw
+  a SubscriptionException in case of failure.
 * **[Java]** Static capabilities provisioning can now be specified as a URI.
   See the [Java Configuration Guide](JavaSettings.md) for details.
 * **[Java]** the domain access controller now has it's own property with which one can set its
@@ -21,6 +43,9 @@
   headers to outgoing joynr messages. See the [JEE Documentation](jee.md) for details.
 * **[Java]** the container classes for multi-out return values are now marked with an interface:
   `MultiReturnValuesContainer`.
+* **[C++]** the QoS parameter has to be passed as std::shared_ptr to the `subscribeTo...` methods
+* **[C++]** Joynr runtime object can be created with a settings object as well as with a path
+  to a settings file.
 
 ##Other changes
 * **[JEE]** a JEE version of the discovery service was added which can be deployed to EE
@@ -30,12 +55,13 @@
 * **[Java, JS, C++, JEE]** Ability to specify effort to be expent on ensuring delivery of
   messages. When set to `best effort` and using MQTT as transport, this results in a QoS 0
   MQTT message being sent (fire-and-forget). See `MessagingQosEffort` classes in each language.
+* **[C++]** muesli is now used as serializer; it can be found at https://github.com/bmwcarit/muesli
 
 #joynr 0.19.5
 This is a minor bug fix release.
 
 ##API relevant changes
-None. 
+None.
 
 ##Other changes
 * **[C++]** Fix multi-threading issue in LocalCapabilitiesDirectory.
@@ -44,7 +70,7 @@ None.
 This is a minor bug fix release.
 
 ##API relevant changes
-None. 
+None.
 
 ##Other changes
 * **[C++]** Correctly load persisted routing table in the LibJoynrRuntime.
@@ -53,10 +79,10 @@ None.
 This is a minor bug fix release.
 
 ##API relevant changes
-* **[C++]** Add new API to create joynr runtime with settings object. 
+* **[C++]** Add new API to create joynr runtime with settings object.
 
 ##Other changes
-* **[JS]** Support attributes starting with capital letters. 
+* **[JS]** Support attributes starting with capital letters.
 
 #joynr 0.19.2
 This is a minor bug fix release.
@@ -65,7 +91,7 @@ This is a minor bug fix release.
 None.
 
 ##Other changes
-* **[C++]** Do not crash joynr runtime if writing persistency files fails. 
+* **[C++]** Do not crash joynr runtime if writing persistency files fails.
 
 #joynr 0.19.1
 This is a minor bug fix release.
