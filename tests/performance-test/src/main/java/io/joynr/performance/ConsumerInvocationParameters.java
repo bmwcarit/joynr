@@ -45,7 +45,7 @@ public class ConsumerInvocationParameters {
      * Determines the test case which shall be performed.
      */
     enum TESTCASE {
-        SEND_STRING, SEND_STRUCT, SEND_BYTEARRAY
+        SEND_STRING, SEND_STRUCT, SEND_BYTEARRAY, SEND_BYTEARRAY_WITH_SIZE_TIMES_K
     }
 
     public enum RuntimeConfig {
@@ -123,6 +123,10 @@ public class ConsumerInvocationParameters {
 
         // getParsedOptionValue seems not to work for enumerations.
         testCase = TESTCASE.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_TESTCASE));
+        if (testCase == TESTCASE.SEND_BYTEARRAY_WITH_SIZE_TIMES_K) {
+            testCase = TESTCASE.SEND_BYTEARRAY;
+            byteArraySize = byteArraySize * 1000;
+        }
         communicationMode = COMMUNICATIONMODE.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_SYNCMODE));
 
         if (commandLine.hasOption(CMDLINE_OPTIONNAME_DISCOVERYSCOPE)) {
