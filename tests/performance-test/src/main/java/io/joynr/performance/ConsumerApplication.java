@@ -22,20 +22,27 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.performance.ConsumerInvocationParameters.BackendConfig;
+import io.joynr.performance.ConsumerInvocationParameters.COMMUNICATIONMODE;
+import io.joynr.performance.ConsumerInvocationParameters.RuntimeConfig;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
+import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import jline.internal.Log;
-import io.joynr.performance.ConsumerInvocationParameters.COMMUNICATIONMODE;
 import joynr.tests.performance.EchoProxy;
 import joynr.tests.performance.Types.ComplexStruct;
 
@@ -55,25 +62,44 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             System.exit(-1);
         }
 
-        JoynrApplication consumerApp = createConsumerApp();
+        Properties appConfig = new Properties();
+        Properties joynrConfig = new Properties();
+
+        Module runtimeModule = getRuntimeModule(joynrConfig);
+
+        JoynrApplication consumerApp = new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(ConsumerApplication.class,
+                                                                                                                                         appConfig));
 
         consumerApp.run();
         consumerApp.shutdown();
     }
 
-    private static JoynrApplication createConsumerApp() {
-        Properties appConfig = new Properties();
-        Properties joynrConfig = new Properties();
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
-        joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
+    private static Module getRuntimeModule(Properties joynrConfig) {
 
-        Module runtimeModule = new LibjoynrWebSocketRuntimeModule();
+        Module runtimeModule;
+        Module backendTransportModules = Modules.EMPTY_MODULE;
 
-        return new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(ConsumerApplication.class,
-                                                                                                                 appConfig));
+        if (invocationParameters.getRuntimeMode() == RuntimeConfig.WEBSOCKET) {
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+            joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
+
+            runtimeModule = new LibjoynrWebSocketRuntimeModule();
+        } else {
+            runtimeModule = new CCInProcessRuntimeModule();
+            // always install HTTP for now
+            backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
+
+            if (invocationParameters.getBackendTransportMode() == BackendConfig.MQTT) {
+                joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParameters.getMqttBrokerUri());
+                joynrConfig.put(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+                backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+            }
+        }
+
+        return Modules.override(runtimeModule).with(backendTransportModules);
     }
 
     @Override

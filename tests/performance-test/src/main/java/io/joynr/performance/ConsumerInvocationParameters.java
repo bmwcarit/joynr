@@ -48,6 +48,14 @@ public class ConsumerInvocationParameters {
         SEND_STRING, SEND_STRUCT, SEND_BYTEARRAY
     }
 
+    public enum RuntimeConfig {
+        IN_PROCESS_CC, WEBSOCKET
+    }
+
+    public enum BackendConfig {
+        MQTT
+    }
+
     private static final String CMDLINE_OPTIONNAME_DOMAINNAME = "domain";
     private static final String CMDLINE_OPTIONNAME_NUMRUNS = "runs";
     private static final String CMDLINE_OPTIONNAME_WARMUPS = "warmups";
@@ -56,6 +64,9 @@ public class ConsumerInvocationParameters {
     private static final String CMDLINE_OPTIONNAME_STRINGDATALENGTH = "stringdatalength";
     private static final String CMDLINE_OPTIONNAME_BYTEARRAYSIZE = "bytearraysize";
     private static final String CMDLINE_OPTIONNAME_DISCOVERYSCOPE = "discoveryscope";
+    private static final String CMDLINE_OPTIONNAME_RUNTIMECFG = "runtimeconfig";
+    private static final String CMDLINE_OPTIONNAME_BACKENDCFG = "backendconfig";
+    private static final String CMDLINE_OPTIONNAME_MQTTBROKERURI = "mqttbrokeruri";
 
     private static String domainName = "";
     private static int numberOfRuns = 1;
@@ -65,6 +76,9 @@ public class ConsumerInvocationParameters {
     private static int stringDataLength = 10;
     private static int byteArraySize = 100;
     private static DiscoveryScope discoveryScope = DiscoveryScope.LOCAL_ONLY;
+    private RuntimeConfig runtimeConfig = RuntimeConfig.IN_PROCESS_CC;
+    private BackendConfig backendConfig = BackendConfig.MQTT;
+    private String mqttBrokerUri = "tcp://localhost:1883";
 
     public ConsumerInvocationParameters(String[] args) throws Exception {
         CommandLine commandLine = parseCommandLineArgs(args);
@@ -109,6 +123,18 @@ public class ConsumerInvocationParameters {
 
         if (commandLine.hasOption(CMDLINE_OPTIONNAME_DISCOVERYSCOPE)) {
             discoveryScope = DiscoveryScope.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_DISCOVERYSCOPE));
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_BACKENDCFG)) {
+            backendConfig = BackendConfig.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_BACKENDCFG));
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_MQTTBROKERURI)) {
+            mqttBrokerUri = commandLine.getOptionValue(CMDLINE_OPTIONNAME_MQTTBROKERURI);
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_RUNTIMECFG)) {
+            runtimeConfig = RuntimeConfig.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_RUNTIMECFG));
         }
     }
 
@@ -188,6 +214,34 @@ public class ConsumerInvocationParameters {
                                         + "LOCAL_ONLY or LOCAL_THEN_GLOBAL. Default is LOCAL_ONLY.")
                                 .build());
 
+        options.addOption(Option.builder("runtime")
+                                .longOpt(CMDLINE_OPTIONNAME_RUNTIMECFG)
+                                .required(false)
+                                .hasArg()
+                                .argName("runtime")
+                                .type(RuntimeConfig.class)
+                                .desc("Runtime module configuration. " + "Default is " + runtimeConfig.toString())
+                                .build());
+
+        options.addOption(Option.builder("backend")
+                                .longOpt(CMDLINE_OPTIONNAME_BACKENDCFG)
+                                .required(false)
+                                .hasArg()
+                                .argName("backend")
+                                .type(BackendConfig.class)
+                                .desc("Backend configuration. At the moment only MQTT is supported. Default is "
+                                        + backendConfig.toString())
+                                .build());
+
+        options.addOption(Option.builder("mbu")
+                                .longOpt(CMDLINE_OPTIONNAME_MQTTBROKERURI)
+                                .required(false)
+                                .hasArg()
+                                .argName("uri")
+                                .type(String.class)
+                                .desc("MQTT broker URI. Default is " + mqttBrokerUri)
+                                .build());
+
         CommandLineParser parser = new DefaultParser();
 
         try {
@@ -229,5 +283,17 @@ public class ConsumerInvocationParameters {
 
     public DiscoveryScope getDiscoveryScope() {
         return discoveryScope;
+    }
+
+    public String getMqttBrokerUri() {
+        return mqttBrokerUri;
+    }
+
+    public RuntimeConfig getRuntimeMode() {
+        return runtimeConfig;
+    }
+
+    public BackendConfig getBackendTransportMode() {
+        return backendConfig;
     }
 }
