@@ -89,14 +89,17 @@ define([
                             receiverParticipantId = "TestMessageRouter_participantId_" + Date.now();
                             receiverParticipantId2 =
                                     "TestMessageRouter_delayedParticipantId_" + Date.now();
-                            joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                            joynrMessage = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                            });
                             joynrMessage.expiryDate = 9360686108031;
                             joynrMessage.to = receiverParticipantId;
                             joynrMessage.from = "senderParticipantId";
                             joynrMessage.payload = "hello";
 
-                            joynrMessage2 =
-                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+                            joynrMessage2 = new JoynrMessage({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                            });
                             joynrMessage2.to = receiverParticipantId2;
                             joynrMessage2.from = "senderParticipantId";
                             joynrMessage2.payload = "hello2";
@@ -209,6 +212,30 @@ define([
                                         return null;
                                     });
                                     increaseFakeTime(1);
+                                });
+
+                        it(
+                                "address can be resolved once known to message router",
+                                function(done) {
+                                    var participantId = "participantId-setToKnown";
+                                    messageRouter =
+                                            createMessageRouter(
+                                                    persistencySpy,
+                                                    messagingStubFactorySpy,
+                                                    messageQueueSpy,
+                                                    incomingAddress,
+                                                    parentMessageRouterAddress);
+
+                                    messageRouter.resolveNextHop(participantId)
+                                        .then(function(address) {
+                                            expect(address).toBe(undefined);
+                                            // it is expected that the given participantId cannot be resolved
+                                            messageRouter.setToKnown(participantId);
+                                            return messageRouter.resolveNextHop(participantId).then(function(address) {
+                                                expect(address).toBe(parentMessageRouterAddress);
+                                                return done();
+                                            }).catch(done.fail);
+                                        });
                                 });
 
                         it(
@@ -428,6 +455,35 @@ define([
                                             .toEqual(incomingAddress);
                                     increaseFakeTime(1);
                                     done();
+                                });
+
+                        it(
+                                "check if resolved hop from routing proxy is cached",
+                                function(done) {
+                                    messageRouter =
+                                            createMessageRouter(
+                                                    persistencySpy,
+                                                    messagingStubFactorySpy,
+                                                    messageQueueSpy,
+                                                    incomingAddress,
+                                                    parentMessageRouterAddress);
+                                    routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
+                                        "resolveNextHop"
+                                    ]);
+                                    routingProxySpy.resolveNextHop.and.returnValue(Promise.resolve({ resolved: true }));
+                                    messageRouter.setRoutingProxy(routingProxySpy);
+
+                                    messageRouter.resolveNextHop(joynrMessage.to).then(function(address) {
+                                        expect(address).toBe(parentMessageRouterAddress);
+                                        expect(routingProxySpy.resolveNextHop.calls.count()).toBe(1);
+                                        routingProxySpy.resolveNextHop.calls.reset();
+                                        return messageRouter.resolveNextHop(joynrMessage.to);
+                                    }).then(function(address){
+                                        expect(address).toBe(parentMessageRouterAddress);
+                                        expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
+                                        done();
+                                        return null;
+                                    }).catch(done.fail);
                                 });
 
                         it(

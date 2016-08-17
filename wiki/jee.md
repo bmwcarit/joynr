@@ -8,7 +8,7 @@ The features supported are:
 * Inject a `ServiceLocator` in order to obtain consumer proxies for calling
 other services
 * Internally uses EE container managed thread pools
-* Uses the EE container's JAX RS to receive joynr messages
+* Uses the EE container's JAX RS to receive joynr messages via HTTP(s)
 
 There is also an example application based on the Radio App example. See the end of this
 document for a description of the example.
@@ -43,6 +43,7 @@ For Gradle, in your build.gradle dependencies add:
 
 Create a `@Singleton` EJB which has no business interface (i.e. does not
 implement any interfaces) and provide methods annotated with:
+
 * `@JoynrProperties`
 	* The method decorated with this annotation must return a `Properties`
 	  object which contains the joynr properties which the application
@@ -84,6 +85,14 @@ this property needs to
 point to the endpoint registration service's URL with which the
 JEE Integration will register itself for its channel's topic.
 E.g. `http://endpointregistry.mycompany.net:8080`.
+* `MessagingPropertyKeys.DISCOVERYDIRECTORYURL` and
+`MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL` - configure the addresses for the
+discovery directory and domain access control services.
+* `MessagingPropertyKeys.PERSISTENCE_FILE` - if you are deploying multiple joynr-enabled
+applications to the same container instance, then you will need to set a different filename
+for this property for each application. E.g.: `"my-app-joynr.properties"` for one and
+`"my-other-app-joynr.properties"` for another. Failing to do so can result in unexpected
+behaviour, as one app will be using the persisted properties and IDs of the other app.
 
 You are principally free to provide any other valid joynr properties via these
 configuration methods. See the [official joynr documentation](./JavaSettings.md)
@@ -111,6 +120,8 @@ An example of a configuration EJB is:
 		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI,
 			"tcp://mqttbroker.com:1883");
 		joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
+			"http://joynrbackend/discovery/channels/discoverydirectory_channelid/");
+		joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL,
 			"http://joynrbackend/discovery/channels/discoverydirectory_channelid/");
 		joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
 			"http://joynrbackend/bounceproxy/");
@@ -337,7 +348,35 @@ In order to do this, you must provide the following content in the
 
 ... here, the `<class-loader delegate="false" />` part is the relevant bit.
 
-## Example
+## Message Processors
+
+By providing EJBs (or CDI Beans) which implement the `JoynrMessageProcessor` interface
+you are able to hook into the message creation process. Each filter is called in turn
+after the message has been created and is given the chance to perform any application
+specific customisations, such as adding custom headers, or mutating any existing ones.
+
+Be careful that your processor doesn't perform any changes which render the message
+un-transmittable, such as changing the `to` or the `from` headers! Generally you
+should only be, e.g., adding custom headers (via the `JoynrMessage#setCustomHeaders()`).
+
+Here's an example of a message processor:
+
+```
+@Stateless
+public class MyMessageProcessor implements JoynrMessageProcessor {
+    public JoynrMessage process(JoynrMessage joynrMessage) {
+        Map<String, String> myCustomHeaders = new HashMap<>();
+        myCustomHeaders.put("my-correlation-id", UUID.randomUuid().toString());
+        joynrMessage.setCustomHeaders(myCustomHeaders);
+        return joynrMessage;
+    }
+}
+```
+
+This would add the custom header `my-correlation-id` to the joynr message with a random
+UUID as the value.
+
+## Example Application
 
 Under `examples/radio-jee` you can find an example application which is based on the
 [Radio App example](./Tutorial.md). It uses the same `radio.fidl` file from the tutorial

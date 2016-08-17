@@ -116,7 +116,10 @@ define(
                  *            published successfully, method signature: "void onReceive({?}value)"
                  * @param {Function}
                  *            settings.onError this function is called if a publication of the
-                 *            attribute value was missed, method signature: "void onError()"
+                 *            attribute value was missed, method signature: "void onError({Error} error)"
+                 * @param {Function}
+                 *            settings.onSubscribed the callback to inform once the subscription request has
+                 *            been delivered successfully
                  * @returns {Object} returns an A+ promise. This object additionally holds the
                  *            unique subscriptionId, used for unsubscribing from the attribute in
                  *            the key subscriptionId

@@ -23,7 +23,6 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 
 class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
@@ -33,7 +32,6 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
-	@Inject private extension BroadcastUtil
 
 	override generate()
 '''
@@ -44,12 +42,23 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
 #include "joynr/TypeUtil.h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»
+«ENDFOR»
+
+«FOR broadcast: francaIntf.broadcasts.filter[selective]»
+	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«getBroadcastFilterClassName(broadcast)».h"
 «ENDFOR»
 
 «getNamespaceStarter(francaIntf)»
 «interfaceName»AbstractProvider::«interfaceName»AbstractProvider()
+«IF hasSelectiveBroadcast»
+	:
+	«FOR broadcast: francaIntf.broadcasts.filter[selective] SEPARATOR ','»
+		«val broadcastName = broadcast.joynrName»
+		«broadcastName»Filters()
+	«ENDFOR»
+«ENDIF»
 {
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(getInterfaceName());
@@ -72,59 +81,43 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 		void «interfaceName»AbstractProvider::«attributeName»Changed(
 				const «attribute.typeName»& «attributeName»
 		) {
-			onAttributeValueChanged(
-					"«attributeName»",
-					«IF attributeType.isEnum && attribute.isArray»
-						joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attributeType.derived)»>(«attributeName»))
-					«ELSEIF attributeType.isEnum»
-						Variant::make<«attribute.typeName»>(«attributeName»)
-					«ELSEIF attribute.isArray»
-						joynr::TypeUtil::toVariant<«attributeType.typeName»>(«attributeName»)
-					«ELSEIF attributeType.isCompound»
-						Variant::make<«attribute.typeName»>(«attributeName»)
-					«ELSEIF attributeType.isMap»
-						Variant::make<«attribute.typeName»>(«attributeName»)
-					«ELSEIF attributeType.isByteBuffer»
-						joynr::TypeUtil::toVariant(«attributeName»)
-					«ELSE»
-						Variant::make<«attribute.typeName»>(«attributeName»)
-					«ENDIF»
-			);
+			onAttributeValueChanged("«attributeName»",«attributeName»);
 		}
 	«ENDIF»
 «ENDFOR»
 
 «FOR broadcast : francaIntf.broadcasts»
-	«var broadcastName = broadcast.joynrName»
+	«val broadcastName = broadcast.joynrName»
 	void «interfaceName»AbstractProvider::fire«broadcastName.toFirstUpper»(
 			«IF !broadcast.outputParameters.empty»
 			«broadcast.commaSeperatedTypedConstOutputParameterList»
 			«ENDIF»
 	) {
-		std::vector<Variant> broadcastValues;
-		«FOR param: getOutputParameters(broadcast)»
-			«var paramType = param.type.resolveTypeDef»
-			«var paramName = param.joynrName»
-			broadcastValues.push_back(
-					«IF paramType.isEnum && param.isArray»
-						joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(paramType.derived)»>(«paramName»))
-					«ELSEIF paramType.isEnum»
-						Variant::make<«param.typeName»>(«paramName»)
-					«ELSEIF param.isArray»
-						joynr::TypeUtil::toVariant<«paramType.typeName»>(«paramName»)
-					«ELSEIF paramType.isCompound»
-						Variant::make<«param.typeName»>(«paramName»)
-					«ELSEIF paramType.isMap»
-						Variant::make<«param.typeName»>(«paramName»)
-					«ELSEIF paramType.isByteBuffer»
-						joynr::TypeUtil::toVariant(«paramName»)
-					«ELSE»
-						Variant::make<«param.typeName»>(«paramName»)
-					«ENDIF»
-			);
-		«ENDFOR»
-		fireBroadcast("«broadcastName»", broadcastValues);
+		«IF broadcast.selective»
+		fireSelectiveBroadcast
+		«ELSE»
+		fireBroadcast
+		«ENDIF»
+		("«broadcastName»"
+		«IF broadcast.selective»
+		, «broadcastName»Filters
+		«ENDIF»
+		«IF !broadcast.outputParameters.empty»
+			,
+			«FOR parameter : broadcast.outputParameters SEPARATOR ','»
+				«parameter.joynrName»
+			«ENDFOR»
+		«ENDIF»
+		);
 	}
+
+	«IF broadcast.selective»
+		«val broadCastFilterClassName = interfaceName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
+		void  «interfaceName»AbstractProvider::addBroadcastFilter(std::shared_ptr<«broadCastFilterClassName»> filter)
+		{
+			«broadcastName»Filters.push_back(std::move(filter));
+		}
+	«ENDIF»
 «ENDFOR»
 «getNamespaceEnder(francaIntf)»
 '''

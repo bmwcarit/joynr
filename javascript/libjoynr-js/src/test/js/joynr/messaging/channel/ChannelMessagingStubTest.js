@@ -69,7 +69,7 @@ define([
         });
 
         it("drop outgoing message if destChannel = myChannel", function(done) {
-            channelMessagingStub2.transmit(joynrMessage);
+            channelMessagingStub2.transmit(joynrMessage).catch(function() { return null; });
             expect(channelMessagingSender.send).not.toHaveBeenCalled();
             expect(joynrMessage.replyChannelId).toBeUndefined();
             done();

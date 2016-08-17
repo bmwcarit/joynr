@@ -46,10 +46,12 @@ import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
@@ -128,6 +130,7 @@ public class StaticCapabilitiesProvisioningTest {
     private LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder createLegacyProvisioningPropertiesHolder() {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
         properties.discoveryDirectoryUrl = "http://localhost:8080";
+        properties.domainAccessControllerUrl = "http://localhost:9090";
         properties.capabilitiesDirectoryChannelId = "capdir_channel_id";
         properties.capabilitiesDirectoryParticipantId = "capdir_participant_id";
         properties.channelId = "local_channel_id";
@@ -172,23 +175,45 @@ public class StaticCapabilitiesProvisioningTest {
         assertEquals(2, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                               properties.capabilitiesDirectoryParticipantId);
+                               properties.capabilitiesDirectoryParticipantId,
+                               properties.discoveryDirectoryUrl);
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalDomainAccessController.INTERFACE_NAME,
-                               properties.domainAccessControllerParticipantId);
+                               properties.domainAccessControllerParticipantId,
+                               properties.domainAccessControllerUrl);
+    }
+
+    @Test(expected = CreationException.class)
+    public void testIncompleteLegacySettings() throws IOException {
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
+        properties.capabilitiesDirectoryParticipantId = "";
+        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
+        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
+        fail("Expecting legacy capabilities provisioning to fail fast.");
     }
 
     private void assertContainsEntryFor(Collection<DiscoveryEntry> entries, String interfaceName) {
-        assertContainsEntryFor(entries, interfaceName, null);
+        assertContainsEntryFor(entries, interfaceName, null, null);
     }
 
-    private void assertContainsEntryFor(Collection<DiscoveryEntry> entries, String interfaceName, String participantId) {
+    private void assertContainsEntryFor(Collection<DiscoveryEntry> entries,
+                                        String interfaceName,
+                                        String participantId,
+                                        String url) {
         boolean found = false;
         for (DiscoveryEntry entry : entries) {
             if (entry instanceof GlobalDiscoveryEntry) {
                 GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) entry;
                 if (globalDiscoveryEntry.getInterfaceName().equals(interfaceName)
                         && (participantId == null || participantId.equals(globalDiscoveryEntry.getParticipantId()))) {
+                    if (url != null) {
+                        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
+                        assertTrue(address instanceof ChannelAddress);
+                        assertEquals(url, ((ChannelAddress) address).getMessagingEndpointUrl());
+                    }
                     found = true;
                 }
             }
@@ -213,6 +238,7 @@ public class StaticCapabilitiesProvisioningTest {
         propertiesHolder.capabilitiesDirectoryChannelId = "";
         propertiesHolder.deprecatedCapabilityDirectoryUrl = "";
         propertiesHolder.discoveryDirectoryUrl = "";
+        propertiesHolder.domainAccessControllerUrl = "";
         return createInjectorForJsonValue(jsonValue, propertiesHolder);
     }
 
@@ -241,6 +267,7 @@ public class StaticCapabilitiesProvisioningTest {
                 bind(String.class).annotatedWith(Names.named(CAPABILITYDIRECTORYURL)).toInstance(provisioningProperties.deprecatedCapabilityDirectoryUrl);
                 bind(String.class).annotatedWith(Names.named(CHANNELID)).toInstance(provisioningProperties.channelId);
                 bind(String.class).annotatedWith(Names.named(DISCOVERYDIRECTORYURL)).toInstance(provisioningProperties.discoveryDirectoryUrl);
+                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL)).toInstance(provisioningProperties.domainAccessControllerUrl);
 
                 bind(ObjectMapper.class).toInstance(objectMapper);
                 bind(RoutingTable.class).toInstance(routingTable);

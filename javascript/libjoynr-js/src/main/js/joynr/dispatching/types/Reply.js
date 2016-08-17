@@ -32,6 +32,8 @@ define("joynr/dispatching/types/Reply", [
      *            settings.requestReplyId
      * @param {Array}
      *            [settings.response] the response may be undefined
+     * @param {Object}
+     *            [settings.error] The exception object in case of request failure
      */
     function Reply(settings) {
         var i;

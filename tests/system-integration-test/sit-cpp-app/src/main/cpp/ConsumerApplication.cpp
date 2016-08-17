@@ -24,11 +24,13 @@
 
 #include "joynr/DiscoveryQos.h"
 #include "joynr/JoynrRuntime.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/Logger.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/test/SystemIntegrationTestProxy.h"
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 using namespace joynr;
 
@@ -36,6 +38,10 @@ using namespace joynr;
 
 int main(int argc, char* argv[])
 {
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+    // Register app at the dlt-daemon for logging
+    DLT_REGISTER_APP("JOYT", argv[0]);
+#endif // JOYNR_ENABLE_DLT_LOGGING
     // Get a logger
     joynr::Logger logger("ConsumerApplication");
 

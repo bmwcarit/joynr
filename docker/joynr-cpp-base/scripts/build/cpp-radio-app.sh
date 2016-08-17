@@ -4,6 +4,7 @@ source /data/src/docker/joynr-base/scripts/global.sh
 
 START=$(date +%s)
 ADDITIONAL_CMAKE_ARGS=''
+DLT='ON'
 
 function usage
 {
@@ -13,6 +14,9 @@ function usage
 
 while [ "$1" != "" ]; do
     case $1 in
+        --dlt )                 shift
+                                DLT=$1
+                                ;;
         --jobs )                shift
                                 JOBS=$1
                                 ;;
@@ -49,7 +53,8 @@ rm -rf /data/build/radio
 mkdir /data/build/radio
 cd /data/build/radio
 
-cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
+cmake -DJOYNR_ENABLE_DLT_LOGGING=$DLT \
+      -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
       -DJOYNR_SERVER=localhost:8080 \
       $ADDITIONAL_CMAKE_ARGS \
       /data/src/examples/radio-app

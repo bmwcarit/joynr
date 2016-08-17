@@ -20,14 +20,14 @@ package io.joynr.accesscontrol.broadcastlistener;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastAdapter;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LdacDomainRoleEntryChangedBroadcastListener implements DomainRoleEntryChangedBroadcastListener {
+public class LdacDomainRoleEntryChangedBroadcastListener extends DomainRoleEntryChangedBroadcastAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(LdacDomainRoleEntryChangedBroadcastListener.class);
     private final DomainAccessControlStore localDomainAccessStore;
 

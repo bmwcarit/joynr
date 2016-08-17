@@ -30,11 +30,11 @@
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Settings.h"
+#include "joynr/serializer/Serializer.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
@@ -179,7 +179,7 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
     const std::size_t payloadSize = GetParam();
     std::string payload(payloadSize, 'x');
     joynrMsg.setPayload(payload);
-    std::string expectedMessage = joynr::JsonSerializer::serialize(joynrMsg);
+    std::string expectedMessage = joynr::serializer::serializeToJson(joynrMsg);
 
     auto onFailure = [](const joynr::exceptions::JoynrRuntimeException& e) {
             FAIL() << "Unexpected call of onFailure function, exception: " + e.getMessage();

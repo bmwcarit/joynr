@@ -29,12 +29,20 @@
 
 #include "../common/Enum.h"
 #include "PerformanceConsumer.h"
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 JOYNR_ENUM(SyncMode, (SYNC)(ASYNC));
-JOYNR_ENUM(TestCase, (SEND_STRING)(SEND_BYTEARRAY)(SEND_STRUCT));
+JOYNR_ENUM(TestCase, (SEND_STRING)(SEND_BYTEARRAY)(SEND_BYTEARRAY_WITH_SIZE_TIMES_K)(SEND_STRUCT));
 
 int main(int argc, char* argv[])
 {
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+    // Register app at the dlt-daemon for logging
+    DLT_REGISTER_APP("JOYT", argv[0]);
+#endif // JOYNR_ENABLE_DLT_LOGGING
+
     namespace po = boost::program_options;
 
     std::string domain;
@@ -57,7 +65,7 @@ int main(int argc, char* argv[])
             "runs,r", po::value(&runs)->required()->notifier(validateRuns), "number of runs")(
             "testCase,t",
             po::value(&testCase)->required(),
-            "SEND_STRING|SEND_BYTEARRAY|SEND_STRUCT")(
+            "SEND_STRING|SEND_BYTEARRAY|SEND_BYTEARRAY_WITH_SIZE_TIMES_K|SEND_STRUCT")(
             "syncMode,s", po::value(&syncMode)->required(), "SYNC|ASYNC")(
             "stringLength,l", po::value(&stringLength)->required(), "length of string")(
             "byteArraySize,b", po::value(&byteArraySize)->required(), "size of bytearray");
@@ -74,7 +82,7 @@ int main(int argc, char* argv[])
         boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
         std::string appDirectory =
                 boost::filesystem::system_complete(appFilename).parent_path().string();
-        std::string pathToSettings(appDirectory + "/resources/performancetest-provider.settings");
+        std::string pathToSettings(appDirectory + "/resources/performancetest-consumer.settings");
 
         std::unique_ptr<joynr::JoynrRuntime> runtime(
                 joynr::JoynrRuntime::createRuntime(pathToSettings));
@@ -91,6 +99,9 @@ int main(int argc, char* argv[])
         switch (testCase) {
         case TestCase::SEND_BYTEARRAY:
             consumer->runByteArray();
+            break;
+        case TestCase::SEND_BYTEARRAY_WITH_SIZE_TIMES_K:
+            consumer->runByteArrayWithSizeTimesK();
             break;
         case TestCase::SEND_STRING:
             consumer->runString();

@@ -32,21 +32,21 @@ ClientQCache::ClientQCache() : cache(), mutex()
     cache.setCacheCapacity(MAX_CUMMULATIVE_CACHE_COST);
 }
 
-Variant ClientQCache::lookUp(const std::string& attributeId)
+boost::any ClientQCache::lookUp(const std::string& attributeId)
 {
     std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(attributeId)) {
-        return Variant::NULL_VARIANT();
+        return boost::any();
     }
-    CachedValue<Variant>* entry = cache.object(attributeId);
+    CachedValue<boost::any>* entry = cache.object(attributeId);
     return entry->getValue();
 }
 
-void ClientQCache::insert(std::string attributeId, Variant value)
+void ClientQCache::insert(std::string attributeId, boost::any value)
 {
     std::lock_guard<std::mutex> lock(mutex);
     auto now = std::chrono::system_clock::now();
-    CachedValue<Variant>* cachedValue = new CachedValue<Variant>(value, now);
+    CachedValue<boost::any>* cachedValue = new CachedValue<boost::any>(value, now);
     cache.insert(attributeId, cachedValue);
 }
 } // namespace joynr

@@ -20,8 +20,10 @@
 #define ONCHANGESUBSCRIPTIONQOS_H
 
 #include <cstdint>
+
 #include "joynr/SubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -167,6 +169,12 @@ public:
                  "instead.")]] static const std::int64_t&
     MAX_MIN_INTERVAL();
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<SubscriptionQos>(this), MUESLI_NVP(minIntervalMs));
+    }
+
 protected:
     /**
      * @brief The minimum interval in milliseconds
@@ -181,5 +189,9 @@ protected:
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::OnChangeSubscriptionQos,
+                                 joynr::SubscriptionQos,
+                                 "joynr.OnChangeSubscriptionQos")
 
 #endif // ONCHANGESUBSCRIPTIONQOS_H

@@ -19,15 +19,19 @@
 #ifndef MOCKOBJECTS_H_
 #define MOCKOBJECTS_H_
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <chrono>
 #include <string>
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+#include <functional>
+
+#include <boost/any.hpp>
 #include <boost/asio.hpp>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "PrettyPrint.h"
 #include "LibJoynrMockObjects.h"
@@ -52,18 +56,10 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MessageRouter.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
 
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
-#include "joynr/SubscriptionReply.h"
-#include "joynr/SubscriptionStop.h"
-#include "joynr/SubscriptionPublication.h"
-#include "joynr/BroadcastSubscriptionRequest.h"
-
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/vehicle/GpsProvider.h"
 
@@ -90,9 +86,6 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/BrokerUrl.h"
-#include "joynr/Directory.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/Variant.h"
 #include "joynr/Settings.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
@@ -103,6 +96,33 @@
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
+
+#include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerMasterRegistrationControlEntryChangedBroadcastFilterParameters.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerOwnerRegistrationControlEntryChangedBroadcastFilterParameters.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerMediatorRegistrationControlEntryChangedBroadcastFilterParameters.h"
+
+namespace joynr
+{
+class JoynrMessage;
+class RequestCaller;
+class Request;
+class SubscriptionReply;
+class SubscriptionStop;
+class SubscriptionStop;
+class BroadcastSubscriptionRequest;
+
+namespace exceptions
+{
+class JoynrException;
+class JoynrRuntimeException;
+class ProviderRuntimeException;
+class DiscoveryException;
+} // namespace exceptions
+} // namespace joynr
 
 using ::testing::A;
 using ::testing::_;
@@ -416,7 +436,7 @@ public:
     );
 
     MOCK_METHOD4(
-            sendSubscriptionPublication,
+            sendSubscriptionPublicationMock,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
@@ -424,13 +444,22 @@ public:
                 const joynr::SubscriptionPublication& subscriptionPublication
             )
     );
+    
+    void sendSubscriptionPublication(
+        const std::string& senderParticipantId,
+        const std::string& receiverParticipantId,
+        const joynr::MessagingQos& qos,
+        joynr::SubscriptionPublication&& subscriptionPublication
+    ){
+        sendSubscriptionPublicationMock(senderParticipantId,receiverParticipantId,qos,subscriptionPublication);
+    }
 };
 
 template <typename T>
 class MockReplyCaller : public joynr::ReplyCaller<T> {
 public:
     MockReplyCaller(std::function<void(const T& returnValue)> callbackFct,
-                    std::function<void(const joynr::exceptions::JoynrException& error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
+                    std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>& error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
     MOCK_METHOD1_T(returnValue, void(const T& payload));
     MOCK_METHOD0_T(timeOut, void());
     MOCK_CONST_METHOD0_T(getType, std::string());
@@ -439,6 +468,7 @@ public:
 class MockGpsFloatSubscriptionListener
         : public joynr::ISubscriptionListener<joynr::types::Localisation::GpsLocation, float> {
 public:
+    MOCK_METHOD1(onSubscribed, void(const std::string& subscriptionId));
     MOCK_METHOD2(onReceive, void(const joynr::types::Localisation::GpsLocation& value, const float&));
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
@@ -446,7 +476,7 @@ public:
 class MockPublicationSender : public joynr::IPublicationSender {
 public:
     MOCK_METHOD4(
-            sendSubscriptionPublication,
+            sendSubscriptionPublicationMock,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
@@ -455,12 +485,30 @@ public:
             )
     );
 
+    MOCK_METHOD4(
+            sendSubscriptionReply,
+            void(
+                const std::string& senderParticipantId,
+                const std::string& receiverParticipantId,
+                const joynr::MessagingQos& qos,
+                const joynr::SubscriptionReply& subscriptionReply
+            )
+    );
+
+    void sendSubscriptionPublication(
+        const std::string& senderParticipantId,
+        const std::string& receiverParticipantId,
+        const joynr::MessagingQos& qos,
+        joynr::SubscriptionPublication&& subscriptionPublication
+    ){
+        sendSubscriptionPublicationMock(senderParticipantId,receiverParticipantId,qos,subscriptionPublication);
+    }
 };
 
 class MockClientCache : public joynr::IClientCache {
 public:
-   MOCK_METHOD1(lookUp, joynr::Variant(const std::string& attributeId));
-   MOCK_METHOD2(insert, void(std::string attributeId, joynr::Variant value));
+   MOCK_METHOD1(lookUp, boost::any(const std::string& attributeId));
+   MOCK_METHOD2(insert, void(std::string attributeId, boost::any value));
 };
 
 class MockDiscovery : public joynr::system::IDiscovery {
@@ -623,31 +671,31 @@ private:
 class MockTestRequestCaller : public joynr::tests::testRequestCaller {
 public:
     void invokeLocationOnSuccessFct(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
-                            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+                            std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {
         joynr::types::Localisation::GpsLocation location;
         onSuccess(location);
     }
 
     void invokeListOfStringsOnSuccessFct(std::function<void(const std::vector<std::string>&)> onSuccess,
-                            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+                            std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {
         std::vector<std::string> listOfStrings;
         listOfStrings.push_back("firstString");
         onSuccess(listOfStrings);
     }
 
     void invokeGetterOnErrorFunctionWithProviderRuntimeException(std::function<void(const std::int32_t&)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
-        onError(joynr::exceptions::ProviderRuntimeException(providerRuntimeExceptionTestMsg));
+            std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {
+        onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(providerRuntimeExceptionTestMsg));
     }
 
     void invokeMethodOnErrorFunctionWithProviderRuntimeException(std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrException&)> onError) {
-        onError(joynr::exceptions::ProviderRuntimeException(providerRuntimeExceptionTestMsg));
+            std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)> onError) {
+        onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(providerRuntimeExceptionTestMsg));
     }
 
     void invokeMapParametersOnSuccessFct(const joynr::types::TestTypes::TStringKeyMap& tStringMapIn,
                                          std::function<void(const joynr::types::TestTypes::TStringKeyMap&)> onSuccess,
-                                         std::function<void(const joynr::exceptions::JoynrException&)>) {
+                                         std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)>) {
         onSuccess(tStringMapIn);
     }
 
@@ -705,24 +753,24 @@ public:
 
     MOCK_METHOD2(getLocation,
                  void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,
-                      std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>));
+                      std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>));
     MOCK_METHOD3(mapParameters,
                  void(const joynr::types::TestTypes::TStringKeyMap&,
                       std::function<void(const joynr::types::TestTypes::TStringKeyMap&)>,
-                      std::function<void(const joynr::exceptions::JoynrException&)>));
+                      std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)>));
     MOCK_METHOD2(getListOfStrings,
                  void(std::function<void(const std::vector<std::string>& listOfStrings)>,
-                      std::function<void(const joynr::exceptions::JoynrException& exception)>));
+                      std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)>));
     MOCK_METHOD2(getAttributeWithProviderRuntimeException,
                  void(std::function<void(const std::int32_t&)>,
-                      std::function<void(const joynr::exceptions::ProviderRuntimeException&)>));
+                      std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>));
     MOCK_METHOD2(methodWithProviderRuntimeException,
                  void(std::function<void()>,
-                      std::function<void(const joynr::exceptions::JoynrException&)>));
-    MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
-    MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener));
-    MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
-    MOCK_METHOD2(unregisterBroadcastListener, void(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener));
+                      std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)>));
+    MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
+    MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, joynr::SubscriptionBroadcastListener* broadcastListener));
+    MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
+    MOCK_METHOD2(unregisterBroadcastListener, void(const std::string& broadcastName, joynr::SubscriptionBroadcastListener* broadcastListener));
 
     std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
 
@@ -735,8 +783,8 @@ public:
     MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(std::make_shared<MockGpsProvider>() ) {}
     MOCK_METHOD2(getLocation, void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,
                                    std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>));
-    MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
-    MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
+    MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
+    MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
 };
 
 
@@ -753,18 +801,10 @@ public:
     MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& subscriptionId));
     MOCK_METHOD4(registerSubscription,void(const std::string& subscribeToName,
                                                     std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller, // SubMgr gets ownership of ptr
-                                                    const joynr::Variant& qosVariant,
+                                                    std::shared_ptr<joynr::SubscriptionQos> qos,
                                                     joynr::SubscriptionRequest& subscriptionRequest));
     MOCK_METHOD1(unregisterSubscription, void(const std::string& subscriptionId));
     MOCK_METHOD1(touchSubscriptionState,void(const std::string& subscriptionId));
-};
-
-
-class MockPublicationManager : public joynr::PublicationManager {
-public:
-    using PublicationManager::PublicationManager;
-
-    MOCK_METHOD2(attributeValueChanged, void(const std::string& subscriptionId, const joynr::Variant& value));
 };
 
 class MockParticipantIdStorage : public joynr::ParticipantIdStorage {

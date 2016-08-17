@@ -25,13 +25,10 @@
 #include <chrono>
 
 #include "joynr/Util.h"
-#include "joynr/Variant.h"
 
 namespace joynr
 {
 INIT_LOGGER(JoynrMessage);
-
-static bool isJoynrMessageRegistered = Variant::registerType<JoynrMessage>("joynr.JoynrMessage");
 
 const std::string& JoynrMessage::HEADER_CONTENT_TYPE()
 {
@@ -70,6 +67,11 @@ const std::string& JoynrMessage::HEADER_REPLY_ADDRESS()
 {
     static const std::string headerReplyAddress("replyChannelId");
     return headerReplyAddress;
+}
+const std::string& JoynrMessage::HEADER_EFFORT()
+{
+    static const std::string headerEffort("effort");
+    return headerEffort;
 }
 const std::string& JoynrMessage::CUSTOM_HEADER_PREFIX()
 {
@@ -331,6 +333,21 @@ std::string JoynrMessage::getHeaderReplyAddress() const
 void JoynrMessage::setHeaderReplyAddress(const std::string& replyAddress)
 {
     setHeaderForKey(HEADER_REPLY_ADDRESS(), replyAddress);
+}
+
+bool JoynrMessage::containsHeaderEffort() const
+{
+    return containsHeader(HEADER_EFFORT());
+}
+
+std::string JoynrMessage::getHeaderEffort() const
+{
+    return getHeaderForKey(HEADER_EFFORT());
+}
+
+void JoynrMessage::setHeaderEffort(const std::string& effort)
+{
+    setHeaderForKey(HEADER_EFFORT(), effort);
 }
 
 } // namespace joynr

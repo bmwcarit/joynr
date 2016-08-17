@@ -16,15 +16,21 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
+#include <string>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <string>
-#include "tests/utils/MockObjects.h"
+
+#include "joynr/SubscriptionStop.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/Request.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+
+#include "tests/utils/MockObjects.h"
+#include "joynr/PrivateCopyAssign.h"
 
 using ::testing::A;
 using ::testing::_;

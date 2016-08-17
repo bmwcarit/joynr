@@ -36,6 +36,12 @@ define("joynr/dispatching/subscription/SubscriptionListener", [], function() {
         }
 
         /**
+         * Is called if subscription request has been successfully delivered to the provider
+         * @name SubscriptionListener#onSubscribed
+         */
+        this.onSubscribed = settings.onSubscribed;
+
+        /**
          * Is called if publication is received
          * @name SubscriptionListener#onReceive
          */

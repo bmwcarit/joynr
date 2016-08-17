@@ -19,15 +19,12 @@
 #ifndef SUBSCRIPTIONREQUEST_H
 #define SUBSCRIPTIONREQUEST_H
 
-#include "joynr/JoynrExport.h"
-#include "joynr/Logger.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/SubscriptionQos.h"
-
 #include <memory>
 #include <string>
 
-#include "joynr/Variant.h"
+#include "joynr/JoynrExport.h"
+#include "joynr/SubscriptionQos.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -57,14 +54,19 @@ public:
     std::string getSubscribeToName() const;
     void setSubscribeToName(const std::string& subscribedToName);
 
-    void setQos(const Variant& qos);
-    const Variant& getQos() const;
-
-    const SubscriptionQos* getSubscriptionQosPtr();
-
     std::string toString() const;
 
-private:
+    std::shared_ptr<SubscriptionQos> getQos() const;
+
+    virtual void setQos(std::shared_ptr<SubscriptionQos> qos);
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(subscriptionId), MUESLI_NVP(subscribedToName), MUESLI_NVP(qos));
+    }
+
+protected:
     /*
       SubscriptionRequest is used to store a subscription while Arbitration is still being done. To
       allow SubscriptionManager
@@ -74,11 +76,12 @@ private:
       */
     std::string subscriptionId;
     std::string subscribedToName;
-    Variant qos;
 
-    ADD_LOGGER(SubscriptionRequest);
+    std::shared_ptr<SubscriptionQos> qos;
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::SubscriptionRequest, "joynr.SubscriptionRequest");
 
 #endif // SUBSCRIPTIONREQUEST_H

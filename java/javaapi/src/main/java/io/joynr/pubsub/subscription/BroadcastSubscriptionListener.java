@@ -20,5 +20,19 @@ package io.joynr.pubsub.subscription;
  */
 
 public interface BroadcastSubscriptionListener {
+    /**
+     * Gets called when the subscription is successfully registered at the provider
+     *
+     * Since the onSubscribed callback is called by a communication middleware thread, it should
+     * not be blocked, wait for user interaction, or do larger computation.
+     */
+    void onSubscribed();
 
+    /**
+     * Gets called on every error that is detected on the subscription
+     *
+     * Since the onError callback is called by a communication middleware thread, it should not
+     * be blocked, wait for user interaction, or do larger computation.
+     */
+    void onError();
 }

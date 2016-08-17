@@ -27,6 +27,9 @@
 #include <string>
 #include <iostream>
 #include <signal.h>
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 using namespace joynr;
 
@@ -47,6 +50,11 @@ int main(int argc, char* argv[])
         std::cerr << "unable to call sigaltstack\n" << std::endl;
         exit(1);
     }
+
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+    // Register app at the dlt-daemon for logging
+    DLT_REGISTER_APP("JOYT", argv[0]);
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
     // Get a logger
     Logger logger("IltProviderApplication");

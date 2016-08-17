@@ -20,9 +20,27 @@ package io.joynr.integration.websocket;
  */
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.joynr.dispatching.JoynrMessageFactory;
+import io.joynr.dispatching.JoynrMessageProcessor;
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
+import io.joynr.messaging.websocket.WebSocketEndpointFactory;
+import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
+import io.joynr.messaging.websocket.WebSocketMessagingStub;
+import io.joynr.messaging.websocket.jetty.client.WebSocketJettyClientFactory;
+import io.joynr.messaging.websocket.server.WebSocketJettyServerFactory;
+import io.joynr.servlet.ServletUtil;
+import joynr.JoynrMessage;
+import joynr.OneWayRequest;
+import joynr.system.RoutingTypes.WebSocketAddress;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
+import joynr.system.RoutingTypes.WebSocketProtocol;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,24 +53,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.joynr.common.ExpiryDate;
-import io.joynr.dispatching.JoynrMessageFactory;
-import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.websocket.WebSocketEndpointFactory;
-import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
-import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
-import io.joynr.messaging.websocket.WebSocketMessagingStub;
-import io.joynr.messaging.websocket.jetty.client.WebSocketJettyClientFactory;
-import io.joynr.messaging.websocket.server.WebSocketJettyServerFactory;
-import io.joynr.servlet.ServletUtil;
-import joynr.JoynrMessage;
-import joynr.OneWayRequest;
-import joynr.system.RoutingTypes.WebSocketAddress;
-import joynr.system.RoutingTypes.WebSocketClientAddress;
-import joynr.system.RoutingTypes.WebSocketProtocol;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WebSocketTest {
@@ -84,7 +84,7 @@ public class WebSocketTest {
                 return null;
             }
         }).when(messageRouterMock).route(Mockito.any(JoynrMessage.class));
-        joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper());
+        joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new HashSet<JoynrMessageProcessor>());
     }
 
     private void configure(int maxMessageSize, long reconnectDelay, long websocketIdleTimeout) {
@@ -148,11 +148,8 @@ public class WebSocketTest {
 
     private void sendMessage() throws Throwable {
         OneWayRequest request = new OneWayRequest("method", new Object[0], new Class<?>[0]);
-        JoynrMessage msg = joynrMessageFactory.createOneWayRequest("fromID",
-                                                                   "toID",
-                                                                   request,
-                                                                   ExpiryDate.fromRelativeTtl(100000),
-                                                                   Collections.<String, String> emptyMap());
+        MessagingQos messagingQos = new MessagingQos(100000);
+        JoynrMessage msg = joynrMessageFactory.createOneWayRequest("fromID", "toID", request, messagingQos);
 
         webSocketMessagingStub.transmit(msg, new FailureAction() {
 

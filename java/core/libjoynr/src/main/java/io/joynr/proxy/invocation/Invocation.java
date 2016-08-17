@@ -25,15 +25,15 @@ import io.joynr.proxy.Future;
  * Invocation contains the generic, queuable information for a proxy call
  */
 
-public class Invocation {
+public class Invocation<T> {
 
-    private final Future<?> future;
+    private final Future<T> future;
 
-    public Invocation(Future<?> future) {
+    public Invocation(Future<T> future) {
         this.future = future;
     }
 
-    public Future<?> getFuture() {
+    public Future<T> getFuture() {
         return future;
     }
 }

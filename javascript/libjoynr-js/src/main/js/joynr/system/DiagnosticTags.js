@@ -95,6 +95,18 @@ define("joynr/system/DiagnosticTags", [], function() {
     };
 
     /**
+     * @param {Object} subscriptionReplyInfo
+     */
+    DiagnosticTags.forSubscriptionReply = function forSubscriptionReply(subscriptionReplyInfo) {
+        return {
+            diagnosticTag : "SubscriptionReply",
+            subscriptionId : subscriptionReplyInfo.subscriptionReply.subscriptionId,
+            to : subscriptionReplyInfo.to,
+            from : subscriptionReplyInfo.from
+        };
+    };
+
+    /**
      * @param {Object} subscriptionRequestInfo
      */
     DiagnosticTags.forSubscriptionRequest =

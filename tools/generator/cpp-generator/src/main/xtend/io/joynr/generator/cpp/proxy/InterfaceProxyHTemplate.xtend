@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,13 @@ import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 
 class InterfaceProxyHTemplate extends InterfaceTemplate {
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
+	@Inject extension InterfaceSubscriptionUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension BroadcastUtil
@@ -50,7 +52,7 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include <memory>
@@ -94,7 +96,6 @@ public:
 	);
 	«FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 		«var attributeName = attribute.joynrName»
-		«val returnType = attribute.typeName»
 
 		/**
 		 * @brief unsubscribes from attribute «attributeName.toFirstUpper»
@@ -104,31 +105,15 @@ public:
 			«className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 		}
 
-		/**
-		 * @brief creates a new subscription to attribute «attributeName.toFirstUpper»
-		 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-		 * @param subscriptionQos The subscription quality of service settings
-		 * @return the subscription id as string
-		 */
-		std::string subscribeTo«attributeName.toFirstUpper»(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos) override {
+		«produceSubscribeToAttributeComments(attribute)»
+		«produceSubscribeToAttributeSignature(attribute)» override {
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
 						subscriptionQos);
 		}
 
-		/**
-		 * @brief updates an existing subscription to attribute «attributeName.toFirstUpper»
-		 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-		 * @param subscriptionQos The subscription quality of service settings
-		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
-		 * @return the subscription id as string
-		 */
-		std::string subscribeTo«attributeName.toFirstUpper»(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos,
-					std::string& subscriptionId) override{
+		«produceUpdateAttributeSubscriptionComments(attribute)»
+		«produceUpdateAttributeSubscriptionSignature(attribute)» override{
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
 						subscriptionQos,
@@ -138,7 +123,6 @@ public:
 
 	«FOR broadcast: francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
-		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 
 		/**
 		 * @brief unsubscribes from broadcast «broadcastName.toFirstUpper»
@@ -148,76 +132,22 @@ public:
 			«className»Base::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
 		}
 
-		«IF isSelective(broadcast)»
-			/**
-			 * @brief subscribes to selective broadcast «broadcastName.toFirstUpper» with filter parameters
-			 * @param filterParameters The filter parameters for selection of suitable broadcasts
-			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-			 * @param subscriptionQos The subscription quality of service settings
-			 * @return the subscription id as string
-			 */
-			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
-						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos) override {
-				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-							filterParameters,
-							subscriptionListener,
-							subscriptionQos);
-			}
+		«produceSubscribeToBroadcastComments(broadcast)»
+		«produceSubscribeToBroadcastSignature(broadcast, francaIntf)» override {
+			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(«IF isSelective(broadcast)»
+						filterParameters,«ENDIF»
+						subscriptionListener,
+						subscriptionQos);
+		}
 
-			/**
-			 * @brief updates an existing subscription to selective broadcast «broadcastName.toFirstUpper» with filter parameters
-			 * @param filterParameters The filter parameters for selection of suitable broadcasts
-			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-			 * @param subscriptionQos The subscription quality of service settings
-			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
-			 * @return the subscription id as string
-			 */
-			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
-						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos,
-						std::string& subscriptionId) override {
-				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-							filterParameters,
-							subscriptionListener,
-							subscriptionQos,
-							subscriptionId);
-			}
-		«ELSE»
-			/**
-			 * @brief subscribes to broadcast «broadcastName.toFirstUpper»
-			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-			 * @param subscriptionQos The subscription quality of service settings
-			 * @return the subscription id as string
-			 */
-			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos) override {
-				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-							subscriptionListener,
-							subscriptionQos);
-			}
-
-			/**
-			 * @brief updates an existing subscription to broadcast «broadcastName.toFirstUpper»
-			 * @param filterParameters The filter parameters for selection of suitable broadcasts
-			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
-			 * @param subscriptionQos The subscription quality of service settings
-			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
-			 * @return the subscription id as string
-			 */
-			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos,
-						std::string& subscriptionId) override {
-				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-							subscriptionListener,
-							subscriptionQos,
-							subscriptionId);
-			}
-		«ENDIF»
+		«produceUpdateBroadcastSubscriptionComments(broadcast)»
+		«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf)» override {
+			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(«IF isSelective(broadcast)»
+						filterParameters,«ENDIF»
+						subscriptionListener,
+						subscriptionQos,
+						subscriptionId);
+		}
 	«ENDFOR»
 
 	/** @brief Destructor */

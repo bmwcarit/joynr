@@ -21,6 +21,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include "JoynrTest.h"
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
@@ -30,6 +31,7 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/exceptions/JoynrException.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -65,7 +67,8 @@ public:
         domainName("cppEnd2EndSubscriptionTest_Domain" + uuid),
         semaphore(0),
         registerProviderWait(1000),
-        subscribeToAttributeWait(2000)
+        subscribeToAttributeWait(2000),
+        providerParticipantId()
 
     {
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
@@ -85,6 +88,9 @@ public:
     }
 
     void TearDown() {
+        if (!providerParticipantId.empty()) {
+            runtime1->unregisterProvider(providerParticipantId);
+        }
         bool deleteChannel = true;
         runtime1->stop(deleteChannel);
         runtime2->stop(deleteChannel);
@@ -123,9 +129,39 @@ public:
     }
 
 private:
+    std::string providerParticipantId;
     DISALLOW_COPY_AND_ASSIGN(End2EndSubscriptionTest);
 
 protected:
+    std::shared_ptr<tests::DefaulttestProvider> registerProvider() {
+        auto testProvider = std::make_shared<tests::DefaulttestProvider>();
+        providerParticipantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+
+        //This wait is necessary, because registerProvider is async, and a lookup could occur
+        // before the register has finished.
+        std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
+        return testProvider;
+    }
+
+    tests::testProxy* buildProxy() {
+        ProxyBuilder<tests::testProxy>* testProxyBuilder
+                = runtime2->createProxyBuilder<tests::testProxy>(domainName);
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
+        discoveryQos.setRetryIntervalMs(250);
+
+        std::int64_t qosRoundTripTTL = 500;
+
+        tests::testProxy* testProxy = testProxyBuilder
+                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                ->setCached(false)
+                ->setDiscoveryQos(discoveryQos)
+                ->build();
+        delete testProxyBuilder;
+        return testProxy;
+    }
+
     template <typename ChangeAttribute, typename SubscribeTo, typename T>
     void testOneShotAttributeSubscription(const T& expectedValue,
                                           SubscribeTo subscribeTo,
@@ -141,32 +177,14 @@ protected:
         std::shared_ptr<ISubscriptionListener<T>> subscriptionListener(
                         mockListener);
 
-        auto testProvider = std::make_shared<tests::DefaulttestProvider>();
-        runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
-
-        //This wait is necessary, because registerProvider is async, and a lookup could occur
-        // before the register has finished.
-        std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
+        std::shared_ptr<tests::DefaulttestProvider> testProvider = registerProvider();
 
         (*testProvider.*setAttribute)(expectedValue, [](){}, [](const joynr::exceptions::ProviderRuntimeException&) {});
-        ProxyBuilder<tests::testProxy>* testProxyBuilder
-                = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-        DiscoveryQos discoveryQos;
-        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeoutMs(1000);
-        discoveryQos.setRetryIntervalMs(250);
 
-        std::int64_t qosRoundTripTTL = 500;
-
-        // Send a message and expect to get a result
-        tests::testProxy* testProxy = testProxyBuilder
-                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                ->setCached(false)
-                ->setDiscoveryQos(discoveryQos)
-                ->build();
+        tests::testProxy* testProxy = buildProxy();
 
         std::int64_t minInterval_ms = 50;
-        OnChangeSubscriptionQos subscriptionQos(
+        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                     500000,   // validity_ms
                     minInterval_ms);  // minInterval_ms
 
@@ -174,15 +192,101 @@ protected:
         waitForAttributeSubscriptionArrivedAtProvider(testProvider, attributeName);
 
         // Wait for a subscription message to arrive
-        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+        EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
 
-        delete testProxyBuilder;
         delete testProxy;
     }
 };
 
 } // namespace joynr
 
+TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration) {
+    auto mockListener = new MockSubscriptionListenerOneType<int32_t>();
+
+    // Use a semaphore to wait for calls to the mock listener
+    std::string subscriptionIdFromListener;
+    std::string subscriptionIdFromFuture;
+    ON_CALL(*mockListener, onSubscribed(_))
+            .WillByDefault(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+
+    std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
+
+    std::shared_ptr<tests::DefaulttestProvider> testProvider = registerProvider();
+
+    testProvider->setTestAttribute(42, [](){}, [](const joynr::exceptions::ProviderRuntimeException& error) {
+        ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage(); });
+
+    tests::testProxy* testProxy = buildProxy();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
+
+    waitForAttributeSubscriptionArrivedAtProvider(testProvider, "testAttribute");
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+
+    delete testProxy;
+}
+
+TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
+    auto mockListener = new MockSubscriptionListenerOneType<int32_t>();
+
+    // Use a semaphore to wait for calls to the mock listener
+    std::string subscriptionIdFromListener;
+    std::string subscriptionIdFromFuture;
+    ON_CALL(*mockListener, onSubscribed(_))
+            .WillByDefault(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+
+    std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
+
+    std::shared_ptr<tests::DefaulttestProvider> testProvider = registerProvider();
+
+    testProvider->setTestAttribute(42, [](){}, [](const joynr::exceptions::ProviderRuntimeException& error) {
+        ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage(); });
+
+    tests::testProxy* testProxy = buildProxy();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
+
+    waitForAttributeSubscriptionArrivedAtProvider(testProvider, "testAttribute");
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+
+    // update subscription
+    subscriptionIdFuture = nullptr;
+    std::string subscriptionId = subscriptionIdFromFuture;
+    subscriptionIdFromFuture.clear();
+    subscriptionIdFromListener.clear();
+    subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos, subscriptionId);
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+    // subscription id from update is the same as the original subscription id
+    EXPECT_EQ(subscriptionId, subscriptionIdFromFuture);
+
+    delete testProxy;
+}
 
 TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute) {
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
@@ -190,7 +294,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute) {
     testOneShotAttributeSubscription(expectedTestEnum,
                                  [](tests::testProxy* testProxy,
                                     std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
-                                    const OnChangeSubscriptionQos& subscriptionQos) {
+                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos) {
                                     testProxy->subscribeToEnumAttribute(subscriptionListener, subscriptionQos);
                                  },
                                  &tests::testProvider::setEnumAttribute,
@@ -203,7 +307,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
     testOneShotAttributeSubscription(expectedByteBuffer,
                                  [](tests::testProxy* testProxy,
                                     std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
-                                    const OnChangeSubscriptionQos& subscriptionQos) {
+                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos) {
                                     testProxy->subscribeToByteBufferAttribute(subscriptionListener, subscriptionQos);
                                  },
                                  &tests::testProvider::setByteBufferAttribute,

@@ -35,7 +35,6 @@
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/PublicationManager.h"
-#include "joynr/IBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
 
 namespace joynr

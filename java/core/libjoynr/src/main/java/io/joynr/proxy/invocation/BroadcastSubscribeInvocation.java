@@ -41,7 +41,7 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
     private final BroadcastFilterParameters filterParameters;
     private final Class<?>[] outParameterTypes;
 
-    public BroadcastSubscribeInvocation(Method method, Object[] args, Future<?> future) {
+    public BroadcastSubscribeInvocation(Method method, Object[] args, Future<String> future) {
         super(future);
         JoynrRpcBroadcast broadcastAnnotation = method.getAnnotation(JoynrRpcBroadcast.class);
         broadcastName = broadcastAnnotation.broadcastName();
@@ -68,7 +68,7 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
     public BroadcastSubscribeInvocation(String broadcastName,
                                         BroadcastSubscriptionListener broadcastSubscriptionListener,
                                         OnChangeSubscriptionQos qos,
-                                        Future<?> future) {
+                                        Future<String> future) {
         super(future);
         this.broadcastName = broadcastName;
         this.filterParameters = null;

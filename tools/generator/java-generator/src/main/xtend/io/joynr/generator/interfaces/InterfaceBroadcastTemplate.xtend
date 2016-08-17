@@ -44,6 +44,7 @@ package «packagePath»;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
+import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
 import joynr.BroadcastFilterParameters;
@@ -62,7 +63,6 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 
 	public interface «listenerInterface» extends BroadcastSubscriptionListener {
 		public void onReceive(«broadcast.commaSeperatedTypedOutputParameterList»);
-		public void onError();
 	}
 
 	public class «broadcastName.toFirstUpper»BroadcastAdapter implements «listenerInterface» {
@@ -70,6 +70,9 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 			// empty implementation
 		}
 		public void onError() {
+			// empty implementation
+		}
+		public void onSubscribed() {
 			// empty implementation
 		}
 	}
@@ -96,25 +99,25 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 		}
 
 		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» broadcastListener,
 				OnChangeSubscriptionQos subscriptionQos,
 				«filterParameterType» filterParameters);
 
 		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» broadcastListener,
 				OnChangeSubscriptionQos subscriptionQos,
 				«filterParameterType» filterParameters,
 				String subscriptionId);
 	«ELSE»
 		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» subscriptionListener,
 				OnChangeSubscriptionQos subscriptionQos);
 
 		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» subscriptionListener,
 				OnChangeSubscriptionQos subscriptionQos,
 				String subscriptionId);

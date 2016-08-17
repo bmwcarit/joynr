@@ -89,3 +89,21 @@ TEST_F(MessagingQosTest, addManyCustomHeaders_invalidData)
     values["broken"] = "😳";
     EXPECT_THROW(qos.putAllCustomMessageHeaders(values), std::invalid_argument);
 }
+
+TEST_F(MessagingQosTest, defaultEffort)
+{
+    EXPECT_EQ(MessagingQosEffort::Enum::NORMAL, qos.getEffort());
+}
+
+TEST_F(MessagingQosTest, setCustomEffort)
+{
+    EXPECT_EQ(MessagingQosEffort::Enum::NORMAL, qos.getEffort());
+    qos.setEffort(MessagingQosEffort::Enum::BEST_EFFORT);
+    EXPECT_EQ(MessagingQosEffort::Enum::BEST_EFFORT, qos.getEffort());
+}
+
+TEST_F(MessagingQosTest, constructorWithCustomEffort)
+{
+    MessagingQos customEffortInstance = MessagingQos(0L, MessagingQosEffort::Enum::BEST_EFFORT);
+    EXPECT_EQ(MessagingQosEffort::Enum::BEST_EFFORT, customEffortInstance.getEffort());
+}

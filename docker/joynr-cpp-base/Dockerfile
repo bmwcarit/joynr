@@ -3,6 +3,11 @@ FROM joynr-base:latest
 ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 
 ###################################################
+# enable gold linker
+###################################################
+RUN  update-alternatives  --set ld /usr/bin/ld.gold
+
+###################################################
 # install qt
 ###################################################
 RUN dnf update -y \
@@ -33,27 +38,13 @@ RUN dnf update -y \
 	&& dnf clean all
 
 ###################################################
-# install jsmn
-###################################################
-
-RUN cd /opt \
-    && git clone https://github.com/zserge/jsmn.git \
-    && cd jsmn \
-    && git checkout 572ace5 \
-    && CFLAGS=-fPIC make \
-    && cp libjsmn.a /usr/local/lib \
-    && cp jsmn.h /usr/local/include \
-    && cd /opt/ \
-    && rm -rf jsmn
-
-###################################################
 # install spdlog
 ###################################################
 
 RUN cd /opt \
     && git clone https://github.com/gabime/spdlog.git \
     && cd spdlog \
-    && git checkout e91e1b8 \
+    && git checkout 4fcde3b \
     && mkdir build \
     && cd build \
     && cmake .. \
@@ -75,6 +66,27 @@ RUN cd /opt \
     && make install -j"$(nproc)" \
     && cd /opt/ \
     && rm -rf websocketpp
+
+###################################################
+# install DLT
+###################################################
+
+RUN cd /opt \
+    && git clone http://git.projects.genivi.org/dlt-daemon.git \
+    && cd dlt-daemon \
+    && git checkout v2.15.0 \
+    && sed -i 's/libdir=${exec_prefix}\/lib/libdir=@CMAKE_INSTALL_FULL_LIBDIR@/' automotive-dlt.pc.in \
+    && sed -i 's/includedir=${exec_prefix}\/include/includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@/' automotive-dlt.pc.in \
+    && mkdir build \
+    && cd build \
+    && cmake .. -DWITH_DLT_DBUS=OFF -DWITH_DLT_TESTS=OFF -DWITH_DLT_EXAMPLES=OFF \
+    && make install -j"$(nproc)" \
+    && cd /opt/ \
+    && rm -rf dlt-daemon \
+    && echo '/usr/local/lib64' > /etc/ld.so.conf.d/dlt.conf
+
+# DLT installs itself in /usr/local/lib64
+ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib64/pkgconfig
 
 ###################################################
 # Copy build scripts

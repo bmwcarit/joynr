@@ -179,6 +179,7 @@ will be sent directly to the url registered in hostPath.
 * For details about using joynr with Java see [joynr Java Developer Guide](java.md).
 * For details about using joynr with C++ see [joynr C\+\+ Developer Guide](cplusplus.md).
 * For details about using joynr with JavaScript see [joynr JavaScript Developer Guide](javascript.md).
+* For details about using joynr Javascript tests see [joynr Javascript Testing](javascript_testing.md)
 
 
 * For building joynr Java yourself see [Building joynr Java and common components](java_building_joynr.md)

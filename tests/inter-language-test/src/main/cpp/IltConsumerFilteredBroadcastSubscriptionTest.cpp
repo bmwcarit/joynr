@@ -20,30 +20,33 @@
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/interlanguagetest/TestInterfaceBroadcastWithFilteringBroadcastFilterParameters.h"
+#include "joynr/Semaphore.h"
 
 using namespace ::testing;
 
 class IltConsumerFilteredBroadcastSubscriptionTest : public IltAbstractConsumerTest
 {
 public:
-    IltConsumerFilteredBroadcastSubscriptionTest() = default;
+    IltConsumerFilteredBroadcastSubscriptionTest()
+            : subscriptionIdFutureTimeout(10000),
+              subscriptionRegisteredTimeout(10000),
+              publicationTimeout(10000)
+    {
+    }
 
-    static volatile bool subscribeBroadcastWithFilteringCallbackDone;
-    static volatile bool subscribeBroadcastWithFilteringCallbackResult;
+protected:
+    std::uint16_t subscriptionIdFutureTimeout;
+    std::chrono::milliseconds subscriptionRegisteredTimeout;
+    std::chrono::milliseconds publicationTimeout;
 };
 
 joynr::Logger iltConsumerFilteredBroadcastSubscriptionTestLogger(
         "IltConsumerFilteredBroadcastSubscriptionTest");
 
-// variables that are to be changed inside callbacks must be declared global
-volatile bool
-        IltConsumerFilteredBroadcastSubscriptionTest::subscribeBroadcastWithFilteringCallbackDone =
-                false;
-volatile bool IltConsumerFilteredBroadcastSubscriptionTest::
-        subscribeBroadcastWithFilteringCallbackResult = false;
-
-class BroadcastWithFilteringBroadcastListener
-        : public SubscriptionListener<
+class MockBroadcastWithFilteringBroadcastListener
+        : public joynr::ISubscriptionListener<
                   std::string,
                   std::vector<std::string>,
                   joynr::interlanguagetest::namedTypeCollection2::
@@ -53,81 +56,67 @@ class BroadcastWithFilteringBroadcastListener
                           joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>>
 {
 public:
-    BroadcastWithFilteringBroadcastListener()
-    {
-    }
-
-    ~BroadcastWithFilteringBroadcastListener()
-    {
-    }
-
-    void onReceive(const std::string& stringOut,
-                   const std::vector<std::string>& stringArrayOut,
-                   const joynr::interlanguagetest::namedTypeCollection2::
-                           ExtendedTypeCollectionEnumerationInTypeCollection::Enum& enumerationOut,
-                   const joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray&
-                           structWithStringArrayOut,
-                   const std::vector<
-                           joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>&
-                           structWithStringArrayArrayOut)
-    {
-        JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
-                       "callSubscribeBroadcastWithFiltering - callback - got broadcast");
-        if (!IltUtil::checkStringArray(stringArrayOut)) {
-            JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
-                           "callSubscribeBroadcastWithFiltering - callback - invalid "
-                           "stringArrayOut content");
-            IltConsumerFilteredBroadcastSubscriptionTest::
-                    subscribeBroadcastWithFilteringCallbackResult = false;
-        } else if (enumerationOut != joynr::interlanguagetest::namedTypeCollection2::
-                                             ExtendedTypeCollectionEnumerationInTypeCollection::
-                                                     ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
-            JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
-                           "callSubscribeBroadcastWithFiltering - callback - invalid "
-                           "enumerationOut content");
-            IltConsumerFilteredBroadcastSubscriptionTest::
-                    subscribeBroadcastWithFilteringCallbackResult = false;
-        } else if (!IltUtil::checkStructWithStringArray(structWithStringArrayOut)) {
-            JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
-                           "callSubscribeBroadcastWithFiltering - callback - invalid "
-                           "structWithStringArrayOut content");
-            IltConsumerFilteredBroadcastSubscriptionTest::
-                    subscribeBroadcastWithFilteringCallbackResult = false;
-        } else if (!IltUtil::checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
-            JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
-                           "callSubscribeBroadcastWithFiltering - callback - invalid "
-                           "structWithStringArrayArrayOut content");
-            IltConsumerFilteredBroadcastSubscriptionTest::
-                    subscribeBroadcastWithFilteringCallbackResult = false;
-        } else {
-            JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
-                           "callSubscribeBroadcastWithFiltering - callback - content "
-                           "OK");
-            IltConsumerFilteredBroadcastSubscriptionTest::
-                    subscribeBroadcastWithFilteringCallbackResult = true;
-        }
-        IltConsumerFilteredBroadcastSubscriptionTest::subscribeBroadcastWithFilteringCallbackDone =
-                true;
-    }
-
-    void onError(const joynr::exceptions::JoynrRuntimeException& error)
-    {
-        JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
-                       "callSubscribeBroadcastWithFiltering - callback - got error");
-        IltConsumerFilteredBroadcastSubscriptionTest::
-                subscribeBroadcastWithFilteringCallbackResult = false;
-        IltConsumerFilteredBroadcastSubscriptionTest::subscribeBroadcastWithFilteringCallbackDone =
-                true;
-    }
+    MOCK_METHOD1(onSubscribed, void(const std::string& subscriptionId));
+    MOCK_METHOD5(
+            onReceive,
+            void(const std::string& stringOut,
+                 const std::vector<std::string>& stringArrayOut,
+                 const joynr::interlanguagetest::namedTypeCollection2::
+                         ExtendedTypeCollectionEnumerationInTypeCollection::Enum& enumerationOut,
+                 const joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray&
+                         structWithStringArrayOut,
+                 const std::vector<
+                         joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>&
+                         structWithStringArrayArrayOut));
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
 
 TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithFiltering)
 {
+    Semaphore subscriptionRegisteredSemaphore;
+    Semaphore publicationSemaphore;
+    std::vector<std::string> stringArrayOut;
+    joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray structWithStringArrayOut;
+    std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>
+            structWithStringArrayArrayOut;
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
-    bool result;
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
+
+    auto mockBroadcastWithFilteringBroadcastListener =
+            std::make_shared<MockBroadcastWithFilteringBroadcastListener>();
+    ON_CALL(*mockBroadcastWithFilteringBroadcastListener, onSubscribed(_))
+            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
+    EXPECT_CALL(*mockBroadcastWithFilteringBroadcastListener, onError(_)).Times(0).WillRepeatedly(
+            ReleaseSemaphore(&publicationSemaphore));
+    EXPECT_CALL(*mockBroadcastWithFilteringBroadcastListener,
+                onReceive(Eq("fireBroadcast"),
+                          _,
+                          Eq(joynr::interlanguagetest::namedTypeCollection2::
+                                     ExtendedTypeCollectionEnumerationInTypeCollection::
+                                             ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION),
+                          _,
+                          _))
+            .Times(1)
+            .WillRepeatedly(DoAll(SaveArg<1>(&stringArrayOut),
+                                  SaveArg<3>(&structWithStringArrayOut),
+                                  SaveArg<4>(&structWithStringArrayArrayOut),
+                                  ReleaseSemaphore(&publicationSemaphore)));
+    EXPECT_CALL(*mockBroadcastWithFilteringBroadcastListener,
+                onReceive(Eq("doNotFireBroadcast"),
+                          _,
+                          Eq(joynr::interlanguagetest::namedTypeCollection2::
+                                     ExtendedTypeCollectionEnumerationInTypeCollection::
+                                             ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION),
+                          _,
+                          _))
+            .Times(0)
+            .WillRepeatedly(DoAll(SaveArg<1>(&stringArrayOut),
+                                  SaveArg<3>(&structWithStringArrayOut),
+                                  SaveArg<4>(&structWithStringArrayArrayOut),
+                                  ReleaseSemaphore(&publicationSemaphore)));
     typedef std::shared_ptr<ISubscriptionListener<
             std::string,
             std::vector<std::string>,
@@ -136,15 +125,15 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
             joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray,
             std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>>>
             listenerType;
+    listenerType listener(mockBroadcastWithFilteringBroadcastListener);
     JOYNR_ASSERT_NO_THROW({
-        listenerType listener(new BroadcastWithFilteringBroadcastListener());
         joynr::interlanguagetest::TestInterfaceBroadcastWithFilteringBroadcastFilterParameters
                 filterParameters;
 
         std::string filterStringOfInterest = "fireBroadcast";
         std::vector<std::string> filterStringArrayOfInterest = IltUtil::createStringArray();
         std::string filterStringArrayOfInterestJson(
-                JsonSerializer::serialize(filterStringArrayOfInterest));
+                joynr::serializer::serializeToJson(filterStringArrayOfInterest));
 
         joynr::interlanguagetest::namedTypeCollection2::
                 ExtendedTypeCollectionEnumerationInTypeCollection::Enum filterEnumOfInterest =
@@ -160,12 +149,12 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
         joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray
                 filterStructWithStringArray = IltUtil::createStructWithStringArray();
         std::string filterStructWithStringArrayJson(
-                JsonSerializer::serialize(filterStructWithStringArray));
+                joynr::serializer::serializeToJson(filterStructWithStringArray));
 
         std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>
                 filterStructWithStringArrayArray = IltUtil::createStructWithStringArrayArray();
         std::string filterStructWithStringArrayArrayJson(
-                JsonSerializer::serialize(filterStructWithStringArrayArray));
+                joynr::serializer::serializeToJson(filterStructWithStringArrayArray));
 
         filterParameters.setStringOfInterest(filterStringOfInterest);
         filterParameters.setStringArrayOfInterest(filterStringArrayOfInterestJson);
@@ -174,23 +163,32 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
         filterParameters.setStructWithStringArrayArrayOfInterest(
                 filterStructWithStringArrayArrayJson);
 
-        subscriptionId = testInterfaceProxy->subscribeToBroadcastWithFilteringBroadcast(
-                filterParameters, listener, subscriptionQos);
-        usleep(1000000);
+        JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
+                       "callSubscribeBroadcastWithFiltering - register subscription");
+        testInterfaceProxy->subscribeToBroadcastWithFilteringBroadcast(
+                                    filterParameters, listener, subscriptionQos)
+                ->get(subscriptionIdFutureTimeout, subscriptionId);
+
+        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
+        JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
+                       "callSubscribeBroadcastWithFiltering - subscription registered");
+
+        JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
+                       "callSubscribeBroadcastWithFiltering - fire broadast \"fireBroadcast\"");
         std::string stringArg = "fireBroadcast";
         testInterfaceProxy->methodToFireBroadcastWithFiltering(stringArg);
-        waitForChange(subscribeBroadcastWithFilteringCallbackDone, 1000);
-        ASSERT_TRUE(subscribeBroadcastWithFilteringCallbackDone);
-        ASSERT_TRUE(subscribeBroadcastWithFilteringCallbackResult);
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
-        // reset counter for 2nd test
-        subscribeBroadcastWithFilteringCallbackDone = false;
-        subscribeBroadcastWithFilteringCallbackResult = false;
+        EXPECT_TRUE(IltUtil::checkStringArray(stringArrayOut));
+        EXPECT_TRUE(IltUtil::checkStructWithStringArray(structWithStringArrayOut));
+        EXPECT_TRUE(IltUtil::checkStructWithStringArrayArray(structWithStringArrayArrayOut));
 
+        JOYNR_LOG_INFO(
+                iltConsumerFilteredBroadcastSubscriptionTestLogger,
+                "callSubscribeBroadcastWithFiltering - fire broadast \"doNotFireBroadcast\"");
         stringArg = "doNotFireBroadcast";
         testInterfaceProxy->methodToFireBroadcastWithFiltering(stringArg);
-        waitForChange(subscribeBroadcastWithFilteringCallbackDone, 1000);
-        ASSERT_FALSE(subscribeBroadcastWithFilteringCallbackDone);
+        ASSERT_FALSE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
     });

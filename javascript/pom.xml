@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>0.19.5</version>
+		<version>0.20.0</version>
 	</parent>
 
 	<modules>

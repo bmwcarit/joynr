@@ -23,7 +23,6 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 
 class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
@@ -32,7 +31,6 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
-	@Inject private extension BroadcastUtil
 
 	override generate()
 '''
@@ -44,18 +42,25 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include <string>
+#include <vector>
+#include <memory>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/AbstractJoynrProvider.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(francaIntf)»
+
+// forward declare broadcast filter classes
+«FOR broadcast: francaIntf.broadcasts.filter[selective]»
+	class «getBroadcastFilterClassName(broadcast)»;
+«ENDFOR»
 
 /** @brief Abstract provider class for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»AbstractProvider :
@@ -76,6 +81,18 @@ public:
 	 */
 	std::string getInterfaceName() const override;
 «IF !francaIntf.attributes.isNullOrEmpty || !francaIntf.broadcasts.isNullOrEmpty»
+
+    «FOR broadcast: francaIntf.broadcasts»
+        «val broadcastName = broadcast.joynrName»
+        «IF broadcast.selective»
+            «val broadCastFilterClassName = interfaceName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
+            /**
+             * @brief Adds a specific broadcastFilter
+             * @param filter an shared_ptr instance of «broadCastFilterClassName»
+             */
+            void addBroadcastFilter(std::shared_ptr<«broadCastFilterClassName»> filter);
+        «ENDIF»
+    «ENDFOR»
 
 	protected:
 «ENDIF»
@@ -101,7 +118,7 @@ public:
 		// broadcasts
 	«ENDIF»
 	«FOR broadcast: francaIntf.broadcasts»
-		«var broadcastName = broadcast.joynrName»
+		«val broadcastName = broadcast.joynrName»
 		/**
 		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete provider to signal an occured
 		 * event. It is used to implement broadcast publications.
@@ -118,6 +135,11 @@ public:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»AbstractProvider);
+
+	«FOR broadcast: francaIntf.broadcasts.filter[selective]»
+		«val broadcastName = broadcast.joynrName»
+		std::vector<std::shared_ptr<«getBroadcastFilterClassName(broadcast)»>> «broadcastName»Filters;
+	«ENDFOR»
 };
 «getNamespaceEnder(francaIntf)»
 

@@ -29,6 +29,7 @@ public:
     MockLocalCapabilitiesDirectoryCallback();
 
     void capabilitiesReceived(const std::vector<joynr::CapabilityEntry>& capabilities) override;
+    void onError(const joynr::exceptions::JoynrRuntimeException&) override;
 
     std::vector<joynr::CapabilityEntry> getResults(int timeout);
     void clearResults();

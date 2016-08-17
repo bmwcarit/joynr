@@ -20,15 +20,14 @@ package io.joynr.accesscontrol.broadcastlistener;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastListener;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastAdapter;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LdacOwnerAccessControlEntryChangedBroadcastListener implements
-        OwnerAccessControlEntryChangedBroadcastListener {
+public class LdacOwnerAccessControlEntryChangedBroadcastListener extends OwnerAccessControlEntryChangedBroadcastAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(LdacOwnerAccessControlEntryChangedBroadcastListener.class);
 
     private DomainAccessControlStore localDomainAccessStore;
@@ -37,7 +36,6 @@ public class LdacOwnerAccessControlEntryChangedBroadcastListener implements
         this.localDomainAccessStore = domainAccessControlStore;
     }
 
-    @Override
     public void onReceive(ChangeType typeOfChange, OwnerAccessControlEntry newOwnerAce) {
         if (!typeOfChange.equals(ChangeType.REMOVE)) {
             localDomainAccessStore.updateOwnerAccessControlEntry(newOwnerAce);
@@ -52,7 +50,6 @@ public class LdacOwnerAccessControlEntryChangedBroadcastListener implements
         }
     }
 
-    @Override
     public void onError() {
         LOG.error("Update ownerAce failed!");
     }

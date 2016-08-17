@@ -41,7 +41,11 @@ JoynrTimePoint ObjectWithDecayTime::getDecayTime() const
 
 bool ObjectWithDecayTime::isExpired() const
 {
-    return std::chrono::system_clock::now() > decayTime;
+    auto now = std::chrono::system_clock::now();
+    std::int64_t nowInMs =
+            std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    std::int64_t decayTimeInMs = decayTime.time_since_epoch().count();
+    return nowInMs > decayTimeInMs;
 }
 
 } // namespace joynr

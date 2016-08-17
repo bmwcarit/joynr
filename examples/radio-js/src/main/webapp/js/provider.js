@@ -274,7 +274,7 @@ $(function() { // DOM ready
                                 customParameters : [],
                                 priority : Date.now(),
                                 scope : joynr.types.ProviderScope.GLOBAL,
-                                onChangeSubscriptions : true
+                                supportsOnChangeSubscriptions : true
                             })).then(
                             function() {
                                 log(

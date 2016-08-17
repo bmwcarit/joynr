@@ -46,7 +46,12 @@ public class ExpiryDate {
      */
     public static ExpiryDate fromRelativeTtl(long relativeTtl) {
         long creationTime = System.currentTimeMillis();
-        long expiryDate = creationTime + relativeTtl;
+        long expiryDate;
+        try {
+            expiryDate = Math.addExact(creationTime, relativeTtl);
+        } catch (ArithmeticException exception) {
+            expiryDate = Long.MAX_VALUE;
+        }
         return new ExpiryDate(relativeTtl, expiryDate, creationTime);
     }
 
@@ -57,7 +62,12 @@ public class ExpiryDate {
      */
     public static ExpiryDate fromAbsolute(long expiryDate) {
         long creationTime = System.currentTimeMillis();
-        long relativeTtl = expiryDate - creationTime;
+        long relativeTtl;
+        try {
+            relativeTtl = Math.subtractExact(expiryDate, creationTime);
+        } catch (ArithmeticException exception) {
+            relativeTtl = Long.MIN_VALUE;
+        }
         return new ExpiryDate(relativeTtl, expiryDate, creationTime);
     }
 

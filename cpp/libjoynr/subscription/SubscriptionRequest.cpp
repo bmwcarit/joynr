@@ -18,7 +18,6 @@
  */
 #include "joynr/SubscriptionRequest.h"
 
-#include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -27,15 +26,7 @@
 namespace joynr
 {
 
-INIT_LOGGER(SubscriptionRequest);
-
-static const bool isSubscriptionRequestRegistered =
-        Variant::registerType<SubscriptionRequest>("joynr.SubscriptionRequest");
-
-SubscriptionRequest::SubscriptionRequest()
-        : subscriptionId(),
-          subscribedToName(),
-          qos(Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos()))
+SubscriptionRequest::SubscriptionRequest() : subscriptionId(), subscribedToName(), qos()
 {
     subscriptionId = util::createUuid();
 }
@@ -50,32 +41,9 @@ std::string SubscriptionRequest::getSubscribeToName() const
     return subscribedToName;
 }
 
-const Variant& SubscriptionRequest::getQos() const
-{
-    return qos;
-}
-
-const SubscriptionQos* SubscriptionRequest::getSubscriptionQosPtr()
-{
-    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
-        return &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
-    }
-    if (qos.is<PeriodicSubscriptionQos>()) {
-        return &qos.get<PeriodicSubscriptionQos>();
-    }
-    if (qos.is<OnChangeSubscriptionQos>()) {
-        return &qos.get<OnChangeSubscriptionQos>();
-    }
-    if (qos.is<SubscriptionQos>()) {
-        return &qos.get<SubscriptionQos>();
-    }
-
-    return nullptr;
-}
-
 bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const
 {
-    bool equal = getQos() == subscriptionRequest.getQos();
+    bool equal = *qos == *(subscriptionRequest.qos);
     return subscriptionId == subscriptionRequest.getSubscriptionId() &&
            subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
 }
@@ -90,14 +58,19 @@ void SubscriptionRequest::setSubscribeToName(const std::string& attributeName)
     this->subscribedToName = attributeName;
 }
 
-void SubscriptionRequest::setQos(const Variant& qos)
-{
-    this->qos = qos;
-}
-
 std::string SubscriptionRequest::toString() const
 {
-    return JsonSerializer::serialize(*this);
+    return joynr::serializer::serializeToJson(*this);
+}
+
+std::shared_ptr<SubscriptionQos> SubscriptionRequest::getQos() const
+{
+    return qos;
+}
+
+void SubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
+{
+    this->qos = std::move(qos);
 }
 
 } // namespace joynr

@@ -37,6 +37,7 @@ define(
             "joynr/types/ProviderQos",
             "joynr/types/ProviderScope",
             "joynr/dispatching/types/SubscriptionPublication",
+            "joynr/exceptions/SubscriptionException",
             "joynr/util/LongTimer",
             "uuid",
             "Date",
@@ -59,6 +60,7 @@ define(
                 ProviderQos,
                 ProviderScope,
                 SubscriptionPublication,
+                SubscriptionException,
                 LongTimer,
                 uuid,
                 Date,
@@ -69,12 +71,14 @@ define(
             describe(
                     "libjoynr-js.joynr.dispatching.subscription.PublicationManager",
                     function() {
+                        var callbackDispatcher;
                         var proxyId, providerId, publicationManager, joynrInstanceId, dispatcherSpy;
                         var provider, asyncGetterCallDelay, fakeTime, intervalSubscriptionRequest;
                         var onChangeSubscriptionRequest, mixedSubscriptionRequest, onChangeBroadcastSubscriptionRequest;
                         var mixedSubscriptionRequestWithAsyncAttribute, testAttributeName;
                         var asyncTestAttributeName, value, minIntervalMs, maxIntervalMs, maxNrOfTimes;
                         var subscriptionLength, asyncTestAttribute, testAttribute, providerSettings;
+                        var testAttributeNotNotifiable, testAttributeNotNotifiableName;
                         var testBroadcastName, testBroadcast;
 
                         function createSubscriptionRequest(
@@ -164,6 +168,27 @@ define(
                             this.unregisterObserver = providerAttribute.unregisterObserver;
                         }
 
+                        function ProviderAttributeReadWrite(
+                                parent,
+                                settings,
+                                attributeName,
+                                attributeType) {
+                            var providerAttribute =
+                                    new ProviderAttribute(
+                                            parent,
+                                            settings,
+                                            attributeName,
+                                            attributeType,
+                                            "READWRITE");
+                            this.registerGetter = providerAttribute.registerGetter;
+                            this.get = providerAttribute.get;
+                            this.registerSetter = providerAttribute.registerSetter;
+                            this.set = providerAttribute.set;
+                            //this.valueChanged = providerAttribute.valueChanged;
+                            //this.registerObserver = providerAttribute.registerObserver;
+                            //this.unregisterObserver = providerAttribute.unregisterObserver;
+                        }
+
                         function stopSubscription(subscriptionInfo) {
                             publicationManager.handleSubscriptionStop(new SubscriptionStop({
                                 subscriptionId : subscriptionInfo.subscriptionId
@@ -174,13 +199,14 @@ define(
                          * Called before each test.
                          */
                         beforeEach(function(done) {
-                            //jasmine.getEnv().currentSpec.description;
+                            callbackDispatcher = jasmine.createSpy("callbackDispatcher");
                             proxyId = "proxy" + uuid();
                             providerId = "provider" + uuid();
                             joynrInstanceId = uuid();
                             fakeTime = 123456789;
                             testAttributeName = "testAttribute";
                             testBroadcastName = "testBroadcast";
+                            testAttributeNotNotifiableName = "testAttributeNotNotifiable";
                             asyncTestAttributeName = "asyncTestAttribute";
                             value = "the value";
                             minIntervalMs = 100;
@@ -239,9 +265,18 @@ define(
                                             asyncTestAttributeName,
                                             "Boolean");
 
+                            testAttributeNotNotifiable =
+                                    new ProviderAttributeReadWrite(
+                                            provider,
+                                            providerSettings,
+                                            testAttributeNotNotifiableName,
+                                            "Boolean");
+
                             provider[testAttributeName] = testAttribute;
                             provider[testBroadcastName] = testBroadcast;
+                            provider[testAttributeNotNotifiableName] = testAttributeNotNotifiable;
                             spyOn(testAttribute, "get").and.returnValue("attributeValue");
+                            spyOn(testAttributeNotNotifiable, "get").and.returnValue("attributeValue");
 
                             provider[asyncTestAttributeName] = asyncTestAttribute;
                             spyOn(asyncTestAttribute, "get").and.callFake(function() {
@@ -316,7 +351,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            onChangeSubscriptionRequest);
+                                            onChangeSubscriptionRequest,
+                                            callbackDispatcher);
                                         expect(
                                             publicationManager
                                             .hasSubscriptionsForProviderAttribute(
@@ -376,7 +412,8 @@ define(
                             publicationManager.handleSubscriptionRequest(
                                     proxyId,
                                     providerId,
-                                    onChangeSubscriptionRequest);
+                                    onChangeSubscriptionRequest,
+                                    callbackDispatcher);
                             expect(
                                 publicationManager.hasSubscriptionsForProviderAttribute(
                                 provider.id,
@@ -409,7 +446,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            intervalSubscriptionRequest);
+                                            intervalSubscriptionRequest,
+                                            callbackDispatcher);
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
@@ -483,7 +521,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            intervalSubscriptionRequest);
+                                            intervalSubscriptionRequest,
+                                            callbackDispatcher);
 
                                     expect(
                                             publicationManager
@@ -515,7 +554,8 @@ define(
                             publicationManager.handleSubscriptionRequest(
                                 proxyId,
                                 providerId,
-                                intervalSubscriptionRequest);
+                                intervalSubscriptionRequest,
+                                callbackDispatcher);
                             expect(
                                 publicationManager.hasSubscriptionsForProviderAttribute(
                                     provider.id,
@@ -585,7 +625,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                         proxyId,
                                         providerId,
-                                        intervalSubscriptionRequest);
+                                        intervalSubscriptionRequest,
+                                        callbackDispatcher);
 
                                     expect(
                                         publicationManager
@@ -630,7 +671,8 @@ define(
                             publicationManager.handleSubscriptionRequest(
                                     proxyId,
                                     providerId,
-                                    onChangeSubscriptionRequest);
+                                    onChangeSubscriptionRequest,
+                                    callbackDispatcher);
 
                             expect(
                                     publicationManager.hasSubscriptionsForProviderAttribute(
@@ -668,7 +710,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            onChangeSubscriptionRequest);
+                                            onChangeSubscriptionRequest,
+                                            callbackDispatcher);
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
@@ -706,7 +749,8 @@ define(
                             publicationManager.handleSubscriptionRequest(
                                     proxyId,
                                     providerId,
-                                    onChangeSubscriptionRequest);
+                                    onChangeSubscriptionRequest,
+                                    callbackDispatcher);
                             expect(
                                     publicationManager.hasSubscriptionsForProviderAttribute(
                                             provider.id,
@@ -758,7 +802,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            onChangeSubscriptionRequest);
+                                            onChangeSubscriptionRequest,
+                                            callbackDispatcher);
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
@@ -817,7 +862,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            mixedSubscriptionRequestWithAsyncAttribute);
+                                            mixedSubscriptionRequestWithAsyncAttribute,
+                                            callbackDispatcher);
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
@@ -929,7 +975,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                         proxyId,
                                         providerId,
-                                        mixedSubscriptionRequest);
+                                        mixedSubscriptionRequest,
+                                        callbackDispatcher);
                                     expect(
                                         publicationManager
                                         .hasSubscriptionsForProviderAttribute(
@@ -1001,7 +1048,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            mixedSubscriptionRequest);
+                                            mixedSubscriptionRequest,
+                                            callbackDispatcher);
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
@@ -1069,7 +1117,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            mixedSubscriptionRequest);
+                                            mixedSubscriptionRequest,
+                                            callbackDispatcher);
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
@@ -1136,7 +1185,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                         proxyId,
                                         providerId,
-                                        mixedSubscriptionRequest);
+                                        mixedSubscriptionRequest,
+                                        callbackDispatcher);
                                     expect(
                                         publicationManager
                                         .hasSubscriptionsForProviderAttribute(
@@ -1207,7 +1257,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            subscriptionRequestWithoutExpiryDate);
+                                            subscriptionRequestWithoutExpiryDate,
+                                            callbackDispatcher);
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
@@ -1275,7 +1326,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                         proxyId,
                                         providerId,
-                                        mixedSubscriptionRequest);
+                                        mixedSubscriptionRequest,
+                                        callbackDispatcher);
                                     expect(
                                         publicationManager
                                         .hasSubscriptionsForProviderAttribute(
@@ -1435,7 +1487,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                         proxyId,
                                         providerId,
-                                        mixedSubscriptionRequest);
+                                        mixedSubscriptionRequest,
+                                        callbackDispatcher);
                                     expect(
                                         publicationManager
                                         .hasSubscriptionsForProviderAttribute(
@@ -1466,7 +1519,8 @@ define(
                             publicationManager.handleSubscriptionRequest(
                                 proxyId,
                                 providerId,
-                                mixedSubscriptionRequest);
+                                mixedSubscriptionRequest,
+                                callbackDispatcher);
                             expect(
                                 publicationManager.hasSubscriptionsForProviderAttribute(
                                     provider.id,
@@ -1508,7 +1562,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            mixedSubscriptionRequest);
+                                            mixedSubscriptionRequest,
+                                            callbackDispatcher);
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
@@ -1574,7 +1629,8 @@ define(
                                     publicationManager.handleEventSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            onChangeBroadcastSubscriptionRequest);
+                                            onChangeBroadcastSubscriptionRequest,
+                                            callbackDispatcher);
 
                                     expect(
                                             publicationManager
@@ -1637,7 +1693,8 @@ define(
                                     publicationManager.handleSubscriptionRequest(
                                             proxyId,
                                             providerId,
-                                            intervalSubscriptionRequest);
+                                            intervalSubscriptionRequest,
+                                            callbackDispatcher);
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
@@ -1677,6 +1734,195 @@ define(
                                         return null;
                                     }).catch(fail);
                                 });
+
+                        it("rejects attribute subscription if expiryDateMs lies in the past", function(done) {
+                            var request = new SubscriptionRequest({
+                                subscriptionId : "subscriptionId" + uuid(),
+                                subscribedToName : testAttributeName,
+                                qos : new OnChangeSubscriptionQos({
+                                    expiryDateMs : Date.now() - 10000
+                                })
+                            });
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    request,
+                                    callbackDispatcher);
+
+                            waitsFor(function() {
+                                return callbackDispatcher.calls.count() === 1;
+                            }, "callbackDispatcher got called", 1000).then(function() {
+                                expect(callbackDispatcher).toHaveBeenCalled();
+                                var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                                expect(error.detailMessage).toMatch(/lies in the past/);
+                                done();
+                                return null;
+                            }).catch(fail);
+                            increaseFakeTime(1);
+                        });
+
+                        it("rejects attribute subscription if attribute does not exist", function(done) {
+                            var request = new SubscriptionRequest({
+                                subscriptionId : "subscriptionId" + uuid(),
+                                subscribedToName : "nonExistingAttribute",
+                                qos : new OnChangeSubscriptionQos()
+                            });
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    request,
+                                    callbackDispatcher);
+
+                            waitsFor(function() {
+                                return callbackDispatcher.calls.count() === 1;
+                            }, "callbackDispatcher got called", 1000).then(function() {
+                                expect(callbackDispatcher).toHaveBeenCalled();
+                                var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                                expect(error.detailMessage).toMatch(/misses attribute/);
+                                done();
+                                return null;
+                            }).catch(fail);
+                            increaseFakeTime(1);
+                        });
+
+                        it("rejects attribute subscription if attribute is not notifiable", function(done) {
+                            var request = new SubscriptionRequest({
+                                subscriptionId : "subscriptionId" + uuid(),
+                                subscribedToName : testAttributeNotNotifiableName,
+                                qos : new OnChangeSubscriptionQos()
+                            });
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    request,
+                                    callbackDispatcher);
+
+                            waitsFor(function() {
+                                return callbackDispatcher.calls.count() === 1;
+                            }, "callbackDispatcher got called", 1000).then(function() {
+                                expect(callbackDispatcher).toHaveBeenCalled();
+                                var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                                expect(error.detailMessage).toMatch(/is not notifiable/);
+                                done();
+                                return null;
+                            }).catch(fail);
+                            increaseFakeTime(1);
+                        });
+
+                        it("rejects attribute subscription if periodMs is too small", function(done) {
+                            var qosSettings = new PeriodicSubscriptionQos({
+                                expiryDateMs : 0,
+                                alertAfterIntervalMs : 0,
+                                publicationTtlMs : 1000
+                            });
+                            // forcibly fake it! The constructor throws, if using this directly
+                            qosSettings.periodMs = PeriodicSubscriptionQos.MIN_PERIOD_MS - 1;
+
+                            var request = new SubscriptionRequest({
+                                subscriptionId : "subscriptionId" + uuid(),
+                                subscribedToName : testAttributeName,
+                                qos : qosSettings
+                            });
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    request,
+                                    callbackDispatcher);
+
+                            waitsFor(function() {
+                                return callbackDispatcher.calls.count() === 1;
+                            }, "callbackDispatcher got called", 1000).then(function() {
+                                expect(callbackDispatcher).toHaveBeenCalled();
+                                var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                                expect(error.detailMessage).toMatch(/is smaller than PeriodicSubscriptionQos/);
+                                done();
+                                return null;
+                            }).catch(fail);
+                            increaseFakeTime(1);
+                        });
+
+                        it("rejects broadcast subscription if expiryDateMs lies in the past", function(done) {
+                            var request = new BroadcastSubscriptionRequest({
+                                subscriptionId : "subscriptionId" + uuid(),
+                                subscribedToName : testBroadcastName,
+                                qos : new OnChangeSubscriptionQos({
+                                    expiryDateMs : Date.now() - 10000
+                                }),
+                                filterParameters : {}
+                            });
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleEventSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    request,
+                                    callbackDispatcher);
+
+                            waitsFor(function() {
+                                return callbackDispatcher.calls.count() === 1;
+                            }, "callbackDispatcher got called", 1000).then(function() {
+                                expect(callbackDispatcher).toHaveBeenCalled();
+                                var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                                expect(error.detailMessage).toMatch(/lies in the past/);
+                                done();
+                                return null;
+                            }).catch(fail);
+                            increaseFakeTime(1);
+                        });
+
+                        it("rejects broadcast subscription if broadcast does not exist", function(done) {
+                            var request = new BroadcastSubscriptionRequest({
+                                subscriptionId : "subscriptionId" + uuid(),
+                                subscribedToName : "nonExistingBroadcast",
+                                qos : new OnChangeSubscriptionQos(),
+                                filterParameters : {}
+                            });
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleEventSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    request,
+                                    callbackDispatcher);
+
+                            waitsFor(function() {
+                                return callbackDispatcher.calls.count() === 1;
+                            }, "callbackDispatcher got called", 1000).then(function() {
+                                expect(callbackDispatcher).toHaveBeenCalled();
+                                var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                                expect(error.detailMessage).toMatch(/misses event/);
+                                done();
+                                return null;
+                            }).catch(fail);
+                            increaseFakeTime(1);
+                        });
+
                     });
 
         });

@@ -20,6 +20,8 @@ package io.joynr.messaging.mqtt.paho.client;
  */
 
 import java.nio.charset.Charset;
+
+import io.joynr.messaging.mqtt.MqttMessagingStub;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 
@@ -40,7 +42,6 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
-    public static final int MQTT_QOS = 1;
     public static final String MQTT_PRIO = "low";
 
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClient.class);
@@ -153,13 +154,18 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void publishMessage(String topic, String serializedMessage) {
+        publishMessage(topic, serializedMessage, MqttMessagingStub.DEFAULT_QOS_LEVEL);
+    }
+
+    @Override
+    public void publishMessage(String topic, String serializedMessage, int qosLevel) {
         if (messagingSkeleton == null) {
             throw new JoynrDelayMessageException("MQTT Publish failed: messagingSkeleton has not been set yet");
         }
         try {
             MqttMessage message = new MqttMessage();
             message.setPayload(serializedMessage.getBytes(Charset.forName("UTF-8")));
-            message.setQos(MqttPahoClient.MQTT_QOS);
+            message.setQos(qosLevel);
             message.setRetained(false);
 
             logger.debug("MQTT Publish to: {}", topic);

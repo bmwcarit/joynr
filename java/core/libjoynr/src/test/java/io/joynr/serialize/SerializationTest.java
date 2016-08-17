@@ -72,7 +72,6 @@ import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.GpsPosition;
-import joynr.types.TestTypes.TDoubleKeyMap;
 import joynr.types.TestTypes.TEnum;
 import joynr.types.TestTypes.TEverythingExtendedStruct;
 import joynr.types.TestTypes.TEverythingMap;
@@ -280,20 +279,6 @@ public class SerializationTest {
         String valueAsString = objectMapper.writeValueAsString(tmap);
 
         TEverythingMap readValue = objectMapper.readValue(valueAsString, TEverythingMap.class);
-        assertEquals(tmap, readValue);
-    }
-
-    @Test
-    public void serializeMapWithDoubleKeyTest() throws Exception {
-        TDoubleKeyMap tmap = new TDoubleKeyMap();
-
-        tmap.put(1d, "value1");
-        tmap.put(2d, "value2");
-
-        String valueAsString = objectMapper.writeValueAsString(tmap);
-        System.out.println(valueAsString);
-
-        TDoubleKeyMap readValue = objectMapper.readValue(valueAsString, TDoubleKeyMap.class);
         assertEquals(tmap, readValue);
     }
 

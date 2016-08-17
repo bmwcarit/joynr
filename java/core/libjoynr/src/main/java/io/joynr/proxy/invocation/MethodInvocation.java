@@ -28,12 +28,12 @@ import java.lang.reflect.Method;
  */
 
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "MethodInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
-public class MethodInvocation extends Invocation {
+public class MethodInvocation<T> extends Invocation<T> {
 
     private final Method method;
     private final Object[] args;
 
-    public MethodInvocation(Method method, Object[] args, Future<?> future) {
+    public MethodInvocation(Method method, Object[] args, Future<T> future) {
         super(future);
         this.method = method;
         this.args = args;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,14 @@
 #ifndef LOCALDOMAINACCESSCONTROLLER_H
 #define LOCALDOMAINACCESSCONTROLLER_H
 
+#include <string>
+#include <memory>
+#include <vector>
+#include <cstdint>
+#include <mutex>
+#include <unordered_map>
+#include <chrono>
+
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
@@ -32,14 +40,7 @@
 #include "AccessControlAlgorithm.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
-
-#include <string>
-#include <memory>
-#include <vector>
-#include <cstdint>
-#include <mutex>
-#include <unordered_map>
-#include <chrono>
+#include "joynr/Future.h"
 
 namespace joynr
 {
@@ -433,16 +434,39 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessController);
 
     AccessControlAlgorithm accessControlAlgorithm;
-    std::unordered_map<std::string, std::string> dreSubscriptions;
+    std::unordered_map<std::string, std::shared_ptr<Future<std::string>>> dreSubscriptions;
 
     struct AceSubscription
     {
-        std::string masterAceSubscriptionId;
-        std::string mediatorAceSubscriptionId;
-        std::string ownerAceSubscriptionId;
+        std::shared_ptr<Future<std::string>> masterAceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> mediatorAceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> ownerAceSubscriptionIdFuture;
+
+        const std::string getMasterAceSubscriptionId()
+        {
+            std::string masterAceSubscriptionId;
+            masterAceSubscriptionIdFuture->get(1000, masterAceSubscriptionId);
+            return masterAceSubscriptionId;
+        }
+
+        const std::string getMediatorAceSubscriptionId()
+        {
+            std::string mediatorAceSubscriptionId;
+            mediatorAceSubscriptionIdFuture->get(1000, mediatorAceSubscriptionId);
+            return mediatorAceSubscriptionId;
+        }
+
+        const std::string getOwnerAceSubscriptionId()
+        {
+            std::string ownerAceSubscriptionId;
+            ownerAceSubscriptionIdFuture->get(1000, ownerAceSubscriptionId);
+            return ownerAceSubscriptionId;
+        }
 
         AceSubscription()
-                : masterAceSubscriptionId(), mediatorAceSubscriptionId(), ownerAceSubscriptionId()
+                : masterAceSubscriptionIdFuture(),
+                  mediatorAceSubscriptionIdFuture(),
+                  ownerAceSubscriptionIdFuture()
         {
         }
     };
@@ -465,7 +489,7 @@ private:
     void initialised(const std::string& domain, const std::string& interfaceName);
     void abortInitialisation(const std::string& domain, const std::string& interfaceName);
 
-    std::string subscribeForDreChange(const std::string& userId);
+    std::shared_ptr<Future<std::string>> subscribeForDreChange(const std::string& userId);
     AceSubscription subscribeForAceChange(const std::string& domain,
                                           const std::string& interfaceName);
     std::string createCompoundKey(const std::string& domain, const std::string& interfaceName);

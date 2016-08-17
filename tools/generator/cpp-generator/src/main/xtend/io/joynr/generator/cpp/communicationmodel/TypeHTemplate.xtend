@@ -63,12 +63,13 @@ class TypeHTemplate extends CompoundTypeTemplate {
 
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
-#include "joynr/Variant.h"
 
 // include complex Datatype headers.
 «FOR member: type.typeDependencies»
 	#include «member.includeOf»
 «ENDFOR»
+
+#include "joynr/serializer/Serializer.h"
 
 «getNamespaceStarter(type, true)»
 
@@ -76,7 +77,7 @@ class TypeHTemplate extends CompoundTypeTemplate {
 «appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «typeName» «IF hasExtendsDeclaration(type)»: public «getExtendedType(type).joynrName»«ENDIF»{
+class «getDllExportMacro()» «typeName» «IF hasExtendsDeclaration(type)»: public «getExtendedType(type).typeName»«ENDIF»{
 
 public:
 	/**
@@ -255,7 +256,11 @@ protected:
 	«ENDIF»
 
 
+«val serializeObjName = typeName.toLowerCase + "Obj"»
 private:
+	// serialize «typeName» with muesli
+	template <typename Archive>
+	friend void serialize(Archive& archive, «typeName»& «serializeObjName»);
 
 	// members
 	«FOR member: getMembers(type)»
@@ -267,6 +272,25 @@ private:
 };
 
 std::size_t hash_value(const «typeName»& «typeName.toFirstLower»Value);
+
+// serialize «typeName» with muesli
+template <typename Archive>
+void serialize(Archive& archive, «typeName»& «serializeObjName»)
+{
+«IF getMembers(type).size > 0 || hasExtendsDeclaration(type)»
+	archive(
+			«IF hasExtendsDeclaration(type)»
+			muesli::BaseClass<«getExtendedType(type).joynrName»>(&«serializeObjName»)«IF type.members.size >0 »,«ENDIF»
+			«ENDIF»
+			«FOR member: type.members SEPARATOR ','»
+			muesli::make_nvp("«member.joynrName»", «serializeObjName».«member.joynrName»)
+			«ENDFOR»
+	);
+«ELSE»
+	std::ignore = archive;
+	std::ignore = «serializeObjName»;
+«ENDIF»
+}
 
 «getNamespaceEnder(type, true)»
 
@@ -291,6 +315,13 @@ struct hash<«type.typeName»> {
 	}
 };
 } // namespace std
+
+«val typeNameString = type.typeName.replace("::", ".")»
+«IF type.hasExtendsDeclaration»
+MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.typeName», «getExtendedType(type).typeName», "«typeNameString»")
+«ELSE»
+MUESLI_REGISTER_TYPE(«type.typeName», "«typeNameString»")
+«ENDIF»
 
 #endif // «headerGuard»
 '''

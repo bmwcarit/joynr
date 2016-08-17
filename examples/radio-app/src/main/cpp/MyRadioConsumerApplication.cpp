@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
  * #L%
  */
 
+#include <cassert>
+#include <limits>
 #include <string>
 #include <stdint.h>
 #include <memory>
@@ -28,10 +30,12 @@
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include <cassert>
-#include <limits>
-#include "joynr/JsonSerializer.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
+#include "joynr/Future.h"
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
 
 using namespace joynr;
 
@@ -42,6 +46,14 @@ public:
     RadioStationListener() = default;
 
     ~RadioStationListener() = default;
+
+    void onSubscribed(const std::string& subscriptionId)
+    {
+        MyRadioHelper::prettyLog(
+                logger,
+                "ATTRIBUTE SUBSCRIPTION current station successful, subscriptionId: " +
+                        subscriptionId);
+    }
 
     void onReceive(const vehicle::RadioStation& value)
     {
@@ -74,6 +86,13 @@ public:
 
     ~WeakSignalBroadcastListener() = default;
 
+    void onSubscribed(const std::string& subscriptionId)
+    {
+        MyRadioHelper::prettyLog(
+                logger,
+                "BROADCAST SUBSCRIPTION weak signal successful, subscriptionId: " + subscriptionId);
+    }
+
     void onReceive(const vehicle::RadioStation& value)
     {
         MyRadioHelper::prettyLog(logger, "BROADCAST SUBSCRIPTION weak signal: " + value.toString());
@@ -93,6 +112,14 @@ public:
     NewStationDiscoveredBroadcastListener() = default;
 
     ~NewStationDiscoveredBroadcastListener() = default;
+
+    void onSubscribed(const std::string& subscriptionId)
+    {
+        MyRadioHelper::prettyLog(
+                logger,
+                "BROADCAST SUBSCRIPTION new station discovered successful, subscriptionId: " +
+                        subscriptionId);
+    }
 
     void onReceive(const vehicle::RadioStation& discoveredStation,
                    const vehicle::GeoPosition& geoPosition)
@@ -114,6 +141,12 @@ INIT_LOGGER(NewStationDiscoveredBroadcastListener);
 int main(int argc, char* argv[])
 {
     using joynr::vehicle::Radio::AddFavoriteStationErrorEnum;
+
+// Register app at the dlt-daemon for logging
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+    DLT_REGISTER_APP("JOYT", argv[0]);
+#endif // JOYNR_ENABLE_DLT_LOGGING
+
     // Get a logger
     joynr::Logger logger("MyRadioConsumerApplication");
 
@@ -184,34 +217,34 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <attribute>Changed method of the <interface>Provider class whenever the
     //       <attribute> value changes.
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos;
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>();
     // The provider will maintain at least a minimum interval idle time in milliseconds between
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    subscriptionQos.setMinIntervalMs(5 * 1000);
+    subscriptionQos->setMinIntervalMs(5 * 1000);
     // The provider will send notifications every maximum interval in milliseconds, even if the
     // value didn't change. It will send notifications more often if on-change notifications are
     // enabled, the value changes more often, and the minimum interval QoS does not prevent it. The
     // maximum interval can thus be seen as a sort of heart beat.
-    subscriptionQos.setMaxIntervalMs(8 * 1000);
+    subscriptionQos->setMaxIntervalMs(8 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
     // setValidityMs will set the end date to current time millis + validity
-    subscriptionQos.setValidityMs(60 * 1000);
+    subscriptionQos->setValidityMs(60 * 1000);
     // Notification messages will be sent with this time-to-live. If a notification message can not
     // be delivered within its TTL, it will be deleted from the system.
     // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
     //       missed publication notification (depending on the value of the alert interval QoS).
-    subscriptionQos.setAlertAfterIntervalMs(10 * 1000);
+    subscriptionQos->setAlertAfterIntervalMs(10 * 1000);
 
     // Subscriptions go to a listener object
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> listener(
             new RadioStationListener());
 
     // Subscribe to the radio station.
-    std::string currentStationSubscriptionId =
+    std::shared_ptr<Future<std::string>> currentStationSubscriptionIdFuture =
             proxy->subscribeToCurrentStation(listener, subscriptionQos);
 
     // broadcast subscription
@@ -221,37 +254,38 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <broadcast>EventOccurred method of the <interface>Provider class whenever
     //       the <broadcast> should be triggered.
-    OnChangeSubscriptionQos weakSignalBroadcastSubscriptionQos;
+    auto weakSignalBroadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
     // The provider will maintain at least a minimum interval idle time in milliseconds between
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    weakSignalBroadcastSubscriptionQos.setMinIntervalMs(1 * 1000);
+    weakSignalBroadcastSubscriptionQos->setMinIntervalMs(1 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
     // setValidityMs will set the end date to current time millis + validity
-    weakSignalBroadcastSubscriptionQos.setValidityMs(60 * 1000);
+    weakSignalBroadcastSubscriptionQos->setValidityMs(60 * 1000);
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
             new WeakSignalBroadcastListener());
-    std::string weakSignalBroadcastSubscriptionId = proxy->subscribeToWeakSignalBroadcast(
-            weakSignalBroadcastListener, weakSignalBroadcastSubscriptionQos);
+    std::shared_ptr<Future<std::string>> weakSignalBroadcastSubscriptionIdFuture =
+            proxy->subscribeToWeakSignalBroadcast(
+                    weakSignalBroadcastListener, weakSignalBroadcastSubscriptionQos);
 
     // selective broadcast subscription
 
-    OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
-    newStationDiscoveredBroadcastSubscriptionQos.setMinIntervalMs(2 * 1000);
-    newStationDiscoveredBroadcastSubscriptionQos.setValidityMs(180 * 1000);
+    auto newStationDiscoveredBroadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    newStationDiscoveredBroadcastSubscriptionQos->setMinIntervalMs(2 * 1000);
+    newStationDiscoveredBroadcastSubscriptionQos->setValidityMs(180 * 1000);
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation, vehicle::GeoPosition>>
             newStationDiscoveredBroadcastListener(new NewStationDiscoveredBroadcastListener());
     vehicle::RadioNewStationDiscoveredBroadcastFilterParameters
             newStationDiscoveredBroadcastFilterParams;
     newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
     vehicle::GeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
-    std::string positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
+    std::string positionOfInterestJson(joynr::serializer::serializeToJson(positionOfInterest));
     newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
     newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
-    std::string newStationDiscoveredBroadcastSubscriptionId =
+    std::shared_ptr<Future<std::string>> newStationDiscoveredBroadcastSubscriptionIdFuture =
             proxy->subscribeToNewStationDiscoveredBroadcast(
                     newStationDiscoveredBroadcastFilterParams,
                     newStationDiscoveredBroadcastListener,
@@ -330,10 +364,33 @@ int main(int argc, char* argv[])
     }
 
     // unsubscribe
-    proxy->unsubscribeFromCurrentStation(currentStationSubscriptionId);
-    proxy->unsubscribeFromWeakSignalBroadcast(weakSignalBroadcastSubscriptionId);
-    proxy->unsubscribeFromNewStationDiscoveredBroadcast(
-            newStationDiscoveredBroadcastSubscriptionId);
+    std::string currentStationSubscriptionId;
+    try {
+        currentStationSubscriptionIdFuture->get(2000, currentStationSubscriptionId);
+        proxy->unsubscribeFromCurrentStation(currentStationSubscriptionId);
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(
+                logger, "UNSUBSCRIBE from ATTRIBUTE current station FAILED: {}", e.getMessage());
+    }
+    std::string weakSignalBroadcastSubscriptionId;
+    try {
+        weakSignalBroadcastSubscriptionIdFuture->get(2000, weakSignalBroadcastSubscriptionId);
+        proxy->unsubscribeFromWeakSignalBroadcast(weakSignalBroadcastSubscriptionId);
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(
+                logger, "UNSUBSCRIBE from BROADCAST weak signal FAILED: {}", e.getMessage());
+    }
+    std::string newStationDiscoveredBroadcastSubscriptionId;
+    try {
+        newStationDiscoveredBroadcastSubscriptionIdFuture->get(
+                2000, newStationDiscoveredBroadcastSubscriptionId);
+        proxy->unsubscribeFromNewStationDiscoveredBroadcast(
+                newStationDiscoveredBroadcastSubscriptionId);
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "UNSUBSCRIBE from BROADCAST new station discovered FAILED: {}",
+                        e.getMessage());
+    }
 
     delete proxy;
     delete proxyBuilder;

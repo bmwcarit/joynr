@@ -257,7 +257,6 @@ endif(${GENERATE_SOURCES})
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -269,7 +268,6 @@ set(
     test_TARGET_LIBRARIES
     JoynrCommon
     Joynr
-    JoynrJsonSerializer
 )
 
 set(
@@ -279,14 +277,12 @@ set(
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
     JoynrTest_SYSTEM_INCLUDE_DIRECTORIES
     ${spdlog_INCLUDE_DIRS}
-    ${jsmn_INCLUDE_DIR}
 )
 
 file(
@@ -320,6 +316,18 @@ target_include_directories(
     SYSTEM PUBLIC
     ${JoynrTest_SYSTEM_INCLUDE_DIRECTORIES}
 )
+
+#
+# Manually handle muesli dependency of JoynrTestGenerated
+#
+# 1. make sure needed libraries required by muesli are being built
+#    before this target
+add_dependencies(JoynrTestGenerated muesli::muesli)
+
+# 2. As cmake OBJECT library do not support linking we need to manually set
+# the INCLUDE_DIRECTORIES from muesli.
+get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(JoynrTestGenerated SYSTEM PUBLIC "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>")
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
@@ -395,32 +403,6 @@ set(
     ${JoynrTest_GENHEADERS}
 )
 
-file(
-    GLOB_RECURSE JsonSerializerTest_GENSOURCES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    #"gen/*.cpp" uncomment this when generate-test-sources prepared for jsonserializer
-    "unit-tests/jsonserializer/generated/*.cpp" #remove this when generate-test-sources prepared for jsonserializer
-)
-
-file(
-    GLOB_RECURSE JsonSerializerTest_GENHEADERS
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    #"gen/*.h" uncomment this when generate-test-sources prepared for jsonserializer
-    "unit-tests/jsonserializer/generated/*.h" #remove this when generate-test-sources prepared for jsonserializer
-)
-
-set(
-    libjsonserializer_test_HEADERS
-    "unit-tests/jsonserializer/ExampleTypes.h"
-    ${JsonSerializerTest_GENHEADERS}
-)
-
-set(
-    libjsonserializer_test_SOURCES
-    "unit-tests/jsonserializer/ExampleTypes.cpp"
-    ${JsonSerializerTest_GENSOURCES}
-)
-
 set(
     libjoynr_test_HEADERS
     "PrettyPrint.h"
@@ -456,6 +438,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         "unit-tests/mqtt/*.cpp"
         "unit-tests/websocket/*.cpp"
         "unit-tests/jsonserializer/*.cpp"
+        "unit-tests/serializer/*.cpp"
     )
 
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -471,8 +454,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
             $<TARGET_OBJECTS:JoynrTestGenerated>
             ${cluster_controller_test_HEADERS}
             ${cluster_controller_test_SOURCES}
-            ${libjsonserializer_test_HEADERS}
-            ${libjsonserializer_test_SOURCES}
             ${g_UnitTests_SOURCES}
         )
 

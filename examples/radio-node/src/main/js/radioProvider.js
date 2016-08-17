@@ -114,7 +114,7 @@ joynr.load(provisioning).then(function(loadedJoynr) {
         customParameters : [],
         priority : Date.now(),
         scope : joynr.types.ProviderScope.GLOBAL,
-        onChangeSubscriptions : true
+        supportsOnChangeSubscriptions : true
     });
 
     var radioProvider = joynr.providerBuilder.build(

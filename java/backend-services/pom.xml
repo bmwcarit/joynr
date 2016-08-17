@@ -27,12 +27,13 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.19.5</version>
+		<version>0.20.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<modules>
 		<module>discovery-directory-servlet</module>
+		<module>discovery-directory-jee</module>
 		<module>capabilities-directory</module>
 		<module>domain-access-controller</module>
 		<module>domain-access-controller-servlet</module>

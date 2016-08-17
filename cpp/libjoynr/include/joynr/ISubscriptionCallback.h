@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,22 +19,26 @@
 #ifndef ISUBSCRIPTIONCALLBACK_H
 #define ISUBSCRIPTIONCALLBACK_H
 
-#include "joynr/exceptions/JoynrException.h"
-
 namespace joynr
 {
-
-/**
-  * @class ISubscriptionCallback
-  * @brief
-  */
+class SubscriptionPublication;
+class SubscriptionReply;
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
+  /**
+    * @class ISubscriptionCallback
+    * @brief
+    */
 
 class ISubscriptionCallback
 {
 public:
     virtual void onError(const exceptions::JoynrRuntimeException& error) = 0;
     virtual ~ISubscriptionCallback() = default;
-    virtual int getTypeId() const = 0;
+    virtual void execute(SubscriptionPublication&& subscriptionPublication) = 0;
+    virtual void execute(const SubscriptionReply& subscriptionReply) = 0;
 };
 
 } // namespace joynr

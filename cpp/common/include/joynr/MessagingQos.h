@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include <iosfwd>
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/MessagingQosEffort.h"
 
 namespace joynr
 {
@@ -38,8 +39,10 @@ public:
     /**
      * @brief Base constructor
      * @param ttl The time to live in milliseconds
+     * @param effort The effort to expend during message delivery
      */
-    explicit MessagingQos(std::uint64_t ttl = 60000);
+    explicit MessagingQos(std::uint64_t ttl = 60000,
+                          MessagingQosEffort::Enum effort = MessagingQosEffort::Enum::NORMAL);
     /** @brief Copy constructor */
     MessagingQos(const MessagingQos& other) = default;
 
@@ -63,6 +66,17 @@ public:
      * @param ttl Time to live in milliseconds
      */
     void setTtl(const std::uint64_t& ttl);
+
+    /**
+     * @brief get the effort to expend during message delivery
+     */
+    MessagingQosEffort::Enum getEffort() const;
+
+    /**
+     * @brief set the effort to expend during message delivery
+     * @param effort the new value for effort
+     */
+    void setEffort(const MessagingQosEffort::Enum effort);
 
     /**
      * @brief Puts a header value for the given header key, replacing an existing value
@@ -93,6 +107,9 @@ public:
 private:
     /** @brief The time to live in milliseconds */
     std::uint64_t ttl;
+
+    /** @brief The effort to expend during message delivery */
+    MessagingQosEffort::Enum effort;
 
     /** @brief The map of custom message headers */
     std::unordered_map<std::string, std::string> messageHeaders;

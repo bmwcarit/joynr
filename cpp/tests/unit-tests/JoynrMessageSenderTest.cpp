@@ -91,10 +91,7 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
 
     Request request;
     request.setMethodName("methodName");
-    std::vector<Variant> params;
-    params.push_back(Variant::make<int>(42));
-    params.push_back(Variant::make<std::string>("value"));
-    request.setParams(params);
+    request.setParams(42, std::string("value"));
     std::vector<std::string> paramDatatypes;
     paramDatatypes.push_back("java.lang.Integer");
     paramDatatypes.push_back("java.lang.String");
@@ -122,10 +119,7 @@ TEST_F(JoynrMessageSenderTest, sendOneWayRequest_normal){
 
     OneWayRequest oneWayRequest;
     oneWayRequest.setMethodName("methodName");
-    std::vector<Variant> params;
-    params.push_back(Variant::make<int>(42));
-    params.push_back(Variant::make<std::string>("value"));
-    oneWayRequest.setParams(params);
+    oneWayRequest.setParams(42, std::string("value"));
     std::vector<std::string> paramDatatypes;
     paramDatatypes.push_back("java.lang.Integer");
     paramDatatypes.push_back("java.lang.String");
@@ -170,9 +164,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     Reply reply;
     reply.setRequestReplyId(util::createUuid());
-    std::vector<Variant> response;
-    response.push_back(Variant::make<std::string>("response"));
-    reply.setResponse(std::move(response));
+    reply.setResponse(std::string("response"));
 
     JoynrMessage message = messageFactory.createReply(
                 senderID,
@@ -195,7 +187,7 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     std::int64_t period = 2000;
     std::int64_t validity = 100000;
     std::int64_t alert = 4000;
-    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(validity, period, alert));
+    auto qos = std::make_shared<PeriodicSubscriptionQos>(validity, period, alert);
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId("subscriptionId");
@@ -225,7 +217,7 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
 
     std::int64_t minInterval = 2000;
     std::int64_t validity = 100000;
-    OnChangeSubscriptionQos qos{validity, minInterval};
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(validity, minInterval);
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filter;
@@ -278,9 +270,7 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     SubscriptionPublication publication;
     publication.setSubscriptionId("ignoresubscriptionid");
-    std::vector<Variant> response;
-    response.push_back(Variant::make<std::string>("publication"));
-    publication.setResponse(response);
+    publication.setResponse(std::string("publication"));
     JoynrMessage message = messageFactory.createSubscriptionPublication(
                 senderID,
                 receiverID,
@@ -290,5 +280,5 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     EXPECT_CALL(*(messagingStub.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION)),
                                                       Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
-    joynrMessageSender.sendSubscriptionPublication(senderID, receiverID, qosSettings, publication);
+    joynrMessageSender.sendSubscriptionPublication(senderID, receiverID, qosSettings, std::move(publication));
 }

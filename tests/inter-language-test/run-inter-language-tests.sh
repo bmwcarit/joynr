@@ -12,13 +12,13 @@ do
 			CC_LANGUAGE=$OPTARG
 			;;
 		b)
-			ILT_BUILD_DIR=$OPTARG
+			ILT_BUILD_DIR=`realpath $OPTARG`
 			;;
 		r)
-			ILT_RESULTS_DIR=$OPTARG
+			ILT_RESULTS_DIR=`realpath $OPTARG`
 			;;
 		s)
-			JOYNR_SOURCE_DIR=$OPTARG
+			JOYNR_SOURCE_DIR=`realpath $OPTARG`
 			if [ ! -d "$JOYNR_SOURCE_DIR" ]
 			then
 				echo "Directory $JOYNR_SOURCE_DIR does not exist!"
@@ -34,6 +34,9 @@ do
 			;;
 	esac
 done
+
+# remove all aliases to get correct return codes
+unalias -a
 
 if [ -z "$CC_LANGUAGE" ]
 then
@@ -91,6 +94,24 @@ trap stopall INT
 SUCCESS=0
 FAILED_TESTS=0
 DOMAIN="joynr-inter-language-test-domain"
+
+function killProcessHierarchy {
+	PID=$1
+	type pstree > /dev/null 2>&1
+	if [ "$?" -eq 0 ]
+	then
+		# find PIDs of hierarchy using pstree, excluding thread ids
+		PIDS=`pstree -p $PID | perl -n -e '{ @pids = /[^\}]\((\d+)/g; foreach (@pids) { print $_ . " "; } ; }'`
+		echo "Killing $PIDS"
+		kill -9 $PIDS > /dev/null 2>&1
+	else
+		# kill any direct children, if any
+		echo "Killing direct children of $PID"
+		pkill -9 -P $PID > /dev/null 2>&1
+		echo "Killing $PID"
+		kill -9 $PID > /dev/null 2>&1
+	fi
+}
 
 function prechecks {
 	if [ ! -f "$ILT_BUILD_DIR/bin/cluster-controller" ]
@@ -184,7 +205,7 @@ function stop_services {
 	then
 		echo "Stopping mosquitto with PID $MOSQUITTO_PID"
 		disown $MOSQUITTO_PID
-		kill -9 $MOSQUITTO_PID
+		killProcessHierarchy $MOSQUITTO_PID
 		wait $MOSQUITTO_PID
 		MOSQUITTO_PID=""
 	fi
@@ -213,6 +234,7 @@ function start_cluster_controller {
 		rm -fr $CLUSTER_CONTROLLER_DIR
 		cp -a $ILT_BUILD_DIR/bin $CLUSTER_CONTROLLER_DIR
 		cd $CLUSTER_CONTROLLER_DIR
+		[[ $? == "0" ]] && echo "cd $CLUSTER_CONTROLLER_DIR OK"
 		./cluster-controller > $ILT_RESULTS_DIR/clustercontroller-cpp-$1.log 2>&1 &
 	fi
 	CLUSTER_CONTROLLER_PID=$!
@@ -228,7 +250,7 @@ function stop_cluster_controller {
 		echo '# stopping clustercontroller'
 		echo '####################################################'
 		disown $CLUSTER_CONTROLLER_PID
-		kill -9 $CLUSTER_CONTROLLER_PID
+		killProcessHierarchy $CLUSTER_CONTROLLER_PID
 		wait $CLUSTER_CONTROLLER_PID
 		echo "Stopped external cluster controller with PID $CLUSTER_CONTROLLER_PID"
 		CLUSTER_CONTROLLER_PID=""
@@ -247,7 +269,6 @@ function start_java_provider_cc {
 	echo '####################################################'
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
-	rm -f java-consumer.persistence_file
 	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport=mqtt > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider cc with PID $PROVIDER_PID"
@@ -262,7 +283,6 @@ function start_java_provider_ws {
 	echo '####################################################'
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
-	rm -f java-consumer.persistence_file
 	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN websocket" > $ILT_RESULTS_DIR/provider-java-ws.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider ws with PID $PROVIDER_PID"
@@ -278,7 +298,7 @@ function stop_provider {
 		echo '####################################################'
 		cd $ILT_DIR
 		disown $PROVIDER_PID
-		kill -9 $PROVIDER_PID
+		killProcessHierarchy $PROVIDER_PID
 		wait $PROVIDER_PID
 		echo "Stopped provider with PID $PROVIDER_PID"
 		PROVIDER_PID=""
@@ -293,6 +313,7 @@ function start_cpp_provider {
 	rm -fr $PROVIDER_DIR
 	cp -a $ILT_BUILD_DIR/bin $PROVIDER_DIR
 	cd $PROVIDER_DIR
+	[[ $? == "0" ]] && echo "cd $PROVIDER_DIR OK"
 	./ilt-provider-ws $DOMAIN > $ILT_RESULTS_DIR/provider-cpp.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started C++ provider with PID $PROVIDER_PID in directory $PROVIDER_DIR"
@@ -374,7 +395,12 @@ function start_cpp_consumer {
 	echo '####################################################'
 	echo '# starting C++ consumer'
 	echo '####################################################'
-	cd $ILT_BUILD_DIR/bin
+	CONSUMER_DIR=$ILT_BUILD_DIR/consumer-bin
+	cd $ILT_BUILD_DIR
+	rm -fr $CONSUMER_DIR
+	cp -a $ILT_BUILD_DIR/bin $CONSUMER_DIR
+	cd $CONSUMER_DIR
+	[[ $? == "0" ]] && echo "cd $CONSUMER_DIR OK"
 	#./ilt-consumer-cc $DOMAIN >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
 	./ilt-consumer-ws $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
 	SUCCESS=$?

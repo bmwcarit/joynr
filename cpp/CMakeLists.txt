@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.19.5)
+project(joynr-0.20.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 19)
-set(JOYNR_PATCH_VERSION 5)
+set(JOYNR_MINOR_VERSION 20)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -106,11 +106,11 @@ option(
 message(STATUS "option USE_PLATFORM_SPDLOG=" ${USE_PLATFORM_SPDLOG})
 
 option(
-    USE_PLATFORM_JSMN
-    "Resolve dependency to jsmn from the system?"
+    USE_PLATFORM_MUESLI
+    "Resolve dependency to muesli from the system?"
     ON
 )
-message(STATUS "option USE_PLATFORM_JSMN=" ${USE_PLATFORM_JSMN})
+message(STATUS "option USE_PLATFORM_MUESLI=" ${USE_PLATFORM_MUESLI})
 
 option(
     USE_PLATFORM_MOSQUITTO
@@ -132,6 +132,29 @@ option(
     ON
 )
 message(STATUS "option USE_PLATFORM_WEBSOCKETPP=" ${USE_PLATFORM_WEBSOCKETPP})
+
+option(
+    JOYNR_ENABLE_DLT_LOGGING
+    "Use DLT logger?"
+    OFF
+)
+message(STATUS "option JOYNR_ENABLE_DLT_LOGGING=" ${JOYNR_ENABLE_DLT_LOGGING})
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+option(
+    USE_PLATFORM_DLT
+    "Resolve dependency to DLT from the system?"
+    ON
+)
+message(STATUS "option USE_PLATFORM_DLT=" ${USE_PLATFORM_DLT})
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
+option(
+    JOYNR_ENABLE_STDOUT_LOGGING
+    "Use stdout logger?"
+    ON
+)
+message(STATUS "option JOYNR_ENABLE_STDOUT_LOGGING=" ${JOYNR_ENABLE_STDOUT_LOGGING})
 
 # should we use DBUS to communicate between libjoynr and cluster-controller
 option(
@@ -178,10 +201,11 @@ include(AddClangFormat)
 # Following dependencies must be installed by the user beforehand because they either
 # use a shared object or are included through joynr header files into the user's code.
 # Mosquitto is only required when the cluster controller build is enabled.
-if(NOT (USE_PLATFORM_SPDLOG AND USE_PLATFORM_JSMN AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
+set (CHECK_DLT (JOYNR_ENABLE_DLT_LOGGING AND USE_PLATFORM_DLT OR NOT JOYNR_ENABLE_DLT_LOGGING))
+if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
     set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
     set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
-    set(codeMsg "${codeMsg} USE_PLATFORM_JSMN and USE_PLATFORM_MOSQUITTO.\")")
+    set(codeMsg "${codeMsg} USE_PLATFORM_DLT and USE_PLATFORM_MOSQUITTO.\")")
     install(CODE "${codeMsg}")
 endif()
 
@@ -372,7 +396,7 @@ message(STATUS "variable Qt5Test_DEFINITIONS=${Qt5Test_DEFINITIONS}")
 
 ######## Add Boost ########
 
-find_package(Boost 1.56.0 REQUIRED
+find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
     system
     thread
@@ -537,7 +561,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wno-format-extra-args -Wformat-nonliteral -Wformat=2 -Winit-self")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Winvalid-pch -Wunsafe-loop-optimizations -Wmissing-include-dirs")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wmissing-braces -Wpacked -Wredundant-decls -Wstack-protector")
-    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wswitch-enum -Wuninitialized -Weffc++ -Wformat-security")
+    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wswitch-enum -Wuninitialized -Wformat-security")
     if(${WIN32})
             # This setting does not work in linux:
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -enable-auto-import")
@@ -611,7 +635,7 @@ else(USE_PLATFORM_SPDLOG)
     AddExternalProject(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog
-        GIT_TAG e91e1b8 # there are no version tags, hence a SHA is used
+        GIT_TAG 4fcde3b # there are no version tags, hence a SHA is used
         TIMEOUT 10
         # Disable configure step
         CONFIGURE_COMMAND ""
@@ -625,12 +649,90 @@ endif(USE_PLATFORM_SPDLOG)
 
 message(STATUS "variable spdlog_INCLUDE_DIRS=" ${spdlog_INCLUDE_DIRS})
 
+### Add DLT ###########################################################
+if(JOYNR_ENABLE_DLT_LOGGING)
+    if (USE_PLATFORM_DLT)
+        include(FindPkgConfig)
+        pkg_check_modules(DLT REQUIRED automotive-dlt)
+        set(DLT_LIBRARIES "${DLT_LIBRARY_DIRS}/${CMAKE_SHARED_LIBRARY_PREFIX}dlt${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    else(USE_PLATFORM_DLT)
+        message(STATUS "############ Download: DLT ############")
+        get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
+
+        set(DLT_LIBRARY_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}dlt${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        set(DLT_LIBRARIES "${EP_PREFIX}/src/DLT-build/src/lib/${DLT_LIBRARY_NAME}")
+
+        AddExternalProject(
+            DLT
+            GIT_REPOSITORY http://git.projects.genivi.org/dlt-daemon.git
+            GIT_TAG v2.15.0
+            TIMEOUT 10
+            CMAKE_ARGS "-DWITH_MAN=OFF;"
+                       "-DWTIH_DLT_ADAPTOR=OFF;" # sic!
+                       "-DWITH_DLT_CONSOLE=OFF"
+                       "-DWITH_DLT_EXAMPLES=OFF"
+                       "-DWITH_DLT_SYSTEM=OFF"
+                       "-DWITH_DLT_DBUS=OFF"
+                       "-DWITH_DLT_TESTS=OFF"
+            BUILD_BYPRODUCTS ${DLT_LIBRARIES}
+        )
+
+        ExternalProject_Get_Property(DLT SOURCE_DIR)
+        set(DLT_INCLUDE_DIRS "${SOURCE_DIR}/include")
+
+        # The directory does not exist when the import targets are checked. As a workaround
+        # we need to create it here. Otherwise the initial cmake call will fail.
+        file(MAKE_DIRECTORY ${EP_PREFIX}/src/DLT-build/src/lib)
+        file(MAKE_DIRECTORY ${EP_PREFIX}/src/DLT/include)
+    endif(USE_PLATFORM_DLT)
+
+    include(CheckDltImportTargets)
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
+### Add muesli ############################################################
+if (USE_PLATFORM_MUESLI)
+    find_package(muesli 0.1.1 REQUIRED CONFIG)
+else(USE_PLATFORM_MUESLI)
+    message(STATUS "############ Download: muesli ############")
+
+    AddExternalProject(
+        muesli
+        GIT_REPOSITORY https://github.com/bmwcarit/muesli
+        GIT_TAG 0.1.1
+        TIMEOUT 10
+        # Disable configure step
+        #CONFIGURE_COMMAND ""
+        CMAKE_ARGS -DBUILD_MUESLI_TESTS=Off
+        # Disable build step
+        #BUILD_COMMAND ""
+    )
+
+    ExternalProject_Get_Property(muesli SOURCE_DIR)
+    ExternalProject_Get_Property(muesli BINARY_DIR)
+
+    # add import target for mosquitto library
+    add_library(muesli::muesli INTERFACE IMPORTED GLOBAL)
+    add_dependencies(muesli::muesli muesli)
+    set(includeDirs "${SOURCE_DIR}/include" "${BINARY_DIR}/ThirdParty/src/rapidjson/include")
+    # need to create include dirs manually at cmake time to prevent cmake warning (non existing path
+    # in INTERFACE_INCLUDE_DIRECTORIES), since otherwise they are created at make time when cloning
+    # the source repositories
+    file(MAKE_DIRECTORY ${includeDirs})
+    set_property(
+        TARGET muesli::muesli
+        APPEND
+        PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${includeDirs}
+    )
+endif(USE_PLATFORM_MUESLI)
+get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
+
+message(STATUS "variable muesli_INCLUDE_DIRECTORIES= ${muesli_INCLUDE_DIRECTORIES}")
+
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     add_subdirectory(common-api)
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 add_subdirectory(common)
-add_subdirectory(jsonserializer)
 add_subdirectory(libjoynr)
 if(${BUILD_CLUSTER_CONTROLLER})
     add_subdirectory(cluster-controller)
@@ -657,7 +759,6 @@ set(
     JoynrCommon
     Joynr
     JoynrWsRuntime
-    JoynrJsonSerializer
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -700,7 +801,6 @@ set(
     JoynrConfig_LIB_COMMON_LIBRARIES
     JoynrCommon
     Joynr
-    JoynrJsonSerializer
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -727,16 +827,13 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 # ... for the build tree
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
-message(STATUS "variable JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY=" ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY})
 
 set(
     JoynrConfig_LIB_COMMON_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_INCLUDE_DIR}
+    ${muesli_INCLUDE_DIRECTORIES}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -753,17 +850,16 @@ set(
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_INCLUDE_DIR}
+    ${muesli_INCLUDE_DIRECTORIES}
 )
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrConfig_LIB_DBUS_INCLUDE_DIRS
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_INCLUDE_DIRS}
-        ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
-        ${jsmn_INCLUDE_DIR}
+        ${muesli_INCLUDE_DIRECTORIES}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
@@ -781,9 +877,9 @@ macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
     set(JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES}${FILE_CONTENTS})
 endmacro(FillJoynrConfigDependencies)
 
-if(USE_PLATFORM_JSMN)
-    FillJoynrConfigDependencies("PlatformJsmn")
-endif(USE_PLATFORM_JSMN)
+if(USE_PLATFORM_MUESLI)
+    FillJoynrConfigDependencies("PlatformMuesli")
+endif(USE_PLATFORM_MUESLI)
 
 if(USE_PLATFORM_MOSQUITTO)
     FillJoynrConfigDependencies("PlatformMosquitto")
@@ -795,6 +891,14 @@ if(USE_PLATFORM_SPDLOG)
     FillJoynrConfigDependencies("PlatformSpdlog")
 endif(USE_PLATFORM_SPDLOG)
 
+if(JOYNR_ENABLE_DLT_LOGGING)
+if(USE_PLATFORM_DLT)
+    FillJoynrConfigDependencies("PlatformDltlog")
+else(USE_PLATFORM_DLT)
+    FillJoynrConfigDependencies("ExternalProjectDltlog")
+endif(USE_PLATFORM_DLT)
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
 configure_file(
     JoynrConfig.cmake.in
     "JoynrConfig.cmake" @ONLY
@@ -805,6 +909,7 @@ file(
         "CMake/CheckCurlImportTargets.cmake"
         "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
+        "CMake/CheckDltImportTargets.cmake"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 # ... for the install tree
@@ -854,6 +959,7 @@ install(
         "CMake/CheckCurlImportTargets.cmake"
         "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
+        "CMake/CheckDltImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
 )
 

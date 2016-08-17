@@ -17,16 +17,11 @@
  * #L%
  */
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/Variant.h"
 #include "joynr/Logger.h"
 
 using namespace joynr;
 
 INIT_LOGGER(OnChangeWithKeepAliveSubscriptionQos);
-
-static bool isOnChangeWithKeepAliveSubscriptionQosSerializer =
-        Variant::registerType<OnChangeWithKeepAliveSubscriptionQos>(
-                "joynr.OnChangeWithKeepAliveSubscriptionQos");
 
 const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS()
 {

@@ -20,13 +20,15 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/JsonSerializer.h"
+#include "joynr/OneWayRequest.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr-messaging/DummyPlatformSecurityManager.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/MessagingQos.h"
 
 namespace joynr
 {
@@ -46,7 +48,7 @@ JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
     // create message and set type
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
-    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<Request>(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
@@ -57,7 +59,7 @@ JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY);
-    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<Reply>(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
@@ -68,7 +70,7 @@ JoynrMessage JoynrMessageFactory::createOneWayRequest(const std::string& senderI
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
-    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<OneWayRequest>(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
@@ -80,11 +82,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION);
-    initMsg(msg,
-            senderId,
-            receiverId,
-            qos,
-            JsonSerializer::serialize<SubscriptionPublication>(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
@@ -96,11 +94,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionRequest(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
-    initMsg(msg,
-            senderId,
-            receiverId,
-            qos,
-            JsonSerializer::serialize<SubscriptionRequest>(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
@@ -112,11 +106,7 @@ JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
-    initMsg(msg,
-            senderId,
-            receiverId,
-            qos,
-            JsonSerializer::serialize<BroadcastSubscriptionRequest>(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
@@ -127,7 +117,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionReply(const std::string& sen
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
-    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<SubscriptionReply>(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
@@ -138,7 +128,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionStop(const std::string& send
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
-    initMsg(msg, senderId, receiverId, qos, JsonSerializer::serialize<SubscriptionStop>(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
@@ -146,7 +136,7 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
                                   const std::string& senderParticipantId,
                                   const std::string& receiverParticipantId,
                                   const MessagingQos& qos,
-                                  const std::string& payload) const
+                                  std::string&& payload) const
 {
     std::int64_t ttl = qos.getTtl();
     msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
@@ -164,8 +154,13 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
     // add content type and class
     msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
 
+    // if the effort has been set to best effort, then activate that in the headers
+    if (qos.getEffort() != MessagingQosEffort::Enum::NORMAL) {
+        msg.setHeaderEffort(MessagingQosEffort::getLiteral(qos.getEffort()));
+    }
+
     // set payload
-    msg.setPayload(payload);
+    msg.setPayload(std::move(payload));
 }
 
 } // namespace joynr

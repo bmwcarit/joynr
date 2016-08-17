@@ -29,10 +29,17 @@ define("joynr/dispatching/types/SubscriptionReply", [
      * @param {Object}
      *            settings
      * @param {String}
-     *            subscriptionId
+     *            settings.subscriptionId
+     * @param {Object}
+     *            [settings.error] The exception object in case of subscription request failure
      */
     function SubscriptionReply(settings) {
         Util.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+
+        Util.checkPropertyIfDefined(settings.error, [
+            "Object",
+            "SubscriptionException"
+        ], "settings.error");
 
         /**
          * @name SubscriptionReply#subscriptionId

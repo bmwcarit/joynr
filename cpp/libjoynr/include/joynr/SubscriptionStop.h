@@ -22,6 +22,7 @@
 #include <string>
 
 #include "joynr/JoynrExport.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -45,10 +46,18 @@ public:
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(subscriptionId));
+    }
+
 private:
     std::string subscriptionId;
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::SubscriptionStop, "joynr.SubscriptionStop")
 
 #endif // SUBSCRIPTIONSTOP_H

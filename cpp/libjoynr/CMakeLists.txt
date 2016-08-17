@@ -7,24 +7,8 @@ message(STATUS "#############################################\n")
 find_package(OpenSSL REQUIRED)
 include(CheckOpenSSLImportTargets)
 
-if(USE_PLATFORM_WEBSOCKETPP)
-    find_package(websocketpp)
-else(USE_PLATFORM_WEBSOCKETPP)
-    AddExternalProject(
-        websocketpp
-        GIT_REPOSITORY https://github.com/zaphoyd/websocketpp.git
-        GIT_TAG 378437aecdcb1dfe62096ffd5d944bf1f640ccc3 # git tag 0.7.0
-        TIMEOUT 10
-        # Disable configure step
-        CONFIGURE_COMMAND ""
-        # Disable build step
-        BUILD_COMMAND ""
-    )
-    ExternalProject_Get_Property(websocketpp SOURCE_DIR)
-    set(WEBSOCKETPP_INCLUDE_DIR "${SOURCE_DIR}")
-endif(USE_PLATFORM_WEBSOCKETPP)
+include(AddWebSocketPP)
 
-get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 
 if(${GENERATE_SOURCES})
@@ -48,15 +32,8 @@ set(
 )
 
 set(
-    JoynrLib_SYS_INCLUDE_DIRS
-    ${jsmn_INCLUDE_DIR}
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
-)
-
-set(
     JoynrLib_TARGET_LIBRARIES
     JoynrCommon
-    JoynrJsonSerializer
 )
 
 set(
@@ -79,7 +56,6 @@ file(
     "dispatcher/*.h"
     "in-process/*.h"
     "joynr-messaging/*.h"
-    "json/*.h"
     "some-ip/*.h"
     "provider/*.h"
     "proxy/*.h"
@@ -87,7 +63,6 @@ file(
     "websocket/*.h"
     "CapabilitiesRegistrar.h"
     "LibjoynrSettings.h"
-    "JsonExceptionSerializer.h"
 )
 
 set(
@@ -106,7 +81,6 @@ file(
     "exceptions/*.cpp"
     "in-process/*.cpp"
     "joynr-messaging/*.cpp"
-    "json/*.cpp"
     "some-ip/*.cpp"
     "provider/*.cpp"
     "proxy/*.cpp"
@@ -114,7 +88,6 @@ file(
     "websocket/*.cpp"
     "CapabilitiesRegistrar.cpp"
     "LibjoynrSettings.cpp"
-    "JsonExceptionSerializer.cpp"
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -160,7 +133,6 @@ target_include_directories(
 target_include_directories(
     Joynr
     SYSTEM
-    PRIVATE ${JoynrLib_SYS_INCLUDE_DIRS}
     PUBLIC
         "$<BUILD_INTERFACE:${WEBSOCKETPP_INCLUDE_DIR}>"
         "$<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>" # necessary, because requirements are not propagated properly in cmake 2.8.x

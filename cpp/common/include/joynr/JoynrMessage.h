@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include <map>
 #include <string>
 
+#include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Logger.h"
@@ -91,6 +92,13 @@ public:
      * @return
      */
     static const std::string& HEADER_REPLY_ADDRESS();
+    /**
+     * @brief HEADER_EFFOR The "effort" header is set when the effort spent on delivering the
+     * message
+     * should be changed.
+     * @return
+     */
+    static const std::string& HEADER_EFFORT();
 
     static const std::string VALUE_MESSAGE_TYPE_ONE_WAY;
     static const std::string VALUE_MESSAGE_TYPE_REQUEST;
@@ -331,6 +339,37 @@ public:
      */
     void setHeaderReplyAddress(const std::string& replyAddress);
 
+    /**
+     * @brief containsHeaderEffort Tests whether the "effort" header of the
+     * message is set or not.
+     * @return true, if the "effort" header is set; false, otherwise.
+     * @see JoynrMessage::HEADER_EFFORT()
+     */
+    bool containsHeaderEffort() const;
+    /**
+     * @brief getHeaderEffort Gets the effort which should be expent delivering the message.
+     * Use JoynrMessage::containsHeaderEffort() to check whether the header is available or not.
+     * @return the "effort" header of the message, if the header is set; A
+     * default-constructed value, otherwise.
+     * @see JoynrMessage::HEADER_EFFORT()
+     */
+    std::string getHeaderEffort() const;
+    /**
+     * @brief setHeaderEffort Sets the effort to be expent on delivering the message.
+     * If the header is already set, its value is replaced with the new one.
+     * Use JoynrMessage::containsHeaderEffort() to check whether the header is
+     * already set or not.
+     * @param effort the "effort" header to be set on the message.
+     * @see JoynrMessage::HEADER_EFFORT()
+     */
+    void setHeaderEffort(const std::string& effort);
+
+    template <class Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(type), MUESLI_NVP(header), MUESLI_NVP(payload));
+    }
+
 private:
     /**
      * @brief CUSTOM_HEADER_PREFIX The prefix used when adding or retrieving custom headers
@@ -359,4 +398,7 @@ private:
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::JoynrMessage, "joynr.JoynrMessage")
+
 #endif // JOYNRMESSAGE_H

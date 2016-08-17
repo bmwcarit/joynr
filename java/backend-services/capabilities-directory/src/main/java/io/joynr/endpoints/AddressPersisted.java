@@ -3,10 +3,10 @@ package io.joynr.endpoints;
 import java.io.Serializable;
 
 import javax.persistence.DiscriminatorColumn;
-import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import javax.persistence.Table;
 
 import joynr.system.RoutingTypes.Address;
@@ -30,9 +30,9 @@ import joynr.system.RoutingTypes.Address;
  * #L%
  */
 
-@Entity
 @Table(name = "endpointaddresses")
 @DiscriminatorColumn(length = 100)
+@MappedSuperclass
 public class AddressPersisted extends Address implements Serializable {
     private static final long serialVersionUID = 1L;
 

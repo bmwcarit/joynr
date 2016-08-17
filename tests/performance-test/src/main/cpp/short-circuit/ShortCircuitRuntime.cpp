@@ -34,8 +34,6 @@
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/Settings.h"
-#include "joynr/MessagingSettings.h"
 
 namespace joynr
 {

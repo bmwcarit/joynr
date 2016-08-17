@@ -27,14 +27,9 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-
-import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
@@ -42,14 +37,16 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
-
 import joynr.JoynrMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DispatcherImpl implements Dispatcher {
 
@@ -90,7 +87,7 @@ public class DispatcherImpl implements Dispatcher {
             JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                                  toParticipantId,
                                                                                  subscriptionRequest,
-                                                                                 ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()),
+                                                                                 messagingQos,
                                                                                  broadcast);
 
             messageRouter.route(message);
@@ -106,7 +103,7 @@ public class DispatcherImpl implements Dispatcher {
             JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
                                                                               toParticipantId,
                                                                               subscriptionStop,
-                                                                              ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
+                                                                              messagingQos);
             messageRouter.route(message);
         }
 
@@ -122,7 +119,7 @@ public class DispatcherImpl implements Dispatcher {
             JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
                                                                          toParticipantId,
                                                                          publication,
-                                                                         ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
+                                                                         messagingQos);
             messageRouter.route(message);
         }
     }
@@ -132,11 +129,22 @@ public class DispatcherImpl implements Dispatcher {
                           Reply reply,
                           long expiryDateMs,
                           Map<String, String> customHeaders) throws IOException {
-        JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId,
-                                                               toParticipantId,
-                                                               reply,
-                                                               ExpiryDate.fromAbsolute(expiryDateMs),
-                                                               customHeaders);
+        MessagingQos messagingQos = new MessagingQos(expiryDateMs);
+        messagingQos.getCustomMessageHeaders().putAll(customHeaders);
+        JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, reply, messagingQos);
+        messageRouter.route(message);
+    }
+
+    @Override
+    public void sendSubscriptionReply(final String fromParticipantId,
+                                      final String toParticipantId,
+                                      SubscriptionReply subscriptionReply,
+                                      MessagingQos messagingQos) {
+
+        JoynrMessage message = joynrMessageFactory.createSubscriptionReply(fromParticipantId,
+                                                                           toParticipantId,
+                                                                           subscriptionReply,
+                                                                           messagingQos);
         messageRouter.route(message);
     }
 
@@ -159,34 +167,36 @@ public class DispatcherImpl implements Dispatcher {
                 Reply reply = objectMapper.readValue(message.getPayload(), Reply.class);
                 logger.debug("Parsed reply from message payload :" + message.getPayload());
                 handle(reply);
-            } else {
-                if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
-                    final Request request = objectMapper.readValue(message.getPayload(), Request.class);
-                    request.setCreatorUserId(message.getCreatorUserId());
-                    logger.debug("Parsed request from message payload :" + message.getPayload());
-                    handle(request, message.getFrom(), message.getTo(), expiryDate, customHeaders);
-                } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
-                    OneWayRequest oneWayRequest = objectMapper.readValue(message.getPayload(), OneWayRequest.class);
-                    oneWayRequest.setCreatorUserId(message.getCreatorUserId());
-                    logger.debug("Parsed one way request from message payload :" + message.getPayload());
-                    handle(oneWayRequest, message.getTo(), expiryDate);
-                } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
-                        || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
-                    SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
-                                                                                     SubscriptionRequest.class);
-                    logger.debug("Parsed subscription request from message payload :" + message.getPayload());
-                    handle(subscriptionRequest, message.getFrom(), message.getTo());
-                } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
-                    SubscriptionStop subscriptionStop = objectMapper.readValue(message.getPayload(),
-                                                                               SubscriptionStop.class);
-                    logger.debug("Parsed subscription stop from message payload :" + message.getPayload());
-                    handle(subscriptionStop);
-                } else if (JoynrMessage.MESSAGE_TYPE_PUBLICATION.equals(type)) {
-                    SubscriptionPublication publication = objectMapper.readValue(message.getPayload(),
-                                                                                 SubscriptionPublication.class);
-                    logger.debug("Parsed publication from message payload :" + message.getPayload());
-                    handle(publication);
-                }
+            } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(type)) {
+                SubscriptionReply subscriptionReply = objectMapper.readValue(message.getPayload(),
+                                                                             SubscriptionReply.class);
+                logger.debug("Parsed reply from message payload :" + message.getPayload());
+                handle(subscriptionReply);
+            } else if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
+                final Request request = objectMapper.readValue(message.getPayload(), Request.class);
+                request.setCreatorUserId(message.getCreatorUserId());
+                logger.debug("Parsed request from message payload :" + message.getPayload());
+                handle(request, message.getFrom(), message.getTo(), expiryDate, customHeaders);
+            } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
+                OneWayRequest oneWayRequest = objectMapper.readValue(message.getPayload(), OneWayRequest.class);
+                oneWayRequest.setCreatorUserId(message.getCreatorUserId());
+                logger.debug("Parsed one way request from message payload :" + message.getPayload());
+                handle(oneWayRequest, message.getTo(), expiryDate);
+            } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
+                    || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
+                SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
+                                                                                 SubscriptionRequest.class);
+                logger.debug("Parsed subscription request from message payload :" + message.getPayload());
+                handle(subscriptionRequest, message.getFrom(), message.getTo());
+            } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
+                SubscriptionStop subscriptionStop = objectMapper.readValue(message.getPayload(), SubscriptionStop.class);
+                logger.debug("Parsed subscription stop from message payload :" + message.getPayload());
+                handle(subscriptionStop);
+            } else if (JoynrMessage.MESSAGE_TYPE_PUBLICATION.equals(type)) {
+                SubscriptionPublication publication = objectMapper.readValue(message.getPayload(),
+                                                                             SubscriptionPublication.class);
+                logger.debug("Parsed publication from message payload :" + message.getPayload());
+                handle(publication);
             }
         } catch (IOException e) {
             logger.error("Error parsing payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding joynr message.",
@@ -236,6 +246,10 @@ public class DispatcherImpl implements Dispatcher {
         requestReplyManager.handleReply(reply);
     }
 
+    private void handle(SubscriptionReply subscriptionReply) {
+        subscriptionManager.handleSubscriptionReply(subscriptionReply);
+    }
+
     private void handle(OneWayRequest oneWayRequest, String toParticipantId, final long expiryDate) {
         requestReplyManager.handleOneWayRequest(toParticipantId, oneWayRequest, expiryDate);
     }
@@ -268,7 +282,6 @@ public class DispatcherImpl implements Dispatcher {
             logger.error("Error extracting payload for message " + message.getId() + ", raw payload: "
                     + message.getPayload(), e.getMessage());
         }
-
     }
 
     private void handle(final SubscriptionPublication publication) {

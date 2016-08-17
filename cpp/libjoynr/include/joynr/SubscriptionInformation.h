@@ -19,11 +19,10 @@
 #ifndef SUBSCRIPTIONINFORMATION_H
 #define SUBSCRIPTIONINFORMATION_H
 
-#include "joynr/JoynrExport.h"
-#include "joynr/Logger.h"
-#include "joynr/SubscriptionRequest.h"
-
 #include <string>
+
+#include "joynr/JoynrExport.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -51,13 +50,19 @@ public:
     std::string getProviderId() const;
     void setProviderId(const std::string& id);
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(proxyId), MUESLI_NVP(providerId));
+    }
+
 private:
     std::string proxyId;
     std::string providerId;
-
-    ADD_LOGGER(SubscriptionInformation);
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::SubscriptionInformation, "joynr.SubscriptionInformation")
 
 #endif // SUBSCRIPTIONINFORMATION_H

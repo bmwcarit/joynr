@@ -19,9 +19,9 @@
 #ifndef PERIODICSUBSCRIPTIONQOS_H
 #define PERIODICSUBSCRIPTIONQOS_H
 
-#include "joynr/SubscriptionQos.h"
 #include <cstdint>
 
+#include "joynr/SubscriptionQos.h"
 #include "joynr/Logger.h"
 
 namespace joynr
@@ -242,6 +242,14 @@ public:
     /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
     static const std::int64_t& NO_ALERT_AFTER_INTERVAL();
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<SubscriptionQos>(this),
+                MUESLI_NVP(periodMs),
+                MUESLI_NVP(alertAfterIntervalMs));
+    }
+
 protected:
     /**
      * @brief The period in milliseconds.
@@ -261,4 +269,9 @@ private:
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::PeriodicSubscriptionQos,
+                                 joynr::SubscriptionQos,
+                                 "joynr.PeriodicSubscriptionQos")
+
 #endif // PERIODICSUBSCRIPTIONQOS_H

@@ -17,8 +17,11 @@
  * #L%
  */
 
-define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
-], function(BroadcastFilterParameters) {
+define("joynr/proxy/ProxyEvent", [
+    "global/Promise",
+    "joynr/proxy/BroadcastFilterParameters",
+    "joynr/dispatching/subscription/util/SubscriptionUtil"
+], function(Promise, BroadcastFilterParameters, SubscriptionUtil) {
 
     /**
      * Checks if the given datatypes and values match the given broadcast parameters
@@ -76,6 +79,8 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
      *            settings.broadcastName the name of the broadcast as modelled in Franca
      * @param {String[]}
      *            settings.broadcastParameter the parameter meta information of the broadcast being subscribed to
+     * @param {Object}
+     *            settings.filterParameters the filter parameters of the broadcast
      * @returns {ProxyEvent}
      */
     function ProxyEvent(parent, settings) {
@@ -95,12 +100,15 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
          * @param {String}
          *            [subscribeParameters.subscriptionId] optional subscriptionId. Used to refresh or
          *            reinstate an existing subscription.
-         * @param {onReceive}
+         * @param {Function}
          *            subscribeParameters.onReceive this function is called when an event as been
          *            received. method signature: "void onReceive({?}value)"
-         * @param {onError}
+         * @param {Function}
          *            subscribeParameters.onError this function is called when an error occurs with
          *            a subscribed event. method signature: "void onError({Error} error)"
+         * @param {Function}
+         *            subscribeParameters.onSubscribed the callback to inform once the subscription request has
+         *            been delivered successfully
          * @returns {Object} returns a promise that is resolved with the subscriptionId, which is to
          *          be used to unsubscribe from this subscription later. NOTE: currently resolved
          *          when the request is sent; later will be resolved once the subscriptionReply is
@@ -108,6 +116,22 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
          */
         this.subscribe =
                 function subscribe(subscribeParameters) {
+                    if (subscribeParameters.filterParameters !== undefined
+                        && subscribeParameters.filterParameters !== null) {
+                        var checkResult =
+                                SubscriptionUtil.checkFilterParameters(
+                                        settings.filterParameters,
+                                        subscribeParameters.filterParameters.filterParameters,
+                                        settings.broadcastName);
+                        if (checkResult.caughtErrors.length !== 0) {
+                            var errorMessage = JSON.stringify(checkResult.caughtErrors);
+                            return Promise.reject(new Error(
+                                    "SubscriptionRequest could not be processed, as the filterParameters \""
+                                        + JSON.stringify(subscribeParameters.filterParameters)
+                                        + "\" are wrong: "
+                                        + errorMessage));
+                        }
+                    }
                     return settings.dependencies.subscriptionManager
                             .registerBroadcastSubscription({
                                 proxyId : parent.proxyParticipantId,
@@ -122,6 +146,7 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
                                             settings.broadcastParameter));
                                 },
                                 onError : subscribeParameters.onError,
+                                onSubscribed : subscribeParameters.onSubscribed,
                                 filterParameters : subscribeParameters.filterParameters
                             });
                 };

@@ -23,6 +23,9 @@
 #include <vector>
 
 #include "joynr/OneWayRequest.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -32,9 +35,6 @@ class JOYNRCOMMON_EXPORT Request : public OneWayRequest
 public:
     Request();
 
-    Request(const Request&) = default;
-    Request& operator=(const Request&) = default;
-
     Request(Request&&) = default;
     Request& operator=(Request&&) = default;
 
@@ -43,9 +43,19 @@ public:
     const std::string& getRequestReplyId() const;
     void setRequestReplyId(std::string requestReplyId);
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<OneWayRequest>(this), MUESLI_NVP(requestReplyId));
+    }
+
 private:
+    DISALLOW_COPY_AND_ASSIGN(Request);
     std::string requestReplyId;
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::Request, "joynr.Request")
+
 #endif // REQUEST_H

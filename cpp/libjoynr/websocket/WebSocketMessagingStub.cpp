@@ -20,10 +20,10 @@
 
 #include "WebSocketMessagingStubFactory.h"
 #include "joynr/IWebSocketSendInterface.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -40,15 +40,15 @@ void WebSocketMessagingStub::transmit(
         JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
+    std::string serializedMessage = joynr::serializer::serializeToJson(message);
+
     if (!webSocket->isInitialized()) {
-        JOYNR_LOG_TRACE(logger,
-                        "WebSocket not ready. Unable to send message {}",
-                        JsonSerializer::serialize(message));
+        JOYNR_LOG_TRACE(
+                logger, "WebSocket not ready. Unable to send message {}", serializedMessage);
         onFailure(exceptions::JoynrDelayMessageException(
                 "WebSocket not ready. Unable to send message"));
     }
 
-    std::string serializedMessage = JsonSerializer::serialize(message);
     JOYNR_LOG_TRACE(logger, ">>>> OUTGOING >>>> {}", serializedMessage);
     webSocket->send(serializedMessage, onFailure);
 }

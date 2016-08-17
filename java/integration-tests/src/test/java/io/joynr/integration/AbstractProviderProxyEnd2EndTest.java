@@ -68,7 +68,7 @@ import joynr.tests.DefaulttestProvider;
 import joynr.tests.test.MethodWithErrorEnumExtendedErrorEnum;
 import joynr.tests.test.MethodWithImplicitErrorEnumErrorEnum;
 import joynr.tests.testAsync.MethodWithMultipleOutputParametersCallback;
-import joynr.tests.testBroadcastInterface.BroadcastWithMapParametersBroadcastListener;
+import joynr.tests.testBroadcastInterface.BroadcastWithMapParametersBroadcastAdapter;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
 import joynr.tests.testProxy;
 import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
@@ -781,15 +781,11 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         final TStringKeyMap mapParam = new TStringKeyMap();
         mapParam.put("key", "value");
-        proxy.subscribeToBroadcastWithMapParametersBroadcast(new BroadcastWithMapParametersBroadcastListener() {
+        proxy.subscribeToBroadcastWithMapParametersBroadcast(new BroadcastWithMapParametersBroadcastAdapter() {
             @Override
             public void onReceive(TStringKeyMap receivedMapParam) {
                 assertEquals(mapParam, receivedMapParam);
                 broadcastReceived.release();
-            }
-
-            @Override
-            public void onError() {
             }
         }, subscriptionQos);
 

@@ -25,6 +25,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <QMap>
 
@@ -268,28 +269,27 @@ private:
     void registerPendingLookup(const std::vector<InterfaceAddress>& interfaceAddresses,
                                const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
     bool isCallbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
-                          const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
+                          const std::shared_ptr<ILocalCapabilitiesCallback>& callback,
+                          const joynr::types::DiscoveryQos& discoveryQos);
     void callbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
                         const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
     void callPendingLookups(const InterfaceAddress& interfaceAddress);
 };
 
-// NOTE: This future is used to convert the synchronous call of the middleware
-// to an asynchronous call to the local capabilities directory. It could be removed
-// once we have the possibility to call provider asynchronous.
-class LocalCapabilitiesFuture : public ILocalCapabilitiesCallback
+class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
 {
 public:
-    LocalCapabilitiesFuture();
+    LocalCapabilitiesCallback(
+            std::function<void(const std::vector<CapabilityEntry>&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
     void capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) override;
-    std::vector<CapabilityEntry> get();
-    std::vector<CapabilityEntry> get(std::chrono::milliseconds timeout);
-    ~LocalCapabilitiesFuture() override = default;
+    void onError(const joynr::exceptions::JoynrRuntimeException&) override;
+    ~LocalCapabilitiesCallback() override = default;
 
 private:
-    Semaphore futureSemaphore;
-    DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesFuture);
-    std::vector<CapabilityEntry> capabilities;
+    DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesCallback);
+    std::function<void(const std::vector<CapabilityEntry>&)> onSuccess;
+    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorCallback;
 };
 
 } // namespace joynr

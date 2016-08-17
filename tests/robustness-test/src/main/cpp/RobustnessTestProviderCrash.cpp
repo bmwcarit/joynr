@@ -49,24 +49,28 @@ template <typename T>
 class MockSubscriptionListenerOneType : public joynr::ISubscriptionListener<T>
 {
 public:
+    MOCK_METHOD1_T(onSubscribed, void(const std::string& subscriptionId));
     MOCK_METHOD1_T(onReceive, void(const T& value));
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
 TEST_F(RobustnessTestProviderCrash, subscribeTo_broadcastWithSingleStringParameter)
 {
-    Semaphore semaphore(0);
+    Semaphore subscriptionRegisteredSemaphore(0);
+    Semaphore publicationSemaphore(0);
+    std::string subscriptionId;
     auto mockListener = std::make_shared<MockSubscriptionListenerOneType<std::string>>();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(_)).WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(_))
+            .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
+    EXPECT_CALL(*mockListener, onSubscribed(_)).WillRepeatedly(
+            DoAll(SaveArg<0>(&subscriptionId), ReleaseSemaphore(&subscriptionRegisteredSemaphore)));
 
-    OnChangeSubscriptionQos subscriptionQos;
-    subscriptionQos.setValidityMs(600000);
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    subscriptionQos->setValidityMs(600000);
     proxy->subscribeToBroadcastWithSingleStringParameterBroadcast(mockListener, subscriptionQos);
-    // This wait is necessary, because subcriptions are async, and a broadcast could occur
-    // before the subscription has started.
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(std::chrono::seconds(10)));
 
     killProvider();
     startProvider();
@@ -74,7 +78,7 @@ TEST_F(RobustnessTestProviderCrash, subscribeTo_broadcastWithSingleStringParamet
     try {
         proxy->startFireBroadcastWithSingleStringParameter();
         // Wait for a subscription message to arrive
-        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(60)))
+        ASSERT_TRUE(publicationSemaphore.waitFor(std::chrono::seconds(60)))
                 << "broadcastWithSingleStringParameter did not arrive in time";
     } catch (const joynr::exceptions::JoynrRuntimeException& e) {
         ADD_FAILURE() << "startFireBroadcastWithSingleStringParameter failed with: "
@@ -86,26 +90,33 @@ TEST_F(RobustnessTestProviderCrash, subscribeTo_broadcastWithSingleStringParamet
         ADD_FAILURE() << "stopFireBroadcastWithSingleStringParameter failed with: "
                       << e.getMessage();
     }
+    proxy->unsubscribeFromBroadcastWithSingleStringParameterBroadcast(subscriptionId);
 }
 
 TEST_F(RobustnessTestProviderCrash, subscribeToAttributeString)
 {
-    Semaphore semaphore(0);
+    Semaphore subscriptionRegisteredSemaphore(0);
+    Semaphore publicationSemaphore(0);
+    std::string subscriptionId;
     auto mockListener = std::make_shared<MockSubscriptionListenerOneType<std::string>>();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(_)).WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(_))
+            .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
+    EXPECT_CALL(*mockListener, onSubscribed(_)).WillRepeatedly(
+            DoAll(SaveArg<0>(&subscriptionId), ReleaseSemaphore(&subscriptionRegisteredSemaphore)));
 
-    OnChangeWithKeepAliveSubscriptionQos subscriptionQos;
-    subscriptionQos.setMinIntervalMs(5 * 1000);
-    subscriptionQos.setMaxIntervalMs(30 * 1000);
-    subscriptionQos.setValidityMs(120 * 1000);
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>();
+    subscriptionQos->setMinIntervalMs(5 * 1000);
+    subscriptionQos->setMaxIntervalMs(30 * 1000);
+    subscriptionQos->setValidityMs(120 * 1000);
     proxy->subscribeToAttributeString(mockListener, subscriptionQos);
+    ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(std::chrono::seconds(10)));
 
     // the first publication should arrive immediately after subscription is done
     try {
         // Wait for a subscription message to arrive
-        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(60)))
+        ASSERT_TRUE(publicationSemaphore.waitFor(std::chrono::seconds(60)))
                 << "attribute publication did not arrive in time";
     } catch (const joynr::exceptions::JoynrRuntimeException& e) {
         ADD_FAILURE() << "waiting for attribute publication failed with: " << e.getMessage();
@@ -119,9 +130,10 @@ TEST_F(RobustnessTestProviderCrash, subscribeToAttributeString)
 
     try {
         // Wait for a subscription message to arrive
-        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(60)))
+        ASSERT_TRUE(publicationSemaphore.waitFor(std::chrono::seconds(60)))
                 << "attribute publication did not arrive in time";
     } catch (const joynr::exceptions::JoynrRuntimeException& e) {
         ADD_FAILURE() << "waiting for attribute publication failed with: " << e.getMessage();
     }
+    proxy->unsubscribeFromAttributeString(subscriptionId);
 }

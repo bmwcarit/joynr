@@ -27,6 +27,8 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_A
 import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITYDIRECTORYURL;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.DISCOVERYDIRECTORYURL;
+import static io.joynr.messaging.MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL;
+import static java.lang.String.format;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +66,10 @@ public class LegacyCapabilitiesProvisioning {
         protected String deprecatedCapabilityDirectoryUrl;
 
         @Inject(optional = true)
+        @Named(DOMAINACCESSCONTROLLERURL)
+        protected String domainAccessControllerUrl;
+
+        @Inject(optional = true)
         @Named(CHANNELID)
         protected String channelId;
 
@@ -93,6 +99,7 @@ public class LegacyCapabilitiesProvisioning {
         // @CHECKSTYLE:OFF
         public LegacyProvisioningPropertiesHolder(String discoveryDirectoryUrl,
                 String deprecatedCapabilityDirectoryUrl,
+                String domainAccessControllerUrl,
                 String channelId,
                 String discoveryDirectoriesDomain,
                 String capabilitiesDirectoryParticipantId,
@@ -102,6 +109,7 @@ public class LegacyCapabilitiesProvisioning {
             // @CHECKSTYLE:ON
             this.discoveryDirectoryUrl = discoveryDirectoryUrl;
             this.deprecatedCapabilityDirectoryUrl = deprecatedCapabilityDirectoryUrl;
+            this.domainAccessControllerUrl = domainAccessControllerUrl;
             this.channelId = channelId;
             this.discoveryDirectoriesDomain = discoveryDirectoriesDomain;
             this.capabilitiesDirectoryParticipantId = capabilitiesDirectoryParticipantId;
@@ -129,7 +137,7 @@ public class LegacyCapabilitiesProvisioning {
                                 GlobalDomainAccessController.INTERFACE_NAME,
                                 properties.domainAccessControllerChannelId,
                                 properties.domainAccessControllerParticipantId,
-                                urlToUse,
+                                properties.domainAccessControllerUrl,
                                 properties.channelId,
                                 properties.discoveryDirectoriesDomain);
     }
@@ -141,12 +149,22 @@ public class LegacyCapabilitiesProvisioning {
                                          String urlForAddress,
                                          String localChannelId,
                                          String domain) {
-        if (isPresent(participantId) && isPresent(urlForAddress) && isPresent(channelId) && isPresent(domain)) {
+        boolean hasUrl = isPresent(urlForAddress);
+        boolean hasParticipantId = isPresent(participantId);
+        if (hasUrl && !hasParticipantId) {
+            throw new IllegalArgumentException(
+                format("When configuring the discovery directory or domain access controller "
+                        + "via properties, you must provide both a URL and a participant ID per service.%n"
+                        + "You provided the URL '%s' and the participant ID '%s' for the service %s.%n"
+                        + "Please complete the configuration and restart the application.",
+                    urlForAddress, participantId, interfaceName));
+        }
+        if (hasParticipantId && hasUrl && isPresent(channelId) && isPresent(domain)) {
             Address address;
             if (localChannelId.equals(channelId)) {
                 address = new InProcessAddress();
             } else if (urlForAddress.startsWith("tcp") || urlForAddress.startsWith("mqtt")) {
-                address = new MqttAddress(urlForAddress, channelId + "/+");
+                address = new MqttAddress(urlForAddress, channelId + "/low/" + participantId);
             } else {
                 address = new ChannelAddress(urlForAddress, channelId);
             }

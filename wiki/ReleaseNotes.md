@@ -1,8 +1,67 @@
+#joynr 0.20.0
+
+##API relevant changes
+* **[JS]** The SubscriptionListener is now able to get informed about succeeded
+  subscription requests. For this purpose, he can implement a callback having
+  the following signature: void onSubscribed(subscriptionId). In case of
+  failure the onError callback can be invoked with a SubscriptionException.
+* **[JS]** The consumer is able to synchronize to subscription requests.
+  The promise returned by <Interface>Proxy.subscribeTo<Attribute|Broadcast> is
+  resolved, once the subscription request has been successfully delivered to the
+  interface provider. In case of failure, it can be rejected with a
+  SubscriptionException.
+* **[Java]** The AttributeSubscriptionAdapter is now able to get informed about succeeded
+  subscription requests. For this purpose, it implements a callback having
+  the following signature: public void onSubscribed(String subscriptionId).
+  In case of failure the onError callback can be invoked with a SubscriptionException.
+* **[Java]** The consumer is able to synchronize to subscription requests.
+  The subscribeTo<BroadcastName> and subscribeTo<AttributeName> methods
+  now return a Future that is resolved once the subscription request has been
+  successfully delivered to the interface provider. The get() method of the
+  Future returns the subscriptionId on successful execution or can throw
+  a SubscriptionException in case of failure.
+* **[C++]** The ISubscriptionListener interface is now able to get informed about succeeded
+  subscription requests. For this purpose, it can implement a callback having
+  the following signature: virtual void onSubscribed(const std::string& subscriptionId).
+  In case of failure the onError callback can be invoked with a SubscriptionException.
+* **[C++]** The consumer is able to synchronize to subscription requests.
+  The subscribeTo<BroadcastName> and subscribeTo<AttributeName> methods
+  now return a Future that is resolved once the subscription request has been
+  successfully delivered to the interface provider. The get() method of the
+  Future returns the subscriptionId on successful execution or can throw
+  a SubscriptionException in case of failure.
+* **[Java]** Static capabilities provisioning can now be specified as a URI.
+  See the [Java Configuration Guide](JavaSettings.md) for details.
+* **[Java]** the domain access controller now has it's own property with which one can set its
+  URI rather than it using the discovery directory URI. See the documentation to
+  `DOMAINACCESSCONTROLLERURL` in the [Java Configuration Guide](JavaSettings.md) for details.
+* **[Java]** when specifying the discovery directory or domain access controller URIs via
+  configuration properties, it is now __not__ necessary to specify the participant IDs as well.
+* **[JS]** Optional expiryDateMs (mills since epoch) can be passed to registerProvider. Default
+  value is one day from now.
+* **[JEE]** Added ability to specifiy message processors which can be used to, e.g., add custom
+  headers to outgoing joynr messages. See the [JEE Documentation](jee.md) for details.
+* **[Java]** the container classes for multi-out return values are now marked with an interface:
+  `MultiReturnValuesContainer`.
+* **[C++]** the QoS parameter has to be passed as std::shared_ptr to the `subscribeTo...` methods
+* **[C++]** Joynr runtime object can be created with a settings object as well as with a path
+  to a settings file.
+
+##Other changes
+* **[JEE]** a JEE version of the discovery service was added which can be deployed to EE
+  containers like, e.g., Payara.
+* **[JEE]** corrected configuration of Radio App JEE and System Integration Tests sit-jee-app
+  to match the new capabilities provisioning and some other minor fixes.
+* **[Java, JS, C++, JEE]** Ability to specify effort to be expent on ensuring delivery of
+  messages. When set to `best effort` and using MQTT as transport, this results in a QoS 0
+  MQTT message being sent (fire-and-forget). See `MessagingQosEffort` classes in each language.
+* **[C++]** muesli is now used as serializer; it can be found at https://github.com/bmwcarit/muesli
+
 #joynr 0.19.5
 This is a minor bug fix release.
 
 ##API relevant changes
-None. 
+None.
 
 ##Other changes
 * **[C++]** Fix multi-threading issue in LocalCapabilitiesDirectory.
@@ -11,7 +70,7 @@ None.
 This is a minor bug fix release.
 
 ##API relevant changes
-None. 
+None.
 
 ##Other changes
 * **[C++]** Correctly load persisted routing table in the LibJoynrRuntime.
@@ -20,10 +79,10 @@ None.
 This is a minor bug fix release.
 
 ##API relevant changes
-* **[C++]** Add new API to create joynr runtime with settings object. 
+* **[C++]** Add new API to create joynr runtime with settings object.
 
 ##Other changes
-* **[JS]** Support attributes starting with capital letters. 
+* **[JS]** Support attributes starting with capital letters.
 
 #joynr 0.19.2
 This is a minor bug fix release.
@@ -32,7 +91,7 @@ This is a minor bug fix release.
 None.
 
 ##Other changes
-* **[C++]** Do not crash joynr runtime if writing persistency files fails. 
+* **[C++]** Do not crash joynr runtime if writing persistency files fails.
 
 #joynr 0.19.1
 This is a minor bug fix release.
@@ -63,6 +122,10 @@ None.
 * **[Java]** The way in which the global capabilities and domain access control directories are
   provisioned has changed. See `StaticCapabilitiesProvisioning` as well as its entry in the
   [Java Settings documentation](JavaSettings.md) for details.
+* **[JEE]** You can now inject the calling principal in providers in order to see who performed
+  the call currently being executed.
+* **[JEE]** Support for HiveMQ shared subscriptions, which enables clustering using only
+  MQTT for communication.
 
 #joynr 0.18.5
 This is a minor bug fix release.

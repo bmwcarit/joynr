@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,20 @@ public:
      *
      * Since the onError callback is called by a communication middleware thread, it should not
      * be blocked, wait for user interaction, or do larger computation.
+     *
+     * @param error JoynrRuntimeException describing the error
      */
     virtual void onError(const exceptions::JoynrRuntimeException& error) = 0;
+
+    /**
+     * @brief onSubscribed Gets called when the subscription is successfully registered at the
+     * provider
+     * @param subscriptionId the subscription id of the subscription as string
+     *
+     * Since the onSubscribed callback is called by a communication middleware thread, it should
+     * not be blocked, wait for user interaction, or do larger computation.
+     */
+    virtual void onSubscribed(const std::string& subscriptionId) = 0;
 };
 
 /**
@@ -53,7 +65,7 @@ public:
      *
      * Since the onReceive callback is called by a communication middleware thread, it should not
      * be blocked, wait for user interaction, or do larger computation.
-     * @param values associated with the subscription this listener is listen to
+     * @param values associated with the subscription this listener is listening to
      */
     virtual void onReceive(const Ts&... values) = 0;
 };

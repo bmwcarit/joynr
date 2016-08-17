@@ -52,13 +52,15 @@ class InterfaceInProcessConnectorHTemplate extends InterfaceTemplate{
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/SubscriptionRequest.h"
+«IF francaIntf.broadcasts.size > 0»
 #include "joynr/BroadcastSubscriptionRequest.h"
+«ENDIF»
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Logger.h"
 #include "joynr/TypeUtil.h"
 
-«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include <memory>
@@ -86,17 +88,17 @@ class «interfaceName»InProcessConnector : public I«interfaceName»Connector {
 private:
 «FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 	«val returnType = attribute.typeName»
-	std::string subscribeTo«attribute.joynrName.toFirstUpper»(
+	std::shared_ptr<joynr::Future<std::string>> subscribeTo«attribute.joynrName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::SubscriptionQos& subscriptionQos,
+				std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 				SubscriptionRequest& subscriptionRequest);
 «ENDFOR»
 «FOR broadcast: francaIntf.broadcasts»
 «val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 «val broadcastName = broadcast.joynrName»
-	std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+	std::shared_ptr<joynr::Future<std::string>> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			const joynr::OnChangeSubscriptionQos& subscriptionQos,
+			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			BroadcastSubscriptionRequest& subscriptionRequest);
 «ENDFOR»
 public:
@@ -133,7 +135,7 @@ public:
 	«produceAsyncSetterDeclarations(francaIntf, false)»
 	«produceAsyncMethodDeclarations(francaIntf, false, true)»
 	«produceFireAndForgetMethodDeclarations(francaIntf, false)»
-	«produceSubscribeUnsubscribeMethods(francaIntf, false)»
+	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false)»
 
 private:
 	ADD_LOGGER(«interfaceName»InProcessConnector);

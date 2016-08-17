@@ -20,63 +20,42 @@ package io.joynr.capabilities;
  */
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import javax.persistence.CascadeType;
+import javax.persistence.Embeddable;
+import javax.persistence.OneToMany;
 
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-
-@Entity
-@Table(name = "providerqos")
+@Embeddable
 public class ProviderQosPersisted extends ProviderQos implements Serializable {
     private static final long serialVersionUID = 1L;
+    private List<CustomParameterPersisted> customParameterList = new ArrayList<>();
 
     public ProviderQosPersisted() {
     }
 
-    private String participantId;
-
-    public ProviderQosPersisted(final String participantId, ProviderQos providerQos) {
-        super(Collections2.transform(Arrays.asList(providerQos.getCustomParameters()),
-                                     new Function<CustomParameter, CustomParameterPersisted>() {
-                                         @Override
-                                         public CustomParameterPersisted apply(CustomParameter input) {
-                                             return new CustomParameterPersisted(participantId, input);
-                                         }
-
-                                     }).toArray(new CustomParameter[providerQos.getCustomParameters().length]),
+    public ProviderQosPersisted(ProviderQos providerQos) {
+        super(providerQos.getCustomParameters(),
               providerQos.getPriority(),
               providerQos.getScope(),
               providerQos.getSupportsOnChangeSubscriptions());
-        this.participantId = participantId;
+        for (CustomParameter customParameter : providerQos.getCustomParameters()) {
+            customParameterList.add(new CustomParameterPersisted(customParameter));
+        }
+    }
+    @OneToMany(cascade = {CascadeType.ALL}, orphanRemoval = true)
+    public List<CustomParameterPersisted> getCustomParameterList() {
+        return customParameterList;
     }
 
-    @Id
-    protected final String getParticipantId() {
-        return participantId;
-    }
-
-    protected final void setParticipantId(String participantId) {
-        this.participantId = participantId;
-    }
-
-    @Override
-    @Lob
-    public CustomParameter[] getCustomParameters() {
-        return super.getCustomParameters();
-    }
-
-    @Override
-    public void setCustomParameters(CustomParameter[] customParameters) {
-        super.setCustomParameters(customParameters);
+    public void setCustomParameterList(List<CustomParameterPersisted> customParameterList) {
+        this.customParameterList = customParameterList;
+        super.setCustomParameters(customParameterList.toArray(new CustomParameter[customParameterList.size()]));
     }
 
     @Override
@@ -113,7 +92,6 @@ public class ProviderQosPersisted extends ProviderQos implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
         return result;
     }
 
@@ -126,14 +104,6 @@ public class ProviderQosPersisted extends ProviderQos implements Serializable {
             return false;
         }
         if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ProviderQosPersisted other = (ProviderQosPersisted) obj;
-        if (participantId == null) {
-            if (other.participantId != null) {
-                return false;
-            }
-        } else if (!participantId.equals(other.participantId)) {
             return false;
         }
         return true;

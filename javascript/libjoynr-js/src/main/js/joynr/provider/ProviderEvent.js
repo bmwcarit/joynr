@@ -19,8 +19,9 @@
 
 define("joynr/provider/ProviderEvent", [
     "joynr/provider/BroadcastOutputParameters",
-    "joynr/util/UtilInternal"
-], function(BroadcastOutputParameters, Util) {
+    "joynr/util/UtilInternal",
+    "joynr/dispatching/subscription/util/SubscriptionUtil"
+], function(BroadcastOutputParameters, Util, SubscriptionUtil) {
 
     /**
      * Constructor of ProviderEvent object that is used in the generation of provider objects
@@ -47,6 +48,21 @@ define("joynr/provider/ProviderEvent", [
 
         var callbacks = [];
         var filters = [];
+
+        /**
+         * @name ProviderEvent#checkFilterParameters
+         * @param {BroadcastFilterParameters} filterParameters
+         * @param {Object} filterParameters.filterParameters an object containing a map filterParameters
+         * 
+         */
+        this.checkFilterParameters =
+                function checkFilterParameters(filterParametersInput) {
+                    var filterParameters = filterParametersInput || {};
+                    return SubscriptionUtil.checkFilterParameters(
+                            filterSettings,
+                            filterParameters.filterParameters,
+                            eventName);
+                };
 
         this.createBroadcastOutputParameters = function createBroadcastOutputParameters() {
             return new BroadcastOutputParameters(outputParameterProperties);

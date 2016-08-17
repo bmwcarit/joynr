@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,9 @@
 #include "joynr/SubscriptionQos.h"
 #include <limits>
 #include <chrono>
-#include "joynr/Variant.h"
 
 namespace joynr
 {
-
-static const bool isSubscriptionQosRegistered =
-        Variant::registerType<SubscriptionQos>("joynr.SubscriptionQos");
 
 const std::int64_t& SubscriptionQos::DEFAULT_PUBLICATION_TTL_MS()
 {
@@ -67,13 +63,13 @@ const std::int64_t& SubscriptionQos::NO_EXPIRY_DATE()
 }
 
 SubscriptionQos::SubscriptionQos()
-        : expiryDateMs(-1), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
+        : expiryDateMs(NO_EXPIRY_DATE()), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
 {
     setValidityMs(1000);
 }
 
 SubscriptionQos::SubscriptionQos(const std::int64_t& validityMs)
-        : expiryDateMs(-1), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
+        : expiryDateMs(NO_EXPIRY_DATE()), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
 {
     setValidityMs(validityMs);
 }

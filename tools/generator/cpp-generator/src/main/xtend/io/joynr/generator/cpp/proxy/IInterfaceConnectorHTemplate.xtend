@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 «getDllExportIncludeStatement()»
-«FOR parameterType: cppStdTypeUtil.getRequiredIncludesFor(francaIntf)»
+«FOR parameterType: cppStdTypeUtil.getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
@@ -62,6 +62,11 @@ namespace joynr {
 } // namespace joynr
 
 «getNamespaceStarter(francaIntf)»
+
+«FOR forwardDecl: cppStdTypeUtil.getBroadcastFilterParametersClassNames(francaIntf)»
+	class «forwardDecl»;
+«ENDFOR»
+
 class «getDllExportMacro()» I«interfaceName»Subscription{
 	/**
 	  * in  - subscriptionListener      std::shared_ptr to a SubscriptionListener which will receive the updates.
@@ -71,7 +76,7 @@ class «getDllExportMacro()» I«interfaceName»Subscription{
 public:
 	virtual ~I«interfaceName»Subscription() = default;
 
-	«produceSubscribeUnsubscribeMethods(francaIntf, true)»
+	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, true)»
 };
 
 class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», public joynr::IConnector, virtual public I«interfaceName»Subscription{

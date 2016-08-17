@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,17 +39,27 @@ class InterfaceRequestInterpreterHTemplate extends InterfaceTemplate {
 #ifndef «headerGuard»
 #define «headerGuard»
 
+#include <memory>
+
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
 #include "joynr/IRequestInterpreter.h"
-
 #include "joynr/Logger.h"
-#include "joynr/exceptions/JoynrException.h"
 
-#include "joynr/Variant.h"
-#include <memory>
-#include <string>
-#include <vector>
+namespace joynr
+{
+
+class RequestCaller;
+class Request;
+class OneWayRequest;
+class BaseReply;
+
+namespace exceptions
+{
+class JoynrException;
+} // namespace exceptions
+
+} // namespace joynr
 
 «getNamespaceStarter(francaIntf)»
 
@@ -57,7 +67,7 @@ class InterfaceRequestInterpreterHTemplate extends InterfaceTemplate {
 class «getDllExportMacro()» «interfaceName»RequestInterpreter: public joynr::IRequestInterpreter {
 public:
 	/** @brief Default constructor */
-	«interfaceName»RequestInterpreter();
+	«interfaceName»RequestInterpreter() = default;
 
 	/** @brief Destructor */
 	~«interfaceName»RequestInterpreter() override = default;
@@ -66,32 +76,24 @@ public:
 	 * @brief Implements IRequestInterpreter.execute().
 	 * Executes method methodName with given parameters on the requestCaller object.
 	 * @param requestCaller Object on which the method is to be executed
-	 * @param methodName The name of the method to be executed
-	 * @param paramValues The list of parameter values
-	 * @param paramTypes The list of parameter types
+	 * @param request Request which was received
 	 * @param onSuccess A callback function to be called once the asynchronous computation has
-	 * finished with success. It must expect the method out parameters.
-	 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
+	 * finished with success. Its signature expects a BaseReply containing the output parameters.
+	 * @param onError A callback function to be called once the asynchronous computation fails.
+	 * Its signature expects a JoynrException.
 	 */
 	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
-					 const std::string& methodName,
-					 const std::vector<Variant>& paramValues,
-					 const std::vector<std::string>& paramTypes,
-					 std::function<void (std::vector<Variant>&& outParams)> onSuccess,
-					 std::function<void (const exceptions::JoynrException& exception)> onError) override;
+				 Request& request,
+				 std::function<void (BaseReply&& reply)> onSuccess,
+				 std::function<void (const std::shared_ptr<exceptions::JoynrException>& exception)> onError) override;
 
 	/**
 	 * @brief Implements IRequestInterpreter.execute().
 	 * Executes fire-and-forget method methodName with given parameters on the requestCaller object.
-	 * @param requestCaller Object on which the method is to be executed
-	 * @param methodName The name of the method to be executed
-	 * @param paramValues The list of parameter values
-	 * @param paramTypes The list of parameter types
+	 * @param request OneWayRequest which was received
 	 */
 	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
-					 const std::string& methodName,
-					 const std::vector<Variant>& paramValues,
-					 const std::vector<std::string>& paramTypes) override;
+					 OneWayRequest& request) override;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);

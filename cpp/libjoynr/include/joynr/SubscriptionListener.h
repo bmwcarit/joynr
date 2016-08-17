@@ -43,6 +43,18 @@ public:
     virtual ~SubscriptionListener() = default;
 
     /**
+     * @brief onSubscribed Gets called when the subscription is successfully registered at the
+     * provider
+     * @param subscriptionId the subscription id of the subscription as string
+     *
+     * Since the onSubscribed callback is called by a communication middleware thread, it should
+     * not be blocked, wait for user interaction, or do larger computation.
+     */
+    virtual void onSubscribed(const std::string& subscriptionId)
+    {
+    }
+
+    /**
      * @brief Method to be called on receiving publication
      * @param value First output parameter of the broadcast | attribute value
      * @param values Optional 2nd..nth output parameter in case of a broadcast

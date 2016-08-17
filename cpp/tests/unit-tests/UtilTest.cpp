@@ -16,30 +16,17 @@
  * limitations under the License.
  * #L%
  */
+#include <vector>
+#include <string>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
 #include "joynr/Util.h"
-#include <vector>
-#include <tuple>
-#include <functional>
-#include <string>
-#include "joynr/types/TestTypes/TEverythingStruct.h"
 
 using namespace joynr;
 
-class UtilTest : public ::testing::Test {
-protected:
-
-    struct ExpandTuple {
-        bool expandIntoThis(int arg1, float arg2, std::string arg3) {
-            return arg1 == 23 && arg2 == 24.25 && arg3 == "Test";
-        }
-    };
-
-    ExpandTuple expandTuple;
-};
-
-TEST_F(UtilTest, splitIntoJsonObjects)
+TEST(UtilTest, splitIntoJsonObjects)
 {
     std::string inputStream;
     std::vector<std::string> result;
@@ -102,78 +89,4 @@ TEST_F(UtilTest, splitIntoJsonObjects)
     result = util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
     EXPECT_EQ(result.at(0), R"({"mes\\"sa{ge":{one:two}})");
-}
-
-TEST_F(UtilTest, convertVectorToVariantVector){
-
-    std::vector<int> intVector;
-    std::vector<Variant> variantVector;
-
-    intVector.push_back(2);
-    intVector.push_back(5);
-    intVector.push_back(-1);
-
-    variantVector.push_back(Variant::make<int>(2));
-    variantVector.push_back(Variant::make<int>(5));
-    variantVector.push_back(Variant::make<int>(-1));
-
-    std::vector<Variant> convertedVariantVector = util::convertVectorToVariantVector<int>(intVector);
-    std::vector<int> convertedIntVector = util::convertVariantVectorToVector<int>(variantVector);
-
-    EXPECT_EQ(convertedVariantVector, variantVector);
-    EXPECT_EQ(convertedIntVector, intVector);
-
-    std::vector<Variant> reconvertedVariantVector = util::convertVectorToVariantVector<int>(convertedIntVector);
-    std::vector<int> reconvertedIntVector = util::convertVariantVectorToVector<int>(convertedVariantVector);
-
-    EXPECT_EQ(reconvertedVariantVector, variantVector);
-    EXPECT_EQ(reconvertedIntVector, intVector);
-
-
-}
-
-TEST_F(UtilTest, typeIdSingleType) {
-    EXPECT_EQ(0, util::getTypeId<void>());
-    EXPECT_GT(util::getTypeId<std::string>(), 0);
-    EXPECT_NE(util::getTypeId<std::string>(), util::getTypeId<std::int32_t>());
-}
-
-TEST_F(UtilTest, typeIdCompositeType){
-    int typeId1 = util::getTypeId<std::string, std::int32_t, float>();
-    EXPECT_GT(typeId1, 0);
-
-    int typeId2 = util::getTypeId<std::int32_t, std::string, float>();
-    EXPECT_NE(typeId1, typeId2);
-    int typeIdTEverythingStruct = util::getTypeId<joynr::types::TestTypes::TEverythingStruct>();
-    EXPECT_GT(typeIdTEverythingStruct, 0);
-    EXPECT_NE(typeId1, typeIdTEverythingStruct);
-    EXPECT_NE(typeId2, typeIdTEverythingStruct);
-}
-
-TEST_F(UtilTest, typeIdVector){
-    int typeIdVectorOfInt = util::getTypeId<std::vector<std::int32_t>>();
-    EXPECT_NE(typeIdVectorOfInt, 0);
-
-    int typeIdVectorOfTEverythingStruct = util::getTypeId<std::vector<joynr::types::TestTypes::TEverythingStruct>>();
-    EXPECT_NE(typeIdVectorOfTEverythingStruct, 0);
-    EXPECT_NE(typeIdVectorOfInt, typeIdVectorOfTEverythingStruct);
-}
-
-TEST_F(UtilTest, valueOfFloatVector){
-    std::vector<float> expectedFloatVector = {1.1f, 1.2f, 1.3f};
-
-    std::vector<Variant> variantVector;
-    for(std::size_t i = 0; i<expectedFloatVector.size(); i++){
-        variantVector.push_back(Variant::NULL_VARIANT());
-    }
-    std::transform(
-                expectedFloatVector.cbegin(),
-                expectedFloatVector.cend(),
-                variantVector.begin(),
-                [](const float value) { return Variant::make<double>(value); }
-    );
-    std::vector<float> floatVector = util::valueOf<std::vector<float>>(Variant::make<std::vector<Variant>>(variantVector));
-    for(std::size_t i = 0; i < expectedFloatVector.size(); i++) {
-        EXPECT_EQ(expectedFloatVector[i], floatVector[i]);
-    }
 }

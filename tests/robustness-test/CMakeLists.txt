@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(robustness-tests-0.19.5)
+project(robustness-tests-0.20.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -23,7 +23,7 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.19.5 REQUIRED)
+find_package(Joynr 0.20.0 REQUIRED)
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
@@ -40,7 +40,7 @@ include(AddClangFormat)
 
 ######## Add Boost ########
 
-find_package(Boost 1.56.0 REQUIRED
+find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
     system
     filesystem

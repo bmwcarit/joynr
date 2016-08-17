@@ -22,9 +22,9 @@
 #include <string>
 #include <vector>
 
+#include "joynr/serializer/Serializer.h"
+#include "joynr/serializer/SerializationPlaceholder.h"
 #include "joynr/JoynrCommonExport.h"
-
-#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -45,19 +45,35 @@ public:
     const std::string& getMethodName() const;
     void setMethodName(const std::string& methodName);
 
-    std::vector<Variant> getParams() const;
-    void setParams(std::vector<Variant> params);
-
-    void addParam(Variant value, std::string datatype);
-
     std::vector<std::string> getParamDatatypes() const;
     void setParamDatatypes(std::vector<std::string> paramDatatypes);
 
+    template <typename... Ts>
+    void setParams(Ts&&... values)
+    {
+        params.setData(std::forward<Ts>(values)...);
+    }
+
+    template <typename... Ts>
+    void getParams(Ts&... values)
+    {
+        params.getData(values...);
+    }
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(methodName), MUESLI_NVP(paramDatatypes), MUESLI_NVP(params));
+    }
+
 private:
     std::string methodName;
-    std::vector<Variant> params;
     std::vector<std::string> paramDatatypes;
+    joynr::serializer::SerializationPlaceholder params;
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::OneWayRequest, "joynr.OneWayRequest")
+
 #endif // ONEWAYREQUEST_H
