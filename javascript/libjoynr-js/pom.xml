@@ -807,6 +807,8 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
+						<!-- configuration options documentation:
+							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
 						<executions>
 							<execution>
 								<id>npm-install</id>
@@ -818,6 +820,34 @@
 									</arguments>
 									<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
 								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+
+							<!-- run nodejs based unit tests -->
+
+							<!-- maven doesn't keep the execution permission of
+								${project.build.testOutputDirectory}/node_run_unit_tests.sh.
+								So we fix it here -->
+							<execution>
+								<configuration>
+									<executable>chmod</executable>
+									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_unit_tests.sh</commandlineArgs>
+								</configuration>
+								<id>process-unit-tests-nodejs</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<configuration>
+									<executable>${project.build.testOutputDirectory}/node_run_unit_tests.sh</executable>
+									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
+								</configuration>
+								<id>run-unit-tests-nodejs</id>
+								<phase>test</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
@@ -876,41 +906,6 @@
 							<skipKarma>false</skipKarma>
 							<karmaFailureIgnore>false</karmaFailureIgnore>
 						</configuration>
-					</plugin>
-
-					<!-- run nodejs based unit tests -->
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<!-- configuration options documentation:
-							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
-						<executions>
-							<!-- maven doesn't keep the execution permission of
-								${project.build.testOutputDirectory}/node_run_unit_tests.sh.
-								So we fix it here -->
-							<execution>
-								<configuration>
-									<executable>chmod</executable>
-									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_unit_tests.sh</commandlineArgs>
-								</configuration>
-								<id>process-unit-tests-nodejs</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
-								<configuration>
-									<executable>${project.build.testOutputDirectory}/node_run_unit_tests.sh</executable>
-									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
-								</configuration>
-								<id>run-unit-tests-nodejs</id>
-								<phase>test</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
 					</plugin>
 				</plugins>
 			</build>
