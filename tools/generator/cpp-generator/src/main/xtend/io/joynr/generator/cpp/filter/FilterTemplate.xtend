@@ -24,7 +24,6 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.BroadcastTemplate
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
 

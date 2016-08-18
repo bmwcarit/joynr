@@ -24,7 +24,6 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
@@ -41,9 +40,6 @@ class InterfaceCppTemplate extends InterfaceTemplate {
 
 	@Inject
 	private extension NamingUtil
-
-	@Inject
-	private extension InterfaceUtil
 
 	@Inject
 	private extension MethodUtil

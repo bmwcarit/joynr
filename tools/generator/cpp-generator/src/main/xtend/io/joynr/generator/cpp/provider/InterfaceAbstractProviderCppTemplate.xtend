@@ -76,7 +76,6 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 
 «FOR attribute : francaIntf.attributes»
 	«IF attribute.notifiable»
-		«var attributeType = attribute.type.resolveTypeDef»
 		«var attributeName = attribute.joynrName»
 		void «interfaceName»AbstractProvider::«attributeName»Changed(
 				const «attribute.typeName»& «attributeName»
