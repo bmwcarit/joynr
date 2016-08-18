@@ -21,15 +21,19 @@ package io.joynr.test.interlanguage;
 
 import java.io.InputStream;
 import java.io.FileInputStream;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
@@ -65,6 +69,7 @@ public abstract class IltConsumerTest {
     public TestName name = new TestName();
 
     private static String providerDomain;
+    private static Semaphore proxyCreated = new Semaphore(0);
     protected static TestInterfaceProxy testInterfaceProxy;
     private static JoynrRuntime consumerRuntime;
 
@@ -188,11 +193,24 @@ public abstract class IltConsumerTest {
                                                                                         TestInterfaceProxy.class);
         testInterfaceProxy = proxyBuilder.setMessagingQos(new MessagingQos(10000))
                                          .setDiscoveryQos(discoveryQos)
-                                         .build();
+                                         .build(new ProxyCreatedCallback<TestInterfaceProxy>() {
+                                             @Override
+                                             public void onProxyCreationFinished(TestInterfaceProxy result) {
+                                                 LOG.info("proxy created");
+                                                 proxyCreated.release();
+
+                                             }
+
+                                             @Override
+                                             public void onProxyCreationError(JoynrRuntimeException error) {
+                                                 LOG.info("error creating proxy");
+                                             }
+                                         });
         if (testInterfaceProxy == null) {
             LOG.info("setupConsumerRuntime: proxy = null");
         } else {
             LOG.info("setupConsumerRuntime: proxy is set != null");
         }
+        proxyCreated.tryAcquire(5000, TimeUnit.MILLISECONDS);
     }
 }
