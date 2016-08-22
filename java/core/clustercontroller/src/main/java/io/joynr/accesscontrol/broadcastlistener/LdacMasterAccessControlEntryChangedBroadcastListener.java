@@ -20,6 +20,7 @@ package io.joynr.accesscontrol.broadcastlistener;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
+import io.joynr.exceptions.SubscriptionException;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastAdapter;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -53,7 +54,9 @@ public class LdacMasterAccessControlEntryChangedBroadcastListener extends
     }
 
     @Override
-    public void onError() {
-        LOG.error("Update masterAce failed!");
+    public void onError(SubscriptionException error) {
+        LOG.error("Subscription to masterAce failed! SubscriptionId: {}, error: {}",
+                  error.getSubscriptionId(),
+                  error.getMessage());
     }
 }

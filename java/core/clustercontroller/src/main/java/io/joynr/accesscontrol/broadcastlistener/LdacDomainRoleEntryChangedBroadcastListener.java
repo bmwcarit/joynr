@@ -20,6 +20,7 @@ package io.joynr.accesscontrol.broadcastlistener;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
+import io.joynr.exceptions.SubscriptionException;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastAdapter;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
@@ -48,7 +49,9 @@ public class LdacDomainRoleEntryChangedBroadcastListener extends DomainRoleEntry
     }
 
     @Override
-    public void onError() {
-        LOG.error("Update of DRE failed!");
+    public void onError(SubscriptionException error) {
+        LOG.error("Subscription to DRE failed! SubscriptionId: {}, error: {}",
+                  error.getSubscriptionId(),
+                  error.getMessage());
     }
 }
