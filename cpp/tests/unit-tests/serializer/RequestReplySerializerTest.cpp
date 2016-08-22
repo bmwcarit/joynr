@@ -261,7 +261,9 @@ TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReplyWithProvider
     joynr::Reply reply = this->initReply("does-not-matter", error);
     auto deserializedError = reply.getError();
 
-    ASSERT_EQ(typeid(*error), typeid(*deserializedError));
+    const joynr::exceptions::ProviderRuntimeException * const errorPtr = error.get();
+    const joynr::exceptions::JoynrException * const deserializedErrorPtr = deserializedError.get();
+    ASSERT_EQ(typeid(*errorPtr), typeid(*deserializedErrorPtr));
     ASSERT_EQ(deserializedError->getMessage(), error->getMessage());
 }
 
@@ -278,7 +280,9 @@ TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReplyWithApplicat
     joynr::Reply reply = this->initReply("does-not-matter", error);
     auto deserializedError = reply.getError();
 
-    ASSERT_EQ(typeid(*error), typeid(*deserializedError));
+    const joynr::exceptions::ApplicationException * const errorPtr = error.get();
+    const joynr::exceptions::JoynrException * const deserializedErrorPtr = deserializedError.get();
+    ASSERT_EQ(typeid(*errorPtr), typeid(*deserializedErrorPtr));
 
     auto deserializedApplicationException = std::dynamic_pointer_cast<joynr::exceptions::ApplicationException>(deserializedError);
     ASSERT_TRUE(deserializedApplicationException != nullptr);

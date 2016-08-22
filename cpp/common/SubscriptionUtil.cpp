@@ -36,7 +36,8 @@ bool SubscriptionUtil::isOnChangeSubscription(const std::shared_ptr<Subscription
     static const std::type_info& onChangeWithKeepAliveSubscriptionQosTypeId =
             typeid(OnChangeWithKeepAliveSubscriptionQos);
 
-    const std::type_info& qosTypeId = typeid(*qos);
+    const SubscriptionQos* const ptr = qos.get();
+    const std::type_info& qosTypeId = typeid(*ptr);
     return qosTypeId == onChangeSubscriptionQosTypeId ||
            qosTypeId == onChangeWithKeepAliveSubscriptionQosTypeId;
 }
