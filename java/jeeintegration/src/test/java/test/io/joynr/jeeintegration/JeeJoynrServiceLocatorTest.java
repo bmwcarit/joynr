@@ -24,12 +24,15 @@ package test.io.joynr.jeeintegration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
+import joynr.exceptions.ProviderRuntimeException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -92,6 +95,16 @@ public class JeeJoynrServiceLocatorTest {
         assertNotNull(callResult);
         assertEquals("two", callResult);
         verify(myJoynrProxy).callMe("one");
+    }
+
+    @Test(expected = ProviderRuntimeException.class)
+    public void testProxyUnwrapsProviderRuntimeException() {
+        reset(myJoynrProxy);
+        when(myJoynrProxy.callMe(anyString())).thenThrow(new ProviderRuntimeException("test"));
+
+        MyServiceSync proxy = subject.get(MyServiceSync.class, "local");
+
+        proxy.callMe("one");
     }
 
     @Test

@@ -22,6 +22,7 @@ package test.io.joynr.jeeintegration;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
@@ -53,6 +54,7 @@ import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.provider.SubscriptionPublisher;
 import io.joynr.provider.SubscriptionPublisherInjection;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.types.ProviderQos;
 import org.junit.Assert;
 import org.junit.Test;
@@ -80,6 +82,8 @@ public class ProviderWrapperTest {
 
         Promise<DeferredVoid> assertMessageContextActive();
 
+        Promise<DeferredVoid> testThrowsProviderRuntimeException();
+
         Promise<Deferred<Object[]>> testMultiOutMethod();
     }
 
@@ -93,6 +97,8 @@ public class ProviderWrapperTest {
         void testServiceMethodVoidReturn();
 
         void assertMessageContextActive();
+
+        void testThrowsProviderRuntimeException();
 
         public class MultiOutResult implements MultiReturnValuesContainer {
             public Object[] getValues() {
@@ -123,6 +129,11 @@ public class ProviderWrapperTest {
         @Override
         public void assertMessageContextActive() {
             assertTrue(JoynrJeeMessageContext.getInstance().isActive());
+        }
+
+        @Override
+        public void testThrowsProviderRuntimeException() {
+            throw new ProviderRuntimeException("test");
         }
 
         @Override
@@ -167,6 +178,30 @@ public class ProviderWrapperTest {
         Object result = subject.invoke(proxy, method, new Object[0]);
 
         assertTrue(result instanceof Promise);
+    }
+
+    @Test
+    public void testInvokeMethodThrowingProviderRuntimeException() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceProviderInterface.class.getMethod("testThrowsProviderRuntimeException");
+
+        Object result = subject.invoke(proxy, method, new Object[0]);
+        assertNotNull(result);
+        assertTrue(result instanceof Promise);
+        assertTrue(((Promise) result).isRejected());
+        ((Promise) result).then(new PromiseListener() {
+            @Override
+            public void onFulfillment(Object... values) {
+                fail("Should never get here");
+            }
+
+            @Override
+            public void onRejection(JoynrException error) {
+                assertTrue(error instanceof ProviderRuntimeException);
+            }
+        });
     }
 
     @Test

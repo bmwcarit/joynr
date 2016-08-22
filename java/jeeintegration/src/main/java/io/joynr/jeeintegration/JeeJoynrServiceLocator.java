@@ -25,6 +25,7 @@ package io.joynr.jeeintegration;
 import static java.lang.String.format;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Set;
@@ -32,6 +33,7 @@ import java.util.Set;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 
+import joynr.exceptions.ProviderRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,10 +116,17 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                                                                        serviceInterface,
                                                                        joynrProxyInterface));
                                                   }
-                                                  return joynrProxy.getClass()
-                                                                   .getMethod(method.getName(),
-                                                                              method.getParameterTypes())
-                                                                   .invoke(joynrProxy, args);
+                                                  try {
+                                                      return joynrProxy.getClass()
+                                                                       .getMethod(method.getName(),
+                                                                                  method.getParameterTypes())
+                                                                       .invoke(joynrProxy, args);
+                                                  } catch (InvocationTargetException e) {
+                                                      if (e.getCause() instanceof ProviderRuntimeException) {
+                                                          throw ((ProviderRuntimeException) e.getCause());
+                                                      }
+                                                      throw e;
+                                                  }
                                               }
                                           });
     }
