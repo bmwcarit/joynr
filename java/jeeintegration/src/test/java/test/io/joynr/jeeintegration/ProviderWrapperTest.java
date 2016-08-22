@@ -54,6 +54,7 @@ import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.provider.SubscriptionPublisher;
 import io.joynr.provider.SubscriptionPublisherInjection;
+import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.types.ProviderQos;
 import org.junit.Assert;
@@ -84,6 +85,8 @@ public class ProviderWrapperTest {
 
         Promise<DeferredVoid> testThrowsProviderRuntimeException();
 
+        Promise<DeferredVoid> testThrowsApplicationException();
+
         Promise<Deferred<Object[]>> testMultiOutMethod();
     }
 
@@ -99,6 +102,8 @@ public class ProviderWrapperTest {
         void assertMessageContextActive();
 
         void testThrowsProviderRuntimeException();
+
+        void testThrowsApplicationException() throws ApplicationException;
 
         public class MultiOutResult implements MultiReturnValuesContainer {
             public Object[] getValues() {
@@ -134,6 +139,11 @@ public class ProviderWrapperTest {
         @Override
         public void testThrowsProviderRuntimeException() {
             throw new ProviderRuntimeException("test");
+        }
+
+        @Override
+        public void testThrowsApplicationException() throws ApplicationException {
+            throw new ApplicationException(null);
         }
 
         @Override
@@ -200,6 +210,30 @@ public class ProviderWrapperTest {
             @Override
             public void onRejection(JoynrException error) {
                 assertTrue(error instanceof ProviderRuntimeException);
+            }
+        });
+    }
+
+    @Test
+    public void testInvokeMethodThrowingApplicationException() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceProviderInterface.class.getMethod("testThrowsApplicationException");
+
+        Object result = subject.invoke(proxy, method, new Object[0]);
+        assertNotNull(result);
+        assertTrue(result instanceof Promise);
+        assertTrue(((Promise) result).isRejected());
+        ((Promise) result).then(new PromiseListener() {
+            @Override
+            public void onFulfillment(Object... values) {
+                fail("Should never get here");
+            }
+
+            @Override
+            public void onRejection(JoynrException error) {
+                assertTrue(error instanceof ApplicationException);
             }
         });
     }

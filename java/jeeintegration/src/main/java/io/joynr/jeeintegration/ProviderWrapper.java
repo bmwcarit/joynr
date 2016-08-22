@@ -35,6 +35,7 @@ import javax.enterprise.inject.spi.BeanManager;
 
 import com.google.inject.Injector;
 import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import io.joynr.messaging.JoynrMessageCreator;
@@ -45,6 +46,7 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.MultiValueDeferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.SubscriptionPublisherInjection;
+import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,14 +113,14 @@ public class ProviderWrapper implements InvocationHandler {
                 JoynrJeeMessageContext.getInstance().activate();
                 copyMessageCreatorInfo();
             }
-            ProviderRuntimeException providerRuntimeException = null;
+            JoynrException joynrException = null;
             try {
                 result = delegateToMethod.invoke(delegate, args);
             } catch (InvocationTargetException e) {
-                providerRuntimeException = getJoynrExceptionFromInvocationException(e);
+                joynrException = getJoynrExceptionFromInvocationException(e);
             }
             if (delegate != this) {
-                AbstractDeferred deferred = createAndResolveOrRejectDeferred(method, result, providerRuntimeException);
+                AbstractDeferred deferred = createAndResolveOrRejectDeferred(method, result, joynrException);
                 Promise promiseResult = new Promise(deferred);
                 return promiseResult;
             }
@@ -132,53 +134,64 @@ public class ProviderWrapper implements InvocationHandler {
 
     private AbstractDeferred createAndResolveOrRejectDeferred(Method method,
                                                               Object result,
-                                                              ProviderRuntimeException providerRuntimeException) {
+                                                              JoynrException joynrException) {
         AbstractDeferred deferred;
         if (result == null && method.getReturnType().equals(Void.class)) {
             deferred = new DeferredVoid();
-            if (providerRuntimeException == null) {
+            if (joynrException == null) {
                 ((DeferredVoid) deferred).resolve();
             }
         } else {
             if (result instanceof MultiReturnValuesContainer) {
                 deferred = new MultiValueDeferred();
-                if (providerRuntimeException == null) {
+                if (joynrException == null) {
                     ((MultiValueDeferred) deferred).resolve(((MultiReturnValuesContainer) result).getValues());
                 }
             } else {
                 deferred = new Deferred();
-                if (providerRuntimeException == null) {
+                if (joynrException == null) {
                     ((Deferred) deferred).resolve(result);
                 }
             }
         }
-        if (providerRuntimeException != null) {
+        if (joynrException != null) {
             LOG.debug("Provider method invocation resulted in provider runtime exception - rejecting the deferred {} with {}",
                       deferred,
-                      providerRuntimeException);
-            deferred.reject(providerRuntimeException);
+                      joynrException);
+            if (joynrException instanceof ApplicationException) {
+                try {
+                    Method rejectMethod = AbstractDeferred.class.getDeclaredMethod("reject", new Class[] { JoynrException.class });
+                    rejectMethod.setAccessible(true);
+                    rejectMethod.invoke(deferred, new Object[] { joynrException });
+                } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                    LOG.warn("Unable to set {} as rejection reason on {}. Wrapping in ProviderRuntimeException instead.", joynrException, deferred);
+                    deferred.reject(new ProviderRuntimeException(((ApplicationException) joynrException).getMessage()));
+                }
+            } else if (joynrException instanceof ProviderRuntimeException) {
+                deferred.reject((ProviderRuntimeException) joynrException);
+            }
         }
         return deferred;
     }
 
-    private ProviderRuntimeException getJoynrExceptionFromInvocationException(InvocationTargetException e)
-                                                                                                          throws InvocationTargetException {
-        ProviderRuntimeException providerRuntimeException = null;
+    private JoynrException getJoynrExceptionFromInvocationException(InvocationTargetException e)
+                                                                                                throws InvocationTargetException {
+        JoynrException joynrException = null;
         if (e.getCause() != null) {
             if (e.getCause() instanceof EJBException) {
                 Exception exception = ((EJBException) e.getCause()).getCausedByException();
                 if (exception instanceof ProviderRuntimeException) {
-                    providerRuntimeException = (ProviderRuntimeException) exception;
+                    joynrException = (ProviderRuntimeException) exception;
                 }
-            } else if (e.getCause() instanceof ProviderRuntimeException) {
-                providerRuntimeException = (ProviderRuntimeException) e.getCause();
+            } else if (e.getCause() instanceof ProviderRuntimeException || e.getCause() instanceof ApplicationException) {
+                joynrException = (JoynrException) e.getCause();
             }
         }
-        if (providerRuntimeException == null) {
+        if (joynrException == null) {
             throw e;
         }
-        LOG.trace("Returning joynr exception: {}", providerRuntimeException);
-        return providerRuntimeException;
+        LOG.trace("Returning joynr exception: {}", joynrException);
+        return joynrException;
     }
 
     private boolean isProviderMethod(Method method, Method delegateToMethod) {
