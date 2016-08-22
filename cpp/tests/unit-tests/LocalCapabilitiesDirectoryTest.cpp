@@ -23,6 +23,7 @@
 #include <string>
 #include <tuple>
 #include <cstdint>
+
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
@@ -522,7 +523,19 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     capabilities = callback->getResults(TIMEOUT);
     EXPECT_EQ(2, capabilities.size());
+}
 
+TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsNoCapability) {
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,
+                    A<std::function<void(const std::vector<types::GlobalDiscoveryEntry>& discoveryEntries)>>(),
+                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
+            .Times(1)
+            .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupZeroResults));
+
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    std::vector<CapabilityEntry> capabilities = callback->getResults(TIMEOUT);
+    EXPECT_EQ(0, capabilities.size());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabilitiesClient) {
@@ -845,7 +858,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
     EXPECT_EQ(1, callback->getResults(10).size());
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_registerLocalCapabilityWhileLookupIsWaiting){
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_GlobalPendingLocalEntryAdded_ReturnsLocalEntry){
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
 
@@ -891,7 +904,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_registerLocalCapabi
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_cleanupPendingCallbacksInCaseCapabilitiesClientCallsOnSuccessCallback){
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_GlobalSucceedsNoLocalEntries_ReturnsGlobalEntries){
     Semaphore semaphore(0);
     joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(5000);
@@ -917,7 +930,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_cleanupPendingCallb
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_cleanupPendingCallbacksInCaseCapabilitiesClientCallsOnErrorCallback){
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_GlobalFailsNoLocalEntries_ReturnsNoEntries){
     Semaphore semaphore(0);
     joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(5000);
@@ -940,6 +953,234 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_cleanupPendingCallb
     thread.join();
 
     EXPECT_EQ(0, callback->getResults(100).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalThenGlobal_LocalEntriesNoGlobalLookup_ReturnsLocalEntry){
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+
+    joynr::types::Version providerVersion(47, 11);
+    joynr::types::DiscoveryEntry entry(
+        providerVersion,
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        lastSeenDateMs,
+        expiryDateMs,
+        PUBLIC_KEY_ID
+    );
+    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(0);
+
+    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(1, callback->getResults(10).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalAndGlobal_GlobalSucceedsNoLocalEntries_ReturnsGlobalEntries){
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(2, callback->getResults(100).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalAndGlobal_GlobalFailsNoLocalEntries_ReturnsNoEntries){
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(0, callback->getResults(100).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalAndGlobal_GlobalSucceedsLocalEntries_ReturnsLocalAndGlobalEntries){
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL);
+
+    joynr::types::Version providerVersion(47, 11);
+    joynr::types::DiscoveryEntry entry(
+        providerVersion,
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        lastSeenDateMs,
+        expiryDateMs,
+        PUBLIC_KEY_ID
+    );
+    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
+
+    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(3, callback->getResults(10).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalAndGlobal_GlobalFailsLocalEntries_ReturnsLocalEntries){
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL);
+
+    joynr::types::Version providerVersion(47, 11);
+    joynr::types::DiscoveryEntry entry(
+        providerVersion,
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        lastSeenDateMs,
+        expiryDateMs,
+        PUBLIC_KEY_ID
+    );
+    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
+
+    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(0, callback->getResults(10).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalSucceedsNoLocalEntries_ReturnsGlobalEntries){
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(2, callback->getResults(100).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsNoLocalEntries_ReturnsNoEntries){
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(0, callback->getResults(100).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalSucceedsLocalEntries_ReturnsGlobalEntries){
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
+
+    joynr::types::Version providerVersion(47, 11);
+    joynr::types::DiscoveryEntry entry(
+        providerVersion,
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        lastSeenDateMs,
+        expiryDateMs,
+        PUBLIC_KEY_ID
+    );
+    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
+
+    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(2, callback->getResults(10).size());
+    EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsLocalEntries_ReturnsNoEntries){
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
+
+    joynr::types::Version providerVersion(47, 11);
+    joynr::types::DiscoveryEntry entry(
+        providerVersion,
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        lastSeenDateMs,
+        expiryDateMs,
+        PUBLIC_KEY_ID
+    );
+    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
+            .Times(1)
+            .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
+
+    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(0, callback->getResults(10).size());
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
 }
 
@@ -1150,7 +1391,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     EXPECT_EQ(0, callback->getResults(10).size());
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupGlobalOnly){
+TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlobalOnly){
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::GLOBAL);
 
