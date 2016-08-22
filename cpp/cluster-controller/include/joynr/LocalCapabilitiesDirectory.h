@@ -185,7 +185,7 @@ public:
     void saveLocalCapabilitiesToFile(const std::string& fileName);
 
     /*
-     * Load capabilities from the the specified file.
+     * Load capabilities from the specified file.
      */
     void injectGlobalCapabilitiesFromFile(const std::string& fileName);
 
