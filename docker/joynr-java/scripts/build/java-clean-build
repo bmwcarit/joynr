@@ -7,6 +7,11 @@ cd /data/src
 # print commands before they are executed
 set -e
 
+function usage
+{
+    echo "usage: java-clean-build [package|install][skipTests]"
+}
+
 GOAL='install'
 SKIPTESTS='false'
 
@@ -18,7 +23,7 @@ while [ "$1" != "" ]; do
                                 ;;
         skipTests )             SKIPTESTS='true'
                                 ;;
-        * )                     echo "invalid argument"
+        * )                     usage
                                 exit 1
     esac
     shift
