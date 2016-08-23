@@ -25,6 +25,7 @@ package test.io.joynr.jeeintegration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -32,7 +33,18 @@ import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
+import com.google.common.collect.Sets;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.jeeintegration.JeeJoynrServiceLocator;
+import io.joynr.jeeintegration.JoynrIntegrationBean;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.runtime.JoynrRuntime;
+import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
+import joynr.jeeintegration.servicelocator.MyService;
+import joynr.jeeintegration.servicelocator.MyServiceProxy;
+import joynr.jeeintegration.servicelocator.MyServiceSync;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,17 +52,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.collect.Sets;
-
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.jeeintegration.JeeJoynrServiceLocator;
-import io.joynr.jeeintegration.JoynrIntegrationBean;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.runtime.JoynrRuntime;
-import joynr.jeeintegration.servicelocator.MyServiceProxy;
-import joynr.jeeintegration.servicelocator.MyServiceSync;
 import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
 
 /**
@@ -105,6 +106,17 @@ public class JeeJoynrServiceLocatorTest {
         MyServiceSync proxy = subject.get(MyServiceSync.class, "local");
 
         proxy.callMe("one");
+    }
+
+    @Test(expected = ApplicationException.class)
+    public void testProxyUnwrapsApplicationException() throws Exception {
+        reset(myJoynrProxy);
+        doThrow(new ApplicationException(MyService.CallMeWithExceptionErrorEnum.MY_ERROR)).when(myJoynrProxy)
+                                                                                          .callMeWithException();
+
+        MyServiceSync proxy = subject.get(MyServiceSync.class, "local");
+
+        proxy.callMeWithException();
     }
 
     @Test

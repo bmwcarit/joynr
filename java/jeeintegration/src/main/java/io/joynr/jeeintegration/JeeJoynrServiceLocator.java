@@ -33,6 +33,7 @@ import java.util.Set;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 
+import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,6 +125,8 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                                                   } catch (InvocationTargetException e) {
                                                       if (e.getCause() instanceof ProviderRuntimeException) {
                                                           throw ((ProviderRuntimeException) e.getCause());
+                                                      } else if (e.getCause() instanceof ApplicationException) {
+                                                          throw ((ApplicationException) e.getCause());
                                                       }
                                                       throw e;
                                                   }
