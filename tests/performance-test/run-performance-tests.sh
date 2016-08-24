@@ -67,6 +67,9 @@ MOSQUITTO_PID=""
 CLUSTER_CONTROLLER_PID=""
 PROVIDER_PID=""
 
+# arguments which are passed to the C++ cluster-controller
+ADDITIONAL_CC_ARGS=""
+
 function waitUntilJettyStarted {
     started=0
     count=0
@@ -135,7 +138,7 @@ function startCppClusterController {
     # ensure previously created persistence files are gone
     rm -Rf *.persist joynr.settings
 
-    ./cluster-controller 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
+    ./cluster-controller $ADDITIONAL_CC_ARGS 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
 
     # Wait long enough in order to allow the cluster controller finish its start procedure
     sleep 5
@@ -367,9 +370,12 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:d:j:p:r:s:t:x:y:m:z:n:" OPTIONS;
+while getopts "c:d:j:p:r:s:t:x:y:m:z:n:a:" OPTIONS;
 do
     case $OPTIONS in
+        a)
+            ADDITIONAL_CC_ARGS=$OPTARG
+            ;;
         c)
             MULTICONSUMER_NUMINSTANCES=$OPTARG
             ;;
