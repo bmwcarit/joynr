@@ -249,6 +249,15 @@ See the
 [System Integration Test](../tests/system-integration-test/sit-jee-app/src/main/java/io/joynr/systemintegrationtest/jee/SystemIntegrationTestBean.java)
 for an example of its usage.
 
+#### <a name="provider_domain"></a> Customising the registration domain
+
+In some cases you might want to register your providers under a different domain than the
+application default (specified via `@JoynrLocalDomain`, see configuration documentation above).
+
+In order to do so, use the `@ProviderDomain` annotation on your implementing bean in addition
+to the `@ServiceLocator` annotation. The value you provide will be used as the domain when
+registering the bean as a joynr provider.
+
 ### Calling services
 
 In order to call services provided by other participants (e.g. applications
