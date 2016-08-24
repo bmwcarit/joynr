@@ -97,3 +97,8 @@ This project has dependencies to:
 * node-XMLHttpRequest (https://github.com/driverdan/node-XMLHttpRequest)
   License: MIT License (https://github.com/driverdan/node-XMLHttpRequest/blob/master/LICENSE)
   npm package: version 1.8.0 (https://www.npmjs.com/package/xmlhttprequest)
+
+* phantomjs-prebuilt (https://www.npmjs.com/package/phantomjs-prebuilt,
+  https://github.com/Medium/phantomjs)
+  License: Apache License 2.0 (https://github.com/Medium/phantomjs/blob/master/LICENSE.txt)
+  npm package: version 2.1.12
