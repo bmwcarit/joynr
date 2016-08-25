@@ -209,7 +209,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
-    public void writeText(Address to, String message, long timeout, TimeUnit unit, final FailureAction failureAction) {
+    public synchronized void writeText(Address to, String message, long timeout, TimeUnit unit, final FailureAction failureAction) {
         if (messageListener == null) {
             throw new JoynrDelayMessageException(20, "WebSocket write failed: receiver has not been set yet");
         }
