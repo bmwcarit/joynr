@@ -24,6 +24,7 @@ import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.Result;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -40,7 +41,7 @@ public class IltConsumerJUnitListener extends RunListener {
     private TestResult testResult = null;
     ArrayList<TestCaseResult> testCaseResults = new ArrayList<TestCaseResult>();
 
-    class TestSuiteResultsStore {
+    static class TestSuiteResultsStore {
         public ArrayList<TestCaseResult> testCaseResults = new ArrayList<TestCaseResult>();
         public int errors = 0;
         public int tests = 0;
@@ -190,8 +191,6 @@ public class IltConsumerJUnitListener extends RunListener {
         // test case specific start time at this point
         startTimeTestCase = System.currentTimeMillis();
 
-        TestSuiteResultsStore store = getStore(description);
-
         printDescription(description, 1);
         LOG.info("<<< testStarted called");
     }
@@ -271,10 +270,10 @@ public class IltConsumerJUnitListener extends RunListener {
         LOG.info(">>> testRunFinished called");
 
         LOG.info("testRunFinished  testSuitesMap.size() = " + testSuitesMap.size());
-        for (String testSuiteName : testSuitesMap.keySet()) {
-            LOG.info("testRunFinished testSuiteName = " + testSuiteName);
-            TestSuiteResultsStore store = testSuitesMap.get(testSuiteName);
-            TestSuiteResult testSuiteResult = new TestSuiteResult(testSuiteName,
+        for (Map.Entry<String, TestSuiteResultsStore> testSuiteEntry : testSuitesMap.entrySet()) {
+            LOG.info("testRunFinished testSuiteName = " + testSuiteEntry.getKey());
+            TestSuiteResultsStore store = testSuiteEntry.getValue();
+            TestSuiteResult testSuiteResult = new TestSuiteResult(testSuiteEntry.getKey(),
                                                                   getFormattedDuration(store.consumedTime),
                                                                   store.tests,
                                                                   store.errors,

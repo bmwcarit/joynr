@@ -44,7 +44,7 @@ public class IltConsumerRestEndpoint {
     @GET
     @Path("/start-tests")
     public TestResult startTests() {
-        TestResult testResult = new TestResult();
+        TestResult testResult;
 
         LOG.info("startTests: entering");
         JUnitCore runner = new JUnitCore();

@@ -100,14 +100,13 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     public void callMethodWithSinglePrimitiveParameters() {
         LOG.info(name.getMethodName() + "");
         try {
-            // short arg = (short)65535;
             short arg = (short) 32767;
             String result;
             result = testInterfaceProxy.methodWithSinglePrimitiveParameters(arg);
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
             }
-            if (!result.equals(new Integer(Short.toUnsignedInt(arg)).toString())) {
+            if (!result.equals(String.valueOf(Short.toUnsignedInt(arg)))) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
                 return;
             }
@@ -145,7 +144,6 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
         LOG.info(name.getMethodName() + " - OK");
     }
 
-    // problems might be to expect wrt. float or double comparison
     @Test
     public void callMethodWithMultiplePrimitiveParameters() {
         LOG.info(name.getMethodName() + "");
@@ -155,8 +153,6 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             boolean arg3 = false;
             MethodWithMultiplePrimitiveParametersReturned result;
             result = testInterfaceProxy.methodWithMultiplePrimitiveParameters(arg1, arg2, arg3);
-            // It might be difficult to compare a float since number representation
-            // might be different.
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
                 return;
@@ -475,7 +471,8 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
                 fail(name.getMethodName() + " - FAILED - got no result");
                 return;
             }
-            if (result.doubleOut != 1.1d || !IltUtil.checkExtendedBaseStruct(result.extendedBaseStructOut)
+            if (!IltUtil.cmpDouble(result.doubleOut, 1.1d)
+                    || !IltUtil.checkExtendedBaseStruct(result.extendedBaseStructOut)
                     || !IltUtil.checkStringArray(result.stringArrayOut)) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
                 return;

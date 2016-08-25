@@ -19,8 +19,6 @@ package io.joynr.test.interlanguage.jee;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.joynr.runtime.JoynrRuntime;
 import joynr.interlanguagetest.TestInterfaceSync;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -40,10 +38,7 @@ public abstract class IltConsumerTest {
     private static String providerDomain;
 
     // no real proxy, but keep the name anyway for now since it is used in test classes
-    protected static TestInterfaceSync testInterfaceProxy;
-    private static JoynrRuntime consumerRuntime;
-
-    protected static ObjectMapper objectMapper;
+    protected TestInterfaceSync testInterfaceProxy;
 
     @BeforeClass
     public static void generalSetUp() throws Exception {
