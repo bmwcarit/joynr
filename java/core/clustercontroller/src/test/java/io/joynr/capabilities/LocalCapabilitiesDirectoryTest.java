@@ -19,6 +19,7 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -42,26 +43,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.hamcrest.TypeSafeMatcher;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
@@ -86,6 +70,23 @@ import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 import joynr.types.Version;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.hamcrest.TypeSafeMatcher;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.internal.matchers.VarargMatcher;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryTest {
@@ -98,6 +99,8 @@ public class LocalCapabilitiesDirectoryTest {
     JoynrRuntime runtime;
     @Mock
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
+    @Mock
+    private ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner;
     @Mock
     private MessageRouter messageRouter;
     @Mock
@@ -124,6 +127,22 @@ public class LocalCapabilitiesDirectoryTest {
 
     public interface TestInterface {
         public static final String INTERFACE_NAME = "interfaceName";
+    }
+
+    private static class DiscoveryEntryStoreVarargMatcher extends ArgumentMatcher<DiscoveryEntryStore[]> implements
+            VarargMatcher {
+        private final DiscoveryEntryStore[] matchAgainst;
+
+        private DiscoveryEntryStoreVarargMatcher(DiscoveryEntryStore... matchAgainst) {
+            this.matchAgainst = matchAgainst;
+        }
+
+        @Override
+        public boolean matches(Object argument) {
+            assertNotNull(argument);
+            assertArrayEquals(matchAgainst, (DiscoveryEntryStore[]) argument);
+            return true;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -186,7 +205,10 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         localDiscoveryEntryStoreMock,
                                                                         globalDiscoveryEntryCacheMock,
                                                                         messageRouter,
-                                                                        globalCapabilitiesClient);
+                                                                        globalCapabilitiesClient,
+                                                                        expiredDiscoveryEntryCacheCleaner);
+        verify(expiredDiscoveryEntryCacheCleaner).scheduleCleanUpForCaches(argThat(new DiscoveryEntryStoreVarargMatcher(globalDiscoveryEntryCacheMock,
+                                                                                                                        localDiscoveryEntryStoreMock)));
 
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] parameterList = { new CustomParameter("key1", "value1"),

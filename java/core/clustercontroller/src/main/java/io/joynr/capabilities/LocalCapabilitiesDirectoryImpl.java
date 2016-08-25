@@ -117,7 +117,8 @@ TransportReadyListener {
                                           DiscoveryEntryStore localDiscoveryEntryStore,
                                           DiscoveryEntryStore globalDiscoveryEntryCache,
                                           MessageRouter messageRouter,
-                                          GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient) {
+                                          GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient,
+                                          ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner) {
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.messageRouter = messageRouter;
@@ -125,6 +126,7 @@ TransportReadyListener {
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
         this.globalDiscoveryEntryCache.add(capabilitiesProvisioning.getDiscoveryEntries());
+        expiredDiscoveryEntryCacheCleaner.scheduleCleanUpForCaches(globalDiscoveryEntryCache, localDiscoveryEntryStore);
     }
 
     /**
