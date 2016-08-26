@@ -5,7 +5,7 @@ REPODIR=${HOME}/.m2/repository
 DOCKER_REPOSITORY=
 MAVENSETTINGS=${HOME}/.m2/settings.xml
 BASE_DOCKER_IMAGE=joynr-runtime-environment-base:latest
-CPP_BUILD_DOCKER_IMAGE=joynr-cpp:latest
+CPP_BUILD_DOCKER_IMAGE=joynr-cpp-gcc:latest
 JS_BUILD_DOCKER_IMAGE=joynr-javascript:latest
 DOCKER_RUN_ADD_FLAGS=
 JOBS=2
@@ -101,14 +101,14 @@ if [ $NO_CPP_BUILD ]; then
 else
 	execute_in_docker "echo \"Generate joynr C++ API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests -am\
 	--projects io.joynr:basemodel,io.joynr.tools.generator:dependency-libs,io.joynr.tools.generator:generator-framework,io.joynr.tools.generator:joynr-generator-maven-plugin,io.joynr.tools.generator:cpp-generator,io.joynr.cpp:libjoynr,io.joynr.tools.generator:joynr-generator-standalone"
-	execute_in_docker "echo \"Building joynr c++\" && /data/src/docker/joynr-cpp/scripts/build/cpp-clean-build.sh --jobs ${JOBS} --enableclangformatter OFF --buildtests OFF 2>&1"
-	execute_in_docker "echo \"Packaging joynr c++\" && /data/src/docker/joynr-cpp/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"
+	execute_in_docker "echo \"Building joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --jobs ${JOBS} --enableclangformatter OFF --buildtests OFF 2>&1"
+	execute_in_docker "echo \"Packaging joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"
 fi
 
 if [ $NO_CPP_TEST_BUILD ]; then
 	echo "Skipping C++ test build ..."
 else
-	execute_in_docker "echo \"Building C++ System Integration Tests\" && export JOYNR_INSTALL_DIR=/data/build/joynr && echo \"dir: \$JOYNR_INSTALL_DIR\" && /data/src/docker/joynr-cpp/scripts/build/cpp-build-tests.sh system-integration-test --jobs ${JOBS} --clangformatter OFF 2>&1"
+	execute_in_docker "echo \"Building C++ System Integration Tests\" && export JOYNR_INSTALL_DIR=/data/build/joynr && echo \"dir: \$JOYNR_INSTALL_DIR\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-tests.sh system-integration-test --jobs ${JOBS} --clangformatter OFF 2>&1"
 fi
 
 if [ $NO_NODE_TEST_BUILD ]; then
