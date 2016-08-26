@@ -42,6 +42,7 @@ import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.runtime.JoynrRuntime;
+import joynr.exceptions.ApplicationException;
 import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
 import org.junit.Before;
@@ -68,6 +69,11 @@ public class JoynrIntegrationBeanTest {
         public String callMe(String parameterOne) {
             return null;
         }
+
+        @Override
+        public void callMeWithException() throws ApplicationException {
+            throw new ApplicationException(null);
+        }
     }
 
     @ServiceProvider(serviceInterface = MyServiceSync.class)
@@ -76,6 +82,11 @@ public class JoynrIntegrationBeanTest {
         @Override
         public String callMe(String parameterOne) {
             return null;
+        }
+
+        @Override
+        public void callMeWithException() throws ApplicationException {
+            throw new ApplicationException(null);
         }
     }
 
