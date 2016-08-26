@@ -1,3 +1,13 @@
+#joynr 0.21.0
+
+##API relevant changes
+* **[JEE]** Ability to specify individual domains for providers via new
+  `@ProviderDomain` annotation. See
+  [JEE Documentation / Customising the registration domain](jee.md#provider_domain).
+
+##Other changes
+
+
 #joynr 0.20.0
 
 ##API relevant changes
