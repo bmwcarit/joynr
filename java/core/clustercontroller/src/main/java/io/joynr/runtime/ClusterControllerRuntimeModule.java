@@ -1,5 +1,11 @@
 package io.joynr.runtime;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 /*
  * #%L
  * %%
@@ -21,6 +27,7 @@ package io.joynr.runtime;
 
 import com.google.inject.name.Names;
 
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.discovery.DiscoveryClientModule;
 import io.joynr.messaging.NoBackendMessagingModule;
 import io.joynr.messaging.routing.RoutingProviderImpl;
@@ -41,5 +48,11 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
 
         bind(PlatformSecurityManager.class).to(DummyPlatformSecurityManager.class);
         bind(Address.class).annotatedWith(Names.named(GLOBAL_ADDRESS)).toProvider(GlobalAddressProvider.class);
+
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.scheduler.capabilities.freshness-%d")
+                                                                     .build();
+        ScheduledExecutorService capabilitiesFreshnessUpdateExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
+        bind(ScheduledExecutorService.class).annotatedWith(Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))
+                                            .toInstance(capabilitiesFreshnessUpdateExecutor);
     }
 }

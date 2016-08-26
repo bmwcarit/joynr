@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -39,6 +41,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
@@ -77,6 +81,9 @@ TransportReadyListener {
         INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.LOCAL_AND_GLOBAL);
         INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.LOCAL_THEN_GLOBAL);
     }
+
+    public static final String PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS = "joynr.capabilities.freshnessupdateintervalms";
+    private ScheduledExecutorService freshnessUpdateScheduler;
 
     private DiscoveryEntryStore localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
@@ -118,7 +125,9 @@ TransportReadyListener {
                                           DiscoveryEntryStore globalDiscoveryEntryCache,
                                           MessageRouter messageRouter,
                                           GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient,
-                                          ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner) {
+                                          ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner,
+                                          @Named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS) long freshnessUpdateIntervalMs,
+                                          @Named(JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS) ScheduledExecutorService freshnessUpdateScheduler) {
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.messageRouter = messageRouter;
@@ -135,6 +144,24 @@ TransportReadyListener {
                     }
                 }
             }, globalDiscoveryEntryCache, localDiscoveryEntryStore);
+        this.freshnessUpdateScheduler = freshnessUpdateScheduler;
+        setUpPeriodicFreshnessUpdate(freshnessUpdateIntervalMs);
+    }
+
+    private void setUpPeriodicFreshnessUpdate(final long freshnessUpdateIntervalMs) {
+        logger.debug("Setting up periodic freshness update with interval {}", freshnessUpdateIntervalMs);
+        Runnable command = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    logger.debug("Updating last seen date ms.");
+                    globalCapabilitiesDirectoryClient.touch(freshnessUpdateIntervalMs);
+                } catch (JoynrRuntimeException e) {
+                    logger.error("error sending freshness update", e);
+                }
+            }
+        };
+        freshnessUpdateScheduler.scheduleAtFixedRate(command, freshnessUpdateIntervalMs, freshnessUpdateIntervalMs, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -509,6 +536,7 @@ TransportReadyListener {
 
     @Override
     public void shutdown(boolean unregisterAllRegisteredCapabilities) {
+        freshnessUpdateScheduler.shutdownNow();
         if (unregisterAllRegisteredCapabilities) {
             Set<DiscoveryEntry> allDiscoveryEntries = localDiscoveryEntryStore.getAllDiscoveryEntries();
 
