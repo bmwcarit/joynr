@@ -1,3 +1,15 @@
+#joynr 0.20.1
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** the MQTT client now performs a manual re-connect and re-subscribe if the
+  connection is lost, because the Paho auto reconnect and persistent subscriptions
+  are buggy in the version we're using.
+
+
 #joynr 0.20.0
 
 ##API relevant changes
