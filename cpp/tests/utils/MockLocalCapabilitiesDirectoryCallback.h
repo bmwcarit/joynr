@@ -23,22 +23,24 @@
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/Semaphore.h"
 
-class MockLocalCapabilitiesDirectoryCallback : public joynr::ILocalCapabilitiesCallback {
+class MockLocalCapabilitiesDirectoryCallback : public joynr::ILocalCapabilitiesCallback
+{
 
 public:
     MockLocalCapabilitiesDirectoryCallback();
 
-    void capabilitiesReceived(const std::vector<joynr::CapabilityEntry>& capabilities) override;
+    void capabilitiesReceived(
+            const std::vector<joynr::types::DiscoveryEntry>& capabilities) override;
     void onError(const joynr::exceptions::JoynrRuntimeException&) override;
 
-    std::vector<joynr::CapabilityEntry> getResults(int timeout);
+    std::vector<joynr::types::DiscoveryEntry> getResults(int timeout);
     void clearResults();
 
     virtual ~MockLocalCapabilitiesDirectoryCallback();
 
 private:
-    std::vector<joynr::CapabilityEntry> results;
+    std::vector<joynr::types::DiscoveryEntry> results;
     joynr::Semaphore semaphore;
 };
 
-#endif //MOCKCAPABILITIESRESULTCALLBACK_H_
+#endif // MOCKCAPABILITIESRESULTCALLBACK_H_

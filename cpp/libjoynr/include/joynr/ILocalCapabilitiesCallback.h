@@ -20,7 +20,7 @@
 #define ILOCALCAPABILITIESCALLBACK_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/CapabilityEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include <vector>
 
 namespace joynr
@@ -31,7 +31,7 @@ class JOYNR_EXPORT ILocalCapabilitiesCallback
 public:
     virtual ~ILocalCapabilitiesCallback() = default;
 
-    virtual void capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) = 0;
+    virtual void capabilitiesReceived(const std::vector<types::DiscoveryEntry>& capabilities) = 0;
     virtual void onError(const joynr::exceptions::JoynrRuntimeException&) = 0;
 };
 
