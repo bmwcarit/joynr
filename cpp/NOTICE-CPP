@@ -37,6 +37,7 @@ WebSocket++ under BSD 3-clause License (BSD-3-clause)
 
 --- Libraries used during joynr build ------------------------------------------
 
+Files in cpp/CMake/git-revision-description under Boost Software License (BSL-1.0)
 Files in cpp/CMake/code-coverage under Boost Software License (BSL-1.0)
 libgtest under BSD 3-clause License (BSD-3-clause)
 libgmock under BSD 3-clause License (BSD-3-clause)

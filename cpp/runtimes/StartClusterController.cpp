@@ -18,23 +18,40 @@
  */
 #include <string>
 
+#ifdef JOYNR_ENABLE_DLT_LOGGING
+#include <dlt/dlt.h>
+#endif // JOYNR_ENABLE_DLT_LOGGING
+
 #include "cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 
 #include "joynr/Logger.h"
 #include "joynr/Settings.h"
 #include "joynr/Util.h"
-#ifdef JOYNR_ENABLE_DLT_LOGGING
-#include <dlt/dlt.h>
-#endif // JOYNR_ENABLE_DLT_LOGGING
+#include "joynr/JoynrVersion.h"
 
 using namespace joynr;
 
 namespace
 {
+static const std::string getVersionInfo()
+{
+    return "Joynr clust-controller."
+           "\nJoynr version: " JOYNR_VERSION "."
+           "\nPackage revision: " JOYNR_PACKAGE_REVISION " build on " JOYNR_BUILD_TIME;
+}
+
 void printUsage(Logger& logger, const std::string& programName)
 {
+    JOYNR_LOG_INFO(logger, "Joynr package revision: " JOYNR_PACKAGE_REVISION ".");
     JOYNR_LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
-    JOYNR_LOG_INFO(logger, "USAGE: {}  <file.settings>... -d <discoveryEntries.json>", programName);
+    JOYNR_LOG_INFO(logger,
+                   "USAGE: {}  <file.settings>... [-d <discoveryEntries.json>] [--version|-v]",
+                   programName);
+}
+
+void printVersionToStdOut()
+{
+    std::cout << getVersionInfo() << std::endl;
 }
 }
 
@@ -54,6 +71,9 @@ int main(int argc, char* argv[])
         printUsage(logger, programName);
     }
 
+    // Always print Joynr version
+    printVersionToStdOut();
+
     // Object that holds all the settings
     auto settings = std::make_unique<Settings>();
 
@@ -63,9 +83,12 @@ int main(int argc, char* argv[])
     // Walk the argument list and
     //  - merge all the settings files into the settings object
     //  - read in input file name to inject discovery entries
-    for (int i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; ++i) {
 
-        if (std::strcmp(argv[i], "-d") == 0) {
+        if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--version") == 0) {
+            // exit immediately if only --version was asked
+            return 0;
+        } else if (std::strcmp(argv[i], "-d") == 0) {
             if (++i < argc) {
                 discoveryEntriesFile = argv[i];
             } else {
