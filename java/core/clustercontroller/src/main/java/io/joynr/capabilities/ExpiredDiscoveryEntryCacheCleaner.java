@@ -51,7 +51,7 @@ public class ExpiredDiscoveryEntryCacheCleaner {
 
     private static final Logger logger = LoggerFactory.getLogger(ExpiredDiscoveryEntryCacheCleaner.class);
 
-    public static final String DISCOVERY_ENTRY_CACHE_CLEANUP_INTERVAL = "joynr.cc.discovery_entry_cache_cleanup_interval";
+    public static final String DISCOVERY_ENTRY_CACHE_CLEANUP_INTERVAL = "joynr.cc.discovery.entry.cache.cleanup.interval";
 
     private ScheduledExecutorService scheduledExecutorService;
     private int cacheCleanupIntervalInMinutes;

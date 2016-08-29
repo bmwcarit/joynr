@@ -314,6 +314,20 @@ Possible values are:
 * **User property**: `joynr.messaging.cc.protocol`
 * **Default value**: `ws`
 
+
+## <a name="ExpiredDiscoveryEntryCacheCleaner"></a>ExpiredDiscoveryEntryCacheCleaner
+
+### `DISCOVERY_ENTRY_CACHE_CLEANUP_INTERVAL`
+The time interval in minutes at which the capabilities cache will be searched for expired
+discovery entries, and these will be expunged from the cache. Applies to both local and
+global cached discovery entries.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.cc.discovery.entry.cache.cleanup.interval`
+* **Default value**: `60`
+
+
 ## JEE Integration
 
 These properties are defined as constants in the

@@ -6,6 +6,11 @@
   [JEE Documentation / Customising the registration domain](jee.md#provider_domain).
 
 ##Other changes
+* **[Java]** The local capabilities directory will periodically be checked for
+  expired discovery entries, and any which have expired will be purged from the
+  caches. The interval at which the entries are checked can be configured using
+  the `joynr.cc.discovery.entry.cache.cleanup.interval` property (See also the
+  [Java Configuration Guide](JavaSettings.md#ExpiredDiscoveryEntryCacheCleaner)).
 
 
 #joynr 0.20.0
