@@ -19,6 +19,7 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,7 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Use this class to periodically check a {@link DiscoveryEntryStore} for expired entries and clean them out.
+ * Use this class to periodically check a {@link DiscoveryEntryStore} for expired entries and clean them out by calling
+ * the provided {@link CleanupAction clean-up action callback}.
  * <p>
  * This implementation uses the {@link ScheduledExecutorService} configured under {@link JoynrInjectionConstants#JOYNR_SCHEDULER_CLEANUP}
  * in order to schedule the cleanup tasks. The interval in which discovery entries are cleaned up can be configured
@@ -42,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * file.
  * </p>
  * <p>
- *     Call the {@link #scheduleCleanUpForCaches(DiscoveryEntryStore[])} method with the stores to be cleaned up at regular
+ *     Call the {@link #scheduleCleanUpForCaches(CleanupAction, DiscoveryEntryStore[])} method with the stores to be cleaned up at regular
  *     intervals to start the process.
  * </p>
  */
@@ -52,6 +54,14 @@ public class ExpiredDiscoveryEntryCacheCleaner {
     private static final Logger logger = LoggerFactory.getLogger(ExpiredDiscoveryEntryCacheCleaner.class);
 
     public static final String DISCOVERY_ENTRY_CACHE_CLEANUP_INTERVAL = "joynr.cc.discovery.entry.cache.cleanup.interval";
+
+    /**
+     * Implementations of this are registered with {@link #scheduleCleanUpForCaches(CleanupAction, DiscoveryEntryStore...)} to be
+     * called for each {@link DiscoveryEntry} found to be expired in the given cache.
+     */
+    public static interface CleanupAction {
+        void cleanup(Set<DiscoveryEntry> expiredDiscoveryEntries);
+    }
 
     private ScheduledExecutorService scheduledExecutorService;
     private int cacheCleanupIntervalInMinutes;
@@ -63,32 +73,32 @@ public class ExpiredDiscoveryEntryCacheCleaner {
         this.cacheCleanupIntervalInMinutes = cacheCleanupIntervalInMinutes;
     }
 
-    public void scheduleCleanUpForCaches(final DiscoveryEntryStore... caches) {
-        for (final DiscoveryEntryStore cache : caches) {
-            scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        doCleanupFor(cache);
-                    } catch (Exception e) {
-                        logger.error("Problem encountered while cleaning up expired discovery entries on cache {}",
-                                     cache,
-                                     e);
-                    }
+    public void scheduleCleanUpForCaches(final CleanupAction cleanupAction, final DiscoveryEntryStore... caches) {
+        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doCleanupFor(cleanupAction, caches);
+                } catch (Exception e) {
+                    logger.error("Problem encountered while cleaning up expired discovery entries on cache {}",
+                                 caches,
+                                 e);
                 }
-            }, cacheCleanupIntervalInMinutes, cacheCleanupIntervalInMinutes, TimeUnit.MINUTES);
-        }
+            }
+        }, cacheCleanupIntervalInMinutes, cacheCleanupIntervalInMinutes, TimeUnit.MINUTES);
     }
 
-    private void doCleanupFor(DiscoveryEntryStore cache) {
-        Set<String> expiredParticipantIds = new HashSet<>();
+    private void doCleanupFor(CleanupAction cleanupAction, DiscoveryEntryStore ... caches) {
+        Set<DiscoveryEntry> expiredDiscoveryEntries = new HashSet<>();
         long now = System.currentTimeMillis();
-        for (DiscoveryEntry discoveryEntry : cache.getAllDiscoveryEntries()) {
-            if (discoveryEntry.getExpiryDateMs() < now) {
-                expiredParticipantIds.add(discoveryEntry.getParticipantId());
+        for (DiscoveryEntryStore cache : caches) {
+            for (DiscoveryEntry discoveryEntry : cache.getAllDiscoveryEntries()) {
+                if (discoveryEntry.getExpiryDateMs() < now) {
+                    expiredDiscoveryEntries.add(discoveryEntry);
+                }
             }
         }
-        logger.debug("The following expired participant IDs will be purged from the cache {}:\n{}", cache, expiredParticipantIds);
-        cache.remove(expiredParticipantIds);
+        logger.debug("The following expired participant IDs will be cleaned from the caches {}:\n{}", Arrays.toString(caches), expiredDiscoveryEntries);
+        cleanupAction.cleanup(expiredDiscoveryEntries);
     }
 }

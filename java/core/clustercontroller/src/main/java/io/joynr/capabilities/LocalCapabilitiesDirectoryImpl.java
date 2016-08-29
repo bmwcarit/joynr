@@ -126,7 +126,15 @@ TransportReadyListener {
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
         this.globalDiscoveryEntryCache.add(capabilitiesProvisioning.getDiscoveryEntries());
-        expiredDiscoveryEntryCacheCleaner.scheduleCleanUpForCaches(globalDiscoveryEntryCache, localDiscoveryEntryStore);
+        expiredDiscoveryEntryCacheCleaner.scheduleCleanUpForCaches(
+            new ExpiredDiscoveryEntryCacheCleaner.CleanupAction() {
+                @Override
+                public void cleanup(Set<DiscoveryEntry> expiredDiscoveryEntries) {
+                    for (DiscoveryEntry discoveryEntry : expiredDiscoveryEntries) {
+                        remove(discoveryEntry);
+                    }
+                }
+            }, globalDiscoveryEntryCache, localDiscoveryEntryStore);
     }
 
     /**

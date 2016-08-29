@@ -207,7 +207,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         messageRouter,
                                                                         globalCapabilitiesClient,
                                                                         expiredDiscoveryEntryCacheCleaner);
-        verify(expiredDiscoveryEntryCacheCleaner).scheduleCleanUpForCaches(argThat(new DiscoveryEntryStoreVarargMatcher(globalDiscoveryEntryCacheMock,
+        verify(expiredDiscoveryEntryCacheCleaner).scheduleCleanUpForCaches(Mockito.<ExpiredDiscoveryEntryCacheCleaner.CleanupAction> any(),
+                                                                           argThat(new DiscoveryEntryStoreVarargMatcher(globalDiscoveryEntryCacheMock,
                                                                                                                         localDiscoveryEntryStoreMock)));
 
         ProviderQos providerQos = new ProviderQos();

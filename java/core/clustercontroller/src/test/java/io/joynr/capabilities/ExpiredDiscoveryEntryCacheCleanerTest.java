@@ -52,6 +52,9 @@ public class ExpiredDiscoveryEntryCacheCleanerTest {
     @Mock
     private DiscoveryEntryStore cache;
 
+    @Mock
+    private ExpiredDiscoveryEntryCacheCleaner.CleanupAction cleanupAction;
+
     @Captor
     private ArgumentCaptor<Runnable> runnableArgumentCaptor;
 
@@ -64,7 +67,7 @@ public class ExpiredDiscoveryEntryCacheCleanerTest {
 
     @Test
     public void testScheduleCacheForCleanup() {
-        subject.scheduleCleanUpForCaches(cache);
+        subject.scheduleCleanUpForCaches(cleanupAction, cache);
         verify(scheduledExecutorService).scheduleAtFixedRate(any(Runnable.class), eq(1L), eq(1L), eq(TimeUnit.MINUTES));
     }
 
@@ -84,13 +87,13 @@ public class ExpiredDiscoveryEntryCacheCleanerTest {
 
         when(cache.getAllDiscoveryEntries()).thenReturn(allEntries);
 
-        subject.scheduleCleanUpForCaches(cache);
+        subject.scheduleCleanUpForCaches(cleanupAction, cache);
 
         verify(scheduledExecutorService).scheduleAtFixedRate(runnableArgumentCaptor.capture(), eq(1L), eq(1L),
             eq(TimeUnit.MINUTES));
         Runnable cleanupTask = runnableArgumentCaptor.getValue();
         cleanupTask.run();
         verify(cache).getAllDiscoveryEntries();
-        verify(cache).remove(Sets.newHashSet(expiredParticipantId));
+        verify(cleanupAction).cleanup(Sets.newHashSet(expiredEntry));
     }
 }
