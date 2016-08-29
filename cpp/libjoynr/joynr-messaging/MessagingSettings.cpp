@@ -154,6 +154,12 @@ const std::string& MessagingSettings::SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
+{
+    static const std::string value("messaging/purge-expired-discovery-entries-interval-ms");
+    return value;
+}
+
 const std::string& MessagingSettings::SETTING_LOCAL_PROXY_HOST()
 {
     static const std::string value("messaging/local-proxy-host");
@@ -403,6 +409,17 @@ int MessagingSettings::getDiscoveryEntryExpiryIntervalMs() const
 void MessagingSettings::setDiscoveryEntryExpiryIntervalMs(int expiryIntervalMs)
 {
     settings.set(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(), expiryIntervalMs);
+}
+
+int MessagingSettings::getPurgeExpiredDiscoveryEntriesIntervalMs() const
+{
+    return settings.get<int>(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
+}
+
+void MessagingSettings::setPurgeExpiredDiscoveryEntriesIntervalMs(int purgeExpiredEntriesIntervalMs)
+{
+    settings.set(
+            SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS(), purgeExpiredEntriesIntervalMs);
 }
 
 int MessagingSettings::getSendMsgRetryInterval() const

@@ -62,17 +62,20 @@ public:
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(),
               mockMessageRouter(singleThreadedIOService.getIOService()),
-              localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings,
-                                                                        capabilitiesClient,
-                                                                        LOCAL_ADDRESS,
-                                                                        mockMessageRouter,
-                                                                        libjoynrSettings)),
+              localCapabilitiesDirectory(),
               lastSeenDateMs(0),
               expiryDateMs(0),
               dummyParticipantId1(),
               dummyParticipantId2(),
               callback()
     {
+        messagingSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
+        localCapabilitiesDirectory =
+                std::make_unique<LocalCapabilitiesDirectory>(messagingSettings,
+                                                             capabilitiesClient,
+                                                             LOCAL_ADDRESS,
+                                                             mockMessageRouter,
+                                                             libjoynrSettings);
     }
 
     ~LocalCapabilitiesDirectoryTest()
@@ -104,11 +107,6 @@ public:
                                              10000,
                                              PUBLIC_KEY_ID);
         globalCapEntryMap.insert(EXTERNAL_ADDRESS, globalCapEntry);
-    }
-
-    void TearDown()
-    {
-        delete localCapabilitiesDirectory;
     }
 
     void fakeLookupZeroResultsForInterfaceAddress(
@@ -274,7 +272,7 @@ protected:
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;
-    LocalCapabilitiesDirectory* localCapabilitiesDirectory;
+    std::unique_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
     std::string dummyParticipantId1;
@@ -1307,16 +1305,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
     localCapabilitiesDirectory->add(entry2);
     localCapabilitiesDirectory->add(entry3);
 
-    // delete LocalCapabilitiesDirectory
-    delete localCapabilitiesDirectory;
-    localCapabilitiesDirectory = nullptr;
-
     // create a new object
-    localCapabilitiesDirectory = new LocalCapabilitiesDirectory(messagingSettings,
-                                                                capabilitiesClient,
-                                                                LOCAL_ADDRESS,
-                                                                mockMessageRouter,
-                                                                libjoynrSettings);
+    localCapabilitiesDirectory = std::make_unique<LocalCapabilitiesDirectory>(messagingSettings,
+                                                                              capabilitiesClient,
+                                                                              LOCAL_ADDRESS,
+                                                                              mockMessageRouter,
+                                                                              libjoynrSettings);
 
     // load persistency
     localCapabilitiesDirectory->loadPersistedFile();
@@ -1366,3 +1360,49 @@ TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnMultiProxy)
     localCapabilitiesDirectory->lookup(
             twoDomains, INTERFACE_1_NAME, discoveryQos, onSuccess, onError);
 }
+
+class LocalCapabilitiesDirectoryPurgeTest
+        : public LocalCapabilitiesDirectoryTest,
+          public ::testing::WithParamInterface<types::ProviderScope::Enum>
+{
+};
+
+TEST_P(LocalCapabilitiesDirectoryPurgeTest, purgeTimedOutEntries)
+{
+    types::ProviderQos providerQos;
+    providerQos.setScope(GetParam());
+
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
+
+    EXPECT_CALL(*capabilitiesClient, add(_))
+            .Times(GetParam() == joynr::types::ProviderScope::LOCAL ? 0 : 1);
+    joynr::types::Version providerVersion(47, 11);
+    joynr::types::DiscoveryEntry entry(providerVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       providerQos,
+                                       lastSeenDateMs,
+                                       10,
+                                       PUBLIC_KEY_ID);
+    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+    EXPECT_EQ(1, callback->getResults(10).size());
+    callback->clearResults();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+    EXPECT_EQ(0, callback->getResults(10).size());
+    callback->clearResults();
+}
+
+INSTANTIATE_TEST_CASE_P(PurgeTimedoutEntries,
+                        LocalCapabilitiesDirectoryPurgeTest,
+                        ::testing::Values(types::ProviderScope::LOCAL,
+                                          types::ProviderScope::GLOBAL));

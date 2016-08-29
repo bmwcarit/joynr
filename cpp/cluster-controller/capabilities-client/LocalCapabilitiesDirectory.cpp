@@ -63,7 +63,11 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           observers(),
           mqttSettings(),
           libJoynrSettings(libjoynrSettings),
-          pendingLookups()
+          pendingLookups(),
+          thread(),
+          ioService(),
+          ioServiceWork(std::make_unique<boost::asio::io_service::work>(ioService)),
+          checkExpiredDiscoveryEntriesTimer(ioService)
 {
     // setting up the provisioned values for GlobalCapabilitiesClient
     // The GlobalCapabilitiesServer is also provisioned in MessageRouter
@@ -85,10 +89,19 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
                                   defaultPublicKeyId),
             true,
             false);
+
+    thread = std::thread([this]() { this->ioService.run(); });
+    scheduleCleanupTimer();
 }
 
 LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
 {
+    checkExpiredDiscoveryEntriesTimer.cancel();
+    ioServiceWork.reset();
+    ioService.stop();
+    if (thread.joinable()) {
+        thread.join();
+    }
     cleanCaches();
 }
 
@@ -193,17 +206,21 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
 
     std::vector<types::DiscoveryEntry> entries =
             searchCache(participantId, std::chrono::milliseconds(-1), true);
+    remove(entries);
+}
 
+void LocalCapabilitiesDirectory::remove(const std::vector<types::DiscoveryEntry>& discoveryEntries)
+{
     // first, update cache
     {
-        for (std::size_t i = 0; i < entries.size(); ++i) {
-            const types::DiscoveryEntry& entry = entries.at(i);
+        for (std::size_t i = 0; i < discoveryEntries.size(); ++i) {
+            const types::DiscoveryEntry& entry = discoveryEntries.at(i);
             std::lock_guard<std::mutex> lock(cacheLock);
-            participantId2LocalCapability.remove(participantId, entry);
+            participantId2LocalCapability.remove(entry.getParticipantId(), entry);
             interfaceAddress2LocalCapabilities.remove(
                     InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
             if (isGlobal(entry)) {
-                participantId2GlobalCapabilities.remove(participantId, entry);
+                participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
                 interfaceAddress2GlobalCapabilities.remove(
                         InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
             }
@@ -211,10 +228,10 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
     }
 
     // second, do final cleanup and observer call
-    for (std::size_t i = 0; i < entries.size(); ++i) {
-        const types::DiscoveryEntry& entry = entries.at(i);
+    for (std::size_t i = 0; i < discoveryEntries.size(); ++i) {
+        const types::DiscoveryEntry& entry = discoveryEntries.at(i);
         if (isGlobal(entry)) {
-            capabilitiesClient->remove(participantId);
+            capabilitiesClient->remove(entry.getParticipantId());
         }
         informObserversOnRemove(entry);
     }
@@ -820,6 +837,51 @@ bool LocalCapabilitiesDirectory::isGlobal(const types::DiscoveryEntry& discovery
 {
     bool isGlobal = discoveryEntry.getQos().getScope() == types::ProviderScope::GLOBAL;
     return isGlobal;
+}
+
+void LocalCapabilitiesDirectory::scheduleCleanupTimer()
+{
+    boost::system::error_code timerError;
+    auto intervalMs = messagingSettings.getPurgeExpiredDiscoveryEntriesIntervalMs();
+    checkExpiredDiscoveryEntriesTimer.expires_from_now(
+            std::chrono::milliseconds(intervalMs), timerError);
+    if (timerError) {
+        JOYNR_LOG_FATAL(logger,
+                        "Error schduling discovery entries check. {}: {}",
+                        timerError.value(),
+                        timerError.message());
+    } else {
+        checkExpiredDiscoveryEntriesTimer.async_wait(
+                std::bind(&LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries,
+                          this,
+                          std::placeholders::_1));
+    }
+}
+
+void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
+        const boost::system::error_code& errorCode)
+{
+    if (!errorCode) {
+        std::vector<types::DiscoveryEntry> expiredEntries;
+        TypedClientMultiCache<std::string, types::DiscoveryEntry>* caches[] = {
+                &participantId2LocalCapability, &participantId2GlobalCapabilities};
+        auto now = TypeUtil::toMilliseconds(std::chrono::system_clock::now());
+        for (auto& cache : caches) {
+            for (auto& key : cache->getKeys()) {
+                for (auto& discoveryEntry : participantId2LocalCapability.lookUpAll(key)) {
+                    if ((std::uint64_t)discoveryEntry.getExpiryDateMs() < now) {
+                        expiredEntries.push_back(discoveryEntry);
+                    }
+                }
+            }
+        }
+        if (expiredEntries.size() > 0) {
+            remove(expiredEntries);
+        }
+    } else {
+        JOYNR_LOG_ERROR(logger, "Error triggering expired discovery entries check.");
+    }
+    scheduleCleanupTimer();
 }
 
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(
