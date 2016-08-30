@@ -37,7 +37,7 @@ public class DiscoveryQos {
 
     private ArbitrationStrategy arbitrationStrategy;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
-    private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.HighestPriority;
+    private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.LastSeen;
 
     long cacheMaxAgeMs;
     private static final long DEFAULT_CACHEMAXAGE = 0L;
