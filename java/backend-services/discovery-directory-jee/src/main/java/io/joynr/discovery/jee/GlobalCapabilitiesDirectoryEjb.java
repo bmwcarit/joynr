@@ -61,7 +61,9 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     @Override
     public void add(GlobalDiscoveryEntry globalDiscoveryEntry) {
         logger.debug("Adding global discovery entry {}", globalDiscoveryEntry);
-        GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry);
+        // TODO set clusterControllerId from globalDiscoveryEntry
+        GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
+                                                                                 "clusterControllerId");
         entityManager.persist(entity);
     }
 

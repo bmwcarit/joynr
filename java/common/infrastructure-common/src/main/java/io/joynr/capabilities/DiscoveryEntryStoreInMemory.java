@@ -273,4 +273,9 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
     private boolean checkAge(Long timeStamp, long maxAcceptedAge) {
         return timeStamp != null && ((System.currentTimeMillis() - timeStamp) <= maxAcceptedAge);
     }
+
+    @Override
+    public void touch(String clusterControllerId) {
+        // TODO Auto-generated method stub
+    }
 }

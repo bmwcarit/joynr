@@ -205,4 +205,34 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
             return false;
         }
     }
+
+    @Override
+    public void touch(String clusterControllerId) {
+        String query = "from GlobalDiscoveryEntryPersisted where clusterControllerId=:clusterControllerId";
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            @SuppressWarnings("unchecked")
+            List<DiscoveryEntry> capabilitiesList = entityManager.createQuery(query)
+                                                                 .setParameter("clusterControllerId",
+                                                                               clusterControllerId)
+                                                                 .getResultList();
+            for (DiscoveryEntry discoveryEntry : capabilitiesList) {
+                logger.trace("  --> BEFORE entry {} last seen {}",
+                             discoveryEntry.getParticipantId(),
+                             discoveryEntry.getLastSeenDateMs());
+                ((GlobalDiscoveryEntryPersisted) discoveryEntry).setLastSeenDateMs(System.currentTimeMillis());
+                logger.trace("  --> AFTER  entry {} last seen {}",
+                             discoveryEntry.getParticipantId(),
+                             discoveryEntry.getLastSeenDateMs());
+            }
+            transaction.commit();
+        } catch (RuntimeException e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            logger.error("Error updating last seen date for cluster controller with ID {}", clusterControllerId, e);
+        }
+
+    }
 }
