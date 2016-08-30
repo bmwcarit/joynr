@@ -103,3 +103,14 @@ file(
     COPY ${Joynr_RESOURCES_DIR}
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     )
+
+if(NOT INSTALL_TEST_DIR)
+    set(INSTALL_TEST_DIR "${CMAKE_INSTALL_BINDIR}" CACHE PATH "Installation sub directory for tests")
+endif(NOT INSTALL_TEST_DIR)
+
+install(
+    FILES
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/performancetest-consumer.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/performancetest-provider.settings
+        DESTINATION ${INSTALL_TEST_DIR}/resources
+)
