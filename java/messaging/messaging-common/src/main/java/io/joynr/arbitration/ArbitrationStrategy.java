@@ -20,5 +20,5 @@ package io.joynr.arbitration;
  */
 
 public enum ArbitrationStrategy {
-    NotSet, FixedChannel, Keyword, HighestPriority, Custom
+    NotSet, FixedChannel, Keyword, HighestPriority, Custom, LastSeen
 }

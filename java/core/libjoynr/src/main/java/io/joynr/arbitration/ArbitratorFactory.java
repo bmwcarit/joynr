@@ -76,6 +76,9 @@ public final class ArbitratorFactory {
         case HighestPriority:
             arbitrationStrategyFunction = new HighestPriorityArbitrationStrategyFunction();
             break;
+        case LastSeen:
+            arbitrationStrategyFunction = new LastSeenArbitrationStrategyFunction();
+            break;
         case Custom:
             arbitrationStrategyFunction = discoveryQos.getArbitrationStrategyFunction();
             break;
