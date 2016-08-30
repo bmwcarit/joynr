@@ -1,10 +1,8 @@
 #!/bin/bash
-
-./cpp-install-muesli.sh --default
-./run-java-formatter
 ./java-clean-build skipTests
-./run-javascript-formatter
 ./javascript-clean-build skipTests
+./cpp-install-muesli.sh --default
 ./cpp-generate.sh
 ./cpp-clean-build.sh --buildtests OFF --enableclangformatter OFF
-./cpp-build-tests.sh all
+./cpp-build-tests.sh inter-language-test
+
