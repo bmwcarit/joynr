@@ -66,7 +66,9 @@ public:
         /** only participants which match a keyword will be considered */
         KEYWORD = 3,
         /** the participant with the highest priority will be selected */
-        HIGHEST_PRIORITY = 4
+        HIGHEST_PRIORITY = 4,
+        /** the last seen participant will be selected */
+        LAST_SEEN = 5
     };
 
     /**
