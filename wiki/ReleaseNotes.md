@@ -2,7 +2,10 @@
 This is a minor bug fix release.
 
 ## API relevant changes
-None.
+* **[Java]** The BroadcastSubscriptionListener is now able to get informed about succeeded
+  subscription requests. For this purpose, it implements a callback having
+  the following signature: public void onSubscribed(String subscriptionId).
+  In case of failure the onError callback can be invoked with a SubscriptionException.
 
 ## Other changes
 * **[Java]** the MQTT client now performs a manual re-connect and re-subscribe if the
