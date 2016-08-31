@@ -410,7 +410,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                          capabilitiesClient,
                                                          channelGlobalCapabilityDir,
                                                          *messageRouter,
-                                                         libjoynrSettings);
+                                                         libjoynrSettings,
+                                                         singleThreadIOService->getIOService(),
+                                                         clusterControllerId);
     localCapabilitiesDirectory->loadPersistedFile();
     // importPersistedLocalCapabilitiesDirectory();
 

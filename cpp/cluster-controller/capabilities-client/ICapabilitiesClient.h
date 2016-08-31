@@ -59,6 +59,11 @@ public:
             std::function<void(const exceptions::JoynrRuntimeException& error)>
                     onError = nullptr) = 0;
 
+    virtual void touch(
+            const std::string& clusterControllerId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError) = 0;
+
     virtual void setProxyBuilder(
             std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
                     capabilitiesProxyBuilder) = 0;

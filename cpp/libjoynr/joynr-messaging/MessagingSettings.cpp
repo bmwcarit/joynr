@@ -298,6 +298,18 @@ std::uint64_t MessagingSettings::DEFAULT_MAXIMUM_TTL_MS()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
+{
+    static const std::string value("messaging/capabilities-freshness-update-interval-ms");
+    return value;
+}
+
+std::chrono::milliseconds MessagingSettings::DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
+{
+    static const std::chrono::milliseconds value(1UL * 60UL * 60UL * 1000UL); // 1 hour
+    return value;
+}
+
 BrokerUrl MessagingSettings::getBrokerUrl() const
 {
     return BrokerUrl(settings.get<std::string>(SETTING_BROKER_URL()));
@@ -542,6 +554,12 @@ void MessagingSettings::setSendMsgMaxTtl(std::int64_t ttl_ms)
     settings.set(SETTING_SEND_MESSAGE_MAX_TTL(), ttl_ms);
 }
 
+std::chrono::milliseconds MessagingSettings::getCapabilitiesFreshnessUpdateIntervalMs() const
+{
+    return std::chrono::milliseconds(
+            settings.get<std::uint64_t>(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()));
+}
+
 bool MessagingSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
@@ -609,6 +627,10 @@ void MessagingSettings::checkSettings()
     }
     if (!settings.contains(SETTING_MAXIMUM_TTL_MS())) {
         setMaximumTtlMs(DEFAULT_MAXIMUM_TTL_MS());
+    }
+    if (!settings.contains(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS())) {
+        settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
+                     DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS().count());
     }
 }
 
@@ -683,6 +705,10 @@ void MessagingSettings::printSettings() const
                     SETTING_DISCOVERY_MESSAGES_TTL_MS(),
                     settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
     JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
+                    getCapabilitiesFreshnessUpdateIntervalMs().count());
 }
 
 } // namespace joynr

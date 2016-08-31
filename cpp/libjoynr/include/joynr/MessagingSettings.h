@@ -84,7 +84,9 @@ public:
      */
     static const std::string& SETTING_DISCOVERY_MESSAGES_TTL_MS();
     static const std::string& SETTING_SEND_MESSAGE_MAX_TTL();
+    static const std::string& SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
 
+    static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
     static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
@@ -171,6 +173,8 @@ public:
     void setDiscoveryMessagesTtl(std::int64_t ttl_ms);
     std::int64_t getSendMsgMaxTtl() const;
     void setSendMsgMaxTtl(std::int64_t ttl_ms);
+
+    std::chrono::milliseconds getCapabilitiesFreshnessUpdateIntervalMs() const;
 
     bool contains(const std::string& key) const;
 
