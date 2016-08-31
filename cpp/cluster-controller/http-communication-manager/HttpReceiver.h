@@ -86,8 +86,6 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
 
-    const BrokerUrl getBrokerUrl();
-
     /* This semaphore keeps track of the status of the channel. On creation no resources are
        available.
        Once the channel is created, one resource will be released. WaitForReceiveQueueStarted will
@@ -106,7 +104,7 @@ private:
     std::string globalClusterControllerAddress;
 
     MessagingSettings settings;
-    LongPollingMessageReceiver* messageReceiver;
+    std::unique_ptr<LongPollingMessageReceiver> messageReceiver;
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;

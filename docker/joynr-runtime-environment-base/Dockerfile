@@ -9,6 +9,7 @@ RUN dnf update -y \
 	&& dnf install -y \
 	tar \
 	nodejs \
+	npm \
 	procps \
 	java-1.8.0-openjdk-headless \
 	&& dnf clean all

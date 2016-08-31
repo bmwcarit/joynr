@@ -139,7 +139,7 @@ transmission.
 
 ##MessagingPropertyKeys
 
-### `BOUNCE_PROXY_URL`
+### `PROPERTY_BOUNCE_PROXY_URL`
 The root URL of the BounceProxy backend service when using HTTP messaging. The cluster controller
 uses this service to create a receive channel (message queue). Messages are posted to the receive
 channel in the backend. The cluster controller polls the channel to download the incoming messages.
@@ -149,7 +149,16 @@ channel in the backend. The cluster controller polls the channel to download the
 * **User property**: `joynr.messaging.bounceproxyurl`
 * **Default value**: `http://localhost:8080/bounceproxy/`
 
-### `DISCOVERYDIRECTORYURL`
+### `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT`
+Select primary global transport middleware which will be used to register providers. The provider
+will be reachable via the selected global transport middleware.
+
+* **REQUIRED if using more than one global transport**
+* **Type**: String
+* **User property**: `joynr.messaging.primaryglobaltransport`
+* **Default value**: NOT SET
+
+### `CAPABILITYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
 appropriate entry in the local capabilities directory.

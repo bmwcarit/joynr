@@ -1,0 +1,70 @@
+@startuml
+
+[-> MessageRouter : route
+
+alt "Destination address stored in routing table"
+	alt "Can create messaging stub"
+		MessageRouter -> MessageRouterThreadPool : "schedule(MessageRunnable) <b>(Thread switch)</b>"
+	else
+		MessageRouter -> MessageQueue : queueMessage
+	end
+else "Unknown address"
+	MessageRouter -> MessageQueue : queueMessage
+	alt "Child Router and parent resolve is not already running"
+		note over MessageRouter
+			"RoutingProxy = parent router"
+		end note
+
+		group "Resolve next hop with parent proxy"
+			MessageRouter ->> RoutingProxy : "resolveNextHopAsync"
+			RoutingProxy -> RoutingJoynrMessagingConnector : "resolveNextHopAsync"
+			RoutingJoynrMessagingConnector -> JoynrMessageSender : "sendRequest(resolveNextHopAsync)"
+			JoynrMessageSender -> Dispatcher : "addReplyCaller"
+			JoynrMessageSender -> MessageRouter : "route"
+			note over MessageRouter
+				"Destination address of RoutingProxy is 
+				 known because it is provisioned"
+			end note
+			MessageRouter -> MessageRouterThreadPool : "schedule(MessageRunnable)"
+			MessageRouterThreadPool ->> MessageRunnable : "run <b>(Thread switched)</b>"
+			MessageRunnable -> WebSocketMessagingStub : transmit
+			WebSocketMessagingStub -> WebSocketPpClient : send
+			WebSocketPpClient ->] : "ResolveNextHop Request"
+
+== Response for resolveNextHop==
+
+			[-> WebSocketLibJoynrMessagingSkeleton : "ResolveNextHop Response"
+			WebSocketLibJoynrMessagingSkeleton -> MessageRouter : route
+			MessageRouter -> MessageRouterThreadPool : "schedule(MessageRunnable) if address found and stub created"
+			MessageRouterThreadPool ->> MessageRunnable : "run <b>(Thread switch)</b>"
+
+			MessageRunnable -> InProcessMessagingStub : transmit
+			InProcessMessagingStub -> InProcessLibJoynrMessagingSkeleton : transmit
+			InProcessLibJoynrMessagingSkeleton -> Dispatcher : receive
+			Dispatcher -> DispatcherThreadPool : "schedule(ReceivedMessageRunnable)"
+			DispatcherThreadPool ->> ReceivedMessageRunnable : "run <b>(Thread switch)</b>"
+			ReceivedMessageRunnable -> Dispatcher : handleReplyReceived
+			Dispatcher -> "ReplyCaller/ReplyInterpreter" : "execute"
+			note over MessageRouter
+				"Response for resolveNextHopAsync"
+			end note
+			"ReplyCaller/ReplyInterpreter" -> MessageRouter : "onSuccess Callback"
+		end
+
+		note over MessageRouter
+			"Following code is executed in callback"
+		end note
+
+		MessageRouter -> MessageRouter : "addProvisionedNextHop"
+		MessageRouter -> MessageRouter : "removeRunningParentResolvers"
+		loop "For all queued messages"
+			alt "Can create messaging stub"
+				MessageRouter -> MessageRouterThreadPool : "schedule(MessageRunnable) <b>(Thread switch)</b>"
+			else
+				MessageRouter -> MessageQueue : queueMessage
+			end
+		end
+	end
+end
+
+@enduml

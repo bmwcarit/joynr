@@ -62,6 +62,9 @@ public:
                                const LongPollingMessageReceiverSettings& settings,
                                std::shared_ptr<Semaphore> channelCreatedSemaphore,
                                std::function<void(const std::string&)> onTextMessageReceived);
+
+    ~LongPollingMessageReceiver();
+
     void stop() override;
     void run() override;
     void interrupt();

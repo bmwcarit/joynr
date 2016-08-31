@@ -27,9 +27,9 @@
 * [Release Notes](wiki/ReleaseNotes.md) -- All joynr releases and API changes at a glance.
 
 # Overview
-joynr is a web-based communication framework for Java and C++ applications wanting to interact
-with other applications, no matter whether they're deployed on consumer devices, vehicles, or
-backend infrastructure.
+joynr is a web-based communication framework for Java, C++, and JavaScript applications
+wanting to interact with other applications, no matter whether they're deployed on consumer
+devices, vehicles, or backend infrastructure.
 
 joynr makes writing distributed applications easy, as it:
 

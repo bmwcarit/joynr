@@ -1,0 +1,54 @@
+@startuml
+
+Network -> WebSocketPpClient : onMessageReceived
+WebSocketPpClient -> WebSocketLibJoynrMessagingSkeleton : "onTextMessageReceived <b>(Thread switch)</b>"
+WebSocketLibJoynrMessagingSkeleton -> MessageRouter : route
+
+note over MessageRouter
+	"Assumption: Destination address is known
+	(in-process delivery)"
+end note
+
+note over MessageRouter
+	"Task scheduled here"
+end note
+
+MessageRouter -> ThreadPoolDelayedScheduler : "schedule(MessageRunnable)"
+
+ThreadPoolDelayedScheduler ->> MessageRunnable : "run <b>(Thread switch)</b>"
+
+alt "Error"
+	MessageRunnable -> MessageRouter : scheduleMessage
+else
+	MessageRouter -> InProcessMessagingStub : transmit
+	InProcessMessagingStub -> InProcessLibJoynrMessagingSkeleton : transmit
+	InProcessLibJoynrMessagingSkeleton -> Dispatcher : receive
+
+	note over Dispatcher
+		"Task scheduled here"
+	end note
+
+	Dispatcher -> ThreadPool : "execute(ReceivedMessageRunnable)"
+
+	ThreadPool ->> ReceivedMessageRunnable : "run <b>(Thread switch)</b>"
+
+	ReceivedMessageRunnable -> Dispatcher : handleRequestReceived
+	Dispatcher -> RadioRequestInterpreter : execute
+	RadioRequestInterpreter -> RadioRequestCaller : getCurrentStation
+	RadioRequestCaller -> MyRadioProvider : getCurrentStation
+	MyRadioProvider --> Dispatcher : "onSuccess / onFailure"
+	Dispatcher -> JoynrMessageSender : sendReply
+	JoynrMessageSender -> MessageRouter : route
+
+	note over MessageRouter
+		"Task scheduled here"
+	end note
+
+	MessageRouter -> ThreadPoolDelayedScheduler : "schedule(MessageRunnable)"
+	ThreadPoolDelayedScheduler ->> MessageRunnable : "run <b>(Thread switch)</b>"
+	MessageRunnable -> WebSocketMessagingStub : transmit
+	WebSocketMessagingStub -> WebSocketPpClient : send
+	WebSocketPpClient -> Network : "Reply message"
+end
+
+@enduml

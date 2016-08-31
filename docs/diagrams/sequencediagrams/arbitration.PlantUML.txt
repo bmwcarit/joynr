@@ -1,0 +1,46 @@
+@startuml
+
+ProxyBuilder -> Arbitrator : startArbitration
+Arbitrator -> LocalDiscoveryAggregator : lookup
+
+alt "Entry is provisioned"
+	LocalDiscoveryAggregator --> Arbitrator : "Provisioned DiscoveryEntry"
+	Arbitrator --> ProxyBuilder : "Provisioned DiscoveryEntry"
+else
+	note over DiscoveryProxy
+		"Sync call"
+	end note
+
+	LocalDiscoveryAggregator -> DiscoveryProxy : lookup
+	DiscoveryProxy ->] : "Lookup Request"
+	LocalDiscoveryAggregator --> Arbitrator : "Received DiscoveryEntry"
+	Arbitrator --> ProxyBuilder : "Provisioned DiscoveryEntry"
+end
+
+note over ProxyBuilder
+	"Waits for Future (addNextHop)"
+end note
+
+ProxyBuilder ->> MessageRouter : addNextHop
+
+MessageRouter -> MessageRouter : addToRoutingTable
+
+group "addNextHopToParent"
+	alt "Not a child router"
+		ProxyBuilder <- MessageRouter : "onSuccess / Release future"
+	else
+		MessageRouter -> RoutingProxy : addNextHopAsync
+		RoutingProxy ->] : "addNextHop Request"
+		RoutingProxy -->> ProxyBuilder : "onSuccess <b>(Potentially from other thread)</b>"
+	end
+end
+
+loop "For each message which was queued"
+	alt "Stub created and destination address known"
+		MessageRouter -> ThreadPoolDelayedScheduler : "schedule(MessageRunnable)"
+	else
+		MessageRouter -> MessageQueue : queueMessage
+	end
+end
+
+@enduml

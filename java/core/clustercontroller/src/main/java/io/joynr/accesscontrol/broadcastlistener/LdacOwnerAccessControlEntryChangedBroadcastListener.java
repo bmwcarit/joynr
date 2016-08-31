@@ -20,6 +20,7 @@ package io.joynr.accesscontrol.broadcastlistener;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
+import io.joynr.exceptions.SubscriptionException;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastAdapter;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
@@ -50,7 +51,9 @@ public class LdacOwnerAccessControlEntryChangedBroadcastListener extends OwnerAc
         }
     }
 
-    public void onError() {
-        LOG.error("Update ownerAce failed!");
+    public void onError(SubscriptionException error) {
+        LOG.error("Subscription to ownerAce failed! SubscriptionId: {}, error: {}",
+                  error.getSubscriptionId(),
+                  error.getMessage());
     }
 }

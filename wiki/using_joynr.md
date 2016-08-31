@@ -69,12 +69,22 @@ The **scope** can be
 The entries found that match the selected scope are then evaluated based on the arbitration strategy.
 
 The **arbitration strategy** can be one of the following:
-* **NotSet** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
-* **FixedChannel** (also see FixedParticipantArbitrator)
-* **Keyword** Only entries that have a matching keyword will be considered
-* **HighestPriority** Entries will be considered according to priority
+* **NotSet (Java)** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
+* **NOT_SET (C++) / Nothing (JS)** use DefaultArbitrator which picks the first discovered entry with
+   compatible version
+* **HighestPriority (Java/JS) / HIGHEST_PRIORITY (C++)** Entries will be considered according to
+   priority
+* **Keyword** (Java/JS) / KEYWORD (C++) Only entries that have a matching keyword will be considered
+* **FixedChannel (Java) / FIXED_PARTICIPANT (C++)** select provider which matches the participantId
+   provided as custom parameter in DiscoveryQos, if existing
+* **LOCAL_ONLY (C++)** (not implemented yet, will throw DiscoveryException)
+* **Custom (Java/JS)** provide a custom ArbitrationStrategyFunction to allow custom selection of
+   discovered entries
 
-The required **keyword** has to be specified by the consumer, if this kind of strategy has been selected.
+**Default arbitration strategy:** HighestPriority
+
+The required **keyword** for the arbitration strategy *Keyword* has to be specified by the consumer,
+if this kind of strategy has been selected.
 
 
 ## Proxy

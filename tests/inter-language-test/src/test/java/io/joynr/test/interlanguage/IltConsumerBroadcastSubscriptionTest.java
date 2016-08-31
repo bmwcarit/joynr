@@ -39,6 +39,7 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumer
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
 
 import org.junit.Test;
@@ -91,7 +92,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                               }
 
                                                                                                               @Override
-                                                                                                              public void onError() {
+                                                                                                              public void onError(SubscriptionException error) {
                                                                                                                   LOG.info(name.getMethodName()
                                                                                                                           + " - callback - error");
                                                                                                                   subscribeBroadcastWithSinglePrimitiveParameterCallbackResult = false;
@@ -192,7 +193,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                  }
 
                                                                                                                  @Override
-                                                                                                                 public void onError() {
+                                                                                                                 public void onError(SubscriptionException error) {
                                                                                                                      LOG.info(name.getMethodName()
                                                                                                                              + " - callback - error");
                                                                                                                      subscribeBroadcastWithMultiplePrimitiveParametersCallbackResult = false;
@@ -290,7 +291,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                           }
 
                                                                                                           @Override
-                                                                                                          public void onError() {
+                                                                                                          public void onError(SubscriptionException error) {
                                                                                                               LOG.info(name.getMethodName()
                                                                                                                       + " - callback - error");
                                                                                                               subscribeBroadcastWithSingleArrayParameterCallbackResult = false;
@@ -390,7 +391,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                              }
 
                                                                                                              @Override
-                                                                                                             public void onError() {
+                                                                                                             public void onError(SubscriptionException error) {
                                                                                                                  LOG.info(name.getMethodName()
                                                                                                                          + " - callback - error");
                                                                                                                  subscribeBroadcastWithMultipleArrayParametersCallbackResult = false;
@@ -488,7 +489,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                 }
 
                                                                                                                 @Override
-                                                                                                                public void onError() {
+                                                                                                                public void onError(SubscriptionException error) {
                                                                                                                     LOG.info(name.getMethodName()
                                                                                                                             + " - callback - error");
                                                                                                                     subscribeBroadcastWithSingleEnumerationParameterCallbackResult = false;
@@ -588,7 +589,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                    }
 
                                                                                                                    @Override
-                                                                                                                   public void onError() {
+                                                                                                                   public void onError(SubscriptionException error) {
                                                                                                                        LOG.info(name.getMethodName()
                                                                                                                                + " - callback - error");
                                                                                                                        subscribeBroadcastWithMultipleEnumerationParametersCallbackResult = false;
@@ -686,7 +687,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                            }
 
                                                                                                            @Override
-                                                                                                           public void onError() {
+                                                                                                           public void onError(SubscriptionException error) {
                                                                                                                LOG.info(name.getMethodName()
                                                                                                                        + " - callback - error");
                                                                                                                subscribeBroadcastWithSingleStructParameterCallbackResult = false;
@@ -786,7 +787,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                               }
 
                                                                                                               @Override
-                                                                                                              public void onError() {
+                                                                                                              public void onError(SubscriptionException error) {
                                                                                                                   LOG.info(name.getMethodName()
                                                                                                                           + " - callback - error");
                                                                                                                   subscribeBroadcastWithMultipleStructParametersCallbackResult = false;

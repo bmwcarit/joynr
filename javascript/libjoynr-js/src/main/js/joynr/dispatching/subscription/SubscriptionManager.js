@@ -268,6 +268,15 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                         var subscriptionId = settings.subscriptionId || uuid();
                         // log.debug("Registering Subscription Id " + subscriptionId);
 
+                        if (settings.attributeName === undefined) {
+                            reject(new Error("Error: attributeName not provided in call to registerSubscription, settings = " + JSON.stringify(settings)));
+                            return;
+                        }
+                        if (settings.attributeType === undefined) {
+                            reject(new Error("Error: attributeType not provided in call to registerSubscription, settings = " + JSON.stringify(settings)));
+                            return;
+                        }
+
                         if (settings.onError === undefined){
                             log.warn("Warning: subscription for attribute \"" + settings.attributeName + "\" has been done without error callback function. You will not be informed about missed publications. Please specify the \"onError\" parameter while subscribing!");
                         }

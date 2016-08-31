@@ -61,7 +61,7 @@ define([
             expect(new DiscoveryQos()).toEqual(new DiscoveryQos({
                 discoveryTimeoutMs : 30000,
                 discoveryRetryDelayMs : 1000,
-                arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
+                arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
                 cacheMaxAgeMs : 0,
                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                 additionalParameters : {}

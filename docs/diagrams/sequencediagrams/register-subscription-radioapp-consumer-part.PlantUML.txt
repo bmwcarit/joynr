@@ -1,0 +1,33 @@
+@startuml
+
+[-> RadioProxy : subscribeToCurrentStation
+RadioProxy -> RadioJoynrMessagingConnector : subscribeToCurrentStation
+RadioJoynrMessagingConnector -> SubscriptionManager : registerSubscription
+
+alt "Subscription exists"
+	note over SubscriptionManager
+		"Task unscheduled here"
+	end note
+	SubscriptionManager -> DelayedScheduler : "unschedule(SubscriptionEndRunnable)"
+	SubscriptionManager -> DelayedScheduler : "unschedule(MissedPublicationRunnable)"
+end
+
+note over SubscriptionManager
+	"Task scheduled shere"
+end note
+
+alt "alert interval > 0 && periodic publication interval > 0"
+	SubscriptionManager -> DelayedScheduler : "schedule(MissedPublicationRunnable)"
+else
+	SubscriptionManager -> DelayedScheduler : "schedule(SubscriptionEndRunnable)"
+end
+
+RadioJoynrMessagingConnector -> JoynrMessageSender : sendSubscriptionRequest
+
+note over MessageRouter
+	"At the moment there
+	is no reply (will change)"
+end note
+JoynrMessageSender -> MessageRouter : "route(SubscriptionRequest)"
+
+@enduml

@@ -1,0 +1,40 @@
+@startuml
+
+[-> LocalCapabilitiesDirectory : "add(DiscoveryEntry)"
+note over LocalCapabilitiesDirectory
+	"LocalCapabilitiesDirectory acts as
+	a DiscoveryProvider. add is therefore
+	called by using the RPC mechanism."
+end note
+LocalCapabilitiesDirectory -> LocalCapabilitiesDirectory : insertInCache
+note over LocalCapabilitiesDirectory
+	"AccessController is an observer"
+end note
+LocalCapabilitiesDirectory -> LocalCapabilitiesDirectory : informObserversOnAdd
+
+alt "Entry has global scope"
+	LocalCapabilitiesDirectory -> CapabilitiesClient : add
+	note over CapabilitiesClient
+		"No 'success' callback /
+		 no returned value.
+		 Error callback writes to log"
+	end note
+	CapabilitiesClient -> GlobalCapabilitiesDirectoryProxy : addAsync
+	GlobalCapabilitiesDirectoryProxy ->] : GlobalDiscoveryEntry
+end
+
+LocalCapabilitiesDirectory -> LocalCapabilitiesDirectory : updatePersistedFile
+LocalCapabilitiesDirectory -> LocalCapabilitiesDirectory : callPendingLookups
+group callPendingLookups
+	loop
+		note over LocalCapabilitiesFuture
+			"callPendingLookups is called for the added interface name.
+			 ILocalCapabilitiesCallback is implemented by LocalCapabilitiesFuture.
+			 LocalCapabilitiesFuture is used in LocalCapabilitiesDirectory::lookup
+			 to wait until capabilities arrive"
+		end note
+		LocalCapabilitiesDirectory ->> ILocalCapabilitiesCallback : capabilitiesReceived
+	end
+end
+
+@enduml

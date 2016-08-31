@@ -170,7 +170,7 @@ public class DispatcherImpl implements Dispatcher {
             } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(type)) {
                 SubscriptionReply subscriptionReply = objectMapper.readValue(message.getPayload(),
                                                                              SubscriptionReply.class);
-                logger.debug("Parsed reply from message payload :" + message.getPayload());
+                logger.debug("Parsed subscription reply from message payload :" + message.getPayload());
                 handle(subscriptionReply);
             } else if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
                 final Request request = objectMapper.readValue(message.getPayload(), Request.class);

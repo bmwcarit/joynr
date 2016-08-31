@@ -313,7 +313,22 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 
 if(${BUILD_CLUSTER_CONTROLLER})
-    #executable to start the cluster controller
+    # executable to start the cluster controller
+
+    # set variables to print CC version
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/git-revision-description")
+    include(GetGitRevisionDescription)
+    get_git_head_revision(GIT_REFSPEC JOYNR_HEAD_SHA1)
+    string(SUBSTRING ${JOYNR_HEAD_SHA1} 0 10 JOYNR_HEAD_SHA1_SHORT)
+    set(JOYNR_PACKAGE_REVISION ${JOYNR_VERSION}.${JOYNR_HEAD_SHA1_SHORT})
+    string(TIMESTAMP JOYNR_BUILD_TIME)
+
+    # configure JoynrVersion.h
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/JoynrVersion.h.in
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/JoynrVersion.h
+    )
+
     set(
         cluster-controller_HEADERS
     )
