@@ -29,6 +29,8 @@
 
 #include <QMap>
 
+#include <boost/asio/steady_timer.hpp>
+
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "cluster-controller/mqtt/MqttSettings.h"
 
@@ -44,12 +46,12 @@
 #include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/TypedClientMultiCache.h"
 #include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
 namespace joynr
 {
 
-class CapabilityEntry;
 class InterfaceAddress;
 class ICapabilitiesClient;
 class LibjoynrSettings;
@@ -114,8 +116,8 @@ public:
       * when capabilities from the global directory are received, to check if a new
       * local provider was registered in the meantime.
       */
-    std::vector<CapabilityEntry> getCachedLocalCapabilities(const std::string& participantId);
-    std::vector<CapabilityEntry> getCachedLocalCapabilities(
+    std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(const std::string& participantId);
+    std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(
             const std::vector<InterfaceAddress>& interfaceAddress);
     /*
      * Performs maintenance on the cache and removes old entries
@@ -125,9 +127,10 @@ public:
     /*
      * Call back methods which will update the local capabilities cache and call the
      * original callback with the results, this indirection was needed because we
-     * need to convert a CapabilitiesInformation object into a CapabilityEntry object.
+     * need to convert a CapabilitiesInformation object into a DiscoveryEntry object.
      */
-    virtual void registerReceivedCapabilities(QMap<std::string, CapabilityEntry> capabilityEntries);
+    virtual void registerReceivedCapabilities(
+            QMap<std::string, types::DiscoveryEntry> capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
     void add(const joynr::types::DiscoveryEntry& discoveryEntry,
@@ -198,7 +201,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
-                              std::vector<CapabilityEntry> cachedLocalCapabilies,
+                              std::vector<types::DiscoveryEntry> cachedLocalCapabilies,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
                               joynr::types::DiscoveryScope::Enum discoveryScope);
 
@@ -209,37 +212,22 @@ private:
                                        const joynr::types::DiscoveryQos& discoveryQos,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
     bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
-                                std::vector<CapabilityEntry>& localCapabilities,
-                                std::vector<CapabilityEntry>& globalCapabilities,
+                                std::vector<types::DiscoveryEntry>& localCapabilities,
+                                std::vector<types::DiscoveryEntry>& globalCapabilities,
                                 std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
-    void insertInCache(const CapabilityEntry& entry, bool localCache, bool globalCache);
-    void insertInCache(const joynr::types::DiscoveryEntry& entry,
-                       bool isGlobal,
-                       bool localCache,
-                       bool globalCache);
-    std::vector<CapabilityEntry> searchCache(const std::vector<InterfaceAddress>& interfaceAddress,
-                                             std::chrono::milliseconds maxCacheAge,
-                                             bool localEntries);
-    std::vector<CapabilityEntry> searchCache(const std::string& participantId,
-                                             std::chrono::milliseconds maxCacheAge,
-                                             bool localEntries);
+    void insertInCache(const types::DiscoveryEntry& entry, bool localCache, bool globalCache);
+    std::vector<types::DiscoveryEntry> searchCache(
+            const std::vector<InterfaceAddress>& interfaceAddress,
+            std::chrono::milliseconds maxCacheAge,
+            bool localEntries);
+    std::vector<types::DiscoveryEntry> searchCache(const std::string& participantId,
+                                                   std::chrono::milliseconds maxCacheAge,
+                                                   bool localEntries);
 
     void cleanCaches();
 
     std::string serializeLocalCapabilitiesToJson() const;
-
-    void convertDiscoveryEntryIntoCapabilityEntry(
-            const joynr::types::DiscoveryEntry& discoveryEntry,
-            CapabilityEntry& capabilityEntry);
-    void convertCapabilityEntryIntoDiscoveryEntry(const CapabilityEntry& capabilityEntry,
-                                                  joynr::types::DiscoveryEntry& discoveryEntry);
-    void convertCapabilityEntriesIntoDiscoveryEntries(
-            const std::vector<CapabilityEntry>& capabilityEntries,
-            std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
-    void convertDiscoveryEntriesIntoCapabilityEntries(
-            const std::vector<types::DiscoveryEntry>& discoveryEntries,
-            std::vector<CapabilityEntry>& capabilityEntries);
 
     ADD_LOGGER(LocalCapabilitiesDirectory);
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
@@ -247,11 +235,13 @@ private:
     std::mutex cacheLock;
     std::mutex pendingLookupsLock;
 
-    TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2GlobalCapabilities;
-    TypedClientMultiCache<std::string, CapabilityEntry> participantId2GlobalCapabilities;
+    TypedClientMultiCache<InterfaceAddress, types::DiscoveryEntry>
+            interfaceAddress2GlobalCapabilities;
+    TypedClientMultiCache<std::string, types::DiscoveryEntry> participantId2GlobalCapabilities;
 
-    TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2LocalCapabilities;
-    TypedClientMultiCache<std::string, CapabilityEntry> participantId2LocalCapability;
+    TypedClientMultiCache<InterfaceAddress, types::DiscoveryEntry>
+            interfaceAddress2LocalCapabilities;
+    TypedClientMultiCache<std::string, types::DiscoveryEntry> participantId2LocalCapability;
 
     std::vector<types::GlobalDiscoveryEntry> registeredGlobalCapabilities;
     MessageRouter& messageRouter;
@@ -263,9 +253,18 @@ private:
 
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
             pendingLookups;
+
+    std::thread thread;
+    boost::asio::io_service ioService;
+    std::unique_ptr<boost::asio::io_service::work> ioServiceWork;
+    boost::asio::steady_timer checkExpiredDiscoveryEntriesTimer;
+
+    void scheduleCleanupTimer();
+    void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);
+    void remove(const std::vector<types::DiscoveryEntry>& discoveryEntries);
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
-    bool hasEntryInCache(const CapabilityEntry& entry, bool localEntries);
+    bool hasEntryInCache(const types::DiscoveryEntry& entry, bool localEntries);
     void registerPendingLookup(const std::vector<InterfaceAddress>& interfaceAddresses,
                                const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
     bool isCallbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
@@ -274,21 +273,22 @@ private:
     void callbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
                         const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
     void callPendingLookups(const InterfaceAddress& interfaceAddress);
+    bool isGlobal(const types::DiscoveryEntry& discoveryEntry) const;
 };
 
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
 {
 public:
     LocalCapabilitiesCallback(
-            std::function<void(const std::vector<CapabilityEntry>&)> onSuccess,
+            std::function<void(const std::vector<types::DiscoveryEntry>&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
-    void capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) override;
+    void capabilitiesReceived(const std::vector<types::DiscoveryEntry>& capabilities) override;
     void onError(const joynr::exceptions::JoynrRuntimeException&) override;
     ~LocalCapabilitiesCallback() override = default;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesCallback);
-    std::function<void(const std::vector<CapabilityEntry>&)> onSuccess;
+    std::function<void(const std::vector<types::DiscoveryEntry>&)> onSuccess;
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorCallback;
 };
 
