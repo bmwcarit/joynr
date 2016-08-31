@@ -56,8 +56,8 @@ public:
      * created by the ProviderArbitratorFactory
      */
     enum class ArbitrationStrategy {
-        /** the arbitration strategy is not set */
-        NOT_SET = 0,
+        /** the last seen participant will be selected */
+        LAST_SEEN = 0,
         /** the participant which matches the provided participantId will be selected, if existing
            */
         FIXED_PARTICIPANT = 1,
@@ -66,9 +66,7 @@ public:
         /** only participants which match a keyword will be considered */
         KEYWORD = 3,
         /** the participant with the highest priority will be selected */
-        HIGHEST_PRIORITY = 4,
-        /** the last seen participant will be selected */
-        LAST_SEEN = 5
+        HIGHEST_PRIORITY = 4
     };
 
     /**

@@ -19,14 +19,10 @@
 #ifndef PROVIDERARBITRATORFACTORY_H
 #define PROVIDERARBITRATORFACTORY_H
 
-#include "joynr/JoynrExport.h"
-#include "joynr/DefaultArbitrator.h"
-#include "joynr/ProviderArbitrator.h"
-#include "joynr/FixedParticipantArbitrator.h"
-#include "joynr/KeywordArbitrator.h"
-#include "joynr/DiscoveryQos.h"
-#include "joynr/QosArbitrator.h"
 #include <string>
+
+#include "joynr/JoynrExport.h"
+#include "joynr/ProviderArbitrator.h"
 
 namespace joynr
 {

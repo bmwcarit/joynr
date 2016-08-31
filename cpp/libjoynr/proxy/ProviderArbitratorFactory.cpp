@@ -18,6 +18,10 @@
  */
 #include "joynr/ProviderArbitratorFactory.h"
 #include "joynr/LastSeenArbitrator.h"
+#include "joynr/FixedParticipantArbitrator.h"
+#include "joynr/KeywordArbitrator.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/QosArbitrator.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
 
@@ -33,10 +37,9 @@ ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
 {
     DiscoveryQos::ArbitrationStrategy strategy = discoveryQos.getArbitrationStrategy();
     switch (strategy) {
-    case DiscoveryQos::ArbitrationStrategy::NOT_SET:
-        return new DefaultArbitrator(
+    case DiscoveryQos::ArbitrationStrategy::LAST_SEEN:
+        return new LastSeenArbitrator(
                 domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
-        break;
     case DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT:
         return new FixedParticipantArbitrator(
                 domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
@@ -51,9 +54,6 @@ ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
                     "KeywordArbitrator creation failed: keyword not set");
         }
         return new KeywordArbitrator(
-                domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
-    case DiscoveryQos::ArbitrationStrategy::LAST_SEEN:
-        return new LastSeenArbitrator(
                 domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
     default:
         throw exceptions::DiscoveryException("Arbitrator creation failed: Invalid strategy!");

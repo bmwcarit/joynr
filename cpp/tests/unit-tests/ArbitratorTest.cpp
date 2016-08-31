@@ -22,8 +22,9 @@
 #include <unordered_set>
 #include "joynr/DiscoveryQos.h"
 #include "joynr/QosArbitrator.h"
+#include "joynr/FixedParticipantArbitrator.h"
 #include "joynr/KeywordArbitrator.h"
-#include "joynr/DefaultArbitrator.h"
+#include "joynr/LastSeenArbitrator.h"
 #include "joynr/exceptions/NoCompatibleProviderFoundException.h"
 #include "joynr/types/Version.h"
 
@@ -312,7 +313,7 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
     discoveryQos.setRetryIntervalMs(100);
     discoveryQos.setDiscoveryTimeoutMs(450);
     joynr::types::Version providerVersion(47, 11);
-    DefaultArbitrator arbitrator(domain, interfaceName, providerVersion, mockDiscovery, discoveryQos);
+    LastSeenArbitrator arbitrator(domain, interfaceName, providerVersion, mockDiscovery, discoveryQos);
 
     arbitrator.startArbitration();
 }
@@ -571,11 +572,11 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
 // containing the versions that were found during the last retry
 TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
     DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::NOT_SET);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
     discoveryQos.setDiscoveryTimeoutMs(199);
     discoveryQos.setRetryIntervalMs(100);
     joynr::types::Version expectedVersion(47, 11);
-    DefaultArbitrator defaultArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    LastSeenArbitrator defaultArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
 
     // Create a list of discovery entries
     types::ProviderQos providerQos(
@@ -724,11 +725,11 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsExceptionFromDiscoveryP
 
 TEST_F(ArbitratorTest, getDefaultReturnsExceptionFromDiscoveryProxy) {
     DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::NOT_SET);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
     discoveryQos.setDiscoveryTimeoutMs(199);
     discoveryQos.setRetryIntervalMs(100);
     joynr::types::Version expectedVersion(47, 11);
-    DefaultArbitrator defaultArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    LastSeenArbitrator defaultArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
 
     testExceptionFromDiscoveryProxy(defaultArbitrator);
 }
@@ -812,11 +813,11 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsExceptionEmptyResult) {
 
 TEST_F(ArbitratorTest, getDefaultReturnsExceptionEmptyResult) {
     DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::NOT_SET);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
     discoveryQos.setDiscoveryTimeoutMs(199);
     discoveryQos.setRetryIntervalMs(100);
     joynr::types::Version expectedVersion(47, 11);
-    DefaultArbitrator defaultArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    LastSeenArbitrator defaultArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
 
     testExceptionEmptyResult(defaultArbitrator);
 }
