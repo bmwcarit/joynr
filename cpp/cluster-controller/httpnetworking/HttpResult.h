@@ -19,12 +19,12 @@
 #ifndef HTTPRESULT_H
 #define HTTPRESULT_H
 
-#include "joynr/JoynrClusterControllerExport.h"
-#include <QMultiMap>
-#include <string>
-#include <QByteArray>
 #include <cstdint>
 #include <memory>
+#include <string>
+#include <unordered_map>
+
+#include "joynr/JoynrClusterControllerExport.h"
 
 namespace joynr
 {
@@ -39,22 +39,22 @@ class JOYNRCLUSTERCONTROLLER_EXPORT HttpResult
 public:
     HttpResult(std::int32_t curlError,
                std::int64_t statusCode,
-               QByteArray* body,
-               QMultiMap<std::string, std::string>* headers);
+               std::string* body,
+               std::unordered_multimap<std::string, std::string>* headers);
     ~HttpResult() = default;
 
     bool isCurlError() const;
     std::int32_t getCurlError() const;
     std::int64_t getStatusCode() const;
     std::string getErrorMessage() const;
-    const QByteArray& getBody() const;
-    const QMultiMap<std::string, std::string>& getHeaders() const;
+    const std::string& getBody() const;
+    const std::unordered_multimap<std::string, std::string>& getHeaders() const;
 
 private:
     std::int32_t curlError;
     std::int64_t statusCode;
-    std::shared_ptr<QByteArray> body;
-    std::shared_ptr<QMultiMap<std::string, std::string>> headers;
+    std::shared_ptr<std::string> body;
+    std::shared_ptr<std::unordered_multimap<std::string, std::string>> headers;
 };
 
 } // namespace joynr

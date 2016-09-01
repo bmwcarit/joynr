@@ -23,7 +23,6 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <QByteArray>
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -70,7 +69,7 @@ public:
     void interrupt();
     bool isInterrupted();
 
-    void processReceivedInput(const QByteArray& receivedInput);
+    void processReceivedInput(const std::string& receivedInput);
     void processReceivedJsonObjects(const std::string& jsonObject);
 
 private:

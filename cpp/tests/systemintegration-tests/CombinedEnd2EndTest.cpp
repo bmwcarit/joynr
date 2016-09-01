@@ -16,14 +16,15 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-#include <memory>
-#include <string>
+
 #include <cstdint>
 #include <chrono>
-#include <QtConcurrent/QtConcurrent>
+#include <future>
+#include <memory>
+#include <string>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "systemintegration-tests/CombinedEnd2EndTest.h"
 #include "systemintegration-tests/TestConfiguration.h"
@@ -956,9 +957,6 @@ static void unsubscribeFromLocation(tests::testProxy* testProxy,
     testProxy->unsubscribeFromLocation(subscriptionId);
 }
 
-
-// This test was written to model a bug report where a subscription started in a background thread
-// causes a runtime error to be reported by Qt
 TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -982,7 +980,7 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     tests::testProxy* testProxy = createTestProxy(runtime2, domainName);
     // Subscribe in a background thread
-    QtConcurrent::run(subscribeToLocation, subscriptionListener, testProxy, this);
+    std::async(subscribeToLocation, subscriptionListener, testProxy, this);
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));

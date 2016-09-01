@@ -18,19 +18,19 @@
  */
 #ifndef CURLHANDLEPOOL_H_
 #define CURLHANDLEPOOL_H_
-#include "joynr/PrivateCopyAssign.h"
+
+#include <cstdint>
+#include <list>
+#include <mutex>
+#include <memory>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <vector>
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "cluster-controller/httpnetworking/HttpNetworking.h"
-
-#include <QLinkedList>
-#include <mutex>
-#include <QMap>
-
-#include <memory>
-#include <vector>
-#include <string>
-#include <cstdint>
+#include "joynr/PrivateCopyAssign.h"
+#include "HttpNetworking.h"
 
 namespace joynr
 {
@@ -96,7 +96,7 @@ private:
       * Hosts in this linked list are ordered by last use. The most recently used host is at the
      * front.
       */
-    QLinkedList<std::string> hosts;
+    std::list<std::string> hosts;
     void* handle;
     mutable std::mutex hostsMutex;
 };
@@ -123,23 +123,18 @@ public:
     void reset() override;
 
 private:
-    /**
-      * Extracts the host in the format <hostName or ip>:<port> from the specified URL.
-      */
-    static std::string extractHost(const std::string& url);
-
     std::shared_ptr<PooledCurlHandle> takeOrCreateHandle(const std::string& host);
 
     /**
       * Handles in this linked list are ordered by last use. The most recently used handle is at the
      * front.
       */
-    QLinkedList<std::shared_ptr<PooledCurlHandle>> handleList;
+    std::list<std::shared_ptr<PooledCurlHandle>> handleList;
 
     /**
       * Handles that are currently in use(rented using getHandle(url)).
       */
-    QMap<void*, std::shared_ptr<PooledCurlHandle>> outHandleMap;
+    std::unordered_map<void*, std::shared_ptr<PooledCurlHandle>> outHandleMap;
 
     /**
       * The number of handles that are internally pooled (out and on hold).
@@ -185,13 +180,12 @@ public:
     void reset() override;
 
 private:
-    static std::string extractHost(const std::string& url);
     /**
       * If there already exists a handle for the current thread which is not in use at the moment it
      * is removed from the list and returned.
       * If no handle is available for the current thread, a new one is created.
       */
-    std::shared_ptr<PooledCurlHandle> takeOrCreateHandle(const Qt::HANDLE& threadId,
+    std::shared_ptr<PooledCurlHandle> takeOrCreateHandle(const std::thread::id& threadId,
                                                          std::string host);
 
     /**
@@ -202,8 +196,8 @@ private:
       * and the size of this map plus the size of outHandleMap is smaller than POOL_SIZE
       */
     // TODO shouldn't the POOL_SIZE define the amount of idle handles?
-    // key of this QMultiMap: Qt::HANDLE == the thread id the handle has been created for.
-    QMultiMap<Qt::HANDLE, std::shared_ptr<PooledCurlHandle>> idleHandleMap;
+    // key of this map: std::thread::id == the thread id the handle has been created for.
+    std::unordered_multimap<std::thread::id, std::shared_ptr<PooledCurlHandle>> idleHandleMap;
     // handleOrderList is used to sort the curl handles according to their last use.
     // By deleting the last item of this list, the longest idle curl handle will be deleted.
     std::vector<std::shared_ptr<PooledCurlHandle>> handleOrderList;
@@ -211,7 +205,7 @@ private:
     /**
       * Handles that are currently in use(rented using getHandle(url)).
       */
-    QMap<void*, std::shared_ptr<PooledCurlHandle>> outHandleMap;
+    std::unordered_map<void*, std::shared_ptr<PooledCurlHandle>> outHandleMap;
 
     static const int POOL_SIZE;
     std::mutex mutex;

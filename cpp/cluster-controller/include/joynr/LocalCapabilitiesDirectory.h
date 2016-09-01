@@ -27,8 +27,6 @@
 #include <vector>
 #include <functional>
 
-#include <QMap>
-
 #include <boost/asio/steady_timer.hpp>
 
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
@@ -119,8 +117,8 @@ public:
      * original callback with the results, this indirection was needed because we
      * need to convert a CapabilitiesInformation object into a DiscoveryEntry object.
      */
-    virtual void registerReceivedCapabilities(
-            QMap<std::string, types::DiscoveryEntry> capabilityEntries);
+    void registerReceivedCapabilities(
+            const std::unordered_multimap<std::string, types::DiscoveryEntry>&& capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
     void add(const joynr::types::DiscoveryEntry& discoveryEntry,
@@ -191,7 +189,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
-                              std::vector<types::DiscoveryEntry> cachedLocalCapabilies,
+                              std::vector<types::DiscoveryEntry>&& cachedLocalCapabilies,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
                               joynr::types::DiscoveryScope::Enum discoveryScope);
 
@@ -202,8 +200,8 @@ private:
                                        const joynr::types::DiscoveryQos& discoveryQos,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
     bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
-                                std::vector<types::DiscoveryEntry>& localCapabilities,
-                                std::vector<types::DiscoveryEntry>& globalCapabilities,
+                                std::vector<types::DiscoveryEntry>&& localCapabilities,
+                                std::vector<types::DiscoveryEntry>&& globalCapabilities,
                                 std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     void insertInCache(const types::DiscoveryEntry& entry, bool localCache, bool globalCache);

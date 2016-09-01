@@ -19,9 +19,10 @@
 #ifndef ILOCALCAPABILITIESCALLBACK_H
 #define ILOCALCAPABILITIESCALLBACK_H
 
-#include "joynr/JoynrExport.h"
-#include "joynr/types/DiscoveryEntry.h"
 #include <vector>
+
+#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {

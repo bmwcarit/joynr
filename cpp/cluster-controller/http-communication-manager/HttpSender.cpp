@@ -29,7 +29,6 @@
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/QtTypeUtil.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -118,8 +117,8 @@ void HttpSender::sendMessage(
             logger, "sendMessageResult.getStatusCode() = {}", sendMessageResult.getStatusCode());
     if (sendMessageResult.getStatusCode() != 201) {
         std::string body("NULL");
-        if (!sendMessageResult.getBody().isNull()) {
-            body = std::string(sendMessageResult.getBody().data());
+        if (!sendMessageResult.getBody().empty()) {
+            body = sendMessageResult.getBody();
         }
         JOYNR_LOG_ERROR(logger,
                         "sending message - fail; error message {}; contents {}; rescheduling "
@@ -154,7 +153,7 @@ HttpResult HttpSender::buildRequestAndSend(const std::string& data,
     std::shared_ptr<HttpRequest> sendMessageRequest(
             sendMessageRequestBuilder->withContentType("application/json")
                     ->withTimeout(std::min(maxAttemptTtl, curlTimeout))
-                    ->postContent(QString::fromStdString(data).toUtf8())
+                    ->postContent(data)
                     ->build());
     JOYNR_LOG_TRACE(logger, "builtRequest");
 
