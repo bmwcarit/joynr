@@ -123,7 +123,7 @@ public class EchoProviderInvocationParameters {
                                 .required(false)
                                 .hasArg()
                                 .argName("uri")
-                                .type(BackendConfig.class)
+                                .type(String.class)
                                 .desc("MQTT broker URI. Default is " + mqttBrokerUri)
                                 .build());
 

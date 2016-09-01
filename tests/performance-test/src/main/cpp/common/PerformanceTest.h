@@ -115,6 +115,8 @@ struct PerformanceTest
         const auto startLoop = Clock::now();
         std::vector<ClockResolution> durationVector =
                 benchmark(runs, std::forward<Function>(fun), std::forward<Args>(args)...);
+        std::cerr << "Testcase: " << name << std::endl;
+
         const auto endLoop = Clock::now();
         printStatistics(
                 durationVector, std::chrono::duration_cast<ClockResolution>(endLoop - startLoop));

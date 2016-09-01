@@ -69,10 +69,10 @@ int main(int argc, char* argv[])
             test.roundTripByteArray(100000);
             break;
         case TestCase::SEND_STRING:
-            test.roundTripString(36);
+            test.roundTripString(100);
             break;
         case TestCase::SEND_STRUCT:
-            test.roundTripStruct(29);
+            test.roundTripStruct(100);
             break;
         }
 
