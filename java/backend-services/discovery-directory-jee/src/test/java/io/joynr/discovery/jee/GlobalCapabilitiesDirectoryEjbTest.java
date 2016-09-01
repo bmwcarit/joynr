@@ -19,7 +19,9 @@ package io.joynr.discovery.jee;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -29,6 +31,7 @@ import javax.persistence.EntityManager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.joynr.capabilities.CapabilityUtils;
+import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.GlobalDiscoveryEntry;
@@ -48,6 +51,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class GlobalCapabilitiesDirectoryEjbTest {
+
+    private static final String TOPIC_NAME = "my/topic";
 
     @Deployment
     public static WebArchive createArchive() {
@@ -88,7 +93,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
                                                                            System.currentTimeMillis() + 1000L,
                                                                            "public key ID",
                                                                            new MqttAddress("tcp://mqttbroker:1883",
-                                                                                           "my/topic"));
+                                                                                           TOPIC_NAME));
     }
 
     @Test
@@ -98,6 +103,33 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         entityManager.clear();
         GlobalDiscoveryEntry result = subject.lookup("participantId");
         assertNotNull(result);
+        assertTrue(result instanceof GlobalDiscoveryEntryPersisted);
+        assertEquals(TOPIC_NAME, ((GlobalDiscoveryEntryPersisted) result).getClusterControllerId());
+    }
+
+    @Test
+    public void testTouch() throws InterruptedException {
+        long initialLastSeen = testGlobalDiscoveryEntry.getLastSeenDateMs();
+        subject.add(testGlobalDiscoveryEntry);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        GlobalDiscoveryEntryPersisted persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class,
+                                                                     testGlobalDiscoveryEntry.getParticipantId());
+        assertNotNull(persisted);
+        assertEquals((Long) initialLastSeen, persisted.getLastSeenDateMs());
+
+        Thread.sleep(1L);
+
+        subject.touch(TOPIC_NAME);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class, testGlobalDiscoveryEntry.getParticipantId());
+        assertNotNull(persisted);
+        assertTrue(initialLastSeen < persisted.getLastSeenDateMs());
     }
 
 }
