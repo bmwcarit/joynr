@@ -83,16 +83,6 @@ public:
 
     void add(const joynr::types::DiscoveryEntry& entry);
 
-    /*
-     * Remove capability from the cache, and for permanent removal from the backend, this method
-     * only allows removal of capabilities associated with this cluster controller.  Therefore
-     * this method does not allow anyone to remove other capabilities from other cluster
-     * controllers.
-     */
-    void remove(const std::string& domain,
-                const std::string& interfaceName,
-                const types::ProviderQos& qos);
-
     virtual void remove(const std::string& participantId);
 
     /*
@@ -224,6 +214,7 @@ private:
     std::vector<types::DiscoveryEntry> searchCache(const std::string& participantId,
                                                    std::chrono::milliseconds maxCacheAge,
                                                    bool localEntries);
+    void removeFromGloballyRegisteredCapabilities(const types::DiscoveryEntry& discoveryEntry);
 
     void cleanCaches();
 
