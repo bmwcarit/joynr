@@ -56,20 +56,13 @@ public:
                       const DiscoveryQos& discoveryQos);
 
     /*
-     *  Attempts to the arbitrate. This function is called by the ProviderArbitrator
-    */
-    void attemptArbitration() override;
-
-    /*
      * The key of the keyword parameter in the provider Qos parameters
      */
     static const std::string KEYWORD_PARAMETER_KEY();
 
-    /*
-     * Made public for testing purposes
-     */
-    void receiveCapabilitiesLookupResults(
-            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+protected:
+    std::string filterDiscoveryEntries(
+            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(KeywordArbitrator);

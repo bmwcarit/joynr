@@ -66,7 +66,6 @@ void ProviderArbitrator::startArbitration()
     auto start = std::chrono::system_clock::now();
 
     while (true) {
-        // Attempt arbitration (overloaded in subclasses)
         attemptArbitration();
         // Finish on success or failure
         if (arbitrationStatus != ArbitrationStatus::ArbitrationRunning)
@@ -101,6 +100,87 @@ void ProviderArbitrator::startArbitration()
                 exceptions::NoCompatibleProviderFoundException(discoveredIncompatibleVersions));
     } else {
         notifyArbitrationListener(arbitrationError);
+    }
+}
+
+void ProviderArbitrator::attemptArbitration()
+{
+    std::vector<joynr::types::DiscoveryEntry> result;
+    try {
+        discoveryProxy.lookup(result, domains, interfaceName, systemDiscoveryQos);
+        receiveCapabilitiesLookupResults(result);
+    } catch (const exceptions::JoynrException& e) {
+        std::string errorMsg = "Unable to lookup provider (domain: " +
+                               (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                               ", interface: " + interfaceName + ") from discovery. Error: " +
+                               e.getMessage();
+        JOYNR_LOG_ERROR(logger, errorMsg);
+        arbitrationError.setMessage(errorMsg);
+    }
+}
+
+void ProviderArbitrator::receiveCapabilitiesLookupResults(
+        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
+{
+    std::string res;
+    discoveredIncompatibleVersions.clear();
+
+    // Check for empty results
+    if (discoveryEntries.size() == 0) {
+        arbitrationError.setMessage("No entries found for domain: " +
+                                    (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                                    ", interface: " + interfaceName);
+        return;
+    }
+
+    std::vector<joynr::types::DiscoveryEntry> preFilteredDiscoveryEntries;
+    joynr::types::Version providerVersion;
+    std::size_t providersWithoutSupportOnChange = 0;
+    std::size_t providersWithIncompatibleVersion = 0;
+    for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
+        types::ProviderQos providerQos = discoveryEntry.getQos();
+        JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
+        providerVersion = discoveryEntry.getProviderVersion();
+
+        if (discoveryQos.getProviderMustSupportOnChange() &&
+            !providerQos.getSupportsOnChangeSubscriptions()) {
+            ++providersWithoutSupportOnChange;
+            continue;
+        }
+
+        if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
+            providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
+            JOYNR_LOG_TRACE(logger,
+                            "Skipping capabilitiesEntry with incompatible version, expected: " +
+                                    std::to_string(interfaceVersion.getMajorVersion()) + "." +
+                                    std::to_string(interfaceVersion.getMinorVersion()));
+            discoveredIncompatibleVersions.insert(providerVersion);
+            ++providersWithIncompatibleVersion;
+            continue;
+        }
+
+        preFilteredDiscoveryEntries.push_back(discoveryEntry);
+    }
+
+    if (preFilteredDiscoveryEntries.empty()) {
+        std::string errorMsg;
+        if (providersWithoutSupportOnChange == discoveryEntries.size()) {
+            errorMsg = "There was more than one entries in capabilitiesEntries, but none supported "
+                       "on change subscriptions.";
+            JOYNR_LOG_WARN(logger, errorMsg);
+            arbitrationError.setMessage(errorMsg);
+        } else if ((providersWithoutSupportOnChange + providersWithIncompatibleVersion) ==
+                   discoveryEntries.size()) {
+            errorMsg = "There was more than one entries in capabilitiesEntries, but none "
+                       "was compatible.";
+            JOYNR_LOG_WARN(logger, errorMsg);
+            arbitrationError.setMessage(errorMsg);
+        }
+        return;
+    } else {
+        res = filterDiscoveryEntries(preFilteredDiscoveryEntries);
+        if (!res.empty())
+            notifyArbitrationListener(res);
     }
 }
 

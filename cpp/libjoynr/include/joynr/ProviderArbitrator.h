@@ -30,6 +30,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/Version.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
 
@@ -60,7 +61,7 @@ public:
      *  This method attempts arbitration and sets arbitrationStatus to indicate the
      *  state of arbitration.
      */
-    virtual void attemptArbitration() = 0;
+    virtual void attemptArbitration();
 
     /*
      *  Returns the result of the arbitration.
@@ -74,6 +75,10 @@ public:
     void setArbitrationListener(IArbitrationListener* listener);
     void removeArbitrationListener();
 
+    // Testing.....
+    virtual void receiveCapabilitiesLookupResults(
+            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+
 protected:
     /*
      *  Creates a new ProviderArbitrator object which blocks the arbitration finished
@@ -86,6 +91,12 @@ protected:
                        const joynr::types::Version& interfaceVersion,
                        joynr::system::IDiscoverySync& discoveryProxy,
                        const DiscoveryQos& discoveryQos);
+
+    //    void receiveCapabilitiesLookupResults(
+    //            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+
+    virtual std::string filterDiscoveryEntries(
+            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries) = 0;
 
     void notifyArbitrationListener(const std::string& participantId);
 

@@ -57,7 +57,7 @@ public:
     };
 
     MOCK_METHOD0(attemptArbitration, void (void));
-
+    MOCK_METHOD1(filterDiscoveryEntries, std::string (const std::vector<joynr::types::DiscoveryEntry>&));
 };
 
 /**

@@ -48,6 +48,15 @@ public:
      */
     void attemptArbitration() override;
 
+protected:
+    std::string filterDiscoveryEntries(
+            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries) override
+    {
+        std::ignore = discoveryEntries;
+        std::string res;
+        return res;
+    };
+
 private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrator);
     ADD_LOGGER(FixedParticipantArbitrator);

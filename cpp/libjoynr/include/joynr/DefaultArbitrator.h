@@ -43,7 +43,20 @@ public:
                       const joynr::types::Version& interfaceVersion,
                       joynr::system::IDiscoverySync& discoveryProxy,
                       const DiscoveryQos& discoveryQos);
+
+    /*
+     * Attempts to arbitrate. This function is called by the ProviderArbitrator
+     */
     void attemptArbitration() override;
+
+protected:
+    std::string filterDiscoveryEntries(
+            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries) override
+    {
+        std::ignore = discoveryEntries;
+        std::string res;
+        return res;
+    };
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultArbitrator);
