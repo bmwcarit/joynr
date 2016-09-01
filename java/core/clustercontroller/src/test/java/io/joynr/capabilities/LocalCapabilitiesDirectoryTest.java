@@ -117,7 +117,7 @@ public class LocalCapabilitiesDirectoryTest {
     private CapabilitiesProvisioning capabilitiesProvisioning;
 
     @Captor
-    ArgumentCaptor<Collection<DiscoveryEntry>> capabilitiesCaptor;
+    private ArgumentCaptor<Collection<DiscoveryEntry>> capabilitiesCaptor;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private ChannelAddress channelAddress;
