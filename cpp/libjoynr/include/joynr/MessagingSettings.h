@@ -102,6 +102,7 @@ public:
     static std::uint64_t DEFAULT_MAXIMUM_TTL_MS();
     static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME();
     static std::chrono::milliseconds DEFAULT_MQTT_RECONNECT_SLEEP_TIME();
+    static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
 
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;

@@ -160,6 +160,11 @@ const std::string& MessagingSettings::SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_IN
     return value;
 }
 
+int MessagingSettings::DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
+{
+    return 60 * 60 * 1000; // 1 hour
+}
+
 const std::string& MessagingSettings::SETTING_LOCAL_PROXY_HOST()
 {
     static const std::string value("messaging/local-proxy-host");
@@ -631,6 +636,10 @@ void MessagingSettings::checkSettings()
     if (!settings.contains(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS())) {
         settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                      DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS().count());
+    }
+    if (!settings.contains(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS())) {
+        setPurgeExpiredDiscoveryEntriesIntervalMs(
+                DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
     }
 }
 
