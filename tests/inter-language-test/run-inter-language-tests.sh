@@ -1,11 +1,12 @@
 #!/bin/bash
 #set -x
+#set -u
 
 JOYNR_SOURCE_DIR=""
 ILT_BUILD_DIR=""
 ILT_RESULTS_DIR=""
 CC_LANGUAGE=""
-while getopts "b:c:s:r:" OPTIONS;
+while getopts "b:c:r:s:" OPTIONS;
 do
 	case $OPTIONS in
 		c)
@@ -29,7 +30,7 @@ do
 			;;
 		\?)
 			echo "Illegal option found."
-			echo "Synopsis: run-inter-language-tests.sh [-b <joynr-build-dir>] [-c <cluster-controller-language (CPP|JAVA)>] [-r <ilt-results-dir>] [-s <joynr-source-dir>]"
+			echo "Synopsis: run-inter-language-tests.sh [-b <ilt-build-dir>] [-c <cluster-controller-language (CPP|JAVA)>] [-r <ilt-results-dir>] [-s <joynr-source-dir>]"
 			exit 1
 			;;
 	esac
@@ -38,20 +39,28 @@ done
 # remove all aliases to get correct return codes
 unalias -a
 
+if [ -z "$JOYNR_SOURCE_DIR" ]
+then
+	# assume this script is started inside a git repo subdirectory,
+	JOYNR_SOURCE_DIR=`git rev-parse --show-toplevel`
+fi
+
+# source global.sh
+if [ -f /data/scripts/global.sh ]
+then
+	source /data/scripts/global.sh
+else
+	source $JOYNR_SOURCE_DIR/docker/joynr-base/scripts/global.sh
+fi
+
 if [ -z "$CC_LANGUAGE" ]
 then
 	# use default C++ cluster-controller
 	CC_LANGUAGE=CPP
 elif [ "$CC_LANGUAGE" != "CPP" ] && [ "$CC_LANGUAGE" != "JAVA" ]
 then
-	echo 'invalid value for cluster-controller language: $CC_LANGUAGE'
+	log 'Invalid value for cluster-controller language: $CC_LANGUAGE.'
 	exit 1
-fi
-
-if [ -z "$JOYNR_SOURCE_DIR" ]
-then
-	# assume this script is started inside a git repo subdirectory,
-	JOYNR_SOURCE_DIR=`git rev-parse --show-toplevel`
 fi
 
 ILT_DIR=$JOYNR_SOURCE_DIR/tests/inter-language-test
@@ -59,12 +68,6 @@ ILT_DIR=$JOYNR_SOURCE_DIR/tests/inter-language-test
 if [ -z "$ILT_BUILD_DIR" ]
 then
 	ILT_BUILD_DIR=$ILT_DIR/build
-fi
-
-# if CI environment, source global settings
-if [ -f /data/scripts/global.sh ]
-then
-	source /data/scripts/global.sh
 fi
 
 if [ -z "$ILT_RESULTS_DIR" ]
@@ -87,9 +90,6 @@ function stopall {
 }
 
 trap stopall INT
-
-#log "ENVIRONMENT"
-#env
 
 SUCCESS=0
 FAILED_TESTS=0
@@ -116,37 +116,37 @@ function killProcessHierarchy {
 function prechecks {
 	if [ ! -f "$ILT_BUILD_DIR/bin/cluster-controller" ]
 	then
-		echo 'C++ environment not built'
+		log 'cluster-controller for ILT not found in $ILT_BUILD_DIR/bin/cluster-controller'
 		exit 1
 	fi
 
 	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-consumer-ws" ]
 	then
-		echo 'C++ environment not built'
+		log 'ilt-consumer-ws for ILT not found in $ILT_BUILD_DIR/bin/ilt-consumer-ws'
 		exit 1
 	fi
 
 	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-provider-cc" ]
 	then
-		echo 'C++ environment not built'
+		log 'ilt-provider-ws for ILT not found in $ILT_BUILD_DIR/bin/ilt-provider-ws'
 		exit 1
 	fi
 
 	if [ ! -f "$ILT_DIR/target/discovery.war" ]
 	then
-		echo 'Java environment not built'
+		log 'discovery.war not found in $ILT_DIR/target/discovery.war'
 		exit 1
 	fi
 
 	if [ ! -f "$ILT_DIR/target/bounceproxy.war" ]
 	then
-		echo 'Java environment not built'
+		log 'bounceproxy.war not found in $ILT_DIR/target/bounceproxy.war'
 		exit 1
 	fi
 
 	if [ ! -f "$ILT_DIR/target/accesscontrol.war" ]
 	then
-		echo 'Java environment not built'
+		log 'accesscontrol.war not found in $ILT_DIR/target/accesscontrol.war'
 		exit 1
 	fi
 }
@@ -155,9 +155,7 @@ function start_services {
 	cd $ILT_DIR
 	rm -f joynr.properties
 	rm -f joynr_participantIds.properties
-	echo '####################################################'
-	echo '# starting services'
-	echo '####################################################'
+	log '# starting services'
 
 	echo "Starting mosquitto"
 	mosquitto -c /etc/mosquitto/mosquitto.conf > $ILT_RESULTS_DIR/mosquitt-$1.log 2>&1 &
@@ -179,7 +177,7 @@ function start_services {
 	done
 	if [ "$started" != "200" ]
 	then
-		echo "Starting Jetty FAILED"
+		log "Starting Jetty FAILED"
 		# startup failed
 		stopall
 	fi
@@ -188,9 +186,7 @@ function start_services {
 }
 
 function stop_services {
-	echo '####################################################'
-	echo '# stopping services'
-	echo '####################################################'
+	log '# stopping services'
 
 	if [ -n "$JETTY_PID" ]
 	then
@@ -214,19 +210,15 @@ function stop_services {
 function start_cluster_controller {
 	if [ "$CC_LANGUAGE" = "JAVA" ]
 	then
-		echo '####################################################'
-		echo '# starting JAVA clustercontroller'
-		echo '####################################################'
+		log '# starting JAVA clustercontroller'
 		CLUSTER_CONTROLLER_DIR=$JOYNR_SOURCE_DIR/java/core/clustercontroller-standalone
 		cd $CLUSTER_CONTROLLER_DIR
 		mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="http::mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
 	else
-		echo '####################################################'
-		echo '# starting C++ clustercontroller'
-		echo '####################################################'
+		log '# starting C++ clustercontroller'
 		if [ ! -d $ILT_BUILD_DIR -o ! -d $ILT_BUILD_DIR/bin ]
 		then
-			echo "C++ build directory or build/bin directory does not exist!"
+			log "C++ build directory or build/bin directory does not exist! Check ILT_BUILD_DIR."
 			stopall
 		fi
 		CLUSTER_CONTROLLER_DIR=$ILT_BUILD_DIR/cluster-controller-bin
@@ -246,9 +238,7 @@ function start_cluster_controller {
 function stop_cluster_controller {
 	if [ -n "$CLUSTER_CONTROLLER_PID" ]
 	then
-		echo '####################################################'
-		echo '# stopping clustercontroller'
-		echo '####################################################'
+		log '# stopping clustercontroller'
 		disown $CLUSTER_CONTROLLER_PID
 		killProcessHierarchy $CLUSTER_CONTROLLER_PID
 		wait $CLUSTER_CONTROLLER_PID
@@ -258,15 +248,11 @@ function stop_cluster_controller {
 }
 
 function test_failed {
-	echo '####################################################'
-	echo '# TEST FAILED'
-	echo '####################################################'
+	log 'TEST FAILED :('
 }
 
 function start_java_provider_cc {
-	echo '####################################################'
-	echo '# starting Java provider CC (with in process clustercontroller)'
-	echo '####################################################'
+	log 'Starting Java provider CC (with in process clustercontroller).'
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
 	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport=mqtt > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
@@ -277,10 +263,7 @@ function start_java_provider_cc {
 }
 
 function start_java_provider_ws {
-	echo '####################################################'
-	echo '# starting Java provider WS'
-	echo '# (with websocket connection to standalone clustercontroller)'
-	echo '####################################################'
+	log 'Starting Java provider WS (with WS to standalone clustercontroller).'
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
 	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN websocket" > $ILT_RESULTS_DIR/provider-java-ws.log 2>&1 &
@@ -293,9 +276,7 @@ function start_java_provider_ws {
 function stop_provider {
 	if [ -n "$PROVIDER_PID" ]
 	then
-		echo '####################################################'
-		echo '# stopping provider'
-		echo '####################################################'
+		log 'Stopping provider.'
 		cd $ILT_DIR
 		disown $PROVIDER_PID
 		killProcessHierarchy $PROVIDER_PID
@@ -306,9 +287,7 @@ function stop_provider {
 }
 
 function start_cpp_provider {
-	echo '####################################################'
-	echo '# starting C++ provider'
-	echo '####################################################'
+	log 'Starting C++ provider.'
 	PROVIDER_DIR=$ILT_BUILD_DIR/provider_bin
 	rm -fr $PROVIDER_DIR
 	cp -a $ILT_BUILD_DIR/bin $PROVIDER_DIR
@@ -322,9 +301,7 @@ function start_cpp_provider {
 }
 
 function start_javascript_provider {
-	echo '####################################################'
-	echo '# starting Javascript provider'
-	echo '####################################################'
+	log 'Starting Javascript provider.'
 	cd $ILT_DIR
 	nohup npm run-script startprovider --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/provider-javascript.log 2>&1 &
 	PROVIDER_PID=$!
@@ -334,10 +311,7 @@ function start_javascript_provider {
 }
 
 function start_java_consumer_cc {
-	echo ''
-	echo '####################################################'
-	echo '# starting Java consumer CC (with in process clustercontroller)'
-	echo '####################################################'
+	log 'Starting Java consumer CC (with in process clustercontroller).'
 	cd $ILT_DIR
 	rm -f java-consumer.persistence_file
 	mkdir $ILT_RESULTS_DIR/consumer-java-cc-$1
@@ -347,26 +321,18 @@ function start_java_consumer_cc {
 	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-cc-$1
 	if [ "$SUCCESS" != 0 ]
 	then
-		echo '####################################################'
-		echo '# Java consumer CC FAILED'
-		echo '####################################################'
+		log 'Java consumer CC FAILED.'
 		echo "STATUS = $SUCCESS"
 		#test_failed
 		let FAILED_TESTS+=1
 		#stopall
 	else
-		echo '####################################################'
-		echo '# Java consumer CC successfully completed'
-		echo '####################################################'
+		log 'Java consumer CC successfully completed.'
 	fi
 }
 
 function start_java_consumer_ws {
-	echo ''
-	echo '####################################################'
-	echo '# starting Java consumer WS'
-	echo '# (with websocket connection to standalone clustercontroller)'
-	echo '####################################################'
+	log 'Starting Java consumer WS (with WS to standalone clustercontroller).'
 	cd $ILT_DIR
 	rm -f java-consumer.persistence_file
 	mkdir $ILT_RESULTS_DIR/consumer-java-ws-$1
@@ -376,25 +342,18 @@ function start_java_consumer_ws {
 	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-ws-$1
 	if [ "$SUCCESS" != 0 ]
 	then
-		echo '####################################################'
-		echo '# Java consumer WS FAILED'
-		echo '####################################################'
+		log 'Java consumer WS FAILED.'
 		echo "STATUS = $SUCCESS"
 		#test_failed
 		let FAILED_TESTS+=1
 		#stopall
 	else
-		echo '####################################################'
-		echo '# Java consumer WS successfully completed'
-		echo '####################################################'
+		log 'Java consumer WS successfully completed.'
 	fi
 }
 
 function start_cpp_consumer {
-	echo ''
-	echo '####################################################'
-	echo '# starting C++ consumer'
-	echo '####################################################'
+	log 'Starting C++ consumer.'
 	CONSUMER_DIR=$ILT_BUILD_DIR/consumer-bin
 	cd $ILT_BUILD_DIR
 	rm -fr $CONSUMER_DIR
@@ -407,25 +366,18 @@ function start_cpp_consumer {
 
 	if [ "$SUCCESS" != 0 ]
 	then
-		echo '####################################################'
-		echo '# C++ consumer FAILED'
-		echo '####################################################'
+	log 'C++ consumer FAILED.'
 		echo "STATUS = $SUCCESS"
 		#test_failed
 		let FAILED_TESTS+=1
 		#stopall
 	else
-		echo '####################################################'
-		echo 'C++ consumer successfully completed'
-		echo '####################################################'
+	log 'C++ consumer successfully completed.'
 	fi
 }
 
 function start_javascript_consumer {
-	echo ''
-	echo '####################################################'
-	echo '# starting Javascript consumer'
-	echo '####################################################'
+	log 'Starting Javascript consumer.'
 	cd $ILT_DIR
 	rm -fr localStorageStorage
 	#npm install
@@ -435,17 +387,13 @@ function start_javascript_consumer {
 
 	if [ "$SUCCESS" != 0 ]
 	then
-		echo '####################################################'
-		echo '# Javascript consumer FAILED'
-		echo '####################################################'
+		log 'Javascript consumer FAILED.'
 		echo "STATUS = $SUCCESS"
 		#test_failed
 		let FAILED_TESTS+=1
 		#stopall
 	else
-		echo '####################################################'
-		echo '# Javascript consumer successfully completed'
-		echo '####################################################'
+		log 'Javascript consumer successfully completed.'
 	fi
 }
 
@@ -490,12 +438,7 @@ npm install jasmine-node
 
 # run checks with Java provider cc
 clean_up
-echo ''
-echo '####################################################'
-echo '####################################################'
-echo '####################################################'
-echo '# RUN CHECKS WITH JAVA PROVIDER CC (with in process clustercontroller)'
-echo '####################################################'
+log 'RUN CHECKS WITH JAVA PROVIDER CC (with in process clustercontroller).'
 PROVIDER="provider-java-cc"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
@@ -507,13 +450,7 @@ stop_services
 
 # run checks with Java provider ws
 clean_up
-echo ''
-echo '####################################################'
-echo '####################################################'
-echo '####################################################'
-echo '# RUN CHECKS WITH JAVA PROVIDER WS'
-echo '# (with websocket connection to standalone clustercontroller)'
-echo '####################################################'
+log 'RUN CHECKS WITH JAVA PROVIDER WS (with WS to standalone clustercontroller).'
 PROVIDER="provider-java-ws"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
@@ -525,12 +462,7 @@ stop_services
 
 # run checks with C++ provider
 clean_up
-echo ''
-echo '####################################################'
-echo '####################################################'
-echo '####################################################'
-echo '# RUN CHECKS WITH C++ PROVIDER'
-echo '####################################################'
+log 'RUN CHECKS WITH C++ PROVIDER.'
 PROVIDER="provider-cpp"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
@@ -542,12 +474,7 @@ stop_services
 
 # run checks with Javascript provider
 clean_up
-echo ''
-echo '####################################################'
-echo '####################################################'
-echo '####################################################'
-echo '# RUN CHECKS WITH JAVASCRIPT PROVIDER'
-echo '####################################################'
+log 'RUN CHECKS WITH JAVASCRIPT PROVIDER.'
 PROVIDER="provider-javascript"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
@@ -565,7 +492,5 @@ then
 fi
 
 # If this point is reached, the tests have been successfull.
-echo '####################################################'
-echo '# TEST SUCCEEDED'
-echo '####################################################'
+log 'TEST SUCCEEDED :)'
 exit $SUCCESS
