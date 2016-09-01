@@ -2,12 +2,13 @@
 
 function usage
 {
-    echo "usage: joynr-docker build | push | pull [--repository mydockerrepo.org --version versionnumber]"
+    echo "usage: joynr-docker build | push | pull [--repository mydockerrepo.org --version versionnumber --pushlatesttag <ON|OFF>]"
 }
 
 repository=
 version=
 command=$1
+pushlatesttag=ON
 shift
 echo "after command: $1"
 
@@ -26,6 +27,9 @@ echo "PARAM is: $1"
                                 ;;
         -h | --help )           usage
                                 exit
+                                ;;
+        -p | --pushlatesttag )  shift
+                                pushlatesttag=$1
                                 ;;
         * )                     usage
                                 exit 1
@@ -73,6 +77,11 @@ function push
     for image in "${listOfImages[@]}"
     do
         docker push ${repository}${image}${version}
+
+        if [ "$pushlatesttag" == "ON" ]
+        then
+            docker push ${repository}${image}:latest
+        fi
     done
 }
 
