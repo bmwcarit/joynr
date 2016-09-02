@@ -21,9 +21,10 @@
 #define PERFORMANCE_TEST_H
 
 #include <algorithm>
-#include <iomanip>
-#include <iostream>
 #include <chrono>
+#include <iomanip>
+#include <numeric>
+#include <iostream>
 #include <utility>
 #include <vector>
 
@@ -37,7 +38,9 @@ struct PerformanceTest
      * @returns average duration of a function call in milliseconds
      */
     template <typename Function, typename... Args>
-    std::vector<ClockResolution> benchmark(std::uint64_t runs, Function&& fun, Args&&... args) const
+    static std::vector<ClockResolution> benchmark(std::uint64_t runs,
+                                                  Function&& fun,
+                                                  Args&&... args)
     {
         using ResultType = decltype(fun(args...));
 
@@ -48,10 +51,10 @@ struct PerformanceTest
     }
 
     template <typename Function, typename... Args>
-    std::vector<ClockResolution> executeBenchmark(std::uint64_t runs,
-                                                  Function&& fun,
-                                                  Args&&... args,
-                                                  std::true_type) const
+    static std::vector<ClockResolution> executeBenchmark(std::uint64_t runs,
+                                                         Function&& fun,
+                                                         Args&&... args,
+                                                         std::true_type)
     {
         std::vector<ClockResolution> durationVector(runs);
         for (std::size_t i = 0; i < runs; ++i) {
@@ -64,10 +67,10 @@ struct PerformanceTest
     }
 
     template <typename Function, typename... Args>
-    std::vector<ClockResolution> executeBenchmark(std::uint64_t runs,
-                                                  Function&& fun,
-                                                  Args&&... args,
-                                                  std::false_type) const
+    static std::vector<ClockResolution> executeBenchmark(std::uint64_t runs,
+                                                         Function&& fun,
+                                                         Args&&... args,
+                                                         std::false_type)
     {
         std::vector<ClockResolution> durationVector(runs);
         using ResultType = decltype(fun(args...));
@@ -107,10 +110,10 @@ struct PerformanceTest
     }
 
     template <typename Function, typename... Args>
-    void runAndPrintAverage(const std::uint64_t runs,
-                            const std::string& name,
-                            Function&& fun,
-                            Args&&... args) const
+    static void runAndPrintAverage(const std::uint64_t runs,
+                                   const std::string& name,
+                                   Function&& fun,
+                                   Args&&... args)
     {
         const auto startLoop = Clock::now();
         std::vector<ClockResolution> durationVector =
