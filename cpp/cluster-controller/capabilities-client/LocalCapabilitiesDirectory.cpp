@@ -160,33 +160,37 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
 
 void LocalCapabilitiesDirectory::remove(const std::vector<types::DiscoveryEntry>& discoveryEntries)
 {
+    for (const auto& entry : discoveryEntries) {
+        remove(entry);
+    }
+
+    updatePersistedFile();
+}
+
+void LocalCapabilitiesDirectory::remove(const types::DiscoveryEntry& discoveryEntry)
+{
     // first, update cache
     {
-        for (std::size_t i = 0; i < discoveryEntries.size(); ++i) {
-            const types::DiscoveryEntry& entry = discoveryEntries.at(i);
-            std::lock_guard<std::mutex> lock(cacheLock);
-            participantId2LocalCapability.remove(entry.getParticipantId(), entry);
-            interfaceAddress2LocalCapabilities.remove(
-                    InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
-            if (isGlobal(entry)) {
-                removeFromGloballyRegisteredCapabilities(entry);
-                participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
-                interfaceAddress2GlobalCapabilities.remove(
-                        InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
-            }
+        std::lock_guard<std::mutex> lock(cacheLock);
+        participantId2LocalCapability.remove(discoveryEntry.getParticipantId(), discoveryEntry);
+        interfaceAddress2LocalCapabilities.remove(
+                InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()),
+                discoveryEntry);
+        if (isGlobal(discoveryEntry)) {
+            removeFromGloballyRegisteredCapabilities(discoveryEntry);
+            participantId2GlobalCapabilities.remove(
+                    discoveryEntry.getParticipantId(), discoveryEntry);
+            interfaceAddress2GlobalCapabilities.remove(
+                    InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()),
+                    discoveryEntry);
         }
     }
 
     // second, do final cleanup and observer call
-    for (std::size_t i = 0; i < discoveryEntries.size(); ++i) {
-        const types::DiscoveryEntry& entry = discoveryEntries.at(i);
-        if (isGlobal(entry)) {
-            capabilitiesClient->remove(entry.getParticipantId());
-        }
-        informObserversOnRemove(entry);
+    if (isGlobal(discoveryEntry)) {
+        capabilitiesClient->remove(discoveryEntry.getParticipantId());
     }
-
-    updatePersistedFile();
+    informObserversOnRemove(discoveryEntry);
 }
 
 void LocalCapabilitiesDirectory::removeFromGloballyRegisteredCapabilities(
@@ -806,8 +810,7 @@ void LocalCapabilitiesDirectory::informObserversOnRemove(
 
 bool LocalCapabilitiesDirectory::isGlobal(const types::DiscoveryEntry& discoveryEntry) const
 {
-    bool isGlobal = discoveryEntry.getQos().getScope() == types::ProviderScope::GLOBAL;
-    return isGlobal;
+    return discoveryEntry.getQos().getScope() == types::ProviderScope::GLOBAL;
 }
 
 void LocalCapabilitiesDirectory::scheduleCleanupTimer()
@@ -832,26 +835,30 @@ void LocalCapabilitiesDirectory::scheduleCleanupTimer()
 void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
         const boost::system::error_code& errorCode)
 {
+    bool doUpdatePersistenceFile = false;
     if (!errorCode) {
-        std::vector<types::DiscoveryEntry> expiredEntries;
         TypedClientMultiCache<std::string, types::DiscoveryEntry>* caches[] = {
                 &participantId2LocalCapability, &participantId2GlobalCapabilities};
-        auto now = TypeUtil::toMilliseconds(std::chrono::system_clock::now());
+        auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                           std::chrono::system_clock::now().time_since_epoch()).count();
         for (auto& cache : caches) {
             for (auto& key : cache->getKeys()) {
                 for (auto& discoveryEntry : participantId2LocalCapability.lookUpAll(key)) {
-                    if ((std::uint64_t)discoveryEntry.getExpiryDateMs() < now) {
-                        expiredEntries.push_back(discoveryEntry);
+                    if (discoveryEntry.getExpiryDateMs() < now) {
+                        remove(discoveryEntry);
+                        doUpdatePersistenceFile = true;
                     }
                 }
             }
         }
-        if (expiredEntries.size() > 0) {
-            remove(expiredEntries);
-        }
     } else {
         JOYNR_LOG_ERROR(logger, "Error triggering expired discovery entries check.");
     }
+
+    if (doUpdatePersistenceFile) {
+        updatePersistedFile();
+    }
+
     scheduleCleanupTimer();
 }
 

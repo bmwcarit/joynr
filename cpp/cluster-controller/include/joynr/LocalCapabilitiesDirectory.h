@@ -251,6 +251,7 @@ private:
     void scheduleCleanupTimer();
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);
     void remove(const std::vector<types::DiscoveryEntry>& discoveryEntries);
+    void remove(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
     bool hasEntryInCache(const types::DiscoveryEntry& entry, bool localEntries);
