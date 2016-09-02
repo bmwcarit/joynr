@@ -22,7 +22,7 @@
 #include <gmock/gmock.h>
 #include <semaphore.h>
 #include "joynr/Logger.h"
-#include "joynr/ProviderArbitrator.h"
+#include "joynr/Arbitrator.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
 
@@ -47,13 +47,13 @@ ACTION_P(ReleaseSemaphore,semaphore)
 MATCHER_P(discoveryException, msg, "") {
     return arg.getTypeName() == joynr::exceptions::DiscoveryException::TYPE_NAME() && arg.getMessage() == msg;
 }
-class MockProviderArbitrator : public ProviderArbitrator {
+class MockArbitrator : public Arbitrator {
 public:
-    MockProviderArbitrator(const std::string& domain,
+    MockArbitrator(const std::string& domain,
                        const std::string& interfaceName,
                        const joynr::types::Version& interfaceVersion,
                        joynr::system::IDiscoverySync& discoveryProxy,
-                       const DiscoveryQos& discoveryQos) : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos){
+                       const DiscoveryQos& discoveryQos) : Arbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos){
     };
 
     MOCK_METHOD0(attemptArbitration, void (void));
@@ -61,16 +61,16 @@ public:
 };
 
 /**
- * Tests correct functionality of ProviderArbitrator
+ * Tests correct functionality of Arbitrator
  */
 
 /**
  * @brief Fixture.
  */
-class ProviderArbitratorTest : public ::testing::Test {
+class ArbitratorTest : public ::testing::Test {
 public:
 
-    ProviderArbitratorTest() :
+    ArbitratorTest() :
         mockDiscovery(),
         discoveryTimeoutMs(std::chrono::milliseconds(1000).count()),
         retryIntervalMs(std::chrono::milliseconds(450).count()),
@@ -81,16 +81,16 @@ public:
         discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
         discoveryQos.setRetryIntervalMs(retryIntervalMs);
         types::Version providerVersion;
-        mockProviderArbitrator = new MockProviderArbitrator("domain", "interfaceName", providerVersion, mockDiscovery, discoveryQos);
+        mockArbitrator = new MockArbitrator("domain", "interfaceName", providerVersion, mockDiscovery, discoveryQos);
     }
     void SetUp() {
-        mockProviderArbitrator->setArbitrationListener(mockArbitrationListener);
+        mockArbitrator->setArbitrationListener(mockArbitrationListener);
     }
 
     void TearDown(){
-        mockProviderArbitrator->removeArbitrationListener();
+        mockArbitrator->removeArbitrationListener();
         delete mockArbitrationListener;
-        delete mockProviderArbitrator;
+        delete mockArbitrator;
     }
 
     static joynr::Logger logger;
@@ -98,16 +98,16 @@ public:
     std::int64_t discoveryTimeoutMs;
     std::int64_t retryIntervalMs;
     DiscoveryQos discoveryQos;
-    MockProviderArbitrator* mockProviderArbitrator;
+    MockArbitrator* mockArbitrator;
     MockArbitrationListener* mockArbitrationListener;
     Semaphore semaphore;
 private:
-    DISALLOW_COPY_AND_ASSIGN(ProviderArbitratorTest);
+    DISALLOW_COPY_AND_ASSIGN(ArbitratorTest);
 };
 
-INIT_LOGGER(ProviderArbitratorTest);
+INIT_LOGGER(ArbitratorTest);
 
-TEST_F(ProviderArbitratorTest, arbitrationTimeout) {
+TEST_F(ArbitratorTest, arbitrationTimeout) {
     // Use a semaphore to count and wait on calls to the mock listener
 
     EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)))
@@ -116,8 +116,8 @@ TEST_F(ProviderArbitratorTest, arbitrationTimeout) {
 
     auto start = std::chrono::system_clock::now();
 
-    EXPECT_CALL(*mockProviderArbitrator, attemptArbitration()).Times(AtLeast(1));
-    mockProviderArbitrator->startArbitration();
+    EXPECT_CALL(*mockArbitrator, attemptArbitration()).Times(AtLeast(1));
+    mockArbitrator->startArbitration();
 
     // Wait for timeout
     // Wait for more than discoveryTimeoutMs milliseconds since it might take some time until the timeout is reported

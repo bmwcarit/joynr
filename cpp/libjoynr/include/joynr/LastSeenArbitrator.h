@@ -23,7 +23,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
-#include "joynr/ProviderArbitrator.h"
+#include "joynr/Arbitrator.h"
 
 namespace joynr
 {
@@ -44,7 +44,7 @@ class DiscoveryQos;
   * It arbitrates to the provider with the latest LastSeenDateMs.
   * This is the default arbitration strategy.
   */
-class JOYNR_EXPORT LastSeenArbitrator : public ProviderArbitrator
+class JOYNR_EXPORT LastSeenArbitrator : public Arbitrator
 {
 
 public:
@@ -54,11 +54,6 @@ public:
                        const joynr::types::Version& interfaceVersion,
                        joynr::system::IDiscoverySync& discoveryProxy,
                        const DiscoveryQos& discoveryQos);
-
-    /*
-     *  Attempts to arbitrate. This function is called by the ProviderArbitrator
-     */
-    void attemptArbitration() override;
 
 protected:
     std::string filterDiscoveryEntries(

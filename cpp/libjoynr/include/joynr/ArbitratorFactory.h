@@ -22,7 +22,7 @@
 #include <string>
 
 #include "joynr/JoynrExport.h"
-#include "joynr/ProviderArbitrator.h"
+#include "joynr/Arbitrator.h"
 
 namespace joynr
 {
@@ -32,18 +32,18 @@ namespace system
 class IDiscoverySync;
 } // namespace system
 
-class JOYNR_EXPORT ProviderArbitratorFactory
+class JOYNR_EXPORT ArbitratorFactory
 {
 
 public:
     /*
      *  Creates an arbitrator object using the type specified in the qosParameters.
      */
-    static ProviderArbitrator* createArbitrator(const std::string& domain,
-                                                const std::string& interfaceName,
-                                                const types::Version& interfaceVersion,
-                                                joynr::system::IDiscoverySync& discoveryProxy,
-                                                const DiscoveryQos& discoveryQos);
+    static Arbitrator* createArbitrator(const std::string& domain,
+                                        const std::string& interfaceName,
+                                        const types::Version& interfaceVersion,
+                                        joynr::system::IDiscoverySync& discoveryProxy,
+                                        const DiscoveryQos& discoveryQos);
 };
 
 } // namespace joynr

@@ -30,8 +30,8 @@
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/IArbitrationListener.h"
 #include "joynr/IRequestCallerDirectory.h"
-#include "joynr/ProviderArbitrator.h"
-#include "joynr/ProviderArbitratorFactory.h"
+#include "joynr/Arbitrator.h"
+#include "joynr/ArbitratorFactory.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
@@ -192,7 +192,7 @@ private:
     ProxyFactory* proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
     joynr::system::IDiscoverySync& discoveryProxy;
-    ProviderArbitrator* arbitrator;
+    Arbitrator* arbitrator;
     Semaphore arbitrationSemaphore;
     std::string participantId;
     exceptions::DiscoveryException arbitrationError;
@@ -308,7 +308,7 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     assert(!hasArbitrationStarted);
     discoveryTimeout = discoveryQos.getDiscoveryTimeoutMs();
     joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
-    arbitrator = ProviderArbitratorFactory::createArbitrator(
+    arbitrator = ArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
     arbitrationSemaphore.wait();
     arbitrator->setArbitrationListener(this);

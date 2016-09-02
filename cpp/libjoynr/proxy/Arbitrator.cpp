@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/ProviderArbitrator.h"
+#include "joynr/Arbitrator.h"
 
 #include <cassert>
 #include <vector>
@@ -33,13 +33,13 @@
 namespace joynr
 {
 
-INIT_LOGGER(ProviderArbitrator);
+INIT_LOGGER(Arbitrator);
 
-ProviderArbitrator::ProviderArbitrator(const std::string& domain,
-                                       const std::string& interfaceName,
-                                       const joynr::types::Version& interfaceVersion,
-                                       joynr::system::IDiscoverySync& discoveryProxy,
-                                       const DiscoveryQos& discoveryQos)
+Arbitrator::Arbitrator(const std::string& domain,
+                       const std::string& interfaceName,
+                       const joynr::types::Version& interfaceVersion,
+                       joynr::system::IDiscoverySync& discoveryProxy,
+                       const DiscoveryQos& discoveryQos)
         : discoveryProxy(discoveryProxy),
           discoveryQos(discoveryQos),
           systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
@@ -58,7 +58,7 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
 {
 }
 
-void ProviderArbitrator::startArbitration()
+void Arbitrator::startArbitration()
 {
     Semaphore semaphore;
 
@@ -103,7 +103,7 @@ void ProviderArbitrator::startArbitration()
     }
 }
 
-void ProviderArbitrator::attemptArbitration()
+void Arbitrator::attemptArbitration()
 {
     std::vector<joynr::types::DiscoveryEntry> result;
     try {
@@ -119,7 +119,7 @@ void ProviderArbitrator::attemptArbitration()
     }
 }
 
-void ProviderArbitrator::receiveCapabilitiesLookupResults(
+void Arbitrator::receiveCapabilitiesLookupResults(
         const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
     std::string res;
@@ -184,7 +184,7 @@ void ProviderArbitrator::receiveCapabilitiesLookupResults(
     }
 }
 
-std::string ProviderArbitrator::getParticipantId()
+std::string Arbitrator::getParticipantId()
 {
     if (participantId.empty()) {
         throw exceptions::DiscoveryException(
@@ -195,7 +195,7 @@ std::string ProviderArbitrator::getParticipantId()
     return participantId;
 }
 
-void ProviderArbitrator::setParticipantId(std::string participantId)
+void Arbitrator::setParticipantId(std::string participantId)
 {
     this->participantId = participantId;
     if (listenerSemaphore.waitFor()) {
@@ -205,20 +205,19 @@ void ProviderArbitrator::setParticipantId(std::string participantId)
     }
 }
 
-void ProviderArbitrator::notifyArbitrationListener(const std::string& participantId)
+void Arbitrator::notifyArbitrationListener(const std::string& participantId)
 {
     setParticipantId(participantId);
     setArbitrationStatus(ArbitrationStatus::ArbitrationSuccessful);
 }
 
-void ProviderArbitrator::notifyArbitrationListener(const exceptions::DiscoveryException& error)
+void Arbitrator::notifyArbitrationListener(const exceptions::DiscoveryException& error)
 {
     setArbitrationError(error);
     setArbitrationStatus(ArbitrationStatus::ArbitrationCanceledForever);
 }
 
-void ProviderArbitrator::setArbitrationStatus(
-        ArbitrationStatus::ArbitrationStatusType arbitrationStatus)
+void Arbitrator::setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus)
 {
     this->arbitrationStatus = arbitrationStatus;
     if (listenerSemaphore.waitFor()) {
@@ -235,7 +234,7 @@ void ProviderArbitrator::setArbitrationStatus(
     }
 }
 
-void ProviderArbitrator::setArbitrationError(const exceptions::DiscoveryException& error)
+void Arbitrator::setArbitrationError(const exceptions::DiscoveryException& error)
 {
     if (listenerSemaphore.waitFor()) {
         assert(listener != nullptr);
@@ -244,7 +243,7 @@ void ProviderArbitrator::setArbitrationError(const exceptions::DiscoveryExceptio
     }
 }
 
-void ProviderArbitrator::removeArbitrationListener()
+void Arbitrator::removeArbitrationListener()
 {
     if (listener != nullptr) {
         this->listener = nullptr;
@@ -252,7 +251,7 @@ void ProviderArbitrator::removeArbitrationListener()
     }
 }
 
-void ProviderArbitrator::setArbitrationListener(IArbitrationListener* listener)
+void Arbitrator::setArbitrationListener(IArbitrationListener* listener)
 {
     this->listener = listener;
     listenerSemaphore.notify();

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/ProviderArbitratorFactory.h"
+#include "joynr/ArbitratorFactory.h"
 #include "joynr/LastSeenArbitrator.h"
 #include "joynr/FixedParticipantArbitrator.h"
 #include "joynr/KeywordArbitrator.h"
@@ -28,12 +28,11 @@
 namespace joynr
 {
 
-ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
-        const std::string& domain,
-        const std::string& interfaceName,
-        const joynr::types::Version& interfaceVersion,
-        joynr::system::IDiscoverySync& discoveryProxy,
-        const DiscoveryQos& discoveryQos)
+Arbitrator* ArbitratorFactory::createArbitrator(const std::string& domain,
+                                                const std::string& interfaceName,
+                                                const joynr::types::Version& interfaceVersion,
+                                                joynr::system::IDiscoverySync& discoveryProxy,
+                                                const DiscoveryQos& discoveryQos)
 {
     DiscoveryQos::ArbitrationStrategy strategy = discoveryQos.getArbitrationStrategy();
     switch (strategy) {

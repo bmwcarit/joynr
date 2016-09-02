@@ -22,7 +22,7 @@
 #include "joynr/JoynrExport.h"
 
 #include <vector>
-#include "joynr/ProviderArbitrator.h"
+#include "joynr/Arbitrator.h"
 #include <string>
 
 namespace joynr
@@ -41,7 +41,7 @@ class DiscoveryEntry;
   * The QoS Arbitrator arbitrates according to the QoS of the provider.
   * Currently it arbitrates to the provider with the highest priority.
   */
-class JOYNR_EXPORT QosArbitrator : public ProviderArbitrator
+class JOYNR_EXPORT QosArbitrator : public Arbitrator
 {
 
 public:

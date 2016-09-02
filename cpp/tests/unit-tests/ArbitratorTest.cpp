@@ -51,8 +51,8 @@ public:
     void TearDown(){
     }
 
-    void testExceptionFromDiscoveryProxy(ProviderArbitrator &arbitrator);
-    void testExceptionEmptyResult(ProviderArbitrator &arbitrator);
+    void testExceptionFromDiscoveryProxy(Arbitrator &arbitrator);
+    void testExceptionEmptyResult(Arbitrator &arbitrator);
 protected:
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
@@ -654,7 +654,7 @@ MATCHER_P(exceptionFromDiscoveryProxy, originalException, "") {
     return arg.getMessage() == expectedErrorMsg;
 }
 
-void ArbitratorTest::testExceptionFromDiscoveryProxy(ProviderArbitrator &arbitrator){
+void ArbitratorTest::testExceptionFromDiscoveryProxy(Arbitrator &arbitrator){
     exceptions::JoynrRuntimeException exception1("first exception");
     exceptions::JoynrRuntimeException expectedException("expected exception");
     EXPECT_CALL(mockDiscovery, lookup(_,_,_,_))
@@ -745,7 +745,7 @@ MATCHER_P(exceptionEmptyResult, originalException, "") {
     return arg.getMessage() == expectedErrorMsg;
 }
 
-void ArbitratorTest::testExceptionEmptyResult(ProviderArbitrator &arbitrator){
+void ArbitratorTest::testExceptionEmptyResult(Arbitrator &arbitrator){
     // discovery entries for first lookup
     types::ProviderQos providerQos(
                       std::vector<types::CustomParameter>(),// custom provider parameters

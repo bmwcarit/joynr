@@ -22,7 +22,7 @@
 #include "joynr/JoynrExport.h"
 
 #include <vector>
-#include "joynr/ProviderArbitrator.h"
+#include "joynr/Arbitrator.h"
 #include "joynr/Logger.h"
 #include <string>
 namespace joynr
@@ -43,7 +43,7 @@ class DiscoveryEntry;
   * of the first entry with the correct keyword is returned.
   */
 
-class JOYNR_EXPORT KeywordArbitrator : public ProviderArbitrator
+class JOYNR_EXPORT KeywordArbitrator : public Arbitrator
 {
 
 public:

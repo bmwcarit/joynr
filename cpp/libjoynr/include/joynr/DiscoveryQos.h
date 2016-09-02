@@ -53,7 +53,7 @@ public:
 
     /**
      * The strategy specifies which type of Arbitrator will be
-     * created by the ProviderArbitratorFactory
+     * created by the ArbitratorFactory
      */
     enum class ArbitrationStrategy {
         /** the last seen participant will be selected */

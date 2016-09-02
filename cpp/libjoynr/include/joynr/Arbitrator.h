@@ -45,11 +45,11 @@ class IDiscoverySync;
 /*
  *  Base class for different arbitration strategies.
  */
-class JOYNR_EXPORT ProviderArbitrator
+class JOYNR_EXPORT Arbitrator
 {
 
 public:
-    virtual ~ProviderArbitrator() = default;
+    virtual ~Arbitrator() = default;
 
     /*
      *  Arbitrate until successful or until a timeout occurs
@@ -81,16 +81,16 @@ public:
 
 protected:
     /*
-     *  Creates a new ProviderArbitrator object which blocks the arbitration finished
+     *  Creates a new Arbitrator object which blocks the arbitration finished
      *  notification as long as no callback onject has been specified.
      *  This blocking is need for example for the fixed channel arbitrator which
      *  sets the channelId instantly.
      */
-    ProviderArbitrator(const std::string& domain,
-                       const std::string& interfaceName,
-                       const joynr::types::Version& interfaceVersion,
-                       joynr::system::IDiscoverySync& discoveryProxy,
-                       const DiscoveryQos& discoveryQos);
+    Arbitrator(const std::string& domain,
+               const std::string& interfaceName,
+               const joynr::types::Version& interfaceVersion,
+               joynr::system::IDiscoverySync& discoveryProxy,
+               const DiscoveryQos& discoveryQos);
 
     //    void receiveCapabilitiesLookupResults(
     //            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
@@ -112,7 +112,7 @@ protected:
     exceptions::DiscoveryException arbitrationError;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);
+    DISALLOW_COPY_AND_ASSIGN(Arbitrator);
     void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
     void setParticipantId(std::string participantId);
     void setArbitrationError(const exceptions::DiscoveryException& error);
@@ -120,7 +120,7 @@ private:
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;
     Semaphore listenerSemaphore;
-    ADD_LOGGER(ProviderArbitrator);
+    ADD_LOGGER(Arbitrator);
 };
 
 } // namespace joynr

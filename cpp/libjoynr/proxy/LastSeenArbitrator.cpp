@@ -34,7 +34,7 @@ LastSeenArbitrator::LastSeenArbitrator(const std::string& domain,
                                        const joynr::types::Version& interfaceVersion,
                                        joynr::system::IDiscoverySync& discoveryProxy,
                                        const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos)
+        : Arbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos)
 {
 }
 

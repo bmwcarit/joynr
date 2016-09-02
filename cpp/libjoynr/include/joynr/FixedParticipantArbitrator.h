@@ -22,7 +22,7 @@
 #include "joynr/Logger.h"
 
 #include <vector>
-#include "joynr/ProviderArbitrator.h"
+#include "joynr/Arbitrator.h"
 #include <string>
 
 namespace joynr
@@ -33,7 +33,7 @@ namespace system
 class IDiscoverySync;
 } // namespace system
 
-class FixedParticipantArbitrator : public ProviderArbitrator
+class FixedParticipantArbitrator : public Arbitrator
 {
 public:
     ~FixedParticipantArbitrator() override = default;
