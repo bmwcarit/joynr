@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
 
     private static final Logger logger = LoggerFactory.getLogger(DiscoveryEntryStorePersisted.class);
-    protected Provider<EntityManager> entityManagerProvider;
+    private EntityManager entityManager;
 
     // Do not sychronize on a Boolean
     // Fixes FindBug warning: DL: Synchronization on Boolean
@@ -62,7 +62,7 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
                                         Provider<EntityManager> entityManagerProvider,
                                         PersistService persistService) {
         persistService.start();
-        this.entityManagerProvider = entityManagerProvider;
+        entityManager = entityManagerProvider.get();
         logger.debug("creating CapabilitiesStore {} with static provisioning", this);
     }
 
@@ -85,7 +85,6 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
             throw new JoynrCommunicationException(message);
         }
 
-        EntityManager entityManager = entityManagerProvider.get();
         GlobalDiscoveryEntryPersisted discoveryEntryFound = entityManager.find(GlobalDiscoveryEntryPersisted.class,
                                                                                discoveryEntry.getParticipantId());
 
@@ -129,7 +128,6 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
     }
 
     private boolean removeCapabilityFromStore(String participantId) {
-        EntityManager entityManager = entityManagerProvider.get();
         GlobalDiscoveryEntryPersisted discoveryEntry = entityManager.find(GlobalDiscoveryEntryPersisted.class,
                                                                           participantId);
 
@@ -164,7 +162,6 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
     @SuppressWarnings("unchecked")
     @Override
     public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName, long cacheMaxAge) {
-        EntityManager entityManager = entityManagerProvider.get();
         String query = "from GlobalDiscoveryEntryPersisted where domain=:domain and interfaceName=:interfaceName";
         List<DiscoveryEntry> result = new ArrayList<>();
         for (String domain : domains) {
@@ -182,7 +179,6 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
     @Override
     @CheckForNull
     public DiscoveryEntry lookup(String participantId, long cacheMaxAge) {
-        EntityManager entityManager = entityManagerProvider.get();
         DiscoveryEntry result = entityManager.find(GlobalDiscoveryEntryPersisted.class, participantId);
         logger.debug("looked up {}, {} and found {}", participantId, cacheMaxAge, result);
         return result;
@@ -190,7 +186,6 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
 
     @Override
     public Set<DiscoveryEntry> getAllDiscoveryEntries() {
-        EntityManager entityManager = entityManagerProvider.get();
         List<GlobalDiscoveryEntryPersisted> allCapabilityEntries = entityManager.createQuery("Select discoveryEntry from GlobalDiscoveryEntryPersisted discoveryEntry",
                                                                                              GlobalDiscoveryEntryPersisted.class)
                                                                                 .getResultList();
@@ -202,7 +197,6 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
     @Override
     public boolean hasDiscoveryEntry(@Nonnull DiscoveryEntry discoveryEntry) {
         if (discoveryEntry instanceof GlobalDiscoveryEntryPersisted) {
-            EntityManager entityManager = entityManagerProvider.get();
             GlobalDiscoveryEntryPersisted searchingForDiscoveryEntry = (GlobalDiscoveryEntryPersisted) discoveryEntry;
             GlobalDiscoveryEntryPersisted foundCapability = entityManager.find(GlobalDiscoveryEntryPersisted.class,
                                                                                searchingForDiscoveryEntry.getParticipantId());
