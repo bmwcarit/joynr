@@ -44,6 +44,7 @@ package «packagePath»;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
+import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
@@ -69,10 +70,10 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 		public void onReceive(«broadcast.commaSeperatedTypedOutputParameterList») {
 			// empty implementation
 		}
-		public void onError() {
+		public void onError(SubscriptionException error) {
 			// empty implementation
 		}
-		public void onSubscribed() {
+		public void onSubscribed(String subscriptionId) {
 			// empty implementation
 		}
 	}

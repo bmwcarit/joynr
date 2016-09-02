@@ -141,7 +141,6 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void registerAttributeSubscription(String fromParticipantId,
                                               Set<String> toParticipantIds,
@@ -292,7 +291,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             if (subscriptionListenerDirectory.containsKey(subscriptionId)) {
                 subscriptionListenerDirectory.get(subscriptionId).onSubscribed(subscriptionId);
             } else if (broadcastSubscriptionListenerDirectory.containsKey(subscriptionId)) {
-                broadcastSubscriptionListenerDirectory.get(subscriptionId).onSubscribed();
+                broadcastSubscriptionListenerDirectory.get(subscriptionId).onSubscribed(subscriptionId);
             } else {
                 logger.warn("No subscription listener found for incoming subscription reply for subscription ID {}!",
                             subscriptionId);
@@ -306,7 +305,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             if (subscriptionListenerDirectory.containsKey(subscriptionId)) {
                 subscriptionListenerDirectory.remove(subscriptionId).onError(subscriptionReply.getError());
             } else if (broadcastSubscriptionListenerDirectory.containsKey(subscriptionId)) {
-                broadcastSubscriptionListenerDirectory.remove(subscriptionId).onError();
+                broadcastSubscriptionListenerDirectory.remove(subscriptionId).onError(subscriptionReply.getError());
             } else {
                 logger.warn("No subscription listener found for incoming subscription reply for subscription ID {}! Error message: {}",
                             subscriptionId,

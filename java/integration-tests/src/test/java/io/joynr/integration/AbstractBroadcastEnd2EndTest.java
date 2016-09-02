@@ -36,6 +36,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.ProviderAnnotations;
@@ -220,8 +221,8 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
                                                               }
 
                                                               @Override
-                                                              public void onError() {
-                                                                  fail("Error while receiving broadcast");
+                                                              public void onError(SubscriptionException error) {
+                                                                  fail("Error subscribing to broadcast");
                                                               }
                                                           },
                                                           subscriptionQos);
@@ -240,8 +241,8 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         proxy.subscribeToBroadcastWithByteBufferParameterBroadcast(new testBroadcastInterface.BroadcastWithByteBufferParameterBroadcastAdapter() {
 
                                                                        @Override
-                                                                       public void onError() {
-                                                                           fail("Error while receiving broadcast");
+                                                                       public void onError(SubscriptionException error) {
+                                                                           fail("Error subscribing to broadcast");
                                                                        }
 
                                                                        @Override

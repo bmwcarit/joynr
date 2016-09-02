@@ -37,14 +37,21 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MessagingQos;
@@ -61,12 +68,6 @@ import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionManagerTest {
@@ -283,6 +284,7 @@ public class SubscriptionManagerTest {
     public void testHandleSubscriptionReplyWithError() {
         SubscriptionException subscriptionError = new SubscriptionException(subscriptionId);
         SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, subscriptionError);
+        @SuppressWarnings("unchecked")
         Future<String> futureMock = mock(Future.class);
         subscriptionFutureMap.put(subscriptionId, futureMock);
         subscriptionManager.handleSubscriptionReply(subscriptionReply);
@@ -293,31 +295,34 @@ public class SubscriptionManagerTest {
     public void testHandleSubscriptionReplyWithErrorWithSubscriptionListener() {
         SubscriptionException subscriptionError = new SubscriptionException(subscriptionId);
         SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, subscriptionError);
+        @SuppressWarnings("unchecked")
         Future<String> futureMock = mock(Future.class);
         subscriptionFutureMap.put(subscriptionId, futureMock);
         AttributeSubscriptionListener<?> subscriptionListener = mock(AttributeSubscriptionListener.class);
         attributeSubscriptionDirectory.put(subscriptionId, subscriptionListener);
         subscriptionManager.handleSubscriptionReply(subscriptionReply);
         verify(futureMock).onFailure(eq(subscriptionError));
-        verify(subscriptionListener).onError(any(JoynrRuntimeException.class));
+        verify(subscriptionListener).onError(eq(subscriptionError));
     }
 
     @Test
     public void testHandleSubscriptionReplyWithErrorWithBroadcastListener() {
         SubscriptionException subscriptionError = new SubscriptionException(subscriptionId);
         SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, subscriptionError);
+        @SuppressWarnings("unchecked")
         Future<String> futureMock = mock(Future.class);
         subscriptionFutureMap.put(subscriptionId, futureMock);
         BroadcastSubscriptionListener broadcastListener = mock(BroadcastSubscriptionListener.class);
         broadcastSubscriptionDirectory.put(subscriptionId, broadcastListener);
         subscriptionManager.handleSubscriptionReply(subscriptionReply);
         verify(futureMock).onFailure(eq(subscriptionError));
-        verify(broadcastListener).onError();
+        verify(broadcastListener).onError(eq(subscriptionError));
     }
 
     @Test
     public void testHandleSubscriptionReplyWithSuccess() {
         SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId);
+        @SuppressWarnings("unchecked")
         Future<String> futureMock = mock(Future.class);
         subscriptionFutureMap.put(subscriptionId, futureMock);
         subscriptionManager.handleSubscriptionReply(subscriptionReply);
@@ -327,6 +332,7 @@ public class SubscriptionManagerTest {
     @Test
     public void testHandleSubscriptionReplyWithSuccessWithSubscriptionListener() {
         SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId);
+        @SuppressWarnings("unchecked")
         Future<String> futureMock = mock(Future.class);
         subscriptionFutureMap.put(subscriptionId, futureMock);
         AttributeSubscriptionListener<?> subscriptionListener = mock(AttributeSubscriptionListener.class);
@@ -339,13 +345,14 @@ public class SubscriptionManagerTest {
     @Test
     public void testHandleSubscriptionReplyWithSuccessWithBroadcastListener() {
         SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId);
+        @SuppressWarnings("unchecked")
         Future<String> futureMock = mock(Future.class);
         subscriptionFutureMap.put(subscriptionId, futureMock);
         BroadcastSubscriptionListener broadcastListener = mock(BroadcastSubscriptionListener.class);
         broadcastSubscriptionDirectory.put(subscriptionId, broadcastListener);
         subscriptionManager.handleSubscriptionReply(subscriptionReply);
         verify(futureMock).onSuccess(eq(subscriptionId));
-        verify(broadcastListener).onSubscribed();
+        verify(broadcastListener).onSubscribed(eq(subscriptionId));
     }
 
 }

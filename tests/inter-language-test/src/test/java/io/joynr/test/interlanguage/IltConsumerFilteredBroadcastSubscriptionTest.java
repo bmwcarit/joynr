@@ -37,6 +37,7 @@ import org.junit.Test;
 import static org.junit.Assert.fail;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
 
 public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTest {
@@ -148,7 +149,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
                                                                                                }
 
                                                                                                @Override
-                                                                                               public void onError() {
+                                                                                               public void onError(SubscriptionException error) {
                                                                                                    LOG.info(name.getMethodName()
                                                                                                            + " - callback - error");
                                                                                                    subscribeBroadcastWithFilteringCallbackResult = false;
