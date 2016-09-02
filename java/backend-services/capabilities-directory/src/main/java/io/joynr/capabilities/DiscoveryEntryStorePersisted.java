@@ -1,23 +1,5 @@
 package io.joynr.capabilities;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.transaction.Transactional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
-
 /*
  * #%L
  * %%
@@ -37,11 +19,27 @@ import com.google.inject.Singleton;
  * #L%
  */
 
-import com.google.inject.persist.PersistService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+import com.google.inject.persist.PersistService;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrCommunicationException;
 import joynr.types.DiscoveryEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The CapabilitiesStore stores a list of provider channelIds and the interfaces
@@ -66,7 +64,6 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
         persistService.start();
         this.entityManagerProvider = entityManagerProvider;
         logger.debug("creating CapabilitiesStore {} with static provisioning", this);
-        //add(staticProvisioning.getCapabilityEntries());
     }
 
     /*
@@ -76,6 +73,7 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
      */
     @Override
     public synchronized void add(DiscoveryEntry discoveryEntry) {
+        logger.debug("adding discovery entry: {}", discoveryEntry);
         if (!(discoveryEntry instanceof GlobalDiscoveryEntryPersisted)) {
             return;
         }
@@ -165,41 +163,40 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional
     public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName, long cacheMaxAge) {
         EntityManager entityManager = entityManagerProvider.get();
         String query = "from GlobalDiscoveryEntryPersisted where domain=:domain and interfaceName=:interfaceName";
         List<DiscoveryEntry> result = new ArrayList<>();
         for (String domain : domains) {
             List<DiscoveryEntry> capabilitiesList = entityManager.createQuery(query)
-                    .setParameter("domain", domain)
-                    .setParameter("interfaceName", interfaceName)
-                    .getResultList();
+                                                                 .setParameter("domain", domain)
+                                                                 .setParameter("interfaceName", interfaceName)
+                                                                 .getResultList();
             result.addAll(capabilitiesList);
         }
 
-        logger.debug("Capabilities found: {}", result.toString());
+        logger.debug("looked up {}, {}, {} and found {}", Arrays.toString(domains), interfaceName, cacheMaxAge, result);
         return result;
     }
 
     @Override
     @CheckForNull
-    @Transactional
     public DiscoveryEntry lookup(String participantId, long cacheMaxAge) {
         EntityManager entityManager = entityManagerProvider.get();
-        return entityManager.find(GlobalDiscoveryEntryPersisted.class, participantId);
+        DiscoveryEntry result = entityManager.find(GlobalDiscoveryEntryPersisted.class, participantId);
+        logger.debug("looked up {}, {} and found {}", participantId, cacheMaxAge, result);
+        return result;
     }
 
     @Override
-    @Transactional
-    public HashSet<DiscoveryEntry> getAllDiscoveryEntries() {
+    public Set<DiscoveryEntry> getAllDiscoveryEntries() {
         EntityManager entityManager = entityManagerProvider.get();
         List<GlobalDiscoveryEntryPersisted> allCapabilityEntries = entityManager.createQuery("Select discoveryEntry from GlobalDiscoveryEntryPersisted discoveryEntry",
                                                                                              GlobalDiscoveryEntryPersisted.class)
                                                                                 .getResultList();
-
-        return new HashSet<DiscoveryEntry>(allCapabilityEntries);
-
+        Set<DiscoveryEntry> result = new HashSet<DiscoveryEntry>(allCapabilityEntries);
+        logger.debug("Retrieved all discovery entries: {}", result);
+        return result;
     }
 
     @Override
