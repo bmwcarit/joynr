@@ -950,8 +950,7 @@ public:
 
 class MockLocalDomainAccessController : public joynr::LocalDomainAccessController {
 public:
-    MockLocalDomainAccessController(joynr::LocalDomainAccessStore* store):
-        LocalDomainAccessController(store){}
+    using joynr::LocalDomainAccessController::LocalDomainAccessController;
 
     MOCK_METHOD5(getConsumerPermission,
                  void(

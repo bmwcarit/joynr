@@ -23,7 +23,6 @@
 #include <atomic>
 #include <tuple>
 
-#include "LocalDomainAccessStore.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
@@ -139,12 +138,12 @@ private:
 //--- LocalDomainAccessController ----------------------------------------------
 
 LocalDomainAccessController::LocalDomainAccessController(
-        LocalDomainAccessStore* localDomainAccessStore)
+        std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore)
         : accessControlAlgorithm(),
           dreSubscriptions(),
           aceSubscriptions(),
           globalDomainAccessControllerProxy(),
-          localDomainAccessStore(localDomainAccessStore),
+          localDomainAccessStore(std::move(localDomainAccessStore)),
           consumerPermissionRequests(),
           initStateMutex(),
           domainRoleEntryChangedBroadcastListener(
@@ -156,11 +155,6 @@ LocalDomainAccessController::LocalDomainAccessController(
           ownerAccessControlEntryChangedBroadcastListener(
                   std::make_shared<OwnerAccessControlEntryChangedBroadcastListener>(*this))
 {
-}
-
-LocalDomainAccessController::~LocalDomainAccessController()
-{
-    delete localDomainAccessStore;
 }
 
 void LocalDomainAccessController::init(
