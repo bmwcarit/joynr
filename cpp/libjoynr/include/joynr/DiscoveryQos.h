@@ -25,7 +25,6 @@
 #include <map>
 
 #include "joynr/JoynrExport.h"
-
 #include "joynr/types/CustomParameter.h"
 #include "joynr/types/DiscoveryScope.h"
 
@@ -56,9 +55,11 @@ public:
      * created by the ArbitratorFactory
      */
     enum class ArbitrationStrategy {
-        /** the last seen participant will be selected */
+        /** the participant that was last refreshed (i.e. with the most current last seen
+           date) will be selected */
         LAST_SEEN = 0,
-        /** the participant which matches the provided participantId will be selected, if existing
+        /** the participant which matches the provided participantId will be selected, if
+         * existing
            */
         FIXED_PARTICIPANT = 1,
         /** only local participants will be considered */

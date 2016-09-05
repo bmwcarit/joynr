@@ -16,52 +16,47 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/QosArbitrator.h"
+#include "joynr/QosArbitrationStrategyFunction.h"
 
-#include "joynr/system/IDiscovery.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/types/CustomParameter.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
 
-INIT_LOGGER(QosArbitrator);
+INIT_LOGGER(QosArbitrationStrategyFunction);
 
-QosArbitrator::QosArbitrator(const std::string& domain,
-                             const std::string& interfaceName,
-                             const joynr::types::Version& interfaceVersion,
-                             joynr::system::IDiscoverySync& discoveryProxy,
-                             const DiscoveryQos& discoveryQos)
-        : Arbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos)
+std::string QosArbitrationStrategyFunction::select(
+        const std::map<std::string, types::CustomParameter> customParameters,
+        const std::vector<types::DiscoveryEntry>& discoveryEntries) const
 {
-}
-
-std::string QosArbitrator::filterDiscoveryEntries(
-        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
-{
-    std::string res;
+    std::ignore = customParameters;
+    std::string selectedParticipantId;
     std::int64_t highestPriority = -1;
-    for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
+
+    for (const auto& discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
-        JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
+        JOYNR_LOG_TRACE(logger, "Looping over discoveryEntry: {}", discoveryEntry.toString());
 
         if (providerQos.getPriority() > highestPriority) {
-            res = discoveryEntry.getParticipantId();
-            JOYNR_LOG_TRACE(logger, "setting res to {}", res);
+            selectedParticipantId = discoveryEntry.getParticipantId();
+            JOYNR_LOG_TRACE(logger, "setting selectedParticipantId to {}", selectedParticipantId);
             highestPriority = providerQos.getPriority();
         }
     }
 
-    if (res.empty()) {
+    if (selectedParticipantId.empty()) {
         std::string errorMsg;
         errorMsg = "There was more than one entries in capabilitiesEntries, but none of the "
                    "compatible entries had a priority > -1";
         JOYNR_LOG_WARN(logger, errorMsg);
-        arbitrationError.setMessage(errorMsg);
+        throw exceptions::DiscoveryException(errorMsg);
     }
-    return res;
+    return selectedParticipantId;
 }
 } // namespace joynr

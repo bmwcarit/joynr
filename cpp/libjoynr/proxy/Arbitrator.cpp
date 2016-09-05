@@ -35,11 +35,13 @@ namespace joynr
 
 INIT_LOGGER(Arbitrator);
 
-Arbitrator::Arbitrator(const std::string& domain,
-                       const std::string& interfaceName,
-                       const joynr::types::Version& interfaceVersion,
-                       joynr::system::IDiscoverySync& discoveryProxy,
-                       const DiscoveryQos& discoveryQos)
+Arbitrator::Arbitrator(
+        const std::string& domain,
+        const std::string& interfaceName,
+        const joynr::types::Version& interfaceVersion,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const DiscoveryQos& discoveryQos,
+        std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction)
         : discoveryProxy(discoveryProxy),
           discoveryQos(discoveryQos),
           systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
@@ -51,6 +53,7 @@ Arbitrator::Arbitrator(const std::string& domain,
           interfaceVersion(interfaceVersion),
           discoveredIncompatibleVersions(),
           arbitrationError("Arbitration could not be finished in time."),
+          arbitrationStrategyFunction(std::move(arbitrationStrategyFunction)),
           participantId(""),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
           listener(nullptr),
@@ -107,7 +110,15 @@ void Arbitrator::attemptArbitration()
 {
     std::vector<joynr::types::DiscoveryEntry> result;
     try {
-        discoveryProxy.lookup(result, domains, interfaceName, systemDiscoveryQos);
+        if (discoveryQos.getArbitrationStrategy() ==
+            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
+            types::DiscoveryEntry fixedParticipantResult;
+            discoveryProxy.lookup(fixedParticipantResult,
+                                  discoveryQos.getCustomParameter("fixedParticipantId").getValue());
+            result.push_back(fixedParticipantResult);
+        } else {
+            discoveryProxy.lookup(result, domains, interfaceName, systemDiscoveryQos);
+        }
         receiveCapabilitiesLookupResults(result);
     } catch (const exceptions::JoynrException& e) {
         std::string errorMsg = "Unable to lookup provider (domain: " +
@@ -178,7 +189,12 @@ void Arbitrator::receiveCapabilitiesLookupResults(
         }
         return;
     } else {
-        res = filterDiscoveryEntries(preFilteredDiscoveryEntries);
+        try {
+            res = arbitrationStrategyFunction->select(
+                    discoveryQos.getCustomParameters(), preFilteredDiscoveryEntries);
+        } catch (const exceptions::DiscoveryException& e) {
+            arbitrationError.setMessage(e.getMessage());
+        }
         if (!res.empty())
             notifyArbitrationListener(res);
     }

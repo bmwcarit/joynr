@@ -16,12 +16,15 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
+
 #include "joynr/ArbitratorFactory.h"
-#include "joynr/LastSeenArbitrator.h"
-#include "joynr/FixedParticipantArbitrator.h"
-#include "joynr/KeywordArbitrator.h"
+#include "joynr/ArbitrationStrategyFunction.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/QosArbitrator.h"
+#include "joynr/FixedParticipantArbitrationStrategyFunction.h"
+#include "joynr/KeywordArbitrationStrategyFunction.h"
+#include "joynr/LastSeenArbitrationStrategyFunction.h"
+#include "joynr/QosArbitrationStrategyFunction.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
 
@@ -34,29 +37,36 @@ Arbitrator* ArbitratorFactory::createArbitrator(const std::string& domain,
                                                 joynr::system::IDiscoverySync& discoveryProxy,
                                                 const DiscoveryQos& discoveryQos)
 {
+    std::unique_ptr<ArbitrationStrategyFunction> arbitrationStrategyFunction;
     DiscoveryQos::ArbitrationStrategy strategy = discoveryQos.getArbitrationStrategy();
     switch (strategy) {
     case DiscoveryQos::ArbitrationStrategy::LAST_SEEN:
-        return new LastSeenArbitrator(
-                domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
+        arbitrationStrategyFunction = std::make_unique<LastSeenArbitrationStrategyFunction>();
+        break;
     case DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT:
-        return new FixedParticipantArbitrator(
-                domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
+        arbitrationStrategyFunction =
+                std::make_unique<FixedParticipantArbitrationStrategyFunction>();
+        break;
     case DiscoveryQos::ArbitrationStrategy::LOCAL_ONLY:
         throw exceptions::DiscoveryException("Arbitration: Local-only not implemented yet.");
     case DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY:
-        return new QosArbitrator(
-                domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
+        arbitrationStrategyFunction = std::make_unique<QosArbitrationStrategyFunction>();
+        break;
     case DiscoveryQos::ArbitrationStrategy::KEYWORD:
         if (discoveryQos.getCustomParameters().count("keyword") == 0) {
-            throw exceptions::DiscoveryException(
-                    "KeywordArbitrator creation failed: keyword not set");
+            throw exceptions::DiscoveryException("Arbitrator creation failed: keyword not set");
         }
-        return new KeywordArbitrator(
-                domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos);
+        arbitrationStrategyFunction = std::make_unique<KeywordArbitrationStrategyFunction>();
+        break;
     default:
         throw exceptions::DiscoveryException("Arbitrator creation failed: Invalid strategy!");
     }
+    return new Arbitrator(domain,
+                          interfaceName,
+                          interfaceVersion,
+                          discoveryProxy,
+                          discoveryQos,
+                          std::move(arbitrationStrategyFunction));
 }
 
 } // namespace joynr
