@@ -19,6 +19,21 @@
   it is consistent with the other `USE_PLATFORM_*` variables.
 * **[C++]**  Reduced the number of threads which are used by a cluster controller instance
 
+#joynr 0.20.1
+This is a minor bug fix release.
+
+## API relevant changes
+* **[Java]** The BroadcastSubscriptionListener is now able to get informed about succeeded
+  subscription requests. For this purpose, it implements a callback having
+  the following signature: public void onSubscribed(String subscriptionId).
+  In case of failure the onError callback can be invoked with a SubscriptionException.
+
+## Other changes
+* **[Java]** the MQTT client now performs a manual re-connect and re-subscribe if the
+  connection is lost, because the Paho auto reconnect and persistent subscriptions
+  are buggy in the version we're using.
+* moved to muesli 0.1.2 to get its bugfix
+
 #joynr 0.20.0
 
 ##API relevant changes
