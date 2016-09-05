@@ -213,7 +213,7 @@ function start_cluster_controller {
 		log '# starting JAVA clustercontroller'
 		CLUSTER_CONTROLLER_DIR=$JOYNR_SOURCE_DIR/java/core/clustercontroller-standalone
 		cd $CLUSTER_CONTROLLER_DIR
-		mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="http::mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
+		mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="http::mqtt" -Djoynr.messaging.primaryglobaltransport="mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
 	else
 		log '# starting C++ clustercontroller'
 		if [ ! -d $ILT_BUILD_DIR -o ! -d $ILT_BUILD_DIR/bin ]
