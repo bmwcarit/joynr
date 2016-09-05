@@ -179,7 +179,7 @@ public class ProxyErrorsTest {
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testProxyIsInvalidatedOnceArbitrationExcetpionThrown() throws Exception {
+    public void testProxyIsInvalidatedOnceArbitrationExceptionThrown() throws Exception {
 
         ProxyBuilder<ProxyErrorsTest.TestProxyWrongVersion> proxyBuilder = runtime.getProxyBuilder(domain,
                                                                                                    ProxyErrorsTest.TestProxyWrongVersion.class);
