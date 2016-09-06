@@ -211,6 +211,8 @@ public abstract class IltConsumerTest {
         } else {
             LOG.info("setupConsumerRuntime: proxy is set != null");
         }
-        proxyCreated.tryAcquire(5000, TimeUnit.MILLISECONDS);
+        // wait until proxy creation is finished or discovery timeout +
+        // 1 second grace period have passed
+        proxyCreated.tryAcquire(11000, TimeUnit.MILLISECONDS);
     }
 }
