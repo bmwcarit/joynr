@@ -16,14 +16,15 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-#include <memory>
-#include <string>
+
 #include <cstdint>
 #include <chrono>
-#include <QtConcurrent/QtConcurrent>
+#include <future>
+#include <memory>
+#include <string>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "systemintegration-tests/CombinedEnd2EndTest.h"
 #include "systemintegration-tests/TestConfiguration.h"
@@ -44,6 +45,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Logger.h"
+#include "JoynrTest.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -568,8 +570,12 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
                                     minInterval_ms,
                                     maxInterval_ms,
                                     3000);  // alertInterval_ms
-    std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    std::shared_ptr<Future<std::string>> future = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
+    std::string subscriptionId;
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
@@ -667,11 +673,12 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange) {
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                                     500000,   // validity_ms
                                     minInterval_ms);  // minInterval_ms
-    std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    auto future = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
-    //This wait is necessary, because subcriptions are async, and an attribute could be changed before
-    // before the subscription has started.
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::string subscriptionId;
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
 
     // Change the location once
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
@@ -740,7 +747,12 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute) {
                                     1000,   // minInterval_ms
                                     2000,    // maxInterval_ms
                                     3000);   // alertInterval_ms
-    std::string subscriptionId = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
+    auto future = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
+
+    std::string subscriptionId;
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
@@ -789,7 +801,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
                                         2000,    //  maxInterval_ms
                                         3000);   // alertInterval_ms
 
-        std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+        testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
 	} catch (const exceptions::DiscoveryException& e) {
         haveDiscoveryException = true;
@@ -846,7 +858,12 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
                                     1000,    // minInterval_ms
                                     2000,   //  maxInterval_ms
                                     10000);  // alertInterval_ms
-    std::string subscriptionId = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    auto future = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+
+    std::string subscriptionId;
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
@@ -928,7 +945,10 @@ void subscribeToLocation(std::shared_ptr<ISubscriptionListener<types::Localisati
                                     1000,    // minInterval_ms
                                     2000,   //  maxInterval_ms
                                     3000);  // alertInterval_ms
-    testSuite->registeredSubscriptionId = testProxy->subscribeToLocation(listener, subscriptionQos);
+    auto future = testProxy->subscribeToLocation(listener, subscriptionQos);
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, testSuite->registeredSubscriptionId);
+    });
 }
 
 // A function that subscribes to a GpsPosition - to be run in a background thread
@@ -937,9 +957,6 @@ static void unsubscribeFromLocation(tests::testProxy* testProxy,
     testProxy->unsubscribeFromLocation(subscriptionId);
 }
 
-
-// This test was written to model a bug report where a subscription started in a background thread
-// causes a runtime error to be reported by Qt
 TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -963,7 +980,7 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     tests::testProxy* testProxy = createTestProxy(runtime2, domainName);
     // Subscribe in a background thread
-    QtConcurrent::run(subscribeToLocation, subscriptionListener, testProxy, this);
+    std::async(subscribeToLocation, subscriptionListener, testProxy, this);
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));

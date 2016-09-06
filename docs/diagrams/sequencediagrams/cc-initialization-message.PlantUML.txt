@@ -1,0 +1,10 @@
+@startuml
+
+[-> WebSocketCcMessagingSkeleton : onTextMessageReceived
+alt "Initialization message"
+	WebSocketCcMessagingSkeleton -> WebSocketMessagingStubFactory : addClient
+else
+	WebSocketCcMessagingSkeleton -> MessageRouter : route
+end
+
+@enduml

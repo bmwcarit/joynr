@@ -3,7 +3,7 @@ package io.joynr.pubsub.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,11 @@ package io.joynr.pubsub.subscription;
 import io.joynr.exceptions.JoynrRuntimeException;
 
 public class AttributeSubscriptionAdapter<T> implements AttributeSubscriptionListener<T> {
+
+    @Override
+    public void onSubscribed(String subscriptionId) {
+        // empty implementation
+    }
 
     @Override
     public void onReceive(T value) {

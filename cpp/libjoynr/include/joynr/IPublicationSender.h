@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ namespace joynr
 {
 
 class SubscriptionPublication;
+class SubscriptionReply;
 class MessagingQos;
 
 /**
@@ -41,6 +42,11 @@ public:
                                              const std::string& receiverParticipantId,
                                              const MessagingQos& qos,
                                              SubscriptionPublication&& subscriptionPublication) = 0;
+
+    virtual void sendSubscriptionReply(const std::string& senderParticipantId,
+                                       const std::string& receiverParticipantId,
+                                       const MessagingQos& qos,
+                                       const SubscriptionReply& subscriptionReply) = 0;
 };
 
 } // namespace joynr

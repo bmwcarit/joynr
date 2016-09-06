@@ -86,13 +86,13 @@ public:
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                   std::unique_ptr<IPlatformSecurityManager> securityManager,
                   boost::asio::io_service& ioService,
-                  int maxThreads = 6,
+                  int maxThreads = 1,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                   std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
                   boost::asio::io_service& ioService,
-                  int maxThreads = 6,
+                  int maxThreads = 1,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
     ~MessageRouter() override;

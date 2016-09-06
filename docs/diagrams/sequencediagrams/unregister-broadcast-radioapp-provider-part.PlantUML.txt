@@ -1,0 +1,31 @@
+@startuml
+
+[-> MessageRouter : "route(SubscriptionStop)"
+
+MessageRouter -> InProcessLibJoynrMessagingSkeleton : transmit
+InProcessLibJoynrMessagingSkeleton -> Dispatcher : receive
+
+note over Dispatcher
+	"Task scheduled here"
+end note
+
+Dispatcher -> ThreadPool : execute
+
+ThreadPool ->> ReceivedMessageRunnable : "run <b>(Thread switched)</b>"
+ReceivedMessageRunnable -> Dispatcher : handleSubscriptionStopReceived
+Dispatcher -> PublicationManager : stopPublication
+
+note over PublicationManager
+	"Broadcast case. Subscription path omitted"
+end note
+
+PublicationManager -> RequestCaller : unregisterBroadcastListener
+RequestCaller -> AbstractJoynrProvider : unregisterBroadcastListener
+
+note over PublicationManager
+	"Task unscheduled here"
+end note
+
+PublicationManager -> DelayedScheduler : "unschedule(PublicationEndRunnable)"
+
+@enduml

@@ -23,7 +23,6 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <QByteArray>
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -62,12 +61,15 @@ public:
                                const LongPollingMessageReceiverSettings& settings,
                                std::shared_ptr<Semaphore> channelCreatedSemaphore,
                                std::function<void(const std::string&)> onTextMessageReceived);
+
+    ~LongPollingMessageReceiver();
+
     void stop() override;
     void run() override;
     void interrupt();
     bool isInterrupted();
 
-    void processReceivedInput(const QByteArray& receivedInput);
+    void processReceivedInput(const std::string& receivedInput);
     void processReceivedJsonObjects(const std::string& jsonObject);
 
 private:

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,8 @@ bool SubscriptionUtil::isOnChangeSubscription(const std::shared_ptr<Subscription
     static const std::type_info& onChangeWithKeepAliveSubscriptionQosTypeId =
             typeid(OnChangeWithKeepAliveSubscriptionQos);
 
-    const std::type_info& qosTypeId = typeid(*qos);
+    const SubscriptionQos* const ptr = qos.get();
+    const std::type_info& qosTypeId = typeid(*ptr);
     return qosTypeId == onChangeSubscriptionQosTypeId ||
            qosTypeId == onChangeWithKeepAliveSubscriptionQosTypeId;
 }

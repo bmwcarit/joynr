@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import joynr.PeriodicSubscriptionQos;
 import joynr.types.Localisation.GpsLocation;
 import joynr.vehicle.GpsProxy;
@@ -71,7 +71,7 @@ class CreateSubscriptionTask extends AsyncTask<GpsProxy, Void, Void> {
                                                                        .setValidityMs(validityMs)
                                                                        .setAlertAfterIntervalMs(alertIntervalMs)
                                                                        .setPublicationTtlMs(publicationTtlMs);
-        AttributeSubscriptionListener<GpsLocation> listener = new AttributeSubscriptionListener<GpsLocation>() {
+        AttributeSubscriptionAdapter<GpsLocation> listener = new AttributeSubscriptionAdapter<GpsLocation>() {
 
             @Override
             public void onReceive(GpsLocation value) {

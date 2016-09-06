@@ -22,12 +22,12 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>io.joynr.examples</groupId>
-    <artifactId>radio-jee</artifactId>
-    <version>0.20.0-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
+	<parent>
+		<groupId>io.joynr.examples</groupId>
+		<artifactId>radio-jee</artifactId>
+		<version>0.21.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
   <artifactId>radio-jee-provider</artifactId>
   <packaging>war</packaging>

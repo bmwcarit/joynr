@@ -38,6 +38,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
+import io.joynr.jeeintegration.api.ProviderDomain;
 import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
@@ -95,14 +96,15 @@ public class JoynrIntegrationBean {
 	private void registerProviders(Set<Bean<?>> serviceProviderBeans, JoynrRuntime runtime) {
 		Set<ProviderQosFactory> providerQosFactories = getProviderQosFactories();
         for (Bean<?> bean : serviceProviderBeans) {
-            ServiceProvider providerService = bean.getBeanClass().getAnnotation(ServiceProvider.class);
+            Class<?> beanClass = bean.getBeanClass();
+            ServiceProvider providerService = beanClass.getAnnotation(ServiceProvider.class);
             Class<?> serviceInterface = serviceProviderDiscovery.getProviderInterfaceFor(providerService.serviceInterface());
             if (LOG.isDebugEnabled()) {
                 LOG.debug(format("Registering %s as provider with joynr runtime for service interface %s.",
                                  bean,
                                  serviceInterface));
             }
-            Object provider = Proxy.newProxyInstance(bean.getBeanClass().getClassLoader(),
+            Object provider = Proxy.newProxyInstance(beanClass.getClassLoader(),
                                                                             new Class<?>[]{ serviceInterface },
                                                                             new ProviderWrapper(bean,
                                                                          beanManager,
@@ -114,9 +116,20 @@ public class JoynrIntegrationBean {
                     break;
                 }
             }
-            runtime.registerProvider(joynrRuntimeFactory.getLocalDomain(), provider, providerQos);
+            runtime.registerProvider(getDomainForProvider(beanClass), provider, providerQos);
             registeredProviders.add(provider);
         }
+    }
+
+    private String getDomainForProvider(Class<?> beanClass) {
+        String domain;
+        ProviderDomain providerDomain = beanClass.getAnnotation(ProviderDomain.class);
+        if (providerDomain != null) {
+            domain = providerDomain.value();
+        } else {
+            domain = joynrRuntimeFactory.getLocalDomain();
+        }
+        return domain;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked", "serial" })

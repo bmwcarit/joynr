@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,6 +91,18 @@ define("joynr/system/DiagnosticTags", [], function() {
             requestReplyId : replyInfo.reply.requestReplyId,
             to : replyInfo.to,
             from : replyInfo.from
+        };
+    };
+
+    /**
+     * @param {Object} subscriptionReplyInfo
+     */
+    DiagnosticTags.forSubscriptionReply = function forSubscriptionReply(subscriptionReplyInfo) {
+        return {
+            diagnosticTag : "SubscriptionReply",
+            subscriptionId : subscriptionReplyInfo.subscriptionReply.subscriptionId,
+            to : subscriptionReplyInfo.to,
+            from : subscriptionReplyInfo.from
         };
     };
 

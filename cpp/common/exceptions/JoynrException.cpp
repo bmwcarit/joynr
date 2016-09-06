@@ -302,7 +302,9 @@ ApplicationException* ApplicationException::clone() const
 
 bool ApplicationException::operator==(const ApplicationException& other) const
 {
-    return typeid(*error) == typeid(*(other.error)) && message == other.getMessage() &&
+    const ApplicationExceptionError* const errorPtr = error.get();
+    const ApplicationExceptionError* const otherErrorPtr = other.error.get();
+    return typeid(*errorPtr) == typeid(*(otherErrorPtr)) && message == other.getMessage() &&
            error->getName() == other.error->getName();
 }
 

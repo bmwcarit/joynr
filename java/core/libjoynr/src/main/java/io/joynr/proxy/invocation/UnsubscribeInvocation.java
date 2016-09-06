@@ -3,7 +3,7 @@ package io.joynr.proxy.invocation;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ public class UnsubscribeInvocation extends SubscriptionInvocation {
 
     private final String subscriptionId;
 
-    public UnsubscribeInvocation(Method method, Object[] args, Future<?> future) {
+    public UnsubscribeInvocation(Method method, Object[] args, Future<String> future) {
         super(future);
         if (args[0] == null || !String.class.isAssignableFrom(args[0].getClass())) {
             throw new JoynrIllegalStateException("First parameter of unsubscribe... has to be a String containing the subscriptionId");

@@ -19,12 +19,12 @@
 #ifndef SERIALIZABLE_H
 #define SERIALIZABLE_H
 
-#include <type_traits>
+#include <string>
+#include <tuple>
+#include <utility>
 
-#include <boost/variant/apply_visitor.hpp>
 #include <boost/type_index.hpp>
-
-#include <muesli/Registry.h>
+#include <boost/variant/apply_visitor.hpp>
 
 namespace joynr
 {

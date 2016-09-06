@@ -23,7 +23,6 @@
 #include <atomic>
 #include <tuple>
 
-#include "LocalDomainAccessStore.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
@@ -78,6 +77,7 @@ class LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener
 {
 public:
     explicit DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    void onSubscribed(const std::string& subscriptionId) override;
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::DomainRoleEntry& changedDre) override;
     void onError(const exceptions::JoynrRuntimeException& error) override;
@@ -92,6 +92,7 @@ class LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListe
 {
 public:
     explicit MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    void onSubscribed(const std::string& subscriptionId) override;
     void onReceive(
             const infrastructure::DacTypes::ChangeType::Enum& changeType,
             const infrastructure::DacTypes::MasterAccessControlEntry& changedMasterAce) override;
@@ -108,6 +109,7 @@ class LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastLis
 public:
     explicit MediatorAccessControlEntryChangedBroadcastListener(
             LocalDomainAccessController& parent);
+    void onSubscribed(const std::string& subscriptionId) override;
     void onReceive(
             const infrastructure::DacTypes::ChangeType::Enum& changeType,
             const infrastructure::DacTypes::MasterAccessControlEntry& changedMediatorAce) override;
@@ -123,6 +125,7 @@ class LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListen
 {
 public:
     explicit OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    void onSubscribed(const std::string& subscriptionId) override;
     void onReceive(
             const infrastructure::DacTypes::ChangeType::Enum& changeType,
             const infrastructure::DacTypes::OwnerAccessControlEntry& changedOwnerAce) override;
@@ -135,12 +138,12 @@ private:
 //--- LocalDomainAccessController ----------------------------------------------
 
 LocalDomainAccessController::LocalDomainAccessController(
-        LocalDomainAccessStore* localDomainAccessStore)
+        std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore)
         : accessControlAlgorithm(),
           dreSubscriptions(),
           aceSubscriptions(),
           globalDomainAccessControllerProxy(),
-          localDomainAccessStore(localDomainAccessStore),
+          localDomainAccessStore(std::move(localDomainAccessStore)),
           consumerPermissionRequests(),
           initStateMutex(),
           domainRoleEntryChangedBroadcastListener(
@@ -152,11 +155,6 @@ LocalDomainAccessController::LocalDomainAccessController(
           ownerAccessControlEntryChangedBroadcastListener(
                   std::make_shared<OwnerAccessControlEntryChangedBroadcastListener>(*this))
 {
-}
-
-LocalDomainAccessController::~LocalDomainAccessController()
-{
-    delete localDomainAccessStore;
 }
 
 void LocalDomainAccessController::init(
@@ -548,12 +546,34 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
                     interfaceName);
 
     // Unsubscribe from ACE change subscriptions
-    globalDomainAccessControllerProxy->unsubscribeFromMasterAccessControlEntryChangedBroadcast(
-            subscriptionIds.masterAceSubscriptionId);
-    globalDomainAccessControllerProxy->unsubscribeFromMediatorAccessControlEntryChangedBroadcast(
-            subscriptionIds.mediatorAceSubscriptionId);
-    globalDomainAccessControllerProxy->unsubscribeFromOwnerAccessControlEntryChangedBroadcast(
-            subscriptionIds.ownerAceSubscriptionId);
+    try {
+        std::string masterAceSubscriptionId = subscriptionIds.getMasterAceSubscriptionId();
+        globalDomainAccessControllerProxy->unsubscribeFromMasterAccessControlEntryChangedBroadcast(
+                masterAceSubscriptionId);
+    } catch (const exceptions::JoynrException& error) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unsubscribe from MasterAccessControlEntryChangedBroadcast failed: " +
+                                error.getMessage());
+    }
+    try {
+        std::string mediatorAceSubscriptionId = subscriptionIds.getMediatorAceSubscriptionId();
+        globalDomainAccessControllerProxy
+                ->unsubscribeFromMediatorAccessControlEntryChangedBroadcast(
+                        mediatorAceSubscriptionId);
+    } catch (const exceptions::JoynrException& error) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unsubscribe from MediatorAccessControlEntryChangedBroadcast failed: " +
+                                error.getMessage());
+    }
+    try {
+        std::string ownerAceSubscriptionId = subscriptionIds.getOwnerAceSubscriptionId();
+        globalDomainAccessControllerProxy->unsubscribeFromOwnerAccessControlEntryChangedBroadcast(
+                ownerAceSubscriptionId);
+    } catch (const exceptions::JoynrException& error) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unsubscribe from OwnerAccessControlEntryChangedBroadcast failed: " +
+                                error.getMessage());
+    }
 }
 
 // Initialise the data for the given data/interface. This function is non-blocking
@@ -739,7 +759,8 @@ void LocalDomainAccessController::processConsumerRequests(
     }
 }
 
-std::string LocalDomainAccessController::subscribeForDreChange(const std::string& userId)
+std::shared_ptr<Future<std::string>> LocalDomainAccessController::subscribeForDreChange(
+        const std::string& userId)
 {
     auto broadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
     broadcastSubscriptionQos->setMinIntervalMs(broadcastMinInterval.count());
@@ -749,15 +770,11 @@ std::string LocalDomainAccessController::subscribeForDreChange(const std::string
             domainRoleFilterParameters;
     domainRoleFilterParameters.setUserIdOfInterest(userId);
 
-    std::string subscriptionId =
-            globalDomainAccessControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
-                    domainRoleFilterParameters,
-                    std::static_pointer_cast<
-                            ISubscriptionListener<ChangeType::Enum, DomainRoleEntry>>(
-                            domainRoleEntryChangedBroadcastListener),
-                    broadcastSubscriptionQos);
-
-    return subscriptionId;
+    return globalDomainAccessControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
+            domainRoleFilterParameters,
+            std::static_pointer_cast<ISubscriptionListener<ChangeType::Enum, DomainRoleEntry>>(
+                    domainRoleEntryChangedBroadcastListener),
+            broadcastSubscriptionQos);
 }
 
 LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscribeForAceChange(
@@ -776,7 +793,7 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
             masterAcefilterParameters;
     masterAcefilterParameters.setDomainOfInterest(domain);
     masterAcefilterParameters.setInterfaceOfInterest(interfaceName);
-    subscriptionIds.masterAceSubscriptionId =
+    subscriptionIds.masterAceSubscriptionIdFuture =
             globalDomainAccessControllerProxy->subscribeToMasterAccessControlEntryChangedBroadcast(
                     masterAcefilterParameters,
                     std::static_pointer_cast<
@@ -788,7 +805,7 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
             mediatorAceFilterParameters;
     mediatorAceFilterParameters.setDomainOfInterest(domain);
     mediatorAceFilterParameters.setInterfaceOfInterest(interfaceName);
-    subscriptionIds.mediatorAceSubscriptionId =
+    subscriptionIds.mediatorAceSubscriptionIdFuture =
             globalDomainAccessControllerProxy
                     ->subscribeToMediatorAccessControlEntryChangedBroadcast(
                             mediatorAceFilterParameters,
@@ -802,7 +819,7 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
             ownerAceFilterParameters;
     ownerAceFilterParameters.setDomainOfInterest(domain);
     ownerAceFilterParameters.setInterfaceOfInterest(interfaceName);
-    subscriptionIds.ownerAceSubscriptionId =
+    subscriptionIds.ownerAceSubscriptionIdFuture =
             globalDomainAccessControllerProxy->subscribeToOwnerAccessControlEntryChangedBroadcast(
                     ownerAceFilterParameters,
                     std::static_pointer_cast<
@@ -860,6 +877,12 @@ LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::
 {
 }
 
+void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onSubscribed(
+        const std::string& subscriptionId)
+{
+    std::ignore = subscriptionId;
+}
+
 void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onReceive(
         const ChangeType::Enum& changeType,
         const DomainRoleEntry& changedDre)
@@ -883,6 +906,12 @@ LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::
         MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent)
         : parent(parent)
 {
+}
+
+void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::onSubscribed(
+        const std::string& subscriptionId)
+{
+    std::ignore = subscriptionId;
 }
 
 void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::onReceive(
@@ -915,6 +944,12 @@ LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener:
 {
 }
 
+void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onSubscribed(
+        const std::string& subscriptionId)
+{
+    std::ignore = subscriptionId;
+}
+
 void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onReceive(
         const ChangeType::Enum& changeType,
         const MasterAccessControlEntry& changedMediatorAce)
@@ -942,6 +977,12 @@ LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::
         OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent)
         : parent(parent)
 {
+}
+
+void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onSubscribed(
+        const std::string& subscriptionId)
+{
+    std::ignore = subscriptionId;
 }
 
 void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onReceive(

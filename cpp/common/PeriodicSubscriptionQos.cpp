@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ void PeriodicSubscriptionQos::setPeriodMs(const std::int64_t& periodMs)
                        periodMs,
                        MAX_PERIOD_MS());
         this->periodMs = MAX_PERIOD_MS();
-        // note: don't return here as we nned to check dependend values at the end of this method
+        // note: don't return here as we need to check dependent values at the end of this method
     } else if (periodMs < MIN_PERIOD_MS()) {
         JOYNR_LOG_WARN(logger,
                        "Trying to set invalid periodMs ({} ms), which is smaller than "
@@ -119,12 +119,12 @@ void PeriodicSubscriptionQos::setPeriodMs(const std::int64_t& periodMs)
                        periodMs,
                        MIN_PERIOD_MS());
         this->periodMs = MIN_PERIOD_MS();
-        // note: don't return here as we nned to check dependend values at the end of this method
+        // note: don't return here as we need to check dependent values at the end of this method
     } else {
         // default case
         this->periodMs = periodMs;
     }
-    // check dependendencies: allertAfterIntervalMs is not smaller than periodMs
+    // check dependencies: alertAfterIntervalMs is not smaller than periodMs
     if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() && alertAfterIntervalMs < getPeriodMs()) {
         JOYNR_LOG_WARN(logger,
                        "alertAfterIntervalMs ({} ms) is smaller than periodMs ({} ms). Setting "

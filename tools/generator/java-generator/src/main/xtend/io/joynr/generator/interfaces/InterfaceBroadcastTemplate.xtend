@@ -3,7 +3,7 @@ package io.joynr.generator.interfaces
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,8 @@ package «packagePath»;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
+import io.joynr.exceptions.SubscriptionException;
+import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
 import joynr.BroadcastFilterParameters;
@@ -62,14 +64,16 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 
 	public interface «listenerInterface» extends BroadcastSubscriptionListener {
 		public void onReceive(«broadcast.commaSeperatedTypedOutputParameterList»);
-		public void onError();
 	}
 
 	public class «broadcastName.toFirstUpper»BroadcastAdapter implements «listenerInterface» {
 		public void onReceive(«broadcast.commaSeperatedTypedOutputParameterList») {
 			// empty implementation
 		}
-		public void onError() {
+		public void onError(SubscriptionException error) {
+			// empty implementation
+		}
+		public void onSubscribed(String subscriptionId) {
 			// empty implementation
 		}
 	}
@@ -96,25 +100,25 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 		}
 
 		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» broadcastListener,
 				OnChangeSubscriptionQos subscriptionQos,
 				«filterParameterType» filterParameters);
 
 		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» broadcastListener,
 				OnChangeSubscriptionQos subscriptionQos,
 				«filterParameterType» filterParameters,
 				String subscriptionId);
 	«ELSE»
 		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» subscriptionListener,
 				OnChangeSubscriptionQos subscriptionQos);
 
 		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» subscriptionListener,
 				OnChangeSubscriptionQos subscriptionQos,
 				String subscriptionId);

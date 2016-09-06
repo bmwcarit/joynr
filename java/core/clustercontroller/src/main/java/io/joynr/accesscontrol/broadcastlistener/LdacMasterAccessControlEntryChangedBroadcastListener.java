@@ -3,7 +3,7 @@ package io.joynr.accesscontrol.broadcastlistener;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,16 @@ package io.joynr.accesscontrol.broadcastlistener;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastListener;
+import io.joynr.exceptions.SubscriptionException;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastAdapter;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LdacMasterAccessControlEntryChangedBroadcastListener implements
-        MasterAccessControlEntryChangedBroadcastListener {
+public class LdacMasterAccessControlEntryChangedBroadcastListener extends
+        MasterAccessControlEntryChangedBroadcastAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(LdacMasterAccessControlEntryChangedBroadcastListener.class);
 
     private DomainAccessControlStore localDomainAccessStore;
@@ -53,7 +54,9 @@ public class LdacMasterAccessControlEntryChangedBroadcastListener implements
     }
 
     @Override
-    public void onError() {
-        LOG.error("Update masterAce failed!");
+    public void onError(SubscriptionException error) {
+        LOG.error("Subscription to masterAce failed! SubscriptionId: {}, error: {}",
+                  error.getSubscriptionId(),
+                  error.getMessage());
     }
 }

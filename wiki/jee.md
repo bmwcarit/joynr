@@ -8,7 +8,7 @@ The features supported are:
 * Inject a `ServiceLocator` in order to obtain consumer proxies for calling
 other services
 * Internally uses EE container managed thread pools
-* Uses the EE container's JAX RS to receive joynr messages
+* Uses the EE container's JAX RS to receive joynr messages via HTTP(s)
 
 There is also an example application based on the Radio App example. See the end of this
 document for a description of the example.
@@ -43,6 +43,7 @@ For Gradle, in your build.gradle dependencies add:
 
 Create a `@Singleton` EJB which has no business interface (i.e. does not
 implement any interfaces) and provide methods annotated with:
+
 * `@JoynrProperties`
 	* The method decorated with this annotation must return a `Properties`
 	  object which contains the joynr properties which the application
@@ -84,6 +85,14 @@ this property needs to
 point to the endpoint registration service's URL with which the
 JEE Integration will register itself for its channel's topic.
 E.g. `http://endpointregistry.mycompany.net:8080`.
+* `MessagingPropertyKeys.DISCOVERYDIRECTORYURL` and
+`MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL` - configure the addresses for the
+discovery directory and domain access control services.
+* `MessagingPropertyKeys.PERSISTENCE_FILE` - if you are deploying multiple joynr-enabled
+applications to the same container instance, then you will need to set a different filename
+for this property for each application. E.g.: `"my-app-joynr.properties"` for one and
+`"my-other-app-joynr.properties"` for another. Failing to do so can result in unexpected
+behaviour, as one app will be using the persisted properties and IDs of the other app.
 
 You are principally free to provide any other valid joynr properties via these
 configuration methods. See the [official joynr documentation](./JavaSettings.md)
@@ -111,6 +120,8 @@ An example of a configuration EJB is:
 		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI,
 			"tcp://mqttbroker.com:1883");
 		joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
+			"http://joynrbackend/discovery/channels/discoverydirectory_channelid/");
+		joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL,
 			"http://joynrbackend/discovery/channels/discoverydirectory_channelid/");
 		joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
 			"http://joynrbackend/bounceproxy/");
@@ -238,6 +249,15 @@ See the
 [System Integration Test](../tests/system-integration-test/sit-jee-app/src/main/java/io/joynr/systemintegrationtest/jee/SystemIntegrationTestBean.java)
 for an example of its usage.
 
+#### <a name="provider_domain"></a> Customising the registration domain
+
+In some cases you might want to register your providers under a different domain than the
+application default (specified via `@JoynrLocalDomain`, see configuration documentation above).
+
+In order to do so, use the `@ProviderDomain` annotation on your implementing bean in addition
+to the `@ServiceLocator` annotation. The value you provide will be used as the domain when
+registering the bean as a joynr provider.
+
 ### Calling services
 
 In order to call services provided by other participants (e.g. applications
@@ -341,7 +361,7 @@ In order to do this, you must provide the following content in the
 
 By providing EJBs (or CDI Beans) which implement the `JoynrMessageProcessor` interface
 you are able to hook into the message creation process. Each filter is called in turn
-after the message has been created an is given the chance to perform any application
+after the message has been created and is given the chance to perform any application
 specific customisations, such as adding custom headers, or mutating any existing ones.
 
 Be careful that your processor doesn't perform any changes which render the message
@@ -380,7 +400,9 @@ The project is sub-divided into one multi-module parent project and three subpro
    |- radio-jee-consumer
 ```
 
-In order to build the project, change to the `radio-jee` directory and call `mvn install`.
+In order to build the project you first have to have built the rest of joynr by executing
+`mvn install` from the root of the directory where you checked out joynr to. Next change
+to the `radio-jee` directory and call `mvn install`.
 
 The following describes running the example on [Payara 4.1](http://www.payara.fish). First,
 install the application server and you will also need to install an MQTT broker, e.g.
@@ -413,3 +435,12 @@ Note the `radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBe
 and `radio-jee-consumer/src/main/java/io/joynr/examples/jee/RadioConsumerRestEndpoint.java`
 classes in particular, which represent the implementation of the joynr provider for the
 Radio service, and the consumer thereof.
+
+If you want to use the radio JEE example as a template for building a joynr based JEE application
+don't forget to change the joynr dependency version in the Maven POMs to a release version. If you
+change the parent POM, which is also likely, don't forget to pull the necessary `dependencyManagement`
+entries from the joynr parent POM into your own POM.  
+You'll also likely want to change the way the FIDL file is included in the API project. In this
+example it is obtained from the `radio-app` Maven dependency, but you will probably want to have it
+in, e.g., `${project.root}/my-api/src/main/model/my.fidl`, and then reference that file directly
+in the generator configuration. See the [joynr Generator Documentation](generator.md) for details.

@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import joynr.PeriodicSubscriptionQos;
 import joynr.system.RoutingTypes.Address;
@@ -125,15 +126,7 @@ public class ConnectorTest {
             String subscriptionId = "subscriptionId";
             PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
             subscriptionQos.setPeriodMs(1000).setExpiryDateMs(0).setAlertAfterIntervalMs(1000);
-            AttributeSubscriptionListener<GpsPosition> listener = new AttributeSubscriptionListener<GpsPosition>() {
-                @Override
-                public void onReceive(GpsPosition value) {
-                }
-
-                @Override
-                public void onError(JoynrRuntimeException error) {
-                }
-            };
+            AttributeSubscriptionListener<GpsPosition> listener = new AttributeSubscriptionAdapter<GpsPosition>();
             Object[] args = new Object[]{ listener, subscriptionQos, subscriptionId };
             Method method = LocalisationSubscriptionInterface.class.getDeclaredMethod("subscribeToGPSPosition",
                                                                                       AttributeSubscriptionListener.class,

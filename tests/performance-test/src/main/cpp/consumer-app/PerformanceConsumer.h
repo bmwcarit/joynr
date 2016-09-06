@@ -26,7 +26,9 @@
 #include <limits>
 #include <numeric>
 #include <exception>
+#include <random>
 
+#include "../common/PerformanceTest.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ProxyBuilder.h"
@@ -39,6 +41,7 @@ namespace joynr
 struct IPerformanceConsumer
 {
     virtual void runByteArray() = 0;
+    virtual void runByteArrayWithSizeTimesK() = 0;
     virtual void runString() = 0;
     virtual void runStruct() = 0;
 };
@@ -97,6 +100,11 @@ public:
         run(&Impl::loopByteArray, getFilledByteArray());
     }
 
+    void runByteArrayWithSizeTimesK() override
+    {
+        run(&Impl::loopByteArray, getFilledByteArrayWithSizeTimesK());
+    }
+
     void runString() override
     {
         run(&Impl::loopString, getFilledString());
@@ -114,7 +122,7 @@ public:
         (static_cast<Impl*>(this)->*fun)(std::forward<Args>(args)...);
         const auto endLoop = Clock::now();
         auto totalDuration = std::chrono::duration_cast<ClockResolution>(endLoop - startLoop);
-        printStatistics(totalDuration);
+        PerformanceTest::printStatistics(durationVector, totalDuration);
     }
 
 protected:
@@ -125,14 +133,41 @@ protected:
 
     std::string getFilledString() const
     {
-        return std::string(stringLength, '#');
+        const char characters[] = "abcdefghijklmnopqrstuvwxyz"
+                                  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                  "0123456789"
+                                  "!\"$%&/()=?@,.-;:_";
+        //                          "°§€ÄÖÜäöüß";
+
+        std::random_device randomDevice;
+        std::default_random_engine rng(randomDevice());
+        std::uniform_int_distribution<std::default_random_engine::result_type> distribution(
+                0, sizeof(characters) - 2);
+        std::string s;
+        for (int i = 0; i < stringLength; i++) {
+            s += characters[distribution(rng)];
+        }
+        return s;
+    }
+
+    static void fillByteArray(ByteArray& data)
+    {
+        // fill data with sequentially increasing numbers
+        std::iota(data.begin(), data.end(), 0);
     }
 
     ByteArray getFilledByteArray() const
     {
+        std::cout << byteArraySize << std::endl << std::endl;
         ByteArray data(byteArraySize);
-        // fill data with sequentially increasing numbers
-        std::iota(data.begin(), data.end(), 0);
+        fillByteArray(data);
+        return data;
+    }
+
+    ByteArray getFilledByteArrayWithSizeTimesK() const
+    {
+        ByteArray data(byteArraySize * 1000);
+        fillByteArray(data);
         return data;
     }
 
@@ -144,31 +179,8 @@ protected:
     std::size_t byteArraySize;
 
 private:
-    void printStatistics(ClockResolution totalDuration)
-    {
-        using DoubleMilliSeconds = std::chrono::duration<double, std::milli>;
-        auto maxDelayDuration = std::chrono::duration_cast<DoubleMilliSeconds>(
-                *std::max_element(durationVector.cbegin(), durationVector.cend()));
-        auto minDelayDuration = std::chrono::duration_cast<DoubleMilliSeconds>(
-                *std::min_element(durationVector.cbegin(), durationVector.cend()));
-        auto sumDelayDuration = std::chrono::duration_cast<DoubleMilliSeconds>(std::accumulate(
-                durationVector.cbegin(), durationVector.cend(), ClockResolution(0)));
-        double meanDelay = sumDelayDuration.count() / messageCount;
-
-        using DoubleSeconds = std::chrono::duration<double>;
-        auto totalDurationSec = std::chrono::duration_cast<DoubleSeconds>(totalDuration);
-        double msgPerSec = messageCount / totalDurationSec.count();
-
-        std::cerr << "----- statistics -----" << std::endl;
-        std::cerr << "totalDuration:\t" << totalDurationSec.count() << " [s]" << std::endl;
-        std::cerr << "maxDelay:\t\t" << maxDelayDuration.count() << " [ms]" << std::endl;
-        std::cerr << "minDelay:\t\t" << minDelayDuration.count() << " [ms]" << std::endl;
-        std::cerr << "meanDelay:\t\t" << meanDelay << " [ms]" << std::endl;
-        std::cerr << "msg/sec:\t\t" << msgPerSec << std::endl;
-    }
-
     std::unique_ptr<JoynrRuntime> runtime;
-    std::uint64_t ttl = 10000;
+    std::uint64_t ttl = 600000;
 };
 
 class SyncEchoConsumer : public PerformanceConsumer<SyncEchoConsumer>

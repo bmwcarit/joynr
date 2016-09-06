@@ -1,0 +1,63 @@
+@startuml
+
+== Outgoing ==
+ 
+[-> RadioProxy : shuffleStation
+
+note over RadioProxy
+	"Implemented by RadioSyncProxy"
+end note
+
+RadioProxy -> RadioJoynrMessagingConnector : shuffleStation
+
+note over RadioJoynrMessagingConnector
+	"Waits for future"
+end note
+
+RadioJoynrMessagingConnector -> JoynrMessageSender : sendRequest
+JoynrMessageSender -> Dispatcher : addReplyCaller
+
+note over MessageRouter
+	"Assumption: Destination address is known"
+end note
+
+JoynrMessageSender -> MessageRouter : route
+
+alt "Error"
+	MessageRouter -> MessageQueue : queueMessage
+else
+	note over MessageRouter
+		"Task scheduled here"
+	end note
+	MessageRouter -> ThreadPoolDelayedScheduler : "schedule(MessageRunnable)"
+	ThreadPoolDelayedScheduler ->> MessageRunnable : "run <b>(Thread switch)</b>"
+	MessageRunnable -> WebSocketMessagingStub : transmit
+	WebSocketMessagingStub -> WebSocketPpClient : send
+	WebSocketPpClient -> Network : Message
+end
+
+== Incoming ==
+
+Network -> WebSocketPpClient : onMessageReceived
+WebSocketPpClient -> WebSocketLibJoynrMessagingSkeleton : "onTextMessageReceived <b>(Thread switch)</b>"
+WebSocketLibJoynrMessagingSkeleton -> MessageRouter : route
+MessageRouter -> ThreadPoolDelayedScheduler : "schedule(MessageRunnable)"
+ThreadPoolDelayedScheduler ->> MessageRunnable : "run <b>(Thread switch)</b>"
+MessageRunnable -> InProcessMessagingStub : transmit
+InProcessMessagingStub -> InProcessLibJoynrMessagingSkeleton : transmit
+InProcessLibJoynrMessagingSkeleton -> Dispatcher : receive
+Dispatcher -> ThreadPool : "execute(ReceivedMessageRunnable)"
+ThreadPool ->> ReceivedMessageRunnable : "run <b>(Thread switch)</b>"
+ReceivedMessageRunnable -> Dispatcher : handleReplyReceived
+Dispatcher -> ReplyCaller : execute
+ReplyCaller -> ReplyInterpreter : execute
+ReplyInterpreter -> ReplyCaller : returnValue
+ReplyCaller -> RadioJoynrMessagingConnector : shuffleStations
+
+note over RadioJoynrMessagingConnector
+	"Future released"
+end note
+
+Dispatcher -> Dispatcher : removeReplyCaller
+
+@enduml

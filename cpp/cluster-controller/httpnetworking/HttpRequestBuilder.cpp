@@ -74,7 +74,7 @@ HttpRequestBuilder* HttpRequestBuilder::withDebug()
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::postContent(const QByteArray& data)
+HttpRequestBuilder* HttpRequestBuilder::postContent(const std::string& data)
 {
     content = data;
     return this;

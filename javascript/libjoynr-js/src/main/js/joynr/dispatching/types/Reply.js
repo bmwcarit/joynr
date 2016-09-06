@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ define("joynr/dispatching/types/Reply", [
      *            settings.requestReplyId
      * @param {Array}
      *            [settings.response] the response may be undefined
+     * @param {Object}
+     *            [settings.error] The exception object in case of request failure
      */
     function Reply(settings) {
         var i;

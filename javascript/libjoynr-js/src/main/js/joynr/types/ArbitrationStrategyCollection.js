@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,6 +111,28 @@ define(
                         }
                         return keywordCaps;
                     };
+
+            /**
+             * The ArbitrationStrategyCollection.LastSeen favors latest lastSeenDateMs
+             * @function ArbitrationStrategyCollection#LastSeen
+             *
+             * @param {Array}
+             *            capabilities the array of capability entries
+             * @param {DiscoveryEntry}
+             *            capabilities.array the array of capability entries
+             *
+             * @returns {Array} an array of capabilities sorted by the lastSeenDateMs
+             */
+            ArbitrationStrategyCollection.LastSeen = function(capabilities) {
+                if (!(Object.prototype.toString.call(capabilities) === "[object Array]")) {
+                    throw new Error("provided argument capabilities is not of type Array");
+                }
+
+                // sort with descending priority
+                return capabilities.sort(function(a, b) {
+                    return b.lastSeenDateMs - a.lastSeenDateMs;
+                });
+            };
 
             return ArbitrationStrategyCollection;
 

@@ -16,17 +16,13 @@
  * limitations under the License.
  * #L%
  */
-
 #include <gtest/gtest.h>
 
-#include "joynr/CapabilityEntry.h"
-using namespace joynr;
+#include "joynr/ObjectWithDecayTime.h"
 
-TEST(CapabilityEntryTest, testEqualsOperator)
+TEST(ObjectWithDecayTimeTest, highValueIsNotExpired)
 {
-    CapabilityEntry entry1;
-    CapabilityEntry entry2;
-    EXPECT_EQ(entry1, entry2);
-    entry1.setProviderVersion(joynr::types::Version(2,2));
-    EXPECT_FALSE(entry1 == entry2);
+    joynr::JoynrTimePoint expiryDate(std::chrono::milliseconds(9223372036854775807));
+    joynr::ObjectWithDecayTime objectWithDecayTime(expiryDate);
+    EXPECT_FALSE(objectWithDecayTime.isExpired());
 }

@@ -1,6 +1,6 @@
 {
   "name": "joynr",
-  "version": "0.20.0-SNAPSHOT",
+  "version": "0.21.0-SNAPSHOT",
   "description": "Web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure",
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
@@ -9,7 +9,7 @@
   "devDependencies": {
     "jasmine-node": ">=2.0.0",
     "jasmine-core" : "2.4.1",
-    "phantomjs-prebuilt" : "2.1.4",
+    "phantomjs-prebuilt" : "2.1.12",
     "karma-requirejs" : "0.2.6",
     "karma-jasmine" : "0.3.8",
     "karma-phantomjs-launcher" : "1.0.0",

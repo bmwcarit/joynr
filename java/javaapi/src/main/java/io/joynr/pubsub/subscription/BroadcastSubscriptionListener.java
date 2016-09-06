@@ -3,7 +3,7 @@ package io.joynr.pubsub.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,26 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
-public interface BroadcastSubscriptionListener {
+import io.joynr.exceptions.SubscriptionException;
 
+public interface BroadcastSubscriptionListener {
+    /**
+     * Gets called when the subscription is successfully registered at the provider
+     *
+     * Since the onSubscribed callback is called by a communication middleware thread, it should
+     * not be blocked, wait for user interaction, or do larger computation.
+     *
+     * @param subscriptionId the subscription id of the subscription as string
+     */
+    void onSubscribed(String subscriptionId);
+
+    /**
+     * Gets called if the subscription registration failed at the provider
+     *
+     * Since the onError callback is called by a communication middleware thread, it should not
+     * be blocked, wait for user interaction, or do larger computation.
+     *
+     * @param error SubscriptionException describing the error
+     */
+    void onError(SubscriptionException error);
 }

@@ -18,7 +18,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     @Inject
     @Named(APP_CONFIG_PROVIDER_DOMAIN)
     private String providerDomain;
-    private String subscriptionIdCurrentStation;
+    private Future<String> subscriptionFutureCurrentStation;
     private RadioProxy radioProxy;
     @Inject
     private ObjectMapper objectMapper;
@@ -198,8 +198,14 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
         if (radioProxy != null) {
-            if (subscriptionIdCurrentStation != null) {
-                radioProxy.unsubscribeFromCurrentStation(subscriptionIdCurrentStation);
+            if (subscriptionFutureCurrentStation != null) {
+                String subscriptionIdCurrentStation;
+                try {
+                    subscriptionIdCurrentStation = subscriptionFutureCurrentStation.get();
+                    radioProxy.unsubscribeFromCurrentStation(subscriptionIdCurrentStation);
+                } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
+                    LOG.error(e.getMessage());
+                }
             }
         }
 
@@ -281,7 +287,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             LOG.info(PRINT_BORDER + "ATTRIBUTE GET: current station: " + currentStation + PRINT_BORDER);
 
             // subscribe to an attribute
-            subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionAdapter<RadioStation>() {
+            subscriptionFutureCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionAdapter<RadioStation>() {
 
                                                                                     @Override
                                                                                     public void onReceive(RadioStation value) {

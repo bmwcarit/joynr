@@ -43,7 +43,7 @@ JAVA_WARMUPS=50
 
 # For test cases with a single consumer, this constant stores the number of messages which
 # will be transmitted during the test
-SINGLECONSUMER_RUNS=1000
+SINGLECONSUMER_RUNS=5000
 
 # For test cases with several consumers, this constant stores how many consumer instances will
 # be created
@@ -54,7 +54,7 @@ MULTICONSUMER_NUMINSTANCES=5
 MULTICONSUMER_RUNS=200
 
 # If a test case has to transmit a string, the length will be determined by this constant
-INPUTDATA_STRINGLENGTH=10
+INPUTDATA_STRINGLENGTH=100
 
 # If a test case has to transmit a byte array, the length will be determined by this constant
 INPUTDATA_BYTEARRAYSIZE=100
@@ -66,6 +66,9 @@ JETTY_PID=""
 MOSQUITTO_PID=""
 CLUSTER_CONTROLLER_PID=""
 PROVIDER_PID=""
+
+# arguments which are passed to the C++ cluster-controller
+ADDITIONAL_CC_ARGS=""
 
 function waitUntilJettyStarted {
     started=0
@@ -131,7 +134,11 @@ function startCppClusterController {
     CC_STDERR=$PERFORMANCETESTS_RESULTS_DIR/cc_stderr.txt
 
     cd $JOYNR_BIN_DIR
-    ./cluster-controller 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
+
+    # ensure previously created persistence files are gone
+    rm -Rf *.persist joynr.settings
+
+    ./cluster-controller $ADDITIONAL_CC_ARGS 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
 
     # Wait long enough in order to allow the cluster controller finish its start procedure
     sleep 5
@@ -146,16 +153,9 @@ function startCppPerformanceTestProvider {
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
     cd $PERFORMANCETESTS_BIN_DIR
-    ./performance-provider-app --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    ./performance-provider-app --globalscope on --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
 
     # Wait long enough in order to allow the provider to finish the registration procedure
-    sleep 5
-
-    # Workaround: We need to start the provider twice. Otherwise, the registration process
-    # will not succeed.
-    kill $PROVIDER_PID
-    wait $PROVIDER_PID
-    ./performance-provider-app --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     sleep 5
 
     echo "C++ performance test provider started"
@@ -167,16 +167,16 @@ function startJavaPerformanceTestProvider {
     PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
-    CONSUMERCLASS="io.joynr.performance.EchoProviderApplication"
-    CONSUMERARGS="-d $DOMAINNAME -s GLOBAL -r IN_PROCESS_CC  -b MQTT -mbu $MQTT_BROKER_URI"
+    PROVIDERCLASS="io.joynr.performance.EchoProviderApplication"
+    PROVIDERARGS="-d $DOMAINNAME -s GLOBAL -r IN_PROCESS_CC  -b MQTT -mbu $MQTT_BROKER_URI"
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
     if [ "$USE_MAVEN" != "ON" ]
     then
-        java -jar performance-test-provider.jar $CONSUMERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+        java -jar performance-test-provider.jar $PROVIDERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     else
-        mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" -Dexec.args="$CONSUMERARGS" \
+        mvn exec:java -o -Dexec.mainClass="$PROVIDERCLASS" -Dexec.args="$PROVIDERARGS" \
             1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     fi
 
@@ -221,6 +221,15 @@ function performJavaConsumerTest {
     wait $TEST_PIDS
 }
 
+function performCppSerializerTest {
+    STDOUT_PARAM=$1
+    REPORTFILE_PARAM=$2
+
+    cd $PERFORMANCETESTS_BIN_DIR
+
+    ./performance-serializer 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+}
+
 function performCppConsumerTest {
     MODE_PARAM=$1
     TESTCASE_PARAM=$2
@@ -229,15 +238,23 @@ function performCppConsumerTest {
     NUM_INSTANCES=$5
     NUM_RUNS=$6
 
+    CONSUMERARGS="-r $NUM_RUNS -t $TESTCASE_PARAM"
+
     cd $PERFORMANCETESTS_BIN_DIR
-    CONSUMERARGS="-d $DOMAINNAME -r $NUM_RUNS -t $TESTCASE_PARAM\
-                  -s $MODE_PARAM -l $INPUTDATA_STRINGLENGTH -b $INPUTDATA_BYTEARRAYSIZE"
+    if [ "$MODE_PARAM" == "SHORTCIRCUIT" ]
+    then
+        PERFORMCPPBINARY="performance-short-circuit"
+    else
+        CONSUMERARGS+=" -d $DOMAINNAME -s $MODE_PARAM -l $INPUTDATA_STRINGLENGTH \
+                       -b $INPUTDATA_BYTEARRAYSIZE"
+        PERFORMCPPBINARY="performance-consumer-app"
+    fi
 
     TEST_PIDS=()
     for (( i=0; i < $NUM_INSTANCES; ++i ))
     do
         echo "Launching consumer $i ..."
-        ./performance-consumer-app $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+        ./$PERFORMCPPBINARY $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
         TEST_PIDS+=$CUR_PID
         TEST_PIDS+=" "
     done
@@ -249,8 +266,24 @@ function performCppConsumerTest {
 function performJsConsumerTest {
     STDOUT_PARAM=$1
     REPORTFILE_PARAM=$2
+    VIACC=$3
+    STARTPROVIDER=$4
+    PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
+    PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
     cd $PERFORMANCETESTS_SOURCE_DIR
+
+    if [ "$STARTPROVIDER" == "ON" ]
+    then
+        if [ "$USE_NPM" == "ON" ]
+        then
+            npm run-script --performance-test:domain=$DOMAINNAME \
+                             startprovider 1>>$PROVIDER_STDOUT 2>>$PROVIDER_STDERR & PROVIDER_PID=$!
+        else
+            # This call assumes that the required js dependencies are installed locally
+            node src/main/js/provider.js $DOMAINNAME 1>>$PROVIDER_STDOUT 2>>$REPORTFILE_PARAM & PROVIDER_PID=$!
+        fi
+    fi
 
     if [ "$USE_NPM" == "ON" ]
     then
@@ -258,15 +291,16 @@ function performJsConsumerTest {
                        --performance-test:domain=$DOMAINNAME \
                        --performance-test:stringlength=$INPUTDATA_STRINGLENGTH \
                        --performance-test:bytearraylength=$INPUTDATA_BYTEARRAYSIZE \
-                         jsconsumertest 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+                       --performance-test:viacc=$VIACC \
+                         startconsumer 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
     else
+        export runs=$SINGLECONSUMER_RUNS
+        export domain=$DOMAINNAME
+        export stringlength=$INPUTDATA_STRINGLENGTH
+        export bytearraylength=$INPUTDATA_BYTEARRAYSIZE
+        export viacc=$VIACC
         # This call assumes that the required js dependencies are installed locally
-        node node_modules/jasmine-node/lib/jasmine-node/cli.js src/main/js/consumer.spec.js \
-            --config runs $SINGLECONSUMER_RUNS \
-            --config domain $DOMAINNAME \
-            --config stringlength $INPUTDATA_STRINGLENGTH \
-            --config bytearraylength $INPUTDATA_BYTEARRAYSIZE \
-        1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+        node src/main/js/consumer.js 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
     fi
 }
 
@@ -301,13 +335,22 @@ function stopCppClusterController {
 
 function stopAnyProvider {
     echo "Killing provider"
-    # pkill is required if maven is used to start a provider. Maven launches the
-    # provider as a child process, which seems not to be killed automatically along
-    # with the parent process
-    pkill -P $PROVIDER_PID
-    kill $PROVIDER_PID
-    wait $PROVIDER_PID
-    PROVIDER_PID=""
+    if [ "$PROVIDER_PID" != "" ]
+    then
+        echo "USE_MAVEN: $USE_MAVEN"
+        if [ "$USE_MAVEN" != "ON" ]
+        then
+            echo "do not call pkill for provider id $PROVIDER_ID"
+        else
+            # pkill is required if maven is used to start a provider. Maven launches the
+            # provider as a child process, which seems not to be killed automatically along
+            # with the parent process
+            pkill -P $PROVIDER_PID
+        fi
+        kill $PROVIDER_PID
+        wait $PROVIDER_PID
+        PROVIDER_PID=""
+    fi
 }
 
 function echoUsage {
@@ -327,11 +370,17 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:j:p:r:s:t:x:y:m:z:n:" OPTIONS;
+while getopts "c:d:j:p:r:s:t:x:y:m:z:n:a:" OPTIONS;
 do
     case $OPTIONS in
+        a)
+            ADDITIONAL_CC_ARGS=$OPTARG
+            ;;
         c)
             MULTICONSUMER_NUMINSTANCES=$OPTARG
+            ;;
+        d)
+            DOMAINNAME=${OPTARG%/}
             ;;
         j)
             JETTY_PATH=${OPTARG%/}
@@ -372,14 +421,17 @@ do
 done
 
 if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
-   [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && [ "$TESTCASE" != "ALL" ] && \
-   [ "$TESTCASE" != "JS_ASYNC" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
+   [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && \
+   [ "$TESTCASE" != "JS_ASYNC" ] && [ "$TESTCASE" != "JS_SHORTCIRCUIT" ] && \
+   [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
-   [ "$TESTCASE" != "CPP_MULTICONSUMER" ]
+   [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
+   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] 
 then
     echo "\"$TESTCASE\" is not a valid testcase"
     echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
-OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER OR ALL"
+JS_CONSUMER, JS_SHORTCIRCUIT, OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
+CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER"
     echoUsage
     exit 1
 fi
@@ -395,16 +447,16 @@ STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer-stdout.txt
 rm -f $STDOUT
 rm -f $REPORTFILE
 
-if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] || [ "$TESTCASE" == "ALL" ]
+if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ]
 then
     startCppClusterController
-    startCppPerformanceTestProvider
 
     echo "### Starting performance tests ###"
 
     for mode in 'ASYNC' 'SYNC'; do
-        if [ "$TESTCASE" == "JAVA_$mode" ] || [ "$TESTCASE" == "ALL" ]
+        if [ "$TESTCASE" == "JAVA_$mode" ]
         then
+            startCppPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
                 echo "Testcase: JAVA $testcase" | tee -a $REPORTFILE
                 performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
@@ -412,43 +464,73 @@ then
         fi
     done
 
-    if [ "$TESTCASE" == "JAVA_MULTICONSUMER" ] || [ "$TESTCASE" == "ALL" ]
+    if [ "$TESTCASE" == "JAVA_MULTICONSUMER" ]
     then
+        startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: JAVA $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
             performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS
         done
     fi
 
-    for mode in 'ASYNC' 'SYNC'; do
-        if [ "$TESTCASE" == "CPP_$mode" ] || [ "$TESTCASE" == "ALL" ]
+    for mode in 'ASYNC' 'SYNC' 'SHORTCIRCUIT'; do
+        if [ "$TESTCASE" == "CPP_$mode" ]
         then
-            for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
-                echo "Testcase: CPP $testcase" | tee -a $REPORTFILE
+            startCppPerformanceTestProvider
+            for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY' 'SEND_BYTEARRAY_WITH_SIZE_TIMES_K'; do
+                echo "Testcase: $TESTCASE::$testcase" | tee -a $REPORTFILE
                 performCppConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
             done
         fi
     done
 
-    if [ "$TESTCASE" == "CPP_MULTICONSUMER" ] || [ "$TESTCASE" == "ALL" ]
+    if [ "$TESTCASE" == "CPP_SERIALIZER" ]
     then
+        echo "Testcase: CPP_SERIALIZER" | tee -a $REPORTFILE
+        performCppSerializerTest $STDOUT $REPORTFILE
+    fi
+
+    if [ "$TESTCASE" == "CPP_MULTICONSUMER" ]
+    then
+        startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: CPP $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
             performCppConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS
         done
     fi
 
-    if [ "$TESTCASE" == "JS_ASYNC" ] || [ "$TESTCASE" == "ALL" ]
+    if [ "$TESTCASE" == "JS_ASYNC" ]
     then
         echo "Testcase: JS_ASYNC" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE
+        performJsConsumerTest $STDOUT $REPORTFILE true ON
+    fi
+
+    if [ "$TESTCASE" == "JS_SHORTCIRCUIT" ]
+    then
+        echo "Testcase: JS_SHORTCIRCUIT" | tee -a $REPORTFILE
+        performJsConsumerTest $STDOUT $REPORTFILE false OFF
+    fi
+
+    if [ "$TESTCASE" == "JS_CONSUMER" ]
+    then
+        echo "Testcase: JS_CONSUMER for domain $DOMAINNAME" | tee -a $REPORTFILE
+        performJsConsumerTest $STDOUT $REPORTFILE true OFF
+    fi
+
+    if [ "$TESTCASE" == "CPP_PROVIDER" ]
+    then
+        echo "Testcase: CPP_PROVIDER for domain $DOMAINNAME" | tee -a $REPORTFILE
+        startCppPerformanceTestProvider $STDOUT $REPORTFILE true OFF
+        # this testcase is used to start a provider which is then accessed from an external consumer
+        # in order to keep the provider running, we sleep for a long time here
+        sleep 100000000
     fi
 
     stopAnyProvider
     stopCppClusterController
 fi
 
-if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ] || [ "$TESTCASE" == "ALL" ]
+if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ]
 then
     checkDirExists $JETTY_PATH
     startJetty
@@ -459,7 +541,7 @@ then
     echo "### Starting performance tests ###"
 
     echo "Testcase: OAP_TO_BACKEND_MOSQ" | tee -a $REPORTFILE
-    performJsConsumerTest $STDOUT $REPORTFILE
+    performJsConsumerTest $STDOUT $REPORTFILE true OFF
 
     stopAnyProvider
     stopCppClusterController

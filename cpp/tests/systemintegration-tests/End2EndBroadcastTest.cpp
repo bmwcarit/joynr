@@ -23,6 +23,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "JoynrTest.h"
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
@@ -35,6 +36,7 @@
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Future.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -179,7 +181,8 @@ public:
                          0.0,
                          444,
                          444,
-                         4))
+                         4)),
+        providerParticipantId()
 
     {
         messagingSettings1.setMessagingPropertiesPersistenceFilename(
@@ -207,6 +210,9 @@ public:
     }
 
     void TearDown() {
+        if (!providerParticipantId.empty()) {
+            runtime1->unregisterProvider(providerParticipantId);
+        }
         bool deleteChannel = true;
         runtime1->stop(deleteChannel);
         runtime2->stop(deleteChannel);
@@ -264,9 +270,41 @@ public:
     }
 
 private:
+    std::string providerParticipantId;
     DISALLOW_COPY_AND_ASSIGN(End2EndBroadcastTest);
 
 protected:
+    std::shared_ptr<MyTestProvider> registerProvider() {
+        auto testProvider = std::make_shared<MyTestProvider>();
+        providerParticipantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+
+        // This wait is necessary, because registerProvider is async, and a lookup could occur
+        // before the register has finished.
+        std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
+
+        return testProvider;
+    }
+
+    std::shared_ptr<tests::testProxy> buildProxy() {
+        ProxyBuilder<tests::testProxy>* testProxyBuilder
+                = runtime2->createProxyBuilder<tests::testProxy>(domainName);
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
+        discoveryQos.setRetryIntervalMs(250);
+
+        std::int64_t qosRoundTripTTL = 500;
+
+        std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
+                                                   ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                                                   ->setCached(false)
+                                                   ->setDiscoveryQos(discoveryQos)
+                                                   ->build());
+
+        delete testProxyBuilder;
+        return testProxy;
+    }
+
     template <typename FireBroadcast, typename SubscribeTo, typename T>
     void testOneShotBroadcastSubscription(const T& expectedValue,
                                           SubscribeTo subscribeTo,
@@ -301,7 +339,7 @@ protected:
                                                       std::nullptr_t{},
                                                       expectedValues...);
     }
-    
+
     template <typename BroadcastFilter>
     void addFilterToTestProvider(std::shared_ptr<MyTestProvider> testProvider, std::shared_ptr<BroadcastFilter> filter)
     {
@@ -323,44 +361,23 @@ protected:
                                           const std::string& broadcastName,
                                           BroadcastFilterPtr filter,
                                           T... expectedValues) {
-        auto testProvider = std::make_shared<MyTestProvider>();
-        runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+        std::shared_ptr<MyTestProvider> testProvider = registerProvider();
         addFilterToTestProvider(testProvider, filter);
-        //This wait is necessary, because registerProvider is async, and a lookup could occur
-        // before the register has finished.
-        std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
-        ProxyBuilder<tests::testProxy>* testProxyBuilder
-                = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-        DiscoveryQos discoveryQos;
-        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeoutMs(1000);
-        discoveryQos.setRetryIntervalMs(250);
-
-        std::int64_t qosRoundTripTTL = 500;
-
-        // Send a message and expect to get a result
-        tests::testProxy* testProxy = testProxyBuilder
-                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                ->setCached(false)
-                ->setDiscoveryQos(discoveryQos)
-                ->build();
+        std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
         std::int64_t minInterval_ms = 50;
         auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                     500000,   // validity_ms
                     minInterval_ms);  // minInterval_ms
 
-        subscribeTo(testProxy, subscriptionListener, subscriptionQos);
+        subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);
         waitForBroadcastSubscriptionArrivedAtProvider(testProvider, broadcastName);
 
         (*testProvider.*fireBroadcast)(expectedValues...);
 
         // Wait for a subscription message to arrive
         ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
-
-        delete testProxyBuilder;
-        delete testProxy;
     }
 };
 
@@ -476,39 +493,21 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener2(
                     mockListener2);
 
-    auto testProvider = std::make_shared<MyTestProvider>();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
-    //This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
-
-    ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
-    discoveryQos.setRetryIntervalMs(250);
-
-    std::int64_t qosRoundTripTTL = 500;
-
-    // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                               ->setCached(false)
-                                               ->setDiscoveryQos(discoveryQos)
-                                               ->build());
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
-    std::string subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
+    auto future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
-    // This wait is necessary, because subcriptions are async, and a broadcast could occur
-    // before the subscription has started.
-    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
+    std::string subscriptionId;
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
 
     testProvider->fireLocationUpdate(
                 gpsLocation2);
@@ -527,9 +526,11 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     // update subscription, much longer minInterval_ms
     subscriptionQos->setMinIntervalMs(5000);
-    testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
+    future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
     testProvider->fireLocationUpdate(gpsLocation2);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
@@ -545,8 +546,6 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     ASSERT_FALSE(altSemaphore.waitFor(std::chrono::seconds(1)));
     //the "old" semaphore shall not be touced, as listener has been replaced with listener2 as callback
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
-
-    delete testProxyBuilder;
 }
 
 TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
@@ -563,39 +562,21 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    auto testProvider = std::make_shared<MyTestProvider>();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
-    //This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
-
-    ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
-    discoveryQos.setRetryIntervalMs(250);
-
-    std::int64_t qosRoundTripTTL = 500;
-
-    // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                               ->setCached(false)
-                                               ->setDiscoveryQos(discoveryQos)
-                                               ->build());
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
-    std::string subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
+    auto future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
-    // This wait is necessary, because subcriptions are async, and a broadcast could occur
-    // before the subscription has started.
-    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
+    std::string subscriptionId;
+    JOYNR_ASSERT_NO_THROW({
+        future->get(5000, subscriptionId);
+    });
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
@@ -631,28 +612,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    auto testProvider = std::make_shared<MyTestProvider>();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
-    //This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
-
-    ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
-    discoveryQos.setRetryIntervalMs(250);
-
-    std::int64_t qosRoundTripTTL = 500;
-
-    // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                               ->setCached(false)
-                                               ->setDiscoveryQos(discoveryQos)
-                                               ->build());
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
@@ -683,8 +645,90 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation4);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+}
 
-    delete testProxyBuilder;
+TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
+
+    MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    std::string subscriptionIdFromListener;
+    std::string subscriptionIdFromFuture;
+    EXPECT_CALL(*mockListener, onSubscribed(_))
+            .WillRepeatedly(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
+                    mockListener);
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
+
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdate");
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+}
+
+TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
+
+    MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    std::string subscriptionIdFromListener;
+    std::string subscriptionIdFromFuture;
+    EXPECT_CALL(*mockListener, onSubscribed(_))
+            .WillRepeatedly(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
+                    mockListener);
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
+
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdate");
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+
+    // update subscription
+    subscriptionIdFuture = nullptr;
+    std::string subscriptionId = subscriptionIdFromFuture;
+    subscriptionIdFromFuture.clear();
+    subscriptionIdFromListener.clear();
+    subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos, subscriptionId);
+
+    // Wait for a subscription reply message to arrive
+    JOYNR_EXPECT_NO_THROW(
+        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
+    );
+    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+    // subscription id from update is the same as the original subscription id
+    EXPECT_EQ(subscriptionId, subscriptionIdFromFuture);
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
@@ -698,28 +742,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
     std::shared_ptr<ISubscriptionListener<void> > subscriptionListener(
                     mockListener);
 
-    auto testProvider = std::make_shared<MyTestProvider>();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
-    //This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
-
-    ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
-    discoveryQos.setRetryIntervalMs(250);
-
-    std::int64_t qosRoundTripTTL = 500;
-
-    // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                               ->setCached(false)
-                                               ->setDiscoveryQos(discoveryQos)
-                                               ->build());
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
@@ -750,8 +775,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
     testProvider->fireEmptyBroadcast();
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
-
-    delete testProxyBuilder;
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
@@ -771,28 +794,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation, float> > subscriptionListener(
                     mockListener);
 
-    auto testProvider = std::make_shared<MyTestProvider>();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
-    //This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
-
-    ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
-    discoveryQos.setRetryIntervalMs(250);
-
-    std::int64_t qosRoundTripTTL = 500;
-
-    // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                               ->setCached(false)
-                                               ->setDiscoveryQos(discoveryQos)
-                                               ->build());
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
@@ -825,8 +829,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     testProvider->fireLocationUpdateWithSpeed(gpsLocation4, 300);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
-
-    delete testProxyBuilder;
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
@@ -848,29 +850,10 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(true));
 
-    auto testProvider = std::make_shared<MyTestProvider>();
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
     testProvider->addBroadcastFilter(filter);
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    //This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
-
-    ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
-    discoveryQos.setRetryIntervalMs(250);
-
-    std::int64_t qosRoundTripTTL = 500;
-
-    // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                               ->setCached(false)
-                                               ->setDiscoveryQos(discoveryQos)
-                                               ->build());
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
@@ -908,8 +891,6 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
-
-    delete testProxyBuilder;
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
@@ -925,29 +906,10 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(false));
 
-    auto testProvider = std::make_shared<MyTestProvider>();
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
     testProvider->addBroadcastFilter(filter);
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    //This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
-
-    ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
-    discoveryQos.setRetryIntervalMs(250);
-
-    std::int64_t qosRoundTripTTL = 500;
-
-    // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                               ->setCached(false)
-                                               ->setDiscoveryQos(discoveryQos)
-                                               ->build());
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
@@ -985,8 +947,6 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     // Wait for a subscription message to arrive
     ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
-
-    delete testProxyBuilder;
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
@@ -1012,28 +972,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListenerBroadcast(
                     mockListenerBroadcast);
 
-    auto testProvider = std::make_shared<MyTestProvider>();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
-    //This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
-
-    ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
-    discoveryQos.setRetryIntervalMs(250);
-
-    std::int64_t qosRoundTripTTL = 500;
-
-    // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                               ->setCached(false)
-                                               ->setDiscoveryQos(discoveryQos)
-                                               ->build());
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
@@ -1067,8 +1008,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
-
-    delete testProxyBuilder;
 }
 
 INSTANTIATE_TEST_CASE_P(Http,

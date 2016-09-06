@@ -28,4 +28,9 @@ interface MyService {
 			String returnValue
 		}
 	}
+	method callMeWithException {
+		error {
+			MY_ERROR
+		}
+	}
 }

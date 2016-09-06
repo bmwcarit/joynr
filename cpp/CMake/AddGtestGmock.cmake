@@ -1,7 +1,7 @@
 option(
     USE_PLATFORM_GTEST_GMOCK
     "Resolve dependency to gtest and gmock from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
 

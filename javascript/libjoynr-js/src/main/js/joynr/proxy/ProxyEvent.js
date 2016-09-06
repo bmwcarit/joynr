@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,12 +100,15 @@ define("joynr/proxy/ProxyEvent", [
          * @param {String}
          *            [subscribeParameters.subscriptionId] optional subscriptionId. Used to refresh or
          *            reinstate an existing subscription.
-         * @param {onReceive}
+         * @param {Function}
          *            subscribeParameters.onReceive this function is called when an event as been
          *            received. method signature: "void onReceive({?}value)"
-         * @param {onError}
+         * @param {Function}
          *            subscribeParameters.onError this function is called when an error occurs with
          *            a subscribed event. method signature: "void onError({Error} error)"
+         * @param {Function}
+         *            subscribeParameters.onSubscribed the callback to inform once the subscription request has
+         *            been delivered successfully
          * @returns {Object} returns a promise that is resolved with the subscriptionId, which is to
          *          be used to unsubscribe from this subscription later. NOTE: currently resolved
          *          when the request is sent; later will be resolved once the subscriptionReply is
@@ -143,6 +146,7 @@ define("joynr/proxy/ProxyEvent", [
                                             settings.broadcastParameter));
                                 },
                                 onError : subscribeParameters.onError,
+                                onSubscribed : subscribeParameters.onSubscribed,
                                 filterParameters : subscribeParameters.filterParameters
                             });
                 };

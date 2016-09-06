@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,7 @@ class Reply;
 class MessagingQos;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
-class SubscriptionReply;
 class SubscriptionStop;
-class SubscriptionPublication;
 
 /**
   * The interface JoynrMessageSender enables the exchange of JoynrMessages
@@ -108,11 +106,6 @@ public:
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
             const BroadcastSubscriptionRequest& subscriptionRequest) = 0;
-
-    virtual void sendSubscriptionReply(const std::string& senderParticipantId,
-                                       const std::string& receiverParticipantId,
-                                       const MessagingQos& qos,
-                                       const SubscriptionReply& subscriptionReply) = 0;
 
     virtual void sendSubscriptionStop(const std::string& senderParticipantId,
                                       const std::string& receiverParticipantId,

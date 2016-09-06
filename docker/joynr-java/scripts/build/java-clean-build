@@ -7,7 +7,13 @@ cd /data/src
 # print commands before they are executed
 set -e
 
+function usage
+{
+    echo "usage: java-clean-build [package|install][skipTests]"
+}
+
 GOAL='install'
+SKIPTESTS='false'
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -15,7 +21,9 @@ while [ "$1" != "" ]; do
                                 ;;
         install )               GOAL='install'
                                 ;;
-        * )                     echo "invalid argument"
+        skipTests )             SKIPTESTS='true'
+                                ;;
+        * )                     usage
                                 exit 1
     esac
     shift
@@ -23,7 +31,7 @@ done
 
 mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle \
 -Dmaven.test.failure.ignore=true \
--DskipTests=false \
+-DskipTests=$SKIPTESTS \
 -Denforcer.skip=true \
 -Dmaven.compile.fork=true \
 -Dmaven.junit.fork=true

@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>0.20.0-SNAPSHOT</version>
+		<version>0.21.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -221,6 +221,10 @@
                 </systemProperty>
                 <systemProperty>
                   <name>joynr.messaging.discoverydirectoryurl</name>
+                  <value>http://localhost:8383/discovery/channels/discoverydirectory_channelid/</value>
+                </systemProperty>
+                <systemProperty>
+                  <name>joynr.messaging.domainaccesscontrollerurl</name>
                   <value>http://localhost:8383/discovery/channels/discoverydirectory_channelid/</value>
                 </systemProperty>
                 <systemProperty>

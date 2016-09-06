@@ -2,12 +2,13 @@
 
 function usage
 {
-    echo "usage: joynr-docker build | push | pull [--repository mydockerrepo.org --version versionnumber]"
+    echo "usage: joynr-docker build | push | pull [--repository mydockerrepo.org --version versionnumber --pushlatesttag <ON|OFF>]"
 }
 
 repository=
 version=
 command=$1
+pushlatesttag=ON
 shift
 echo "after command: $1"
 
@@ -27,91 +28,61 @@ echo "PARAM is: $1"
         -h | --help )           usage
                                 exit
                                 ;;
+        -p | --pushlatesttag )  shift
+                                pushlatesttag=$1
+                                ;;
         * )                     usage
                                 exit 1
     esac
     shift
 done
 
+# list of available images
+declare -a listOfImages=(
+    "joynr-base"
+    "joynr-java"
+    "joynr-android"
+    "joynr-javascript"
+    "joynr-cpp-base"
+    "joynr-cpp-gcc"
+    "joynr-cpp-clang"
+    "joynr-runtime-environment-base"
+    "joynr-ilt-gcc"
+)
 
 function build
 {
     echo "building repository: $repository$version"
-
-    docker build -t ${repository}joynr-base${version} joynr-base/
-    docker tag -f ${repository}joynr-base${version} ${repository}joynr-base:latest
-    docker tag -f ${repository}joynr-base${version} joynr-base:latest
-
-    docker build -t ${repository}joynr-java${version} joynr-java/
-    docker tag -f ${repository}joynr-java${version} ${repository}joynr-java:latest
-    docker tag -f ${repository}joynr-java${version} joynr-java:latest
-
-    docker build -t ${repository}joynr-android${version} joynr-android/
-    docker tag -f ${repository}joynr-android${version} ${repository}joynr-android:latest
-    docker tag -f ${repository}joynr-android${version} joynr-android:latest
-
-    docker build -t ${repository}joynr-javascript${version} joynr-javascript/
-    docker tag -f ${repository}joynr-javascript${version} ${repository}joynr-javascript:latest
-    docker tag -f ${repository}joynr-javascript${version} joynr-javascript:latest
-
-    docker build -t ${repository}joynr-cpp-base${version} joynr-cpp-base/
-    docker tag -f ${repository}joynr-cpp-base${version} ${repository}joynr-cpp-base:latest
-    docker tag -f ${repository}joynr-cpp-base${version} joynr-cpp-base:latest
-
-    docker build -t ${repository}joynr-cpp-gcc${version} joynr-cpp-gcc/
-    docker tag -f ${repository}joynr-cpp-gcc${version} ${repository}joynr-cpp-gcc:latest
-    docker tag -f ${repository}joynr-cpp-gcc${version} joynr-cpp-gcc:latest
-
-    docker build -t ${repository}joynr-cpp-clang${version} joynr-cpp-clang/
-    docker tag -f ${repository}joynr-cpp-clang${version} ${repository}joynr-cpp-clang:latest
-    docker tag -f ${repository}joynr-cpp-clang${version} joynr-cpp-clang:latest
-
-    docker build -t ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base/
-    docker tag -f ${repository}joynr-runtime-environment-base${version} ${repository}joynr-runtime-environment-base:latest
-    docker tag -f ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base:latest
+    for image in "${listOfImages[@]}"
+    do
+        docker build -t ${repository}${image}${version} ${image}/
+        docker tag -f ${repository}${image}${version} ${repository}${image}:latest
+        docker tag -f ${repository}${image}${version} ${image}:latest
+    done
 }
 
 function pull
 {
     echo "pulling from repository: $repository for version:$version"
-
-    docker pull ${repository}joynr-base${version}
-    docker tag -f ${repository}joynr-base${version} joynr-base:latest
-
-    docker pull ${repository}joynr-java${version}
-    docker tag -f ${repository}joynr-java${version} joynr-java
-
-    docker pull ${repository}joynr-android${version}
-    docker tag -f ${repository}joynr-android${version} joynr-android
-
-    docker pull ${repository}joynr-javascript${version}
-    docker tag -f ${repository}joynr-javascript${version} joynr-javascript
-
-    docker pull ${repository}joynr-cpp-base${version}
-    docker tag -f ${repository}joynr-cpp-base${version} joynr-cpp-base
-
-    docker pull ${repository}joynr-cpp-gcc${version}
-    docker tag -f ${repository}joynr-cpp-gcc${version} joynr-cpp-gcc
-
-    docker pull ${repository}joynr-cpp-clang${version}
-    docker tag -f ${repository}joynr-cpp-clang${version} joynr-cpp-clang
-
-    docker pull ${repository}joynr-runtime-environment-base${version}
-    docker tag -f ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base
+    for image in "${listOfImages[@]}"
+    do
+        docker pull ${repository}${image}${version}
+        docker tag -f ${repository}${image}${version} ${image}:latest
+    done
 }
 
 function push
 {
     echo "pushing to repository: $repository with version:$version"
+    for image in "${listOfImages[@]}"
+    do
+        docker push ${repository}${image}${version}
 
-    docker push ${repository}joynr-base${version}
-    docker push ${repository}joynr-java${version}
-    docker push ${repository}joynr-android${version}
-    docker push ${repository}joynr-javascript${version}
-    docker push ${repository}joynr-cpp-base${version}
-    docker push ${repository}joynr-cpp-gcc${version}
-    docker push ${repository}joynr-cpp-clang${version}
-    docker push ${repository}joynr-runtime-environment-base${version}
+        if [ "$pushlatesttag" == "ON" ]
+        then
+            docker push ${repository}${image}:latest
+        fi
+    done
 }
 
 

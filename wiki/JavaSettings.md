@@ -139,7 +139,7 @@ transmission.
 
 ##MessagingPropertyKeys
 
-### `BOUNCE_PROXY_URL`
+### `PROPERTY_BOUNCE_PROXY_URL`
 The root URL of the BounceProxy backend service when using HTTP messaging. The cluster controller
 uses this service to create a receive channel (message queue). Messages are posted to the receive
 channel in the backend. The cluster controller polls the channel to download the incoming messages.
@@ -149,7 +149,16 @@ channel in the backend. The cluster controller polls the channel to download the
 * **User property**: `joynr.messaging.bounceproxyurl`
 * **Default value**: `http://localhost:8080/bounceproxy/`
 
-### `DISCOVERYDIRECTORYURL`
+### `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT`
+Select primary global transport middleware which will be used to register providers. The provider
+will be reachable via the selected global transport middleware.
+
+* **REQUIRED if using more than one global transport**
+* **Type**: String
+* **User property**: `joynr.messaging.primaryglobaltransport`
+* **Default value**: NOT SET
+
+### `CAPABILITYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
 appropriate entry in the local capabilities directory.
@@ -314,6 +323,20 @@ Possible values are:
 * **User property**: `joynr.messaging.cc.protocol`
 * **Default value**: `ws`
 
+
+## <a name="ExpiredDiscoveryEntryCacheCleaner"></a>ExpiredDiscoveryEntryCacheCleaner
+
+### `DISCOVERY_ENTRY_CACHE_CLEANUP_INTERVAL`
+The time interval in minutes at which the capabilities cache will be searched for expired
+discovery entries, and these will be expunged from the cache. Applies to both local and
+global cached discovery entries.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.cc.discovery.entry.cache.cleanup.interval`
+* **Default value**: `60`
+
+
 ## JEE Integration
 
 These properties are defined as constants in the
@@ -377,10 +400,11 @@ that the system requires exactly one entry for each to be provisioned. The syste
 fail to start if either one is lacking or duplicate entries have been provisioned.  
 If you want to change either one of those entries from the default, you don't have to
 do so using the JSON format. You can override the entries from the JSON by using the
-properties listed in the `ConfigurableMessagingSettings` section above. If you choose
-this approach, ensure that you specify both the participant ID and the URL for the given
-service, as if you omit one of those properties, the entry will not be considered
-complete and will not be loaded, falling back the value found in the JSON.
+properties listed in the `ConfigurableMessagingSettings` section above.  
+Generally you will simply specifiy one of `DISCOVERYDIRECTORYURL` and/or
+`DOMAINACCESSCONTROLLERURL`, although it is also possible to override all other parts
+of the entry if necessary. Specifying an incomplete entry by, e.g., setting the
+participant ID to an empty value will result in the system failing to start.
 
 * **OPTIONAL**
 * **Type**: String

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,17 @@ define("joynr/dispatching/types/SubscriptionReply", [
      * @param {Object}
      *            settings
      * @param {String}
-     *            subscriptionId
+     *            settings.subscriptionId
+     * @param {Object}
+     *            [settings.error] The exception object in case of subscription request failure
      */
     function SubscriptionReply(settings) {
         Util.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+
+        Util.checkPropertyIfDefined(settings.error, [
+            "Object",
+            "SubscriptionException"
+        ], "settings.error");
 
         /**
          * @name SubscriptionReply#subscriptionId

@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -256,6 +256,54 @@ public class ArbitrationTest {
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
         discoveryQos.setProviderMustSupportOnChange(true);
+        try {
+            Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+                                                             interfaceName,
+                                                             interfaceVersion,
+                                                             discoveryQos,
+                                                             localDiscoveryAggregator);
+            arbitrator.setArbitrationListener(arbitrationCallback);
+            arbitrator.startArbitration();
+            Mockito.verify(arbitrationCallback, Mockito.times(1))
+                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+        } catch (DiscoveryException e) {
+            Assert.fail("A Joyn Arbitration Exception has been thrown");
+        }
+    }
+
+    @Test
+    public void testLastSeenArbitrator() {
+        ProviderQos providerQos = new ProviderQos();
+
+        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
+                                                domain,
+                                                TestInterface.INTERFACE_NAME,
+                                                "wrongParticipantId",
+                                                providerQos,
+                                                222L,
+                                                NO_EXPIRY,
+                                                publicKeyId));
+
+        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
+                                                domain,
+                                                TestInterface.INTERFACE_NAME,
+                                                expectedParticipantId,
+                                                providerQos,
+                                                333L,
+                                                NO_EXPIRY,
+                                                publicKeyId));
+
+        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
+                                                domain,
+                                                TestInterface.INTERFACE_NAME,
+                                                "thirdParticipantId",
+                                                providerQos,
+                                                111L,
+                                                NO_EXPIRY,
+                                                publicKeyId));
+
+        discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.LastSeen, Long.MAX_VALUE);
+
         try {
             Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
                                                              interfaceName,

@@ -1,11 +1,9 @@
 package io.joynr.dispatching.subscription;
 
-import static org.hamcrest.Matchers.contains;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +19,7 @@ import static org.hamcrest.Matchers.contains;
  * #L%
  */
 
+import static org.hamcrest.Matchers.contains;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -28,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.util.Set;
@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -53,16 +52,19 @@ import com.google.common.collect.Sets;
 
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
@@ -71,7 +73,7 @@ import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
 public class SubscriptionManagerTest {
 
     private String attributeName;
-    private AttributeSubscriptionListener<?> attributeSubscriptionCallback;
+    private AttributeSubscriptionAdapter<Integer> attributeSubscriptionCallback;
 
     private PeriodicSubscriptionQos qos;
     private OnChangeSubscriptionQos onChangeQos;
@@ -86,6 +88,8 @@ public class SubscriptionManagerTest {
     private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory = spy(new ConcurrentHashMap<String, BroadcastSubscriptionListener>());
     private ConcurrentMap<String, PubSubState> subscriptionStates = spy(new ConcurrentHashMap<String, PubSubState>());
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers = spy(new ConcurrentHashMap<String, MissedPublicationTimer>());
+    private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes = spy(Maps.<String, Class<?>[]> newConcurrentMap());
+    private ConcurrentMap<String, Future<String>> subscriptionFutureMap = spy(Maps.<String, Future<String>> newConcurrentMap());
 
     @Mock
     private PubSubState subscriptionState;
@@ -96,6 +100,7 @@ public class SubscriptionManagerTest {
 
     private String fromParticipantId;
     private String toParticipantId;
+    private Future<String> future;
 
     @Mock
     private ConcurrentMap<String, Class<?>> subscriptionAttributeTypes;
@@ -113,24 +118,14 @@ public class SubscriptionManagerTest {
                                                           missedPublicationTimers,
                                                           subscriptionEndFutures,
                                                           subscriptionAttributeTypes,
-                                                          Maps.<String, Class<?>[]> newConcurrentMap(),
+                                                          subscriptionBroadcastTypes,
+                                                          subscriptionFutureMap,
                                                           cleanupScheduler,
                                                           dispatcher);
         subscriptionId = "testSubscription";
 
         attributeName = "testAttribute";
-        attributeSubscriptionCallback = new AttributeSubscriptionListener<Integer>() {
-            @Override
-            public void onError(JoynrRuntimeException error) {
-                // TODO Auto-generated method stub
-            }
-
-            @Override
-            public void onReceive(Integer value) {
-                // TODO Auto-generated method stub
-
-            }
-        };
+        attributeSubscriptionCallback = new AttributeSubscriptionAdapter<Integer>();
         long minInterval_ms = 100;
         long maxInterval_ms = 5000;
         long subscriptionDuration = 20000;
@@ -163,6 +158,7 @@ public class SubscriptionManagerTest {
         qosSettings = new MessagingQos();
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
+        future = new Future<String>();
     }
 
     @SuppressWarnings("unchecked")
@@ -172,31 +168,31 @@ public class SubscriptionManagerTest {
         class IntegerReference extends TypeReference<Integer> {
         }
 
+        Future<String> future = mock(Future.class);
         AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,
                                                                                             IntegerReference.class,
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
-                                                                                            null);
+                                                                                            future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
                                                           Sets.newHashSet(toParticipantId),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
-        Mockito.verify(attributeSubscriptionDirectory).put(Mockito.anyString(),
-                                                           Mockito.eq(attributeSubscriptionCallback));
-        Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
+        verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
+        verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
-        Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
-                                                  Mockito.eq(qos.getExpiryDateMs()),
-                                                  Mockito.eq(TimeUnit.MILLISECONDS));
-        Mockito.verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
-                                                                     Mockito.any(ScheduledFuture.class));
+        verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
+                                          Mockito.eq(qos.getExpiryDateMs()),
+                                          Mockito.eq(TimeUnit.MILLISECONDS));
+        verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
+                                                             Mockito.any(ScheduledFuture.class));
 
-        Mockito.verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                           (Set<String>) argThat(contains(toParticipantId)),
-                                                           any(SubscriptionRequest.class),
-                                                           any(MessagingQos.class),
-                                                           eq(false));
+        verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
+                                                   (Set<String>) argThat(contains(toParticipantId)),
+                                                   any(SubscriptionRequest.class),
+                                                   any(MessagingQos.class),
+                                                   eq(false));
     }
 
     @SuppressWarnings("unchecked")
@@ -208,27 +204,26 @@ public class SubscriptionManagerTest {
         BroadcastSubscribeInvocation subscriptionRequest = new BroadcastSubscribeInvocation(broadcastName,
                                                                                             broadcastSubscriptionListener,
                                                                                             onChangeQos,
-                                                                                            null);
+                                                                                            future);
         subscriptionManager.registerBroadcastSubscription(fromParticipantId,
                                                           Sets.newHashSet(toParticipantId),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
-        Mockito.verify(broadcastSubscriptionDirectory).put(Mockito.anyString(),
-                                                           Mockito.eq(broadcastSubscriptionListener));
-        Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
+        verify(broadcastSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(broadcastSubscriptionListener));
+        verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
-        Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
-                                                  Mockito.eq(qos.getExpiryDateMs()),
-                                                  Mockito.eq(TimeUnit.MILLISECONDS));
-        Mockito.verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
-                                                                     Mockito.any(ScheduledFuture.class));
+        verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
+                                          Mockito.eq(qos.getExpiryDateMs()),
+                                          Mockito.eq(TimeUnit.MILLISECONDS));
+        verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
+                                                             Mockito.any(ScheduledFuture.class));
 
-        Mockito.verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                           (Set<String>) argThat(contains(toParticipantId)),
-                                                           any(SubscriptionRequest.class),
-                                                           any(MessagingQos.class),
-                                                           eq(true));
+        verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
+                                                   (Set<String>) argThat(contains(toParticipantId)),
+                                                   any(SubscriptionRequest.class),
+                                                   any(MessagingQos.class),
+                                                   eq(true));
     }
 
     @SuppressWarnings("unchecked")
@@ -243,24 +238,23 @@ public class SubscriptionManagerTest {
                                                                                 IntegerReference.class,
                                                                                 attributeSubscriptionCallback,
                                                                                 qosWithoutExpiryDate,
-                                                                                null);
+                                                                                future);
         subscriptionId = request.getSubscriptionId();
         subscriptionManager.registerAttributeSubscription(fromParticipantId, Sets.newHashSet(toParticipantId), request);
 
-        Mockito.verify(attributeSubscriptionDirectory).put(Mockito.anyString(),
-                                                           Mockito.eq(attributeSubscriptionCallback));
-        Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
+        verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
+        verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
-        Mockito.verify(cleanupScheduler, never()).schedule(Mockito.any(Runnable.class),
-                                                           Mockito.anyLong(),
-                                                           Mockito.any(TimeUnit.class));
-        Mockito.verify(subscriptionEndFutures, never()).put(Mockito.anyString(), Mockito.any(ScheduledFuture.class));
+        verify(cleanupScheduler, never()).schedule(Mockito.any(Runnable.class),
+                                                   Mockito.anyLong(),
+                                                   Mockito.any(TimeUnit.class));
+        verify(subscriptionEndFutures, never()).put(Mockito.anyString(), Mockito.any(ScheduledFuture.class));
 
-        Mockito.verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                           (Set<String>) argThat(contains(toParticipantId)),
-                                                           any(SubscriptionRequest.class),
-                                                           any(MessagingQos.class),
-                                                           eq(false));
+        verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
+                                                   (Set<String>) argThat(contains(toParticipantId)),
+                                                   any(SubscriptionRequest.class),
+                                                   any(MessagingQos.class),
+                                                   eq(false));
     }
 
     @SuppressWarnings("unchecked")
@@ -276,13 +270,89 @@ public class SubscriptionManagerTest {
                                                    subscriptionId,
                                                    qosSettings);
 
-        Mockito.verify(subscriptionStates).get(Mockito.eq(subscriptionId));
-        Mockito.verify(subscriptionState).stop();
+        verify(subscriptionStates).get(Mockito.eq(subscriptionId));
+        verify(subscriptionState).stop();
 
-        Mockito.verify(dispatcher, times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
-                                                                  (Set<String>) argThat(contains(toParticipantId)),
-                                                                  Mockito.eq(new SubscriptionStop(subscriptionId)),
-                                                                  Mockito.any(MessagingQos.class));
+        verify(dispatcher, times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
+                                                          (Set<String>) argThat(contains(toParticipantId)),
+                                                          Mockito.eq(new SubscriptionStop(subscriptionId)),
+                                                          Mockito.any(MessagingQos.class));
 
     }
+
+    @Test
+    public void testHandleSubscriptionReplyWithError() {
+        SubscriptionException subscriptionError = new SubscriptionException(subscriptionId);
+        SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, subscriptionError);
+        @SuppressWarnings("unchecked")
+        Future<String> futureMock = mock(Future.class);
+        subscriptionFutureMap.put(subscriptionId, futureMock);
+        subscriptionManager.handleSubscriptionReply(subscriptionReply);
+        verify(futureMock).onFailure(eq(subscriptionError));
+    }
+
+    @Test
+    public void testHandleSubscriptionReplyWithErrorWithSubscriptionListener() {
+        SubscriptionException subscriptionError = new SubscriptionException(subscriptionId);
+        SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, subscriptionError);
+        @SuppressWarnings("unchecked")
+        Future<String> futureMock = mock(Future.class);
+        subscriptionFutureMap.put(subscriptionId, futureMock);
+        AttributeSubscriptionListener<?> subscriptionListener = mock(AttributeSubscriptionListener.class);
+        attributeSubscriptionDirectory.put(subscriptionId, subscriptionListener);
+        subscriptionManager.handleSubscriptionReply(subscriptionReply);
+        verify(futureMock).onFailure(eq(subscriptionError));
+        verify(subscriptionListener).onError(eq(subscriptionError));
+    }
+
+    @Test
+    public void testHandleSubscriptionReplyWithErrorWithBroadcastListener() {
+        SubscriptionException subscriptionError = new SubscriptionException(subscriptionId);
+        SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, subscriptionError);
+        @SuppressWarnings("unchecked")
+        Future<String> futureMock = mock(Future.class);
+        subscriptionFutureMap.put(subscriptionId, futureMock);
+        BroadcastSubscriptionListener broadcastListener = mock(BroadcastSubscriptionListener.class);
+        broadcastSubscriptionDirectory.put(subscriptionId, broadcastListener);
+        subscriptionManager.handleSubscriptionReply(subscriptionReply);
+        verify(futureMock).onFailure(eq(subscriptionError));
+        verify(broadcastListener).onError(eq(subscriptionError));
+    }
+
+    @Test
+    public void testHandleSubscriptionReplyWithSuccess() {
+        SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId);
+        @SuppressWarnings("unchecked")
+        Future<String> futureMock = mock(Future.class);
+        subscriptionFutureMap.put(subscriptionId, futureMock);
+        subscriptionManager.handleSubscriptionReply(subscriptionReply);
+        verify(futureMock).onSuccess(eq(subscriptionId));
+    }
+
+    @Test
+    public void testHandleSubscriptionReplyWithSuccessWithSubscriptionListener() {
+        SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId);
+        @SuppressWarnings("unchecked")
+        Future<String> futureMock = mock(Future.class);
+        subscriptionFutureMap.put(subscriptionId, futureMock);
+        AttributeSubscriptionListener<?> subscriptionListener = mock(AttributeSubscriptionListener.class);
+        attributeSubscriptionDirectory.put(subscriptionId, subscriptionListener);
+        subscriptionManager.handleSubscriptionReply(subscriptionReply);
+        verify(futureMock).onSuccess(eq(subscriptionId));
+        verify(subscriptionListener).onSubscribed(eq(subscriptionId));
+    }
+
+    @Test
+    public void testHandleSubscriptionReplyWithSuccessWithBroadcastListener() {
+        SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId);
+        @SuppressWarnings("unchecked")
+        Future<String> futureMock = mock(Future.class);
+        subscriptionFutureMap.put(subscriptionId, futureMock);
+        BroadcastSubscriptionListener broadcastListener = mock(BroadcastSubscriptionListener.class);
+        broadcastSubscriptionDirectory.put(subscriptionId, broadcastListener);
+        subscriptionManager.handleSubscriptionReply(subscriptionReply);
+        verify(futureMock).onSuccess(eq(subscriptionId));
+        verify(broadcastListener).onSubscribed(eq(subscriptionId));
+    }
+
 }

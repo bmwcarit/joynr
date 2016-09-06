@@ -38,18 +38,17 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.jeeintegration.ServiceProviderDiscovery;
+import io.joynr.jeeintegration.api.ServiceProvider;
+import joynr.exceptions.ApplicationException;
 import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.jeeintegration.ServiceProviderDiscovery;
-import io.joynr.jeeintegration.api.ServiceProvider;
 
 /**
  * Unit tests for {@link ServiceProviderDiscovery}.
@@ -65,6 +64,11 @@ public class ServiceProviderDiscoveryTest {
         public String callMe(String parameterOne) throws JoynrRuntimeException {
             return "DummyBeanOne";
         }
+
+        @Override
+        public void callMeWithException() throws ApplicationException {
+            throw new ApplicationException(CallMeWithExceptionErrorEnum.MY_ERROR);
+        }
     }
 
     @Stateless
@@ -73,6 +77,11 @@ public class ServiceProviderDiscoveryTest {
         @Override
         public String callMe(String parameterOne) throws JoynrRuntimeException {
             return "DummyBeanTwo";
+        }
+
+        @Override
+        public void callMeWithException() throws ApplicationException {
+            throw new ApplicationException(CallMeWithExceptionErrorEnum.MY_ERROR);
         }
     }
 
@@ -93,6 +102,11 @@ public class ServiceProviderDiscoveryTest {
         @Override
         public String callMe(String parameterOne) {
             return parameterOne;
+        }
+
+        @Override
+        public void callMeWithException() throws ApplicationException {
+            throw new ApplicationException(CallMeWithExceptionErrorEnum.MY_ERROR);
         }
     }
 

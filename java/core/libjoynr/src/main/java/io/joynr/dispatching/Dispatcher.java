@@ -5,7 +5,7 @@ import java.util.Set;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.Set;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingQos;
 import joynr.SubscriptionPublication;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 
@@ -43,6 +44,11 @@ public interface Dispatcher extends MessageArrivedListener {
                                             Set<String> toParticipantId,
                                             SubscriptionPublication publication,
                                             MessagingQos qosSettings);
+
+    void sendSubscriptionReply(String fromParticipantId,
+                               String toParticipantId,
+                               SubscriptionReply subscriptionReply,
+                               MessagingQos qosSettings);
 
     /**
      *

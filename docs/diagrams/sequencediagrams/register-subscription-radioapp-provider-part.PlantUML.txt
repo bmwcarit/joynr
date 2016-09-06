@@ -1,0 +1,88 @@
+@startuml
+
+[-> MessageRouter : "route(SubscriptionRequest)"
+
+MessageRouter -> InProcessLibJoynrMessagingSkeleton : transmit
+InProcessLibJoynrMessagingSkeleton -> Dispatcher : receive
+
+note over Dispatcher
+	"Task scheduled here"
+end note
+
+Dispatcher -> ThreadPool : execute
+
+ThreadPool ->> ReceivedMessageRunnable : "run <b>(Thread switched)</b>"
+ReceivedMessageRunnable -> Dispatcher : handleSubscriptionRequestReceived
+
+alt "Target provider not registered"
+	Dispatcher -> PublicationManager : add
+	PublicationManager -> PublicationManager : queueSubscriptionRequest
+	note over PublicationManager
+		"Dispatcher::addRequestCaller calls PublicationManager::restore
+		 which uses the queue to finalize the registration"
+	end note
+else
+	Dispatcher -> PublicationManager : add
+	alt "Publication exists"
+		PublicationManager -> RequestCaller : unregisterAttributeListener
+		RequestCaller -> AbstractJoynrProvider : unregisterAttributeListener
+
+		note over PublicationManager
+			"Task unscheduled here"
+		end note
+
+		PublicationManager -> DelayedScheduler : unschedule(PublicationEndRunnable)
+	end
+
+	alt "Is 'on change' publication"
+		PublicationManager -> RequestCaller : registerAttributeListener
+		RequestCaller -> AbstractJoynrProvider : registerAttributeListener
+	end
+
+	alt "Subscription not expired but has expiry date"
+		note over PublicationManager
+			"Task scheduled here"
+		end note
+
+		PublicationManager -> DelayedScheduler : "schedule(PublicationEndRunnable)"
+	end
+
+	note over PublicationManager
+		"Task scheduled here"
+	end note
+
+	PublicationManager -> DelayedScheduler : "schedule(PublisherRunnable)"
+end
+
+== PublisherRunnable ==
+
+PublisherRunnable -> PublicationManager : pollSubscription
+
+alt "Periodic publication && timeSinceLastPublication < publicationInterval"
+	note over PublicationManager
+		"Task scheduled here"
+	end note
+	PublicationManager -> DelayedScheduler : "schedule(PublisherRunnable)"
+else
+	PublicationManager -> RequestInterpreter : execute
+	RequestInterpreter -> RequestCaller : getCurrentValue
+	RequestCaller -> DefaultRadioProvider : getCurrentStation
+
+	group "Callback for getCurrentStation"
+		note over PublicationManager
+			"Sends either a value or an error"
+		end note
+		PublicationManager -> JoynrMessageSender : sendSubscriptionPublication
+		JoynrMessageSender -> MessageRouter : "route(SubscriptionPublication)"
+
+		alt "Periodic publication && !expired"
+			PublicationManager -> DelayedScheduler : "schedule(PublisherRunnable)"
+			note over PublicationManager
+				"Task scheduled here"
+			end note
+		end
+	end
+end
+
+
+@enduml

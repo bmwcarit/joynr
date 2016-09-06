@@ -3,7 +3,7 @@ package io.joynr.proxy.invocation;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,15 @@ import io.joynr.proxy.Future;
  * Invocation contains the generic, queuable information for a proxy call
  */
 
-public class Invocation {
+public class Invocation<T> {
 
-    private final Future<?> future;
+    private final Future<T> future;
 
-    public Invocation(Future<?> future) {
+    public Invocation(Future<T> future) {
         this.future = future;
     }
 
-    public Future<?> getFuture() {
+    public Future<T> getFuture() {
         return future;
     }
 }

@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import org.slf4j.Logger;
@@ -101,6 +102,17 @@ public class JoynrMessageFactory {
                                     Reply reply,
                                     MessagingQos messagingQos) {
         return createMessage(JoynrMessage.MESSAGE_TYPE_REPLY, fromParticipantId, toParticipantId, reply, messagingQos);
+    }
+
+    public JoynrMessage createSubscriptionReply(final String fromParticipantId,
+                                                final String toParticipantId,
+                                                SubscriptionReply subscriptionReply,
+                                                MessagingQos messagingQos) {
+        return createMessage(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REPLY,
+                             fromParticipantId,
+                             toParticipantId,
+                             subscriptionReply,
+                             messagingQos);
     }
 
     public JoynrMessage createSubscriptionRequest(String fromParticipantId,

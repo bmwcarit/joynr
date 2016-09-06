@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,10 @@
 #include "joynr/infrastructure/DacTypes/Role.h"
 #include "joynr/ISubscriptionListener.h"
 #include "AccessControlAlgorithm.h"
+#include "LocalDomainAccessStore.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
+#include "joynr/Future.h"
 
 namespace joynr
 {
@@ -47,8 +49,6 @@ namespace infrastructure
 {
 class GlobalDomainAccessControllerProxy;
 } // namespace infrastructure
-
-class LocalDomainAccessStore;
 
 /**
  * Object that controls access to providers
@@ -72,8 +72,9 @@ public:
         virtual void operationNeeded() = 0;
     };
 
-    explicit LocalDomainAccessController(LocalDomainAccessStore* localDomainAccessStore);
-    virtual ~LocalDomainAccessController();
+    explicit LocalDomainAccessController(
+            std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore);
+    virtual ~LocalDomainAccessController() = default;
     /**
      * The init method has to be called first, only afterwards LocalDomainAccessController may be
      * used.
@@ -433,16 +434,39 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessController);
 
     AccessControlAlgorithm accessControlAlgorithm;
-    std::unordered_map<std::string, std::string> dreSubscriptions;
+    std::unordered_map<std::string, std::shared_ptr<Future<std::string>>> dreSubscriptions;
 
     struct AceSubscription
     {
-        std::string masterAceSubscriptionId;
-        std::string mediatorAceSubscriptionId;
-        std::string ownerAceSubscriptionId;
+        std::shared_ptr<Future<std::string>> masterAceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> mediatorAceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> ownerAceSubscriptionIdFuture;
+
+        const std::string getMasterAceSubscriptionId()
+        {
+            std::string masterAceSubscriptionId;
+            masterAceSubscriptionIdFuture->get(1000, masterAceSubscriptionId);
+            return masterAceSubscriptionId;
+        }
+
+        const std::string getMediatorAceSubscriptionId()
+        {
+            std::string mediatorAceSubscriptionId;
+            mediatorAceSubscriptionIdFuture->get(1000, mediatorAceSubscriptionId);
+            return mediatorAceSubscriptionId;
+        }
+
+        const std::string getOwnerAceSubscriptionId()
+        {
+            std::string ownerAceSubscriptionId;
+            ownerAceSubscriptionIdFuture->get(1000, ownerAceSubscriptionId);
+            return ownerAceSubscriptionId;
+        }
 
         AceSubscription()
-                : masterAceSubscriptionId(), mediatorAceSubscriptionId(), ownerAceSubscriptionId()
+                : masterAceSubscriptionIdFuture(),
+                  mediatorAceSubscriptionIdFuture(),
+                  ownerAceSubscriptionIdFuture()
         {
         }
     };
@@ -451,7 +475,7 @@ private:
 
     std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
-    LocalDomainAccessStore* localDomainAccessStore;
+    std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
 
     ADD_LOGGER(LocalDomainAccessController);
     static std::chrono::milliseconds broadcastMinInterval;
@@ -465,7 +489,7 @@ private:
     void initialised(const std::string& domain, const std::string& interfaceName);
     void abortInitialisation(const std::string& domain, const std::string& interfaceName);
 
-    std::string subscribeForDreChange(const std::string& userId);
+    std::shared_ptr<Future<std::string>> subscribeForDreChange(const std::string& userId);
     AceSubscription subscribeForAceChange(const std::string& domain,
                                           const std::string& interfaceName);
     std::string createCompoundKey(const std::string& domain, const std::string& interfaceName);

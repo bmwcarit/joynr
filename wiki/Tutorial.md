@@ -170,8 +170,11 @@ can be stopped by hitting `q`. The provider will be unregistered and the applica
 JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings, pathToMessagingSettings);
 // Initialize the quality of service settings
 // Set the priority so that the consumer application always uses the most recently started provider
+std::chrono::milliseconds millisSinceEpoch =
+    std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch());
 types::ProviderQos providerQos;
-providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
+providerQos.setPriority(millisSinceEpoch.count());
 // Register the provider
 std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider());
 runtime->registerProvider<vehicle::RadioProvider>(providerDomain, provider, providerQos);
@@ -203,6 +206,7 @@ public static void main(String[] args) {
 public void run() {
     provider = new MyRadioProvider(providerScope);
     ProviderQos providerQos = new ProviderQos();
+    providerQos.setPriority(System.currentTimeMillis());
     runtime.registerProvider(localDomain, provider, providerQos);
 }
 
@@ -365,11 +369,9 @@ int main(int argc, char* argv[])
         // missed publication notification (depending on the value of the alert interval QoS).
         int publicationTtlMs = 5000;
 
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minIntervalMs,
-                                                                                                        maxIntervalMs,
-                                                                                                        expiryDateMs,
-                                                                                                        alertAfterIntervalMs,
-                                                                                                        publicationTtlMs);
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(minInterval_ms).setMaxIntervalMs(maxInterval_ms).setExpiryDateMs(validityMs);
+        subscriptionQos.setAlertAfterIntervalMs(alertAfterInterval_ms).setPublicationTtlMs(publicationTtl_ms);
 
         ProxyBuilder<RadioProxy> proxyBuilder = runtime.getProxyBuilder(providerDomain, RadioProxy.class);
         try {
@@ -379,10 +381,10 @@ int main(int argc, char* argv[])
             LOG.info(PRINT_BORDER + "ATTRIBUTE GET: current station: " + currentStation + PRINT_BORDER);
 
             // subscribe to an attribute
-            subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionListener<RadioStation>() {
+            subscriptionFutureCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionListener<RadioStation>() {
 
                                                                                     @Override
-                                                                                    public void receive(RadioStation value) {
+                                                                                    public void onReceive(RadioStation value) {
                                                                                         LOG.info(PRINT_BORDER
                                                                                                 + "ATTRIBUTE SUBSCRIPTION: current station: "
                                                                                                 + value + PRINT_BORDER);

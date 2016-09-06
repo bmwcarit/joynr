@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@
  */
 #ifndef HTTPNETWORKING_H
 #define HTTPNETWORKING_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrClusterControllerExport.h"
 #include <string>
-#include <QByteArray>
 #include <chrono>
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrClusterControllerExport.h"
 
 namespace joynr
 {
@@ -136,7 +136,7 @@ public:
       * The caller must ensure that the pointer stays valid until the built HttpRequest is no longer
      * used.
       */
-    virtual IHttpPostBuilder* postContent(const QByteArray& data) = 0;
+    virtual IHttpPostBuilder* postContent(const std::string& data) = 0;
     ~IHttpPostBuilder() override = default;
 };
 

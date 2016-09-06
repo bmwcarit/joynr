@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,12 @@ define("joynr/dispatching/subscription/SubscriptionListener", [], function() {
             // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
             return new SubscriptionListener(settings);
         }
+
+        /**
+         * Is called if subscription request has been successfully delivered to the provider
+         * @name SubscriptionListener#onSubscribed
+         */
+        this.onSubscribed = settings.onSubscribed;
 
         /**
          * Is called if publication is received

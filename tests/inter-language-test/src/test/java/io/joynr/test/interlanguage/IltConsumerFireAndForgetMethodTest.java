@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import joynr.OnChangeSubscriptionQos;
 
@@ -55,7 +56,8 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
     private Integer attributeFireAndForgetValue = -1;
     private OnChangeSubscriptionQos subscriptionQos;
-    private String attributeFireAndForgetSubscriptionId = "";
+    //private Future<String> attributeFireAndForgetSubscriptionId = new Future<String>();
+    private String attributeFireAndForgetSubscriptionId;
     private Semaphore publicationReceivedSemaphore;
     private Answer<Void> releaseSemaphore = new Answer<Void>() {
         @Override
@@ -118,11 +120,16 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
             testInterfaceProxy.setAttributeFireAndForget(expected);
 
             // subscribe to attributeFireAndForget
-            attributeFireAndForgetSubscriptionId = testInterfaceProxy.subscribeToAttributeFireAndForget(attributeFireAndForgetListener,
-                                                                                                        subscriptionQos);
+            Future<String> myFuture;
+            myFuture = testInterfaceProxy.subscribeToAttributeFireAndForget(attributeFireAndForgetListener,
+                                                                            subscriptionQos);
+
+            attributeFireAndForgetSubscriptionId = myFuture.get(10000);
+            LOG.info(name.getMethodName() + ": subscribeToAttributeFireAndForget - subscription successful");
             assertTrue(publicationReceivedSemaphore.tryAcquire(5000, TimeUnit.MILLISECONDS));
             assertEquals(expected, attributeFireAndForgetValue);
-            LOG.info(name.getMethodName() + ": subscribeToAttributeFireAndForget - subscription successful");
+
+            LOG.info(name.getMethodName() + ": subscribeToAttributeFireAndForget - first publication received");
         } catch (Exception e) {
             fail(name.getMethodName() + ": subscribeToAttributeFireAndForget - FAILED - caught unexpected exception: "
                     + e.getMessage());

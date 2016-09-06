@@ -34,7 +34,7 @@
 #include "joynr/serializer/Serializer.h"
 
 template <typename Generator>
-class SerializerPerformanceTest : public PerformanceTest<>
+class SerializerPerformanceTest : public PerformanceTest
 {
     using OutputStream = muesli::StringOStream;
     using OutputArchive = muesli::JsonOutputArchive<OutputStream>;
@@ -42,15 +42,19 @@ class SerializerPerformanceTest : public PerformanceTest<>
     using InputArchive = muesli::JsonInputArchive<InputStream>;
 
 public:
-    SerializerPerformanceTest(std::size_t length)
-            : length(length), request(Generator::generateRequest(length)), messageFactory(), qos()
+    SerializerPerformanceTest(std::uint64_t runs, std::size_t length)
+            : runs(runs),
+              length(length),
+              request(Generator::generateRequest(length)),
+              messageFactory(),
+              qos()
     {
     }
 
     void runSerializationBenchmark() const
     {
         auto fun = [this]() { this->createMessage(); };
-        runAndPrintAverage(getTestName("serialization"), fun);
+        runAndPrintAverage(runs, getTestName("serialization"), fun);
     }
 
     void runFullMessageSerializationBenchmark() const
@@ -62,7 +66,7 @@ public:
             oarchive(message);
             return ostream.getString();
         };
-        runAndPrintAverage(getTestName("full message serialization"), fun);
+        runAndPrintAverage(runs, getTestName("full message serialization"), fun);
     }
 
     template <typename ParamType>
@@ -79,7 +83,7 @@ public:
             return param;
         };
 
-        runAndPrintAverage(getTestName("deserialization"), fun);
+        runAndPrintAverage(runs, getTestName("deserialization"), fun);
     }
 
     template <typename ParamType>
@@ -109,7 +113,7 @@ public:
             return param;
         };
 
-        runAndPrintAverage(getTestName("full message deserialization"), fun);
+        runAndPrintAverage(runs, getTestName("full message deserialization"), fun);
     }
 
 private:
@@ -129,6 +133,7 @@ private:
                std::to_string(length);
     }
 
+    std::uint64_t runs;
     std::size_t length;
     joynr::Request request;
     joynr::JoynrMessageFactory messageFactory;

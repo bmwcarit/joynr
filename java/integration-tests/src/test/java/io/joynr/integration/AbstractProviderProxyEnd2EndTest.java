@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ import joynr.tests.DefaulttestProvider;
 import joynr.tests.test.MethodWithErrorEnumExtendedErrorEnum;
 import joynr.tests.test.MethodWithImplicitErrorEnumErrorEnum;
 import joynr.tests.testAsync.MethodWithMultipleOutputParametersCallback;
-import joynr.tests.testBroadcastInterface.BroadcastWithMapParametersBroadcastListener;
+import joynr.tests.testBroadcastInterface.BroadcastWithMapParametersBroadcastAdapter;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
 import joynr.tests.testProxy;
 import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
@@ -781,15 +781,11 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         final TStringKeyMap mapParam = new TStringKeyMap();
         mapParam.put("key", "value");
-        proxy.subscribeToBroadcastWithMapParametersBroadcast(new BroadcastWithMapParametersBroadcastListener() {
+        proxy.subscribeToBroadcastWithMapParametersBroadcast(new BroadcastWithMapParametersBroadcastAdapter() {
             @Override
             public void onReceive(TStringKeyMap receivedMapParam) {
                 assertEquals(mapParam, receivedMapParam);
                 broadcastReceived.release();
-            }
-
-            @Override
-            public void onError() {
             }
         }, subscriptionQos);
 

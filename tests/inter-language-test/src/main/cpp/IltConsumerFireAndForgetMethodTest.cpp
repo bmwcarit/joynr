@@ -29,6 +29,7 @@ using namespace ::testing;
 class MockInt32SubscriptionListener : public joynr::ISubscriptionListener<std::int32_t>
 {
 public:
+    MOCK_METHOD1(onSubscribed, void(const std::string& subscriptionId));
     MOCK_METHOD1(onReceive, void(const std::int32_t& value));
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
@@ -106,13 +107,14 @@ void IltConsumerFireAndForgetMethodTest::subscribeToAttributeFireAndForget(
     int64_t validity = 60000;
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
+    EXPECT_CALL(*mockInt32SubscriptionListener, onSubscribed(_)).Times(1);
     EXPECT_CALL(*mockInt32SubscriptionListener, onReceive(0)).Times(1);
     EXPECT_CALL(*mockInt32SubscriptionListener, onError(_)).Times(0);
     JOYNR_ASSERT_NO_THROW({
         testInterfaceProxy->setAttributeFireAndForget(0);
-        attributeFireAndForgetSubscriptionId =
-                testInterfaceProxy->subscribeToAttributeFireAndForget(
-                        mockInt32SubscriptionListener, subscriptionQos);
+        testInterfaceProxy->subscribeToAttributeFireAndForget(
+                                    mockInt32SubscriptionListener, subscriptionQos)
+                ->get(attributeFireAndForgetSubscriptionId);
     });
     JOYNR_LOG_INFO(logger,
                    "subscribeToAttributeFireAndForget - subscriptionId: " +

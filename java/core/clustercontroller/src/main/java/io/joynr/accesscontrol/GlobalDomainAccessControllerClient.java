@@ -32,7 +32,7 @@ import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -354,25 +354,25 @@ public class GlobalDomainAccessControllerClient {
 
     }
 
-    public String subscribeToMasterAccessControlEntryChangedBroadcast(LdacMasterAccessControlEntryChangedBroadcastListener ldacMasterAccessControlEntryChangedBroadcastListener,
-                                                                      OnChangeSubscriptionQos broadcastSubscriptionQos,
-                                                                      MasterAccessControlEntryChangedBroadcastFilterParameters masterAcefilterParameters) {
+    public Future<String> subscribeToMasterAccessControlEntryChangedBroadcast(LdacMasterAccessControlEntryChangedBroadcastListener ldacMasterAccessControlEntryChangedBroadcastListener,
+                                                                              OnChangeSubscriptionQos broadcastSubscriptionQos,
+                                                                              MasterAccessControlEntryChangedBroadcastFilterParameters masterAcefilterParameters) {
         return getProxy(TTL_30_DAYS_IN_MS).subscribeToMasterAccessControlEntryChangedBroadcast(ldacMasterAccessControlEntryChangedBroadcastListener,
                                                                                                broadcastSubscriptionQos,
                                                                                                masterAcefilterParameters);
     }
 
-    public String subscribeToMediatorAccessControlEntryChangedBroadcast(LdacMediatorAccessControlEntryChangedBroadcastListener ldacMediatorAccessControlEntryChangedBroadcastListener,
-                                                                        OnChangeSubscriptionQos broadcastSubscriptionQos,
-                                                                        MediatorAccessControlEntryChangedBroadcastFilterParameters mediatorAceFilterParameters) {
+    public Future<String> subscribeToMediatorAccessControlEntryChangedBroadcast(LdacMediatorAccessControlEntryChangedBroadcastListener ldacMediatorAccessControlEntryChangedBroadcastListener,
+                                                                                OnChangeSubscriptionQos broadcastSubscriptionQos,
+                                                                                MediatorAccessControlEntryChangedBroadcastFilterParameters mediatorAceFilterParameters) {
         return getProxy(TTL_30_DAYS_IN_MS).subscribeToMediatorAccessControlEntryChangedBroadcast(ldacMediatorAccessControlEntryChangedBroadcastListener,
                                                                                                  broadcastSubscriptionQos,
                                                                                                  mediatorAceFilterParameters);
     }
 
-    public String subscribeToOwnerAccessControlEntryChangedBroadcast(LdacOwnerAccessControlEntryChangedBroadcastListener ldacOwnerAccessControlEntryChangedBroadcastListener,
-                                                                     OnChangeSubscriptionQos broadcastSubscriptionQos,
-                                                                     OwnerAccessControlEntryChangedBroadcastFilterParameters ownerAceFilterParameters) {
+    public Future<String> subscribeToOwnerAccessControlEntryChangedBroadcast(LdacOwnerAccessControlEntryChangedBroadcastListener ldacOwnerAccessControlEntryChangedBroadcastListener,
+                                                                             OnChangeSubscriptionQos broadcastSubscriptionQos,
+                                                                             OwnerAccessControlEntryChangedBroadcastFilterParameters ownerAceFilterParameters) {
         return getProxy(TTL_30_DAYS_IN_MS).subscribeToOwnerAccessControlEntryChangedBroadcast(ldacOwnerAccessControlEntryChangedBroadcastListener,
                                                                                               broadcastSubscriptionQos,
                                                                                               ownerAceFilterParameters);

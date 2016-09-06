@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include <string>
 
 #include "joynr/JoynrExport.h"
+#include "joynr/exceptions/SubscriptionException.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
@@ -42,18 +43,22 @@ public:
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
 
+    std::shared_ptr<exceptions::SubscriptionException> getError() const;
+    void setError(std::shared_ptr<exceptions::SubscriptionException> error);
+
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(subscriptionId));
+        archive(MUESLI_NVP(subscriptionId), MUESLI_NVP(error));
     }
 
 private:
     std::string subscriptionId;
+    std::shared_ptr<exceptions::SubscriptionException> error;
 };
 
 } // namespace joynr
 
-MUESLI_REGISTER_TYPE(joynr::SubscriptionReply, "joynr.SubscriptionReply");
+MUESLI_REGISTER_TYPE(joynr::SubscriptionReply, "joynr.SubscriptionReply")
 
 #endif // SUBSCRIPTIONREPLY_H

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,6 +122,8 @@ define(
                  *            requestSettings.onReceive
                  * @param {Function}
                  *            requestSettings.onError
+                 * @param {Function}
+                 *            requestSettings.onSubscribed
                  * @param {String}
                  *            requestSettings.subscriptionId optional parameter subscriptionId to
                  *            reuse a preexisting identifier for this concrete subscription request
@@ -137,7 +139,8 @@ define(
                         qos : requestSettings.subscriptionQos,
                         subscriptionId : requestSettings.subscriptionId,
                         onReceive : requestSettings.onReceive,
-                        onError : requestSettings.onError
+                        onError : requestSettings.onError,
+                        onSubscribed : requestSettings.onSubscribed
                     });
                 }
 
@@ -246,7 +249,10 @@ define(
                      *            "void onReceive({?}value)"
                      * @param {Function}
                      *            settings.onError this function is called if a publication of the
-                     *            attribute value was missed, method signature: "void onError()"
+                     *            attribute value was missed, method signature: "void onError({Error} error)"
+                     * @param {Function}
+                     *            settings.onSubscribed the callback to inform once the subscription request has
+                     *            been delivered successfully
                      * @param {String}
                      *            settings.subscriptionId optional subscriptionId to be used for the
                      *            new subscription

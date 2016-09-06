@@ -48,11 +48,13 @@ define(
                             expect(ArbitrationStrategyCollection.Nothing).toBeDefined();
                             expect(ArbitrationStrategyCollection.HighestPriority).toBeDefined();
                             expect(ArbitrationStrategyCollection.Keyword).toBeDefined();
+                            expect(ArbitrationStrategyCollection.LastSeen).toBeDefined();
 
                             expect(typeof ArbitrationStrategyCollection.Nothing).toBe("function");
                             expect(typeof ArbitrationStrategyCollection.HighestPriority).toBe(
                                     "function");
                             expect(typeof ArbitrationStrategyCollection.Keyword).toBe("function");
+                            expect(typeof ArbitrationStrategyCollection.LastSeen).toBe("function");
                         });
 
                         function getDiscoveryEntryList() {
@@ -64,6 +66,7 @@ define(
                                     }),
                                     domain : "KeywordmyDomain",
                                     interfaceName : "myInterfaceName",
+                                    lastSeenDateMs : 111,
                                     qos : new ProviderQos({
                                         customParameters : [],
                                         priority : 1,
@@ -80,6 +83,7 @@ define(
                                     }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceName",
+                                    lastSeenDateMs : 333,
                                     qos : new ProviderQos({
                                         customParameters : [],
                                         priority : 4,
@@ -96,7 +100,7 @@ define(
                                     }),
                                     domain : "myWithKeywordDomain",
                                     interfaceName : "myInterfaceName",
-                                    lastSeenDateMs : 123,
+                                    lastSeenDateMs : 222,
                                     qos : new ProviderQos({
                                         customParameters : [
                                             new CustomParameter({
@@ -122,7 +126,7 @@ define(
                                     }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceNameKeyword",
-                                    lastSeenDateMs : 123,
+                                    lastSeenDateMs : 555,
                                     qos : new ProviderQos({
                                         customParameters : [
                                             new CustomParameter({
@@ -148,7 +152,7 @@ define(
                                     }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceName",
-                                    lastSeenDateMs : 123,
+                                    lastSeenDateMs : 444,
                                     qos : new ProviderQos({
                                         customParameters : [
                                             new CustomParameter({
@@ -199,6 +203,32 @@ define(
                                     for (i = 0; i < highestPriority.length - 1; ++i) {
                                         expect(highestPriority[i].qos.priority).toBeGreaterThan(
                                                 highestPriority[i + 1].qos.priority);
+                                    }
+                                });
+
+                        it("Strategy 'LastSeen' includes all capability infos", function() {
+                            var discoveryEntryList = getDiscoveryEntryList();
+                            var discoveryEntryId;
+                            var latestSeen =
+                                    ArbitrationStrategyCollection.LastSeen(discoveryEntryList);
+                            for (discoveryEntryId in discoveryEntryList) {
+                                if (discoveryEntryList.hasOwnProperty(discoveryEntryId)) {
+                                    expect(latestSeen).toContain(
+                                            discoveryEntryList[discoveryEntryId]);
+                                }
+                            }
+                        });
+
+                        it(
+                                "Strategy 'LastSeen' sorts according to lastSeenDateMs priority",
+                                function() {
+                                    var lastSeen =
+                                            ArbitrationStrategyCollection
+                                                    .LastSeen(getDiscoveryEntryList());
+                                    var i;
+                                    for (i = 0; i < lastSeen.length - 1; ++i) {
+                                        expect(lastSeen[i].lastSeenDateMs).toBeGreaterThan(
+                                                lastSeen[i + 1].lastSeenDateMs);
                                     }
                                 });
 

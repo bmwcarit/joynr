@@ -45,6 +45,7 @@
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/exceptions/SubscriptionException.h"
 
 namespace joynr
 {
@@ -167,6 +168,51 @@ bool isSubscriptionExpired(const std::shared_ptr<SubscriptionQos> qos, int offse
            qos->getExpiryDateMs() < (now + offset);
 }
 
+void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSender,
+                                               const std::string& fromParticipantId,
+                                               const std::string& toParticipantId,
+                                               const std::int64_t& expiryDateMs,
+                                               const SubscriptionReply& subscriptionReply)
+{
+    MessagingQos messagingQos;
+    if (expiryDateMs == SubscriptionQos::NO_EXPIRY_DATE()) {
+        messagingQos.setTtl(INT64_MAX);
+    } else {
+        std::int64_t ttl = DispatcherUtils::convertAbsoluteTimeToTtl(
+                JoynrTimePoint(std::chrono::milliseconds(expiryDateMs)));
+        messagingQos.setTtl(ttl);
+    }
+    publicationSender->sendSubscriptionReply(
+            fromParticipantId, toParticipantId, messagingQos, subscriptionReply);
+}
+
+void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSender,
+                                               const std::string& fromParticipantId,
+                                               const std::string& toParticipantId,
+                                               const std::int64_t& expiryDateMs,
+                                               const std::string& subscriptionId)
+{
+    SubscriptionReply subscriptionReply;
+    subscriptionReply.setSubscriptionId(subscriptionId);
+    sendSubscriptionReply(
+            publicationSender, fromParticipantId, toParticipantId, expiryDateMs, subscriptionReply);
+}
+
+void PublicationManager::sendSubscriptionReply(
+        IPublicationSender* publicationSender,
+        const std::string& fromParticipantId,
+        const std::string& toParticipantId,
+        const std::int64_t& expiryDateMs,
+        const std::string& subscriptionId,
+        const std::shared_ptr<exceptions::SubscriptionException>& error)
+{
+    SubscriptionReply subscriptionReply;
+    subscriptionReply.setSubscriptionId(subscriptionId);
+    subscriptionReply.setError(error);
+    sendSubscriptionReply(
+            publicationSender, fromParticipantId, toParticipantId, expiryDateMs, subscriptionReply);
+}
+
 void PublicationManager::add(const std::string& proxyParticipantId,
                              const std::string& providerParticipantId,
                              std::shared_ptr<RequestCaller> requestCaller,
@@ -226,10 +272,24 @@ void PublicationManager::handleAttributeSubscriptionRequest(
                         currentScheduledPublicationsMutex);
                 currentScheduledPublications.push_back(subscriptionId);
             }
+            sendSubscriptionReply(publicationSender,
+                                  requestInfo->getProviderId(),
+                                  requestInfo->getProxyId(),
+                                  qos->getExpiryDateMs(),
+                                  subscriptionId);
             // sent at least once the current value
             delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId));
         } else {
             JOYNR_LOG_WARN(logger, "publication end is in the past");
+            std::int64_t expiryDateMs =
+                    DispatcherUtils::convertTtlToAbsoluteTime(60000).time_since_epoch().count();
+            sendSubscriptionReply(publicationSender,
+                                  requestInfo->getProviderId(),
+                                  requestInfo->getProxyId(),
+                                  expiryDateMs,
+                                  subscriptionId,
+                                  std::make_shared<exceptions::SubscriptionException>(
+                                          "publication end is in the past", subscriptionId));
         }
     }
 }
@@ -314,7 +374,6 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         std::shared_ptr<RequestCaller> requestCaller,
         IPublicationSender* publicationSender)
 {
-
     std::string subscriptionId = requestInfo->getSubscriptionId();
 
     auto publication = std::make_shared<Publication>(publicationSender, requestCaller);
@@ -353,8 +412,22 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
                         std::chrono::milliseconds(publicationEndDelay));
                 JOYNR_LOG_DEBUG(logger, "publication will end in {}  ms", publicationEndDelay);
             }
+            sendSubscriptionReply(publicationSender,
+                                  requestInfo->getProviderId(),
+                                  requestInfo->getProxyId(),
+                                  qos->getExpiryDateMs(),
+                                  subscriptionId);
         } else {
             JOYNR_LOG_WARN(logger, "publication end is in the past");
+            std::int64_t expiryDateMs =
+                    DispatcherUtils::convertTtlToAbsoluteTime(60000).time_since_epoch().count();
+            sendSubscriptionReply(publicationSender,
+                                  requestInfo->getProviderId(),
+                                  requestInfo->getProxyId(),
+                                  expiryDateMs,
+                                  subscriptionId,
+                                  std::make_shared<exceptions::SubscriptionException>(
+                                          "publication end is in the past", subscriptionId));
         }
     }
 }
@@ -774,7 +847,8 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
     std::shared_ptr<Publication> publication(publications.value(subscriptionId));
     std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest(
             subscriptionId2SubscriptionRequest.value(subscriptionId));
-    {
+
+    if (publication && subscriptionRequest) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // See if the publication is needed
         const std::shared_ptr<SubscriptionQos> qos = subscriptionRequest->getQos();

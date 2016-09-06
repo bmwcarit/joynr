@@ -39,6 +39,9 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumer
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.exceptions.SubscriptionException;
+import io.joynr.proxy.Future;
+
 import org.junit.Test;
 import static org.junit.Assert.fail;
 
@@ -55,7 +58,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithSinglePrimitiveParameter() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -89,7 +92,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                               }
 
                                                                                                               @Override
-                                                                                                              public void onError() {
+                                                                                                              public void onError(SubscriptionException error) {
                                                                                                                   LOG.info(name.getMethodName()
                                                                                                                           + " - callback - error");
                                                                                                                   subscribeBroadcastWithSinglePrimitiveParameterCallbackResult = false;
@@ -127,7 +130,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithSinglePrimitiveParameterBroadcast(subscriptionId);
+                testInterfaceProxy.unsubscribeFromBroadcastWithSinglePrimitiveParameterBroadcast(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on subscribe: " + e.getMessage());
@@ -153,7 +156,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithMultiplePrimitiveParameters() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -190,7 +193,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                  }
 
                                                                                                                  @Override
-                                                                                                                 public void onError() {
+                                                                                                                 public void onError(SubscriptionException error) {
                                                                                                                      LOG.info(name.getMethodName()
                                                                                                                              + " - callback - error");
                                                                                                                      subscribeBroadcastWithMultiplePrimitiveParametersCallbackResult = false;
@@ -227,7 +230,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithMultiplePrimitiveParametersBroadcast(subscriptionId);
+                testInterfaceProxy.unsubscribeFromBroadcastWithMultiplePrimitiveParametersBroadcast(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
@@ -253,7 +256,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithSingleArrayParameter() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -288,7 +291,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                           }
 
                                                                                                           @Override
-                                                                                                          public void onError() {
+                                                                                                          public void onError(SubscriptionException error) {
                                                                                                               LOG.info(name.getMethodName()
                                                                                                                       + " - callback - error");
                                                                                                               subscribeBroadcastWithSingleArrayParameterCallbackResult = false;
@@ -326,7 +329,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithSingleArrayParameterBroadcast(subscriptionId);
+                testInterfaceProxy.unsubscribeFromBroadcastWithSingleArrayParameterBroadcast(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
@@ -352,7 +355,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithMultipleArrayParameters() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -388,7 +391,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                              }
 
                                                                                                              @Override
-                                                                                                             public void onError() {
+                                                                                                             public void onError(SubscriptionException error) {
                                                                                                                  LOG.info(name.getMethodName()
                                                                                                                          + " - callback - error");
                                                                                                                  subscribeBroadcastWithMultipleArrayParametersCallbackResult = false;
@@ -426,7 +429,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleArrayParametersBroadcast(subscriptionId);
+                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleArrayParametersBroadcast(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
@@ -452,7 +455,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithSingleEnumerationParameter() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -486,7 +489,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                 }
 
                                                                                                                 @Override
-                                                                                                                public void onError() {
+                                                                                                                public void onError(SubscriptionException error) {
                                                                                                                     LOG.info(name.getMethodName()
                                                                                                                             + " - callback - error");
                                                                                                                     subscribeBroadcastWithSingleEnumerationParameterCallbackResult = false;
@@ -524,7 +527,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(subscriptionId);
+                testInterfaceProxy.unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
@@ -550,7 +553,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithMultipleEnumerationParameters() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -586,7 +589,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                    }
 
                                                                                                                    @Override
-                                                                                                                   public void onError() {
+                                                                                                                   public void onError(SubscriptionException error) {
                                                                                                                        LOG.info(name.getMethodName()
                                                                                                                                + " - callback - error");
                                                                                                                        subscribeBroadcastWithMultipleEnumerationParametersCallbackResult = false;
@@ -624,7 +627,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleEnumerationParametersBroadcast(subscriptionId);
+                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleEnumerationParametersBroadcast(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
@@ -650,7 +653,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithSingleStructParameter() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -684,7 +687,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                            }
 
                                                                                                            @Override
-                                                                                                           public void onError() {
+                                                                                                           public void onError(SubscriptionException error) {
                                                                                                                LOG.info(name.getMethodName()
                                                                                                                        + " - callback - error");
                                                                                                                subscribeBroadcastWithSingleStructParameterCallbackResult = false;
@@ -722,7 +725,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithSingleStructParameterBroadcast(subscriptionId);
+                testInterfaceProxy.unsubscribeFromBroadcastWithSingleStructParameterBroadcast(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
@@ -748,7 +751,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithMultipleStructParameters() {
-        String subscriptionId;
+        Future<String> subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -784,7 +787,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                               }
 
                                                                                                               @Override
-                                                                                                              public void onError() {
+                                                                                                              public void onError(SubscriptionException error) {
                                                                                                                   LOG.info(name.getMethodName()
                                                                                                                           + " - callback - error");
                                                                                                                   subscribeBroadcastWithMultipleStructParametersCallbackResult = false;
@@ -822,7 +825,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleStructParametersBroadcast(subscriptionId);
+                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleStructParametersBroadcast(subscriptionId.get());
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());

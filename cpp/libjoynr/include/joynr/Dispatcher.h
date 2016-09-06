@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public:
     // Todo: should be changed to a std::shared_ptr or reference.
     Dispatcher(JoynrMessageSender* messageSender,
                boost::asio::io_service& ioService,
-               int maxThreads = 4);
+               int maxThreads = 1);
 
     ~Dispatcher() override;
 
@@ -84,6 +84,7 @@ private:
     void handleSubscriptionRequestReceived(const JoynrMessage& message);
     void handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message);
     void handleSubscriptionStopReceived(const JoynrMessage& message);
+    void handleSubscriptionReplyReceived(const JoynrMessage& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Dispatcher);

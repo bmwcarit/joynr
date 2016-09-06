@@ -3,7 +3,7 @@ package io.joynr.proxy.invocation;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
     private final SubscriptionQos qos;
     private final String attributeName;
 
-    public AttributeSubscribeInvocation(Method method, Object[] args, Future<?> future) {
+    public AttributeSubscribeInvocation(Method method, Object[] args, Future<String> future) {
         super(future);
         JoynrRpcSubscription subscriptionAnnotation = method.getAnnotation(JoynrRpcSubscription.class);
         if (subscriptionAnnotation == null) {
@@ -71,7 +71,7 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
                                         Class<? extends TypeReference<?>> attributeTypeReference,
                                         AttributeSubscriptionListener<?> attributeSubscriptionListener,
                                         SubscriptionQos qos,
-                                        Future<?> future) {
+                                        Future<String> future) {
         super(future);
         this.attributeTypeReference = attributeTypeReference;
         this.attributeSubscriptionListener = attributeSubscriptionListener;

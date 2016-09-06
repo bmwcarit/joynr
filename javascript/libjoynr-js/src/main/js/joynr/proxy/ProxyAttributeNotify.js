@@ -72,7 +72,10 @@ define("joynr/proxy/ProxyAttributeNotify", [ "joynr/proxy/ProxyAttribute"
          *            successfully, method signature: "void onReceive({?}value)"
          * @param {Function}
          *            settings.onError this function is called if a publication of the attribute
-         *            value was missed, method signature: "void onError()"
+         *            value was missed, method signature: "void onError({Error} error)"
+         * @param {Function}
+         *            settings.onSubscribed the callback to inform once the subscription request has
+         *            been delivered successfully
          * @returns {Object} returns an A+ promise object that will alternatively accept callback
          *            functions through its setters "then(function ({Object}
          *            subscriptionId){}).catch(function ({string}error){..})", this

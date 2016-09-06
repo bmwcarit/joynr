@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,10 +95,10 @@ class AccessControllerTest : public ::testing::Test {
 public:
     AccessControllerTest() :
         singleThreadedIOService(),
-        localDomainAccessControllerMock(new LocalDomainAccessStore(
+        localDomainAccessControllerMock(std::make_unique<LocalDomainAccessStore>(
                         true // start with clean database
         )),
-        accessControllerCallback(new MockConsumerPermissionCallback()),
+        accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
         settings(),
         messagingSettingsMock(settings),
         localCapabilitiesDirectoryMock(messagingSettingsMock, settings, singleThreadedIOService.getIOService()),
@@ -159,9 +159,6 @@ public:
         )
                 .Times(1)
                 .WillOnce(Invoke(this, &AccessControllerTest::invokeOnSuccessCallbackFct));
-    }
-
-    void TearDown(){
     }
 
 protected:

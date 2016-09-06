@@ -3,7 +3,7 @@ package io.joynr.accesscontrol.broadcastlistener;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,15 @@ package io.joynr.accesscontrol.broadcastlistener;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
+import io.joynr.exceptions.SubscriptionException;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastAdapter;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LdacDomainRoleEntryChangedBroadcastListener implements DomainRoleEntryChangedBroadcastListener {
+public class LdacDomainRoleEntryChangedBroadcastListener extends DomainRoleEntryChangedBroadcastAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(LdacDomainRoleEntryChangedBroadcastListener.class);
     private final DomainAccessControlStore localDomainAccessStore;
 
@@ -48,7 +49,9 @@ public class LdacDomainRoleEntryChangedBroadcastListener implements DomainRoleEn
     }
 
     @Override
-    public void onError() {
-        LOG.error("Update of DRE failed!");
+    public void onError(SubscriptionException error) {
+        LOG.error("Subscription to DRE failed! SubscriptionId: {}, error: {}",
+                  error.getSubscriptionId(),
+                  error.getMessage());
     }
 }

@@ -82,6 +82,7 @@ define([
                     }).then(function() {
                         // get the value
                         attribute.get().then(resolve, reject);
+                        return null;
                     }).catch(function(error) {
                         reject(error);
                         IntegrationUtils.outputPromiseError(error);

@@ -30,11 +30,11 @@
 
 using namespace joynr;
 
-struct ShortCircuitTest : public PerformanceTest<1000>
+struct ShortCircuitTest : public PerformanceTest
 {
     using ByteArray = std::vector<std::int8_t>;
 
-    ShortCircuitTest()
+    ShortCircuitTest(std::uint64_t runs) : runs(runs)
     {
         echoProvider = std::make_shared<PerformanceTestEchoProvider>();
         // default uses a priority that is the current time,
@@ -67,7 +67,7 @@ struct ShortCircuitTest : public PerformanceTest<1000>
             return result;
         };
         const std::string testName = "string length: " + std::to_string(length);
-        runAndPrintAverage(testName, fun);
+        runAndPrintAverage(runs, testName, fun);
     }
 
     void roundTripStruct(std::size_t length)
@@ -82,7 +82,7 @@ struct ShortCircuitTest : public PerformanceTest<1000>
         };
 
         const std::string testName = "byte[] size/string length: " + std::to_string(length);
-        runAndPrintAverage(testName, fun);
+        runAndPrintAverage(runs, testName, fun);
     }
 
     void roundTripByteArray(std::size_t length)
@@ -95,7 +95,7 @@ struct ShortCircuitTest : public PerformanceTest<1000>
         };
 
         const std::string testName = "byte[] size: " + std::to_string(length);
-        runAndPrintAverage(testName, fun);
+        runAndPrintAverage(runs, testName, fun);
     }
 
 private:
@@ -107,6 +107,7 @@ private:
         return data;
     }
 
+    std::uint64_t runs;
     ShortCircuitRuntime runtime;
     std::shared_ptr<PerformanceTestEchoProvider> echoProvider;
     std::unique_ptr<tests::performance::EchoProxy> echoProxy;

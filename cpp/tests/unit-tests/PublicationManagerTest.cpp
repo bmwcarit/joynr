@@ -18,6 +18,12 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <algorithm>
+#include <chrono>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <thread>
 #include "tests/utils/MockObjects.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
@@ -29,8 +35,9 @@
 #include "tests/utils/TimeUtils.h"
 #include "joynr/Logger.h"
 #include "joynr/exceptions/MethodInvocationException.h"
-#include <thread>
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/Semaphore.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -43,12 +50,13 @@ using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
 using ::testing::Matcher;
 using ::testing::MakeMatcher;
-#include <string>
-#include <cstdint>
-#include <algorithm>
-#include <memory>
 
 using namespace joynr;
+
+ACTION_P(ReleaseSemaphore, semaphore)
+{
+    semaphore->notify();
+}
 
 class PublicationManagerTest : public testing::Test {
 public:
@@ -57,6 +65,8 @@ public:
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored broadcastsubscriptions
     }
 protected:
+    void sendSubscriptionReplyOnSuccessfulRegistration(SubscriptionRequest& subscriptionRequest);
+    void sendSubscriptionExceptionOnExpiredRegistration(SubscriptionRequest& subscriptionRequest);
     SingleThreadedIOService singleThreadedIOService;
     ADD_LOGGER(PublicationManagerTest);
 };
@@ -1245,4 +1255,127 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
     // wait for the async publication
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
     //now, two publications should be noticed, even if the original subscription is expired
+}
+
+void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(SubscriptionRequest& subscriptionRequest)
+{
+    joynr::Semaphore semaphore(0);
+    PublicationManager publicationManager(singleThreadedIOService.getIOService());
+    MockPublicationSender* mockPublicationSender = new MockPublicationSender;
+    auto requestCaller = std::make_shared<MockTestRequestCaller>();
+
+    std::string proxyId = "ProxyId";
+    std::string providerId = "ProviderId";
+    std::string subscriptionId = "testSubscriptionId";
+    subscriptionRequest.setSubscriptionId(subscriptionId);
+    //SubscriptionQos
+    auto qos = std::make_shared<OnChangeSubscriptionQos>();
+    subscriptionRequest.setQos(qos);
+
+    // expected subscription reply
+    SubscriptionReply expectedSubscriptionReply;
+    expectedSubscriptionReply.setSubscriptionId(subscriptionId);
+
+    EXPECT_CALL(
+                *mockPublicationSender,
+                sendSubscriptionReply(
+                    Eq(providerId), // sender participant ID
+                    Eq(proxyId), // receiver participant ID
+                    _, // messaging QoS
+                    Eq(expectedSubscriptionReply) // subscription reply
+                )
+    ).Times(1)
+    .WillOnce(ReleaseSemaphore(&semaphore));
+
+    JOYNR_LOG_DEBUG(logger, "adding request");
+    publicationManager.add(proxyId, providerId, requestCaller, subscriptionRequest, mockPublicationSender);
+    // remove subscription before deletion of mockPublicationSender
+    publicationManager.removeAllSubscriptions(providerId);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    delete mockPublicationSender;
+}
+
+TEST_F(PublicationManagerTest, attribute_sendSubscriptionReplyOnSuccessfulRegistration) {
+    //SubscriptionRequest
+    SubscriptionRequest subscriptionRequest;
+    std::string subscribeToName = "testAttribute";
+    subscriptionRequest.setSubscribeToName(subscribeToName);
+
+    sendSubscriptionReplyOnSuccessfulRegistration(subscriptionRequest);
+}
+
+TEST_F(PublicationManagerTest, broadcast_sendSubscriptionReplyOnSuccessfulRegistration) {
+    //SubscriptionRequest
+    BroadcastSubscriptionRequest subscriptionRequest;
+    std::string subscribeToName = "testBroadcast";
+    subscriptionRequest.setSubscribeToName(subscribeToName);
+
+    sendSubscriptionReplyOnSuccessfulRegistration(subscriptionRequest);
+}
+
+void PublicationManagerTest::sendSubscriptionExceptionOnExpiredRegistration(SubscriptionRequest& subscriptionRequest)
+{
+    joynr::Semaphore semaphore(0);
+    PublicationManager publicationManager(singleThreadedIOService.getIOService());
+    MockPublicationSender* mockPublicationSender = new MockPublicationSender;
+    auto requestCaller = std::make_shared<MockTestRequestCaller>();
+
+    std::string proxyId = "ProxyId";
+    std::string providerId = "ProviderId";
+    std::string subscriptionId = "testSubscriptionId";
+    subscriptionRequest.setSubscriptionId(subscriptionId);
+    //SubscriptionQos
+    std::int64_t minInterval_ms = 50;
+    std::int64_t validity_ms = 0;
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(
+                        validity_ms,
+                        minInterval_ms);
+    subscriptionRequest.setQos(qos);
+
+    // expected subscription reply
+    SubscriptionReply expectedSubscriptionReply;
+    expectedSubscriptionReply.setSubscriptionId(subscriptionId);
+    auto exception = std::make_shared<exceptions::SubscriptionException>(
+                "publication end is in the past", subscriptionId);
+    expectedSubscriptionReply.setError(exception);
+
+    EXPECT_CALL(
+                *mockPublicationSender,
+                sendSubscriptionReply(
+                    Eq(providerId), // sender participant ID
+                    Eq(proxyId), // receiver participant ID
+                    _, // messaging QoS
+                    Eq(expectedSubscriptionReply) // subscription reply
+                )
+    ).Times(1)
+    .WillOnce(ReleaseSemaphore(&semaphore));
+
+    // wait some time to ensure the subscription is expired
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    JOYNR_LOG_DEBUG(logger, "adding request");
+    publicationManager.add(proxyId, providerId, requestCaller, subscriptionRequest, mockPublicationSender);
+    // remove subscription before deletion of mockPublicationSender
+    publicationManager.removeAllSubscriptions(providerId);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    delete mockPublicationSender;
+}
+
+TEST_F(PublicationManagerTest, attribute_sendSubscriptionExceptionOnExpiredSubscriptionRequest) {
+    //SubscriptionRequest
+    SubscriptionRequest subscriptionRequest;
+    std::string subscribeToName = "testAttribute";
+    subscriptionRequest.setSubscribeToName(subscribeToName);
+
+    sendSubscriptionExceptionOnExpiredRegistration(subscriptionRequest);
+}
+
+TEST_F(PublicationManagerTest, broadcast_sendSubscriptionExceptionOnExpiredSubscriptionRequest) {
+    //SubscriptionRequest
+    BroadcastSubscriptionRequest subscriptionRequest;
+    std::string subscribeToName = "testBroadcast";
+    subscriptionRequest.setSubscribeToName(subscribeToName);
+
+    sendSubscriptionExceptionOnExpiredRegistration(subscriptionRequest);
 }

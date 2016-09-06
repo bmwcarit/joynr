@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.20.0-SNAPSHOT)
+project(joynr-0.21.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 20)
+set(JOYNR_MINOR_VERSION 21)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -635,7 +635,7 @@ else(USE_PLATFORM_SPDLOG)
     AddExternalProject(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog
-        GIT_TAG v0.9.0 # there are no version tags, hence a SHA is used
+        GIT_TAG 4fcde3b # there are no version tags, hence a SHA is used
         TIMEOUT 10
         # Disable configure step
         CONFIGURE_COMMAND ""
@@ -691,14 +691,14 @@ endif(JOYNR_ENABLE_DLT_LOGGING)
 
 ### Add muesli ############################################################
 if (USE_PLATFORM_MUESLI)
-    find_package(muesli 0.1.0 REQUIRED CONFIG)
+    find_package(muesli 0.1.2 REQUIRED CONFIG)
 else(USE_PLATFORM_MUESLI)
     message(STATUS "############ Download: muesli ############")
 
     AddExternalProject(
         muesli
         GIT_REPOSITORY https://github.com/bmwcarit/muesli
-        GIT_TAG 0.1.0
+        GIT_TAG 0.1.2
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
@@ -722,11 +722,6 @@ else(USE_PLATFORM_MUESLI)
         TARGET muesli::muesli
         APPEND
         PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${includeDirs}
-    )
-    set_property(
-        TARGET muesli::muesli
-        APPEND
-        PROPERTY INTERFACE_COMPILE_DEFINITIONS "RAPIDJSON_HAS_STDSTRING"
     )
 endif(USE_PLATFORM_MUESLI)
 get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)

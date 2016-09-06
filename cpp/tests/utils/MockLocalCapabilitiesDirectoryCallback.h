@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,21 +23,24 @@
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/Semaphore.h"
 
-class MockLocalCapabilitiesDirectoryCallback : public joynr::ILocalCapabilitiesCallback {
+class MockLocalCapabilitiesDirectoryCallback : public joynr::ILocalCapabilitiesCallback
+{
 
 public:
     MockLocalCapabilitiesDirectoryCallback();
 
-    void capabilitiesReceived(const std::vector<joynr::CapabilityEntry>& capabilities) override;
+    void capabilitiesReceived(
+            const std::vector<joynr::types::DiscoveryEntry>& capabilities) override;
+    void onError(const joynr::exceptions::JoynrRuntimeException&) override;
 
-    std::vector<joynr::CapabilityEntry> getResults(int timeout);
+    std::vector<joynr::types::DiscoveryEntry> getResults(int timeout);
     void clearResults();
 
     virtual ~MockLocalCapabilitiesDirectoryCallback();
 
 private:
-    std::vector<joynr::CapabilityEntry> results;
+    std::vector<joynr::types::DiscoveryEntry> results;
     joynr::Semaphore semaphore;
 };
 
-#endif //MOCKCAPABILITIESRESULTCALLBACK_H_
+#endif // MOCKCAPABILITIESRESULTCALLBACK_H_

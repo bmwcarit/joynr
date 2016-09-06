@@ -1,0 +1,22 @@
+@startuml
+
+[-> GpsProvider : locationChanged
+GpsProvider -> AbstractJoynrProvider : locationChanged
+
+loop
+	AbstractJoynrProvider -> SubscriptionAttributeListener : attributeValueChanged
+	SubscriptionAttributeListener -> PublicationManager : attributeValueChanged
+	alt "Publication not scheduled"
+		alt "Time until next publication == 0"
+			PublicationManager -> JoynrMessageSender : sendSubscriptionPublication
+			JoynrMessageSender -> MessageRouter : "route(SubscriptionPublication)"
+		else
+			note over PublicationManager
+				"Task scheduled here"
+			end note
+			PublicationManager -> DelayedScheduler : "schedule(PublisherRunnable)"
+		end
+	end
+end
+
+@enduml

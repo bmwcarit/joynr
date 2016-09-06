@@ -20,161 +20,131 @@
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/Semaphore.h"
 
 using namespace ::testing;
 
 class IltConsumerAttributeSubscriptionTest : public IltAbstractConsumerTest
 {
 public:
-    IltConsumerAttributeSubscriptionTest() = default;
+    IltConsumerAttributeSubscriptionTest()
+            : subscriptionIdFutureTimeout(10000),
+              subscriptionRegisteredTimeout(10000),
+              publicationTimeout(10000)
+    {
+    }
 
-    static volatile bool subscribeAttributeEnumerationCallbackDone;
-    static volatile bool subscribeAttributeEnumerationCallbackResult;
-    static volatile bool subscribeAttributeWithExceptionFromGetterCallbackDone;
-    static volatile bool subscribeAttributeWithExceptionFromGetterCallbackResult;
+protected:
+    std::uint16_t subscriptionIdFutureTimeout;
+    std::chrono::milliseconds subscriptionRegisteredTimeout;
+    std::chrono::milliseconds publicationTimeout;
 };
 
 joynr::Logger iltConsumerAttributeSubscriptionTestLogger("IltConsumerAttributeSubscriptionTest");
 
 // SUBSCRIBE ATTRIBUTE ENUMERATION
 
-volatile bool IltConsumerAttributeSubscriptionTest::subscribeAttributeEnumerationCallbackDone =
-        false;
-volatile bool IltConsumerAttributeSubscriptionTest::subscribeAttributeEnumerationCallbackResult =
-        false;
-volatile bool IltConsumerAttributeSubscriptionTest::
-        subscribeAttributeWithExceptionFromGetterCallbackDone = false;
-volatile bool IltConsumerAttributeSubscriptionTest::
-        subscribeAttributeWithExceptionFromGetterCallbackResult = false;
-
-class AttributeEnumerationListener
-        : public SubscriptionListener<joynr::interlanguagetest::Enumeration::Enum>
+class MockEnumerationSubscriptionListener
+        : public joynr::ISubscriptionListener<joynr::interlanguagetest::Enumeration::Enum>
 {
 public:
-    AttributeEnumerationListener() = default;
-
-    ~AttributeEnumerationListener() override = default;
-
-    void onReceive(const joynr::interlanguagetest::Enumeration::Enum& enumerationOut) override
-    {
-        JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
-                       "callSubscribeAttributeEnumeration - callback - got broadcast");
-        if (enumerationOut != joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_2) {
-            JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
-                           "callSubscribeAttributeEnumeration - callback - invalid "
-                           "content");
-            IltConsumerAttributeSubscriptionTest::subscribeAttributeEnumerationCallbackResult =
-                    false;
-        } else {
-            JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
-                           "callSubscribeAttributeEnumeration - callback - content OK");
-            IltConsumerAttributeSubscriptionTest::subscribeAttributeEnumerationCallbackResult =
-                    true;
-        }
-        IltConsumerAttributeSubscriptionTest::subscribeAttributeEnumerationCallbackDone = true;
-    }
-
-    void onError(const joynr::exceptions::JoynrRuntimeException& error) override
-    {
-        JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
-                       "callSubscribeAttributeEnumeration - callback - got error");
-        IltConsumerAttributeSubscriptionTest::subscribeAttributeEnumerationCallbackResult = false;
-        IltConsumerAttributeSubscriptionTest::subscribeAttributeEnumerationCallbackDone = true;
-    }
+    MOCK_METHOD1(onSubscribed, void(const std::string& subscriptionId));
+    MOCK_METHOD1(onReceive,
+                 void(const joynr::interlanguagetest::Enumeration::Enum& enumerationOut));
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
 
 TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
 {
+    Semaphore subscriptionRegisteredSemaphore;
+    Semaphore publicationSemaphore;
+    joynr::interlanguagetest::Enumeration::Enum enumerationArg =
+            joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_2;
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
+
+    auto mockEnumerationSubscriptionListener =
+            std::make_shared<MockEnumerationSubscriptionListener>();
+    ON_CALL(*mockEnumerationSubscriptionListener, onSubscribed(_))
+            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
+    EXPECT_CALL(*mockEnumerationSubscriptionListener, onError(_)).Times(0).WillRepeatedly(
+            ReleaseSemaphore(&publicationSemaphore));
+    EXPECT_CALL(*mockEnumerationSubscriptionListener, onReceive(Eq(enumerationArg)))
+            .Times(1)
+            .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
+    std::shared_ptr<ISubscriptionListener<joynr::interlanguagetest::Enumeration::Enum>> listener(
+            mockEnumerationSubscriptionListener);
     JOYNR_ASSERT_NO_THROW({
-        joynr::interlanguagetest::Enumeration::Enum enumerationArg =
-                joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_2;
+        JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
+                       "callSubscribeAttributeEnumeration - set attributeEnumeration");
         testInterfaceProxy->setAttributeEnumeration(enumerationArg);
 
-        std::shared_ptr<ISubscriptionListener<joynr::interlanguagetest::Enumeration::Enum>>
-                listener(new AttributeEnumerationListener());
-        subscriptionId =
-                testInterfaceProxy->subscribeToAttributeEnumeration(listener, subscriptionQos);
-        usleep(1000000);
-        waitForChange(subscribeAttributeEnumerationCallbackDone, 1000);
-        ASSERT_TRUE(subscribeAttributeEnumerationCallbackDone);
-        ASSERT_TRUE(subscribeAttributeEnumerationCallbackResult);
+        JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
+                       "callSubscribeAttributeEnumeration - register subscription");
+        testInterfaceProxy->subscribeToAttributeEnumeration(listener, subscriptionQos)->get(
+                subscriptionIdFutureTimeout, subscriptionId);
+
+        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
+        JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
+                       "callSubscribeAttributeEnumeration - subscription registered");
+
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromAttributeEnumeration(subscriptionId);
     });
 }
 
-class AttributeWithExceptionFromGetterListener : public SubscriptionListener<bool>
+// SUBSCRIBE ATTRIBUTE WITH EXCEPTION FROM GETTER
+
+class MockBoolSubscriptionListener : public joynr::ISubscriptionListener<bool>
 {
 public:
-    AttributeWithExceptionFromGetterListener() = default;
-
-    ~AttributeWithExceptionFromGetterListener() override = default;
-
-    void onReceive(const bool& value) override
-    {
-        JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
-                       "callSubscribeAttributeWithExceptionFromGetter - callback - "
-                       "unexpectedly got broadcast");
-        IltConsumerAttributeSubscriptionTest::
-                subscribeAttributeWithExceptionFromGetterCallbackResult = false;
-        IltConsumerAttributeSubscriptionTest::
-                subscribeAttributeWithExceptionFromGetterCallbackDone = true;
-    }
-
-    void onError(const joynr::exceptions::JoynrRuntimeException& error) override
-    {
-        if (error.getTypeName() == "joynr.exceptions.ProviderRuntimeException") {
-            if (error.getMessage() == "Exception from getAttributeWithExceptionFromGetter") {
-                JOYNR_LOG_INFO(
-                        iltConsumerAttributeSubscriptionTestLogger,
-                        "callSubscribeAttributeWithExceptionFromGetter - callback - got expected "
-                        "exception");
-                IltConsumerAttributeSubscriptionTest::
-                        subscribeAttributeWithExceptionFromGetterCallbackResult = true;
-            } else {
-                JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
-                               "callSubscribeAttributeWithExceptionFromGetter - callback - got "
-                               "ProviderRuntimeException with wrong message");
-                JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger, error.getMessage());
-                IltConsumerAttributeSubscriptionTest::
-                        subscribeAttributeWithExceptionFromGetterCallbackResult = false;
-            }
-        } else {
-            JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
-                           "callSubscribeAttributeWithExceptionFromGetter - callback - got invalid "
-                           "exception "
-                           "type");
-            JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger, error.getTypeName());
-            JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger, error.getMessage());
-            IltConsumerAttributeSubscriptionTest::
-                    subscribeAttributeWithExceptionFromGetterCallbackResult = false;
-        }
-        IltConsumerAttributeSubscriptionTest::
-                subscribeAttributeWithExceptionFromGetterCallbackDone = true;
-    }
+    MOCK_METHOD1(onSubscribed, void(const std::string& subscriptionId));
+    MOCK_METHOD1(onReceive, void(const bool& boolOut));
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
+
+MATCHER_P(providerRuntimeException, msg, "")
+{
+    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME() &&
+           arg.getMessage() == msg;
+}
 
 TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithExceptionFromGetter)
 {
+    Semaphore subscriptionRegisteredSemaphore;
+    Semaphore publicationSemaphore;
+    exceptions::JoynrRuntimeException error;
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
+
+    auto mockEnumerationSubscriptionListener = std::make_shared<MockBoolSubscriptionListener>();
+    ON_CALL(*mockEnumerationSubscriptionListener, onSubscribed(_))
+            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
+    EXPECT_CALL(
+            *mockEnumerationSubscriptionListener,
+            onError(providerRuntimeException("Exception from getAttributeWithExceptionFromGetter")))
+            .Times(1)
+            .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
+    EXPECT_CALL(*mockEnumerationSubscriptionListener, onReceive(_)).Times(0).WillRepeatedly(
+            ReleaseSemaphore(&publicationSemaphore));
+    std::shared_ptr<ISubscriptionListener<bool>> listener(mockEnumerationSubscriptionListener);
     JOYNR_ASSERT_NO_THROW({
-        std::shared_ptr<ISubscriptionListener<bool>> listener(
-                new AttributeWithExceptionFromGetterListener());
-        subscriptionId = testInterfaceProxy->subscribeToAttributeWithExceptionFromGetter(
-                listener, subscriptionQos);
-        // Waiting one second
-        waitForChange(subscribeAttributeWithExceptionFromGetterCallbackDone, 1000);
-        ASSERT_TRUE(subscribeAttributeWithExceptionFromGetterCallbackDone);
-        ASSERT_TRUE(subscribeAttributeWithExceptionFromGetterCallbackResult);
+        JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
+                       "callSubscribeAttributeWithExceptionFromGetter - register subscription");
+        testInterfaceProxy->subscribeToAttributeWithExceptionFromGetter(listener, subscriptionQos)
+                ->get(subscriptionIdFutureTimeout, subscriptionId);
+        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
+        JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
+                       "callSubscribeAttributeWithExceptionFromGetter - subscription registered");
+
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromAttributeWithExceptionFromGetter(subscriptionId);
     });

@@ -3,7 +3,7 @@ package io.joynr.accesscontrol.broadcastlistener;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,16 @@ package io.joynr.accesscontrol.broadcastlistener;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MediatorAccessControlEntryChangedBroadcastListener;
+import io.joynr.exceptions.SubscriptionException;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MediatorAccessControlEntryChangedBroadcastAdapter;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LdacMediatorAccessControlEntryChangedBroadcastListener implements
-        MediatorAccessControlEntryChangedBroadcastListener {
+public class LdacMediatorAccessControlEntryChangedBroadcastListener extends
+        MediatorAccessControlEntryChangedBroadcastAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(LdacMediatorAccessControlEntryChangedBroadcastListener.class);
 
     private DomainAccessControlStore localDomainAccessStore;
@@ -53,7 +54,9 @@ public class LdacMediatorAccessControlEntryChangedBroadcastListener implements
     }
 
     @Override
-    public void onError() {
-        LOG.error("Update mediatorAce failed!");
+    public void onError(SubscriptionException error) {
+        LOG.error("Subscription to mediatorAce failed! SubscriptionId: {}, error: {}",
+                  error.getSubscriptionId(),
+                  error.getMessage());
     }
 }

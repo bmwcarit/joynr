@@ -72,9 +72,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         var subscriptionInfos = {};
         // stores subscriptionId - SubscriptionListener
         var subscriptionListeners = {};
-        var subscriptionResolvedMap = {};
         // stores the object which is returned by setTimeout mapped to the subscriptionId
         var publicationCheckTimerIds = {};
+        var subscriptionReplyCallers = {};
 
         /**
          * @param {String}
@@ -164,28 +164,37 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             return ttl;
         }
 
-        function storeSubscriptionRequest(parameters, subscriptionRequest) {
-            var subscriptionInfo = Util.extend({
-                proxyId : parameters.proxyId,
-                providerId : parameters.providerId,
-                lastPublicationTime_ms : 0
-            }, subscriptionRequest);
-
-            subscriptionInfos[subscriptionRequest.subscriptionId] = subscriptionInfo;
-            subscriptionListeners[subscriptionRequest.subscriptionId] = new SubscriptionListener({
-                onReceive : function(response) {
+        function storeSubscriptionRequest(settings, subscriptionRequest) {
+            var onReceiveWrapper;
+            if (settings.attributeType !== undefined) {
+                onReceiveWrapper = function(response) {
+                    settings.onReceive(Typing.augmentTypes(response[0], typeRegistry, settings.attributeType));
+                };
+            } else {
+                onReceiveWrapper = function(response) {
                     var responseKey;
                     for (responseKey in response) {
                         if (response.hasOwnProperty(responseKey)) {
                             response[responseKey] = Typing.augmentTypes(response[responseKey],
                                                                         typeRegistry,
-                                                                        parameters.broadcastParameter[responseKey].type);
+                                                                        settings.broadcastParameter[responseKey].type);
                         }
                     }
-                    parameters.onReceive(response);
-                },
-                onError : parameters.onError
+                    settings.onReceive(response);
+                };
+            }
+            subscriptionListeners[subscriptionRequest.subscriptionId] = new SubscriptionListener({
+                onReceive : onReceiveWrapper,
+                onError : settings.onError,
+                onSubscribed : settings.onSubscribed
             });
+            var subscriptionInfo = Util.extend({
+                proxyId : settings.proxyId,
+                providerId : settings.providerId,
+                lastPublicationTime_ms : 0
+            }, subscriptionRequest);
+
+            subscriptionInfos[subscriptionRequest.subscriptionId] = subscriptionInfo;
 
             var alertAfterIntervalMs = subscriptionRequest.qos.alertAfterIntervalMs;
             if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
@@ -199,6 +208,18 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                                 alertAfterIntervalMs);
             }
 
+        }
+
+        function cleanupSubscription(subscriptionId) {
+            if (subscriptionInfos[subscriptionId] !== undefined) {
+                delete subscriptionInfos[subscriptionId];
+            }
+            if (subscriptionListeners[subscriptionId] !== undefined) {
+                delete subscriptionListeners[subscriptionId];
+            }
+            if (subscriptionReplyCallers[subscriptionId] !== undefined) {
+                delete subscriptionReplyCallers[subscriptionId];
+            }
         }
 
         /**
@@ -235,21 +256,26 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param {SubscriptionManager~onError}
          *            settings.onError the callback for missing publication alerts or when an
          *            error occurs.
+         * @param {SubscriptionManager~onSubscribed}
+         *            settings.onSubscribed the callback to inform once the subscription request has
+         *            been delivered successfully
          * @returns an A promise object which provides the subscription token upon success and
          *          an error upon failure
          */
         this.registerSubscription =
                 function registerSubscription(settings) {
                     return new Promise(function(resolve, reject) {
-                        var subscriptionId;
-                        if (settings.subscriptionId === undefined) {
-                            // create a new subscriptionId
-                            subscriptionId = uuid();
-                        } else {
-                            // reuse a preexisting subscriptionId
-                            subscriptionId = settings.subscriptionId;
-                        }
+                        var subscriptionId = settings.subscriptionId || uuid();
                         // log.debug("Registering Subscription Id " + subscriptionId);
+
+                        if (settings.attributeName === undefined) {
+                            reject(new Error("Error: attributeName not provided in call to registerSubscription, settings = " + JSON.stringify(settings)));
+                            return;
+                        }
+                        if (settings.attributeType === undefined) {
+                            reject(new Error("Error: attributeType not provided in call to registerSubscription, settings = " + JSON.stringify(settings)));
+                            return;
+                        }
 
                         if (settings.onError === undefined){
                             log.warn("Warning: subscription for attribute \"" + settings.attributeName + "\" has been done without error callback function. You will not be informed about missed publications. Please specify the \"onError\" parameter while subscribing!");
@@ -267,46 +293,26 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                             ttl : calculateTtl(subscriptionRequest.qos)
                         });
 
-                        subscriptionResolvedMap[subscriptionId] = resolve;
+                        subscriptionReplyCallers[subscriptionId] = {
+                            resolve : resolve,
+                            reject : reject
+                        };
+
+                        storeSubscriptionRequest(settings, subscriptionRequest);
+
                         dispatcher.sendSubscriptionRequest({
                             from : settings.proxyId,
                             to : settings.providerId,
                             messagingQos : messagingQos,
                             subscriptionRequest : subscriptionRequest
-                        }).then(function() {
-                            // TODO once 1319: this can be removed
-                            delete subscriptionResolvedMap[subscriptionId];
-                            resolve(subscriptionId);
                         }).catch(function(error) {
-                            delete subscriptionResolvedMap[subscriptionId];
+                            cleanupSubscription(subscriptionId);
+                            if (settings.onError) {
+                                settings.onError(error);
+                            }
                             reject(error);
+                            return;
                         });
-
-                        var subscriptionInfo = Util.extend({
-                            proxyId : settings.proxyId,
-                            providerId : settings.providerId,
-                            lastPublicationTime_ms : 0
-                        }, subscriptionRequest);
-
-                        subscriptionInfos[subscriptionId] = subscriptionInfo;
-                        subscriptionListeners[subscriptionId] = new SubscriptionListener({
-                            onReceive : function(response) {
-                                            settings.onReceive(Typing.augmentTypes(response[0], typeRegistry, settings.attributeType));
-                                        },
-                            onError : settings.onError
-                        });
-                        var alertAfterIntervalMs = settings.qos.alertAfterIntervalMs;
-                        if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
-                            publicationCheckTimerIds[subscriptionId] =
-                                    LongTimer
-                                            .setTimeout(
-                                                    function checkPublicationAlertAfterInterval() {
-                                                        checkPublication(
-                                                                subscriptionId,
-                                                                alertAfterIntervalMs);
-                                                    },
-                                                    alertAfterIntervalMs);
-                        }
                     });
                 };
 
@@ -335,6 +341,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            parameters.onReceive is called when a broadcast is received.
          * @param {SubscriptionManager~onError}
          *            parameters.onError is called when an error occurs with the broadcast
+         * @param {SubscriptionManager~onSubscribed}
+         *            parameters.onSubscribed the callback to inform once the subscription request has
+         *            been delivered successfully
          * @returns a promise object which provides the subscription token upon success and an error
          *          upon failure
          */
@@ -348,27 +357,30 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     qos : parameters.subscriptionQos,
                     filterParameters : parameters.filterParameters
                 });
-                storeSubscriptionRequest(parameters, subscriptionRequest);
-
-                subscriptionResolvedMap[subscriptionRequest.subscriptionId] = resolve;
 
                 messagingQos = new MessagingQos({
                     ttl : calculateTtl(subscriptionRequest.qos)
                 });
+
+                subscriptionReplyCallers[subscriptionRequest.subscriptionId] = {
+                    resolve : resolve,
+                    reject : reject
+                };
+
+                storeSubscriptionRequest(parameters, subscriptionRequest);
 
                 dispatcher.sendBroadcastSubscriptionRequest({
                     from : parameters.proxyId,
                     to : parameters.providerId,
                     messagingQos : messagingQos,
                     subscriptionRequest : subscriptionRequest
-                }).then(function() {
-                    // TODO 1319: this can be removed later. Will be done on subscriptionreply
-                    // instead of here.
-                    delete subscriptionResolvedMap[subscriptionRequest.subscriptionId];
-                    resolve(subscriptionRequest.subscriptionId);
                 }).catch(function(error) {
+                    cleanupSubscription(subscriptionRequest.subscriptionId);
+                    if (parameters.onError) {
+                        parameters.onError(error);
+                    }
                     reject(error);
-                    delete subscriptionResolvedMap[subscriptionRequest.subscriptionId];
+                    return;
                 });
             });
         };
@@ -379,12 +391,46 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param subscriptionReply
          *            {SubscriptionReply} incoming subscriptionReply
          */
-        this.handleSubscriptionReply = function handleSubscriptionReply(subscriptionResponse) {
-            // TODO Will be done on subscriptionreply instead of here.
-            var subscriptionId = subscriptionResponse.subscriptionId;
-            if (subscriptionResolvedMap[subscriptionId] !== undefined) {
-                subscriptionResolvedMap[subscriptionId](subscriptionId);
-                delete subscriptionResolvedMap[subscriptionId];
+        this.handleSubscriptionReply = function handleSubscriptionReply(subscriptionReply) {
+            var subscriptionReplyCaller = subscriptionReplyCallers[subscriptionReply.subscriptionId];
+            var subscriptionListener = subscriptionListeners[subscriptionReply.subscriptionId];
+
+            if (subscriptionReplyCaller === undefined && subscriptionListener === undefined) {
+                log
+                        .error("error handling subscription reply, because subscriptionReplyCaller and subscriptionListener could not be found: "
+                            + JSONSerializer.stringify(subscriptionReply, undefined, 4));
+                return;
+            }
+
+            try {
+                if (subscriptionReply.error) {
+                    if (!(subscriptionReply.error instanceof Error)) {
+                        subscriptionReply.error = Typing.augmentTypes(
+                                subscriptionReply.error,
+                                typeRegistry);
+                    }
+                    if (subscriptionReplyCaller !== undefined) {
+                        subscriptionReplyCaller.reject(subscriptionReply.error);
+                    }
+                    if (subscriptionListener !== undefined && subscriptionListener.onError !== undefined) {
+                        subscriptionListener.onError(subscriptionReply.error);
+                    }
+                    cleanupSubscription(subscriptionReply.subscriptionId);
+                } else {
+                    if (subscriptionReplyCaller !== undefined) {
+                        subscriptionReplyCaller.resolve(subscriptionReply.subscriptionId);
+                    }
+                    if (subscriptionListener !== undefined && subscriptionListener.onSubscribed !== undefined) {
+                        subscriptionListener.onSubscribed(subscriptionReply.subscriptionId);
+                    }
+                    delete subscriptionReplyCallers[subscriptionReply.subscriptionId];
+                }
+            } catch (e) {
+                log.error("exception thrown during handling subscription reply "
+                    + JSONSerializer.stringify(subscriptionReply, undefined, 4)
+                    + ":\n"
+                    + e.stack);
+                delete subscriptionReplyCallers[subscriptionReply.subscriptionId];
             }
         };
 
@@ -455,9 +501,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 delete publicationCheckTimerIds[settings.subscriptionId];
             }
 
-            delete subscriptionInfos[settings.subscriptionId];
-            delete subscriptionListeners[settings.subscriptionId];
-            delete subscriptionResolvedMap[settings.subscriptionId];
+            cleanupSubscription(settings.subscriptionId);
 
             return promise;
         };

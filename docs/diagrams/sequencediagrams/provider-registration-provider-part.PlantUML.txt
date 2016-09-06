@@ -1,0 +1,42 @@
+@startuml
+
+[-> JoynrRuntime : registerProvider
+JoynrRuntime -> CapabilitiesRegistrar : add
+CapabilitiesRegistrar -> LocalDiscoveryAggregator : "add(DiscoveryEntry)"
+
+note over DiscoveryProxy
+	"Sync RPC call"
+end note
+
+LocalDiscoveryAggregator -> DiscoveryProxy : "add(DiscoveryEntry)"
+DiscoveryProxy ->] : DiscoveryEntry
+
+note over CapabilitiesRegistrar
+	"Waits for future (addNextHop)"
+end note
+
+CapabilitiesRegistrar -> MessageRouter : addNextHop
+MessageRouter -> MessageRouter : addToRoutingTable
+
+MessageRouter -> MessageRouter : addNextHopToParent
+MessageRouter -> RoutingProxy : addNextHopAsync
+
+note over RoutingProxy
+	"Async RPC call"
+end note
+
+RoutingProxy ->>] : "addNextHop Request"
+
+note over MessageRouter
+	"sendMessages will return immediately since there are no messages yet"
+end note
+
+MessageRouter -> MessageRouter : sendMessages
+
+RoutingProxy -->> CapabilitiesRegistrar : "onSuccess (addNextHopAsync)"
+
+note over CapabilitiesRegistrar
+	"End: Waits for future (addNextHop)"
+end note
+
+@enduml

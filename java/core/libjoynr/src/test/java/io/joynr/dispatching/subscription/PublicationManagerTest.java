@@ -20,11 +20,11 @@ package io.joynr.dispatching.subscription;
  */
 
 import static org.hamcrest.Matchers.contains;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -47,19 +47,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
 import com.google.common.collect.Lists;
-
-import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
@@ -75,6 +64,7 @@ import joynr.BroadcastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
@@ -82,6 +72,15 @@ import joynr.tests.testLocationUpdateWithSpeedSelectiveBroadcastFilter;
 import joynr.tests.testProvider;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PublicationManagerTest {
@@ -108,7 +107,7 @@ public class PublicationManagerTest {
     @Mock
     private ProviderDirectory providerDirectory;
     @Mock
-    private Dispatcher dispatcher;
+    private DispatcherImpl dispatcher;
     @Mock
     private testProvider provider;
 
@@ -188,6 +187,12 @@ public class PublicationManagerTest {
                                                                             any(MessagingQos.class));
 
         Thread.sleep(subscriptionLength);
+
+        verify(dispatcher).sendSubscriptionReply(eq(providerId),
+                                                 eq(proxyId),
+                                                 any(SubscriptionReply.class),
+                                                 any(MessagingQos.class));
+        //(eq(subscriptionRequest), eq(proxyId), eq(providerId));
         verifyNoMoreInteractions(dispatcher);
     }
 
@@ -237,6 +242,10 @@ public class PublicationManagerTest {
                                                                  (Set<String>) argThat(contains(proxyId)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
+        verify(dispatcher).sendSubscriptionReply(anyString(),
+                                                 anyString(),
+                                                 any(SubscriptionReply.class),
+                                                 any(MessagingQos.class));
 
         Thread.sleep(subscriptionLength);
         verifyNoMoreInteractions(dispatcher);
