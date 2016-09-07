@@ -48,7 +48,9 @@ class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public IMessageReceiver
 {
 
 public:
-    explicit HttpReceiver(const MessagingSettings& settings);
+    explicit HttpReceiver(const MessagingSettings& settings,
+                          const std::string& channelId,
+                          const std::string& receiverId);
     ~HttpReceiver() override;
 
     /**
