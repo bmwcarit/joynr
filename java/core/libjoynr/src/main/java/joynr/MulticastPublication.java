@@ -23,36 +23,36 @@ import java.util.List;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 
-public class SubscriptionPublication extends AbstractPublication {
+public class MulticastPublication extends AbstractPublication {
 
     private static final long serialVersionUID = 1L;
 
-    private String subscriptionId;
+    private String multicastId;
 
-    public SubscriptionPublication() {
+    public MulticastPublication() {
     }
 
-    public SubscriptionPublication(List<? extends Object> response, String subscriptionId) {
+    public MulticastPublication(List<? extends Object> response, String multicastId) {
         super(response);
-        this.subscriptionId = subscriptionId;
+        this.multicastId = multicastId;
     }
 
-    public SubscriptionPublication(JoynrRuntimeException error, String subscriptionId) {
+    public MulticastPublication(JoynrRuntimeException error, String multicastId) {
         super(error);
-        this.subscriptionId = subscriptionId;
+        this.multicastId = multicastId;
     }
 
-    public String getSubscriptionId() {
-        return subscriptionId;
+    public String getMulticastId() {
+        return multicastId;
     }
 
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
+    public void setMulticastId(String multicastId) {
+        this.multicastId = multicastId;
     }
 
     @Override
     public String toString() {
-        return "SubscriptionPublication [" + "subscriptionId=" + subscriptionId + ", "
+        return "MulticastPublication [" + "multicastId=" + multicastId + ", "
                 + (getResponse() != null ? "response=" + getResponse() + ", " : "")
                 + (getError() != null ? "error=" + getError() : "") + "]";
     }
@@ -66,9 +66,9 @@ public class SubscriptionPublication extends AbstractPublication {
         if (!super.equals(o))
             return false;
 
-        SubscriptionPublication that = (SubscriptionPublication) o;
+        MulticastPublication that = (MulticastPublication) o;
 
-        return subscriptionId.equals(that.subscriptionId);
+        return multicastId.equals(that.multicastId);
 
     }
 
@@ -76,7 +76,7 @@ public class SubscriptionPublication extends AbstractPublication {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + subscriptionId.hashCode();
+        result = prime * result + multicastId.hashCode();
         return result;
     }
 }
