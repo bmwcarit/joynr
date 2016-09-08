@@ -19,14 +19,15 @@ package io.joynr.proxy.invocation;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.ReflectionUtils;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.proxy.Future;
-import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-
 import java.lang.reflect.Method;
 
+import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.proxy.Future;
+import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.BroadcastFilterParameters;
 import joynr.OnChangeSubscriptionQos;
 
@@ -34,17 +35,12 @@ import joynr.OnChangeSubscriptionQos;
  * BroadcastSubscribeInvocation contains the queuable information for a {@literal subscribeTo<broadcast>} call
  */
 public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
-    private String subscriptionId = "";
     private final BroadcastSubscriptionListener broadcastSubscriptionListener;
-    private final String broadcastName;
-    private final OnChangeSubscriptionQos qos;
     private final BroadcastFilterParameters filterParameters;
     private final Class<?>[] outParameterTypes;
 
     public BroadcastSubscribeInvocation(Method method, Object[] args, Future<String> future) {
-        super(future);
-        JoynrRpcBroadcast broadcastAnnotation = method.getAnnotation(JoynrRpcBroadcast.class);
-        broadcastName = broadcastAnnotation.broadcastName();
+        super(future, getSubscriptionNameFromAnnotation(method), (SubscriptionQos) args[1]);
         boolean isSelectiveBroadcast = args.length > 2 && args[2] instanceof BroadcastFilterParameters;
 
         // For broadcast subscriptions the args array contains the following entries:
@@ -54,25 +50,30 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
         // args[3] : (isSelectiveBroadcast) ? optional subscription ID : not available
         broadcastSubscriptionListener = (BroadcastSubscriptionListener) args[0];
         outParameterTypes = extractOutParameterTypes(broadcastSubscriptionListener);
-        qos = (OnChangeSubscriptionQos) args[1];
 
         if (isSelectiveBroadcast) {
             filterParameters = (BroadcastFilterParameters) args[2];
-            subscriptionId = (args.length == 4) ? (String) args[3] : "";
+            setSubscriptionId((args.length == 4) ? (String) args[3] : "");
         } else {
             filterParameters = new BroadcastFilterParameters();
-            subscriptionId = (args.length == 3) ? (String) args[2] : "";
+            setSubscriptionId((args.length == 3) ? (String) args[2] : "");
         }
+    }
+
+    private static String getSubscriptionNameFromAnnotation(Method method) {
+        JoynrRpcBroadcast broadcastAnnotation = method.getAnnotation(JoynrRpcBroadcast.class);
+        if (broadcastAnnotation == null) {
+            throw new JoynrIllegalStateException("SubscribeTo... methods must be annotated with JoynrRpcSubscription annotation");
+        }
+        return broadcastAnnotation.broadcastName();
     }
 
     public BroadcastSubscribeInvocation(String broadcastName,
                                         BroadcastSubscriptionListener broadcastSubscriptionListener,
                                         OnChangeSubscriptionQos qos,
                                         Future<String> future) {
-        super(future);
-        this.broadcastName = broadcastName;
+        super(future, broadcastName, qos);
         this.filterParameters = null;
-        this.qos = qos;
         this.broadcastSubscriptionListener = broadcastSubscriptionListener;
         outParameterTypes = extractOutParameterTypes(broadcastSubscriptionListener);
     }
@@ -91,21 +92,12 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
         }
     }
 
-    @Override
-    public String getSubscriptionId() {
-        return subscriptionId;
-    }
-
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-    }
-
     public BroadcastSubscriptionListener getBroadcastSubscriptionListener() {
         return broadcastSubscriptionListener;
     }
 
     public OnChangeSubscriptionQos getQos() {
-        return qos;
+        return (OnChangeSubscriptionQos) super.getQos();
     }
 
     public BroadcastFilterParameters getFilterParameters() {
@@ -113,7 +105,7 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
     }
 
     public String getBroadcastName() {
-        return broadcastName;
+        return getSubscriptionName();
     }
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "BroadcastSubscribeInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")

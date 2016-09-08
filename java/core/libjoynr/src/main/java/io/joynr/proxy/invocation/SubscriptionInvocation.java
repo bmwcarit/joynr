@@ -20,15 +20,46 @@ package io.joynr.proxy.invocation;
  */
 
 import io.joynr.proxy.Future;
+import io.joynr.pubsub.SubscriptionQos;
 
 public abstract class SubscriptionInvocation extends Invocation<String> {
-    public SubscriptionInvocation(Future<String> future) {
+
+    private String subscriptionId = "";
+    private final String subscriptionName;
+    private final SubscriptionQos qos;
+
+    public SubscriptionInvocation(Future<String> future, String subscriptionName, SubscriptionQos qos) {
+        this(future, subscriptionName, qos, null);
+    }
+
+    public SubscriptionInvocation(Future<String> future,
+                                  String subscriptionName,
+                                  SubscriptionQos qos,
+                                  String subscriptionId) {
         super(future);
+        this.subscriptionName = subscriptionName;
+        this.subscriptionId = subscriptionId;
+        this.qos = qos;
     }
 
     public boolean hasSubscriptionId() {
         return getSubscriptionId() != null && !getSubscriptionId().isEmpty();
     }
 
-    public abstract String getSubscriptionId();
+    public String getSubscriptionId() {
+        return subscriptionId;
+    }
+
+    public void setSubscriptionId(String subscriptionId) {
+        this.subscriptionId = subscriptionId;
+    }
+
+    public String getSubscriptionName() {
+        return subscriptionName;
+    }
+
+    public SubscriptionQos getQos() {
+        return qos;
+    }
+
 }

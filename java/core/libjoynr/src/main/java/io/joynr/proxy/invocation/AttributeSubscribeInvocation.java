@@ -19,15 +19,14 @@ package io.joynr.proxy.invocation;
  * #L%
  */
 
+import java.lang.reflect.Method;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-
-import java.lang.reflect.Method;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * AttributeSubscribeInvocation contains the queuable information for a {@literal subscribeTo<attribute>} call
@@ -35,36 +34,38 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class AttributeSubscribeInvocation extends SubscriptionInvocation {
     private final AttributeSubscriptionListener<?> attributeSubscriptionListener;
     private final Class<?> attributeTypeReference;
-    private String subscriptionId = "";
-    private final SubscriptionQos qos;
-    private final String attributeName;
 
     public AttributeSubscribeInvocation(Method method, Object[] args, Future<String> future) {
-        super(future);
-        JoynrRpcSubscription subscriptionAnnotation = method.getAnnotation(JoynrRpcSubscription.class);
-        if (subscriptionAnnotation == null) {
-            throw new JoynrIllegalStateException("SubscribeTo... methods must be annotated with JoynrRpcSubscription annotation");
-        }
-        attributeName = subscriptionAnnotation.attributeName();
+        super(future, getAttributeNameFromAnnotation(method), (SubscriptionQos) args[1]);
         if (args[0] == null || !AttributeSubscriptionListener.class.isAssignableFrom(args[0].getClass())) {
             throw new JoynrIllegalStateException("First parameter of subscribeTo... has to implement AttributeSubscriptionListener");
         }
-        attributeTypeReference = subscriptionAnnotation.attributeType();
+        attributeTypeReference = getAnnotationFromMethod(method).attributeType();
 
         attributeSubscriptionListener = (AttributeSubscriptionListener<?>) args[0];
         if (args[1] == null || !SubscriptionQos.class.isAssignableFrom(args[1].getClass())) {
             throw new JoynrIllegalStateException("Second parameter of subscribeTo... has to be of type SubscriptionQos");
         }
 
-        qos = (SubscriptionQos) args[1];
-
         if (args.length > 2) {
             if (args[2] != null && args[2] instanceof String) {
-                subscriptionId = (String) args[2];
+                setSubscriptionId((String) args[2]);
             } else {
                 throw new JoynrIllegalStateException("Third parameter of subscribeTo... has to be of type String");
             }
         }
+    }
+
+    private static JoynrRpcSubscription getAnnotationFromMethod(Method method) {
+        JoynrRpcSubscription subscriptionAnnotation = method.getAnnotation(JoynrRpcSubscription.class);
+        if (subscriptionAnnotation == null) {
+            throw new JoynrIllegalStateException("SubscribeTo... methods must be annotated with JoynrRpcSubscription annotation");
+        }
+        return subscriptionAnnotation;
+    }
+
+    private static String getAttributeNameFromAnnotation(Method method) {
+        return getAnnotationFromMethod(method).attributeName();
     }
 
     public AttributeSubscribeInvocation(String attributeName,
@@ -72,16 +73,9 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
                                         AttributeSubscriptionListener<?> attributeSubscriptionListener,
                                         SubscriptionQos qos,
                                         Future<String> future) {
-        super(future);
+        super(future, attributeName, qos);
         this.attributeTypeReference = attributeTypeReference;
         this.attributeSubscriptionListener = attributeSubscriptionListener;
-        this.attributeName = attributeName;
-        this.qos = qos;
-    }
-
-    @Override
-    public String getSubscriptionId() {
-        return subscriptionId;
     }
 
     public AttributeSubscriptionListener<?> getAttributeSubscriptionListener() {
@@ -92,15 +86,7 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
         return attributeTypeReference;
     }
 
-    public SubscriptionQos getQos() {
-        return qos;
-    }
-
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-    }
-
     public String getAttributeName() {
-        return attributeName;
+        return getSubscriptionName();
     }
 }

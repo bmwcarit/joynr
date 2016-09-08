@@ -19,6 +19,20 @@ package io.joynr.proxy;
  * #L%
  */
 
+import java.lang.reflect.Method;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import io.joynr.Async;
 import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
@@ -34,29 +48,11 @@ import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.Invocation;
 import io.joynr.proxy.invocation.MethodInvocation;
-import io.joynr.proxy.invocation.SubscriptionInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
-
-import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import joynr.MethodMetaInformation;
 import joynr.exceptions.ApplicationException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
 
 public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConnectorFactory connectorFactory;
@@ -68,7 +64,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConnectorInvocationHandler connector;
     private final String proxyParticipantId;
     private ConcurrentLinkedQueue<MethodInvocation<?>> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation<?>>();
-    private ConcurrentLinkedQueue<SubscriptionInvocation> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionInvocation>();
+    private ConcurrentLinkedQueue<Invocation<String>> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<Invocation<String>>();
     private String interfaceName;
     private Set<String> domains;
 
@@ -199,7 +195,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     private void sendQueuedSubscriptionInvocations() {
         while (true) {
-            SubscriptionInvocation currentSubscription = queuedSubscriptionInvocationList.poll();
+            Invocation<String> currentSubscription = queuedSubscriptionInvocationList.poll();
             if (currentSubscription == null) {
                 return;
             }
@@ -440,8 +436,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             invocation.getFuture().onFailure(exception);
         }
 
-        for (Iterator<SubscriptionInvocation> iterator = queuedSubscriptionInvocationList.iterator(); iterator.hasNext();) {
-            SubscriptionInvocation invocation = iterator.next();
+        for (Iterator<Invocation<String>> iterator = queuedSubscriptionInvocationList.iterator(); iterator.hasNext();) {
+            Invocation<String> invocation = iterator.next();
             invocation.getFuture().onFailure(exception);
         }
     }
