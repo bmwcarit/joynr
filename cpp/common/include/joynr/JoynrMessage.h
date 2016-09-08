@@ -110,6 +110,7 @@ public:
             VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY; // reply that the subscription was
                                                    // registered successfully
     static const std::string VALUE_MESSAGE_TYPE_PUBLICATION;
+    static const std::string VALUE_MESSAGE_TYPE_MULTICAST;
     static const std::string VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP;
 
     static const std::string VALUE_CONTENT_TYPE_TEXT_PLAIN;
@@ -365,6 +366,22 @@ public:
      */
     void setHeaderEffort(const std::string& effort);
 
+    /**
+     * @brief isReceivedFromGlobal Check whether receivedFromGlobal is set (default: false).
+     * ReceivedFromGlobal indicates whether a multicast message is originating from the current
+     * runtime and should hence be transmitted globally, or whether it is a message received via
+     * a global transport middleware and needs to be routed internally.
+     * @return true, if receivedFromGlobal is set; false, otherwise
+     * @see JoynrMessage::setReceivedFromGlobal()
+     */
+    bool isReceivedFromGlobal() const;
+    /**
+     * @brief setReceivedFromGlobal set receivedFromGlobal.
+     * @param receivedFromGlobal the new value of receivedFromGlobal
+     * @see JoynrMessage::isReceivedFromGlobal()
+     */
+    void setReceivedFromGlobal(bool receivedFromGlobal);
+
     template <class Archive>
     void serialize(Archive& archive)
     {
@@ -393,6 +410,9 @@ private:
     std::string type;
     std::map<std::string, std::string> header;
     std::string payload;
+    // receivedFromGlobal is a transient attribute which will not be serialized.
+    // It is only used locally for routing decisions.
+    bool receivedFromGlobal;
     ADD_LOGGER(JoynrMessage);
 
     void generateAndSetMsgIdHeaderIfAbsent();

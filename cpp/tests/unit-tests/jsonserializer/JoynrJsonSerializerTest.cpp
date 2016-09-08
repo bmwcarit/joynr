@@ -31,8 +31,10 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
 #include "joynr/SubscriptionPublication.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/JoynrMessage.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
 #include "joynr/types/TestTypes/TStruct.h"
@@ -64,6 +66,29 @@ private:
 };
 
 INIT_LOGGER(JoynrJsonSerializerTest);
+
+TEST_F(JoynrJsonSerializerTest, receivedFromGlobalAttributeIsIgnoredBySerialization)
+{
+    // Create a JoynrMessage
+    JoynrMessage msg;
+    msg.setType("TESTTYPE");
+    std::string payload = "testPayload";
+    msg.setPayload(payload);
+
+    msg.setReceivedFromGlobal(true);
+    ASSERT_TRUE(msg.isReceivedFromGlobal());
+
+    // Serialize into JSON
+    std::string json = joynr::serializer::serializeToJson(msg);
+    JOYNR_LOG_TRACE(logger, "JoynrMessage JSON: {}",json);
+
+    JoynrMessage deserializedMsg;
+    joynr::serializer::deserializeFromJson(deserializedMsg, json);
+
+    // TODO disabled because of a bug in muesli (the message header is not deserialized correctly)
+    // EXPECT_EQ(msg, deserializedMsg);
+    EXPECT_FALSE(deserializedMsg.isReceivedFromGlobal());
+}
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerApplicationException)
 {
@@ -253,6 +278,45 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerMulticastSubscriptionRequest)
     joynr::serializer::deserializeFromJson(deserializedMulticastSubscriptionRequest, json);
 
     EXPECT_EQ(expectedRequest, deserializedMulticastSubscriptionRequest);
+}
+
+TEST_F(JoynrJsonSerializerTest, deserializerMulticastPublicationWithProviderRuntimeException)
+{
+    // Create a Publication
+    MulticastPublication publication;
+    publication.setMulticastId("testSubscriptionId");
+    publication.setError(std::make_shared<exceptions::ProviderRuntimeException>("Message of ProviderRuntimeException"));
+
+    // Serialize into JSON
+    std::string json = joynr::serializer::serializeToJson(publication);
+    JOYNR_LOG_TRACE(logger, "MulticastPublication JSON: {}",json);
+
+    MulticastPublication deserializedMulticastPublication;
+    joynr::serializer::deserializeFromJson(deserializedMulticastPublication, json);
+
+    EXPECT_EQ(publication, deserializedMulticastPublication);
+}
+
+TEST_F(JoynrJsonSerializerTest, deserializerMulticastPublication)
+{
+    // Create a publication
+    MulticastPublication expectedPublication;
+    std::string someString{"Hello World"};
+    const std::int32_t expectedInt = 101;
+    const float expectedFloat = 9.99f;
+    bool expectedBool = true;
+
+    expectedPublication.setResponse(someString, expectedInt, expectedFloat, expectedBool);
+    expectedPublication.setMulticastId("000-10000-01101");
+
+    // Serialize into JSON
+    std::string json = joynr::serializer::serializeToJson(expectedPublication);
+    JOYNR_LOG_TRACE(logger, "MulticastPublication JSON: {}",json);
+
+    MulticastPublication deserializedMulticastPublication;
+    joynr::serializer::deserializeFromJson(deserializedMulticastPublication, json);
+
+    EXPECT_EQ(expectedPublication, deserializedMulticastPublication);
 }
 
 // test with real MasterAccessControlEntry
