@@ -63,7 +63,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = new PublicationManager(singleThreadedIOService.getIOService());
-    subscriptionManager = new SubscriptionManager(singleThreadedIOService.getIOService());
+    subscriptionManager =
+            new SubscriptionManager(singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());
 
     inProcessPublicationSender = std::make_unique<InProcessPublicationSender>(subscriptionManager);

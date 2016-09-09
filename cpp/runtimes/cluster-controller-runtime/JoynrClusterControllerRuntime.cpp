@@ -374,7 +374,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
             libjoynrSettings.getBroadcastSubscriptionRequestPersistenceFilename());
 
-    subscriptionManager = new SubscriptionManager(singleThreadIOService->getIOService());
+    subscriptionManager =
+            new SubscriptionManager(singleThreadIOService->getIOService(), messageRouter);
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
     auto libjoynrMessagingAddress =
             std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);

@@ -86,7 +86,7 @@ public:
 
     void SetUp(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
-        subscriptionManager = new SubscriptionManager(singleThreadedIOService.getIOService());
+        subscriptionManager = new SubscriptionManager(singleThreadedIOService.getIOService(), mockMessageRouter);
         publicationManager = new PublicationManager(singleThreadedIOService.getIOService());
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);

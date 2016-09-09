@@ -356,6 +356,18 @@ public:
             const std::string& participantId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+    MOCK_METHOD5(addMulticastReceiver, void(
+            const std::string& multicastId,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+    MOCK_METHOD5(removeMulticastReceiver, void(
+            const std::string& multicastId,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 };
 
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {

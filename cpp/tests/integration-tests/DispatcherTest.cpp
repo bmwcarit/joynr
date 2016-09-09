@@ -219,7 +219,7 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
                 reply
     );
 
-    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService());
+    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
     auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
     EXPECT_CALL(mockSubscriptionManager, getSubscriptionCallback(Eq(subscriptionId))).WillOnce(Return(mockSubscriptionCallback));
 

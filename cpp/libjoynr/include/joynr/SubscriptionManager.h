@@ -20,11 +20,18 @@
 #ifndef SUBSCRIPTIONMANAGER_H
 #define SUBSCRIPTIONMANAGER_H
 
-#include <string>
-#include <memory>
 #include <cstdint>
+#include <forward_list>
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
 
 #include "joynr/ISubscriptionManager.h"
+
+#include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/Runnable.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -44,8 +51,16 @@ namespace joynr
 {
 class ISubscriptionCallback;
 class DelayedScheduler;
+class MessageRouter;
+class MulticastSubscriptionRequest;
 class SubscriptionQos;
 class SubscriptionRequest;
+
+namespace exceptions
+{
+class ProviderRuntimeException;
+} // namespace exceptions
+
 /**
   * @class SubscriptionManager
   * @brief The subscription manager is used by the proxy (via the appropriate connector)
@@ -61,8 +76,9 @@ class JOYNR_EXPORT SubscriptionManager : public ISubscriptionManager
 public:
     ~SubscriptionManager() override;
 
-    explicit SubscriptionManager(boost::asio::io_service& ioService);
-    explicit SubscriptionManager(DelayedScheduler* scheduler);
+    SubscriptionManager(boost::asio::io_service& ioService,
+                        std::shared_ptr<MessageRouter> messageRouter);
+    SubscriptionManager(DelayedScheduler* scheduler, std::shared_ptr<MessageRouter> messageRouter);
 
     /**
      * @brief Subscribe to an attribute or broadcast. Modifies the subscription request to include
@@ -78,6 +94,33 @@ public:
                               std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
                               std::shared_ptr<SubscriptionQos> qos,
                               SubscriptionRequest& subscriptionRequest) override;
+
+    /**
+     * @brief Subscribe to a multicast. Modifies the subscription request to include
+     * all necessary information (side effect). Takes ownership of the ISubscriptionCallback, i.e.
+     * deletes the callback when no longer required.
+     *
+     * @param subscribeToName
+     * @param subscriberParticipantId
+     * @param providerParticipantId
+     * @param partition
+     * @param subscriptionCaller
+     * @param qos
+     * @param subscriptionRequest
+     * @param onSuccess
+     * @param onError
+     */
+    void registerSubscription(
+            const std::string& subscribeToName,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            const std::vector<std::string>& partitions,
+            std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+            std::shared_ptr<SubscriptionQos> qos,
+            MulticastSubscriptionRequest& subscriptionRequest,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
 
     /**
      * @brief Stop the subscription. Removes the callback and stops the notifications
@@ -105,13 +148,34 @@ public:
     std::shared_ptr<ISubscriptionCallback> getSubscriptionCallback(
             const std::string& subscriptionId) override;
 
+    /**
+     * @brief Get a list of shared pointers to the subscription callbacks. The list is empty
+     * if the multicast ID does not exist.
+     *
+     * @param multicastId
+     * @return std::forward_list<std::shared_ptr<ISubscriptionCallback>>
+     */
+    std::forward_list<std::shared_ptr<ISubscriptionCallback>> getMulticastSubscriptionCallbacks(
+            const std::string& multicastId) override;
+
 private:
     //    void checkMissedPublication(const Timer::TimerId id);
-
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
+
+    std::string createMulticastId(const std::string& providerParticipantId,
+                                  const std::string& multicastName,
+                                  const std::vector<std::string>& partitions);
+
     class Subscription;
 
+    void stopSubscription(std::shared_ptr<Subscription> subscription);
+
     ThreadSafeMap<std::string, std::shared_ptr<Subscription>> subscriptions;
+
+    MulticastReceiverDirectory multicastSubscribers;
+    std::mutex multicastSubscribersMutex;
+
+    std::shared_ptr<MessageRouter> messageRouter;
 
     DelayedScheduler* missedPublicationScheduler;
     ADD_LOGGER(SubscriptionManager);

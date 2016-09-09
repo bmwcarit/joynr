@@ -50,7 +50,7 @@ public:
 
     TestJoynrMessagingConnectorTest():
         singleThreadedIOService(),
-        mockSubscriptionManager(singleThreadedIOService.getIOService()),
+        mockSubscriptionManager(singleThreadedIOService.getIOService(), nullptr),
         gpsLocation(types::Localisation::GpsLocation(
                         9.0,
                         51.0,

@@ -107,7 +107,8 @@ void LibJoynrRuntime::init(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
             libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
-    subscriptionManager = new SubscriptionManager(singleThreadIOService->getIOService());
+    subscriptionManager =
+            new SubscriptionManager(singleThreadIOService->getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadIOService->getIOService());
 
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
