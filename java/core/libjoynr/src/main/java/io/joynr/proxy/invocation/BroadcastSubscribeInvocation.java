@@ -22,6 +22,7 @@ package io.joynr.proxy.invocation;
 import java.lang.reflect.Method;
 
 import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -41,7 +42,7 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
 
     public BroadcastSubscribeInvocation(Method method, Object[] args, Future<String> future) {
         super(future, getSubscriptionNameFromAnnotation(method), (SubscriptionQos) args[1]);
-        boolean isSelectiveBroadcast = args.length > 2 && args[2] instanceof BroadcastFilterParameters;
+        boolean isSelectiveBroadcast = method.getAnnotation(JoynrRpcBroadcast.class) != null;
 
         // For broadcast subscriptions the args array contains the following entries:
         // args[0] : BroadcastSubscriptionListener
@@ -62,10 +63,14 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
 
     private static String getSubscriptionNameFromAnnotation(Method method) {
         JoynrRpcBroadcast broadcastAnnotation = method.getAnnotation(JoynrRpcBroadcast.class);
-        if (broadcastAnnotation == null) {
-            throw new JoynrIllegalStateException("SubscribeTo... methods must be annotated with JoynrRpcSubscription annotation");
+        if (broadcastAnnotation != null) {
+            return broadcastAnnotation.broadcastName();
         }
-        return broadcastAnnotation.broadcastName();
+        JoynrMulticast multicastAnnotation = method.getAnnotation(JoynrMulticast.class);
+        if (multicastAnnotation != null) {
+            return multicastAnnotation.name();
+        }
+        throw new JoynrIllegalStateException("SubscribeTo... methods must be annotated with either JoynrRpcSubscription or JoynrMulticast  annotation");
     }
 
     public BroadcastSubscribeInvocation(String broadcastName,

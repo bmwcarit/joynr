@@ -43,6 +43,7 @@ class InterfaceBroadcastTemplate extends InterfaceTemplate {
 package «packagePath»;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
+import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
@@ -112,12 +113,12 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 				«filterParameterType» filterParameters,
 				String subscriptionId);
 	«ELSE»
-		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
+		@JoynrMulticast(name = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» subscriptionListener,
 				OnChangeSubscriptionQos subscriptionQos);
 
-		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
+		@JoynrMulticast(name = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» subscriptionListener,
 				OnChangeSubscriptionQos subscriptionQos,
