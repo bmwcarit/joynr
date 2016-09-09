@@ -19,13 +19,12 @@ package io.joynr.proxy.invocation;
  * #L%
  */
 
+import static io.joynr.proxy.invocation.InvocationReflectionsUtils.extractOutParameterTypes;
+
 import java.lang.reflect.Method;
 
-import io.joynr.dispatcher.rpc.ReflectionUtils;
-import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
@@ -66,11 +65,7 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
         if (broadcastAnnotation != null) {
             return broadcastAnnotation.broadcastName();
         }
-        JoynrMulticast multicastAnnotation = method.getAnnotation(JoynrMulticast.class);
-        if (multicastAnnotation != null) {
-            return multicastAnnotation.name();
-        }
-        throw new JoynrIllegalStateException("SubscribeTo... methods must be annotated with either JoynrRpcSubscription or JoynrMulticast  annotation");
+        throw new JoynrIllegalStateException("SubscribeTo... methods must be annotated with JoynrRpcSubscription annotation");
     }
 
     public BroadcastSubscribeInvocation(String broadcastName,
@@ -81,20 +76,6 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
         this.filterParameters = null;
         this.broadcastSubscriptionListener = broadcastSubscriptionListener;
         outParameterTypes = extractOutParameterTypes(broadcastSubscriptionListener);
-    }
-
-    private static Class<?>[] extractOutParameterTypes(BroadcastSubscriptionListener listener) {
-        try {
-            Method onReceiveListenerMethod = ReflectionUtils.findMethod(listener.getClass(), "onReceive");
-            Class<?>[] outParameterTypes = onReceiveListenerMethod.getParameterTypes();
-            return outParameterTypes;
-        } catch (NoSuchMethodException e) {
-            // this should not happen since a broadcast listener must have an
-            // onReceive method
-            String message = String.format("Unable to find \"onReceive\" method on subscription listener object of type \"%s\".",
-                                           listener.getClass().getName());
-            throw new JoynrRuntimeException(message, e);
-        }
     }
 
     public BroadcastSubscriptionListener getBroadcastSubscriptionListener() {

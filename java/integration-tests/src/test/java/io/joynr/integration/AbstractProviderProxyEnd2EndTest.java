@@ -19,7 +19,6 @@ package io.joynr.integration;
  * #L%
  */
 
-import io.joynr.provider.ProviderAnnotations;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +27,18 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+import com.google.inject.Module;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -43,6 +54,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
@@ -50,17 +62,6 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-
 import joynr.OnChangeSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
@@ -78,11 +79,11 @@ import joynr.tests.testTypes.ComplexTestType2;
 import joynr.tests.testTypes.DerivedStruct;
 import joynr.tests.testTypes.ErrorEnumBase;
 import joynr.tests.testTypes.TestEnum;
-import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.Trip;
-
+import joynr.types.ProviderQos;
+import joynr.types.TestTypes.TStringKeyMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -93,10 +94,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Module;
-
-import joynr.types.TestTypes.TStringKeyMap;
 
 public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
     private static final String MAX_MESSAGE_SIZE = "4000000";
@@ -727,6 +724,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         assertArrayEquals(byteArray, result);
     }
 
+    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testSimpleBroadcast() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
         final Semaphore broadcastReceived = new Semaphore(0);
@@ -767,6 +765,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     }
 
+    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testBroadcastWithMapParameter() throws DiscoveryException, JoynrIllegalStateException,
                                                InterruptedException {

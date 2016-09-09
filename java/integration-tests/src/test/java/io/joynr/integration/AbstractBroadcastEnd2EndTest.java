@@ -58,6 +58,7 @@ import joynr.types.Localisation.GpsLocation;
 import joynr.types.ProviderQos;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -163,6 +164,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
     }
 
+    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeToBroadcastOneOutput() throws InterruptedException {
 
@@ -184,6 +186,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         broadcastReceived.acquire();
     }
 
+    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeToBroadcastMultipleOutputs() throws InterruptedException {
         final Semaphore broadcastReceived = new Semaphore(0);
@@ -206,6 +209,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         broadcastReceived.acquire();
     }
 
+    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeToBroadcastWithEnumOutput() throws InterruptedException {
         final Semaphore broadcastReceived = new Semaphore(0);
@@ -232,6 +236,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         broadcastReceived.acquire();
     }
 
+    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeToBroadcastWithByteBufferOutput() throws InterruptedException {
         final Semaphore broadcastReceived = new Semaphore(0);
@@ -267,6 +272,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         return onChangeSubscriptionQos;
     }
 
+    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeAndUnsubscribeFromEmptyBroadcast() throws InterruptedException, ApplicationException {
 
@@ -300,6 +306,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         assertFalse(broadcastReceived.tryAcquire(300, TimeUnit.MILLISECONDS));
     }
 
+    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeAndUnsubscribeFromBroadcast() throws InterruptedException {
 

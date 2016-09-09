@@ -86,6 +86,7 @@ public class SubscriptionManagerTest {
 
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory = spy(new ConcurrentHashMap<String, AttributeSubscriptionListener<?>>());
     private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory = spy(new ConcurrentHashMap<String, BroadcastSubscriptionListener>());
+    private ConcurrentMap<String, Set<String>> multicastSubscribersDirectory = spy(new ConcurrentHashMap<String, Set<String>>());
     private ConcurrentMap<String, PubSubState> subscriptionStates = spy(new ConcurrentHashMap<String, PubSubState>());
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers = spy(new ConcurrentHashMap<String, MissedPublicationTimer>());
     private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes = spy(Maps.<String, Class<?>[]> newConcurrentMap());
@@ -114,6 +115,7 @@ public class SubscriptionManagerTest {
     public void setUp() {
         subscriptionManager = new SubscriptionManagerImpl(attributeSubscriptionDirectory,
                                                           broadcastSubscriptionDirectory,
+                                                          multicastSubscribersDirectory,
                                                           subscriptionStates,
                                                           missedPublicationTimers,
                                                           subscriptionEndFutures,
