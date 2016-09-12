@@ -49,8 +49,8 @@ import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
+import joynr.MulticastSubscriptionRequest;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
@@ -241,9 +241,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                         multicastSubscribeInvocation.getOutParameterTypes());
                                          broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                                                     multicastSubscribeInvocation.getListener());
-                                         return new BroadcastSubscriptionRequest(multicastSubscribeInvocation.getSubscriptionId(),
+                                         return new MulticastSubscriptionRequest(multicastId,
+                                                                                 multicastSubscribeInvocation.getSubscriptionId(),
                                                                                  multicastSubscribeInvocation.getSubscriptionName(),
-                                                                                 new BroadcastFilterParameters(),
                                                                                  multicastSubscribeInvocation.getQos());
                                      }
                                  });
