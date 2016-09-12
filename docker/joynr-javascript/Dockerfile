@@ -18,6 +18,11 @@ RUN dnf install -y \
 	&& dnf clean all
 
 ###################################################
+# install phantomjs to avoid additional download
+###################################################
+RUN npm install -g phantomjs-prebuilt@2.1.12
+
+###################################################
 # deploy the build scripts
 ###################################################
 COPY scripts/build/* /data/scripts/build/
