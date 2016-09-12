@@ -23,6 +23,7 @@
 #include <cassert>
 #include <initializer_list>
 #include <functional>
+#include <memory>
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -30,6 +31,8 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
 #include "joynr/SubscriptionPublication.h"
+#include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
 #include "joynr/types/TestTypes/TStruct.h"
@@ -230,6 +233,26 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
     joynr::serializer::deserializeFromJson(deserializedSubscriptionPublication, json);
 
     EXPECT_EQ(expectedPublication, deserializedSubscriptionPublication);
+}
+
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerMulticastSubscriptionRequest)
+{
+    // Create a multicast subscription request
+    MulticastSubscriptionRequest expectedRequest;
+    expectedRequest.setMulticastId("multicastId");
+    expectedRequest.setSubscriptionId("000-10000-01101");
+    expectedRequest.setSubscribeToName("subscribeToName");
+    auto qos = std::make_shared<OnChangeSubscriptionQos>();
+    expectedRequest.setQos(qos);
+
+    // Serialize into JSON
+    std::string json = joynr::serializer::serializeToJson(expectedRequest);
+    JOYNR_LOG_TRACE(logger, "MulticastSubscriptionRequest JSON: {}",json);
+
+    MulticastSubscriptionRequest deserializedMulticastSubscriptionRequest;
+    joynr::serializer::deserializeFromJson(deserializedMulticastSubscriptionRequest, json);
+
+    EXPECT_EQ(expectedRequest, deserializedMulticastSubscriptionRequest);
 }
 
 // test with real MasterAccessControlEntry
