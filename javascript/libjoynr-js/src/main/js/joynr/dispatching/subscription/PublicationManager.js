@@ -792,6 +792,12 @@ define(
                     return false;
                 };
 
+                function callbackDispatcherAsync(reply, callbackDispatcher) {
+                    LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                        callbackDispatcher(new SubscriptionReply(reply));
+                    }, 0);
+                }
+
                 /**
                  * Handles SubscriptionRequests
                  *
@@ -859,12 +865,12 @@ define(
                                     subscriptionId : subscriptionId
                                 });
                                 log.error(exception.detailMessage);
-                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                                    callbackDispatcher(new SubscriptionReply({
-                                        error : exception,
-                                        subscriptionId : subscriptionId
-                                    }));
-                                }, 0);
+                                callbackDispatcherAsync(
+                                        {
+                                            error : exception,
+                                            subscriptionId : subscriptionId
+                                        },
+                                        callbackDispatcher);
                                 return;
                             }
 
@@ -882,12 +888,12 @@ define(
                                     subscriptionId : subscriptionId
                                 });
                                 log.error(exception.detailMessage);
-                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                                    callbackDispatcher(new SubscriptionReply({
-                                        error : exception,
-                                        subscriptionId : subscriptionId
-                                    }));
-                                }, 0);
+                                callbackDispatcherAsync(
+                                        {
+                                            error : exception,
+                                            subscriptionId : subscriptionId
+                                        },
+                                        callbackDispatcher);
                                 return;
                             }
 
@@ -906,12 +912,12 @@ define(
                                     subscriptionId : subscriptionId
                                 });
                                 log.error(exception.detailMessage);
-                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                                    callbackDispatcher(new SubscriptionReply({
-                                        error : exception,
-                                        subscriptionId : subscriptionId
-                                    }));
-                                }, 0);
+                                callbackDispatcherAsync(
+                                        {
+                                            error : exception,
+                                            subscriptionId : subscriptionId
+                                        },
+                                        callbackDispatcher);
                                 return;
                             }
 
@@ -936,12 +942,12 @@ define(
                                         subscriptionId : subscriptionId
                                     });
                                     log.error(exception.detailMessage);
-                                    LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                                        callbackDispatcher(new SubscriptionReply({
-                                            error : exception,
-                                            subscriptionId : subscriptionId
-                                        }));
-                                    }, 0);
+                                    callbackDispatcherAsync(
+                                            {
+                                                error : exception,
+                                                subscriptionId : subscriptionId
+                                            },
+                                            callbackDispatcher);
                                     return;
                                 }
 
@@ -968,12 +974,12 @@ define(
                                         subscriptionId : subscriptionId
                                     });
                                     log.error(exception.detailMessage);
-                                    LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                                        callbackDispatcher(new SubscriptionReply({
-                                            error : exception,
-                                            subscriptionId : subscriptionId
-                                        }));
-                                    }, 0);
+                                    callbackDispatcherAsync(
+                                            {
+                                                error : exception,
+                                                subscriptionId : subscriptionId
+                                            },
+                                            callbackDispatcher);
                                     return;
                                 }
                                 // call the get method on the provider at the set interval
@@ -1001,11 +1007,11 @@ define(
                                     sendPublication(subscriptionInfo, undefined, exception);
                                     return exception;
                                 });
-                            LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                                callbackDispatcher(new SubscriptionReply({
-                                    subscriptionId : subscriptionId
-                                }));
-                            }, 0);
+                            callbackDispatcherAsync(
+                                    {
+                                        subscriptionId : subscriptionId
+                                    },
+                                    callbackDispatcher);
                         };
 
                 /**
@@ -1075,12 +1081,12 @@ define(
                                     subscriptionId : subscriptionId
                                 });
                                 log.error(exception.detailMessage);
-                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                                    callbackDispatcher(new SubscriptionReply({
-                                        error : exception,
-                                        subscriptionId : subscriptionId
-                                    }));
-                                }, 0);
+                                callbackDispatcherAsync(
+                                        {
+                                            error : exception,
+                                            subscriptionId : subscriptionId
+                                        },
+                                        callbackDispatcher);
                                 return;
                             }
 
@@ -1108,12 +1114,12 @@ define(
                                     subscriptionId : subscriptionId
                                 });
                                 log.error(exception.detailMessage);
-                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                                    callbackDispatcher(new SubscriptionReply({
-                                        error : exception,
-                                        subscriptionId : subscriptionId
-                                    }));
-                                }, 0);
+                                callbackDispatcherAsync(
+                                        {
+                                            error : exception,
+                                            subscriptionId : subscriptionId
+                                        },
+                                        callbackDispatcher);
                                 return;
                             }
 
@@ -1138,12 +1144,12 @@ define(
                                         subscriptionId : subscriptionId
                                     });
                                     log.error(exception.detailMessage);
-                                    LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                                        callbackDispatcher(new SubscriptionReply({
-                                            error : exception,
-                                            subscriptionId : subscriptionId
-                                        }));
-                                    }, 0);
+                                    callbackDispatcherAsync(
+                                            {
+                                                error : exception,
+                                                subscriptionId : subscriptionId
+                                            },
+                                            callbackDispatcher);
                                     return;
                                 }
 
@@ -1161,11 +1167,11 @@ define(
 
                             persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
                             storeSubscriptions();
-                            LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                                callbackDispatcher(new SubscriptionReply({
-                                    subscriptionId : subscriptionId
-                                }));
-                            }, 0);
+                            callbackDispatcherAsync(
+                                    {
+                                        subscriptionId : subscriptionId
+                                    },
+                                    callbackDispatcher);
                         };
 
                 /**
