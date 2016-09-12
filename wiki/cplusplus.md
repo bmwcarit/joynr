@@ -153,14 +153,15 @@ entries are found in the cache, a remote lookup is triggered.
 
 The enumeration ```ArbitrationStrategy``` defines special options to select a Provider:
 
-* **NOT_SET** use DefaultArbitrator which picks the first discovered entry with compatible version
+* **LAST_SEEN** The participant that was last refreshed (i.e. with the most current last seen date)
+ will be selected
 * **HIGHEST_PRIORITY** Entries will be considered according to priority
 * **KEYWORD** Only entries that have a matching keyword will be considered
 * **FIXED_PARTICIPANT** select provider which matches the participantId provided as custom parameter
    in DiscoveryQos (see below), if existing
 * **LOCAL_ONLY** (not implemented yet, will throw DiscoveryException)
 
-**Default arbitration strategy:** HighestPriority
+**Default arbitration strategy:** LAST_SEEN
 
 The priority is set by the provider through the call ```providerQos.setPriority()```.
 

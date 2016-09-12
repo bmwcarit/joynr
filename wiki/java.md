@@ -208,7 +208,8 @@ Available values are as follows:
 Whenever global entries are involved, they are first searched in the local cache. In case no global entries are found in the cache, a remote lookup is triggered.
 
 The enumeration ```ArbitrationStrategy``` defines special options to select a Provider:
-
+* **LastSeen** The participant that was last refreshed (i.e. with the most current last seen date)
+will be selected
 * **NotSet** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
 * **HighestPriority** Entries will be considered according to priority
 * **Keyword** Only entries that have a matching keyword will be considered
@@ -217,7 +218,7 @@ The enumeration ```ArbitrationStrategy``` defines special options to select a Pr
 * **Custom** Allows you to provide a `ArbitrationStrategyFunction` to allow custom
 selection of discovered entries
 
-**Default arbitration strategy:** HighestPriority
+**Default arbitration strategy:** LastSeen
 
 The priority is set by the provider through the call ```providerQos.setPriority()```.
 
