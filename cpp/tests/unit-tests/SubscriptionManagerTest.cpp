@@ -31,6 +31,7 @@
 #include "joynr/Logger.h"
 #include "joynr/Directory.h"
 #include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Util.h"
 #include <chrono>
 #include <cstdint>

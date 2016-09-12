@@ -31,10 +31,9 @@ namespace joynr
 
 /** @class SubscriptionRequest
   * @brief SubscriptionRequest stores the information that is necessary to store a
- * subscription-Request on
+  * subscription request on
   * subscriber side, while Aribtration is handled.
   */
-
 class JOYNR_EXPORT SubscriptionRequest
 {
 public:
@@ -82,6 +81,6 @@ protected:
 
 } // namespace joynr
 
-MUESLI_REGISTER_TYPE(joynr::SubscriptionRequest, "joynr.SubscriptionRequest");
+MUESLI_REGISTER_TYPE(joynr::SubscriptionRequest, "joynr.SubscriptionRequest")
 
 #endif // SUBSCRIPTIONREQUEST_H

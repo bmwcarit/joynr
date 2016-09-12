@@ -23,6 +23,7 @@
 
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionInformation.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {

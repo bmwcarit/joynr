@@ -29,6 +29,7 @@
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/SingleThreadedIOService.h"
 
