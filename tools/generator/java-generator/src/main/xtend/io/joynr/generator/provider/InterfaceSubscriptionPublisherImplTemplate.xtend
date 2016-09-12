@@ -61,7 +61,7 @@ public class «className»Impl extends AbstractSubscriptionPublisher implements 
 		«ENDIF»
 	«ENDFOR»
 
-	«FOR broadcast : francaIntf.broadcasts»
+	«FOR broadcast : francaIntf.broadcasts.filter[selective]»
 		«var broadcastName = broadcast.joynrName»
 		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {
 			«IF broadcast.outArgs.length == 1 && (isArray(broadcast.outArgs.get(0)) || isByteBuffer(broadcast.outArgs.get(0).type))»
@@ -72,6 +72,21 @@ public class «className»Impl extends AbstractSubscriptionPublisher implements 
 				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"));
 			«ELSE»
 				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «broadcast.commaSeperatedUntypedOutputParameterList»);
+			«ENDIF»
+		}
+
+	«ENDFOR»
+	«FOR broadcast : francaIntf.broadcasts.filter[!selective]»
+		«var broadcastName = broadcast.joynrName»
+		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {
+			«IF broadcast.outArgs.length == 1 && (isArray(broadcast.outArgs.get(0)) || isByteBuffer(broadcast.outArgs.get(0).type))»
+				// passing array to varargs will cause array elements to be understood as multiple parameters.
+				// Cast to Object prevents this.
+				fireMulticast("«broadcastName»", new String[0], (Object) «broadcast.commaSeperatedUntypedOutputParameterList»);
+			«ELSEIF broadcast.outArgs.empty»
+				fireMulticast("«broadcastName»", new String[0]);
+			«ELSE»
+				fireMulticast("«broadcastName»", new String[0], «broadcast.commaSeperatedUntypedOutputParameterList»);
 			«ENDIF»
 		}
 
