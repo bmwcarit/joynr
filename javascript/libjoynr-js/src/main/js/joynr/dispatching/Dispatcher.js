@@ -482,7 +482,9 @@ define("joynr/dispatching/Dispatcher", [
          */
         this.receive =
                 function receive(joynrMessage) {
-                    log.debug("received message with the following payload: "
+                    log.debug("received message with id \""
+                        + joynrMessage.msgId
+                        + "\" and the following payload: "
                         + joynrMessage.payload);
                     switch (joynrMessage.type) {
 
