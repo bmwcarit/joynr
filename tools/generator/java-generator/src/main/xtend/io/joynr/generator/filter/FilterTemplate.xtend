@@ -43,7 +43,7 @@ class FilterTemplate implements BroadcastTemplate{
 
 		import io.joynr.pubsub.publication.BroadcastFilterImpl;
 		«FOR datatype: getRequiredIncludesFor(broadcast)»
-			import «datatype»;
+		import «datatype»;
 		«ENDFOR»
 
 		public abstract class «className» extends BroadcastFilterImpl {
