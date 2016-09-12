@@ -110,7 +110,7 @@ ln -s target/node-classes/node_modules node_modules
 
 Example command line for manual start:
 
-```karma start src/tests/karma/karma.<config>.js --single-run=false --debug```
+```karma start src/test/karma/karma.<config>.js --single-run=false --debug```
 
 If running a browser with visible UI just hit the debug button once the test has run once.
 If using a headless browser (e.g. ```PhantomJS```) please run a browser (e.g. ```Google-Chrome```)
