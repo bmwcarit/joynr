@@ -792,10 +792,15 @@ define(
                     return false;
                 };
 
+                /* the parameter "callbackDispatcher" is optional, as in case of restoring
+                 * subscriptions, no reply must be sent back via the dispatcher
+                 */
                 function callbackDispatcherAsync(reply, callbackDispatcher) {
-                    LongTimer.setTimeout(function asyncCallbackDispatcher() {
-                        callbackDispatcher(new SubscriptionReply(reply));
-                    }, 0);
+                    if (callbackDispatcher !== undefined) {
+                        LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                            callbackDispatcher(new SubscriptionReply(reply));
+                        }, 0);
+                    }
                 }
 
                 /**
