@@ -272,9 +272,16 @@ define([
                                     },
                                     expectedPublications + "publications to occur",
                                     timeout).then(function() {
-                                expect(spy.onReceive.calls.count()).toBe(expectedPublications);
-                                expectationFct(spy.onReceive.calls);
-                                spy.onReceive.calls.reset();
+                                var promise = new Promise(function(resolve, reject) {
+                                    setTimeout(function() {
+                                        resolve();
+                                    }, 100);
+                                });
+                                return promise.then(function() {
+                                    expect(spy.onReceive.calls.count()).toBe(expectedPublications);
+                                    expectationFct(spy.onReceive.calls);
+                                    spy.onReceive.calls.reset();
+                                });
                             });
                         }
 
