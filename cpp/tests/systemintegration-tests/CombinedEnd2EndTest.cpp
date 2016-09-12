@@ -980,7 +980,8 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     tests::testProxy* testProxy = createTestProxy(runtime2, domainName);
     // Subscribe in a background thread
-    std::async(subscribeToLocation, subscriptionListener, testProxy, this);
+    //subscribeToLocation(subscriptionListener, testProxy, this);
+    std::async(std::launch::async, subscribeToLocation, subscriptionListener, testProxy, this);
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
