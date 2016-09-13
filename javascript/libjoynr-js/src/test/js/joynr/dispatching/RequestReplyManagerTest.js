@@ -863,6 +863,21 @@ define(
                                     }).toThrow();
                                     done();
                                 });
+                        it(" rejects reply callers when shut down", function(done) {
+                            var replyCallerSpy = jasmine.createSpyObj("promise", [
+                                                                                  "resolve",
+                                                                                  "reject"
+                                                                                  ]);
+
+                            requestReplyManager.addReplyCaller(
+                                  requestReplyId,
+                                  replyCallerSpy,
+                                  ttl_ms);
+                            expect(replyCallerSpy.reject).not.toHaveBeenCalled();
+                            requestReplyManager.shutdown();
+                            expect(replyCallerSpy.reject).toHaveBeenCalled();
+                            done();
+                        });
 
                     });
         }); // require
