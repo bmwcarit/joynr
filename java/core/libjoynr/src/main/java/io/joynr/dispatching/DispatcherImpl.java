@@ -38,6 +38,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
 import joynr.JoynrMessage;
+import joynr.MulticastPublication;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -327,5 +328,19 @@ public class DispatcherImpl implements Dispatcher {
     private void handle(SubscriptionStop subscriptionStop) {
         logger.info("Subscription stop received");
         publicationManager.stopPublication(subscriptionStop.getSubscriptionId());
+    }
+
+    @Override
+    public void sendMulticast(String fromParticipantId,
+                              String multicastName,
+                              String[] partitions,
+                              MulticastPublication multicastPublication,
+                              MessagingQos messagingQos) {
+        JoynrMessage message = joynrMessageFactory.createMulticast(fromParticipantId,
+                                                                   multicastName,
+                                                                   partitions,
+                                                                   multicastPublication,
+                                                                   messagingQos);
+        messageRouter.route(message);
     }
 }

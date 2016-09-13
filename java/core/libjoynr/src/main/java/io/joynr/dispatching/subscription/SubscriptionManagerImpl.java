@@ -222,8 +222,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                               Set<String> toParticipantIds,
                                               final MulticastSubscribeInvocation multicastSubscribeInvocation) {
         for (String toParticipantId : toParticipantIds) {
-            final String multicastId = createMulticastId(toParticipantId,
-                                                         multicastSubscribeInvocation.getSubscriptionName());
+            final String multicastId = MulticastIdUtil.createMulticastId(toParticipantId,
+                                                                         multicastSubscribeInvocation.getSubscriptionName());
             registerSubscription(fromParticipantId,
                                  toParticipantIds,
                                  multicastSubscribeInvocation,
@@ -280,17 +280,6 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                            subscriptionRequest,
                                            messagingQos,
                                            subscriptionRequest instanceof BroadcastSubscriptionRequest);
-    }
-
-    private String createMulticastId(String providerParticipantId, String multicastName, String... partitions) {
-        StringBuilder builder = new StringBuilder(providerParticipantId);
-        builder.append("/").append(multicastName);
-        if (partitions != null && partitions.length > 0) {
-            for (int index = 0; index < partitions.length; index++) {
-                builder.append("/").append(partitions[index]);
-            }
-        }
-        return builder.toString();
     }
 
     @Override

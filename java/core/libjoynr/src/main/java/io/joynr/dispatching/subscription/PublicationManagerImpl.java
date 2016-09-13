@@ -64,6 +64,7 @@ import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.pubsub.publication.MulticastListener;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
+import joynr.MulticastPublication;
 import joynr.MulticastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
@@ -735,7 +736,10 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                      multicastName,
                      Arrays.toString(partitions),
                      Arrays.toString(values));
-        //dispatcher.sendMulticast(providerParticipantId, multicastName, partitions, values);
+        String multicastId = MulticastIdUtil.createMulticastId(providerParticipantId, multicastName, partitions);
+        MulticastPublication multicastPublication = new MulticastPublication(Arrays.asList(values), multicastId);
+        MessagingQos messagingQos = new MessagingQos();
+        dispatcher.sendMulticast(providerParticipantId, multicastName, partitions, multicastPublication, messagingQos);
     }
 
     @Override

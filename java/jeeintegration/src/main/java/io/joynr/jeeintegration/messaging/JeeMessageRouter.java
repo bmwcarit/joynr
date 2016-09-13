@@ -21,18 +21,17 @@ package io.joynr.jeeintegration.messaging;
 
 import static java.lang.String.format;
 
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.messaging.routing.RoutingTable;
-
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.routing.AddressManager;
+import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.RoutingTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The MessageRouter is responsible for routing messages to their destination, and internally queues message post
@@ -55,8 +54,9 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.MessageRouterIm
     public JeeMessageRouter(RoutingTable routingTable,
                             @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                             @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                            MessagingStubFactory messagingStubFactory) {
-        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory);
+                            MessagingStubFactory messagingStubFactory,
+                            AddressManager addressManager) {
+        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory, addressManager);
         if (LOG.isDebugEnabled()) {
             LOG.debug(format("Initialising with:%n\troutingTable: %s%n\tscheduler: %s%n\tsendMsgRetryIntervalMs: %d%n\tmessageStubFactory: %s",
                              routingTable,

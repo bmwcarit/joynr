@@ -73,6 +73,7 @@ import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
@@ -122,6 +123,9 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         // other address types must be added to the Multibinder to support global addressing. Created here to make
         // sure the Set exists, even if empty.
         Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+        });
+
+        Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
         });
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);

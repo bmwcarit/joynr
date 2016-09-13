@@ -19,12 +19,17 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.runtime.SystemServicesSettings;
+import joynr.JoynrMessage;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
@@ -35,10 +40,6 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * MessageRouter implementation which adds hops to its parent and tries to resolve unknown addresses at its parent
@@ -58,20 +59,31 @@ public class ChildMessageRouter extends MessageRouterImpl {
                               @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
                               @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                               @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                              MessagingStubFactory messagingStubFactory) {
-        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory);
+                              MessagingStubFactory messagingStubFactory, AddressManager addressManager) {
+        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory, addressManager);
         this.incomingAddress = incomingAddress;
     }
 
     @Override
-    protected Address getAddress(String toParticipantId) {
-        Address address = super.getAddress(toParticipantId);
+    protected Address getAddress(JoynrMessage message) {
+        Address address;
+        JoynrMessageNotSentException noAddressException = null;
+        try {
+            address = super.getAddress(message);
+        } catch (JoynrMessageNotSentException e) {
+            noAddressException = e;
+            address = null;
+        }
+        String toParticipantId = message.getTo();
         if (address == null && parentRouter != null) {
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {
                 super.addNextHop(toParticipantId, parentRouterMessagingAddress);
                 address = parentRouterMessagingAddress;
             }
+        }
+        if (address == null && noAddressException != null) {
+            throw noAddressException;
         }
         return address;
     }

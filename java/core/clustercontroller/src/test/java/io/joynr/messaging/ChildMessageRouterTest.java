@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import io.joynr.messaging.routing.AddressManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,6 +64,8 @@ public class ChildMessageRouterTest {
     private WebSocketAddress incomingAddress;
     @Mock
     private MessagingStubFactory messagingStubFactory;
+    @Mock
+    private AddressManager addressManager;
 
     private JoynrMessage message;
     private ChildMessageRouter messageRouter;
@@ -79,7 +82,8 @@ public class ChildMessageRouterTest {
                                                incomingAddress,
                                                provideMessageSchedulerThreadPoolExecutor(),
                                                sendMsgRetryIntervalMs,
-                                               messagingStubFactory);
+                                               messagingStubFactory,
+                                               addressManager);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
 
         when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);

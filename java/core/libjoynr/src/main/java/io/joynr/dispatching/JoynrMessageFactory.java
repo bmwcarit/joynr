@@ -30,6 +30,7 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
 import joynr.JoynrMessage;
+import joynr.MulticastPublication;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -37,6 +38,7 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,6 +153,22 @@ public class JoynrMessageFactory {
                              messagingQos);
     }
 
+    public JoynrMessage createMulticast(String fromParticipantId,
+                                        String multicastName,
+                                        String[] partitions,
+                                        MulticastPublication multicastPublication,
+                                        MessagingQos messagingQos) {
+        String to = multicastName;
+        if (partitions != null && partitions.length > 0) {
+            to += "/" + StringUtils.join(partitions, '/');
+        }
+        return createMessage(JoynrMessage.MESSAGE_TYPE_MULTICAST,
+                             fromParticipantId,
+                             to,
+                             multicastPublication,
+                             messagingQos);
+    }
+
     private Map<String, String> createHeader(final String fromParticipantId, final String toParticipantId) {
         Map<String, String> header = Maps.newHashMap();
         header.put(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, "todo");
@@ -179,5 +197,4 @@ public class JoynrMessageFactory {
         }
         return serializedPayload;
     }
-
 }

@@ -1,14 +1,5 @@
 package io.joynr.dispatching;
 
-import java.util.Set;
-
-import io.joynr.messaging.MessageArrivedListener;
-import io.joynr.messaging.MessagingQos;
-import joynr.SubscriptionPublication;
-import joynr.SubscriptionReply;
-import joynr.SubscriptionRequest;
-import joynr.SubscriptionStop;
-
 /*
  * #%L
  * %%
@@ -27,6 +18,16 @@ import joynr.SubscriptionStop;
  * limitations under the License.
  * #L%
  */
+
+import java.util.Set;
+
+import io.joynr.messaging.MessageArrivedListener;
+import io.joynr.messaging.MessagingQos;
+import joynr.MulticastPublication;
+import joynr.SubscriptionPublication;
+import joynr.SubscriptionReply;
+import joynr.SubscriptionRequest;
+import joynr.SubscriptionStop;
 
 public interface Dispatcher extends MessageArrivedListener {
     public void sendSubscriptionRequest(String fromParticipantId,
@@ -49,6 +50,12 @@ public interface Dispatcher extends MessageArrivedListener {
                                String toParticipantId,
                                SubscriptionReply subscriptionReply,
                                MessagingQos qosSettings);
+
+    void sendMulticast(String fromParticipantId,
+                       String multicastName,
+                       String[] partitions,
+                       MulticastPublication multicastPublication,
+                       MessagingQos messagingQos);
 
     /**
      * @param clear indicates whether the channel should be closed

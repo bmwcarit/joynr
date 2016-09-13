@@ -20,7 +20,11 @@ package io.joynr.messaging.routing;
  */
 
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,11 +34,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -42,8 +41,8 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
-
 import io.joynr.common.ExpiryDate;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
@@ -51,14 +50,14 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.MessageRouterImpl;
-import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.messaging.routing.RoutingTableImpl;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageRouterTest {
@@ -98,6 +97,9 @@ public class MessageRouterTest {
                 }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
                 }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
                 messagingStubFactory.addBinding(ChannelAddress.class).toInstance(messagingStubFactoryMock);
+
+                Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
+                });
 
                 routingTable.put(toParticipantId, channelAddress);
                 joynrMessage = new JoynrMessage();
