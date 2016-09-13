@@ -507,6 +507,10 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                         capabilitiesRegistrar.shutdown();
                     }
 
+                    if (messageRouter !== undefined) {
+                        messageRouter.shutdown();
+                    }
+
                     if (requestReplyManager !== undefined) {
                         requestReplyManager.shutdown();
                     }

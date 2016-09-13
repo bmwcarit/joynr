@@ -123,7 +123,8 @@ define([
 
                             messageQueueSpy = jasmine.createSpyObj("messageQueueSpy", [
                                 "putMessage",
-                                "getAndRemoveMessages"
+                                "getAndRemoveMessages",
+                                "shutdown"
                             ]);
 
                             store = {};
@@ -660,6 +661,49 @@ define([
                                         done();
                                         return null;
                                     }).catch(fail);
+                                });
+                        it(
+                                " throws exception when called while shut down",
+                                function(done) {
+                                    messageRouter =
+                                        createMessageRouter(
+                                                persistencySpy,
+                                                messagingStubFactorySpy,
+                                                messageQueueSpy,
+                                                incomingAddress,
+                                                parentMessageRouterAddress);
+
+                                    messageRouter.shutdown();
+
+                                    expect(messageQueueSpy.shutdown).toHaveBeenCalled();
+                                    messageRouter.removeNextHop("hopId").then(fail).catch(function() {
+                                        return messageRouter.resolveNextHop("hopId").then(fail);
+                                    }).catch(function() {
+                                        return messageRouter.addNextHop("hopId", {}).then(fail);
+                                    }).catch(done);
+                                });
+
+                        it(
+                                " reject pending promises when shut down",
+                                function(done) {
+                                    messageRouter =
+                                        createMessageRouter(
+                                                persistencySpy,
+                                                messagingStubFactorySpy,
+                                                messageQueueSpy,
+                                                incomingAddress,
+                                                parentMessageRouterAddress);
+
+                                    var addNextHopPromise = messageRouter.addNextHop(joynrMessage.to, address).then(fail);
+                                    var removeNextHopPromise = messageRouter.removeNextHop(joynrMessage.to).then(fail);
+                                    increaseFakeTime(1);
+
+                                    messageRouter.shutdown();
+                                    addNextHopPromise.catch(function() {
+                                       return removeNextHopPromise.catch(function() {
+                                           done();
+                                       });
+                                    });
                                 });
                     });
         });
