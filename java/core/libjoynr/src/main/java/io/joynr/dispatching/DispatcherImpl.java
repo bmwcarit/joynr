@@ -262,7 +262,7 @@ public class DispatcherImpl implements Dispatcher {
 
     @Override
     public void shutdown(boolean clear) {
-        logger.info("SHUTTING DOWN RequestReplyManager");
+        logger.info("SHUTTING DOWN DispatcherImpl");
     }
 
     @Override
