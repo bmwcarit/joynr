@@ -76,6 +76,19 @@ define(
                 }
 
                 /**
+                 * deletes stored reply caller object correctly
+                 *
+                 * @name RequestReplyManager#deleteReplyCaller
+                 * @function
+                 *
+                 * @param {String}
+                 *            requestReplyId
+                 */
+                function deleteReplyCaller(requestReplyId) {
+                    delete replyCallers[requestReplyId];
+                }
+
+                /**
                  * @name RequestReplyManager#sendRequest
                  * @function
                  *
@@ -101,7 +114,7 @@ define(
                         }, settings.messagingQos.ttl);
                         // resolve will be called upon successful response
                         dispatcher.sendRequest(settings).catch(function(error) {
-                            delete replyCallers[settings.request.requestReplyId];
+                            deleteReplyCaller(settings.request.requestReplyId);
                             reject(error);
                         });
                     });
