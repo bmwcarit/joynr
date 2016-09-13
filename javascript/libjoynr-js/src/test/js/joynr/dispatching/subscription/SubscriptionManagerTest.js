@@ -723,5 +723,20 @@ define([
 
                             increaseFakeTime(1);
                         });
-              });
+
+                        it(
+                                " throws exception when called while shut down",
+                                function(done) {
+                                    subscriptionManager.shutdown();
+
+                                    subscriptionManager.registerSubscription({}).then(fail).catch(function() {
+                                        return subscriptionManager.registerBroadcastSubscription({}).then(fail);
+                                    }).catch(function() {
+                                        expect(function() {
+                                            subscriptionManager.unregisterSubscription({});
+                                        }).toThrow();
+                                        done();
+                                    });
+                                });
+                        });
         });

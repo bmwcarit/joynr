@@ -565,6 +565,10 @@ define(
                                 publicationManager.shutdown();
                             }
 
+                            if (subscriptionManager !== undefined) {
+                                subscriptionManager.shutdown();
+                            }
+
                             joynrState = JoynrStates.SHUTDOWN;
                             log.debug("joynr shut down");
                             return Promise.resolve();
