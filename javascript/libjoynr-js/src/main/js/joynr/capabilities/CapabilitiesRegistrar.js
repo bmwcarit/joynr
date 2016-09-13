@@ -56,6 +56,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
         var requestReplyManager = dependencies.requestReplyManager;
         var publicationManager = dependencies.publicationManager;
         var loggingManager = dependencies.loggingManager;
+        var started = true;
 
         /**
          * @param provider
@@ -74,6 +75,16 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
             return false;
         }
 
+        /*
+         * Internal function used to throw exception in case of CapabilitiesRegistrar
+         * is not used properly
+         */
+        function checkIfReady() {
+            if (!started) {
+                throw new Error("CapabilitiesRegistrar is already shut down");
+            }
+        }
+
         /**
          * Registers a provider so that it is publicly available
          *
@@ -83,6 +94,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          * NOTE: authToken is now ignored.
          */
         this.registerCapability = function registerCapability() {
+            checkIfReady();
             // remove first argument (authToken) before passing on to registerProvider
             Array.prototype.shift.apply(arguments);
             return this.registerProvider.apply(this, arguments);
@@ -117,6 +129,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                         providerQos,
                         expiryDateMs,
                         loggingContext) {
+                    checkIfReady();
 
                     var missingImplementations = provider.checkImplementation();
 
@@ -178,6 +191,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          * NOTE: authToken is now ignored.
          */
         this.unregisterCapability = function unregisterCapability() {
+            checkIfReady();
             // remove first argument (authToken) before passing on to unregisterProvider
             Array.prototype.shift.apply(arguments);
             return this.unregisterProvider.apply(this, arguments);
@@ -197,6 +211,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          * @returns {Object} an A+ promise
          */
         this.unregisterProvider = function unregisterProvider(domain, provider) {
+            checkIfReady();
             // retrieve participantId
             var participantId = participantIdStorage.getParticipantId(domain, provider);
 
@@ -218,6 +233,15 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
             ]);
         };
 
+        /**
+         * Shutdown the capabilities registrar
+         *
+         * @function
+         * @name CapabilitiesRegistrar#shutdown
+         */
+        this.shutdown = function shutdown() {
+            started = false;
+        };
     }
 
     return CapabilitiesRegistrar;

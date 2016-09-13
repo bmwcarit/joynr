@@ -539,6 +539,11 @@ define(
                                     throw new Error(errorString);
                                 });
                             });
+
+                            if (capabilitiesRegistrar !== undefined) {
+                                capabilitiesRegistrar.shutdown();
+                            }
+
                             joynrState = JoynrStates.SHUTDOWN;
                             log.debug("joynr shut down");
                             return Promise.resolve();
