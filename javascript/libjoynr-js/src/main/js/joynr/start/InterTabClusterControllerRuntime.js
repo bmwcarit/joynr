@@ -687,6 +687,10 @@ define(
                                 capabilitiesRegistrar.shutdown();
                             }
 
+                            if (arbitrator !== undefined) {
+                                arbitrator.shutdown();
+                            }
+
                             if (messageRouter !== undefined) {
                                 messageRouter.shutdown();
                             }
