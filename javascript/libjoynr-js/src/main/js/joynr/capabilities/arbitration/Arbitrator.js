@@ -145,7 +145,8 @@ define(
                                 deferred.resolve(versionCompatibleArbitratedCaps);
                             } else {
                                 // retry discovery in discoveryRetryDelayMs ms
-                                LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
+                                deferred.discoveryRetryTimer = LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
+                                    delete deferred.discoveryRetryTimer;
                                     discoverCapabilities(
                                             capabilityDiscoveryStub,
                                             domains,
@@ -179,6 +180,8 @@ define(
                     return new Arbitrator(capabilityDiscoveryStub, staticCapabilities);
                 }
 
+                var pendingArbitrations = {};
+                var arbitrationId = 0;
                 var started = true;
 
                 function isReady() {
@@ -208,7 +211,9 @@ define(
                                             reject(new Error("Arbitrator is already shut down"));
                                             return;
                                         }
+                                        arbitrationId++;
                                         var deferred = {
+                                            id : arbitrationId,
                                             resolve : resolve,
                                             reject : reject,
                                             incompatibleVersionsFound : [],
@@ -223,11 +228,13 @@ define(
                                                     settings.proxyVersion,
                                                     deferred);
                                         } else {
+                                            pendingArbitrations[deferred.id] = deferred;
                                             deferred.discoveryTimeoutMsId =
                                                     LongTimer
                                                             .setTimeout(
                                                                     function discoveryCapabilitiesTimeOut() {
                                                                         deferred.pending = false;
+                                                                        delete pendingArbitrations[deferred.id];
 
                                                                         if (deferred.incompatibleVersionsFound.length > 0) {
                                                                             var message =
@@ -257,10 +264,12 @@ define(
                                                                     settings.discoveryQos.discoveryTimeoutMs);
                                             var resolveWrapper = function(args) {
                                                 LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
+                                                delete pendingArbitrations[deferred.id];
                                                 resolve(args);
                                             };
                                             var rejectWrapper = function(args) {
                                                 LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
+                                                delete pendingArbitrations[deferred.id];
                                                 reject(args);
                                             };
                                             deferred.resolve = resolveWrapper;
@@ -283,6 +292,20 @@ define(
                          * @name Arbitrator#shutdown
                          */
                         this.shutdown = function shutdown() {
+                            var id;
+                            for (id in pendingArbitrations) {
+                                if (pendingArbitrations.hasOwnProperty(id)) {
+                                    var pendingArbitration = pendingArbitrations[id];
+                                    if (pendingArbitration.discoveryTimeoutMsId !== undefined) {
+                                        LongTimer.clearTimeout(pendingArbitration.discoveryTimeoutMsId);
+                                    }
+                                    if (pendingArbitration.discoveryRetryTimer !== undefined) {
+                                        LongTimer.clearTimeout(pendingArbitration.discoveryRetryTimer);
+                                    }
+                                    pendingArbitration.reject(new Error("Arbitration is already shut down"));
+                                }
+                            }
+                            pendingArbitrations = {};
                             started = false;
                         };
             }
