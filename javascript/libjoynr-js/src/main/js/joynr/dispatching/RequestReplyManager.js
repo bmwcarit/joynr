@@ -85,6 +85,10 @@ define(
                  *            requestReplyId
                  */
                 function deleteReplyCaller(requestReplyId) {
+                    var replyCaller = replyCallers[requestReplyId];
+                    if (replyCaller && replyCaller.replyCallMissedTimer) {
+                        LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
+                    }
                     delete replyCallers[requestReplyId];
                 }
 
@@ -180,7 +184,7 @@ define(
                 this.addReplyCaller = function addReplyCaller(requestReplyId, replyCaller, ttl_ms) {
                     checkIfReady();
                     replyCallers[requestReplyId] = replyCaller;
-                    LongTimer.setTimeout(function replyCallMissed() {
+                    replyCaller.replyCallMissedTimer = LongTimer.setTimeout(function replyCallMissed() {
                         var replyCaller = replyCallers[requestReplyId];
                         if (replyCaller === undefined) {
                             return;
@@ -450,6 +454,9 @@ define(
                                 } else {
                                     replyCaller.resolve(reply.response);
                                 }
+                                if (replyCaller.replyCallMissedTimer) {
+                                    LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
+                                }
                                 delete replyCallers[reply.requestReplyId];
                             } catch (e) {
                                 log.error("exception thrown during handling reply "
@@ -471,6 +478,9 @@ define(
                         if (replyCallers.hasOwnProperty(requestReplyId)) {
                             var replyCaller = replyCallers[requestReplyId];
                             if (replyCaller) {
+                                if (replyCaller.replyCallMissedTimer !== undefined) {
+                                    LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
+                                }
                                 replyCaller.reject(new Error("RequestReplyManager is already shut down"));
                             }
                         }
