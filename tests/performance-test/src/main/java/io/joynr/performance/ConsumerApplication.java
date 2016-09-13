@@ -37,7 +37,6 @@ import io.joynr.performance.ConsumerInvocationParameters.RuntimeConfig;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -94,7 +93,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
             if (invocationParameters.getBackendTransportMode() == BackendConfig.MQTT) {
                 joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParameters.getMqttBrokerUri());
-                joynrConfig.put(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+                joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
             }
         }

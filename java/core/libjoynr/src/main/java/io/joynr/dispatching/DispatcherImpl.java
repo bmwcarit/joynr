@@ -328,5 +328,4 @@ public class DispatcherImpl implements Dispatcher {
         logger.info("Subscription stop received");
         publicationManager.stopPublication(subscriptionStop.getSubscriptionId());
     }
-
 }

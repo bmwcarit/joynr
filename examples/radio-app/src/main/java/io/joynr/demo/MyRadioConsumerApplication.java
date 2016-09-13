@@ -51,7 +51,6 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -184,7 +183,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
 
             if (transport.contains("mqtt")) {
                 joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
-                joynrConfig.put(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+                joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
             }
 

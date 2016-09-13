@@ -2,6 +2,13 @@ package io.joynr.dispatching;
 
 import java.util.Set;
 
+import io.joynr.messaging.MessageArrivedListener;
+import io.joynr.messaging.MessagingQos;
+import joynr.SubscriptionPublication;
+import joynr.SubscriptionReply;
+import joynr.SubscriptionRequest;
+import joynr.SubscriptionStop;
+
 /*
  * #%L
  * %%
@@ -20,13 +27,6 @@ import java.util.Set;
  * limitations under the License.
  * #L%
  */
-
-import io.joynr.messaging.MessageArrivedListener;
-import io.joynr.messaging.MessagingQos;
-import joynr.SubscriptionPublication;
-import joynr.SubscriptionReply;
-import joynr.SubscriptionRequest;
-import joynr.SubscriptionStop;
 
 public interface Dispatcher extends MessageArrivedListener {
     public void sendSubscriptionRequest(String fromParticipantId,
@@ -51,9 +51,7 @@ public interface Dispatcher extends MessageArrivedListener {
                                MessagingQos qosSettings);
 
     /**
-     *
-     * @param clear
-     *            indicates whether the channel should be closed
+     * @param clear indicates whether the channel should be closed
      */
     public void shutdown(boolean clear);
 }

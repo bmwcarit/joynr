@@ -20,6 +20,7 @@ package io.joynr.integration;
  */
 import java.util.Properties;
 
+import io.joynr.messaging.MessagingPropertyKeys;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -31,7 +32,6 @@ import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.servlet.ServletUtil;
@@ -60,7 +60,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         mqttConfig = new Properties();
         mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
         // test is using 2 global address typs, so need to set one of them as primary
-        mqttConfig.put(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+        mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         joynrConfig.putAll(mqttConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
         Module modulesWithRuntime = Modules.override(runtimeModule).with(new AtmosphereMessagingModule(),
