@@ -45,6 +45,7 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
         var resendDelay_ms = settings.channelQos && settings.channelQos.resendDelay_ms ? settings.channelQos.resendDelay_ms : 1000;
         var communicationModule = settings.communicationModule;
         var started = false;
+        var terminated = false;
 
         var getRelativeExpiryDate = function getRelativeExpiryDate(joynrMessage) {
             return parseInt(joynrMessage.expiryDate, 10) - Date.now();
@@ -83,6 +84,10 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
          *            queuedMessage to be sent
          */
         function postMessage(queuedMessage) {
+            if (terminated) {
+                queuedMessage.reject(new Error("ChannelMessagingSender is already shut down"));
+                return;
+            }
             var timeout = getRelativeExpiryDate(queuedMessage);
 
             // XMLHttpRequest uses a timeout of 0 to mean that there is no timeout.
@@ -196,6 +201,10 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
                                     + Typing.getObjectType(joynrMessage)));
                     }
                             return new Promise(function(resolve, reject) {
+                                if (terminated) {
+                                    reject(new Error("ChannelMessagingSender is already shut down"));
+                                    return;
+                                }
                                 var queuedMessage = {
                                     message : joynrMessage,
                                     to : toChannelAddress.messagingEndpointUrl
@@ -223,16 +232,41 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
          * queuedMessage
          */
          function resend(queuedMessage) {
+             if (terminated) {
+                 queuedMessage.reject(new Error("ChannelMessagingSender is already shut down"));
+                 return;
+             }
+
              if (checkIfExpired(queuedMessage)) {
                  return;
              }
 
              // resend the message
-             LongTimer.setTimeout(function() {
+             queuedMessage.resendTimer = LongTimer.setTimeout(function() {
+                 delete queuedMessage.resendTimer;
                  postMessage(queuedMessage);
              }, resendDelay_ms);
          }
 
+         /**
+          * Shutdown the channel messaging sender
+          *
+          * @function
+          * @name ChannelMessagingSender#shutdown
+          */
+         this.shutdown = function shutdown() {
+             messageQueue.forEach(function(queuedMessage) {
+                 if (queuedMessage.expiryTimer) {
+                     LongTimer.clearTimeout(queuedMessage.expiryTimer);
+                 }
+                 if (queuedMessage.resendTimer) {
+                     LongTimer.clearTimeout(queuedMessage.resendTimer);
+                 }
+                 queuedMessage.reject(new Error("ChannelMessagingSender is already shut down"));
+             });
+             messageQueue = [];
+             terminated = true;
+         };
     }
 
     return ChannelMessagingSender;
