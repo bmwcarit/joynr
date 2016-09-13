@@ -22,6 +22,7 @@
 
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessageRouter.h"
+#include "joynr/MessagingSettings.h"
 
 namespace joynr
 {
