@@ -542,6 +542,10 @@ define(
                                 requestReplyManager.shutdown();
                             }
 
+                            if (publicationManager !== undefined) {
+                                publicationManager.shutdown();
+                            }
+
                             return Promise.all([]/* TODO: insert promises here */).then(function() {
                                 joynrState = JoynrStates.SHUTDOWN;
                                 log.debug("joynr shut down");

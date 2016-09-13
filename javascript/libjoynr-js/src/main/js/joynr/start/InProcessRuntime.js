@@ -548,6 +548,10 @@ define(
                                 requestReplyManager.shutdown();
                             }
 
+                            if (publicationManager !== undefined) {
+                                publicationManager.shutdown();
+                            }
+
                             joynrState = JoynrStates.SHUTDOWN;
                             log.debug("joynr shut down");
                             return Promise.resolve();
