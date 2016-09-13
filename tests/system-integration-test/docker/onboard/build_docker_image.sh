@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# ADDITIONAL_DOCKER_ARGS is provided for external injection
+# of required special parameters in order to support extension
+# of DNS handling and HOSTS entries via environment settings.
+# It is thus required that it does not get assigned any value.
 BUILDDIR=target
 REPODIR=${HOME}/.m2/repository
 DOCKER_REPOSITORY=
@@ -18,6 +22,7 @@ Possible options:
 
 --no-cpp-build: skip the clean / build of the joynr CPP framework
 --no-cpp-test-build: skip building the sit-cpp-app
+--no-java-test-build: skip building the sit-java-app
 --no-node-test-build: skip building the sit-node-app
 -r, --docker-repository <docker repository>: set the value of the DOCKER_REPOSITORY variable, determining
     where the cpp base image is pulled from.
@@ -38,6 +43,9 @@ do
 		;;
 		--no-cpp-test-build)
 		NO_CPP_TEST_BUILD=true
+		;;
+		--no-java-test-build)
+		NO_JAVA_TEST_BUILD=true
 		;;
 		--no-node-test-build)
 		NO_NODE_TEST_BUILD=true
@@ -82,6 +90,7 @@ function execute_in_docker {
 		DOCKERIMAGE=$2
 	fi
 	docker run --rm -t $DOCKER_RUN_ADD_FLAGS --privileged \
+		$ADDITIONAL_DOCKER_ARGS \
 		-e http_proxy=$http_proxy \
 		-e https_proxy=$https_proxy \
 		-e no_proxy=$no_proxy \
@@ -96,12 +105,23 @@ function execute_in_docker {
 #create build dir:
 mkdir -p $(pwd)/../../../../build
 
+if [ -z $NO_JAVA_TEST_BUILD ]
+then
+	# Build Java
+	execute_in_docker "echo \"Generate Java API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests"
+	SKIP_MAVEN_BUILD_CPP_PREREQUISITES=true
+fi
+
 if [ $NO_CPP_BUILD ]; then
 	echo "Skipping C++ build ..."
 else
-	execute_in_docker "echo \"Generate joynr C++ API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests -am\
-	--projects io.joynr:basemodel,io.joynr.tools.generator:dependency-libs,io.joynr.tools.generator:generator-framework,io.joynr.tools.generator:joynr-generator-maven-plugin,io.joynr.tools.generator:cpp-generator,io.joynr.cpp:libjoynr,io.joynr.tools.generator:joynr-generator-standalone"
-	execute_in_docker "echo \"Building joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --jobs ${JOBS} --enableclangformatter OFF --buildtests OFF 2>&1"
+	# if Java is included, the following section can be skipped since already included above
+	if [ -z $SKIP_MAVEN_BUILD_CPP_PREREQUISITES ]
+	then
+		execute_in_docker "echo \"Generate joynr C++ API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests -am\
+		--projects io.joynr:basemodel,io.joynr.tools.generator:dependency-libs,io.joynr.tools.generator:generator-framework,io.joynr.tools.generator:joynr-generator-maven-plugin,io.joynr.tools.generator:cpp-generator,io.joynr.cpp:libjoynr,io.joynr.tools.generator:joynr-generator-standalone"
+	fi
+	execute_in_docker "echo \"Building joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs ${JOBS} --enableclangformatter OFF --buildtests OFF 2>&1"
 	execute_in_docker "echo \"Packaging joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"
 fi
 
@@ -124,6 +144,12 @@ mkdir -p ${BUILDDIR}
 
 cp -R ../../sit-node-app ${BUILDDIR}
 cp -R ../../../../build/tests ${BUILDDIR}
+# create the directory in any case because it is referenced in Dockerfile below
+mkdir ${BUILDDIR}/sit-java-app
+if [ -z $NO_JAVA_TEST_BUILD ]
+then
+	cp -R ../../sit-java-app/target/sit-java-app-*-jar-with-dependencies.jar ${BUILDDIR}/sit-java-app
+fi
 
 # Find a file with a name which matches 'joynr-[version].rpm'
 find  ../../../../build/joynr/package/RPM/x86_64/ -iregex ".*joynr-[0-9].*rpm" -exec cp {} $BUILDDIR/joynr.rpm \;
@@ -141,6 +167,7 @@ cat > $BUILDDIR/Dockerfile <<-EOF
     ###################################################
     COPY joynr.rpm /tmp/joynr.rpm
     RUN dnf install -y \
+        boost \
         /tmp/joynr.rpm \
         && rm /tmp/joynr.rpm
 
@@ -155,6 +182,11 @@ cat > $BUILDDIR/Dockerfile <<-EOF
     COPY sit-node-app /data/sit-node-app
 
     ###################################################
+    # Copy sit-java-app
+    ###################################################
+    COPY sit-java-app /data/sit-java-app
+
+    ###################################################
     # Copy run script
     ###################################################
     COPY onboard-cc-messaging.settings /data/onboard-cc-messaging.settings
@@ -165,8 +197,8 @@ EOF
 chmod 666 $BUILDDIR/Dockerfile
 
 echo "environment:" `env`
-echo "docker build -t sit-node-and-cpp-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $BUILDDIR"
-docker build -t sit-node-and-cpp-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $BUILDDIR
+echo "docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $BUILDDIR"
+docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $BUILDDIR
 
 docker images | grep '<none' | awk '{print $3}' | xargs docker rmi -f 2>/dev/null
 rm -Rf $BUILDDIR
