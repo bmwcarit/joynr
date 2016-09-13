@@ -540,6 +540,10 @@ define(
                                 });
                             });
 
+                            if (channelMessagingSender !== undefined) {
+                                channelMessagingSender.shutdown();
+                            }
+
                             if (capabilitiesRegistrar !== undefined) {
                                 capabilitiesRegistrar.shutdown();
                             }
