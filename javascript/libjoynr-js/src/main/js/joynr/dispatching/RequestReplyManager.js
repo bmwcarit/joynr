@@ -67,6 +67,13 @@ define(
 
                 var providers = {};
                 var replyCallers = {};
+                var started = true;
+
+                function checkIfReady() {
+                    if (!started) {
+                        throw new Error("RequestReplyManager is already shut down");
+                    }
+                }
 
                 /**
                  * @name RequestReplyManager#sendRequest
@@ -85,6 +92,7 @@ define(
                  * @returns {Promise} the Promise for the Request
                  */
                 this.sendRequest = function sendRequest(settings) {
+                    checkIfReady();
                     var addReplyCaller = this.addReplyCaller;
                     return new Promise(function(resolve, reject) {
                         addReplyCaller(settings.request.requestReplyId, {
@@ -116,6 +124,7 @@ define(
                  * @returns {Promise} the Promise for the Request
                  */
                 this.sendOneWayRequest = function sendOneWayRequest(settings) {
+                    checkIfReady();
                     return new Promise(function(resolve, reject) {
                         dispatcher.sendOneWayRequest(settings).then(resolve).catch(reject);
                     });
@@ -134,6 +143,7 @@ define(
                  *            provider
                  */
                 this.addRequestCaller = function addRequestCaller(participantId, provider) {
+                    checkIfReady();
                     providers[participantId] = provider;
                 };
 
@@ -155,6 +165,7 @@ define(
                  *            to the replyCaller
                  */
                 this.addReplyCaller = function addReplyCaller(requestReplyId, replyCaller, ttl_ms) {
+                    checkIfReady();
                     replyCallers[requestReplyId] = replyCaller;
                     LongTimer.setTimeout(function replyCallMissed() {
                         var replyCaller = replyCallers[requestReplyId];
@@ -178,6 +189,7 @@ define(
                  */
                 this.removeRequestCaller =
                         function removeRequestCaller(participantId) {
+                            checkIfReady();
                             try {
                                 delete providers[participantId];
                             } catch (error) {
@@ -197,8 +209,23 @@ define(
                  */
                 this.handleRequest =
                         function handleRequest(providerParticipantId, request, callbackDispatcher) {
-                            var provider = providers[providerParticipantId];
                             var exception;
+                            try {
+                                checkIfReady();
+                            } catch(error) {
+                                exception = new MethodInvocationException({
+                                    detailMessage: "error handling request: "
+                                        + JSONSerializer.stringify(request)
+                                        + " for providerParticipantId "
+                                        + providerParticipantId + ". Joynr runtime already shut down."
+                                });
+                                callbackDispatcher(new Reply({
+                                    error : exception,
+                                    requestReplyId : request.requestReplyId
+                                }));
+                                return;
+                            }
+                            var provider = providers[providerParticipantId];
                             if (!provider) {
                                 // TODO error handling request
                                 // TODO what if no provider is found in the mean time?
@@ -347,6 +374,7 @@ define(
                          */
                         this.handleOneWayRequest =
                                 function handleOneWayRequest(providerParticipantId, request) {
+                                    checkIfReady();
                                     var provider = providers[providerParticipantId];
                                     if (!provider) {
                                         throw new MethodInvocationException({
@@ -417,6 +445,16 @@ define(
                                     + e.stack);
                             }
                         };
+
+                /**
+                 * Shutdown the request reply manager
+                 *
+                 * @function
+                 * @name RequestReplyManager#shutdown
+                 */
+                this.shutdown = function shutdown() {
+                    started = false;
+                };
             }
 
             return RequestReplyManager;

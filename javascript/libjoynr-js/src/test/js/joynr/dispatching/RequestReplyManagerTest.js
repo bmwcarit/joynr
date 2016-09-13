@@ -29,10 +29,11 @@ define(
             "joynr/types/TypeRegistrySingleton",
             "joynr/util/Typing",
             "joynr/util/UtilInternal",
+            "joynr/exceptions/MethodInvocationException",
             "global/Promise",
             "global/WaitsFor"
         ],
-        function(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, Promise, waitsFor) {
+        function(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, MethodInvocationException, Promise, waitsFor) {
             describe(
                     "libjoynr-js.joynr.dispatching.RequestReplyManager",
                     function() {
@@ -824,5 +825,44 @@ define(
                                         return null;
                                     }).catch(fail);
                                 });
+
+                        it(
+                                " throws exception when called while shut down",
+                                function(done) {
+                                    requestReplyManager.shutdown();
+                                    expect(function() {
+                                        requestReplyManager.removeRequestCaller(
+                                                "providerParticipantId");
+                                    }).toThrow();
+                                    var callbackDispatcherSpy = jasmine.createSpy('callbackDispatcherSpy');
+                                    requestReplyManager.handleRequest(
+                                            "providerParticipantId",
+                                            {
+                                                requestReplyId : requestReplyId
+                                            },
+                                            callbackDispatcherSpy);
+                                    expect(callbackDispatcherSpy).toHaveBeenCalled();
+                                    expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof Reply);
+                                    expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof MethodInvocationException);
+                                    expect(function() {
+                                        var replyCallerSpy = jasmine.createSpyObj("promise", [
+                                                                                              "resolve",
+                                                                                              "reject"
+                                                                                          ]);
+
+                                        requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy);
+                                    }).toThrow();
+                                    expect(function() {
+                                        requestReplyManager.addRequestCaller("providerParticipantId", {});
+                                    }).toThrow();
+                                    expect(function() {
+                                        requestReplyManager.sendOneWayRequest({});
+                                    }).toThrow();
+                                    expect(function() {
+                                        requestReplyManager.sendRequest({});
+                                    }).toThrow();
+                                    done();
+                                });
+
                     });
         }); // require
