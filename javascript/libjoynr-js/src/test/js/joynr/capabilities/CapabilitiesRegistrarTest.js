@@ -20,7 +20,6 @@
  * #L%
  */
 
-//TODO: some of this relies on the dummy implementation, change accordingly when implementating
 define([
             "global/Promise",
             "joynr/capabilities/CapabilitiesRegistrar",
@@ -369,6 +368,33 @@ define([
                                 return null;
                             }).catch(fail);
                         });
+
+                        it(
+                                "CapabilitiesRegistrar throws exception when called while shut down",
+                                function(done) {
+                                    capabilitiesRegistrar.shutdown();
+                                    expect(function() {
+                                        capabilitiesRegistrar.registerCapability(
+                                                authToken,
+                                                domain,
+                                                provider,
+                                                providerQos);
+                                    }).toThrow();
+                                    expect(function() {
+                                        capabilitiesRegistrar.registerProvider(
+                                                domain,
+                                                provider,
+                                                providerQos);
+                                    }).toThrow();
+                                    expect(function() {
+                                        capabilitiesRegistrar.unregisterProvider(domain, provider);
+                                    }).toThrow();
+                                    expect(function() {
+                                        capabilitiesRegistrar.unregisterCapability(domain, provider);
+                                    }).toThrow();
+                                    done();
+                                });
+
                     });
 
         }); // require
