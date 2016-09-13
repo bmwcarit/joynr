@@ -179,6 +179,12 @@ define(
                     return new Arbitrator(capabilityDiscoveryStub, staticCapabilities);
                 }
 
+                var started = true;
+
+                function isReady() {
+                    return started;
+                }
+
                 /**
                  * Starts the arbitration process
                  *
@@ -198,6 +204,10 @@ define(
                             settings = Util.extendDeep({}, settings);
                             return new Promise(
                                     function(resolve, reject) {
+                                        if (!isReady()) {
+                                            reject(new Error("Arbitrator is already shut down"));
+                                            return;
+                                        }
                                         var deferred = {
                                             resolve : resolve,
                                             reject : reject,
@@ -264,6 +274,16 @@ define(
                                                     deferred);
                                         }
                                     });
+                        };
+
+                        /**
+                         * Shutdown the Arbitrator
+                         *
+                         * @function
+                         * @name Arbitrator#shutdown
+                         */
+                        this.shutdown = function shutdown() {
+                            started = false;
                         };
             }
 
