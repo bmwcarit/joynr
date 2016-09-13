@@ -550,6 +550,10 @@ define(
                                 subscriptionManager.shutdown();
                             }
 
+                            if (dispatcher !== undefined) {
+                                dispatcher.shutdown();
+                            }
+
                             return Promise.all([]/* TODO: insert promises here */).then(function() {
                                 joynrState = JoynrStates.SHUTDOWN;
                                 log.debug("joynr shut down");
