@@ -75,6 +75,11 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         // stores the object which is returned by setTimeout mapped to the subscriptionId
         var publicationCheckTimerIds = {};
         var subscriptionReplyCallers = {};
+        var started = true;
+
+        function isReady() {
+            return started;
+        }
 
         /**
          * @param {String}
@@ -265,6 +270,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         this.registerSubscription =
                 function registerSubscription(settings) {
                     return new Promise(function(resolve, reject) {
+                        if (!isReady()) {
+                            reject(new Error("SubscriptionManager is already shut down"));
+                        }
                         var subscriptionId = settings.subscriptionId || uuid();
                         // log.debug("Registering Subscription Id " + subscriptionId);
 
@@ -342,6 +350,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             var messagingQos;
 
             return new Promise(function(resolve, reject) {
+                if (!isReady()) {
+                    reject(new Error("SubscriptionManager is already shut down"));
+                }
                 var subscriptionRequest = new BroadcastSubscriptionRequest({
                     subscriptionId : parameters.subscriptionId || uuid(),
                     subscribedToName : parameters.broadcastName,
@@ -468,6 +479,10 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @returns {Object} A promise object
          */
         this.unregisterSubscription = function unregisterSubscription(settings) {
+            if (!isReady()) {
+                throw new Error("SubscriptionManager is already shut down");
+            }
+
             var subscriptionInfo = subscriptionInfos[settings.subscriptionId];
             var errorMessage;
             if (subscriptionInfo === undefined) {
@@ -497,6 +512,34 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             return promise;
         };
 
+        /**
+         * Shutdown the subscription manager
+         *
+         * @function
+         * @name SubscriptionManager#shutdown
+         */
+        this.shutdown = function shutdown() {
+            var subscriptionId;
+            for (subscriptionId in publicationCheckTimerIds) {
+                if (publicationCheckTimerIds.hasOwnProperty(subscriptionId)) {
+                    var timerId = publicationCheckTimerIds[subscriptionId];
+                    if (timerId !== undefined) {
+                        LongTimer.clearTimeout(timerId);
+                    }
+                }
+            }
+            publicationCheckTimerIds = {};
+            for (subscriptionId in subscriptionReplyCallers) {
+                if (subscriptionReplyCallers.hasOwnProperty(subscriptionId)) {
+                    var subscriptionReplyCaller = subscriptionReplyCallers[subscriptionId];
+                    if (subscriptionReplyCaller) {
+                        subscriptionReplyCaller.reject(new Error("Subscription Manager is already shut down"));
+                    }
+                }
+            }
+            subscriptionReplyCallers = {};
+            started = false;
+        };
     }
 
     return SubscriptionManager;
