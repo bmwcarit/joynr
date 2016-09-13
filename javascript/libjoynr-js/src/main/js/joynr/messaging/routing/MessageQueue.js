@@ -137,6 +137,17 @@ define(
                     }
                     return result;
                 };
+
+                /**
+                 * Shutdown the message queue
+                 *
+                 * @function
+                 * @name MessageQueue#shutdown
+                 */
+                self.shutdown = function shutdown() {
+                    messageQueues = {};
+                    self.currentQueueSize = 0;
+                };
             }
 
             MessageQueue.CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 5000;
