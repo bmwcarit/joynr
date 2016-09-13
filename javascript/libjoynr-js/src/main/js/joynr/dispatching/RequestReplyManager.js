@@ -67,7 +67,6 @@ define(
 
                 var providers = {};
                 var replyCallers = {};
-                //var deletedReplyCallers = {};
 
                 /**
                  * @name RequestReplyManager#sendRequest
@@ -163,9 +162,6 @@ define(
                             return;
                         }
                         replyCaller.reject(new Error("Request with id \"" + requestReplyId + "\" failed: ttl expired"));
-                        // remove the replyCaller from replyCallers in
-                        // ttl_ms
-                        // deletedReplyCallers[requestReplyId] = replyCaller;
                         delete replyCallers[requestReplyId];
                     }, ttl_ms);
                 };
@@ -413,7 +409,6 @@ define(
                                 } else {
                                     replyCaller.resolve(reply.response);
                                 }
-                                // deletedReplyCallers[reply.requestReplyId] = replyCallers[reply.requestReplyId];
                                 delete replyCallers[reply.requestReplyId];
                             } catch (e) {
                                 log.error("exception thrown during handling reply "
