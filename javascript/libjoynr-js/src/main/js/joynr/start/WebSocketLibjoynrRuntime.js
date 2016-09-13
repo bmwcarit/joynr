@@ -519,6 +519,10 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                         subscriptionManager.shutdown();
                     }
 
+                    if (dispatcher !== undefined) {
+                        dispatcher.shutdown();
+                    }
+
                     joynrState = JoynrStates.SHUTDOWN;
                     log.debug("joynr shut down");
                     return Promise.resolve();

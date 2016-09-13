@@ -699,6 +699,10 @@ define(
                                 subscriptionManager.shutdown();
                             }
 
+                            if (dispatcher !== undefined) {
+                                dispatcher.shutdown();
+                            }
+
                             log.debug("joynr cluster controller shut down");
                             joynrState = JoynrStates.SHUTDOWN;
                             return Promise.resolve();
