@@ -557,6 +557,10 @@ define(
                                 capabilitiesRegistrar.shutdown();
                             }
 
+                            if (messageRouter !== undefined) {
+                                messageRouter.shutdown();
+                            }
+
                             if (requestReplyManager !== undefined) {
                                 requestReplyManager.shutdown();
                             }
