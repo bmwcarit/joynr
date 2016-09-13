@@ -453,6 +453,16 @@ define(
                  * @name RequestReplyManager#shutdown
                  */
                 this.shutdown = function shutdown() {
+                    var requestReplyId;
+                    for (requestReplyId in replyCallers) {
+                        if (replyCallers.hasOwnProperty(requestReplyId)) {
+                            var replyCaller = replyCallers[requestReplyId];
+                            if (replyCaller) {
+                                replyCaller.reject(new Error("RequestReplyManager is already shut down"));
+                            }
+                        }
+                    }
+                    replyCallers = {};
                     started = false;
                 };
             }
