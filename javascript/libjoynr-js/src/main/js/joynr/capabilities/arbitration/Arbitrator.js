@@ -213,7 +213,7 @@ define(
                                                     settings.proxyVersion,
                                                     deferred);
                                         } else {
-                                            var discoveryTimeoutMsId =
+                                            deferred.discoveryTimeoutMsId =
                                                     LongTimer
                                                             .setTimeout(
                                                                     function discoveryCapabilitiesTimeOut() {
@@ -246,10 +246,15 @@ define(
                                                                     },
                                                                     settings.discoveryQos.discoveryTimeoutMs);
                                             var resolveWrapper = function(args) {
-                                                LongTimer.clearTimeout(discoveryTimeoutMsId);
+                                                LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
                                                 resolve(args);
                                             };
+                                            var rejectWrapper = function(args) {
+                                                LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
+                                                reject(args);
+                                            };
                                             deferred.resolve = resolveWrapper;
+                                            deferred.reject = rejectWrapper;
                                             discoverCapabilities(
                                                     capabilityDiscoveryStub,
                                                     settings.domains,
