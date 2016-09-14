@@ -20,6 +20,8 @@ package io.joynr.messaging.mqtt.paho.client;
  */
 
 import java.nio.charset.Charset;
+import java.util.HashSet;
+import java.util.Set;
 
 import io.joynr.messaging.mqtt.MqttMessagingStub;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -49,6 +51,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private IMessaging messagingSkeleton;
     private int reconnectSleepMs;
 
+    private Set<String> subscribedTopics = new HashSet<>();
+
     public MqttPahoClient(MqttClient mqttClient, int reconnectSleepMs) throws MqttException {
         this.mqttClient = mqttClient;
         this.reconnectSleepMs = reconnectSleepMs;
@@ -61,6 +65,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 mqttClient.connect(getConnectOptions());
                 mqttClient.setCallback(this);
                 logger.debug("MQTT Connected client");
+                for (String topic : subscribedTopics) {
+                    subscribe(topic);
+                }
             } catch (MqttException mqttError) {
                 logger.error("MQTT Connect failed.", mqttError);
                 switch (mqttError.getReasonCode()) {
@@ -95,9 +102,10 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private MqttConnectOptions getConnectOptions() {
         MqttConnectOptions options = new MqttConnectOptions();
-        options.setAutomaticReconnect(true);
+        options.setAutomaticReconnect(false);
         options.setConnectionTimeout(120);
         options.setKeepAliveInterval(60);
+        options.setCleanSession(false);
         return options;
     }
 
@@ -109,6 +117,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             try {
                 mqttClient.subscribe(topic);
                 subscribed = true;
+                subscribedTopics.add(topic);
             } catch (MqttException mqttError) {
                 logger.debug("MQTT subscribe to: " + topic + " failed: " + mqttError.getMessage(), mqttError);
                 switch (mqttError.getReasonCode()) {
@@ -220,6 +229,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             case MqttException.REASON_CODE_SERVER_CONNECT_ERROR:
             case MqttException.REASON_CODE_UNEXPECTED_ERROR:
             case MqttException.REASON_CODE_WRITE_TIMEOUT:
+                start();
                 break;
             default:
                 shutdown();

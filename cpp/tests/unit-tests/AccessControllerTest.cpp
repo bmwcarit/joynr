@@ -95,10 +95,10 @@ class AccessControllerTest : public ::testing::Test {
 public:
     AccessControllerTest() :
         singleThreadedIOService(),
-        localDomainAccessControllerMock(new LocalDomainAccessStore(
+        localDomainAccessControllerMock(std::make_unique<LocalDomainAccessStore>(
                         true // start with clean database
         )),
-        accessControllerCallback(new MockConsumerPermissionCallback()),
+        accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
         settings(),
         messagingSettingsMock(settings),
         localCapabilitiesDirectoryMock(messagingSettingsMock, settings, singleThreadedIOService.getIOService()),
@@ -159,9 +159,6 @@ public:
         )
                 .Times(1)
                 .WillOnce(Invoke(this, &AccessControllerTest::invokeOnSuccessCallbackFct));
-    }
-
-    void TearDown(){
     }
 
 protected:

@@ -1,11 +1,9 @@
 package io.joynr.pubsub.publication;
 
-import java.util.List;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +18,8 @@ import java.util.List;
  * limitations under the License.
  * #L%
  */
+
+import java.util.List;
 
 public interface BroadcastListener {
     void broadcastOccurred(List<BroadcastFilter> filters, Object... value);

@@ -137,6 +137,17 @@ transmission.
 * **User property**: `joynr.messaging.sendmsgretryintervalms`
 * **Default value**: `3000`
 
+### PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
+
+The cluster controller sends a freshness update message to the global discovery directory every
+PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS milliseconds. The global discovery directory
+updates the ```lastSeenDateMs``` of all capabilities registered via this cluster controller.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.capabilities.freshnessupdateintervalms`
+* **Default value**: `3600000`
+
 ##MessagingPropertyKeys
 
 ### `PROPERTY_BOUNCE_PROXY_URL`

@@ -43,7 +43,7 @@ define([
 
     describe("libjoynr-js.joynr.proxy.ProxyEvent", function() {
 
-        var weakSignal;
+        var weakSignal, broadcastWithoutFilterParameters;
         var subscriptionId;
         var subscriptionQos = new OnChangeSubscriptionQos();
         var subscriptionManagerSpy;
@@ -94,6 +94,25 @@ define([
                     "c": "reservedForTypeInfo"
                 }
             });
+
+            broadcastWithoutFilterParameters = new ProxyEvent(fakeProxy, {
+                broadcastName : "weakSignal",
+                discoveryQos : new DiscoveryQos(),
+                messagingQos : new MessagingQos(),
+                dependencies : {
+                    subscriptionManager : subscriptionManagerSpy
+                }
+            });
+
+            done();
+        });
+
+        it("selective broadcast without filter parameters works", function(done) {
+            var filterParameterValues = { "a" : "valueForA" };
+
+            var broadcastFilterParameters = broadcastWithoutFilterParameters.createFilterParameters();
+            broadcastFilterParameters.filterParameters = filterParameterValues;
+            expect(broadcastFilterParameters.filterParameters).toEqual(filterParameterValues);
             done();
         });
 

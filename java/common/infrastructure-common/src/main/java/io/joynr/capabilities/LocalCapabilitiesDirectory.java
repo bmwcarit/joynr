@@ -30,6 +30,8 @@ import java.util.Set;
 import javax.annotation.CheckForNull;
 
 public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
+    public static final String JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS = "joynr.scheduler.capabilities.freshness";
+
     /**
      * Adds a capability to the list of registered local capabilities. May also transmit the updated list to the
      * capabilities directory.

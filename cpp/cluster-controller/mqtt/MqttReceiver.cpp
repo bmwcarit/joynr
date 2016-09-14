@@ -18,7 +18,6 @@
  */
 #include "MqttReceiver.h"
 
-#include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -27,23 +26,21 @@ namespace joynr
 
 INIT_LOGGER(MqttReceiver);
 
-MqttReceiver::MqttReceiver(const MessagingSettings& settings)
+MqttReceiver::MqttReceiver(const MessagingSettings& settings,
+                           const std::string& channelIdForMqttTopic,
+                           const std::string& receiverId)
         : channelCreatedSemaphore(new joynr::Semaphore(0)),
           isChannelCreated(false),
-          channelIdForMqttTopic(),
+          channelIdForMqttTopic(channelIdForMqttTopic),
           globalClusterControllerAddress(),
-          receiverId(),
+          receiverId(receiverId),
           mosquittoSubscriber(settings, globalClusterControllerAddress, channelCreatedSemaphore)
 {
-    MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
-
-    channelIdForMqttTopic = persist.getChannelId();
     std::string brokerUri =
             "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
             std::to_string(settings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
     system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, channelIdForMqttTopic);
     globalClusterControllerAddress = joynr::serializer::serializeToJson(receiveMqttAddress);
-    receiverId = persist.getReceiverId();
 
     mosquittoSubscriber.registerChannelId(channelIdForMqttTopic);
 }

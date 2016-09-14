@@ -44,6 +44,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
@@ -89,6 +90,8 @@ public class JeeIntegrationBeanTest {
 				Key.get(ScheduledExecutorService.class, Names.named(JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP))));
 		assertEquals(scheduledExecutorService, joynrInjector
 				.getInstance(Key.get(ScheduledExecutorService.class, Names.named(MessageRouter.SCHEDULEDTHREADPOOL))));
+		assertEquals(scheduledExecutorService, joynrInjector
+		             .getInstance(Key.get(ScheduledExecutorService.class, Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))));
 	}
 
 }

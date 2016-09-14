@@ -187,7 +187,10 @@ var inProcessProvisioning = {
     channelQos: { // optional
         messageProcessors: <# of message processors>, //default value is 4
         resendDelay_ms: <resend delay>, //default value is 1000
-    }
+    },
+    // Interval in milliseconds at which the clustercontroller will send a freshness
+    // update message to the global discovery directory
+    capabilitiesFreshnessUpdateIntervalMs : <capabilitiesFreshnessUpdateIntervalMs> // optional, default value is 3600000 (1 hour)
 };
 
 var interTabClusterControllerProvisioning = {
@@ -206,6 +209,9 @@ var interTabClusterControllerProvisioning = {
     }
     parentWindow : <parent windows>, // e.g. window.opener || window.top
     parentOrigin : <paranet origin>, // e.g. location.origin || (window.location.protocol+'//'+window.location.host)
-    window : <window object>
+    window : <window object>,
+    // Interval in milliseconds at which the clustercontroller will send a freshness
+    // update message to the global discovery directory
+    capabilitiesFreshnessUpdateIntervalMs : <capabilitiesFreshnessUpdateIntervalMs> // optional, default value is 3600000 (1 hour)
 };
 ```

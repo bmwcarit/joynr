@@ -38,6 +38,7 @@
 #include "joynr/infrastructure/DacTypes/Role.h"
 #include "joynr/ISubscriptionListener.h"
 #include "AccessControlAlgorithm.h"
+#include "LocalDomainAccessStore.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
 #include "joynr/Future.h"
@@ -48,8 +49,6 @@ namespace infrastructure
 {
 class GlobalDomainAccessControllerProxy;
 } // namespace infrastructure
-
-class LocalDomainAccessStore;
 
 /**
  * Object that controls access to providers
@@ -73,8 +72,9 @@ public:
         virtual void operationNeeded() = 0;
     };
 
-    explicit LocalDomainAccessController(LocalDomainAccessStore* localDomainAccessStore);
-    virtual ~LocalDomainAccessController();
+    explicit LocalDomainAccessController(
+            std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore);
+    virtual ~LocalDomainAccessController() = default;
     /**
      * The init method has to be called first, only afterwards LocalDomainAccessController may be
      * used.
@@ -475,7 +475,7 @@ private:
 
     std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
-    LocalDomainAccessStore* localDomainAccessStore;
+    std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
 
     ADD_LOGGER(LocalDomainAccessController);
     static std::chrono::milliseconds broadcastMinInterval;

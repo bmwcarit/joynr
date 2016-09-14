@@ -99,6 +99,11 @@ public:
                 std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
                         nullptr) override;
 
+    void touch(const std::string& clusterControllerId,
+               std::function<void()> onSuccess = nullptr,
+               std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError =
+                       nullptr) override;
+
     void setProxyBuilder(
             std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
                     capabilitiesProxyBuilder) override;

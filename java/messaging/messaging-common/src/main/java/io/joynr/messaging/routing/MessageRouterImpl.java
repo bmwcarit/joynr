@@ -113,7 +113,7 @@ public class MessageRouterImpl implements MessageRouter {
             schedule(new Runnable() {
                 @Override
                 public void run() {
-                    logger.debug("Staring processing of message {}", message);
+                    logger.debug("Starting processing of message {}", message);
                     try {
                         checkExpiry(message);
 

@@ -847,7 +847,8 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
     std::shared_ptr<Publication> publication(publications.value(subscriptionId));
     std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest(
             subscriptionId2SubscriptionRequest.value(subscriptionId));
-    {
+
+    if (publication && subscriptionRequest) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // See if the publication is needed
         const std::shared_ptr<SubscriptionQos> qos = subscriptionRequest->getQos();

@@ -6,3 +6,6 @@ joynr.messaging.cc.host=localhost
 joynr.messaging.cc.port=4242
 joynr.messaging.cc.protocol=ws
 joynr.messaging.cc.path=
+joynr.messaging.sendMsgRetryIntervalMs=10
+joynr.discovery.requestTimeout=200
+joynr.arbitration.minimumRetryDelay=200

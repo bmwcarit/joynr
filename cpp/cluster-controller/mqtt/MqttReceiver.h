@@ -35,7 +35,9 @@ namespace joynr
 class JOYNRCLUSTERCONTROLLER_EXPORT MqttReceiver : public IMessageReceiver
 {
 public:
-    explicit MqttReceiver(const MessagingSettings& settings);
+    explicit MqttReceiver(const MessagingSettings& settings,
+                          const std::string& channelIdForMqttTopic,
+                          const std::string& receiverId);
 
     ~MqttReceiver() override;
 

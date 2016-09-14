@@ -53,6 +53,11 @@ ACTION_P(AcquireSemaphore, semaphore)
     semaphore->wait();
 }
 
+ACTION_P(ReleaseSemaphore, semaphore)
+{
+    semaphore->notify();
+}
+
 class LocalCapabilitiesDirectoryTest : public ::testing::Test
 {
 public:
@@ -65,6 +70,7 @@ public:
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(),
               mockMessageRouter(singleThreadedIOService.getIOService()),
+              clusterControllerId("clusterControllerId"),
               localCapabilitiesDirectory(),
               lastSeenDateMs(0),
               expiryDateMs(0),
@@ -73,12 +79,15 @@ public:
               callback()
     {
         messagingSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
+        settings.set(MessagingSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(), 200);
         localCapabilitiesDirectory =
                 std::make_unique<LocalCapabilitiesDirectory>(messagingSettings,
                                                              capabilitiesClient,
                                                              LOCAL_ADDRESS,
                                                              mockMessageRouter,
-                                                             libjoynrSettings);
+                                                             libjoynrSettings,
+                                                             singleThreadedIOService.getIOService(),
+                                                             clusterControllerId);
     }
 
     ~LocalCapabilitiesDirectoryTest()
@@ -275,6 +284,7 @@ protected:
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;
+    std::string clusterControllerId;
     std::unique_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
@@ -1498,7 +1508,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                                                               capabilitiesClient,
                                                                               LOCAL_ADDRESS,
                                                                               mockMessageRouter,
-                                                                              libjoynrSettings);
+                                                                              libjoynrSettings,
+                                                                              singleThreadedIOService.getIOService(),
+                                                                              "clusterControllerId");
 
     // load persistency
     localCapabilitiesDirectory->loadPersistedFile();
@@ -1547,6 +1559,16 @@ TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnMultiProxy)
     EXPECT_CALL(mockCallback, onSuccess(_)).Times(0);
     localCapabilitiesDirectory->lookup(
             twoDomains, INTERFACE_1_NAME, discoveryQos, onSuccess, onError);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
+{
+    EXPECT_CALL(*capabilitiesClient, touch(_,_,_)).Times(0);
+    Mock::VerifyAndClearExpectations(capabilitiesClient.get());
+    Semaphore semaphore(0);
+    EXPECT_CALL(*capabilitiesClient, touch(Eq(clusterControllerId),_,_)).Times(2).WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(250)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(250)));
 }
 
 class LocalCapabilitiesDirectoryPurgeTest

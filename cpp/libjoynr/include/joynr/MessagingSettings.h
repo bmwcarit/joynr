@@ -84,7 +84,9 @@ public:
      */
     static const std::string& SETTING_DISCOVERY_MESSAGES_TTL_MS();
     static const std::string& SETTING_SEND_MESSAGE_MAX_TTL();
+    static const std::string& SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
 
+    static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
     static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
@@ -100,6 +102,7 @@ public:
     static std::uint64_t DEFAULT_MAXIMUM_TTL_MS();
     static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME();
     static std::chrono::milliseconds DEFAULT_MQTT_RECONNECT_SLEEP_TIME();
+    static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
 
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
@@ -171,6 +174,8 @@ public:
     void setDiscoveryMessagesTtl(std::int64_t ttl_ms);
     std::int64_t getSendMsgMaxTtl() const;
     void setSendMsgMaxTtl(std::int64_t ttl_ms);
+
+    std::chrono::milliseconds getCapabilitiesFreshnessUpdateIntervalMs() const;
 
     bool contains(const std::string& key) const;
 

@@ -114,7 +114,7 @@ public class ProxyErrorsTest {
 
         discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
-        discoveryQos.setDiscoveryTimeoutMs(500);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
         discoveryQos.setRetryIntervalMs(100);
 
         callback = new ProxyCreatedCallback<ProxyErrorsTest.TestProxyWrongVersion>() {
@@ -179,7 +179,7 @@ public class ProxyErrorsTest {
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testProxyIsInvalidatedOnceArbitrationExcetpionThrown() throws Exception {
+    public void testProxyIsInvalidatedOnceArbitrationExceptionThrown() throws Exception {
 
         ProxyBuilder<ProxyErrorsTest.TestProxyWrongVersion> proxyBuilder = runtime.getProxyBuilder(domain,
                                                                                                    ProxyErrorsTest.TestProxyWrongVersion.class);

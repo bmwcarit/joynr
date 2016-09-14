@@ -77,7 +77,7 @@ class SubscriptionQos;
 class JOYNR_EXPORT PublicationManager
 {
 public:
-    explicit PublicationManager(boost::asio::io_service& ioService, int maxThreads = 2);
+    explicit PublicationManager(boost::asio::io_service& ioService, int maxThreads = 1);
     explicit PublicationManager(DelayedScheduler* scheduler);
     virtual ~PublicationManager();
     /**

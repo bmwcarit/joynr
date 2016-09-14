@@ -89,29 +89,58 @@ public class ClusterController {
         runtime = injectorCC.getInstance(JoynrRuntime.class);
         LocalCapabilitiesDirectory capabilitiesDirectory = injectorCC.getInstance(LocalCapabilitiesDirectory.class);
 
-        ConsoleReader console;
-        try {
-            console = new ConsoleReader();
-            String command = "";
-            while (!command.equals("q")) {
-                command = console.readLine();
+        Thread shutdownHook = new Thread() {
+            @Override
+            public void run() {
+                LOG.info("executing shutdown hook");
+                synchronized (this) {
+                    LOG.info("notifying any waiting thread from shutdown hook");
+                    notifyAll();
+                }
+                LOG.info("shutting down");
+                runtime.shutdown(false);
+                LOG.info("shutdown completed");
+            }
+        };
+        LOG.info("adding shutdown hook");
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-                if (command.equals("caps")) {
-                    Set<DiscoveryEntry> allLocalDiscoveryEntries = capabilitiesDirectory.listLocalCapabilities();
-                    StringBuffer discoveryEntriesAsText = new StringBuffer();
-                    for (DiscoveryEntry capability : allLocalDiscoveryEntries) {
-                        discoveryEntriesAsText.append(capability.toString()).append('\n');
+        if (System.console() != null) {
+            ConsoleReader console;
+            try {
+                console = new ConsoleReader();
+                String command = "";
+                while (!command.equals("q")) {
+                    command = console.readLine();
+
+                    if (command.equals("caps")) {
+                        Set<DiscoveryEntry> allLocalDiscoveryEntries = capabilitiesDirectory.listLocalCapabilities();
+                        StringBuffer discoveryEntriesAsText = new StringBuffer();
+                        for (DiscoveryEntry capability : allLocalDiscoveryEntries) {
+                            discoveryEntriesAsText.append(capability.toString()).append('\n');
+                        }
+                        LOG.info(discoveryEntriesAsText.toString());
+                    } else {
+                        LOG.info("\n\nUSAGE press\n" + " q\tto quit\n caps\tto list registered providers\n");
                     }
-                    LOG.info(discoveryEntriesAsText.toString());
-                } else {
-                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n caps\tto list registered providers\n");
+                }
+            } catch (IOException e) {
+                LOG.error("error reading input from console", e);
+            }
+        } else {
+            LOG.info("\n\nNon-interactive mode detected.\n"
+                    + "This cluster controller will continue to run until its JVM gets terminated\n"
+                    + "by the operating system. This can be triggered by sending a SIGTERM signal\n"
+                    + "to the process running the JVM.");
+            synchronized (shutdownHook) {
+                LOG.info("waiting on shutdown hook");
+                try {
+                    shutdownHook.wait();
+                } catch (InterruptedException e) {
+                    // ignore
                 }
             }
-        } catch (IOException e) {
-            LOG.error("error reading input from console", e);
         }
-        LOG.info("shutting down");
-        runtime.shutdown(false);
         System.exit(0);
     }
 }

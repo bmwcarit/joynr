@@ -74,6 +74,7 @@ define(
             "joynr/start/settings/defaultInterTabSettings",
             "joynr/start/settings/defaultClusterControllerSettings",
             "joynr/util/Typing",
+            "joynr/util/LongTimer",
             "global/LocalStorage"
         ],
         function(
@@ -129,6 +130,7 @@ define(
                 defaultInterTabSettings,
                 defaultClusterControllerSettings,
                 Typing,
+                LongTimer,
                 LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
@@ -191,6 +193,7 @@ define(
                 var registerRoutingProviderPromise;
                 var persistency;
                 var longPollingCreatePromise;
+                var freshnessIntervalId;
 
                 // this is required at load time of libjoynr
                 typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -544,6 +547,14 @@ define(
 
                             discoveryStub.setSkeleton(new InProcessSkeleton(capabilityDiscovery));
 
+                            var period = provisioning.capabilitiesFreshnessUpdateIntervalMs || 3600000; // default: 1 hour
+                            freshnessIntervalId = LongTimer.setInterval(function() {
+                                capabilityDiscovery.touch(channelId, period).catch(function(error) {
+                                    log.error("error sending freshness update: " + error);
+                                });
+                                return null;
+                            }, period);
+
                             providerBuilder = Object.freeze(new ProviderBuilder());
 
                             providerQos = new ProviderQos({
@@ -668,6 +679,9 @@ define(
                                             + "\"");
                             }
                             joynrState = JoynrStates.SHUTTINGDOWN;
+
+                            LongTimer.clearInterval(freshnessIntervalId);
+
                             longPollingCreatePromise.then(function() {
                                 longPollingMessageReceiver.clear(channelId)
                                 .then(function() {

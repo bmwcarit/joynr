@@ -30,7 +30,6 @@
 #include <boost/asio/steady_timer.hpp>
 
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "cluster-controller/mqtt/MqttSettings.h"
 
 #include "common/InterfaceAddress.h"
 
@@ -46,6 +45,14 @@
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
+
+namespace boost
+{
+namespace asio
+{
+class io_service;
+} // namespace asio
+} // namespace boost
 
 namespace joynr
 {
@@ -75,7 +82,9 @@ public:
                                std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
                                MessageRouter& messageRouter,
-                               LibjoynrSettings& libJoynrSettings);
+                               LibjoynrSettings& libJoynrSettings,
+                               boost::asio::io_service& ioService,
+                               const std::string clusterControllerId);
 
     ~LocalCapabilitiesDirectory() override;
 
@@ -236,21 +245,21 @@ private:
     MessageRouter& messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
-    MqttSettings mqttSettings;
-
     LibjoynrSettings& libJoynrSettings; // to retrieve info about persistency
 
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
             pendingLookups;
 
-    std::thread thread;
-    boost::asio::io_service ioService;
-    std::unique_ptr<boost::asio::io_service::work> ioServiceWork;
     boost::asio::steady_timer checkExpiredDiscoveryEntriesTimer;
 
     void scheduleCleanupTimer();
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);
     void remove(const std::vector<types::DiscoveryEntry>& discoveryEntries);
+    void remove(const types::DiscoveryEntry& discoveryEntry);
+    boost::asio::steady_timer freshnessUpdateTimer;
+    std::string clusterControllerId;
+    void scheduleFreshnessUpdate();
+    void sendAndRescheduleFreshnessUpdate(const boost::system::error_code& timerError);
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
     bool hasEntryInCache(const types::DiscoveryEntry& entry, bool localEntries);

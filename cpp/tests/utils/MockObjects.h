@@ -175,6 +175,9 @@ public:
                      const std::string& participantId,
                      std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> callbackFct,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+    MOCK_METHOD3(touch, void(const std::string& clusterControllerId,
+                     std::function<void()> onSuccess,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
 
     void setProxyBuilder(std::unique_ptr<joynr::IProxyBuilder<joynr::infrastructure::GlobalCapabilitiesDirectoryProxy>> input) {
         std::ignore = input;
@@ -950,8 +953,7 @@ public:
 
 class MockLocalDomainAccessController : public joynr::LocalDomainAccessController {
 public:
-    MockLocalDomainAccessController(joynr::LocalDomainAccessStore* store):
-        LocalDomainAccessController(store){}
+    using joynr::LocalDomainAccessController::LocalDomainAccessController;
 
     MOCK_METHOD5(getConsumerPermission,
                  void(
@@ -987,7 +989,7 @@ public:
     MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings, boost::asio::io_service& ioService):
         messageRouter(ioService),
         libjoynrMockSettings(settings),
-        LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter, libjoynrMockSettings){}
+        LocalCapabilitiesDirectory(messagingSettings, nullptr, "localAddress", messageRouter, libjoynrMockSettings, ioService, "clusterControllerId"){}
 
     MOCK_METHOD3(
             lookup,
