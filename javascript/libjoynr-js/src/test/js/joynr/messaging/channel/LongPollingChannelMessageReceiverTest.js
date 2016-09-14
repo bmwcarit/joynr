@@ -134,7 +134,7 @@ define([
                                 fail("create longPollingChannelMessageReceiver succeeded");
                                 return null;
                             }).catch(function() {
-                                expect(Date.now() - createChannelCallTimestamp > channelCreationTimeout_ms).toEqual(true);
+                                expect(Date.now() - createChannelCallTimestamp + 1).toBeGreaterThan(channelCreationTimeout_ms);
                                 done();
                             });
                         });
