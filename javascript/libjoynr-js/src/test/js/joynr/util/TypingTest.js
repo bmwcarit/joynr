@@ -1,4 +1,5 @@
 /*jslint newcap: true, nomen: true */
+/*global xit: true */
 
 /*
  * #%L
@@ -23,6 +24,7 @@ define(
         [
             "joynr/util/Typing",
             "joynr/start/TypeRegistry",
+            "joynr/system/LoggerFactory",
             "joynr/types/TypeRegistrySingleton",
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderQos",
@@ -30,12 +32,14 @@ define(
             "joynr/types/Version",
             "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/ComplexRadioStation",
+            "joynr/datatypes/exampleTypes/ComplexStruct",
             "joynr/datatypes/exampleTypes/Country",
             "joynr/tests/testTypes/TestEnum"
         ],
         function(
                 Typing,
                 TypeRegistry,
+                LoggerFactory,
                 TypeRegistrySingleton,
                 DiscoveryEntry,
                 ProviderQos,
@@ -43,6 +47,7 @@ define(
                 Version,
                 RadioStation,
                 ComplexRadioStation,
+                ComplexStruct,
                 Country,
                 TestEnum) {
 
@@ -117,6 +122,8 @@ define(
             describe(
                     "libjoynr-js.joynr.Typing.augmentType",
                     function() {
+
+                        var log = LoggerFactory.getLogger("joynr.util.TypingTest");
 
                         var tests =
                                 [
@@ -312,6 +319,39 @@ define(
                             }
                             done();
                         });
+
+                        xit(
+                                "performance measurement of augmenting struct types",
+                                function() {
+                                    var i, rawInput, timeStart, delta, times = 5000, typeRegistry =
+                                            TypeRegistrySingleton.getInstance();
+                                    typeRegistry.addType("joynr.datatypes.exampleTypes.ComplexStruct", ComplexStruct);
+                                    /*jslint nomen: true */
+                                    rawInput =
+                                            {
+                                                _typeName : "joynr.datatypes.exampleTypes.ComplexStruct",
+                                                num32 : "123456",
+                                                num64 : "123456789",
+                                                str : "looooooooooooooooooooooooooooooooooooooongStriiiiiiiiiiiiiiiiiiiiiiiing",
+                                                data : []
+                                            };
+                                    /*jslint nomen: false */
+                                    for (i = 0; i < 1000; i++) {
+                                        rawInput.data.push("0");
+                                    }
+
+                                    timeStart = Date.now();
+                                    for (i = 0; i < times; i++) {
+                                        Typing.augmentTypes(rawInput, typeRegistry);
+                                    }
+                                    delta = Date.now() - timeStart;
+                                    log
+                                            .info("Time took for augmenting struct type \"ComplexStruct\""
+                                                + times
+                                                + " times: "
+                                                + delta
+                                                + "ms");
+                                });
 
                         it(
                                 "throws when giving a function or an object with a custom type",
