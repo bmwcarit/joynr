@@ -715,6 +715,10 @@ define(
                                 dispatcher.shutdown();
                             }
 
+                            if (typeRegistry !== undefined) {
+                                typeRegistry.shutdown();
+                            }
+
                             log.debug("joynr cluster controller shut down");
                             joynrState = JoynrStates.SHUTDOWN;
                             return Promise.resolve();
