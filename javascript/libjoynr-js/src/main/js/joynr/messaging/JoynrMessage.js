@@ -93,10 +93,10 @@ define(
                     }
                 });
 
-                this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE, "application/json");
+                this.header[JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE] = "application/json";
 
-                if (this[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] === undefined) {
-                    this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID, uuid());
+                if (this.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] === undefined) {
+                    this.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] = uuid();
                 }
             }
 
