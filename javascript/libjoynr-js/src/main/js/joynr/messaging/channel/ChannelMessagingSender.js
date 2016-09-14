@@ -200,24 +200,24 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
                                 "CANNOT SEND: invalid joynrMessage which is of type "
                                     + Typing.getObjectType(joynrMessage)));
                     }
-                            return new Promise(function(resolve, reject) {
-                                if (terminated) {
-                                    reject(new Error("ChannelMessagingSender is already shut down"));
-                                    return;
-                                }
-                                var queuedMessage = {
-                                    message : joynrMessage,
-                                    to : toChannelAddress.messagingEndpointUrl
-                                        + "messageWithoutContentType/",
-                                    resolve : resolve,
-                                    reject : reject,
-                                    pending : true,
-                                    expiryTimer : undefined
-                                };
-                                createExpiryTimer(queuedMessage);
-                                messageQueue.push(queuedMessage);
-                                LongTimer.setTimeout(notify, 0);
-                            });
+                    return new Promise(function(resolve, reject) {
+                        if (terminated) {
+                            reject(new Error("ChannelMessagingSender is already shut down"));
+                            return;
+                        }
+                        var queuedMessage = {
+                            message : joynrMessage,
+                            to : toChannelAddress.messagingEndpointUrl
+                                + "messageWithoutContentType/",
+                            resolve : resolve,
+                            reject : reject,
+                            pending : true,
+                            expiryTimer : undefined
+                        };
+                        createExpiryTimer(queuedMessage);
+                        messageQueue.push(queuedMessage);
+                        LongTimer.setTimeout(notify, 0);
+                    });
                 };
 
          /**
