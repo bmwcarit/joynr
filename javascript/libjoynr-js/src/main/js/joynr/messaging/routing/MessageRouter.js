@@ -193,6 +193,12 @@ define(
                             var hop, participantId, errorFct;
 
                             errorFct = function(error) {
+                                if (!isReady()) {
+                                    //in this case, the error is expected, e.g. during shut down
+                                    log.debug("Adding routingProxy.proxyParticipantId " + routingProxy.proxyParticipantId
+                                            + "failed while the message router is not ready. Error: " + error.message);
+                                    return;
+                                }
                                 throw new Error(error);
                             };
 
