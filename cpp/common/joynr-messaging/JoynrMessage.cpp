@@ -85,6 +85,8 @@ const std::string JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST = "request";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION = "subscriptionPublication";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY = "subscriptionReply";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST = "subscriptionRequest";
+const std::string JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST =
+        "multicastSubscriptionRequest";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST =
         "broadcastSubscriptionRequest";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";

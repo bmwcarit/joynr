@@ -20,6 +20,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/OneWayRequest.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -94,6 +95,18 @@ JoynrMessage JoynrMessageFactory::createSubscriptionRequest(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
+    return msg;
+}
+
+JoynrMessage JoynrMessageFactory::createMulticastSubscriptionRequest(
+        const std::string& senderId,
+        const std::string& receiverId,
+        const MessagingQos& qos,
+        const MulticastSubscriptionRequest& payload) const
+{
+    JoynrMessage msg;
+    msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }

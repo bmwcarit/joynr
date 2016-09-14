@@ -104,6 +104,7 @@ public:
     static const std::string VALUE_MESSAGE_TYPE_REQUEST;
     static const std::string VALUE_MESSAGE_TYPE_REPLY;
     static const std::string VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+    static const std::string VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST;
     static const std::string VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
     static const std::string
             VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY; // reply that the subscription was

@@ -23,6 +23,7 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/OnChangeSubscriptionQos.h"
@@ -225,6 +226,20 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest)
             senderID, receiverID, qos, subscriptionRequest);
     checkHeaderCreatorFromTo(joynrMessage);
     EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, joynrMessage.getType());
+}
+
+TEST_F(JoynrMessageFactoryTest, createMulticastSubscriptionRequest)
+{
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    MulticastSubscriptionRequest subscriptionRequest;
+    subscriptionRequest.setSubscriptionId("subscriptionId");
+    subscriptionRequest.setMulticastId("multicastId");
+    subscriptionRequest.setSubscribeToName("attributeName");
+    subscriptionRequest.setQos(subscriptionQos);
+    JoynrMessage joynrMessage = messageFactory.createMulticastSubscriptionRequest(
+            senderID, receiverID, qos, subscriptionRequest);
+    checkHeaderCreatorFromTo(joynrMessage);
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionStop)
