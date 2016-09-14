@@ -89,6 +89,7 @@ public class MessageRouterTest {
             protected void configure() {
                 bind(MessageRouter.class).to(MessageRouterImpl.class);
                 bind(RoutingTable.class).toInstance(routingTable);
+                bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
                                 .toInstance(msgRetryIntervalMs);
 

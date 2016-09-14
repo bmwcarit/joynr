@@ -19,10 +19,10 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
+import javax.inject.Inject;
+
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
-
-import javax.inject.Inject;
 import joynr.system.RoutingAbstractProvider;
 import joynr.system.RoutingTypes.BrowserAddress;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -106,7 +106,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     public Promise<DeferredVoid> addMulticastReceiver(String multicastId,
                                                       String subscriberParticipantId,
                                                       String providerParticipantId) {
-        assert false : "method not implemented";
+        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         return resolvedDeferred();
     }
 
@@ -114,7 +114,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     public Promise<DeferredVoid> removeMulticastReceiver(String multicastId,
                                                          String subscriberParticipantId,
                                                          String providerParticipantId) {
-        assert false : "method not implemented";
+        messageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         return resolvedDeferred();
     }
 }

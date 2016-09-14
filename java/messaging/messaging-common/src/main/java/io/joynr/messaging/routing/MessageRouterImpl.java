@@ -53,6 +53,7 @@ public class MessageRouterImpl implements MessageRouter {
     private long sendMsgRetryIntervalMs;
     private MessagingStubFactory messagingStubFactory;
     private AddressManager addressManager;
+    protected final MulticastReceiverRegistry multicastReceiverRegistry;
 
     @Inject
     @Singleton
@@ -60,12 +61,14 @@ public class MessageRouterImpl implements MessageRouter {
                              @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                              @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                              MessagingStubFactory messagingStubFactory,
-                             AddressManager addressManager) {
+                             AddressManager addressManager,
+                             MulticastReceiverRegistry multicastReceiverRegistry) {
         this.routingTable = routingTable;
         this.scheduler = scheduler;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
         this.messagingStubFactory = messagingStubFactory;
         this.addressManager = addressManager;
+        this.multicastReceiverRegistry = multicastReceiverRegistry;
     }
 
     @Override
@@ -76,6 +79,16 @@ public class MessageRouterImpl implements MessageRouter {
     @Override
     public boolean resolveNextHop(String participantId) {
         return routingTable.containsKey(participantId);
+    }
+
+    @Override
+    public void addMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId) {
+        multicastReceiverRegistry.registerMulticastReceiver(multicastId, subscriberParticipantId);
+    }
+
+    @Override
+    public void removeMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId) {
+        multicastReceiverRegistry.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
     }
 
     @Override

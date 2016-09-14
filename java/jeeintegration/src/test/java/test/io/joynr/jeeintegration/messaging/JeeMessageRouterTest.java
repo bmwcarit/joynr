@@ -32,6 +32,7 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.jeeintegration.messaging.JeeMessageRouter;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
@@ -59,6 +60,9 @@ public class JeeMessageRouterTest {
     @Mock
     private AddressManager addressManager;
 
+    @Mock
+    private MulticastReceiverRegistry multicastReceiverRegistry;
+
     @Test
     public void testScheduleMessage() {
         Address address = new Address();
@@ -69,7 +73,8 @@ public class JeeMessageRouterTest {
                                                         scheduler,
                                                         1000L,
                                                         messagingStubFactory,
-                                                        addressManager);
+                                                        addressManager,
+                                                        multicastReceiverRegistry);
 
         message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000L));
         subject.route(message);
@@ -83,7 +88,8 @@ public class JeeMessageRouterTest {
                                                         scheduler,
                                                         1000L,
                                                         messagingStubFactory,
-                                                        addressManager);
+                                                        addressManager,
+                                                        multicastReceiverRegistry);
 
         subject.shutdown();
 

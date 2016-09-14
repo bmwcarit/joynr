@@ -27,6 +27,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import io.joynr.messaging.routing.AddressManager;
+import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,6 +67,8 @@ public class ChildMessageRouterTest {
     private MessagingStubFactory messagingStubFactory;
     @Mock
     private AddressManager addressManager;
+    @Mock
+    private MulticastReceiverRegistry multicastReceiverRegistry;
 
     private JoynrMessage message;
     private ChildMessageRouter messageRouter;
@@ -83,7 +86,8 @@ public class ChildMessageRouterTest {
                                                provideMessageSchedulerThreadPoolExecutor(),
                                                sendMsgRetryIntervalMs,
                                                messagingStubFactory,
-                                               addressManager);
+                                               addressManager,
+                                               multicastReceiverRegistry);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
 
         when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
