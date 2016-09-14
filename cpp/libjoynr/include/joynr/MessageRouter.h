@@ -137,6 +137,20 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
+    void addMulticastReceiver(
+            const std::string& multicastId,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    void removeMulticastReceiver(
+            const std::string& multicastId,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
     void removeNextHop(const std::string& participantId,
                        std::function<void()> onSuccess = nullptr,
                        std::function<void(const joynr::exceptions::ProviderRuntimeException&)>

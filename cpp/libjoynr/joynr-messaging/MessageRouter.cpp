@@ -20,9 +20,9 @@
 
 #include <cassert>
 #include <functional>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/placeholders.hpp>
-#include <boost/bind.hpp>
 
 #include "joynr/DispatcherUtils.h"
 #include "joynr/MessagingStubFactory.h"
@@ -33,7 +33,6 @@
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/types/ProviderQos.h"
 #include "cluster-controller/access-control/IAccessController.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/InProcessMessagingAddress.h"
@@ -582,6 +581,36 @@ void MessageRouter::resolveNextHop(
         resolved = routingTable.contains(participantId);
     }
     onSuccess(resolved);
+}
+
+void MessageRouter::addMulticastReceiver(
+        const std::string& multicastId,
+        const std::string& subscriberParticipantId,
+        const std::string& providerParticipantId,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    assert(false && "Not implemented yet");
+    std::ignore = multicastId;
+    std::ignore = subscriberParticipantId;
+    std::ignore = providerParticipantId;
+    std::ignore = onSuccess;
+    std::ignore = onError;
+}
+
+void MessageRouter::removeMulticastReceiver(
+        const std::string& multicastId,
+        const std::string& subscriberParticipantId,
+        const std::string& providerParticipantId,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    assert(false && "Not implemented yet");
+    std::ignore = multicastId;
+    std::ignore = subscriberParticipantId;
+    std::ignore = providerParticipantId;
+    std::ignore = onSuccess;
+    std::ignore = onError;
 }
 
 /**

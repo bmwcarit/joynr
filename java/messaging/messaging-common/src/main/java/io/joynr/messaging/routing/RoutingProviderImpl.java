@@ -101,4 +101,20 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
         deferred.resolve(resolved);
         return new Promise<>(deferred);
     }
+
+    @Override
+    public Promise<DeferredVoid> addMulticastReceiver(String multicastId,
+                                                      String subscriberParticipantId,
+                                                      String providerParticipantId) {
+        assert false : "method not implemented";
+        return resolvedDeferred();
+    }
+
+    @Override
+    public Promise<DeferredVoid> removeMulticastReceiver(String multicastId,
+                                                         String subscriberParticipantId,
+                                                         String providerParticipantId) {
+        assert false : "method not implemented";
+        return resolvedDeferred();
+    }
 }

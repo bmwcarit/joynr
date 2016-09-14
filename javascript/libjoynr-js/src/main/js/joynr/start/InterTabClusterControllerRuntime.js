@@ -627,6 +627,12 @@ define(
                                         },
                                         removeNextHop : function(opArgs) {
                                             return messageRouter.removeNextHop(opArgs.participantId);
+                                        },
+                                        addMulticastReceiver : function(opArgs) {
+                                            throw new Error('not implemented');
+                                        },
+                                        removeMulticastReceiver : function(opArgs) {
+                                            throw new Error('not implemented');
                                         }
                                     });
                             registerRoutingProviderPromise =
