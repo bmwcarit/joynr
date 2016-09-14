@@ -82,14 +82,12 @@ public class DispatcherImpl implements Dispatcher {
     public void sendSubscriptionRequest(String fromParticipantId,
                                         Set<String> toParticipantIds,
                                         SubscriptionRequest subscriptionRequest,
-                                        MessagingQos messagingQos,
-                                        boolean broadcast) {
+                                        MessagingQos messagingQos) {
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                                  toParticipantId,
                                                                                  subscriptionRequest,
-                                                                                 messagingQos,
-                                                                                 broadcast);
+                                                                                 messagingQos);
 
             messageRouter.route(message);
         }

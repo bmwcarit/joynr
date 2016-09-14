@@ -33,8 +33,7 @@ public interface Dispatcher extends MessageArrivedListener {
     public void sendSubscriptionRequest(String fromParticipantId,
                                         Set<String> toParticipantId,
                                         SubscriptionRequest subscriptionRequest,
-                                        MessagingQos qosSettings,
-                                        boolean broadcast);
+                                        MessagingQos qosSettings);
 
     public void sendSubscriptionStop(String fromParticipantId,
                                      Set<String> toParticipantId,

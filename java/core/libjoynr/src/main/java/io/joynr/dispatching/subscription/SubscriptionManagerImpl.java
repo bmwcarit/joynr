@@ -275,11 +275,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
         }
 
-        dispatcher.sendSubscriptionRequest(fromParticipantId,
-                                           toParticipantIds,
-                                           subscriptionRequest,
-                                           messagingQos,
-                                           subscriptionRequest instanceof BroadcastSubscriptionRequest);
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, subscriptionRequest, messagingQos);
     }
 
     @Override

@@ -55,6 +55,7 @@ public class JoynrMessage implements JoynrType {
     public static final String MESSAGE_CUSTOM_HEADER_PREFIX = "custom-";
     public static final String CONTENT_TYPE_TEXT_PLAIN = "text/plain";
     public static final String CONTENT_TYPE_APPLICATION_JSON = "application/json";
+    public static final String MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST = "multicastSubscriptionRequest";
 
     private String type;
     private Map<String, String> header;

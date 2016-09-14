@@ -29,8 +29,10 @@ import com.google.inject.Inject;
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
+import joynr.BroadcastSubscriptionRequest;
 import joynr.JoynrMessage;
 import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionRequest;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -120,11 +122,12 @@ public class JoynrMessageFactory {
     public JoynrMessage createSubscriptionRequest(String fromParticipantId,
                                                   String toParticipantId,
                                                   SubscriptionRequest subscriptionRequest,
-                                                  MessagingQos messagingQos,
-                                                  boolean broadcast) {
+                                                  MessagingQos messagingQos) {
         String messageType;
-        if (broadcast) {
+        if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
             messageType = JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
+        } else if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
+            messageType = JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST;
         } else {
             messageType = JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
         }

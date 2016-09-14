@@ -199,8 +199,7 @@ public class SubscriptionManagerTest {
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
                                                    (Set<String>) argThat(contains(toParticipantId)),
                                                    any(SubscriptionRequest.class),
-                                                   any(MessagingQos.class),
-                                                   eq(false));
+                                                   any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -230,8 +229,7 @@ public class SubscriptionManagerTest {
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
                                                    (Set<String>) argThat(contains(toParticipantId)),
                                                    any(SubscriptionRequest.class),
-                                                   any(MessagingQos.class),
-                                                   eq(true));
+                                                   any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -261,8 +259,7 @@ public class SubscriptionManagerTest {
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
                                                    (Set<String>) argThat(contains(toParticipantId)),
                                                    any(SubscriptionRequest.class),
-                                                   any(MessagingQos.class),
-                                                   eq(false));
+                                                   any(MessagingQos.class));
     }
 
     private static interface TestMulticastSubscriptionInterface {

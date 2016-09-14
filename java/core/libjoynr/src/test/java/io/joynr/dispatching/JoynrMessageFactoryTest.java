@@ -40,8 +40,10 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
+import io.joynr.pubsub.SubscriptionQos;
 import joynr.JoynrMessage;
 import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionRequest;
 import joynr.PeriodicSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
@@ -222,8 +224,7 @@ public class JoynrMessageFactoryTest {
         JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                              toParticipantId,
                                                                              subscriptionRequest,
-                                                                             messagingQos,
-                                                                             false);
+                                                                             messagingQos);
         assertEquals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
         assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
         assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
@@ -294,4 +295,24 @@ public class JoynrMessageFactoryTest {
         assertTrue(joynrMessage.getPayload().contains(MulticastPublication.class.getName()));
     }
 
+    @Test
+    public void testCreateMulticastSubscriptionRequest() {
+        String multicastId = "multicastId";
+        String subscriptionId = "subscriptionId";
+        String multicastName = "multicastName";
+        SubscriptionQos subscriptionQos = mock(SubscriptionQos.class);
+
+        MulticastSubscriptionRequest multicastSubscriptionRequest = new MulticastSubscriptionRequest(multicastId,
+                                                                                                     subscriptionId,
+                                                                                                     multicastName,
+                                                                                                     subscriptionQos);
+
+        JoynrMessage result = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
+                                                                            toParticipantId,
+                                                                            multicastSubscriptionRequest,
+                                                                            messagingQos);
+
+        assertNotNull(result);
+        assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, result.getType());
+    }
 }
