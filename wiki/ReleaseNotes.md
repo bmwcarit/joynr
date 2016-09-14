@@ -4,6 +4,7 @@
 * **[JEE]** Ability to specify individual domains for providers via new
   `@ProviderDomain` annotation. See
   [JEE Documentation / Customising the registration domain](jee.md#provider_domain).
+* **[Java, JS, C++]** Introduce LastSeen arbitration strategy and set it as default arbitration.
 
 ##Other changes
 * **[Java, C++]** The local capabilities directory will periodically be checked for

@@ -36,7 +36,7 @@ std::int64_t& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT()
 DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
 {
     static DiscoveryQos::ArbitrationStrategy default_strategy =
-            DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY;
+            DiscoveryQos::ArbitrationStrategy::LAST_SEEN;
     return default_strategy;
 }
 

@@ -32,9 +32,9 @@ class DiscoveryException;
 }
 
 /**
- * @brief Class interface used by ProviderArbitrator
+ * @brief Class interface used by Arbitrator
  *
- * IArbitrationListener is an interface used by ProviderArbitrator
+ * IArbitrationListener is an interface used by Arbitrator
  * to notify the AbstractProxy about a successful completion
  * of the arbitration process.
  */

@@ -69,8 +69,10 @@ The **scope** can be
 The entries found that match the selected scope are then evaluated based on the arbitration strategy.
 
 The **arbitration strategy** can be one of the following:
+* **LAST_SEEN (Java/JS/C++)** the participant that was last refreshed (i.e. with the most current
+last seen date) will be selected
 * **NotSet (Java)** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
-* **NOT_SET (C++) / Nothing (JS)** use DefaultArbitrator which picks the first discovered entry with
+* **Nothing (JS)** use DefaultArbitrator which picks the first discovered entry with
    compatible version
 * **HighestPriority (Java/JS) / HIGHEST_PRIORITY (C++)** Entries will be considered according to
    priority
@@ -81,7 +83,7 @@ The **arbitration strategy** can be one of the following:
 * **Custom (Java/JS)** provide a custom ArbitrationStrategyFunction to allow custom selection of
    discovered entries
 
-**Default arbitration strategy:** HighestPriority
+**Default arbitration strategy:** LAST_SEEN
 
 The required **keyword** for the arbitration strategy *Keyword* has to be specified by the consumer,
 if this kind of strategy has been selected.
