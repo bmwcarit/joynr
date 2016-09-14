@@ -585,6 +585,10 @@ define(
                                 dispatcher.shutdown();
                             }
 
+                            if (typeRegistry !== undefined) {
+                                typeRegistry.shutdown();
+                            }
+
                             joynrState = JoynrStates.SHUTDOWN;
                             log.debug("joynr shut down");
                             return Promise.resolve();
