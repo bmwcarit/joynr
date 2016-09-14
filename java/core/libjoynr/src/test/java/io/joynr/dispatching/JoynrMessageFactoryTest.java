@@ -22,6 +22,7 @@ package io.joynr.dispatching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -40,11 +41,13 @@ import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
 import joynr.JoynrMessage;
+import joynr.MulticastPublication;
 import joynr.PeriodicSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -252,4 +255,43 @@ public class JoynrMessageFactoryTest {
         assertNotNull(joynrMessage.getHeader().get("test"));
         assertEquals("test", joynrMessage.getHeader().get("test"));
     }
+
+    @Test
+    public void testCreateMulticastMessage() {
+        String multicastName = "multicastName";
+        String[] partitions = new String[]{ "one", "two" };
+        MulticastPublication multicastPublication = mock(MulticastPublication.class);
+
+        JoynrMessage joynrMessage = joynrMessageFactory.createMulticast(fromParticipantId,
+                                                                        multicastName,
+                                                                        partitions,
+                                                                        multicastPublication,
+                                                                        messagingQos);
+
+        assertNotNull(joynrMessage);
+        assertEquals(fromParticipantId, joynrMessage.getFrom());
+        assertEquals(multicastName + "/" + StringUtils.join(partitions, "/"), joynrMessage.getTo());
+        assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
+        assertTrue(joynrMessage.getPayload().contains(MulticastPublication.class.getName()));
+    }
+
+    @Test
+    public void testCreateMulticastMessageWithoutPartitions() {
+        String multicastName = "multicastName";
+        String[] partitions = new String[0];
+        MulticastPublication multicastPublication = mock(MulticastPublication.class);
+
+        JoynrMessage joynrMessage = joynrMessageFactory.createMulticast(fromParticipantId,
+                                                                        multicastName,
+                                                                        partitions,
+                                                                        multicastPublication,
+                                                                        messagingQos);
+
+        assertNotNull(joynrMessage);
+        assertEquals(fromParticipantId, joynrMessage.getFrom());
+        assertEquals(multicastName, joynrMessage.getTo());
+        assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
+        assertTrue(joynrMessage.getPayload().contains(MulticastPublication.class.getName()));
+    }
+
 }

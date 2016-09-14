@@ -61,6 +61,7 @@ import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.BroadcastFilter;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
+import joynr.MulticastPublication;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
@@ -78,6 +79,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
@@ -739,5 +741,20 @@ public class PublicationManagerTest {
                                                                                         (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                                         any(SubscriptionPublication.class),
                                                                                         any(MessagingQos.class));
+    }
+
+    @Test
+    public void testMulticastOccurred() {
+        String providerParticipantId = "providerParticipantId";
+        String multicastName = "multicastName";
+        String[] partitions = new String[]{ "first", "second" };
+
+        publicationManager.multicastOccurred(providerParticipantId, multicastName, partitions, "one", 1);
+
+        verify(dispatcher).sendMulticast(eq(providerParticipantId),
+                                         eq(multicastName),
+                                         eq(partitions),
+                                         Mockito.<MulticastPublication> any(),
+                                         Mockito.<MessagingQos> any());
     }
 }

@@ -38,10 +38,18 @@ public class AddressManager {
     private RoutingTable routingTable;
     private MulticastAddressCalculator multicastAddressCalculator;
 
-    private static class PrimaryGlobalTransportHolder {
+    protected static class PrimaryGlobalTransportHolder {
         @Inject(optional = true)
         @Named(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT)
         private String primaryGlobalTransport;
+
+        public PrimaryGlobalTransportHolder() {
+        }
+
+        // For testing only
+        protected PrimaryGlobalTransportHolder(String primaryGlobalTransport) {
+            this.primaryGlobalTransport = primaryGlobalTransport;
+        }
 
         public String get() {
             return primaryGlobalTransport;

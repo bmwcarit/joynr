@@ -20,7 +20,10 @@ package io.joynr.dispatching.subscription;
  */
 
 import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -28,8 +31,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -37,19 +43,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
+import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -58,6 +57,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
@@ -68,6 +68,12 @@ import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionManagerTest {
@@ -259,14 +265,59 @@ public class SubscriptionManagerTest {
                                                    eq(false));
     }
 
+    private static interface TestMulticastSubscriptionInterface {
+        @JoynrMulticast(name = "myMulticast")
+        void subscribeToMyMulticast();
+    }
+
+    @Test
+    public void testRegisterMulticastSubscription() throws Exception {
+        testRegisterMulticastSubscription(null);
+    }
+
+    @Test
+    public void testRegisterMulticastSubscriptionWithExistingSubscriptionId() throws Exception {
+        testRegisterMulticastSubscription(subscriptionId);
+    }
+
+    private void testRegisterMulticastSubscription(String subscriptionId) throws Exception {
+        Method method = TestMulticastSubscriptionInterface.class.getMethod("subscribeToMyMulticast", new Class[0]);
+        BroadcastSubscriptionListener listener = spy(new BroadcastSubscriptionListener() {
+            @Override
+            public void onError(SubscriptionException error) {
+            }
+            @Override
+            public void onSubscribed(String subscriptionId) {
+            }
+            public void onReceive() {
+            }
+        });
+        SubscriptionQos subscriptionQos = mock(OnChangeSubscriptionQos.class);
+        Object[] args = new Object[] { listener, subscriptionQos, subscriptionId };
+
+        String multicastId = toParticipantId + "/myMulticast";
+        Set<String> subscriptionIdSet = new HashSet<>();
+        multicastSubscribersDirectory.put(multicastId, subscriptionIdSet);
+
+        MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method, args, future);
+
+        subscriptionManager.registerMulticastSubscription(fromParticipantId, Sets.newHashSet(toParticipantId), invocation);
+
+        verify(multicastSubscribersDirectory).put(anyString(), anySet());
+        assertEquals(1, subscriptionIdSet.size());
+        if (subscriptionId != null) {
+            assertEquals(subscriptionId, subscriptionIdSet.iterator().next());
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void unregisterSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                         JsonGenerationException, JsonMappingException, IOException {
 
-        Mockito.when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
-        Mockito.when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
-        Mockito.when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
+        when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
+        when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
+        when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
         subscriptionManager.unregisterSubscription(fromParticipantId,
                                                    Sets.newHashSet(toParticipantId),
                                                    subscriptionId,

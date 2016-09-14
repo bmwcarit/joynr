@@ -38,6 +38,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -57,12 +58,14 @@ import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 import joynr.JoynrMessage;
+import joynr.MulticastPublication;
 import joynr.OneWayRequest;
 import joynr.Request;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -175,5 +178,33 @@ public class DispatcherImplTest {
 
         verify(requestReplyManagerMock).handleOneWayRequest(toParticipantId, request, joynrMessage.getExpiryDate());
         verify(messageRouterMock, never()).route((JoynrMessage) any());
+    }
+
+    @Test
+    public void testSendMulticastMessage() {
+        JoynrMessageFactory joynrMessageFactoryMock = mock(JoynrMessageFactory.class);
+        ObjectMapper objectMapperMock = mock(ObjectMapper.class);
+
+        fixture = new DispatcherImpl(requestReplyManagerMock,
+                                     subscriptionManagerMock,
+                                     publicationManagerMock,
+                                     messageRouterMock,
+                                     joynrMessageFactoryMock,
+                                     objectMapperMock);
+
+        String fromParticipantId = "fromParticipantId";
+        String multicastName = "multicastName";
+        String[] partitions = new String[]{ "one", "two" };
+        MulticastPublication multicastPublication = mock(MulticastPublication.class);
+        MessagingQos messagingQos = mock(MessagingQos.class);
+
+        fixture.sendMulticast(fromParticipantId, multicastName, partitions, multicastPublication, messagingQos);
+
+        verify(joynrMessageFactoryMock).createMulticast(eq(fromParticipantId),
+                                                        eq(multicastName),
+                                                        eq(partitions),
+                                                        eq(multicastPublication),
+                                                        eq(messagingQos));
+        verify(messageRouterMock).route(Mockito.<JoynrMessage> any());
     }
 }
