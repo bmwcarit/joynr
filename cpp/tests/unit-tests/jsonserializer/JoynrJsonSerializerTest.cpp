@@ -24,14 +24,12 @@
 #include <initializer_list>
 #include <functional>
 
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
-#include "joynr/Logger.h"
-#include "joynr/SubscriptionPublication.h"
-
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "joynr/serializer/Serializer.h"
+#include "joynr/Logger.h"
+#include "joynr/SubscriptionPublication.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
 #include "joynr/types/TestTypes/TStruct.h"
@@ -41,10 +39,10 @@
 #include "joynr/types/TestTypes/TIntegerKeyMap.h"
 #include "joynr/types/TestTypes/TStringToByteBufferMap.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/MessagingQos.h"
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnum.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/exceptions/JoynrExceptionUtil.h"
+#include "joynr/exceptions/MethodInvocationException.h"
+#include "joynr/types/Version.h"
 
 using namespace ::testing;
 using namespace joynr;
