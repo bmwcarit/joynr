@@ -19,6 +19,16 @@
   it is consistent with the other `USE_PLATFORM_*` variables.
 * **[C++]**  Reduced the number of threads which are used by a cluster controller instance
 
+#joynr 0.20.2
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+## Other changes
+* **[JS]** Fixed bug which caused exception when loading persisted
+  subscriptions during startup.
+
 #joynr 0.20.1
 This is a minor bug fix release.
 
