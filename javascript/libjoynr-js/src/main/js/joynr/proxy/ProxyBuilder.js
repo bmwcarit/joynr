@@ -206,7 +206,12 @@ define("joynr/proxy/ProxyBuilder", [
                                             }
                                             dependencies.messageRouter.addNextHop(
                                                     proxy.proxyParticipantId,
-                                                    dependencies.libjoynrMessagingAddress);
+                                                    dependencies.libjoynrMessagingAddress).catch(function(error){
+                                                        log.debug("Exception occured while registering the address for interface "
+                                                                + proxy.interfaceName + ", domain " + proxy.domain
+                                                                + ", proxyParticipantId " + proxy.proxyParticipantId
+                                                                + " to message router");
+                                                    });
                                             dependencies.messageRouter
                                                     .setToKnown(proxy.providerParticipantId);
 
