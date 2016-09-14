@@ -28,10 +28,12 @@ set -e
 
 DATA_DIR=/data
 CPP_HOME=${DATA_DIR}/sit-cpp-app
-NODE_HOME=${DATA_DIR}/sit-node-app
+NODE_APP_HOME=${DATA_DIR}/sit-node-app
+# Do not use JAVA_HOME, which has special meaning
+JAVA_APP_HOME=${DATA_DIR}/sit-java-app
 DOMAIN_PREFIX="io.joynr.systemintegrationtest"
 CONSUMER_DOMAIN_PREFIXES=()
-function print_usage {
+print_usage() {
 	echo "Usage: ./run-onboard-sit.sh [--own-domain-prefix <own domain prefix>] [--consumer-domain-prefix <consumer domain prefix>]*
 
 --own-domain-prefix: set the domain-prefix used by the c++ and node provider. This domain prefix is also used when
@@ -40,56 +42,68 @@ function print_usage {
 "
 }
 
-while [[ $# -gt 0 ]]
+while [ $# -gt 0 ]
 do
 	key="$1"
 	case $key in
 		--own-domain-prefix)
-		shift
-		DOMAIN_PREFIX="$1"
-		;;
+			shift
+			DOMAIN_PREFIX="$1"
+			;;
 		--consumer-domain-prefix)
-		shift
-		CONSUMER_DOMAIN_PREFIXES+=("$1")
-		;;
+			shift
+			CONSUMER_DOMAIN_PREFIXES=$CONSUMER_DOMAIN_PREFIXES"$1"
+			;;
 		*)
-		echo "Unknown argument: $1"
-		print_usage
-		exit -1
-		;;
+			echo "Unknown argument: $1"
+			print_usage
+			exit 1
+			;;
 	esac
 	shift
 done
 
 echo "adding $DOMAIN_PREFIX also to the list of consumer domain prefixes"
-CONSUMER_DOMAIN_PREFIXES+=($DOMAIN_PREFIX)
+CONSUMER_DOMAIN_PREFIXES=$CONSUMER_DOMAIN_PREFIXES$DOMAIN_PREFIX
 
 echo "start cluster controller + providers with domain prefix $DOMAIN_PREFIX"
 (
-  cd ${CPP_HOME}/bin
+	cd ${CPP_HOME}/bin
 
-  ./cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings & CLUSTER_CONTROLLER_PID=$!
+	./cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings & CLUSTER_CONTROLLER_PID=$!
 
-  ./jsit-provider-ws $DOMAIN_PREFIX.cpp runForever & CPP_PROVIDER_PID=$!
+	./jsit-provider-ws $DOMAIN_PREFIX.cpp runForever & CPP_PROVIDER_PID=$!
 
-  cd ${NODE_HOME}
+	cd ${NODE_APP_HOME}
 
-  npm run-script startprovider --sit-node-app:domain=$DOMAIN_PREFIX.node --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242 & NODE_PROVIDER_PID=$!
+	npm run-script startprovider --sit-node-app:domain=$DOMAIN_PREFIX.node --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242 & NODE_PROVIDER_PID=$!
+
+	cd ${JAVA_APP_HOME}
+
+	java -cp *.jar io.joynr.systemintegrationtest.ProviderApplication $DOMAIN_PREFIX.java runForever & JAVA_PROVIDER_PID=$!
 )
 
 echo "Wait for JEE Application to be started"
 (
-	function wait_for_jee_endpoint {
+	wait_for_jee_endpoint() {
 		retry_count=0
 		max_retries=60
-		until curl -f -s http://sit-jee-app:8080/sit-jee-app/consumer/ping || ((retry_count++ > max_retries))
+		while [ $retry_count -le $max_retries ]
 		do
+			curl -f -s http://sit-jee-app:8080/sit-jee-app/consumer/ping
+			if [ "$?" = 0 ]
+			then
+				break
+			fi
 			echo "JEE application not started yet ..."
 			sleep 2
+			retry_count=$(($retry_count+1))
 		done
-		if (( retry_count > max_retries )); then
+
+		if [ $retry_count -gt $max_retries ]
+		then
 			echo "JEE application failed to start in time."
-			exit -1
+			exit 1
 		fi
 		return 0
 	}
@@ -97,61 +111,120 @@ echo "Wait for JEE Application to be started"
 )
 
 for domainprefix in "${CONSUMER_DOMAIN_PREFIXES[@]}"
-  do
-  echo "run cpp consumer test"
-  (
-    cd ${CPP_HOME}/bin
+do
+	echo "run cpp consumer test"
+	(
+		cd ${CPP_HOME}/bin
 
-    # cpp - run the test against cpp provider
-    ./jsit-consumer-ws $domainprefix.cpp
+		# cpp - run the test against cpp provider
+		./jsit-consumer-ws $domainprefix.cpp
 
-    if [ "$?" == "-1" ]
-    then
-      echo "ERROR joynr cpp system integration test against cpp provider failed with error code $?"
-    else
-      echo "cpp<->cpp joynr system integration test succeeded"
-    fi
+		if [ "$?" = "0" ]
+		then
+			echo "cpp<->cpp joynr system integration test succeeded"
+		else
+			echo "ERROR joynr cpp system integration test against cpp provider failed with error code $?"
+		fi
 
-    # cpp - run the test against node provider
-    ./jsit-consumer-ws $domainprefix.node
+		# cpp - run the test against java provider
+		./jsit-consumer-ws $domainprefix.java
 
-    if [ "$?" == "-1" ]
-    then
-      echo "ERROR joynr cpp system integration test against node provider failed with error code $?"
-    else
-      echo "cpp<->node joynr system integration test succeeded"
-    fi
+		if [ "$?" = "0" ]
+		then
+			echo "cpp<->java joynr system integration test succeeded"
+		else
+			echo "ERROR joynr cpp system integration test against java provider failed with error code $?"
+		fi
 
-    # cpp - run the test against jee provider
-    ./jsit-consumer-ws $domainprefix.jee
+		# cpp - run the test against node provider
+		./jsit-consumer-ws $domainprefix.node
 
-    if [ "$?" == "-1" ]
-    then
-      echo "ERROR joynr cpp system integration test against jee provider failed with error code $?"
-    else
-      echo "cpp<->jee joynr system integration test succeeded"
-    fi
-  )
+		if [ "$?" = "0" ]
+		then
+			echo "cpp<->node joynr system integration test succeeded"
+		else
+			echo "ERROR joynr cpp system integration test against node provider failed with error code $?"
+		fi
 
-  echo "run node consumer test"
-  (
-    cd ${NODE_HOME}
+		# cpp - run the test against jee provider
+		./jsit-consumer-ws $domainprefix.jee
 
-    # node - run the test against cpp provider
-    npm run-script startconsumer --sit-node-app:domain=$domainprefix.cpp --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
+		if [ "$?" = "0" ]
+		then
+			echo "cpp<->jee joynr system integration test succeeded"
+		else
+			echo "ERROR joynr cpp system integration test against jee provider failed with error code $?"
+		fi
+	)
 
-    # node - run the test against node provider
-    npm run-script startconsumer --sit-node-app:domain=$domainprefix.node --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
+	echo "run java consumer test"
+	(
+		cd ${JAVA_APP_HOME}
 
-    # node - run the test against jee provider
-    npm run-script startconsumer --sit-node-app:domain=$domainprefix.jee --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
+		# java - run the test against cpp provider
+		java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication $domainprefix.cpp
 
-  )
+		if [ "$?" = "0" ]
+		then
+			echo "java<->cpp joynr system integration test succeeded"
+		else
+			echo "ERROR joynr java system integration test against cpp provider failed with error code $?"
+		fi
+
+		# java - run the test against java provider
+		java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication $domainprefix.java
+
+		if [ "$?" = "0" ]
+		then
+			echo "java<->java joynr system integration test succeeded"
+		else
+			echo "ERROR joynr java system integration test against java provider failed with error code $?"
+		fi
+
+		# java - run the test against node provider
+		java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication $domainprefix.node
+
+		if [ "$?" = "0" ]
+		then
+			echo "java<->node joynr system integration test succeeded"
+		else
+			echo "ERROR joynr java system integration test against node provider failed with error code $?"
+		fi
+
+		# java - run the test against jee provider
+		java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication $domainprefix.jee
+
+		if [ "$?" = "0" ]
+		then
+			echo "java<->jee joynr system integration test succeeded"
+		else
+			echo "ERROR joynr java system integration test against jee provider failed with error code $?"
+		fi
+	)
+
+	echo "run node consumer test"
+	(
+		cd ${NODE_APP_HOME}
+
+		# node - run the test against cpp provider
+		npm run-script startconsumer --sit-node-app:domain=$domainprefix.cpp --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
+
+		# node - run the test against java provider
+		npm run-script startconsumer --sit-node-app:domain=$domainprefix.java --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
+
+		# node - run the test against node provider
+		npm run-script startconsumer --sit-node-app:domain=$domainprefix.node --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
+
+		# node - run the test against jee provider
+		npm run-script startconsumer --sit-node-app:domain=$domainprefix.jee --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
+
+	)
 done
 
 # Clean up
 # disabled, as the provider and the cluster controller must still be available for the jee consumer test
 # kill $CPP_PROVIDER_PID
+# kill $JAVA_PROVIDER_PID
 # kill $NODE_PROVIDER_PID
 # kill $CLUSTER_CONTROLLER_PID
 # kill $MOSQUITTO_PID
