@@ -26,9 +26,10 @@ define(
             "global/WebSocket",
             "joynr/util/Util",
             "joynr/util/JSONSerializer",
+            "joynr/util/LongTimer",
             "joynr/system/LoggerFactory"
         ],
-        function(Promise, WebSocket, Util, JSONSerializer, LoggerFactory) {
+        function(Promise, WebSocket, Util, JSONSerializer, LongTimer, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.websocket.SharedWebSocket");
             /**
              * @param address
@@ -139,8 +140,10 @@ define(
                         var onError;
                         var onClose;
                         var closed = false;
+                        var reconnectTimer;
 
                         var resetConnection = function resetConnection() {
+                            reconnectTimer = undefined;
                             if (closed) {
                                 return;
                             }
@@ -159,7 +162,10 @@ define(
                                     + " reason: "
                                     + event.reason
                                     + ". Resetting connection.");
-                            setTimeout(resetConnection, reconnectSleepTimeMs);
+                            if (reconnectTimer !== undefined) {
+                                LongTimer.clearTimeout(reconnectTimer);
+                            }
+                            reconnectTimer = LongTimer.setTimeout(resetConnection, reconnectSleepTimeMs);
                         };
 
                         onClose = function onClose(event) {
@@ -169,7 +175,10 @@ define(
                                     + " reason: "
                                     + event.reason
                                     + ". Trying to reconnect...");
-                                setTimeout(resetConnection, reconnectSleepTimeMs);
+                                if (reconnectTimer !== undefined) {
+                                    LongTimer.clearTimeout(reconnectTimer);
+                                }
+                                reconnectTimer = LongTimer.setTimeout(resetConnection, reconnectSleepTimeMs);
                             } else {
                                 log.info("connection closed. reason: " + event.reason);
                             }
@@ -210,6 +219,10 @@ define(
                          */
                         this.close = function close() {
                             closed = true;
+                            if (reconnectTimer !== undefined) {
+                                LongTimer.clearTimeout(reconnectTimer);
+                                reconnectTimer = undefined;
+                            }
                             if (websocket !== null) {
                                 websocket.close(SharedWebSocket.EVENT_CODE_SHUTDOWN, "shutdown");
                             }
