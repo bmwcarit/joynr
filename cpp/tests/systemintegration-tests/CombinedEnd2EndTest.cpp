@@ -636,7 +636,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>())).Times(4)
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
@@ -668,8 +668,8 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange) {
     // Publications will be sent maintaining this minimum interval provided, even if the value
     // changes more often. This prevents the consumer from being flooded by updated values.
     // The filtering happens on the provider's side, thus also preventing excessive network traffic.
-    // This value is provided in milliseconds. The minimum value for minInterval is 50 ms.
-    std::int64_t minInterval_ms = 50;
+    // This value is provided in milliseconds. The minimum value for minInterval is 500 ms.
+    std::int64_t minInterval_ms = 500;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                                     500000,   // validity_ms
                                     minInterval_ms);  // minInterval_ms
@@ -686,12 +686,24 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange) {
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
-    // Change the location 3 times
+    // Change the location multiple times
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.1, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.2, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.3, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.4, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 3));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.1, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.2, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.3, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.4, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.1, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.2, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.3, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.4, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
 
     // Wait for 3 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
