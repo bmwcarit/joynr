@@ -41,8 +41,6 @@ public:
     bool operator==(const SubscriptionStop& other) const;
     bool operator!=(const SubscriptionStop& other) const;
 
-    const static SubscriptionStop NULL_RESPONSE;
-
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
 

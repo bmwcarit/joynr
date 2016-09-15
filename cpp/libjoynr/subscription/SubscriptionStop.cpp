@@ -22,8 +22,6 @@
 namespace joynr
 {
 
-const SubscriptionStop SubscriptionStop::NULL_RESPONSE = SubscriptionStop();
-
 SubscriptionStop::SubscriptionStop() : subscriptionId()
 {
 }

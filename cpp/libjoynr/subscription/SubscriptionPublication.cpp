@@ -22,8 +22,6 @@
 namespace joynr
 {
 
-const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
-
 SubscriptionPublication::SubscriptionPublication() : subscriptionId(), error()
 {
 }
