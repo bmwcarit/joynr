@@ -1,0 +1,3 @@
+[lib-joynr]
+participant-ids-persistence-file=systemintegrationtest-consumer.participantids
+message-router-persistence-file=systemintegration-consumer-routing-table.persist
