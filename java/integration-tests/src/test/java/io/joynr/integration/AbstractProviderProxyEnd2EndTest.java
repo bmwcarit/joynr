@@ -724,7 +724,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         assertArrayEquals(byteArray, result);
     }
 
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testSimpleBroadcast() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
         final Semaphore broadcastReceived = new Semaphore(0);
@@ -759,7 +758,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }, subscriptionQos);
 
         // wait to allow the subscription request to arrive at the provider
-        getSubscriptionTestsPublisher().waitForBroadcastSubscription();
+        Thread.sleep(500);
         provider.fireLocationUpdateWithSpeed(gpsLocation, currentSpeed);
         broadcastReceived.acquire();
 

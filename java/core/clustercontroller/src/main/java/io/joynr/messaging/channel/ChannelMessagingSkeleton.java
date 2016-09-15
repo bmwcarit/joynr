@@ -19,25 +19,23 @@ package io.joynr.messaging.channel;
  * #L%
  */
 
+import com.google.inject.Inject;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
-
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-
-public class ChannelMessagingSkeleton implements IMessagingSkeleton {
+public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingMulticastSubscriber {
     private final MessageRouter messageRouter;
 
     private static final Logger logger = LoggerFactory.getLogger(ChannelMessagingSkeleton.class);
@@ -54,6 +52,9 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
     public void transmit(JoynrMessage message, FailureAction failureAction) {
         final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
         try {
+            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+                message.setReceivedFromGlobal(true);
+            }
             addRequestorToMessageRouter(message.getFrom(), replyToChannelId);
             messageRouter.route(message);
         } catch (JoynrSendBufferFullException | JoynrMessageNotSentException exception) {
@@ -120,6 +121,16 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
     @Override
     public void shutdown() {
         messageReceiver.shutdown(false);
+    }
+
+    @Override
+    public void registerMulticastSubscription(String multicastId) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void unregisterMulticastSubscription(String multicastId) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
 }

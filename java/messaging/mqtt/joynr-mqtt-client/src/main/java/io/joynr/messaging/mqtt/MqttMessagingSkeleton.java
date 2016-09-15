@@ -19,12 +19,17 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.routing.MessageRouter;
@@ -35,13 +40,14 @@ import joynr.system.RoutingTypes.RoutingTypesUtil;
 /**
  * Connects to the MQTT broker
  */
-public class MqttMessagingSkeleton implements IMessagingSkeleton {
+public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMulticastSubscriber {
 
     private MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
     private JoynrMessageSerializer messageSerializer;
     private MqttClientFactory mqttClientFactory;
     private MqttAddress ownAddress;
+    private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
 
     @Inject
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
@@ -77,8 +83,29 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
     }
 
     @Override
+    public void registerMulticastSubscription(String multicastId) {
+        multicastSubscriptionCount.putIfAbsent(multicastId, new AtomicInteger());
+        mqttClient.subscribe(multicastId);
+        multicastSubscriptionCount.get(multicastId).incrementAndGet();
+    }
+
+    @Override
+    public void unregisterMulticastSubscription(String multicastId) {
+        AtomicInteger subscribersCount = multicastSubscriptionCount.get(multicastId);
+        if (subscribersCount != null) {
+            int remainingCount = subscribersCount.decrementAndGet();
+            if (remainingCount == 0) {
+                mqttClient.unsubscribe(multicastId);
+            }
+        }
+    }
+
+    @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
         try {
+            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+                message.setReceivedFromGlobal(true);
+            }
             String replyToMqttAddress = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
             if (replyToMqttAddress != null && !replyToMqttAddress.isEmpty()) {
                 messageRouter.addNextHop(message.getFrom(), RoutingTypesUtil.fromAddressString(replyToMqttAddress));

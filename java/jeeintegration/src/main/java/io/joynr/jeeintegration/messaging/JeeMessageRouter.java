@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
@@ -56,12 +57,14 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.MessageRouterIm
                             @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                             @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                             MessagingStubFactory messagingStubFactory,
+                            MessagingSkeletonFactory messagingSkeletonFactory,
                             AddressManager addressManager,
                             MulticastReceiverRegistry multicastReceiverRegistry) {
         super(routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
               messagingStubFactory,
+              messagingSkeletonFactory,
               addressManager,
               multicastReceiverRegistry);
         if (LOG.isDebugEnabled()) {

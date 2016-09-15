@@ -30,6 +30,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.JoynrMessage;
 import joynr.exceptions.ProviderRuntimeException;
@@ -62,12 +63,14 @@ public class ChildMessageRouter extends MessageRouterImpl {
 
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public ChildMessageRouter(RoutingTable routingTable,
                               @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
                               @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                               @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                              MessagingStubFactory messagingStubFactory, AddressManager addressManager, MulticastReceiverRegistry multicastReceiverRegistry) {
-        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory, addressManager, multicastReceiverRegistry);
+                              MessagingStubFactory messagingStubFactory, MessagingSkeletonFactory messagingSkeletonFactory, AddressManager addressManager, MulticastReceiverRegistry multicastReceiverRegistry) {
+        // CHECKSTYLE:ON
+        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory, messagingSkeletonFactory, addressManager, multicastReceiverRegistry);
         this.incomingAddress = incomingAddress;
     }
 

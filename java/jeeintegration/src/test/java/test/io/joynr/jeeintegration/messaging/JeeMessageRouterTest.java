@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.jeeintegration.messaging.JeeMessageRouter;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
@@ -55,6 +56,9 @@ public class JeeMessageRouterTest {
     private MessagingStubFactory messagingStubFactory;
 
     @Mock
+    private MessagingSkeletonFactory messagingSkeletonFactory;
+
+    @Mock
     private RoutingTable routingTable;
 
     @Mock
@@ -73,6 +77,7 @@ public class JeeMessageRouterTest {
                                                         scheduler,
                                                         1000L,
                                                         messagingStubFactory,
+                                                        messagingSkeletonFactory,
                                                         addressManager,
                                                         multicastReceiverRegistry);
 
@@ -88,6 +93,7 @@ public class JeeMessageRouterTest {
                                                         scheduler,
                                                         1000L,
                                                         messagingStubFactory,
+                                                        messagingSkeletonFactory,
                                                         addressManager,
                                                         multicastReceiverRegistry);
 

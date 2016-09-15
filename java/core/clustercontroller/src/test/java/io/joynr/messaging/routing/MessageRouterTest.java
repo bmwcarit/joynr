@@ -49,6 +49,9 @@ import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
@@ -71,6 +74,8 @@ public class MessageRouterTest {
     private ChannelMessagingStubFactory messagingStubFactoryMock;
     @Mock
     private IMessaging messagingStubMock;
+    @Mock
+    private ChannelMessagingSkeleton messagingSkeletonMock;
 
     private MessageRouter messageRouter;
     private JoynrMessage joynrMessage;
@@ -98,6 +103,15 @@ public class MessageRouterTest {
                 }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
                 }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
                 messagingStubFactory.addBinding(ChannelAddress.class).toInstance(messagingStubFactoryMock);
+
+                MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+                messagingSkeletonFactory = MapBinder.newMapBinder(binder(),
+                                                                  new TypeLiteral<Class<? extends Address>>() {
+                                                                  },
+                                                                  new TypeLiteral<IMessagingSkeleton>() {
+                                                                  },
+                                                                  Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
+                messagingSkeletonFactory.addBinding(ChannelAddress.class).toInstance(messagingSkeletonMock);
 
                 Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
                 });

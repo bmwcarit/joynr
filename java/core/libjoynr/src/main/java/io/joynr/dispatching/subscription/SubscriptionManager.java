@@ -68,6 +68,8 @@ public interface SubscriptionManager {
 
     void handleBroadcastPublication(String subscriptionId, Object[] broadcastValues);
 
+    void handleMulticastPublication(String multicastId, Object[] publicizedValues);
+
     <T> void handleAttributePublication(String subscriptionId, T attributeValue);
 
     <T> void handleAttributePublicationError(String subscriptionId, JoynrRuntimeException error);

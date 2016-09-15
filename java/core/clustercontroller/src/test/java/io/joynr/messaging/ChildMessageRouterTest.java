@@ -66,6 +66,8 @@ public class ChildMessageRouterTest {
     @Mock
     private MessagingStubFactory messagingStubFactory;
     @Mock
+    private MessagingSkeletonFactory messagingSkeletonFactory;
+    @Mock
     private AddressManager addressManager;
     @Mock
     private MulticastReceiverRegistry multicastReceiverRegistry;
@@ -86,6 +88,7 @@ public class ChildMessageRouterTest {
                                                provideMessageSchedulerThreadPoolExecutor(),
                                                sendMsgRetryIntervalMs,
                                                messagingStubFactory,
+                                               messagingSkeletonFactory,
                                                addressManager,
                                                multicastReceiverRegistry);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");

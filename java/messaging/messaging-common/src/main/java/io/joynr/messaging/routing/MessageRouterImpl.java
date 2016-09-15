@@ -38,6 +38,9 @@ import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingMulticastSubscriber;
+import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import org.slf4j.Logger;
@@ -53,6 +56,7 @@ public class MessageRouterImpl implements MessageRouter {
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
     private MessagingStubFactory messagingStubFactory;
+    private final MessagingSkeletonFactory messagingSkeletonFactory;
     private AddressManager addressManager;
     protected final MulticastReceiverRegistry multicastReceiverRegistry;
 
@@ -62,12 +66,14 @@ public class MessageRouterImpl implements MessageRouter {
                              @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                              @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                              MessagingStubFactory messagingStubFactory,
+                             MessagingSkeletonFactory messagingSkeletonFactory,
                              AddressManager addressManager,
                              MulticastReceiverRegistry multicastReceiverRegistry) {
         this.routingTable = routingTable;
         this.scheduler = scheduler;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
         this.messagingStubFactory = messagingStubFactory;
+        this.messagingSkeletonFactory = messagingSkeletonFactory;
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
     }
@@ -83,13 +89,50 @@ public class MessageRouterImpl implements MessageRouter {
     }
 
     @Override
-    public void addMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId) {
+    public void addMulticastReceiver(final String multicastId,
+                                     String subscriberParticipantId,
+                                     String providerParticipantId) {
+        logger.debug("Adding multicast receiver {} for multicast {} on provider {}",
+                     subscriberParticipantId,
+                     multicastId,
+                     providerParticipantId);
         multicastReceiverRegistry.registerMulticastReceiver(multicastId, subscriberParticipantId);
+        performSubscriptionOperation(multicastId, providerParticipantId, new SubscriptionOperation() {
+            @Override
+            public void perform(IMessagingMulticastSubscriber messagingMulticastSubscriber) {
+                messagingMulticastSubscriber.registerMulticastSubscription(multicastId);
+            }
+        });
     }
 
     @Override
-    public void removeMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId) {
+    public void removeMulticastReceiver(final String multicastId,
+                                        String subscriberParticipantId,
+                                        String providerParticipantId) {
         multicastReceiverRegistry.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+        performSubscriptionOperation(multicastId, providerParticipantId, new SubscriptionOperation() {
+            @Override
+            public void perform(IMessagingMulticastSubscriber messagingMulticastSubscriber) {
+                messagingMulticastSubscriber.unregisterMulticastSubscription(multicastId);
+            }
+        });
+    }
+
+    private static interface SubscriptionOperation {
+        void perform(IMessagingMulticastSubscriber messagingMulticastSubscriber);
+    }
+
+    private void performSubscriptionOperation(String multicastId,
+                                              String providerParticipantId,
+                                              SubscriptionOperation operation) {
+        Address providerAddress = routingTable.get(providerParticipantId);
+        IMessagingSkeleton messagingSkeleton = messagingSkeletonFactory.getSkeleton(providerAddress);
+        if (messagingSkeleton != null && messagingSkeleton instanceof IMessagingMulticastSubscriber) {
+            operation.perform((IMessagingMulticastSubscriber) messagingSkeleton);
+        } else {
+            logger.debug("No messaging skeleton found for address {}, not performing multicast subscription.",
+                         providerAddress);
+        }
     }
 
     @Override

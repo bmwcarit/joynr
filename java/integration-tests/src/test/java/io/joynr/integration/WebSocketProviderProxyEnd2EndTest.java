@@ -18,36 +18,37 @@ package io.joynr.integration;
  * limitations under the License.
  * #L%
  */
+
+import static org.junit.Assert.assertEquals;
+
 import java.util.Properties;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Key;
-import com.google.inject.name.Names;
-
-import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
-import io.joynr.messaging.websocket.WebSocketEndpointFactory;
-import io.joynr.proxy.ProxyBuilder;
-import joynr.system.RoutingTypes.WebSocketAddress;
-import joynr.tests.testProxy;
-import org.junit.After;
-import org.junit.Before;
-
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
-
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
+import io.joynr.messaging.websocket.WebSocketEndpointFactory;
 import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import io.joynr.servlet.ServletUtil;
+import joynr.system.RoutingTypes.WebSocketAddress;
+import joynr.tests.testProxy;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -134,5 +135,12 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
         Thread.sleep(1000);
         result = proxy.addNumbers(7, 8, 1);
         assertEquals(16, result);
+    }
+
+    // Remove once we have support for multicast in websockets
+    @Ignore
+    @Override
+    public void testSimpleBroadcast() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
+        // Noop
     }
 }

@@ -237,7 +237,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                                        Sets.<String> newHashSet());
                                          }
                                          multicastSubscribersDirectory.get(multicastId).add(subscriptionId);
-                                         subscriptionBroadcastTypes.put(subscriptionId,
+                                         subscriptionBroadcastTypes.put(multicastId,
                                                                         multicastSubscribeInvocation.getOutParameterTypes());
                                          broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                                                     multicastSubscribeInvocation.getListener());
@@ -313,6 +313,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             logger.error("Broadcast publication could not be processed", e);
+        }
+    }
+
+    @Override
+    public void handleMulticastPublication(String multicastId, Object[] publicizedValues) {
+        for (String subscriptionId : multicastSubscribersDirectory.get(multicastId)) {
+            handleBroadcastPublication(subscriptionId, publicizedValues);
         }
     }
 

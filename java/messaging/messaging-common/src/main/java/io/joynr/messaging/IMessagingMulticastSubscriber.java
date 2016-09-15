@@ -1,6 +1,4 @@
-package io.joynr.messaging.mqtt;
-
-import io.joynr.messaging.IMessaging;
+package io.joynr.messaging;
 
 /*
  * #%L
@@ -21,20 +19,10 @@ import io.joynr.messaging.IMessaging;
  * #L%
  */
 
-public interface JoynrMqttClient {
+public interface IMessagingMulticastSubscriber {
 
-    public void start();
+    void registerMulticastSubscription(String multicastId);
 
-    public void setMessageListener(IMessaging messaging);
-
-    public void shutdown();
-
-    public void publishMessage(String topic, String serializedMessage);
-
-    public void publishMessage(String topic, String serializedMessage, int qosLevel);
-
-    public void subscribe(String topic);
-
-    public void unsubscribe(String topic);
+    void unregisterMulticastSubscription(String multicastId);
 
 }

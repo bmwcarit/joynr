@@ -39,6 +39,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
 import joynr.JoynrMessage;
 import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionRequest;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -89,6 +90,10 @@ public class DispatcherImpl implements Dispatcher {
                                                                                  subscriptionRequest,
                                                                                  messagingQos);
 
+            if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
+                String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
+                messageRouter.addMulticastReceiver(multicastId, fromParticipantId, toParticipantId);
+            }
             messageRouter.route(message);
         }
     }
@@ -196,6 +201,11 @@ public class DispatcherImpl implements Dispatcher {
                                                                              SubscriptionPublication.class);
                 logger.debug("Parsed publication from message payload :" + message.getPayload());
                 handle(publication);
+            } else if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(type)) {
+                MulticastPublication multicastPublication = objectMapper.readValue(message.getPayload(),
+                                                                                   MulticastPublication.class);
+                logger.debug("Parsed multicast publication from message payload: {}", message.getPayload());
+                handle(multicastPublication);
             }
         } catch (IOException e) {
             logger.error("Error parsing payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding joynr message.",
@@ -283,20 +293,24 @@ public class DispatcherImpl implements Dispatcher {
         }
     }
 
+    private Object[] getPublicationValues(Class<?>[] parameterTypes, List<?> publicizedValues) {
+        if (parameterTypes.length != publicizedValues.size()) {
+            throw new JoynrRuntimeException("number of received out parameter values do not match with the number of out parameter types.");
+        }
+        Object[] values = new Object[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            values[i] = objectMapper.convertValue(publicizedValues.get(i), parameterTypes[i]);
+        }
+        return values;
+    }
+
     private void handle(final SubscriptionPublication publication) {
         try {
             String subscriptionId = publication.getSubscriptionId();
             if (subscriptionManager.isBroadcast(subscriptionId)) {
                 Class<?>[] broadcastOutParameterTypes = subscriptionManager.getBroadcastOutParameterTypes(subscriptionId);
                 List<?> broadcastOutParamterValues = (List<?>) publication.getResponse();
-                if (broadcastOutParameterTypes.length != broadcastOutParamterValues.size()) {
-                    throw new JoynrRuntimeException("number of received broadcast out parameter values do not match with number of broadcast out parameter types.");
-                }
-                Object[] broadcastValues = new Object[broadcastOutParameterTypes.length];
-                for (int i = 0; i < broadcastOutParameterTypes.length; i++) {
-                    broadcastValues[i] = objectMapper.convertValue(broadcastOutParamterValues.get(i),
-                                                                   broadcastOutParameterTypes[i]);
-                }
+                Object[] broadcastValues = getPublicationValues(broadcastOutParameterTypes, broadcastOutParamterValues);
                 subscriptionManager.handleBroadcastPublication(subscriptionId, broadcastValues);
             } else {
                 JoynrRuntimeException error = publication.getError();
@@ -320,6 +334,17 @@ public class DispatcherImpl implements Dispatcher {
             }
         } catch (Exception e) {
             logger.error("Error delivering publication: {} : {}", e.getClass(), e.getMessage());
+        }
+    }
+
+    private void handle(MulticastPublication multicastPublication) {
+        try {
+            Object[] values = getPublicationValues(subscriptionManager.getBroadcastOutParameterTypes(multicastPublication.getMulticastId()),
+                                                   (List<?>) multicastPublication.getResponse());
+            subscriptionManager.handleMulticastPublication(multicastPublication.getMulticastId(), values);
+        } catch (Exception e) {
+            logger.error("Error delivering multicast publication: {} : {}", e.getClass(), e.getMessage());
+            logger.trace("Full exception.", e);
         }
     }
 
