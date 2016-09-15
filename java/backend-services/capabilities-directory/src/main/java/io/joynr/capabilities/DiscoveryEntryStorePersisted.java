@@ -1,23 +1,5 @@
 package io.joynr.capabilities;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.transaction.Transactional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
-
 /*
  * #%L
  * %%
@@ -37,11 +19,27 @@ import com.google.inject.Singleton;
  * #L%
  */
 
-import com.google.inject.persist.PersistService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+import com.google.inject.persist.PersistService;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrCommunicationException;
 import joynr.types.DiscoveryEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The CapabilitiesStore stores a list of provider channelIds and the interfaces
@@ -53,7 +51,7 @@ import joynr.types.DiscoveryEntry;
 public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
 
     private static final Logger logger = LoggerFactory.getLogger(DiscoveryEntryStorePersisted.class);
-    protected Provider<EntityManager> entityManagerProvider;
+    private EntityManager entityManager;
 
     // Do not sychronize on a Boolean
     // Fixes FindBug warning: DL: Synchronization on Boolean
@@ -64,9 +62,8 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
                                         Provider<EntityManager> entityManagerProvider,
                                         PersistService persistService) {
         persistService.start();
-        this.entityManagerProvider = entityManagerProvider;
+        entityManager = entityManagerProvider.get();
         logger.debug("creating CapabilitiesStore {} with static provisioning", this);
-        //add(staticProvisioning.getCapabilityEntries());
     }
 
     /*
@@ -76,6 +73,7 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
      */
     @Override
     public synchronized void add(DiscoveryEntry discoveryEntry) {
+        logger.debug("adding discovery entry: {}", discoveryEntry);
         if (!(discoveryEntry instanceof GlobalDiscoveryEntryPersisted)) {
             return;
         }
@@ -87,7 +85,6 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
             throw new JoynrCommunicationException(message);
         }
 
-        EntityManager entityManager = entityManagerProvider.get();
         GlobalDiscoveryEntryPersisted discoveryEntryFound = entityManager.find(GlobalDiscoveryEntryPersisted.class,
                                                                                discoveryEntry.getParticipantId());
 
@@ -131,7 +128,6 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
     }
 
     private boolean removeCapabilityFromStore(String participantId) {
-        EntityManager entityManager = entityManagerProvider.get();
         GlobalDiscoveryEntryPersisted discoveryEntry = entityManager.find(GlobalDiscoveryEntryPersisted.class,
                                                                           participantId);
 
@@ -165,47 +161,42 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional
     public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName, long cacheMaxAge) {
-        EntityManager entityManager = entityManagerProvider.get();
         String query = "from GlobalDiscoveryEntryPersisted where domain=:domain and interfaceName=:interfaceName";
         List<DiscoveryEntry> result = new ArrayList<>();
         for (String domain : domains) {
             List<DiscoveryEntry> capabilitiesList = entityManager.createQuery(query)
-                    .setParameter("domain", domain)
-                    .setParameter("interfaceName", interfaceName)
-                    .getResultList();
+                                                                 .setParameter("domain", domain)
+                                                                 .setParameter("interfaceName", interfaceName)
+                                                                 .getResultList();
             result.addAll(capabilitiesList);
         }
 
-        logger.debug("Capabilities found: {}", result.toString());
+        logger.debug("looked up {}, {}, {} and found {}", Arrays.toString(domains), interfaceName, cacheMaxAge, result);
         return result;
     }
 
     @Override
     @CheckForNull
-    @Transactional
     public DiscoveryEntry lookup(String participantId, long cacheMaxAge) {
-        EntityManager entityManager = entityManagerProvider.get();
-        return entityManager.find(GlobalDiscoveryEntryPersisted.class, participantId);
+        DiscoveryEntry result = entityManager.find(GlobalDiscoveryEntryPersisted.class, participantId);
+        logger.debug("looked up {}, {} and found {}", participantId, cacheMaxAge, result);
+        return result;
     }
 
     @Override
-    @Transactional
-    public HashSet<DiscoveryEntry> getAllDiscoveryEntries() {
-        EntityManager entityManager = entityManagerProvider.get();
+    public Set<DiscoveryEntry> getAllDiscoveryEntries() {
         List<GlobalDiscoveryEntryPersisted> allCapabilityEntries = entityManager.createQuery("Select discoveryEntry from GlobalDiscoveryEntryPersisted discoveryEntry",
                                                                                              GlobalDiscoveryEntryPersisted.class)
                                                                                 .getResultList();
-
-        return new HashSet<DiscoveryEntry>(allCapabilityEntries);
-
+        Set<DiscoveryEntry> result = new HashSet<DiscoveryEntry>(allCapabilityEntries);
+        logger.debug("Retrieved all discovery entries: {}", result);
+        return result;
     }
 
     @Override
     public boolean hasDiscoveryEntry(@Nonnull DiscoveryEntry discoveryEntry) {
         if (discoveryEntry instanceof GlobalDiscoveryEntryPersisted) {
-            EntityManager entityManager = entityManagerProvider.get();
             GlobalDiscoveryEntryPersisted searchingForDiscoveryEntry = (GlobalDiscoveryEntryPersisted) discoveryEntry;
             GlobalDiscoveryEntryPersisted foundCapability = entityManager.find(GlobalDiscoveryEntryPersisted.class,
                                                                                searchingForDiscoveryEntry.getParticipantId());
@@ -213,5 +204,35 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public void touch(String clusterControllerId) {
+        String query = "from GlobalDiscoveryEntryPersisted where clusterControllerId=:clusterControllerId";
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            @SuppressWarnings("unchecked")
+            List<DiscoveryEntry> capabilitiesList = entityManager.createQuery(query)
+                                                                 .setParameter("clusterControllerId",
+                                                                               clusterControllerId)
+                                                                 .getResultList();
+            for (DiscoveryEntry discoveryEntry : capabilitiesList) {
+                logger.trace("  --> BEFORE entry {} last seen {}",
+                             discoveryEntry.getParticipantId(),
+                             discoveryEntry.getLastSeenDateMs());
+                ((GlobalDiscoveryEntryPersisted) discoveryEntry).setLastSeenDateMs(System.currentTimeMillis());
+                logger.trace("  --> AFTER  entry {} last seen {}",
+                             discoveryEntry.getParticipantId(),
+                             discoveryEntry.getLastSeenDateMs());
+            }
+            transaction.commit();
+        } catch (RuntimeException e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            logger.error("Error updating last seen date for cluster controller with ID {}", clusterControllerId, e);
+        }
+
     }
 }

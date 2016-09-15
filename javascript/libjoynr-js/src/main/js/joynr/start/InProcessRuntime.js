@@ -66,6 +66,7 @@ define(
             "joynr/start/settings/defaultLibjoynrSettings",
             "joynr/start/settings/defaultClusterControllerSettings",
             "joynr/util/Typing",
+            "joynr/util/LongTimer",
             "global/LocalStorage"
         ],
         function(
@@ -113,6 +114,7 @@ define(
                 defaultLibjoynrSettings,
                 defaultClusterControllerSettings,
                 Typing,
+                LongTimer,
                 LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
@@ -166,6 +168,7 @@ define(
                 var messageQueueSettings;
                 var persistency;
                 var longPollingCreatePromise;
+                var freshnessIntervalId;
 
                 // this is required at load time of libjoynr
                 typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -486,6 +489,14 @@ define(
 
                             discoveryStub.setSkeleton(new InProcessSkeleton(capabilityDiscovery));
 
+                            var period = provisioning.capabilitiesFreshnessUpdateIntervalMs || 3600000; // default: 1 hour
+                            freshnessIntervalId = LongTimer.setInterval(function() {
+                                capabilityDiscovery.touch(channelId, period).catch(function(error) {
+                                    log.error("error sending freshness update: " + error);
+                                });
+                                return null;
+                            }, period);
+
                             providerBuilder = Object.freeze(new ProviderBuilder());
 
                             loggingManager.registerAppenderClass(
@@ -525,6 +536,8 @@ define(
                             }
                             joynrState = JoynrStates.SHUTTINGDOWN;
 
+                            LongTimer.clearInterval(freshnessIntervalId);
+
                             longPollingCreatePromise.then(function() {
                                 return longPollingMessageReceiver.clear(channelId)
                                 .then(function() {
@@ -539,6 +552,15 @@ define(
                                     throw new Error(errorString);
                                 });
                             });
+
+                            if (capabilitiesRegistrar !== undefined) {
+                                capabilitiesRegistrar.shutdown();
+                            }
+
+                            if (requestReplyManager !== undefined) {
+                                requestReplyManager.shutdown();
+                            }
+
                             joynrState = JoynrStates.SHUTDOWN;
                             log.debug("joynr shut down");
                             return Promise.resolve();

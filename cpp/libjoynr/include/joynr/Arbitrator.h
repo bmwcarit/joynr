@@ -19,10 +19,11 @@
 
 #ifndef PROVIDERARBITRATOR_H
 #define PROVIDERARBITRATOR_H
-#include <unordered_set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
+#include "joynr/ArbitrationStrategyFunction.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/IArbitrationListener.h"
@@ -30,6 +31,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/Version.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
 
@@ -44,23 +46,29 @@ class IDiscoverySync;
 /*
  *  Base class for different arbitration strategies.
  */
-class JOYNR_EXPORT ProviderArbitrator
+class JOYNR_EXPORT Arbitrator
 {
 
 public:
-    virtual ~ProviderArbitrator() = default;
+    virtual ~Arbitrator() = default;
+
+    /*
+     *  Creates a new Arbitrator object which blocks the arbitration finished
+     *  notification as long as no callback onject has been specified.
+     *  This blocking is need for example for the fixed channel arbitrator which
+     *  sets the channelId instantly.
+     */
+    Arbitrator(const std::string& domain,
+               const std::string& interfaceName,
+               const joynr::types::Version& interfaceVersion,
+               joynr::system::IDiscoverySync& discoveryProxy,
+               const DiscoveryQos& discoveryQos,
+               std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction);
 
     /*
      *  Arbitrate until successful or until a timeout occurs
      */
     void startArbitration();
-
-    /*
-     *  attemptArbitration() has to be implemented by the concrete arbitration strategy.
-     *  This method attempts arbitration and sets arbitrationStatus to indicate the
-     *  state of arbitration.
-     */
-    virtual void attemptArbitration() = 0;
 
     /*
      *  Returns the result of the arbitration.
@@ -74,18 +82,16 @@ public:
     void setArbitrationListener(IArbitrationListener* listener);
     void removeArbitrationListener();
 
-protected:
+private:
     /*
-     *  Creates a new ProviderArbitrator object which blocks the arbitration finished
-     *  notification as long as no callback onject has been specified.
-     *  This blocking is need for example for the fixed channel arbitrator which
-     *  sets the channelId instantly.
+     *  attemptArbitration() has to be implemented by the concrete arbitration strategy.
+     *  This method attempts arbitration and sets arbitrationStatus to indicate the
+     *  state of arbitration.
      */
-    ProviderArbitrator(const std::string& domain,
-                       const std::string& interfaceName,
-                       const joynr::types::Version& interfaceVersion,
-                       joynr::system::IDiscoverySync& discoveryProxy,
-                       const DiscoveryQos& discoveryQos);
+    virtual void attemptArbitration();
+
+    virtual void receiveCapabilitiesLookupResults(
+            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
 
     void notifyArbitrationListener(const std::string& participantId);
 
@@ -99,9 +105,9 @@ protected:
     joynr::types::Version interfaceVersion;
     std::unordered_set<joynr::types::Version> discoveredIncompatibleVersions;
     exceptions::DiscoveryException arbitrationError;
+    std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction;
 
-private:
-    DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);
+    DISALLOW_COPY_AND_ASSIGN(Arbitrator);
     void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
     void setParticipantId(std::string participantId);
     void setArbitrationError(const exceptions::DiscoveryException& error);
@@ -109,7 +115,7 @@ private:
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;
     Semaphore listenerSemaphore;
-    ADD_LOGGER(ProviderArbitrator);
+    ADD_LOGGER(Arbitrator);
 };
 
 } // namespace joynr

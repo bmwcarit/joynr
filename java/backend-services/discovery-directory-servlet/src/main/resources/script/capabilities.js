@@ -52,6 +52,14 @@ function init() {
     
     {
         "sTitle": "Keywords"
+    },
+
+    {
+        "sTitle": "LastSeenDateMs"
+    },
+
+    {
+        "sTitle": "ClusterControllerId"
     }
 ]
         
@@ -91,6 +99,8 @@ function update() {
             var priority = entry.qos.priority;
             var version = entry.qos.version;
             var keywords =  extractKeywords(entry.qos.customParameters); 
+            var lastSeenDateMs = entry.lastSeenDateMs;
+            var clusterControllerId = entry.clusterControllerId;
             
             if(address === undefined) {
                 address = "undefined";
@@ -110,6 +120,9 @@ function update() {
             if(version === undefined) {
                 version = "undefined";
             }
+            if(clusterControllerId === undefined) {
+                clusterControllerId = "undefined";
+            }
             
             var row = [];
             row.push(trash(participant));
@@ -120,6 +133,8 @@ function update() {
             row.push(priority);            
             row.push(version);
             row.push(keywords);
+            row.push(lastSeenDateMs);
+            row.push(clusterControllerId);
             items.push(row);
 
         }

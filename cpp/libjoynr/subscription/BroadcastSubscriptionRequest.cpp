@@ -18,6 +18,9 @@
  */
 #include "joynr/BroadcastSubscriptionRequest.h"
 
+#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+
 namespace joynr
 {
 

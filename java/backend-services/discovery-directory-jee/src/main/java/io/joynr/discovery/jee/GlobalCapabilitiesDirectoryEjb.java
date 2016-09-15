@@ -24,11 +24,16 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
+import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.GlobalDiscoveryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +66,17 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     @Override
     public void add(GlobalDiscoveryEntry globalDiscoveryEntry) {
         logger.debug("Adding global discovery entry {}", globalDiscoveryEntry);
-        GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry);
+        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
+        String clusterControllerId;
+        if (address instanceof MqttAddress) {
+            clusterControllerId = ((MqttAddress) address).getTopic();
+        } else if (address instanceof ChannelAddress) {
+            clusterControllerId = ((ChannelAddress) address).getChannelId();
+        } else {
+            clusterControllerId = String.valueOf(address);
+        }
+        GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
+                                                                                 clusterControllerId);
         entityManager.persist(entity);
     }
 
@@ -103,7 +118,15 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void touch(String clusterControllerId) {
-        logger.debug("Touch called. Doesn't currently do anything.");
+        logger.debug("Touch called. Updating discovery entries from cluster controller with id: " + clusterControllerId);
+        String queryString = "select gdep from GlobalDiscoveryEntryPersisted gdep where gdep.clusterControllerId = :clusterControllerId";
+        long now = System.currentTimeMillis();
+        TypedQuery<GlobalDiscoveryEntryPersisted> query = entityManager.createQuery(queryString,
+                                                                                    GlobalDiscoveryEntryPersisted.class);
+        query.setParameter("clusterControllerId", clusterControllerId);
+        for (GlobalDiscoveryEntryPersisted globalDiscoveryEntryPersisted : query.getResultList()) {
+            globalDiscoveryEntryPersisted.setLastSeenDateMs(now);
+        }
     }
 
 }

@@ -64,7 +64,7 @@ private:
 
 INIT_LOGGER(JoynrJsonSerializerTest);
 
-TEST_F(JoynrJsonSerializerTest, exampleDeserializerAplicationException)
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerApplicationException)
 {
     using namespace joynr::tests;
     std::string literal = test::MethodWithErrorEnumExtendedErrorEnum::getLiteral(

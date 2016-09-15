@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -115,9 +117,14 @@ public class LocalCapabilitiesDirectoryTest {
     private GlobalAddressProvider globalAddressProvider;
     @Mock
     private CapabilitiesProvisioning capabilitiesProvisioning;
+    @Mock
+    private ScheduledExecutorService capabilitiesFreshnessUpdateExecutor;
 
     @Captor
     private ArgumentCaptor<Collection<DiscoveryEntry>> capabilitiesCaptor;
+
+    @Captor
+    private ArgumentCaptor<Runnable> runnableCaptor;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private ChannelAddress channelAddress;
@@ -200,16 +207,23 @@ public class LocalCapabilitiesDirectoryTest {
         when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(Sets.newHashSet(globalCapabilitiesDirectoryDiscoveryEntry,
                                                                                         domainAccessControllerDiscoveryEntry));
 
+        // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
                                                                         globalAddressProvider,
                                                                         localDiscoveryEntryStoreMock,
                                                                         globalDiscoveryEntryCacheMock,
                                                                         messageRouter,
                                                                         globalCapabilitiesClient,
-                                                                        expiredDiscoveryEntryCacheCleaner);
+                                                                        expiredDiscoveryEntryCacheCleaner,
+                                                                        3600000,
+                                                                        capabilitiesFreshnessUpdateExecutor);
         verify(expiredDiscoveryEntryCacheCleaner).scheduleCleanUpForCaches(Mockito.<ExpiredDiscoveryEntryCacheCleaner.CleanupAction> any(),
                                                                            argThat(new DiscoveryEntryStoreVarargMatcher(globalDiscoveryEntryCacheMock,
                                                                                                                         localDiscoveryEntryStoreMock)));
+        verify(capabilitiesFreshnessUpdateExecutor).scheduleAtFixedRate(runnableCaptor.capture(),
+                                                                        anyLong(),
+                                                                        anyLong(),
+                                                                        eq(TimeUnit.MILLISECONDS));
 
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] parameterList = { new CustomParameter("key1", "value1"),
@@ -955,4 +969,10 @@ public class LocalCapabilitiesDirectoryTest {
                                                                eq(Arrays.asList(globalDiscoveryEntry.getParticipantId())));
     }
 
+    @Test
+    public void callTouchPeriodically() throws InterruptedException {
+        Runnable runnable = runnableCaptor.getValue();
+        runnable.run();
+        verify(globalCapabilitiesClient).touch(anyLong());
+    }
 }

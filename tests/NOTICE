@@ -56,6 +56,7 @@ This project has dependencies to:
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.tests.system-integration-test:sit-cpp-app under The Apache Software License, Version 2.0
+  io.joynr.tests.system-integration-test:sit-java-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-node-app under The Apache Software License, Version 2.0
   io.joynr.tests:inter-language-test under The Apache Software License, Version 2.0

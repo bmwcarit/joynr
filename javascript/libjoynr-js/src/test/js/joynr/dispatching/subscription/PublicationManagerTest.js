@@ -508,6 +508,28 @@ define(
                                     }).catch(fail);
                                 });
 
+                        it( "restores a persisted subscription request correctly", function(done) {
+                            localStorage.clear();
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    intervalSubscriptionRequest,
+                                    callbackDispatcher);
+                            //now, a valid subscription should be correctly persisted -> let's restore
+
+                            var publicationManagerWithRestore =
+                                    new PublicationManager(
+                                            dispatcherSpy,
+                                            localStorage,
+                                            joynrInstanceId);
+                            publicationManagerWithRestore.addPublicationProvider(providerId, provider);
+                            publicationManagerWithRestore.restore();
+                            // increasing the time by one tick ensures all async callbacks within the
+                            // publication manager are invoked
+                            increaseFakeTime(1);
+                            done();
+                        });
                         it(
                                 "does not publish when interval subscription has an endDate in the past",
                                 function(done) {

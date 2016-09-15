@@ -191,12 +191,14 @@ class ProxyGenerator extends InterfaceJsTemplate {
 					«IF isSelective(event)»
 					dependencies: {
 							subscriptionManager: settings.dependencies.subscriptionManager
-						},
+					},
+					«IF filterParameters.size > 0»
 					filterParameters: {
 						«FOR filterParameter : filterParameters SEPARATOR ","»
 							"«filterParameter»": "reservedForTypeInfo"
 						«ENDFOR»
 					}
+					«ENDIF»
 					«ELSE»
 					dependencies: {
 							subscriptionManager: settings.dependencies.subscriptionManager

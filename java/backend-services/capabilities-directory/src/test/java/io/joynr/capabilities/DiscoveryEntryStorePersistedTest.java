@@ -28,6 +28,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 
@@ -199,6 +200,106 @@ public class DiscoveryEntryStorePersistedTest {
         fail("Not yet implemented");
     }
 
+    @Test
+    public void testTouchUpdatesLastSeenDateMs() throws Exception {
+        String domain = "testTouchDomain";
+        String interfaceName = "testTouchInterfaceName";
+        String clusterControllerId = "testTouchClusterControllerId";
+        GlobalDiscoveryEntryPersisted discoveryEntry1 = createDiscoveryEntry(domain + "1",
+                                                                             interfaceName + "1",
+                                                                             "testTouchParticipantId1");
+        discoveryEntry1.setClusterControllerId(clusterControllerId);
+        store.add(discoveryEntry1);
+        GlobalDiscoveryEntryPersisted discoveryEntry2 = createDiscoveryEntry(domain + "2",
+                                                                             interfaceName + "2",
+                                                                             "testTouchParticipantId2");
+        discoveryEntry2.setClusterControllerId(clusterControllerId);
+        store.add(discoveryEntry2);
+
+        entityManager.clear();
+
+        Thread.sleep(1);
+        // check: lastSeenDateMs < System.currentTimeMillis()
+        long currentTimeMillisBefore = System.currentTimeMillis();
+
+        List<DiscoveryEntry> returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ discoveryEntry1.getDomain() },
+                                                                                   discoveryEntry1.getInterfaceName(),
+                                                                                   CACHE_MAX_AGE);
+        assertTrue(returnedEntries.contains(discoveryEntry1));
+        assertTrue(returnedEntries.size() == 1);
+        assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisBefore);
+
+        returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ discoveryEntry2.getDomain() },
+                                                              discoveryEntry2.getInterfaceName(),
+                                                              CACHE_MAX_AGE);
+        assertTrue(returnedEntries.contains(discoveryEntry2));
+        assertTrue(returnedEntries.size() == 1);
+        assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisBefore);
+
+        // call touch for clusterControllerId and check lastSeenDateMs
+        store.touch(clusterControllerId);
+
+        entityManager.clear();
+
+        Thread.sleep(1);
+        long currentTimeMillisAfter = System.currentTimeMillis();
+
+        returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ discoveryEntry1.getDomain() },
+                                                              discoveryEntry1.getInterfaceName(),
+                                                              CACHE_MAX_AGE);
+        assertFalse(returnedEntries.contains(discoveryEntry1));
+        // touch should not insert additional entries
+        assertTrue(returnedEntries.size() == 1);
+        assertTrue(returnedEntries.get(0).getLastSeenDateMs() > currentTimeMillisBefore);
+        assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisAfter);
+
+        returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ discoveryEntry2.getDomain() },
+                                                              discoveryEntry2.getInterfaceName(),
+                                                              CACHE_MAX_AGE);
+        assertFalse(returnedEntries.contains(discoveryEntry2));
+        // touch should not insert additional entries
+        assertTrue(returnedEntries.size() == 1);
+        assertTrue(returnedEntries.get(0).getLastSeenDateMs() > currentTimeMillisBefore);
+        assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisAfter);
+    }
+
+    @Test
+    public void testTouchDoesNotUpdateEntriesFromOtherClusterControllers() throws Exception {
+        String domain = "testTouchDomain";
+        String interfaceName = "testTouchInterfaceName";
+        String clusterControllerId = "testTouchClusterControllerId";
+        GlobalDiscoveryEntryPersisted touchedDiscoveryEntry = createDiscoveryEntry(domain,
+                                                                                   interfaceName,
+                                                                                   "testTouchParticipantId1");
+        touchedDiscoveryEntry.setClusterControllerId(clusterControllerId);
+        store.add(touchedDiscoveryEntry);
+        GlobalDiscoveryEntryPersisted discoveryEntryFromDefaultClusterController = createDiscoveryEntry(domain,
+                                                                                                        interfaceName,
+                                                                                                        "testTouchParticipantIdFromDefaultClusterController");
+        store.add(discoveryEntryFromDefaultClusterController);
+        entityManager.clear();
+
+        // wait some time to ensure new lastSeenDateMs
+        Thread.sleep(1);
+
+        List<DiscoveryEntry> returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ domain },
+                                                                                   interfaceName,
+                                                                                   CACHE_MAX_AGE);
+        assertTrue(returnedEntries.contains(touchedDiscoveryEntry));
+        assertTrue(returnedEntries.contains(discoveryEntryFromDefaultClusterController));
+        assertTrue(returnedEntries.size() == 2);
+
+        // call touch for clusterControllerId and check discoveryEntries
+        store.touch(clusterControllerId);
+        Thread.sleep(1);
+
+        returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ domain }, interfaceName, CACHE_MAX_AGE);
+        assertFalse(returnedEntries.contains(touchedDiscoveryEntry));
+        assertTrue(returnedEntries.contains(discoveryEntryFromDefaultClusterController));
+        // touch should not insert additional entries
+        assertTrue(returnedEntries.size() == 2);
+    }
+
     private GlobalDiscoveryEntryPersisted createDiscoveryEntry(String domain, String interfaceName, String participantId)
                                                                                                                          throws Exception {
         ProviderQos qos = new ProviderQos();
@@ -206,7 +307,7 @@ public class DiscoveryEntryStorePersistedTest {
         long expiryDateMs = Long.MAX_VALUE;
         String publicKeyId = "publicKeyId";
         Address address = new MqttAddress("brokerUri", "topic");
-        String addressSeialized = new ObjectMapper().writeValueAsString(address);
+        String addressSerialized = new ObjectMapper().writeValueAsString(address);
         GlobalDiscoveryEntryPersisted discoveryEntry = new GlobalDiscoveryEntryPersisted(new Version(47, 11),
                                                                                          domain,
                                                                                          interfaceName,
@@ -215,7 +316,8 @@ public class DiscoveryEntryStorePersistedTest {
                                                                                          lastSeenDateMs,
                                                                                          expiryDateMs,
                                                                                          publicKeyId,
-                                                                                         addressSeialized);
+                                                                                         addressSerialized,
+                                                                                         "clusterControllerId");
         return discoveryEntry;
     }
 

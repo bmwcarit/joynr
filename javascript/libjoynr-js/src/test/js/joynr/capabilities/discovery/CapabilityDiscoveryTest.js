@@ -68,7 +68,8 @@ define([
                 var spyObj = jasmine.createSpyObj(name, [
                     "lookup",
                     "add",
-                    "remove"
+                    "remove",
+                    "touch"
                 ]);
                 spyObj.lookup.and.returnValue(returnValue);
                 spyObj.add.and.returnValue(returnValue);
@@ -794,6 +795,24 @@ define([
                                         assertDiscoveryEntryEquals(discoveryEntry, actualDiscoveryEntry);
 
                                         expect(localCapStoreSpy.add).not.toHaveBeenCalledWith();
+                                        done();
+                                        return null;
+                                    }).catch(fail);
+                                });
+
+                        it(
+                                "touch calls global cap dir correctly",
+                                function(done) {
+                                    var actualClusterControllerId;
+                                    var actualTtl;
+                                    var expectedTtl = 1337;
+                                    var expectedClusterControllerId = "testTouchClusterControllerId";
+                                    capabilityDiscovery.touch(expectedClusterControllerId, expectedTtl).then(function() {
+                                        expect(globalCapDirSpy.touch).toHaveBeenCalled();
+                                        actualTtl = proxyBuilderSpy.build.calls.argsFor(0)[1].messagingQos.ttl;
+                                        actualClusterControllerId = globalCapDirSpy.touch.calls.argsFor(0)[0].clusterControllerId;
+                                        expect(actualTtl).toEqual(expectedTtl);
+                                        expect(actualClusterControllerId).toEqual(expectedClusterControllerId);
                                         done();
                                         return null;
                                     }).catch(fail);

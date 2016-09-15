@@ -503,6 +503,14 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                         webSocketMessagingSkeleton.shutdown();
                     }
 
+                    if (capabilitiesRegistrar !== undefined) {
+                        capabilitiesRegistrar.shutdown();
+                    }
+
+                    if (requestReplyManager !== undefined) {
+                        requestReplyManager.shutdown();
+                    }
+
                     joynrState = JoynrStates.SHUTDOWN;
                     log.debug("joynr shut down");
                     return Promise.resolve();

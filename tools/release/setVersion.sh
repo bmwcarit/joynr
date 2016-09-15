@@ -65,10 +65,10 @@ tests/system-integration-test/docker/onboard/joynr-without-test.spec
 
 echo "prepare git patch"
 
-countFoundOldVersions=$(git grep ${oldVersion} * | grep -v ReleaseNotes | wc -l)
+countFoundOldVersions=$(git grep -F ${oldVersion} * | grep -v ReleaseNotes | wc -l)
 if (($countFoundOldVersions > 0)); then
     echo "WARNING: a grep over your workspace emphasised that the oldVersion is still present in some of your resources. Please check manually!"
-    git grep ${oldVersion} * | grep -v ReleaseNotes
+    git grep -F ${oldVersion} * | grep -v ReleaseNotes
 else
     git add -A && git commit -m "[Release] set version to $newVersion"
 fi

@@ -31,6 +31,7 @@
 #include "joynr/SubscriptionAttributeListener.h"
 #include "joynr/SubscriptionBroadcastListener.h"
 #include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
 #include "tests/utils/TimeUtils.h"
 #include "joynr/Logger.h"

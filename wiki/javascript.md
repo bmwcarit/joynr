@@ -136,12 +136,14 @@ function `myFunction` needs additional filter criteria like the arbitration stra
 the result of `myFunction.bind(myParam)` has to be used as arbitration strategy.
 
 **Predefined arbitration strategies:**
+* **ArbitrationStrategyCollection.LastSeen** The participant that was last refreshed (i.e. with the
+most current last seen date) will be selected
 * **ArbitrationStrategyCollection.Nothing** use DefaultArbitrator which picks the first discovered
    entry with compatible version
 * **ArbitrationStrategyCollection.HighestPriority** Highest priority provider will be selected
 * **ArbitrationStrategyCollection.Keyword** Only a Provider that has keyword set will be selected
 
-**Default arbitration strategy:** HighestPriority
+**Default arbitration strategy:** LastSeen
 
 The priority used by the arbitration strategy *HighestPriority* is set by the provider in its
 providerQos settings.

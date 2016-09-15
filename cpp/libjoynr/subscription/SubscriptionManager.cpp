@@ -23,10 +23,12 @@
 #include <mutex>
 #include <boost/asio/io_service.hpp>
 
-#include "joynr/SubscriptionUtil.h"
-#include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/ISubscriptionCallback.h"
+#include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/SubscriptionQos.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/SubscriptionUtil.h"
 
 namespace joynr
 {

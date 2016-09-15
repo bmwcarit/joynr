@@ -4,6 +4,7 @@
 * **[JEE]** Ability to specify individual domains for providers via new
   `@ProviderDomain` annotation. See
   [JEE Documentation / Customising the registration domain](jee.md#provider_domain).
+* **[Java, JS, C++]** Introduce LastSeen arbitration strategy and set it as default arbitration.
 
 ##Other changes
 * **[Java, C++]** The local capabilities directory will periodically be checked for
@@ -18,6 +19,16 @@
 * **[C++]** Build variable `USE_PLATFORM_GTEST_GMOCK` now defaults to ON so that
   it is consistent with the other `USE_PLATFORM_*` variables.
 * **[C++]**  Reduced the number of threads which are used by a cluster controller instance
+
+#joynr 0.20.2
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+## Other changes
+* **[JS]** Fixed bug which caused exception when loading persisted
+  subscriptions during startup.
 
 #joynr 0.20.1
 This is a minor bug fix release.

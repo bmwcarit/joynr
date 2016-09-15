@@ -68,3 +68,13 @@ accessible from the docker container at **/data/src**.
 ```-e DEV_UID="$(id -u)"``` makes sure that artifacts created during the build are owned by the user
 of the host system afterwards, allowing temporary build artifacts to be deleted by a continous
 integration server, for instance.
+
+Make sure the local Maven directory
+
+* contains the settings in the files ```settings.xml``` and ```security-settings.xml```
+* does not change the storage location for artifacts (```localRepository``` inside
+  ```settings.xml```)
+* contains only path settings (if any) which are reachable from inside the docker container
+* contains no invalid encrypted password entries in ```settings.xml```
+
+since otherwise the build might break.

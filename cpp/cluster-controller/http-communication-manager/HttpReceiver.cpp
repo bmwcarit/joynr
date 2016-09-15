@@ -21,7 +21,6 @@
 #include "cluster-controller/http-communication-manager/LongPollingMessageReceiver.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
-#include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
@@ -33,19 +32,17 @@ namespace joynr
 
 INIT_LOGGER(HttpReceiver);
 
-HttpReceiver::HttpReceiver(const MessagingSettings& settings)
+HttpReceiver::HttpReceiver(const MessagingSettings& settings,
+                           const std::string& channelId,
+                           const std::string& receiverId)
         : channelCreatedSemaphore(std::make_shared<Semaphore>(0)),
-          channelId(),
-          receiverId(),
+          channelId(channelId),
+          receiverId(receiverId),
           globalClusterControllerAddress(),
           settings(settings),
           messageReceiver(nullptr),
           onTextMessageReceived(nullptr)
 {
-    MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
-    channelId = persist.getChannelId();
-    receiverId = persist.getReceiverId();
-
     JOYNR_LOG_DEBUG(logger, "Print settings... ");
     settings.printSettings();
     updateSettings();

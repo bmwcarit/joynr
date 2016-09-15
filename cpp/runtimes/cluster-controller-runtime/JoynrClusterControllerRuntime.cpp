@@ -34,6 +34,7 @@
 #include "cluster-controller/http-communication-manager/HttpSender.h"
 #include "cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
+#include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 #include "cluster-controller/mqtt/MqttReceiver.h"
 #include "cluster-controller/mqtt/MqttSender.h"
@@ -258,6 +259,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     std::string httpSerializedGlobalClusterControllerAddress;
     std::string mqttSerializedGlobalClusterControllerAddress;
 
+    MessagingPropertiesPersistence persist(
+            messagingSettings.getMessagingPropertiesPersistenceFilename());
+    std::string clusterControllerId = persist.getChannelId();
+    std::string receiverId = persist.getReceiverId();
     /**
       * ClusterController side HTTP
       *
@@ -270,7 +275,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                            "The http message receiver supplied is NULL, creating the default "
                            "http MessageReceiver");
 
-            httpMessageReceiver = std::make_shared<HttpReceiver>(messagingSettings);
+            httpMessageReceiver = std::make_shared<HttpReceiver>(
+                    messagingSettings, clusterControllerId, receiverId);
 
             assert(httpMessageReceiver != nullptr);
 
@@ -315,7 +321,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                            "The mqtt message receiver supplied is NULL, creating the default "
                            "mqtt MessageReceiver");
 
-            mqttMessageReceiver = std::make_shared<MqttReceiver>(messagingSettings);
+            mqttMessageReceiver = std::make_shared<MqttReceiver>(
+                    messagingSettings, clusterControllerId, receiverId);
 
             assert(mqttMessageReceiver != nullptr);
         }
@@ -403,7 +410,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                          capabilitiesClient,
                                                          channelGlobalCapabilityDir,
                                                          *messageRouter,
-                                                         libjoynrSettings);
+                                                         libjoynrSettings,
+                                                         singleThreadIOService->getIOService(),
+                                                         clusterControllerId);
     localCapabilitiesDirectory->loadPersistedFile();
     // importPersistedLocalCapabilitiesDirectory();
 
