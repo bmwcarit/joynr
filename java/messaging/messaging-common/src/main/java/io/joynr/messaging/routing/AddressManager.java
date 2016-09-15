@@ -19,6 +19,7 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.google.inject.Inject;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 public class AddressManager {
 
     private static final Logger logger = LoggerFactory.getLogger(AddressManager.class);
+    private final MulticastReceiverRegistry multicastReceiversRegistry;
 
     private RoutingTable routingTable;
     private MulticastAddressCalculator multicastAddressCalculator;
@@ -59,8 +61,10 @@ public class AddressManager {
     @Inject
     public AddressManager(RoutingTable routingTable,
                           PrimaryGlobalTransportHolder primaryGlobalTransport,
-                          Set<MulticastAddressCalculator> multicastAddressCalculators) {
+                          Set<MulticastAddressCalculator> multicastAddressCalculators,
+                          MulticastReceiverRegistry multicastReceiverRegistry) {
         this.routingTable = routingTable;
+        this.multicastReceiversRegistry = multicastReceiverRegistry;
         if (multicastAddressCalculators.size() > 1 && primaryGlobalTransport.get() == null) {
             throw new JoynrIllegalStateException("Multiple multicast address calculators registered, but no primary global transport set.");
         }
@@ -85,20 +89,41 @@ public class AddressManager {
      * @return the address to send the message to. Will not be null, because if an address can't be determined an exception is thrown.
      * @throws JoynrMessageNotSentException if no address can be determined / found for the given message.
      */
-    public Address getAddress(JoynrMessage message) {
+    public Set<Address> getAddresses(JoynrMessage message) {
+        Set<Address> result = new HashSet<>();
         String toParticipantId = message.getTo();
-        Address address = null;
-        if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType()) && multicastAddressCalculator != null) {
-            address = multicastAddressCalculator.calculate(message);
+        if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            handleMulticastMessage(message, result);
         } else if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
-            address = routingTable.get(toParticipantId);
+            Address address = routingTable.get(toParticipantId);
+            if (address != null) {
+                result.add(address);
+            }
         }
-        logger.trace("Participant with ID {} has address {}", new Object[]{ toParticipantId, address });
-        if (address == null) {
-            throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
-                    + toParticipantId);
+        logger.trace("Message {} will results in destination addresses {}", new Object[]{ message, result });
+        if (result.size() == 0) {
+            throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
+                    + message);
         }
-        return address;
+        return result;
+    }
+
+    private void handleMulticastMessage(JoynrMessage message, Set<Address> result) {
+        if (!message.isReceivedFromGlobal() && multicastAddressCalculator != null) {
+            Address calculatedAddress = multicastAddressCalculator.calculate(message);
+            if (calculatedAddress != null) {
+                result.add(calculatedAddress);
+            }
+        } else if (message.isReceivedFromGlobal() || multicastAddressCalculator == null) {
+            String multicastId = message.getFrom() + "/" + message.getTo();
+            Set<String> receivers = multicastReceiversRegistry.getReceivers(multicastId);
+            for (String receiverParticipantId : receivers) {
+                Address address = routingTable.get(receiverParticipantId);
+                if (address != null) {
+                    result.add(address);
+                }
+            }
+        }
     }
 
 }

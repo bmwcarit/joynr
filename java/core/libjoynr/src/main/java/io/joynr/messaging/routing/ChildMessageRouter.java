@@ -72,27 +72,27 @@ public class ChildMessageRouter extends MessageRouterImpl {
     }
 
     @Override
-    protected Address getAddress(JoynrMessage message) {
-        Address address;
+    protected Set<Address> getAddresses(JoynrMessage message) {
+        Set<Address> result;
         JoynrMessageNotSentException noAddressException = null;
         try {
-            address = super.getAddress(message);
+            result = super.getAddresses(message);
         } catch (JoynrMessageNotSentException e) {
             noAddressException = e;
-            address = null;
+            result = new HashSet<>();
         }
         String toParticipantId = message.getTo();
-        if (address == null && parentRouter != null) {
+        if (result.isEmpty() && parentRouter != null) {
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {
                 super.addNextHop(toParticipantId, parentRouterMessagingAddress);
-                address = parentRouterMessagingAddress;
+                result.add(parentRouterMessagingAddress);
             }
         }
-        if (address == null && noAddressException != null) {
+        if (result.isEmpty() && noAddressException != null) {
             throw noAddressException;
         }
-        return address;
+        return result;
     }
 
     @Override

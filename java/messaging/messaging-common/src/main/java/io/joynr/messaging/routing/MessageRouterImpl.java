@@ -22,6 +22,7 @@ package io.joynr.messaging.routing;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -111,8 +112,8 @@ public class MessageRouterImpl implements MessageRouter {
         scheduler.schedule(runnable, delay, timeUnit);
     }
 
-    protected Address getAddress(JoynrMessage message) {
-        return addressManager.getAddress(message);
+    protected Set<Address> getAddresses(JoynrMessage message) {
+        return addressManager.getAddresses(message);
     }
 
     private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
@@ -124,17 +125,19 @@ public class MessageRouterImpl implements MessageRouter {
                     logger.debug("Starting processing of message {}", message);
                     try {
                         checkExpiry(message);
-                        Address address = getAddress(message);
-                        String messageId = message.getId().substring(UUID_TAIL);
-                        logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId,
-                                message.getType(),
-                                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                                message.getHeader().toString() });
-                        logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(),
-                                message.getPayload() });
-                        IMessaging messagingStub = messagingStubFactory.create(address);
-                        messagingStub.transmit(message, createFailureAction(message, retriesCount));
+                        Set<Address> addresses = getAddresses(message);
+                        for (Address address : addresses) {
+                            String messageId = message.getId().substring(UUID_TAIL);
+                            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId,
+                                    message.getType(),
+                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
+                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                                    message.getHeader().toString() });
+                            logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(),
+                                    message.getPayload() });
+                            IMessaging messagingStub = messagingStubFactory.create(address);
+                            messagingStub.transmit(message, createFailureAction(message, retriesCount));
+                        }
                     } catch (Exception error) {
                         logger.error("error in scheduled message router thread: {}", error.getMessage());
                         FailureAction failureAction = createFailureAction(message, retriesCount);
