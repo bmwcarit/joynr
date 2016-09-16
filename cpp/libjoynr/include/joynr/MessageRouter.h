@@ -19,6 +19,7 @@
 #ifndef MESSAGEROUTER_H
 #define MESSAGEROUTER_H
 #include <chrono>
+#include <forward_list>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -30,6 +31,7 @@
 #include "joynr/Directory.h"
 #include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/Runnable.h"
 #include "joynr/system/RoutingAbstractProvider.h"
@@ -184,6 +186,7 @@ private:
     using RoutingTable = Directory<std::string, const joynr::system::RoutingTypes::Address>;
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
+    MulticastReceiverDirectory multicastReceiverDirectory;
     ThreadPoolDelayedScheduler messageScheduler;
     std::unique_ptr<joynr::system::RoutingProxy> parentRouter;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress;
@@ -199,6 +202,11 @@ private:
 
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
+
+    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
+    getDestinationAddresses(const JoynrMessage& message);
+    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
+            const std::unordered_set<std::string>& participantIds);
 
     void addNextHopToParent(std::string participantId,
                             std::function<void(void)> callbackFct = nullptr,
