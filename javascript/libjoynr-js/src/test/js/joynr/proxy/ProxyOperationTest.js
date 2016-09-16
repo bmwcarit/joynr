@@ -327,7 +327,7 @@ define([
                                                                 [ {
                                                                     name : "returnEnum",
                                                                     // currently, we generate the type of the array element into the signature
-                                                                    type : TestEnum.ZERO._typeName
+                                                                    type : TestEnum.ZERO._typeName + "[]"
                                                                 }],
                                                                 [["ZERO", "ONE"]],
                                                                 {
