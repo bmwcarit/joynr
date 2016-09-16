@@ -21,6 +21,8 @@
 
 #include "MosquittoSubscriber.h"
 
+#include <string>
+
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/IMessageReceiver.h"
@@ -72,6 +74,10 @@ public:
 
     void registerReceiveCallback(
             std::function<void(const std::string&)> onTextMessageReceived) override;
+
+    void subscribeToTopic(const std::string& topic);
+
+    void unsubscribeFromTopic(const std::string& topic);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttReceiver);

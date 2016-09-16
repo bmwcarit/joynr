@@ -21,6 +21,8 @@
 
 #include <condition_variable>
 #include <memory>
+#include <mutex>
+#include <unordered_set>
 
 #include "mosquittopp.h"
 
@@ -57,14 +59,23 @@ public:
     void interrupt();
     bool isInterrupted();
 
+    /* subscribe to channelId / topic */
+    void subscribeToTopic(const std::string& topic);
+
+    /* unsubscribe from channelId / topic */
+    void unsubscribeFromTopic(const std::string& topic);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoSubscriber);
 
     MqttSettings mqttSettings;
     std::string channelId;
     std::string topic;
+    std::unordered_set<std::string> additionalTopics;
+    std::recursive_mutex additionalTopicsMutex;
     Semaphore* channelCreatedSemaphore;
 
+    std::atomic<bool> isConnected;
     std::atomic<bool> isRunning;
     std::atomic<bool> isChannelAvailable;
 
@@ -75,10 +86,8 @@ private:
 
     void checkServerTime();
 
-    /* subscribe to channelId / topic */
-    void subscribeToTopic();
-    /* unsubscribe from channelId / topic */
-    void unsubscribeFromTopic();
+    void restoreSubscriptions();
+    void subscribeToTopicInternal(const std::string& topic);
 
     void on_connect(int rc) override;
     void on_subscribe(int mid, int qos_count, const int* granted_qos) override;

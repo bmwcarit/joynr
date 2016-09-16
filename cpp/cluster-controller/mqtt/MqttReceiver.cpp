@@ -94,4 +94,14 @@ void MqttReceiver::registerReceiveCallback(
     mosquittoSubscriber.registerReceiveCallback(onTextMessageReceived);
 }
 
+void MqttReceiver::subscribeToTopic(const std::string& topic)
+{
+    mosquittoSubscriber.subscribeToTopic(topic);
+}
+
+void MqttReceiver::unsubscribeFromTopic(const std::string& topic)
+{
+    mosquittoSubscriber.unsubscribeFromTopic(topic);
+}
+
 } // namespace joynr
