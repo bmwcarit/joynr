@@ -73,6 +73,9 @@ define(
                             });
                         }
 
+                        RadioStation.getMemberType = function(i) {
+                        };
+
                         var Country = {
                             AUSTRALIA : "AUSTRALIA",
                             AUSTRIA : "AUSTRIA",
@@ -111,6 +114,9 @@ define(
                                 value : "test.ComplexTypeWithComplexAndSimpleProperties"
                             });
                         }
+
+                        ComplexTypeWithComplexAndSimpleProperties.getMemberType = function(i) {
+                        };
 
                         /**
                          * Called before each test.

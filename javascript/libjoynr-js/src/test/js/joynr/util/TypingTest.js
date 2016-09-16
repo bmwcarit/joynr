@@ -63,6 +63,8 @@ define(
                 this.e = e;
             }
 
+            MyType.getMemberType = function(i) {};
+
             function MySecondType(a, b, c, d, e) {
                 this._typeName = "MySecondTypeName";
                 this.a = a;
@@ -71,6 +73,8 @@ define(
                 this.d = d;
                 this.e = e;
             }
+
+            MySecondType.getMemberType = function(i) {};
 
             beforeEach(function(done) {
                 var datatypePromises =
