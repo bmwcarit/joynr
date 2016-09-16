@@ -94,7 +94,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 					configurable : false,
 					writable : false,
 					enumerable : true,
-					value : "«type.joynrTypeName»"
+					value : «type.joynrName»._typeName
 				});
 				«IF type.base != null»
 
@@ -136,6 +136,13 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 				}
 
 			};
+
+			Object.defineProperty(«type.joynrName», "_typeName", {
+				configurable : false,
+				writable : false,
+				enumerable : false,
+				value : "«type.joynrTypeName»"
+			});
 
 			/**
 			 * @name «type.joynrName»#MAJOR_VERSION
