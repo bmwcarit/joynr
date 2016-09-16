@@ -97,7 +97,12 @@ define("joynr/util/Util", [
                 }
             } else if (typeof value === "object" && !Typing.isComplexJoynrObject(value)) {
                 value = Typing.augmentTypes(value, typeRegistry);
-                value.checkMembers(Util.checkPropertyIfDefined);
+                /*jslint nomen: true */
+                var Constructor = typeRegistry.getConstructor(value._typeName);
+                /*jslint nomen: false */
+                if (Constructor.checkMembers) {
+                    Constructor.checkMembers(value, Util.checkPropertyIfDefined);
+                }
             }
         }
 

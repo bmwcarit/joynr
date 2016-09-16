@@ -104,15 +104,23 @@ define(
                     if (operationArguments.hasOwnProperty(argumentName)) {
                         argumentValue = operationArguments[argumentName];
                         // make sure types of complex type members are also ok
-                        if (argumentValue
-                            && argumentValue.checkMembers
-                            && typeof argumentValue.checkMembers === "function") {
+                        /*jslint nomen: true */
+                        if (!Util.checkNullUndefined(argumentValue)) {
+                            var Constructor = typeRegistry.getConstructor(argumentValue._typeName);
+
                             try {
-                                argumentValue.checkMembers(Util.checkPropertyIfDefined);
+                                if (Constructor && Constructor.checkMembers) {
+                                    Constructor.checkMembers(
+                                            argumentValue,
+                                            Util.checkPropertyIfDefined);
+                                }
                             } catch (error) {
                                 errors.push(error.message);
                             }
+                        } else {
+                            errors.push("Argument \"" + argumentName + "\" undefined.");
                         }
+                        /*jslint nomen: false */
                     }
                 }
                 return errors;
