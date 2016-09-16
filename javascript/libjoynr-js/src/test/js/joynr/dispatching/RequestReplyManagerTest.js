@@ -29,12 +29,13 @@ define(
             "joynr/types/TypeRegistrySingleton",
             "joynr/util/Typing",
             "joynr/util/UtilInternal",
+            "joynr/util/JSONSerializer",
             "joynr/exceptions/MethodInvocationException",
             "joynr/types/Version",
             "global/Promise",
             "global/WaitsFor"
         ],
-        function(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, MethodInvocationException, Version, Promise, waitsFor) {
+        function(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, JSONSerializer, MethodInvocationException, Version, Promise, waitsFor) {
             describe(
                     "libjoynr-js.joynr.dispatching.RequestReplyManager",
                     function() {
@@ -249,7 +250,7 @@ define(
                                     methodName : "set" + UtilInternal.firstUpper(attributeName),
                                     paramDatatypes : [],
                                     // untype objects through serialization and deserialization
-                                    params : JSON.parse(JSON.stringify(params))
+                                    params : JSON.parse(JSONSerializer.stringify(params))
                                 });
 
                                 requestReplyManager.addRequestCaller(
@@ -290,7 +291,7 @@ define(
                                     methodName : "testFunction",
                                     paramDatatypes : paramDatatypes,
                                     // untype objects through serialization and deserialization
-                                    params : JSON.parse(JSON.stringify(params))
+                                params : JSON.parse(JSONSerializer.stringify(params))
                                 });
 
                                 requestReplyManager.addRequestCaller(
@@ -394,7 +395,7 @@ define(
 
                                 });
 
-                        function testHandleReplyWithExpectedType(paramDatatypes, params, promiseChain) {
+                        function testHandleReplyWithExpectedType(params, promiseChain) {
                             var replyCallerSpy = jasmine.createSpyObj("deferred", [
                                 "resolve",
                                 "reject"
@@ -404,8 +405,7 @@ define(
                                 var reply = new Reply({
                                     requestReplyId : requestReplyId,
                                     // untype object by serializing and deserializing it
-                                    response : [ JSON.parse(JSON.stringify(params))
-                                    ]
+                                    response : JSON.parse(JSONSerializer.stringify(params))
                                 });
 
                                 requestReplyManager.addReplyCaller(
@@ -419,14 +419,16 @@ define(
                                         || replyCallerSpy.reject.calls.count() > 0;
                                 }, "reject or fulfill to be called", ttl_ms * 2);
                             }).then(function() {
+                                var i;
                                 expect(replyCallerSpy.resolve).toHaveBeenCalled();
                                 expect(replyCallerSpy.reject).not.toHaveBeenCalled();
 
                                 var result = replyCallerSpy.resolve.calls.argsFor(0)[0];
-                                expect(result).toEqual([ params
-                                ]);
-                                expect(Typing.getObjectType(result)).toEqual(
-                                    Typing.getObjectType(params));
+                                for(i=0;i<params.length;i++) {
+                                    expect(result[i]).toEqual(params[i]);
+                                    expect(Typing.getObjectType(result[i])).toEqual(
+                                            Typing.getObjectType(params[i]));
+                                }
                             }).catch(function(error) {
                                 fail(error);
                             });
@@ -437,7 +439,7 @@ define(
                             var promiseChain = Promise.resolve();
                             for (i = 0; i < testData.length; ++i) {
                                 test = testData[i];
-                                promiseChain = testHandleReplyWithExpectedType(test.paramDatatype, test.params, promiseChain);
+                                promiseChain = testHandleReplyWithExpectedType(test.params, promiseChain);
                             }
                             promiseChain.then(function() {
                                 done();
