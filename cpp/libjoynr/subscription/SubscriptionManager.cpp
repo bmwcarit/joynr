@@ -90,14 +90,21 @@ void SubscriptionManager::registerSubscription(
         unregisterSubscription(subscriptionId);
     }
 
-    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                               std::chrono::system_clock::now().time_since_epoch()).count();
+    const std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                     std::chrono::system_clock::now().time_since_epoch()).count();
+
+    const std::int64_t subscriptionExpiryDateMs = qos->getExpiryDateMs();
+    const std::int64_t alertAfterInterval = SubscriptionUtil::getAlertInterval(qos);
+    const std::int64_t periodicPublicationInterval =
+            SubscriptionUtil::getPeriodicPublicationInterval(qos);
+
     subscriptionRequest.setQos(qos);
-    if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE() &&
-        qos->getExpiryDateMs() < now) {
+
+    if (subscriptionExpiryDateMs != SubscriptionQos::NO_EXPIRY_DATE() &&
+        subscriptionExpiryDateMs < now) {
         throw std::invalid_argument("Subscription ExpiryDate " +
-                                    std::to_string(qos->getExpiryDateMs()) + " in the past. Now: " +
-                                    std::to_string(now));
+                                    std::to_string(subscriptionExpiryDateMs) +
+                                    " in the past. Now: " + std::to_string(now));
     }
 
     auto subscription = std::make_shared<Subscription>(subscriptionCaller);
@@ -106,18 +113,13 @@ void SubscriptionManager::registerSubscription(
 
     {
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
-        if (SubscriptionUtil::getAlertInterval(qos) > 0 &&
-            SubscriptionUtil::getPeriodicPublicationInterval(qos) > 0) {
+        if (alertAfterInterval > 0 && periodicPublicationInterval > 0) {
             JOYNR_LOG_DEBUG(logger, "Will notify if updates are missed.");
-            std::int64_t alertAfterInterval = SubscriptionUtil::getAlertInterval(qos);
-            JoynrTimePoint expiryDate(std::chrono::milliseconds(qos->getExpiryDateMs()));
-            if (qos->getExpiryDateMs() == SubscriptionQos::NO_EXPIRY_DATE()) {
+            JoynrTimePoint expiryDate(std::chrono::milliseconds{subscriptionExpiryDateMs});
+            if (subscriptionExpiryDateMs == SubscriptionQos::NO_EXPIRY_DATE()) {
                 expiryDate = JoynrTimePoint(
                         std::chrono::milliseconds(std::numeric_limits<std::int64_t>::max()));
             }
-            std::int64_t periodicPublicationInterval =
-                    SubscriptionUtil::getPeriodicPublicationInterval(qos);
-
             subscription->missedPublicationRunnableHandle = missedPublicationScheduler->schedule(
                     new MissedPublicationRunnable(expiryDate,
                                                   periodicPublicationInterval,
@@ -126,12 +128,14 @@ void SubscriptionManager::registerSubscription(
                                                   *this,
                                                   alertAfterInterval),
                     std::chrono::milliseconds(alertAfterInterval));
-        } else if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
-            std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                       std::chrono::system_clock::now().time_since_epoch()).count();
+        } else if (subscriptionExpiryDateMs != SubscriptionQos::NO_EXPIRY_DATE()) {
+            const std::int64_t now =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                            std::chrono::system_clock::now().time_since_epoch()).count();
+
             subscription->subscriptionEndRunnableHandle = missedPublicationScheduler->schedule(
                     new SubscriptionEndRunnable(subscriptionId, *this),
-                    std::chrono::milliseconds(qos->getExpiryDateMs() - now));
+                    std::chrono::milliseconds(subscriptionExpiryDateMs - now));
         }
     }
     subscriptionRequest.setSubscriptionId(subscriptionId);
