@@ -30,10 +30,11 @@ define(
             "joynr/util/Typing",
             "joynr/util/UtilInternal",
             "joynr/exceptions/MethodInvocationException",
+            "joynr/types/Version",
             "global/Promise",
             "global/WaitsFor"
         ],
-        function(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, MethodInvocationException, Promise, waitsFor) {
+        function(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, MethodInvocationException, Version, Promise, waitsFor) {
             describe(
                     "libjoynr-js.joynr.dispatching.RequestReplyManager",
                     function() {
@@ -725,15 +726,11 @@ define(
                                                 .toHaveBeenCalledWith(
                                                         new Reply(
                                                                 {
-                                                                    error : Typing
-                                                                            .augmentTypes(
-                                                                                    {
-                                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                    error : new MethodInvocationException({
                                                                                         "detailMessage" : 'error handling request: {"paramDatatypes":["String"],"params":["myTestParameter"],"methodName":"testFunction","requestReplyId":"'
                                                                                             + test.request.requestReplyId
                                                                                             + '","_typeName":"joynr.Request"} for providerParticipantId nonExistentProviderId'
-                                                                                    },
-                                                                                    typeRegistry),
+                                                                    }),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
                                         done();
@@ -753,18 +750,13 @@ define(
                                                 .toHaveBeenCalledWith(
                                                         new Reply(
                                                                 {
-                                                                    error : Typing
-                                                                            .augmentTypes(
-                                                                                    {
-                                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                    error : new MethodInvocationException({
                                                                                         "detailMessage" : 'Could not find an operation "notExistentOperationOrAttribute" in the provider',
-                                                                                        "providerVersion" : {
-                                                                                            "_typeName" : "joynr.types.Version",
+                                                                        "providerVersion" : new Version({
                                                                                             "majorVersion" : 47,
                                                                                             "minorVersion" : 11
-                                                                                        }
-                                                                                    },
-                                                                                    typeRegistry),
+                                                                        })
+                                                                    }),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
                                         done();
@@ -783,18 +775,13 @@ define(
                                                 .toHaveBeenCalledWith(
                                                         new Reply(
                                                                 {
-                                                                    error : Typing
-                                                                            .augmentTypes(
-                                                                                    {
-                                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                    error : new MethodInvocationException({
                                                                                         "detailMessage" : 'Could not find an operation "getNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider',
-                                                                                        "providerVersion" : {
-                                                                                            "_typeName" : "joynr.types.Version",
+                                                                        "providerVersion" : new Version({
                                                                                             "majorVersion" : 47,
                                                                                             "minorVersion" : 11
-                                                                                        }
-                                                                                    },
-                                                                                    typeRegistry),
+                                                                        })
+                                                                    }),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
                                         done();
@@ -813,18 +800,13 @@ define(
                                                 .toHaveBeenCalledWith(
                                                         new Reply(
                                                                 {
-                                                                    error : Typing
-                                                                            .augmentTypes(
-                                                                                    {
-                                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                    error : new MethodInvocationException({
                                                                                         "detailMessage" : 'Could not find an operation "setNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider',
-                                                                                        "providerVersion" : {
-                                                                                            "_typeName" : "joynr.types.Version",
+                                                                        "providerVersion" : new Version({
                                                                                             "majorVersion" : 47,
                                                                                             "minorVersion" : 11
-                                                                                        }
-                                                                                    },
-                                                                                    typeRegistry),
+                                                                        })
+                                                                    }),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
                                         done();
