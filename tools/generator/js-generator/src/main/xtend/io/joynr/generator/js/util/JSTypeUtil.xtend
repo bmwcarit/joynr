@@ -158,7 +158,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 			return "\"Number\""
 		} else {
 			if (type.isCompound || type.isMap) {
-				return "\"" + type.derived.joynrName + "\""
+				return "[\"Object\", \"" + type.derived.joynrName + "\"]"
 			}
 			else {
 				/* TODO in the final version, enumerations must always be represented as object.
