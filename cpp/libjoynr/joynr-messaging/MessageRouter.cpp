@@ -633,12 +633,25 @@ void MessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = multicastId;
-    std::ignore = subscriberParticipantId;
-    std::ignore = providerParticipantId;
-    std::ignore = onSuccess;
-    std::ignore = onError;
+    std::function<void()> onSuccessWrapper =
+            [this, multicastId, subscriberParticipantId, onSuccess]() {
+        multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
+        onSuccess();
+    };
+    if (isChildMessageRouter()) {
+        std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+                [onError](const exceptions::JoynrException& error) {
+            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        };
+        parentRouter->addMulticastReceiverAsync(multicastId,
+                                                subscriberParticipantId,
+                                                providerParticipantId,
+                                                onSuccessWrapper,
+                                                onErrorWrapper);
+    } else {
+        // TODO perform transport level multicast subscription
+        onSuccessWrapper();
+    }
 }
 
 void MessageRouter::removeMulticastReceiver(
@@ -648,12 +661,21 @@ void MessageRouter::removeMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = multicastId;
-    std::ignore = subscriberParticipantId;
-    std::ignore = providerParticipantId;
-    std::ignore = onSuccess;
-    std::ignore = onError;
+    multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+    if (isChildMessageRouter()) {
+        std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+                [onError](const exceptions::JoynrException& error) {
+            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        };
+        parentRouter->removeMulticastReceiverAsync(multicastId,
+                                                   subscriberParticipantId,
+                                                   providerParticipantId,
+                                                   onSuccess,
+                                                   onErrorWrapper);
+    } else {
+        // TODO perform transport level multicast unsubscription
+        onSuccess();
+    }
 }
 
 /**
