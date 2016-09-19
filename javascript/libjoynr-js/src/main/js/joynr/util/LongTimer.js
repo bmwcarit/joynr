@@ -19,8 +19,8 @@
 
 // max value for timeout, see
 // http://stackoverflow.com/questions/3468607/why-does-settimeout-break-for-large-millisecond-delay-values
-define("joynr/util/LongTimer", [ "joynr/util/Util"
-], function(Util) {
+define("joynr/util/LongTimer", [ "joynr/util/Typing"
+], function(Typing) {
 
     /**
      * Implementation for long (>2^31-1 ms) timer functions that only allows timeouts or intervals
@@ -50,8 +50,8 @@ define("joynr/util/LongTimer", [ "joynr/util/Util"
      *             if parameters are nullable or not of documented type
      */
     LongTimer.setTimeout = function(func, timeout) {
-        Util.checkProperty(func, "Function", "func");
-        Util.checkProperty(timeout, "Number", "timeout");
+        Typing.checkProperty(func, "Function", "func");
+        Typing.checkProperty(timeout, "Number", "timeout");
 
         // get next timeout id
         var timeoutId = ++highestTimeoutId;
@@ -107,7 +107,7 @@ define("joynr/util/LongTimer", [ "joynr/util/Util"
      *             if parameters are nullable or not of documented type
      */
     LongTimer.clearTimeout = function(timeoutId) {
-        Util.checkProperty(timeoutId, "Number", "timeoutId");
+        Typing.checkProperty(timeoutId, "Number", "timeoutId");
 
         // retrieve timeout object
         var timeoutObj = LongTimer.timeoutMap[timeoutId];
@@ -139,8 +139,8 @@ define("joynr/util/LongTimer", [ "joynr/util/Util"
      *             if parameters are nullable or not of documented type
      */
     LongTimer.setInterval = function(func, interval) {
-        Util.checkProperty(func, "Function", "func");
-        Util.checkProperty(interval, "Number", "interval");
+        Typing.checkProperty(func, "Function", "func");
+        Typing.checkProperty(interval, "Number", "interval");
 
         // get next interval id
         var intervalId = ++highestIntervalId;
@@ -190,7 +190,7 @@ define("joynr/util/LongTimer", [ "joynr/util/Util"
      *             if parameters are nullable or not of documented type
      */
     LongTimer.clearInterval = function(intervalId) {
-        Util.checkProperty(intervalId, "Number", "intervalId");
+        Typing.checkProperty(intervalId, "Number", "intervalId");
 
         // retrieve interval object
         var interval = intervalMap[intervalId];

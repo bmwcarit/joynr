@@ -19,10 +19,11 @@
 
 define("joynr/messaging/browser/BrowserMessagingSkeleton", [
     "joynr/messaging/JoynrMessage",
+    "joynr/util/Typing",
     "joynr/util/UtilInternal",
     "joynr/util/JSONSerializer",
     "joynr/system/LoggerFactory"
-], function(JoynrMessage, Util, JSONSerializer, LoggerFactory) {
+], function(JoynrMessage, Typing, Util, JSONSerializer, LoggerFactory) {
 
     /**
      * @constructor BrowserMessagingSkeleton
@@ -32,8 +33,12 @@ define("joynr/messaging/browser/BrowserMessagingSkeleton", [
      */
     function BrowserMessagingSkeleton(settings) {
         var log = LoggerFactory.getLogger("joynr/messaging/browser/BrowserMessagingSkeleton");
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.webMessagingSkeleton, Object, "settings.webMessagingSkeleton");
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing
+                .checkProperty(
+                        settings.webMessagingSkeleton,
+                        Object,
+                        "settings.webMessagingSkeleton");
 
         var receiverCallbacks = [];
 
@@ -57,7 +62,7 @@ define("joynr/messaging/browser/BrowserMessagingSkeleton", [
          * @param {Function} listener a listener function that should be added and should receive messages
          */
         this.registerListener = function(listener) {
-            Util.checkProperty(listener, "Function", "listener");
+            Typing.checkProperty(listener, "Function", "listener");
 
             receiverCallbacks.push(listener);
         };
@@ -70,7 +75,7 @@ define("joynr/messaging/browser/BrowserMessagingSkeleton", [
          * @param {Function} listener the listener function that should re removed and shouldn't receive messages any more
          */
         this.unregisterListener = function(listener) {
-            Util.checkProperty(listener, "Function", "listener");
+            Typing.checkProperty(listener, "Function", "listener");
 
             Util.removeElementFromArray(receiverCallbacks, listener);
         };

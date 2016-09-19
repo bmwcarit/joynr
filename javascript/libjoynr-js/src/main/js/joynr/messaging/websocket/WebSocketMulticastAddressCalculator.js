@@ -17,8 +17,8 @@
  * #L%
  */
 
-define("joynr/messaging/websocket/WebSocketMulticastAddressCalculator", [ "joynr/util/UtilInternal"
-], function(Util) {
+define("joynr/messaging/websocket/WebSocketMulticastAddressCalculator", [ "joynr/util/Typing"
+], function(Typing) {
 
     /**
      * @constructor WebSocketMulticastAddressCalculator
@@ -29,8 +29,8 @@ define("joynr/messaging/websocket/WebSocketMulticastAddressCalculator", [ "joynr
      */
     var WebSocketMulticastAddressCalculator =
             function WebSocketMulticastAddressCalculator(settings) {
-                Util.checkProperty(settings, "Object", "settings");
-                Util.checkProperty(
+                Typing.checkProperty(settings, "Object", "settings");
+                Typing.checkProperty(
                         settings.globalAddress,
                         "WebSocketAddress",
                         "settings.globalAddress");

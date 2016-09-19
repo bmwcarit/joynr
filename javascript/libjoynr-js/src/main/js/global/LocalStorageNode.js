@@ -22,8 +22,8 @@
  */
 define([
     "node-localstorage",
-    "joynr/util/Util"
-], function(LocalStorage, Util) {
+    "joynr/util/Typing"
+], function(LocalStorage, Typing) {
     /**
      * LocalStorage constructor (node wrapper for LocalStorage)
      * @constructor LocalStorageWrapper
@@ -44,7 +44,7 @@ define([
                 //the local storage wrapper uses the optionally given location
                 var location = settings.location || "./localStorageStorage";
                 var localStorage = new LocalStorage.LocalStorage(location, settings.quota);
-                Util.checkPropertyIfDefined(
+                Typing.checkPropertyIfDefined(
                         settings.clearPersistency,
                         "Boolean",
                         "settings.clearPersistency");

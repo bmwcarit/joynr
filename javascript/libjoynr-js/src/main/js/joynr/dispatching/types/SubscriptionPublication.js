@@ -34,8 +34,8 @@ define("joynr/dispatching/types/SubscriptionPublication", [
      *            settings.error The exception object in case of publication failure
      */
     function SubscriptionPublication(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
         if (settings.response === undefined && settings.error === undefined) {
             throw new Error(
                     "SubscriptionPublication object does neither contain response nor error");
@@ -47,7 +47,7 @@ define("joynr/dispatching/types/SubscriptionPublication", [
             settings.response = Util.ensureTypedValues(settings.response);
         }
 
-        Util.checkPropertyIfDefined(settings.error, [
+        Typing.checkPropertyIfDefined(settings.error, [
             "Object",
             "JoynrRuntimeException",
             "PublicationMissedException",

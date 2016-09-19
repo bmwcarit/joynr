@@ -19,9 +19,9 @@
 
 define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
     "joynr/messaging/JoynrMessage",
-    "joynr/util/UtilInternal",
+    "joynr/util/Typing",
     "joynr/system/LoggerFactory"
-], function(JoynrMessage, Util, LoggerFactory) {
+], function(JoynrMessage, Typing, LoggerFactory) {
 
     /**
      * @constructor WebSocketMessagingSkeleton
@@ -32,9 +32,13 @@ define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
      */
     var WebSocketMessagingSkeleton =
             function WebSocketMessagingSkeleton(settings) {
-                Util.checkProperty(settings, "Object", "settings");
-                Util.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
-                Util.checkProperty(settings.mainTransport, "Boolean", "settings.mainTransport");
+                Typing.checkProperty(settings, "Object", "settings");
+                Typing
+                        .checkProperty(
+                                settings.sharedWebSocket,
+                                "SharedWebSocket",
+                                "sharedWebSocket");
+                Typing.checkProperty(settings.mainTransport, "Boolean", "settings.mainTransport");
 
                 var sharedWebSocket = settings.sharedWebSocket;
                 var listener;
@@ -60,7 +64,7 @@ define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
                  *            listener a listener function that should be added and should receive messages
                  */
                 this.registerListener = function registerListener(listenerToAdd) {
-                    Util.checkProperty(listenerToAdd, "Function", "listenerToAdd");
+                    Typing.checkProperty(listenerToAdd, "Function", "listenerToAdd");
 
                     listener = listenerToAdd;
                 };
@@ -74,7 +78,7 @@ define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
                  *            messages any more
                  */
                 this.unregisterListener = function unregisterListener(listenerToRemove) {
-                    Util.checkProperty(listenerToRemove, "Function", "listenerToRemove");
+                    Typing.checkProperty(listenerToRemove, "Function", "listenerToRemove");
 
                     listener = undefined;
                 };

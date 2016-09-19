@@ -58,11 +58,11 @@ define("joynr/dispatching/types/Request", [
         var oneWayRequest = new OneWayRequest(settings);
         settings.requestReplyId = settings.requestReplyId || uuid();
 
-        Util.checkProperty(settings, [
+        Typing.checkProperty(settings, [
             "joynr.Request",
             "Object"
         ], "settings");
-        Util.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
+        Typing.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
 
         /**
          * @name Request#requestReplyId

@@ -24,12 +24,12 @@ define(
         [
             "global/Promise",
             "global/WebSocket",
-            "joynr/util/Util",
+            "joynr/util/Typing",
             "joynr/util/JSONSerializer",
             "joynr/util/LongTimer",
             "joynr/system/LoggerFactory"
         ],
-        function(Promise, WebSocket, Util, JSONSerializer, LongTimer, LoggerFactory) {
+        function(Promise, WebSocket, Typing, JSONSerializer, LongTimer, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.websocket.SharedWebSocket");
             /**
              * @param address
@@ -119,12 +119,12 @@ define(
              */
             var SharedWebSocket =
                     function SharedWebSocket(settings) {
-                        Util.checkProperty(settings, "Object", "settings");
-                        Util.checkProperty(
+                        Typing.checkProperty(settings, "Object", "settings");
+                        Typing.checkProperty(
                                 settings.localAddress,
                                 "WebSocketClientAddress",
                                 "localAddress");
-                        Util.checkProperty(
+                        Typing.checkProperty(
                                 settings.remoteAddress,
                                 "WebSocketAddress",
                                 "remoteAddress");
@@ -204,7 +204,7 @@ define(
                          */
                         this.send = function send(joynrMessage) {
                             try {
-                                Util.checkProperty(joynrMessage, "JoynrMessage", "joynrMessage");
+                                Typing.checkProperty(joynrMessage, "JoynrMessage", "joynrMessage");
                             } catch (e) {
                                 throw e;
                             }

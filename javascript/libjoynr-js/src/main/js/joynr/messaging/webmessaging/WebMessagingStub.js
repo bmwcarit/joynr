@@ -19,10 +19,9 @@
 
 define("joynr/messaging/webmessaging/WebMessagingStub", [
     "global/Promise",
-    "joynr/util/UtilInternal",
     "joynr/util/JSONSerializer",
     "joynr/system/LoggerFactory"
-], function(Promise, Util, JSONSerializer, LoggerFactory) {
+], function(Promise, JSONSerializer, LoggerFactory) {
 
     /**
      * @name WebMessagingStub

@@ -19,10 +19,11 @@
 
 define("joynr/exceptions/MethodInvocationException", [
     "joynr/types/TypeRegistrySingleton",
+    "joynr/util/Typing",
     "joynr/util/UtilInternal",
     "joynr/exceptions/JoynrRuntimeException",
     "joynr/system/LoggerFactory"
-], function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
+], function(TypeRegistrySingleton, Typing, Util, JoynrRuntimeException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -68,8 +69,8 @@ define("joynr/exceptions/MethodInvocationException", [
          * @type String
          */
         if (settings) {
-            Util.checkProperty(settings, "Object", "settings");
-            Util.checkPropertyIfDefined(
+            Typing.checkProperty(settings, "Object", "settings");
+            Typing.checkPropertyIfDefined(
                     settings.providerVersion,
                     "Version",
                     "settings.providerVersion");

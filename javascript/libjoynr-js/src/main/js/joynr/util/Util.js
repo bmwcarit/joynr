@@ -28,58 +28,6 @@ define("joynr/util/Util", [
      */
     var Util = {};
 
-    Util.checkProperty =
-            function(obj, type, description) {
-                if (obj === undefined) {
-                    throw new Error(description + " is undefined");
-                }
-                if (typeof type === "string" && Typing.getObjectType(obj) !== type) {
-                    throw new Error(description
-                        + " is not of type "
-                        + type
-                        + ". Actual type is "
-                        + Typing.getObjectType(obj));
-                }
-                if (Object.prototype.toString.call(type) === "[object Array]"
-                    && !Typing.getObjectType(obj).match("^" + type.join("$|^") + "$")) {
-                    throw new Error(description
-                        + " is not of a type from "
-                        + type
-                        + ". Actual type is "
-                        + Typing.getObjectType(obj));
-                }
-                if (typeof type === "function" && !(obj instanceof type)) {
-                    throw new Error(description
-                        + " is not of type "
-                        + Typing.getObjectType(type)
-                        + ". Actual type is "
-                        + Typing.getObjectType(obj));
-                }
-            };
-
-    /**
-     * Checks if the variable is of specified type
-     * @function Util#checkPropertyIfDefined
-     *
-     * @param {?}
-     *            obj the object
-     * @param {String|Function}
-     *            type a string representation of the the data type (e.g. "Boolean", "Number",
-     *             "String", "Array", "Object", "Function"
-     *            "MyCustomType", "Object|MyCustomType") or a constructor function to check against
-     *             using instanceof (e.g. obj
-     *            instanceof type)
-     * @param {String}
-     *            description a description for the thrown error
-     * @throws an
-     *             error if the object not of the given type
-     */
-    Util.checkPropertyIfDefined = function(obj, type, description) {
-        if (obj !== undefined && obj !== null) {
-            Util.checkProperty(obj, type, description);
-        }
-    };
-
     /**
      * @function Util#ensureTypedValues
      * @param {Object} value
@@ -101,7 +49,7 @@ define("joynr/util/Util", [
                 var Constructor = typeRegistry.getConstructor(value._typeName);
                 /*jslint nomen: false */
                 if (Constructor.checkMembers) {
-                    Constructor.checkMembers(value, Util.checkPropertyIfDefined);
+                    Constructor.checkMembers(value, Typing.checkPropertyIfDefined);
                 }
             }
         }

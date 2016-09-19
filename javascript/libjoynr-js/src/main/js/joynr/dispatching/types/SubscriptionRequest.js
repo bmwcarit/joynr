@@ -46,10 +46,10 @@ define("joynr/dispatching/types/SubscriptionRequest", [
      *            [settings.qos] the subscriptionQos
      */
     function SubscriptionRequest(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-        Util.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
-        Util.checkPropertyIfDefined(settings.qos, [
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+        Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
+        Typing.checkPropertyIfDefined(settings.qos, [
             "Object",
             "OnChangeSubscriptionQos",
             "PeriodicSubscriptionQos",

@@ -37,20 +37,20 @@ define("joynr/dispatching/types/Reply", [
      */
     function Reply(settings) {
         var i;
-        Util.checkProperty(settings, [
+        Typing.checkProperty(settings, [
             "joynr.Reply",
             "Object"
         ], "settings");
-        Util.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
+        Typing.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
         // "response" is not set in case an exception is returned
-        Util.checkPropertyIfDefined(settings.response, "Array", "settings.response");
+        Typing.checkPropertyIfDefined(settings.response, "Array", "settings.response");
         if (settings.response) {
             for (i = 0; i < settings.response.length; i++) {
                 settings.response[i] = Util.ensureTypedValues(settings.response[i]);
             }
         }
         // if present "error" must be one of the exception types
-        Util.checkPropertyIfDefined(settings.error, [
+        Typing.checkPropertyIfDefined(settings.error, [
             "Object",
             "ApplicationException",
             "DiscoveryException",

@@ -19,10 +19,11 @@
 
 define("joynr/exceptions/ApplicationException", [
     "joynr/types/TypeRegistrySingleton",
+    "joynr/util/Typing",
     "joynr/util/UtilInternal",
     "joynr/exceptions/JoynrException",
     "joynr/system/LoggerFactory"
-], function(TypeRegistrySingleton, Util, JoynrException, LoggerFactory) {
+], function(TypeRegistrySingleton, Typing, Util, JoynrException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -62,10 +63,10 @@ define("joynr/exceptions/ApplicationException", [
          * @type String
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.ApplicationException");
-        Util.checkPropertyIfDefined(settings, "Object", "settings");
+        Typing.checkPropertyIfDefined(settings, "Object", "settings");
         if (settings && settings.error) {
-            Util.checkProperty(settings.error.name, "String", "settings.error.name");
-            Util.checkProperty(settings.error.value, [
+            Typing.checkProperty(settings.error.name, "String", "settings.error.name");
+            Typing.checkProperty(settings.error.value, [
                 "String",
                 "Number"
             ], "settings.error.value");

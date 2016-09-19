@@ -52,13 +52,13 @@ define("joynr/dispatching/types/OneWayRequest", [
         }
         var i;
 
-        Util.checkProperty(settings, [
+        Typing.checkProperty(settings, [
             "joynr.OneWayRequest",
             "Object"
         ], "settings");
-        Util.checkProperty(settings.methodName, "String", "settings.methodName");
-        Util.checkPropertyIfDefined(settings.paramDatatypes, "Array", "settings.paramDatatypes");
-        Util.checkPropertyIfDefined(settings.params, "Array", "settings.params");
+        Typing.checkProperty(settings.methodName, "String", "settings.methodName");
+        Typing.checkPropertyIfDefined(settings.paramDatatypes, "Array", "settings.paramDatatypes");
+        Typing.checkPropertyIfDefined(settings.params, "Array", "settings.params");
 
         if (settings.params) {
             for (i = 0; i < settings.params.length; i++) {

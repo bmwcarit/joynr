@@ -112,7 +112,7 @@ define(
                                 if (Constructor && Constructor.checkMembers) {
                                     Constructor.checkMembers(
                                             argumentValue,
-                                            Util.checkPropertyIfDefined);
+                                            Typing.checkPropertyIfDefined);
                                 }
                             } catch (error) {
                                 errors.push(error.message);

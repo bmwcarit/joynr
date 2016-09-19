@@ -550,4 +550,92 @@ define(
 
             });
 
+            function testTypingCheckProperty(functionName) {
+                function CustomObj() {}
+                function AnotherCustomObj() {}
+                var objects = [
+                    true,
+                    1,
+                    "a string",
+                    [],
+                    {},
+                    function() {},
+                    new CustomObj(),
+                    new AnotherCustomObj()
+                ];
+                var types = [
+                    "Boolean",
+                    "Number",
+                    "String",
+                    "Array",
+                    "Object",
+                    "Function",
+                    CustomObj,
+                    AnotherCustomObj
+                ];
+
+                it("provides the correct type information", function() {
+                    var i, j;
+                    function functionBuilder(object, type) {
+                        return function() {
+                            Typing[functionName](object, type, "some description");
+                        };
+                    }
+
+                    for (i = 0; i < objects.length; ++i) {
+                        for (j = 0; j < types.length; ++j) {
+                            var test = expect(functionBuilder(objects[i], types[j]));
+
+                            if (i === j) {
+                                test.not.toThrow();
+                            } else {
+                                test.toThrow();
+                            }
+                        }
+                    }
+                });
+
+                it("supports type alternatives", function() {
+                    var type = [
+                        "Object",
+                        "CustomObj"
+                    ];
+                    expect(function() {
+                        Typing[functionName]({}, type, "some description");
+                    }).not.toThrow();
+                    expect(function() {
+                        Typing[functionName](new CustomObj(), type, "some description");
+                    }).not.toThrow();
+                    expect(function() {
+                        Typing[functionName](new AnotherCustomObj(), type, "some description");
+                    }).toThrow();
+                });
+            }
+
+            describe("libjoynr-js.joynr.Typing.checkProperty", function() {
+                testTypingCheckProperty("checkProperty");
+
+                it("throws on null and undefined", function() {
+                    expect(function() {
+                        Typing.checkProperty(undefined, "undefined", "some description");
+                    }).toThrow();
+                    expect(function() {
+                        Typing.checkProperty(null, "null", "some description");
+                    }).toThrow();
+                });
+            });
+
+            describe("libjoynr-js.joynr.Typing.checkPropertyIfDefined", function() {
+                testTypingCheckProperty("checkPropertyIfDefined");
+
+                it("does not throw on null or undefined", function() {
+                    expect(function() {
+                        Typing.checkPropertyIfDefined(undefined, "undefined", "some description");
+                    }).not.toThrow();
+                    expect(function() {
+                        Typing.checkPropertyIfDefined(null, "null", "some description");
+                    }).not.toThrow();
+                });
+            });
+
         });

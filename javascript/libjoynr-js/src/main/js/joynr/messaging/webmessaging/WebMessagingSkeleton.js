@@ -19,9 +19,11 @@
 
 define(
         "joynr/messaging/webmessaging/WebMessagingSkeleton",
-        [ "joynr/util/UtilInternal"
+        [
+            "joynr/util/Typing",
+            "joynr/util/UtilInternal"
         ],
-        function(Util) {
+        function(Typing, Util) {
 
             /**
              * @constructor WebMessagingSkeleton
@@ -29,7 +31,7 @@ define(
              * @param {Window} settings.window the window to register the event handler at
              */
             function WebMessagingSkeleton(settings) {
-                Util.checkProperty(settings, "Object", "settings");
+                Typing.checkProperty(settings, "Object", "settings");
 
                 if (settings.window === undefined) {
                     throw new Error(
@@ -56,7 +58,7 @@ define(
                  * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
                  */
                 this.registerListener = function registerListener(listener) {
-                    Util.checkPropertyIfDefined(listener, "Function", "listener");
+                    Typing.checkPropertyIfDefined(listener, "Function", "listener");
 
                     receiverCallbacks.push(listener);
                 };
@@ -68,7 +70,7 @@ define(
                  * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
                  */
                 this.unregisterListener = function unregisterListener(listener) {
-                    Util.checkPropertyIfDefined(listener, "Function", "listener");
+                    Typing.checkPropertyIfDefined(listener, "Function", "listener");
 
                     Util.removeElementFromArray(receiverCallbacks, listener);
                 };

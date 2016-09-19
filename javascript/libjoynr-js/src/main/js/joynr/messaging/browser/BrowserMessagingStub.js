@@ -17,8 +17,8 @@
  * #L%
  */
 
-define("joynr/messaging/browser/BrowserMessagingStub", [ "joynr/util/Util"
-], function(Util) {
+define("joynr/messaging/browser/BrowserMessagingStub", [ "joynr/util/Typing"
+], function(Typing) {
 
     /**
      * @name BrowserMessagingStub
