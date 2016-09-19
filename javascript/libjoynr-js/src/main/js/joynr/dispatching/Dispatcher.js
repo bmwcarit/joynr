@@ -647,10 +647,8 @@ define("joynr/dispatching/Dispatcher", [
 
                         case JoynrMessage.JOYNRMESSAGE_TYPE_REPLY:
                             try {
-                                var settings = Util.extend(parsePayload(joynrMessage.payload), {
-                                    requestReplyId : joynrMessage.requestReplyId
-                                });
-                                requestReplyManager.handleReply(new Reply(settings));
+                                requestReplyManager.handleReply(new Reply(
+                                        parsePayload(joynrMessage.payload)));
                             } catch (errorInReply) {
                                 // TODO handle error in handling the reply
                                 log.error("error handling reply: " + errorInReply);
