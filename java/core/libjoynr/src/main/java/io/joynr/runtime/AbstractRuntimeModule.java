@@ -93,6 +93,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+    Multibinder<MulticastAddressCalculator> multicastAddressCalculators;
 
     @Override
     protected void configure() {
@@ -127,7 +128,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
         });
 
-        Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
+        multicastAddressCalculators = Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
         });
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);

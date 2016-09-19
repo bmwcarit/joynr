@@ -29,13 +29,12 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
-import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import io.joynr.messaging.websocket.WebSocketEndpointFactory;
+import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.CCWebSocketRuntimeModule;
@@ -47,7 +46,6 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.tests.testProxy;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -86,7 +84,14 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
         ccConfig.putAll(webSocketConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         injectorCC = new JoynrInjectorFactory(ccConfig, Modules.override(new CCWebSocketRuntimeModule())
-                                                               .with(new AtmosphereMessagingModule())).getInjector();
+                                                               .with(new AtmosphereMessagingModule(),
+                                                                     new AbstractModule() {
+                                                                         @Override
+                                                                         protected void configure() {
+                                                                             bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
+                                                                                                .toInstance(Boolean.TRUE);
+                                                                         }
+                                                                     })).getInjector();
         return injectorCC.getInstance(JoynrRuntime.class);
     }
 
@@ -137,10 +142,4 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
         assertEquals(16, result);
     }
 
-    // Remove once we have support for multicast in websockets
-    @Ignore
-    @Override
-    public void testSimpleBroadcast() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
-        // Noop
-    }
 }

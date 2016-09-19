@@ -18,11 +18,13 @@ package io.joynr.runtime;
  * limitations under the License.
  * #L%
  */
+import com.google.inject.name.Names;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.WebSocketMessageSerializerFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
+import io.joynr.messaging.websocket.WebSocketMulticastAddressCalculator;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.messaging.websocket.jetty.client.WebSocketJettyClientModule;
 
@@ -45,10 +47,13 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         install(new WebSocketJettyClientModule());
         bind(JoynrRuntime.class).to(LibjoynrRuntime.class).in(Singleton.class);
         bind(MessageRouter.class).to(ChildMessageRouter.class);
+        bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
+                           .toInstance(Boolean.TRUE);
 
         messagingSkeletonFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingSkeleton.class);
         messagingStubFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingStubFactory.class);
         messageSerializerFactory.addBinding(WebSocketAddress.class).to(WebSocketMessageSerializerFactory.class);
+        multicastAddressCalculators.addBinding().to(WebSocketMulticastAddressCalculator.class);
     }
 
     @Provides
