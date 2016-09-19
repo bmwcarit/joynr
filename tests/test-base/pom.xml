@@ -33,6 +33,12 @@
 			<resource>
 				<directory>src/main/js</directory>
 			</resource>
+			<resource>
+				<directory>${basedir}</directory>
+				<includes>
+					<include>package.json</include>
+				</includes>
+			</resource>
 		</resources>
 
 		<plugins>
@@ -51,7 +57,7 @@
 						<root>.</root>
 					</roots>
 					<excludes>
-						<exclude>src/main/js/package.json</exclude>
+						<exclude>package.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
