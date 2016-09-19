@@ -65,6 +65,7 @@
 
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IRequestCallerDirectory.h"
+#include "joynr/MulticastMessagingSkeletonDirectory.h"
 
 #include "joynr/ClusterControllerDirectories.h"
 
@@ -335,7 +336,11 @@ public:
     }
 
     MockMessageRouter(boost::asio::io_service& ioService):
-        MessageRouter(std::unique_ptr<joynr::IMessagingStubFactory>(), std::unique_ptr<joynr::IPlatformSecurityManager>(), ioService, 0)
+        MessageRouter(std::unique_ptr<joynr::IMessagingStubFactory>(),
+                      std::shared_ptr<joynr::MulticastMessagingSkeletonDirectory>(),
+                      std::unique_ptr<joynr::IPlatformSecurityManager>(),
+                      ioService,
+                      0)
     {
         EXPECT_CALL(
                 *this,

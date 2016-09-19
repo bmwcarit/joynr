@@ -53,7 +53,9 @@ namespace joynr
 
 class IAccessController;
 class IMessaging;
+class IMessagingMulticastSubscriber;
 class IMessagingStubFactory;
+class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class JoynrMessage;
 class JoynrMessagingEndpointAddress;
@@ -84,6 +86,8 @@ class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingAbstractProvider
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+                  std::shared_ptr<MulticastMessagingSkeletonDirectory>
+                          multicastMessagingSkeletonDirectory,
                   std::unique_ptr<IPlatformSecurityManager> securityManager,
                   boost::asio::io_service& ioService,
                   int maxThreads = 1,
@@ -183,6 +187,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
+    std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
     using RoutingTable = Directory<std::string, const joynr::system::RoutingTypes::Address>;
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
@@ -207,6 +212,10 @@ private:
     getDestinationAddresses(const JoynrMessage& message);
     std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
+
+    std::shared_ptr<IMessagingMulticastSubscriber> getMulticastSkeleton(
+            const std::string& providerParticipantId,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
 
     void addNextHopToParent(std::string participantId,
                             std::function<void(void)> callbackFct = nullptr,

@@ -25,6 +25,7 @@
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
+#include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/Request.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
@@ -81,6 +82,7 @@ public:
     {
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
         messageRouter = std::make_unique<MessageRouter>(std::unique_ptr<MessagingStubFactory>(messagingStubFactory),
+                                                        std::shared_ptr<MulticastMessagingSkeletonDirectory>(),
                                                         std::unique_ptr<IPlatformSecurityManager>(),
                                                         singleThreadedIOService.getIOService());
         qos.setTtl(10000);

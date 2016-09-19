@@ -61,6 +61,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingStubFactory.h"
+#include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/ProxyFactory.h"
@@ -131,7 +132,9 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           mqttMessagingIsRunning(false),
           doMqttMessaging(false),
           doHttpMessaging(false),
-          mqttSettings()
+          mqttSettings(),
+          multicastMessagingSkeletonDirectory(
+                  std::make_shared<MulticastMessagingSkeletonDirectory>())
 {
     initializeAllDependencies();
 }
@@ -159,8 +162,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     messagingStubFactory->registerStubFactory(std::make_shared<DbusMessagingStubFactory>());
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
+
     // init message router
     messageRouter = std::make_shared<MessageRouter>(messagingStubFactory,
+                                                    multicastMessagingSkeletonDirectory,
                                                     std::move(securityManager),
                                                     singleThreadIOService->getIOService());
     messageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
@@ -327,10 +332,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         }
 
         if (!mqttMessagingIsRunning) {
-            mqttMessagingSkeleton = std::make_shared<MqttMessagingSkeleton>(*messageRouter);
+            mqttMessagingSkeleton = std::make_shared<MqttMessagingSkeleton>(
+                    *messageRouter, std::static_pointer_cast<MqttReceiver>(mqttMessageReceiver));
             mqttMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
                 mqttMessagingSkeleton->onTextMessageReceived(msg);
             });
+            multicastMessagingSkeletonDirectory
+                    ->registerSkeleton<system::RoutingTypes::MqttAddress>(mqttMessagingSkeleton);
         }
 
         mqttSerializedGlobalClusterControllerAddress =
@@ -507,6 +515,8 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
     singleThreadIOService->stop();
     stopMessaging();
+
+    multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
 
     if (joynrDispatcher != nullptr) {
         JOYNR_LOG_TRACE(logger, "joynrDispatcher");

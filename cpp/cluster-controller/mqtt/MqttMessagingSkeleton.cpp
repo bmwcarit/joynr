@@ -18,18 +18,51 @@
  */
 #include "MqttMessagingSkeleton.h"
 
+#include "MqttReceiver.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/JoynrMessage.h"
 #include "joynr/MessageRouter.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(MqttMessagingSkeleton);
 
-MqttMessagingSkeleton::MqttMessagingSkeleton(MessageRouter& messageRouter)
-        : messageRouter(messageRouter)
+MqttMessagingSkeleton::MqttMessagingSkeleton(MessageRouter& messageRouter,
+                                             std::shared_ptr<MqttReceiver> mqttReceiver)
+        : messageRouter(messageRouter),
+          mqttReceiver(mqttReceiver),
+          multicastSubscriptionCount(),
+          multicastSubscriptionCountMutex()
 {
+}
+
+void MqttMessagingSkeleton::registerMulticastSubscription(const std::string& multicastId)
+{
+    std::lock_guard<std::mutex> lock(multicastSubscriptionCountMutex);
+    if (multicastSubscriptionCount.find(multicastId) == multicastSubscriptionCount.cend()) {
+        mqttReceiver->subscribeToTopic(multicastId);
+        multicastSubscriptionCount[multicastId] = 1;
+    } else {
+        multicastSubscriptionCount[multicastId]++;
+    }
+}
+
+void MqttMessagingSkeleton::unregisterMulticastSubscription(const std::string& multicastId)
+{
+    std::lock_guard<std::mutex> lock(multicastSubscriptionCountMutex);
+    auto countIterator = multicastSubscriptionCount.find(multicastId);
+    if (countIterator == multicastSubscriptionCount.cend()) {
+        JOYNR_LOG_ERROR(
+                logger, "unregister multicast subscription called for non existing subscription");
+    } else if (countIterator->second == 1) {
+        multicastSubscriptionCount.erase(multicastId);
+        mqttReceiver->unsubscribeFromTopic(multicastId);
+    } else {
+        countIterator->second--;
+    }
 }
 
 void MqttMessagingSkeleton::transmit(
@@ -55,6 +88,8 @@ void MqttMessagingSkeleton::transmit(
             // do not try to route the message if address is not valid
             return;
         }
+    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+        message.setReceivedFromGlobal(true);
     }
 
     try {

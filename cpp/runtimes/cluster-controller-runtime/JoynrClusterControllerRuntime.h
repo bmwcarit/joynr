@@ -60,6 +60,7 @@ class WebSocketCcMessagingSkeleton;
 class InProcessMessagingSkeleton;
 class HttpMessagingSkeleton;
 class MqttMessagingSkeleton;
+class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class Settings;
 class JoynrMessageSender;
@@ -154,6 +155,7 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
     MqttSettings mqttSettings;
+    std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
 
     friend class ::JoynrClusterControllerRuntimeTest;
 };

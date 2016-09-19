@@ -19,22 +19,30 @@
 #ifndef MQTTMESSAGINGSKELETON_H
 #define MQTTMESSAGINGSKELETON_H
 
+#include <memory>
+#include <mutex>
 #include <string>
+#include <unordered_map>
 
-#include "joynr/IMessaging.h"
+#include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
 
 class MessageRouter;
+class MqttReceiver;
 class JoynrMessage;
 
-class MqttMessagingSkeleton : public IMessaging
+class MqttMessagingSkeleton : public IMessagingMulticastSubscriber
 {
 public:
-    explicit MqttMessagingSkeleton(MessageRouter& messageRouter);
+    MqttMessagingSkeleton(MessageRouter& messageRouter, std::shared_ptr<MqttReceiver> mqttReceiver);
 
     ~MqttMessagingSkeleton() override = default;
 
@@ -42,12 +50,18 @@ public:
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
+    void registerMulticastSubscription(const std::string& multicastId) override;
+    void unregisterMulticastSubscription(const std::string& multicastId) override;
+
     void onTextMessageReceived(const std::string& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingSkeleton);
     ADD_LOGGER(MqttMessagingSkeleton);
     MessageRouter& messageRouter;
+    std::shared_ptr<MqttReceiver> mqttReceiver;
+    std::unordered_map<std::string, std::uint64_t> multicastSubscriptionCount;
+    std::mutex multicastSubscriptionCountMutex;
 };
 
 } // namespace joynr

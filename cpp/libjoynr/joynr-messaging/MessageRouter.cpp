@@ -24,11 +24,14 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/placeholders.hpp>
 
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/IMessaging.h"
+#include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/JoynrMessage.h"
+#include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SteadyTimer.h"
@@ -81,13 +84,16 @@ auto filterFun = [](std::shared_ptr<const joynr::system::RoutingTypes::Address> 
     return inprocessAddress == nullptr;
 };
 
-MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
-                             std::unique_ptr<IPlatformSecurityManager> securityManager,
-                             boost::asio::io_service& ioService,
-                             int maxThreads,
-                             std::unique_ptr<MessageQueue> messageQueue)
+MessageRouter::MessageRouter(
+        std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+        std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory,
+        std::unique_ptr<IPlatformSecurityManager> securityManager,
+        boost::asio::io_service& ioService,
+        int maxThreads,
+        std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
           messagingStubFactory(std::move(messagingStubFactory)),
+          multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           routingTable("MessageRouter-RoutingTable", ioService, filterFun),
           routingTableLock(),
           multicastReceiverDirectory(),
@@ -115,6 +121,7 @@ MessageRouter::MessageRouter(
         std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
           messagingStubFactory(std::move(messagingStubFactory)),
+          multicastMessagingSkeletonDirectory(nullptr),
           routingTable("MessageRouter-RoutingTable", ioService, filterFun),
           routingTableLock(),
           multicastReceiverDirectory(),
@@ -626,6 +633,34 @@ void MessageRouter::resolveNextHop(
     onSuccess(resolved);
 }
 
+std::shared_ptr<IMessagingMulticastSubscriber> MessageRouter::getMulticastSkeleton(
+        const std::string& providerParticipantId,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
+    {
+        ReadLocker lock(routingTableLock);
+        destAddress = routingTable.lookup(providerParticipantId);
+    }
+    if (!destAddress) {
+        exceptions::ProviderRuntimeException exception(
+                "No routing entry for multicast provider (providerParticipantId=" +
+                providerParticipantId + ") found.");
+        onError(exception);
+        return nullptr;
+    }
+    std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
+            multicastMessagingSkeletonDirectory->getSkeleton(destAddress);
+    if (!skeleton) {
+        exceptions::ProviderRuntimeException error("No messaging skeleton for multicast "
+                                                   "provider (providerParticipantId=" +
+                                                   providerParticipantId + ") "
+                                                                           "found.");
+        onError(error);
+    }
+    return skeleton;
+}
+
 void MessageRouter::addMulticastReceiver(
         const std::string& multicastId,
         const std::string& subscriberParticipantId,
@@ -638,19 +673,27 @@ void MessageRouter::addMulticastReceiver(
         multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
         onSuccess();
     };
+    std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+            [onError](const exceptions::JoynrException& error) {
+        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+    };
     if (isChildMessageRouter()) {
-        std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-                [onError](const exceptions::JoynrException& error) {
-            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
-        };
         parentRouter->addMulticastReceiverAsync(multicastId,
                                                 subscriberParticipantId,
                                                 providerParticipantId,
                                                 onSuccessWrapper,
                                                 onErrorWrapper);
     } else {
-        // TODO perform transport level multicast subscription
-        onSuccessWrapper();
+        std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
+                getMulticastSkeleton(providerParticipantId, onError);
+        if (skeleton) {
+            try {
+                skeleton->registerMulticastSubscription(multicastId);
+                onSuccessWrapper();
+            } catch (const exceptions::JoynrRuntimeException& error) {
+                onErrorWrapper(error);
+            }
+        }
     }
 }
 
@@ -673,8 +716,12 @@ void MessageRouter::removeMulticastReceiver(
                                                    onSuccess,
                                                    onErrorWrapper);
     } else {
-        // TODO perform transport level multicast unsubscription
-        onSuccess();
+        std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
+                getMulticastSkeleton(providerParticipantId, onError);
+        if (skeleton) {
+            skeleton->unregisterMulticastSubscription(multicastId);
+            onSuccess();
+        }
     }
 }
 

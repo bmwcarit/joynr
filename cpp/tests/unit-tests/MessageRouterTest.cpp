@@ -29,6 +29,7 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/SingleThreadedIOService.h"
 
@@ -60,6 +61,7 @@ public:
         this->messagingStubFactory = messagingStubFactory.get();
 
         messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory),
+                                                        std::shared_ptr<MulticastMessagingSkeletonDirectory>(),
                                                         std::unique_ptr<IPlatformSecurityManager>(),
                                                         singleThreadedIOService.getIOService(),
                                                         6, std::move(messageQueue));
@@ -250,7 +252,11 @@ TEST_F(MessageRouterTest, restoreRoutingTable) {
     std::remove(routingTablePersistenceFilename.c_str());
 
     auto messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
-    auto messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>(), singleThreadedIOService.getIOService());
+    auto messageRouter = std::make_unique<MessageRouter>(
+                messagingStubFactory,
+                std::make_shared<MulticastMessagingSkeletonDirectory>(),
+                std::unique_ptr<IPlatformSecurityManager>(),
+                singleThreadedIOService.getIOService());
     std::string participantId = "myParticipantId";
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
 
@@ -258,7 +264,11 @@ TEST_F(MessageRouterTest, restoreRoutingTable) {
     messageRouter->loadRoutingTable(routingTablePersistenceFilename);
     messageRouter->addProvisionedNextHop(participantId, address); // Saves the RoutingTable to the persistence file.
 
-    messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>(), singleThreadedIOService.getIOService());
+    messageRouter = std::make_unique<MessageRouter>(
+                messagingStubFactory,
+                std::make_shared<MulticastMessagingSkeletonDirectory>(),
+                std::unique_ptr<IPlatformSecurityManager>(),
+                singleThreadedIOService.getIOService());
 
     messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 
