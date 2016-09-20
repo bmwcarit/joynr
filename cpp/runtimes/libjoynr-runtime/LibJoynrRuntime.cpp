@@ -55,8 +55,7 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
           inProcessDispatcher(nullptr),
           settings(std::move(settings)),
           libjoynrSettings(new LibjoynrSettings(*this->settings)),
-          dispatcherMessagingSkeleton(nullptr),
-          runtimeExecutor(nullptr)
+          dispatcherMessagingSkeleton(nullptr)
 {
     libjoynrSettings->printSettings();
 }
@@ -192,18 +191,6 @@ void LibJoynrRuntime::unregisterProvider(const std::string& participantId)
 {
     assert(capabilitiesRegistrar);
     capabilitiesRegistrar->remove(participantId);
-}
-
-void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor)
-{
-    this->runtimeExecutor = std::unique_ptr<JoynrRuntimeExecutor>(runtimeExecutor);
-}
-
-LibJoynrRuntime* LibJoynrRuntime::create(JoynrRuntimeExecutor* runtimeExecutor)
-{
-    LibJoynrRuntime* runtime = runtimeExecutor->getRuntime();
-    runtime->setRuntimeExecutor(runtimeExecutor);
-    return runtime;
 }
 
 } // namespace joynr

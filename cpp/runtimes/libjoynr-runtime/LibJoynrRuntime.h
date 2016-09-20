@@ -33,7 +33,6 @@
 #include "joynr/IMessaging.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/Semaphore.h"
 
@@ -54,7 +53,6 @@ public:
     explicit LibJoynrRuntime(std::unique_ptr<Settings> settings);
     ~LibJoynrRuntime() override;
 
-    static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
     void unregisterProvider(const std::string& participantId) override;
 
 protected:
@@ -83,8 +81,6 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
-    std::unique_ptr<JoynrRuntimeExecutor> runtimeExecutor;
-    void setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor);
 };
 
 } // namespace joynr

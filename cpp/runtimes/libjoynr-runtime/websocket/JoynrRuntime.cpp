@@ -18,8 +18,8 @@
  */
 #include "joynr/JoynrRuntime.h"
 #include "libjoynr-runtime/LibJoynrRuntime.h"
-#include "JoynrWebSocketRuntimeExecutor.h"
 #include "joynr/Settings.h"
+#include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
 namespace joynr
 {
@@ -36,6 +36,6 @@ JoynrRuntime* JoynrRuntime::createRuntime(const std::string& pathToLibjoynrSetti
 
 JoynrRuntime* JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
 {
-    return LibJoynrRuntime::create(new JoynrWebSocketRuntimeExecutor(std::move(settings)));
+    return new LibJoynrWebSocketRuntime(std::move(settings));
 }
 } // namespace joynr

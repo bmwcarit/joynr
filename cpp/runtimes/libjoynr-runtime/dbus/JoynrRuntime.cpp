@@ -20,7 +20,6 @@
 
 #include "joynr/JoynrRuntime.h"
 #include "libjoynr-runtime/LibJoynrRuntime.h"
-#include "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.h"
 
 namespace joynr
 {
@@ -32,7 +31,7 @@ JoynrRuntime* JoynrRuntime::createRuntime(const std::string& pathToLibjoynrSetti
     Settings messagingSettings{pathToMessagingSettings};
     Settings::merge(messagingSettings, *settings, false);
 
-    return LibJoynrRuntime::create(new JoynrDbusRuntimeExecutor(std::move(settings)));
+    return new LibJoynrDbusRuntime(std::move(settings));
 }
 
 } // namespace joynr
