@@ -208,14 +208,11 @@ define("joynr/dispatching/Dispatcher", [
                         requestMessage.setCustomHeaders(settings.messagingQos.customHeaders);
                     }
 
-                    log.info("calling "
-                        + settings.request.methodName
-                        + ". Request: "
-                        + requestMessage.payload, DiagnosticTags.forRequest({
-                        request : settings.request,
-                        to : settings.to,
-                        from : settings.from
-                    }));
+            log.info("calling " + settings.request.methodName + ".", DiagnosticTags.forRequest({
+                request : settings.request,
+                to : settings.to,
+                from : settings.from
+            }));
 
                     return sendJoynrMessage(requestMessage, settings);
                 };
@@ -246,14 +243,12 @@ define("joynr/dispatching/Dispatcher", [
                     if (settings.messagingQos.customHeaders) {
                         oneWayRequestMessage.setCustomHeaders(settings.messagingQos.customHeaders);
                     }
-                    log.info("calling "
-                        + settings.request.methodName
-                        + ". OneWayRequest: "
-                        + oneWayRequestMessage.payload, DiagnosticTags.forOneWayRequest({
-                        request : settings.request,
-                        to : settings.to,
-                        from : settings.from
-                    }));
+                    log.info("calling " + settings.request.methodName + ".", DiagnosticTags
+                            .forOneWayRequest({
+                                request : settings.request,
+                                to : settings.to,
+                                from : settings.from
+                            }));
 
                     return sendJoynrMessage(oneWayRequestMessage, settings);
                 };
