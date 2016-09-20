@@ -37,7 +37,7 @@ var consumerBase = {
             console.log("Using domain " + options.domain);
             console.error("Performing " + options.numRuns + " runs");
             var viaClusterController = options.viacc == 'true';
-            console.log("Short-circuit-test: " + viaClusterController);
+            console.log("Via cluster-contoller: " + viaClusterController);
             var provisioning = testbase.provisioning_common;
             if (viaClusterController) {
                 provisioning.ccAddress.host = options.cchost;
