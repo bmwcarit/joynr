@@ -73,11 +73,17 @@ define("joynr/dispatching/types/Reply", [
          * @name Reply#requestReplyId
          * @type String
          */
+        this.requestReplyId = settings.requestReplyId;
         /**
          * @name Reply#response
          * @type Array
          */
-        Util.extend(this, settings);
+        this.response = settings.response;
+        /**
+         * @name Reply#error
+         * @type Object
+         */
+        this.error = settings.error;
 
         /**
          * The joynr type name
