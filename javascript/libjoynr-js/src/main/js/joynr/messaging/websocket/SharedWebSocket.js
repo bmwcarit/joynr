@@ -159,8 +159,8 @@ define(
                         onError = function onError(event) {
                             log.error("error in websocket: "
                                     + event.code
-                                    + " reason: "
-                                    + event.reason
+                                    + (event.reason !== undefined ? " reason: "
+                                    + event.reason : "")
                                     + ". Resetting connection.");
                             if (reconnectTimer !== undefined) {
                                 LongTimer.clearTimeout(reconnectTimer);
