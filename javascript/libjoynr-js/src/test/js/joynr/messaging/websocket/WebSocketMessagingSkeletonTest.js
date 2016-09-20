@@ -30,13 +30,12 @@ define([
         WebSocketClientAddress,
         SharedWebSocket) {
 
-    describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingSkeleton", function() {
+    describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", function() {
 
         var window = null;
         var sharedWebSocket = null;
         var webSocketMessagingSkeleton = null;
-        var listener1 = null;
-        var listener2 = null;
+        var listener = null;
         var data = null;
         var event = null;
         var multicastEvent;
@@ -67,8 +66,7 @@ define([
                 mainTransport : true
             });
 
-            listener1 = jasmine.createSpy("listener1");
-            listener2 = jasmine.createSpy("listener2");
+            listener = jasmine.createSpy("listener");
             function MessageEvent() {}
             event = new MessageEvent();
             data = new JoynrMessage({
@@ -133,46 +131,34 @@ define([
             done();
         });
 
-        it("event calls through to registered listeners", function(done) {
-            webSocketMessagingSkeleton.registerListener(listener1);
-            webSocketMessagingSkeleton.registerListener(listener2);
-            expect(listener1).not.toHaveBeenCalled();
-            expect(listener2).not.toHaveBeenCalled();
+        it("event calls through to registered listener", function() {
+            webSocketMessagingSkeleton.registerListener(listener);
+            expect(listener).not.toHaveBeenCalled();
 
             sharedWebSocket.onmessage(event);
 
-            expect(listener1).toHaveBeenCalledWith(data);
-            expect(listener2).toHaveBeenCalledWith(data);
-            expect(listener1.calls.count()).toBe(1);
-            expect(listener2.calls.count()).toBe(1);
-            done();
+            expect(listener).toHaveBeenCalledWith(data);
+            expect(listener.calls.count()).toBe(1);
         });
 
-        it("event does not call through to unregistered listeners", function(done) {
-            webSocketMessagingSkeleton.registerListener(listener1);
-            webSocketMessagingSkeleton.registerListener(listener2);
-            webSocketMessagingSkeleton.unregisterListener(listener1);
-
+        it("event does not call through to unregistered listener", function() {
+            webSocketMessagingSkeleton.registerListener(listener);
             sharedWebSocket.onmessage(event);
-
-            webSocketMessagingSkeleton.unregisterListener(listener2);
-
+            expect(listener).toHaveBeenCalled();
+            expect(listener.calls.count()).toBe(1);
+            webSocketMessagingSkeleton.unregisterListener(listener);
             sharedWebSocket.onmessage(event);
-
-            expect(listener1).not.toHaveBeenCalled();
-            expect(listener2).toHaveBeenCalled();
-            expect(listener2.calls.count()).toBe(1);
-            done();
+            expect(listener.calls.count()).toBe(1);
         });
 
         function receiveMessageAndCheckForIsReceivedFromGlobalFlag(expectedValue) {
-            webSocketMessagingSkeleton.registerListener(listener1);
+            webSocketMessagingSkeleton.registerListener(listener);
 
             sharedWebSocket.onmessage(multicastEvent);
 
-            expect(listener1).toHaveBeenCalled();
-            expect(listener1.calls.count()).toBe(1);
-            expect(listener1.calls.argsFor(0)[0].isReceivedFromGlobal).toBe(expectedValue);
+            expect(listener).toHaveBeenCalled();
+            expect(listener.calls.count()).toBe(1);
+            expect(listener.calls.argsFor(0)[0].isReceivedFromGlobal).toBe(expectedValue);
         }
 
         it("sets isReceivedFromGlobal if web socket is main transport", function() {

@@ -37,18 +37,18 @@ define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
                 Util.checkProperty(settings.mainTransport, "Boolean", "settings.mainTransport");
 
                 var sharedWebSocket = settings.sharedWebSocket;
-                var receiverCallbacks = [];
+                var listener;
 
-                sharedWebSocket.onmessage =
+                settings.sharedWebSocket.onmessage =
                         function(event) {
                             var received = event.data;
-                            if (typeof event.data === "string") {
+                            if (listener !== undefined && typeof event.data === "string") {
                                 var joynrMessage = new JoynrMessage(JSON.parse(event.data));
                                 if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
                                     && settings.mainTransport) {
                                     joynrMessage.setReceivedFromGlobal(true);
                                 }
-                                Util.fire(receiverCallbacks, joynrMessage);
+                                listener(joynrMessage);
                             }
                         };
 
@@ -59,10 +59,10 @@ define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
                  * @param {Function}
                  *            listener a listener function that should be added and should receive messages
                  */
-                this.registerListener = function registerListener(listener) {
-                    Util.checkProperty(listener, "Function", "listener");
+                this.registerListener = function registerListener(listenerToAdd) {
+                    Util.checkProperty(listenerToAdd, "Function", "listenerToAdd");
 
-                    receiverCallbacks.push(listener);
+                    listener = listenerToAdd;
                 };
 
                 /**
@@ -73,10 +73,10 @@ define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
                  *            listener the listener function that should re removed and shouldn't receive
                  *            messages any more
                  */
-                this.unregisterListener = function unregisterListener(listener) {
-                    Util.checkProperty(listener, "Function", "listener");
+                this.unregisterListener = function unregisterListener(listenerToRemove) {
+                    Util.checkProperty(listenerToRemove, "Function", "listenerToRemove");
 
-                    Util.removeElementFromArray(receiverCallbacks, listener);
+                    listener = undefined;
                 };
 
                 /**
