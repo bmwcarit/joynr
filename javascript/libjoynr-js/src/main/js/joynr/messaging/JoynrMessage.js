@@ -36,8 +36,6 @@ define(
              *            settings.type the message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
              */
             function JoynrMessage(settings) {
-                settings = settings || {};
-
                 Object.defineProperties(this, {
                     /**
                      * The joynr type name
