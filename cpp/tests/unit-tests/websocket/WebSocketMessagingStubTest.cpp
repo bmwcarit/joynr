@@ -35,6 +35,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Settings.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/SingleThreadedIOService.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
@@ -118,6 +119,7 @@ public:
         wsSettings(settings),
         server(),
         serverAddress(),
+        singleThreadedIOService(),
         webSocket(nullptr)
     {
         server.start();
@@ -135,7 +137,7 @@ public:
         );
         JOYNR_LOG_DEBUG(logger, "server URL: {}",serverAddress.toString());
         joynr::Semaphore connected(0);
-        webSocket = std::make_shared<joynr::WebSocketPpClient>(wsSettings);
+        webSocket = std::make_shared<joynr::WebSocketPpClient>(wsSettings, singleThreadedIOService.getIOService());
         webSocket->registerConnectCallback([&connected](){connected.notify();});
         webSocket->connect(serverAddress);
 
@@ -150,6 +152,7 @@ protected:
     joynr::WebSocketSettings wsSettings;
     WebSocketServer server;
     joynr::system::RoutingTypes::WebSocketAddress serverAddress;
+    joynr::SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<joynr::WebSocketPpClient> webSocket;
 };
 
@@ -173,7 +176,7 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
     server.registerTextMessageReceivedCallback(callback);
 
     // send message using messaging stub
-    joynr::WebSocketMessagingStub messagingStub(webSocket);
+    joynr::WebSocketMessagingStub messagingStub(webSocket->getSender());
     joynr::JoynrMessage joynrMsg;
 
     const std::size_t payloadSize = GetParam();

@@ -60,11 +60,6 @@ void QWebSocketSendWrapper::registerDisconnectCallback(
     onConnectionClosed = onWebSocketDisconnected;
 }
 
-void QWebSocketSendWrapper::registerReceiveCallback(std::function<void(const std::string&)>)
-{
-    // Is already done by WebSocketCcMessagingSkeleton
-}
-
 bool QWebSocketSendWrapper::isInitialized() const
 {
     return isConnected();

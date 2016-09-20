@@ -55,11 +55,7 @@ public:
     void send(const std::string& message,
               const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
-
-    void registerDisconnectCallback(std::function<void()> onWebSocketDisconnected) override;
-
-    void registerReceiveCallback(
-            std::function<void(const std::string&)> onTextMessageReceived) override;
+    void registerDisconnectCallback(std::function<void()> onWebSocketDisconnected);
 
     bool isInitialized() const override;
 

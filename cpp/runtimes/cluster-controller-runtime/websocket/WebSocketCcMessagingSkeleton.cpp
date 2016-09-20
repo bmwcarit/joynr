@@ -116,7 +116,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
         try {
             WebSocketClientAddress clientAddress;
             joynr::serializer::deserializeFromJson(clientAddress, message.toStdString());
-            std::shared_ptr<IWebSocketSendInterface> clientWrapper =
+            std::shared_ptr<QWebSocketSendWrapper> clientWrapper =
                     std::make_shared<QWebSocketSendWrapper>(client);
             messagingStubFactory->addClient(clientAddress, clientWrapper);
 
