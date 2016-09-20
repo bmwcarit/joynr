@@ -25,6 +25,7 @@ define(
             "global/Promise",
             "joynr/dispatching/subscription/PublicationManager",
             "joynr/messaging/MessagingQos",
+            "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/BroadcastSubscriptionRequest",
             "joynr/dispatching/types/SubscriptionStop",
@@ -48,6 +49,7 @@ define(
                 Promise,
                 PublicationManager,
                 MessagingQos,
+                SubscriptionReply,
                 SubscriptionRequest,
                 BroadcastSubscriptionRequest,
                 SubscriptionStop,
@@ -1945,6 +1947,64 @@ define(
                             increaseFakeTime(1);
                         });
 
+                        it(
+                                " throws exception when called while shut down",
+                                function(done) {
+                                    publicationManager.shutdown();
+                                    var callbackDispatcherSpy = jasmine.createSpy('callbackDispatcherSpy');
+
+                                    expect(function() {
+                                        publicationManager.removePublicationProvider(
+                                                "providerParticipantId",
+                                                {});
+                                    }).toThrow();
+
+                                    expect(function() {
+                                        publicationManager.addPublicationProvider(
+                                                "providerParticipantId",
+                                                {});
+                                    }).toThrow();
+
+                                    expect(function() {
+                                        publicationManager.restore();
+                                    }).toThrow();
+
+                                    publicationManager.handleSubscriptionRequest(
+                                            "proxyParticipantId",
+                                            "providerParticipantId",
+                                            {
+                                                subscriptionId : "subscriptionId"
+                                            },
+                                            callbackDispatcherSpy);
+                                    increaseFakeTime(1);
+                                    waitsFor(function() {
+                                        return callbackDispatcherSpy.calls.count() === 1;
+                                    }, "callbackDispatcher for attributes got called", 1000).then(function() {
+                                        expect(callbackDispatcherSpy).toHaveBeenCalled();
+                                        expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
+                                        expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
+                                        return null;
+                                    }).then(function() {
+                                        callbackDispatcherSpy.calls.reset();
+                                        publicationManager.handleEventSubscriptionRequest(
+                                                "proxyParticipantId",
+                                                "providerParticipantId",
+                                                {
+                                                    subscriptionId : "subscriptionId"
+                                                },
+                                                callbackDispatcherSpy);
+                                        increaseFakeTime(1);
+                                        waitsFor(function() {
+                                            return callbackDispatcherSpy.calls.count() === 1;
+                                        }, "callbackDispatcher for events got called", 1000).then(function() {
+                                            expect(callbackDispatcherSpy).toHaveBeenCalled();
+                                            expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
+                                            expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
+                                            done();
+                                            return null;
+                                        });
+                                    }).catch(fail);
+                                });
                     });
 
         });

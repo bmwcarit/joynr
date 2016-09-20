@@ -198,7 +198,7 @@ define(
 
                                                         log
                                                                 .info(
-                                                                        "received message",
+                                                                        "received message with id " + joynrMessage.msgId + ": ",
                                                                         JSON
                                                                                 .stringify(DiagnosticTags
                                                                                         .forJoynrMessage(joynrMessage)));

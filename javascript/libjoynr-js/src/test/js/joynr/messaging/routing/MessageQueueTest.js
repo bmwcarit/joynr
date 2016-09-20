@@ -192,6 +192,14 @@ define(
                                             .toEqual(0);
                                     done();
                                 });
+                        it(" empty message queue when shut down", function() {
+                            expect(messageQueue.currentQueueSize).toEqual(0);
+                            messageQueue.putMessage(joynrMessage);
+                            expect(messageQueue.currentQueueSize > 0).toBeTruthy();
+
+                            messageQueue.shutdown();
+                            expect(messageQueue.currentQueueSize).toEqual(0);
+                        });
 
                     });
         });

@@ -482,7 +482,9 @@ define("joynr/dispatching/Dispatcher", [
          */
         this.receive =
                 function receive(joynrMessage) {
-                    log.debug("received message with the following payload: "
+                    log.debug("received message with id \""
+                        + joynrMessage.msgId
+                        + "\" and the following payload: "
                         + joynrMessage.payload);
                     switch (joynrMessage.type) {
 
@@ -619,6 +621,20 @@ define("joynr/dispatching/Dispatcher", [
                             break;
                     }
                 };
+        /**
+         * Shutdown the dispatcher
+         *
+         * @function
+         * @name dispatcher#shutdown
+         */
+        this.shutdown = function shutdown() {
+            log.debug("Dispatcher shut down");
+            /* do nothing, as either the managers on the layer above (RRM, PM, SM) or
+             * the message router on the layer below are implementing the
+             * correct handling when the runtime is shut down
+             */
+
+        };
     }
 
     return Dispatcher;
