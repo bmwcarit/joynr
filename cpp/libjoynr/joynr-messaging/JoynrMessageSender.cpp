@@ -133,6 +133,22 @@ void JoynrMessageSender::sendBroadcastSubscriptionRequest(
     }
 }
 
+void JoynrMessageSender::sendMulticastSubscriptionRequest(
+        const std::string& senderParticipantId,
+        const std::string& receiverParticipantId,
+        const MessagingQos& qos,
+        const MulticastSubscriptionRequest& subscriptionRequest)
+{
+    try {
+        JoynrMessage message = messageFactory.createMulticastSubscriptionRequest(
+                senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (const std::invalid_argument& exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
+}
+
 void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticipantId,
                                                const std::string& receiverParticipantId,
                                                const MessagingQos& qos,

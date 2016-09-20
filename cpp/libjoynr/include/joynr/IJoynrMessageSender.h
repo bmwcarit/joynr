@@ -35,6 +35,7 @@ class Reply;
 class MessagingQos;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
+class MulticastSubscriptionRequest;
 class SubscriptionStop;
 
 /**
@@ -106,6 +107,12 @@ public:
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
             const BroadcastSubscriptionRequest& subscriptionRequest) = 0;
+
+    virtual void sendMulticastSubscriptionRequest(
+            const std::string& senderParticipantId,
+            const std::string& receiverParticipantId,
+            const MessagingQos& qos,
+            const MulticastSubscriptionRequest& subscriptionRequest) = 0;
 
     virtual void sendSubscriptionStop(const std::string& senderParticipantId,
                                       const std::string& receiverParticipantId,
