@@ -74,6 +74,9 @@ var consumerBase = {
             return Promise.resolve();
         }
     },
+    shutdown : function() {
+        return joynr.shutdown();
+    },
     registerProvider : function() {
         var providerQos = new joynr.types.ProviderQos({
             customParameters : [],
