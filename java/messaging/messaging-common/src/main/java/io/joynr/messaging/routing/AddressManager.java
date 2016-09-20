@@ -100,7 +100,7 @@ public class AddressManager {
                 result.add(address);
             }
         }
-        logger.trace("Message {} will results in destination addresses {}", new Object[]{ message, result });
+        logger.trace("Found the following addresses for essage {}: {}", new Object[]{ message, result });
         if (result.size() == 0) {
             throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
                     + message);
