@@ -1,3 +1,12 @@
+#joynr 0.20.3
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+## Other changes
+* **[JS]** Fix bug which resulted in improper shutdown of joynr.
+
 #joynr 0.20.2
 This is a minor bug fix release.
 
