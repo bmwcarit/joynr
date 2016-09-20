@@ -70,15 +70,17 @@ define("joynr/dispatching/types/OneWayRequest", [
          * @name OneWayRequest#methodName
          * @type String
          */
+        this.methodName = settings.methodName;
         /**
          * @name OneWayRequest#paramDatatypes
          * @type Array
          */
+        this.paramDatatypes = settings.paramDatatypes;
         /**
          * @name OneWayRequest#params
          * @type Array
          */
-        Util.extend(this, defaultSettings, settings);
+        this.params = settings.params;
 
         /**
          * The joynr type name
