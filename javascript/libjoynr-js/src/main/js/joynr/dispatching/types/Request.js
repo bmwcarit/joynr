@@ -17,88 +17,106 @@
  * #L%
  */
 
-define("joynr/dispatching/types/Request", [
-    "joynr/dispatching/types/OneWayRequest",
-    "joynr/util/UtilInternal",
-    "joynr/util/Typing",
-    "uuid"
-], function(OneWayRequest, Util, Typing, uuid) {
+define(
+        "joynr/dispatching/types/Request",
+        [
+            "joynr/util/UtilInternal",
+            "joynr/util/Typing",
+            "uuid"
+        ],
+        function(Util, Typing, uuid) {
 
-    var defaultSettings = {
-        paramDatatypes : [],
-        params : []
-    };
+            var defaultSettings = {
+                paramDatatypes : [],
+                params : []
+            };
 
-    /**
-     * @name Request
-     * @constructor
-     *
-     * @param {Object}
-     *            settings
-     * @param {String}
-     *            settings.requestReplyId
-     * @param {String}
-     *            settings.methodName
-     * @param {Array}
-     *            [settings.paramDatatypes] parameter datatypes
-     * @param {String}
-     *            settings.paramDatatypes.array
-     * @param {Array}
-     *            [settings.params] parameters
-     * @param {?}
-     *            settings.params.array
-     */
-    function Request(settings) {
-        if (!(this instanceof Request)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new Request(settings);
-        }
-        var i;
-        var oneWayRequest = new OneWayRequest(settings);
-        settings.requestReplyId = settings.requestReplyId || uuid();
+            /**
+             * @name Request
+             * @constructor
+             *
+             * @param {Object}
+             *            settings
+             * @param {String}
+             *            settings.requestReplyId
+             * @param {String}
+             *            settings.methodName
+             * @param {Array}
+             *            [settings.paramDatatypes] parameter datatypes
+             * @param {String}
+             *            settings.paramDatatypes.array
+             * @param {Array}
+             *            [settings.params] parameters
+             * @param {?}
+             *            settings.params.array
+             */
+            function Request(settings) {
+                if (!(this instanceof Request)) {
+                    // in case someone calls constructor without new keyword (e.g. var c
+                    // = Constructor({..}))
+                    return new Request(settings);
+                }
+                var i;
 
-        Typing.checkProperty(settings, [
-            "joynr.Request",
-            "Object"
-        ], "settings");
-        Typing.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
+                Typing.checkProperty(settings, [
+                    "joynr.Request",
+                    "Object"
+                ], "settings");
 
-        /**
-         * @name Request#requestReplyId
-         * @type String
-         */
-        /**
-         * @name Request#methodName
-         * @type String
-         */
-        /**
-         * @name Request#paramDatatypes
-         * @type Array
-         */
-        /**
-         * @name Request#params
-         * @type Array
-         */
-        Util.extend(this, defaultSettings, settings, oneWayRequest);
+                Typing.checkProperty(settings.methodName, "String", "settings.methodName");
+                Typing.checkPropertyIfDefined(
+                        settings.paramDatatypes,
+                        "Array",
+                        "settings.paramDatatypes");
+                Typing.checkPropertyIfDefined(settings.params, "Array", "settings.params");
+                Typing.checkPropertyIfDefined(
+                        settings.requestReplyId,
+                        "String",
+                        "settings.requestReplyId");
 
-        /**
-         * The joynr type name
-         *
-         * @name Request#_typeName
-         * @type String
-         */
-        Object.defineProperty(this, "_typeName", {
-            value : "joynr.Request",
-            readable : true,
-            writable : false,
-            enumerable : true,
-            configurable : false
+                /**
+                 * @name Request#methodName
+                 * @type String
+                 */
+                this.methodName = settings.methodName;
+                /**
+                 * @name Request#paramDatatypes
+                 * @type Array
+                 */
+                this.paramDatatypes = settings.paramDatatypes;
+                /**
+                 * @name Request#params
+                 * @type Array
+                 */
+                if (settings.params) {
+                    this.params = [];
+                    for (i = 0; i < settings.params.length; i++) {
+                        this.params[i] = Util.ensureTypedValues(settings.params[i]);
+                    }
+                }
+
+                /**
+                 * @name Request#requestReplyId
+                 * @type String
+                 */
+                this.requestReplyId = settings.requestReplyId || uuid();
+                /**
+                 * The joynr type name
+                 *
+                 * @name Request#_typeName
+                 * @type String
+                 */
+                Object.defineProperty(this, "_typeName", {
+                    value : "joynr.Request",
+                    readable : true,
+                    writable : false,
+                    enumerable : true,
+                    configurable : false
+                });
+
+                return Object.freeze(this);
+            }
+
+            return Request;
+
         });
-
-        return Object.freeze(this);
-    }
-
-    return Request;
-
-});
