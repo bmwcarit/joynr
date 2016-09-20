@@ -57,10 +57,6 @@ class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName»Connector.h"
 #include "joynr/AbstractJoynrMessagingConnector.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/SubscriptionRequest.h"
-«IF francaIntf.broadcasts.size > 0»
-#include "joynr/BroadcastSubscriptionRequest.h"
-«ENDIF»
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
@@ -68,6 +64,15 @@ namespace joynr {
 	class MessagingQos;
 	class IJoynrMessageSender;
 	class ISubscriptionManager;
+	«IF !francaIntf.attributes.empty»
+		class SubscriptionRequest;
+	«ENDIF»
+	«IF !francaIntf.broadcasts.filter[selective].empty»
+		class BroadcastSubscriptionRequest;
+	«ENDIF»
+	«IF !francaIntf.broadcasts.filter[!selective].empty»
+		class MulticastSubscriptionRequest;
+	«ENDIF»
 	template <class ... Ts> class Future;
 	template <typename... Ts> class ISubscriptionListener;
 
@@ -119,7 +124,11 @@ private:
 		std::shared_ptr<joynr::Future<std::string>> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
-				BroadcastSubscriptionRequest& subscriptionRequest);
+				«IF broadcast.selective»
+					BroadcastSubscriptionRequest& subscriptionRequest);
+				«ELSE»
+					std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest);
+				«ENDIF»
 	«ENDFOR»
 public:
 	/**
