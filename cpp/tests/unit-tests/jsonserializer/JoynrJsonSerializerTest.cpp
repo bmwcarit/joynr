@@ -85,8 +85,7 @@ TEST_F(JoynrJsonSerializerTest, receivedFromGlobalAttributeIsIgnoredBySerializat
     JoynrMessage deserializedMsg;
     joynr::serializer::deserializeFromJson(deserializedMsg, json);
 
-    // TODO disabled because of a bug in muesli (the message header is not deserialized correctly)
-    // EXPECT_EQ(msg, deserializedMsg);
+    EXPECT_EQ(msg, deserializedMsg);
     EXPECT_FALSE(deserializedMsg.isReceivedFromGlobal());
 }
 
