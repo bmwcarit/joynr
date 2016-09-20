@@ -85,7 +85,13 @@ define("joynr/dispatching/types/Reply", [
          * @name Reply#_typeName
          * @type String
          */
-        Typing.augmentTypeName(this, "joynr");
+        Object.defineProperty(this, "_typeName", {
+            value : "joynr.Reply",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
 
         return Object.freeze(this);
     }

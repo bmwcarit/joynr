@@ -88,7 +88,13 @@ define("joynr/dispatching/types/Request", [
          * @name Request#_typeName
          * @type String
          */
-        Typing.augmentTypeName(this, "joynr");
+        Object.defineProperty(this, "_typeName", {
+            value : "joynr.Request",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
 
         return Object.freeze(this);
     }

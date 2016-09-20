@@ -86,8 +86,13 @@ define("joynr/dispatching/types/OneWayRequest", [
          * @name OneWayRequest#_typeName
          * @type String
          */
-        Typing.augmentTypeName(this, "joynr");
-
+        Object.defineProperty(this, "_typeName", {
+            value : "joynr.OneWayRequest",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
         return Object.freeze(this);
     }
 
