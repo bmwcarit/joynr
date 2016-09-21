@@ -494,9 +494,6 @@ private:
                                           const std::string& interfaceName);
     std::string createCompoundKey(const std::string& domain, const std::string& interfaceName);
 
-    template <typename T>
-    bool onlyWildcardOperations(const std::vector<T>& aceEntries);
-
     // Requests waiting to get consumer permission
     struct ConsumerPermissionRequest
     {

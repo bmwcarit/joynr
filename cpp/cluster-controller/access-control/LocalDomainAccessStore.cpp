@@ -797,6 +797,31 @@ bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const std::string& us
     return query.exec();
 }
 
+bool LocalDomainAccessStore::onlyWildcardOperations(const std::string& userId,
+                                                    const std::string& domain,
+                                                    const std::string& interfaceName)
+{
+    return checkOnlyWildcardOperations(
+                   getMasterAccessControlEntries(userId, domain, interfaceName)) &&
+           checkOnlyWildcardOperations(
+                   getMediatorAccessControlEntries(userId, domain, interfaceName)) &&
+           checkOnlyWildcardOperations(getOwnerAccessControlEntries(userId, domain, interfaceName));
+}
+
+template <typename T>
+bool LocalDomainAccessStore::checkOnlyWildcardOperations(const std::vector<T>& aceEntries)
+{
+    if (aceEntries.empty()) {
+        return true;
+    }
+
+    if (aceEntries.size() > 1) {
+        return false;
+    }
+
+    return aceEntries.begin()->getOperation() == LocalDomainAccessStore::WILDCARD;
+}
+
 void LocalDomainAccessStore::reset()
 {
     JOYNR_LOG_DEBUG(logger, "execute: entering reset store");

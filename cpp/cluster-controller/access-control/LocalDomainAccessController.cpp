@@ -225,17 +225,10 @@ void LocalDomainAccessController::getConsumerPermission(
     }
 
     // If this point is reached the data for the ACL check is available
-    std::vector<MasterAccessControlEntry> masterAces =
-            localDomainAccessStore->getMasterAccessControlEntries(userId, domain, interfaceName);
-    std::vector<MasterAccessControlEntry> mediatorAces =
-            localDomainAccessStore->getMediatorAccessControlEntries(userId, domain, interfaceName);
-    std::vector<OwnerAccessControlEntry> ownerAces =
-            localDomainAccessStore->getOwnerAccessControlEntries(userId, domain, interfaceName);
 
     // The operations of the ACEs should only contain wildcards, if not
     // getConsumerPermission should be called with an operation
-    if (!(onlyWildcardOperations(masterAces) && onlyWildcardOperations(mediatorAces) &&
-          onlyWildcardOperations(ownerAces))) {
+    if (!localDomainAccessStore->onlyWildcardOperations(userId, domain, interfaceName)) {
         callback->operationNeeded();
     } else {
         // The operations are all wildcards
@@ -1006,20 +999,6 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
 {
     std::ignore = error;
     JOYNR_LOG_ERROR(parent.logger, "Change of OwnerAce failed!");
-}
-
-template <typename T>
-bool LocalDomainAccessController::onlyWildcardOperations(const std::vector<T>& aceEntries)
-{
-    if (aceEntries.empty()) {
-        return true;
-    }
-
-    if (aceEntries.size() > 1) {
-        return false;
-    }
-
-    return aceEntries.begin()->getOperation() == LocalDomainAccessStore::WILDCARD;
 }
 
 } // namespace joynr

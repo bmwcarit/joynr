@@ -364,6 +364,18 @@ public:
 
     static constexpr const char* WILDCARD = "*";
 
+    /**
+     * Check if only wildcard operations exist for the given combination of
+     * userId, domain and interface
+     *
+     * @param userId
+     * @param domain
+     * @param interfaceName
+     */
+    bool onlyWildcardOperations(const std::string& userId,
+                                const std::string& domain,
+                                const std::string& interfaceName);
+
 private:
     ADD_LOGGER(LocalDomainAccessStore);
 
@@ -481,6 +493,9 @@ private:
      * NOTE: After this function store will have no entries!!!
      */
     void reset();
+
+    template <typename T>
+    bool checkOnlyWildcardOperations(const std::vector<T>& aceEntries);
 };
 } // namespace joynr
 #endif // LOCALDOMAINACCESSSTORE_H
