@@ -20,11 +20,16 @@
 #ifndef LOCALDOMAINACCESSSTORE_H
 #define LOCALDOMAINACCESSSTORE_H
 
-#include <vector>
 #include <string>
+#include <tuple>
+#include <vector>
 
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/composite_key.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/mem_fun.hpp>
+#include <boost/multi_index/ordered_index.hpp>
 #include <boost/optional.hpp>
-#include <QtSql/QSqlDatabase>
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
@@ -34,11 +39,90 @@
 
 namespace joynr
 {
+
+namespace access_control
+{
+
+static constexpr const char* WILDCARD = "*";
+
+namespace dac = joynr::infrastructure::DacTypes;
+namespace bmi = boost::multi_index;
+
+namespace tags
+{
+struct UidDomainInterfaceOperation;
+struct DomainAndInterface;
+struct Domain;
+} // namespace tags
+
+template <typename Entry>
+struct TableMaker
+{
+    using UidKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry, const std::string&, getUid);
+    using DomainKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry,
+                                                      const std::string&,
+                                                      getDomain);
+    using InterfaceKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry,
+                                                         const std::string&,
+                                                         getInterfaceName);
+    using OperationKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(Entry, const std::string&, getOperation);
+
+    // this custom comparator ensures that wildcards come last
+    struct WildcardComparator
+    {
+        bool operator()(const std::string& lhs, const std::string& rhs) const
+        {
+            if (lhs == WILDCARD) {
+                return false;
+            }
+            if (rhs == WILDCARD) {
+                return true;
+            }
+            return (lhs < rhs);
+        }
+    };
+
+    using DefaultComparator = std::less<std::string>;
+
+    using Type = bmi::multi_index_container<
+            Entry,
+            bmi::indexed_by<
+                    bmi::ordered_unique<bmi::tag<tags::UidDomainInterfaceOperation>,
+                                        bmi::composite_key<Entry,
+                                                           UidKey,
+                                                           DomainKey,
+                                                           InterfaceKey,
+                                                           OperationKey>,
+                                        bmi::composite_key_compare<WildcardComparator,
+                                                                   DefaultComparator,
+                                                                   DefaultComparator,
+                                                                   WildcardComparator>>,
+                    bmi::ordered_non_unique<bmi::tag<tags::DomainAndInterface>,
+                                            bmi::composite_key<Entry, DomainKey, InterfaceKey>>,
+                    bmi::hashed_non_unique<bmi::tag<tags::Domain>, DomainKey>>>;
+};
+
+namespace domain_role
+{
+using UidKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::DomainRoleEntry, const std::string&, getUid);
+using RoleKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::DomainRoleEntry,
+                                                const dac::Role::Enum&,
+                                                getRole);
+
+using Table = bmi::multi_index_container<
+        dac::DomainRoleEntry,
+        bmi::indexed_by<
+                bmi::ordered_unique<bmi::tag<tags::UidDomainInterfaceOperation>,
+                                    bmi::composite_key<dac::DomainRoleEntry, UidKey, RoleKey>>>>;
+} // namespace domain_role
+
+} // namespace access_control
+
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessStore
 {
 public:
     explicit LocalDomainAccessStore(bool clearDatabaseOnStartup = false);
-    ~LocalDomainAccessStore();
+    ~LocalDomainAccessStore() = default;
 
     /**
      * Get the domain roles for the given user.
@@ -94,7 +178,7 @@ public:
      * If no entry has been found for specified uid, then returns master ACE with uid "*".
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
-            const std::string& uid);
+            const std::string& uid) const;
 
     /**
      * Returns a std::vector of master ACEs applying to domains the user uid has role Master,
@@ -117,7 +201,7 @@ public:
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
             const std::string& domain,
-            const std::string& interfaceName);
+            const std::string& interfaceName) const;
 
     /**
      * Get the master access control entries for an incoming message with
@@ -362,8 +446,6 @@ public:
                                        const std::string& interfaceName,
                                        const std::string& operation);
 
-    static constexpr const char* WILDCARD = "*";
-
     /**
      * Check if only wildcard operations exist for the given combination of
      * userId, domain and interface
@@ -379,123 +461,146 @@ public:
 private:
     ADD_LOGGER(LocalDomainAccessStore);
 
-    static QSqlDatabase db;
-
-    // Bind values to queries
-    static const char* BIND_UID;
-    static const char* BIND_DOMAIN;
-    static const char* BIND_ROLE;
-    static const char* BIND_INTERFACE;
-    static const char* BIND_OPERATION;
-    static const char* BIND_DEFAULT_TRUSTLEVEL;
-    static const char* BIND_DEFAULT_CHANGETRUSTLEVEL;
-    static const char* BIND_DEFAULT_CONSUMERPERMISSION;
-    static const char* BIND_POSSIBLE_CONSUMERPERMISSIONS;
-    static const char* BIND_POSSIBLE_TRUSTLEVELS;
-    static const char* BIND_POSSIBLE_CHANGETRUSTLEVELS;
-    static const char* BIND_REQUIRED_TRUSTLEVEL;
-    static const char* BIND_REQUIRED_CHANGETRUSTLEVEL;
-    static const char* BIND_CONSUMERPERMISSION;
-
-    // Queries
-    static const std::string SELECT_DRE;
-    static const std::string UPDATE_DRE;
-    static const std::string DELETE_DRE;
-    static const std::string GET_UID_MASTER_ACES;
-    static const std::string GET_DOMAIN_INTERFACE_MASTER_ACES;
-    static const std::string GET_UID_DOMAIN_INTERFACE_MASTER_ACES;
-    static const std::string GET_MASTER_ACE;
-    static const std::string UPDATE_MASTER_ACE;
-    static const std::string DELETE_MASTER_ACE;
-    static const std::string GET_EDITABLE_MASTER_ACES;
-    static const std::string GET_UID_MEDIATOR_ACES;
-    static const std::string GET_DOMAIN_INTERFACE_MEDIATOR_ACES;
-    static const std::string GET_UID_DOMAIN_INTERFACE_MEDIATOR_ACES;
-    static const std::string GET_MEDIATOR_ACE;
-    static const std::string UPDATE_MEDIATOR_ACE;
-    static const std::string DELETE_MEDIATOR_ACE;
-    static const std::string GET_EDITABLE_MEDIATOR_ACES;
-    static const std::string GET_UID_OWNER_ACES;
-    static const std::string GET_DOMAIN_INTERFACE_OWNER_ACES;
-    static const std::string GET_UID_DOMAIN_INTERFACE_OWNER_ACES;
-    static const std::string GET_OWNER_ACE;
-    static const std::string UPDATE_OWNER_ACE;
-    static const std::string DELETE_OWNER_ACE;
-    static const std::string GET_EDITABLE_OWNER_ACES;
-
-    // Helper functions
-    bool insertDomainRoleEntry(const std::string& userId,
-                               infrastructure::DacTypes::Role::Enum role,
-                               const std::vector<std::string>& domains);
-
-    std::vector<infrastructure::DacTypes::MasterAccessControlEntry> extractMasterAces(
-            QSqlQuery& query);
-
-    std::vector<infrastructure::DacTypes::OwnerAccessControlEntry> extractOwnerAces(
-            QSqlQuery& query);
-
-    void setPossibleConsumerPermissions(infrastructure::DacTypes::MasterAccessControlEntry& entry,
-                                        QSqlQuery& query,
-                                        int field);
-
-    void setPossibleRequiredTrustLevels(infrastructure::DacTypes::MasterAccessControlEntry& entry,
-                                        QSqlQuery& query,
-                                        int field);
-
-    void setPossibleRequiredControlEntryChangeTrustLevels(
-            infrastructure::DacTypes::MasterAccessControlEntry& entry,
-            QSqlQuery& query,
-            int field);
-
-    template <typename T>
-    T getEnumField(QSqlQuery& query, int field);
-
-    template <typename T>
-    std::vector<T> deserializeEnumList(const QByteArray& value);
-
-    template <typename T>
-    QByteArray serializeEnumList(const std::vector<T>& value);
-
-    template <typename T>
-    boost::optional<T> firstEntry(const std::vector<T>& list);
-
-    QSqlQuery createGetAceQuery(const std::string& sqlQuery,
-                                const std::string& uid,
-                                const std::string& domain,
-                                const std::string& interfaceName,
-                                const std::string& operation);
-
-    QSqlQuery createGetAceQuery(const std::string& sqlQuery, const std::string& uid);
-
-    QSqlQuery createGetAceQuery(const std::string& sqlQuery,
-                                const std::string& domain,
-                                const std::string& interfaceName);
-
-    QSqlQuery createGetAceQuery(const std::string& sqlQuery,
-                                const std::string& uid,
-                                const std::string& domain,
-                                const std::string& interfaceName);
-
-    QSqlQuery createUpdateMasterAceQuery(
-            const std::string& sqlQuery,
-            const infrastructure::DacTypes::MasterAccessControlEntry& updatedMasterAce);
-    QSqlQuery createRemoveAceQuery(const std::string& sqlQuery,
-                                   const std::string& uid,
-                                   const std::string& domain,
-                                   const std::string& interfaceName,
-                                   const std::string& operation);
-    QSqlQuery createGetEditableAceQuery(const std::string& sqlQuery,
-                                        const std::string& uid,
-                                        infrastructure::DacTypes::Role::Enum role);
-
     /**
      * Reset store to initial state.
      * NOTE: After this function store will have no entries!!!
      */
     void reset();
 
-    template <typename T>
-    bool checkOnlyWildcardOperations(const std::vector<T>& aceEntries);
+    using MasterTable =
+            access_control::TableMaker<access_control::dac::MasterAccessControlEntry>::Type;
+    MasterTable masterTable;
+    MasterTable mediatorTable;
+    using OwnerTable =
+            access_control::TableMaker<access_control::dac::OwnerAccessControlEntry>::Type;
+    OwnerTable ownerTable;
+
+    using DomainRoleTable = access_control::domain_role::Table;
+    DomainRoleTable domainRoleTable;
+
+    template <typename Table, typename Value = typename Table::value_type, typename... Args>
+    std::vector<Value> getEqualRange(const Table& table, Args&&... args) const
+    {
+        auto range = table.equal_range(std::make_tuple(std::forward<Args>(args)...));
+        std::vector<Value> result;
+        std::copy(range.first, range.second, std::back_inserter(result));
+        return result;
+    }
+
+    template <typename Table, typename... Args>
+    bool removeFromTable(Table& table, Args&&... args)
+    {
+        auto it = lookup(table, std::forward<Args>(args)...);
+        if (it == table.end()) {
+            return false;
+        }
+        table.erase(it);
+        return true;
+    }
+
+    template <typename Table, typename Iterator = typename Table::const_iterator, typename... Args>
+    typename Table::const_iterator lookup(const Table& table, Args&&... args) const
+    {
+        return table.find(std::make_tuple(std::forward<Args>(args)...));
+    }
+
+    template <typename Table, typename Value = typename Table::value_type, typename... Args>
+    boost::optional<Value> lookupOptional(const Table& table, Args&&... args) const
+    {
+        auto it = lookup(table, std::forward<Args>(args)...);
+        boost::optional<Value> result;
+        if (it != table.end()) {
+            result = *it;
+        }
+        return result;
+    }
+
+    template <typename Table, typename Entry>
+    bool insertOrReplace(Table& table, const Entry& updatedEntry)
+    {
+        std::pair<typename Table::iterator, bool> result = table.insert(updatedEntry);
+        if (!result.second) {
+            // entry exists, update it
+            return table.replace(result.first, updatedEntry);
+        }
+        return true;
+    }
+
+    template <typename Table, typename Value = typename Table::value_type>
+    boost::optional<Value> lookupOptionalWithWildcard(const Table& table,
+                                                      const std::string& uid,
+                                                      const std::string& domain,
+                                                      const std::string& interfaceName,
+                                                      const std::string& operation) const
+    {
+        boost::optional<Value> entry;
+        entry = lookupOptional(table, uid, domain, interfaceName, operation);
+        if (!entry) {
+            entry = lookupOptional(table, uid, domain, interfaceName, access_control::WILDCARD);
+        }
+        if (!entry) {
+            entry = lookupOptional(
+                    table, access_control::WILDCARD, domain, interfaceName, operation);
+        }
+        if (!entry) {
+            entry = lookupOptional(table,
+                                   access_control::WILDCARD,
+                                   domain,
+                                   interfaceName,
+                                   access_control::WILDCARD);
+        }
+        return entry;
+    }
+
+    template <typename Table>
+    bool checkOnlyWildcardOperations(const Table& table,
+                                     const std::string& userId,
+                                     const std::string& domain,
+                                     const std::string& interfaceName) const
+    {
+        auto range = table.equal_range(std::make_tuple(userId, domain, interfaceName));
+        std::size_t size = std::distance(range.first, range.second);
+
+        if (size == 0) {
+            return true;
+        }
+
+        if (size > 1) {
+            return false;
+        }
+
+        return range.first->getOperation() == access_control::WILDCARD;
+    }
+
+    template <typename Table, typename Value = typename Table::value_type>
+    std::vector<Value> getEditableAccessControlEntries(const Table& table,
+                                                       const std::string& userId,
+                                                       access_control::dac::Role::Enum role) const
+    {
+        std::vector<Value> entries;
+        auto it = domainRoleTable.find(std::make_tuple(userId, role));
+        if (it != domainRoleTable.end()) {
+            for (const std::string& domain : it->getDomains()) {
+                auto range = table.template get<access_control::tags::Domain>().equal_range(domain);
+                std::copy(range.first, range.second, std::back_inserter(entries));
+            }
+        }
+        return entries;
+    }
+
+    template <typename Table, typename Value = typename Table::value_type, typename... Args>
+    std::vector<Value> getEqualRangeWithUidWildcard(Table& table,
+                                                    const std::string& uid,
+                                                    Args&&... args) const
+    {
+        std::vector<Value> entries = getEqualRange(table, uid, std::forward<Args>(args)...);
+        std::vector<Value> wildcardEntries =
+                getEqualRange(table, access_control::WILDCARD, std::forward<Args>(args)...);
+        entries.insert(entries.end(),
+                       std::make_move_iterator(wildcardEntries.begin()),
+                       std::make_move_iterator(wildcardEntries.end()));
+        return entries;
+    }
 };
 } // namespace joynr
 #endif // LOCALDOMAINACCESSSTORE_H

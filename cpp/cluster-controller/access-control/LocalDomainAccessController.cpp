@@ -233,7 +233,7 @@ void LocalDomainAccessController::getConsumerPermission(
     } else {
         // The operations are all wildcards
         Permission::Enum permission = getConsumerPermission(
-                userId, domain, interfaceName, LocalDomainAccessStore::WILDCARD, trustLevel);
+                userId, domain, interfaceName, access_control::WILDCARD, trustLevel);
         callback->consumerPermission(permission);
     }
 }

@@ -140,7 +140,7 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAces) {
                                                                                                     expectedMasterAccessControlEntry.getInterfaceName(),
                                                                                                     expectedMasterAccessControlEntry.getOperation()).get());
     MasterAccessControlEntry masterAceWildcardUser(expectedMasterAccessControlEntry);
-    masterAceWildcardUser.setUid(LocalDomainAccessStore::WILDCARD);
+    masterAceWildcardUser.setUid(access_control::WILDCARD);
     localDomainAccessStore->updateMasterAccessControlEntry(masterAceWildcardUser);
 
     std::vector<MasterAccessControlEntry> masterAces = localDomainAccessStore->getMasterAccessControlEntries(TEST_DOMAIN1, TEST_INTERFACE1);
@@ -159,7 +159,7 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAces) {
 }
 
 TEST_F(LocalDomainAccessStoreTest, getMasterAceWithWildcardOperation) {
-    expectedMasterAccessControlEntry.setOperation(LocalDomainAccessStore::WILDCARD);
+    expectedMasterAccessControlEntry.setOperation(access_control::WILDCARD);
     localDomainAccessStore->updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
 
     EXPECT_EQ(expectedMasterAccessControlEntry, localDomainAccessStore->getMasterAccessControlEntry(expectedMasterAccessControlEntry.getUid(),
@@ -229,7 +229,7 @@ TEST_F(LocalDomainAccessStoreTest, getOwnerAccessControlEntry) {
                                                                                                     expectedOwnerAccessControlEntry.getInterfaceName(),
                                                                                                     expectedOwnerAccessControlEntry.getOperation()).get());
     OwnerAccessControlEntry ownerAceWildcardUser(expectedOwnerAccessControlEntry);
-    ownerAceWildcardUser.setUid(LocalDomainAccessStore::WILDCARD);
+    ownerAceWildcardUser.setUid(access_control::WILDCARD);
     EXPECT_TRUE(localDomainAccessStore->updateOwnerAccessControlEntry(ownerAceWildcardUser));
 
     std::vector<OwnerAccessControlEntry> ownerAces = localDomainAccessStore->getOwnerAccessControlEntries(TEST_DOMAIN1, TEST_INTERFACE1);
