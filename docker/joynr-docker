@@ -71,7 +71,6 @@ function pull
     for image in "${listOfImages[@]}"
     do
         docker pull ${repository}${image}${version}
-        docker tag -f ${repository}${image}${version} ${image}:latest
     done
 }
 
