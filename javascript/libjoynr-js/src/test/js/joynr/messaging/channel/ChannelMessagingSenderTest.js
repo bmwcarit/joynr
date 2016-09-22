@@ -142,6 +142,16 @@ define([
                                     }).catch(fail);
                                 });
 
+                        it(
+                                "reject queued messages once shut down",
+                                function(done) {
+                                    communicationModuleSpy.createXMLHTTPRequest.and.returnValue(Promise.resolve());
+                                    var sendPromise = channelMessageSender.send(joynrMessage, channelAddress);
+                                    expect(communicationModuleSpy.createXMLHTTPRequest).not.toHaveBeenCalled();
+                                    channelMessageSender.shutdown();
+                                    sendPromise.then(fail).catch(done);
+                                });
+
                     });
 
         });

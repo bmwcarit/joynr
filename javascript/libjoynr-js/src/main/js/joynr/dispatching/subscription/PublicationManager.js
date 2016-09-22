@@ -104,6 +104,12 @@ define(
                 var subscriptionPersistenceKey =
                         PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX + "_" + joynrInstanceId;
 
+                var started = true;
+
+                function isReady() {
+                    return started;
+                }
+
                 /**
                  * Stores subscriptions
                  * @name PublicationManager#storeSubscriptions
@@ -391,6 +397,12 @@ define(
                  *            value
                  */
                 function publishAttributeValue(providerId, attributeName, attribute, value) {
+                    if (!isReady()) {
+                        throw new Error("attribute publication for providerId \""
+                                + providerId + "and attribute " + attributeName
+                                + " is not forwarded to subscribers, as the publication manager is "
+                                + "already shut down");
+                    }
                     var subscriptionId, subscriptions =
                             getSubscriptionsForProviderAttribute(providerId, attributeName);
                     if (!subscriptions) {
@@ -477,6 +489,12 @@ define(
                  *            value
                  */
                 function publishEventValue(providerId, eventName, event, data) {
+                    if (!isReady()) {
+                        throw new Error("event publication for providerId \""
+                                + providerId + "and eventName " + eventName
+                                + " is not forwarded to subscribers, as the publication manager is "
+                                + "already shut down");
+                    }
                     var publish;
                     var i;
                     var filterParameters;
@@ -821,6 +839,25 @@ define(
                                 providerParticipantId,
                                 subscriptionRequest,
                                 callbackDispatcher) {
+                            var exception;
+                            if (!isReady()) {
+                                exception = new SubscriptionException({
+                                    detailMessage: "error handling subscription request: "
+                                        + JSONSerializer.stringify(subscriptionRequest)
+                                        + "and provider ParticipantId "
+                                        + providerParticipantId
+                                        + ": joynr runtime already shut down",
+                                    subscriptionId : subscriptionRequest.subscriptionId
+                                });
+                                log.debug(exception.detailMessage);
+                                callbackDispatcherAsync(
+                                        {
+                                            error : exception,
+                                            subscriptionId : subscriptionRequest.subscriptionId
+                                        },
+                                        callbackDispatcher);
+                                return;
+                            }
                             var subscriptionInterval;
                             var provider = participantIdToProvider[providerParticipantId];
                             // construct subscriptionInfo from subscriptionRequest and participantIds
@@ -830,7 +867,6 @@ define(
                                             proxyParticipantId,
                                             providerParticipantId,
                                             subscriptionRequest);
-                            var exception;
 
                             var subscriptionId = subscriptionInfo.subscriptionId;
 
@@ -1037,6 +1073,25 @@ define(
                                 providerParticipantId,
                                 subscriptionRequest,
                                 callbackDispatcher) {
+                            var exception;
+                            if (!isReady()) {
+                                exception = new SubscriptionException({
+                                    detailMessage: "error handling subscription request: "
+                                        + JSONSerializer.stringify(subscriptionRequest)
+                                        + "and provider ParticipantId "
+                                        + providerParticipantId
+                                        + ": joynr runtime already shut down",
+                                    subscriptionId : subscriptionRequest.subscriptionId
+                                });
+                                log.debug(exception.detailMessage);
+                                callbackDispatcherAsync(
+                                        {
+                                            error : exception,
+                                            subscriptionId : subscriptionRequest.subscriptionId
+                                        },
+                                        callbackDispatcher);
+                                return;
+                            }
                             var subscriptionInterval;
                             var provider = participantIdToProvider[providerParticipantId];
                             // construct subscriptionInfo from subscriptionRequest and participantIds
@@ -1048,7 +1103,6 @@ define(
                                             subscriptionRequest);
 
                             var subscriptionId = subscriptionInfo.subscriptionId;
-                            var exception;
 
                             // in case the subscriptionId is already used in a previous
                             // subscription, remove this one
@@ -1190,6 +1244,9 @@ define(
                  */
                 this.removePublicationProvider =
                         function removePublicationProvider(participantId, provider) {
+                            if (!isReady()) {
+                                throw new Error("PublicationManager is already shut down");
+                            }
                             var propertyName, property;
 
                             // cycles over all provider members
@@ -1234,6 +1291,9 @@ define(
                 this.addPublicationProvider =
                         function addPublicationProvider(participantId, provider) {
                             var propertyName, property, pendingSubscriptions, pendingSubscription, subscriptionObject;
+                            if (!isReady()) {
+                                throw new Error("PublicationManager is already shut down");
+                            }
 
                             // stores the participantId to
                             participantIdToProvider[participantId] = provider;
@@ -1296,6 +1356,10 @@ define(
                  */
                 this.restore =
                         function restore() {
+                            if (!isReady()) {
+                                throw new Error("PublicationManager is already shut down");
+                            }
+
                             var subscriptions = persistency.getItem(subscriptionPersistenceKey);
                             if (subscriptions && JSON && JSON.parse) {
                                 var subscriptionIds =
@@ -1321,6 +1385,28 @@ define(
                             }
                         };
 
+
+                /**
+                 * Shutdown the publication manager
+                 *
+                 * @function
+                 * @name PublicationManager#shutdown
+                 */
+                this.shutdown = function shutdown() {
+                    var subscriptionId;
+                    for (subscriptionId in subscriptionInfos) {
+                        if (subscriptionInfos.hasOwnProperty(subscriptionId)) {
+                            var subscriptionInfo = subscriptionInfos[subscriptionId];
+                            if (subscriptionInfo.subscriptionInterval !== undefined) {
+                                LongTimer.clearTimeout(subscriptionInfo.subscriptionInterval);
+                            }
+                            if (subscriptionInfo.onChangeDebounce !== undefined) {
+                                LongTimer.clearTimeout(subscriptionInfo.onChangeDebounce);
+                            }
+                        }
+                    }
+                    started = false;
+                };
             }
 
             PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX = "subscriptions";

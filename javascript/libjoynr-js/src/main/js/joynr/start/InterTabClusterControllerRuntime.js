@@ -703,12 +703,40 @@ define(
                                 });
                             });
 
+                            if (channelMessagingSender !== undefined) {
+                                channelMessagingSender.shutdown();
+                            }
+
                             if (capabilitiesRegistrar !== undefined) {
                                 capabilitiesRegistrar.shutdown();
                             }
 
+                            if (arbitrator !== undefined) {
+                                arbitrator.shutdown();
+                            }
+
+                            if (messageRouter !== undefined) {
+                                messageRouter.shutdown();
+                            }
+
                             if (requestReplyManager !== undefined) {
                                 requestReplyManager.shutdown();
+                            }
+
+                            if (publicationManager !== undefined) {
+                                publicationManager.shutdown();
+                            }
+
+                            if (subscriptionManager !== undefined) {
+                                subscriptionManager.shutdown();
+                            }
+
+                            if (dispatcher !== undefined) {
+                                dispatcher.shutdown();
+                            }
+
+                            if (typeRegistry !== undefined) {
+                                typeRegistry.shutdown();
                             }
 
                             log.debug("joynr cluster controller shut down");

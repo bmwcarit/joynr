@@ -492,7 +492,6 @@
 										<include>DISCLAIMER</include>
 										<include>joynr.js</include>
 										<include>libjoynr-deps*.js</include>
-										<include>package.json</include>
 										<include>require.config.node.js</include>
 										<include>joynr/**</include>
 										<include>global/LocalStorageNode.js</include>
@@ -512,6 +511,12 @@
 								</resource>
 								<resource>
 									<directory>${basedir}/wiki/npm</directory>
+								</resource>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>package.json</include>
+									</includes>
 								</resource>
 							</resources>
 						</configuration>
@@ -657,7 +662,7 @@
 						-->
 						<exclude>jsdoc3.conf.json</exclude>
 						<exclude>src/main/resources/libjoynrEndFrag.js</exclude>
-						<exclude>src/main/resources/package.json</exclude>
+						<exclude>package.json</exclude>
 						<exclude>src/test/resources/spec/support/jasmine.json</exclude>
 					</excludes>
 				</configuration>

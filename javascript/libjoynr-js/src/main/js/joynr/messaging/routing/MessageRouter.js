@@ -92,6 +92,13 @@ define(
                     throw new Error("messageQueue is undefined");
                 }
 
+
+                var started = true;
+
+                function isReady() {
+                    return started;
+                }
+
                 /**
                  * @function MessageRouter#getStorageKey
                  *
@@ -111,6 +118,11 @@ define(
                  * @returns {Promise} promise
                  */
                 this.removeNextHop = function removeNextHop(participantId) {
+                    if (!isReady()) {
+                        log.debug("removeNextHop: ignore call as message router is already shut down");
+                        return Promise.reject(new Error("message router is already shut down"));
+                    }
+
                     routingTable[participantId] = undefined;
                     persistency.removeItem(that.getStorageKey(participantId));
                     var promise;
@@ -181,6 +193,12 @@ define(
                             var hop, participantId, errorFct;
 
                             errorFct = function(error) {
+                                if (!isReady()) {
+                                    //in this case, the error is expected, e.g. during shut down
+                                    log.debug("Adding routingProxy.proxyParticipantId " + routingProxy.proxyParticipantId
+                                            + "failed while the message router is not ready. Error: " + error.message);
+                                    return;
+                                }
                                 throw new Error(error);
                             };
 
@@ -224,6 +242,11 @@ define(
                  *          participantId, or undefined if not found
                  */
                 this.resolveNextHop = function resolveNextHop(participantId) {
+                    if (!isReady()) {
+                        log.debug("resolveNextHop: ignore call as message router is already shut down");
+                        return Promise.reject(new Error("message router is already shut down"));
+                    }
+
                     var address, addressString;
                     address = routingTable[participantId];
 
@@ -310,6 +333,10 @@ define(
                  */
                 this.addNextHop =
                         function addNextHop(participantId, address) {
+                            if (!isReady()) {
+                                log.debug("addNextHop: ignore call as message router is already shut down");
+                                return Promise.reject(new Error("message router is already shut down"));
+                            }
                             // store the address of the participantId persistently
                             routingTable[participantId] = address;
                             var serializedAddress = JSONSerializer.stringify(address);
@@ -378,12 +405,40 @@ define(
                  * @returns void
                  */
                 this.setToKnown = function setToKnown(participantId) {
+                    if (!isReady()) {
+                        log.debug("setToKnown: ignore call as message router is already shut down");
+                        return;
+                    }
+
                     //if not already set
                     if (routingTable[participantId] === undefined) {
                         if (parentMessageRouterAddress !== undefined) {
                             routingTable[participantId] = parentMessageRouterAddress;
                         }
                     }
+                };
+
+                /**
+                 * Shutdown the message router
+                 *
+                 * @function
+                 * @name MessageRouter#shutdown
+                 */
+                this.shutdown = function shutdown() {
+                    if (queuedAddNextHopCalls !== undefined) {
+                        queuedAddNextHopCalls.forEach(function(call) {
+                            call.reject("Message Router has been shut down");
+                        });
+                        queuedAddNextHopCalls = [];
+                    }
+                    if (queuedAddNextHopCalls !== undefined) {
+                        queuedRemoveNextHopCalls.forEach(function(call) {
+                            call.reject("Message Router has been shut down");
+                        });
+                        queuedRemoveNextHopCalls = [];
+                    }
+                    started = false;
+                    settings.messageQueue.shutdown();
                 };
             }
 

@@ -22,6 +22,9 @@
 #include <cstdlib>
 #include <string>
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+
 #include "joynr/DiscoveryQos.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
@@ -56,7 +59,12 @@ int main(int argc, char* argv[])
     std::string providerDomain(argv[1]);
     JOYNR_LOG_INFO(logger, "Create proxy for domain {}", providerDomain);
 
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime("");
+    boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
+    std::string appDirectory =
+            boost::filesystem::system_complete(appFilename).parent_path().string();
+    std::string pathToSettings(appDirectory + "/resources/systemintegrationtest-consumer.settings");
+
+    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToSettings);
 
     // Create proxy builder
     ProxyBuilder<test::SystemIntegrationTestProxy>* proxyBuilder =
@@ -112,5 +120,5 @@ int main(int argc, char* argv[])
     delete proxyBuilder;
     delete runtime;
 
-    return success ? 0 : -1;
+    return success ? 0 : 1;
 }

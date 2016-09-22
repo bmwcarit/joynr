@@ -19,27 +19,20 @@
 #ifndef MESSAGEROUTER_H
 #define MESSAGEROUTER_H
 #include <chrono>
-#include <unordered_set>
+#include <memory>
 #include <mutex>
 #include <string>
-#include <memory>
+#include <unordered_set>
 
+#include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/Directory.h"
-#include "joynr/JoynrExport.h"
-#include "joynr/ObjectWithDecayTime.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/IMessaging.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/system/RoutingProxy.h"
-#include "joynr/system/RoutingAbstractProvider.h"
-#include "joynr/MessageQueue.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
-#include "joynr/Runnable.h"
-#include "joynr/Semaphore.h"
 #include "joynr/Logger.h"
-#include "joynr/SteadyTimer.h"
+#include "joynr/MessageQueue.h"
+#include "joynr/ObjectWithDecayTime.h"
+#include "joynr/Runnable.h"
+#include "joynr/system/RoutingAbstractProvider.h"
 
 namespace boost
 {
@@ -56,14 +49,19 @@ class error_code;
 namespace joynr
 {
 
-class IMessagingStubFactory;
-class JoynrMessagingEndpointAddress;
 class IAccessController;
+class IMessaging;
+class IMessagingStubFactory;
 class IPlatformSecurityManager;
+class JoynrMessage;
+class JoynrMessagingEndpointAddress;
+class SteadyTimer;
+class ThreadPoolDelayedScheduler;
 
 namespace system
 {
 class Address;
+class RoutingProxy;
 } // namespace system
 
 /**

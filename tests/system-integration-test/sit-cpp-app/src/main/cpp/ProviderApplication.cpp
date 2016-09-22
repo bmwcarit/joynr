@@ -22,6 +22,9 @@
 #include <memory>
 #include <string>
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
@@ -61,7 +64,12 @@ int main(int argc, char* argv[])
     const std::string providerDomain(argv[1]);
     JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
 
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime("");
+    boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
+    std::string appDirectory =
+            boost::filesystem::system_complete(appFilename).parent_path().string();
+    std::string pathToSettings(appDirectory + "/resources/systemintegrationtest-provider.settings");
+
+    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToSettings);
 
     joynr::Semaphore semaphore;
 

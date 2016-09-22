@@ -9,7 +9,8 @@
       "jasmine-node": ">=1.14.5"
   },
   "dependencies": {
-      "bluebird" : "3.3.5"
+      "bluebird" : "3.3.5",
+      "joynr" : ">=0.21.0-SNAPSHOT"
   },
   "config": {
     "domain": "performance_test_domain",

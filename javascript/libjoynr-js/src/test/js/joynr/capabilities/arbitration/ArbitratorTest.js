@@ -787,5 +787,25 @@ define([
                                     // resolve/reject callbacks are called
                                     increaseFakeTime(1);
                                 });
+
+                        it(
+                                "rejects pending arbitrations when shutting down",
+                                function(done) {
+                                    var rejectCalled = false;
+                                    capDiscoverySpy.lookup.and.returnValue(Promise.resolve([]));
+                                    spyOn(discoveryQos, "arbitrationStrategy").and.returnValue([]);
+                                    arbitrator = new Arbitrator(capDiscoverySpy);
+
+                                    // start arbitration
+                                    var arbitrationPromise = arbitrator.startArbitration({
+                                        domains : [domain],
+                                        interfaceName : interfaceName,
+                                        discoveryQos : discoveryQos,
+                                        proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
+                                    });
+                                    increaseFakeTime(100);
+                                    arbitrator.shutdown();
+                                    arbitrationPromise.then(fail).catch(done);
+                                });
             });
         }); // require
