@@ -34,7 +34,7 @@ JoynrWebSocketRuntimeExecutor::JoynrWebSocketRuntimeExecutor(std::unique_ptr<Set
 
 void JoynrWebSocketRuntimeExecutor::createRuntime()
 {
-    runtime = std::make_unique<LibJoynrWebSocketRuntime>(settings.get());
+    runtime = std::make_unique<LibJoynrWebSocketRuntime>(std::move(settings));
     runtimeSemaphore.notify();
 }
 

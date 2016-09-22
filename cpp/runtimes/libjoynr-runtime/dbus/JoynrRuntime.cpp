@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
+
 #include "joynr/JoynrRuntime.h"
 #include "libjoynr-runtime/LibJoynrRuntime.h"
 #include "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.h"
@@ -26,11 +28,11 @@ namespace joynr
 JoynrRuntime* JoynrRuntime::createRuntime(const std::string& pathToLibjoynrSettings,
                                           const std::string& pathToMessagingSettings)
 {
-    Settings* settings = new Settings(pathToLibjoynrSettings);
+    auto settings = std::make_unique<Settings>(pathToLibjoynrSettings);
     Settings messagingSettings{pathToMessagingSettings};
     Settings::merge(messagingSettings, *settings, false);
 
-    return LibJoynrRuntime::create(new JoynrDbusRuntimeExecutor(settings));
+    return LibJoynrRuntime::create(new JoynrDbusRuntimeExecutor(std::move(settings)));
 }
 
 } // namespace joynr

@@ -51,7 +51,7 @@ class LibJoynrRuntime : public JoynrRuntime
 {
 
 public:
-    explicit LibJoynrRuntime(Settings* settings);
+    explicit LibJoynrRuntime(std::unique_ptr<Settings> settings);
     ~LibJoynrRuntime() override;
 
     static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
@@ -68,7 +68,7 @@ protected:
     IDispatcher* inProcessDispatcher;
 
     // take ownership, so a pointer is used
-    Settings* settings;
+    std::unique_ptr<Settings> settings;
     // use pointer for settings object to check the configuration before initialization
     LibjoynrSettings* libjoynrSettings;
 

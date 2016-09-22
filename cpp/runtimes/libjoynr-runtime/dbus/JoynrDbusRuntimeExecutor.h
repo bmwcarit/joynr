@@ -32,7 +32,7 @@ class Settings;
 class JoynrDbusRuntimeExecutor : public JoynrRuntimeExecutor
 {
 public:
-    explicit JoynrDbusRuntimeExecutor(Settings* settings);
+    explicit JoynrDbusRuntimeExecutor(std::unique_ptr<Settings> settings);
     ~JoynrDbusRuntimeExecutor() override = default;
 
 private:

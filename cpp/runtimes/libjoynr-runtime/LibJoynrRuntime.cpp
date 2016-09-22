@@ -43,7 +43,7 @@
 namespace joynr
 {
 
-LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
+LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
         : JoynrRuntime(*settings),
           subscriptionManager(nullptr),
           inProcessPublicationSender(nullptr),
@@ -53,8 +53,8 @@ LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
           joynrMessageSender(nullptr),
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
-          settings(settings),
-          libjoynrSettings(new LibjoynrSettings(*settings)),
+          settings(std::move(settings)),
+          libjoynrSettings(new LibjoynrSettings(*this->settings)),
           dispatcherMessagingSkeleton(nullptr),
           runtimeExecutor(nullptr)
 {
