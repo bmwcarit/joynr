@@ -2,13 +2,13 @@
 
 function usage
 {
-    echo "usage: joynr-docker build | push | pull [--repository mydockerrepo.org --version versionnumber --pushlatesttag <ON|OFF>]"
+    echo "usage: joynr-docker build | push | pull [--repository|-r mydockerrepo.org --version|-v versionnumber --additionaltags|-a <comma-separated list of tags>]"
 }
 
 repository=
 version=
 command=$1
-pushlatesttag=ON
+additionaltags=latest
 shift
 echo "after command: $1"
 
@@ -28,8 +28,8 @@ echo "PARAM is: $1"
         -h | --help )           usage
                                 exit
                                 ;;
-        -p | --pushlatesttag )  shift
-                                pushlatesttag=$1
+        -a | --additionaltags )  shift
+                                additionaltags=$1
                                 ;;
         * )                     usage
                                 exit 1
@@ -56,8 +56,12 @@ function build
     for image in "${listOfImages[@]}"
     do
         docker build -t ${repository}${image}${version} ${image}/
-        docker tag -f ${repository}${image}${version} ${repository}${image}:latest
-        docker tag -f ${repository}${image}${version} ${image}:latest
+        IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
+
+        for tag in "${tags[@]}"; do
+            docker tag ${repository}${image}${version} ${repository}${image}:${tag}
+            docker tag ${repository}${image}${version} ${image}:${tag}
+        done
     done
 }
 
@@ -78,10 +82,12 @@ function push
     do
         docker push ${repository}${image}${version}
 
-        if [ "$pushlatesttag" == "ON" ]
-        then
-            docker push ${repository}${image}:latest
-        fi
+        IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
+
+        for tag in "${tags[@]}"; do
+            docker push ${repository}${image}:${tag}
+        done
+
     done
 }
 
