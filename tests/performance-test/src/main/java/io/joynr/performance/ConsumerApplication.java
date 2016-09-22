@@ -337,9 +337,9 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     }
 
     private static JoynrApplication createJoynrApplication() throws Exception {
-        Module runtimeModule = Modules.override(getRuntimeModule()).with(getBackendModule());
-
         Properties joynrConfig = createJoynrConfig();
+        Module runtimeModule = getRuntimeModule(joynrConfig);
+
         Properties appConfig = new Properties();
 
         JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
@@ -365,23 +365,4 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
         return joynrConfig;
     }
-
-    private static Module getRuntimeModule() throws Exception {
-        switch (invocationParameters.getRuntimeMode()) {
-        case IN_PROCESS_CC:
-            return new CCInProcessRuntimeModule();
-        default:
-            throw new Exception("Unknown runtime requested");
-        }
-    }
-
-    private static Module getBackendModule() throws Exception {
-        switch (invocationParameters.getBackendTransportMode()) {
-        case MQTT:
-            return Modules.combine(new AtmosphereMessagingModule(), new MqttPahoModule());
-        default:
-            throw new Exception("Unknown backend requested");
-        }
-    }
-
 }
