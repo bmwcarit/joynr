@@ -63,106 +63,99 @@ INIT_LOGGER(TrackableObject);
 
 class DirectoryTest : public ::testing::Test
 {
-    public:
+public:
     DirectoryTest()
-        : directory(nullptr),
+        : singleThreadedIOService(),
+          directory("Directory", singleThreadedIOService.getIOService()),
           testValue(nullptr),
           secondTestValue(nullptr),
           firstKey(""),
-          secondKey(""),
-          singleThreadedIOService()
+          secondKey("")
     {
         singleThreadedIOService.start();
     }
 
-
     void SetUp(){
-        directory = new Directory<std::string, std::string>("Directory", singleThreadedIOService.getIOService());
         testValue = std::make_shared<std::string>("testValue");
         secondTestValue = std::make_shared<std::string>("secondTestValue");
         firstKey = std::string("firstKey");
         secondKey = std::string("secondKey");
     }
-    void TearDown(){
-        delete directory;
-    }
 
 protected:
-    Directory<std::string, std::string>* directory;
+    SingleThreadedIOService singleThreadedIOService;
+    Directory<std::string, std::string> directory;
     std::shared_ptr<std::string> testValue;
     std::shared_ptr<std::string> secondTestValue;
     std::string firstKey;
     std::string secondKey;
-    SingleThreadedIOService singleThreadedIOService;
 private:
     DISALLOW_COPY_AND_ASSIGN(DirectoryTest);
 };
 
 TEST_F(DirectoryTest, addAndContains)
 {
-    directory->add(firstKey, testValue);
-    ASSERT_TRUE(directory->contains(firstKey));
+    directory.add(firstKey, testValue);
+    ASSERT_TRUE(directory.contains(firstKey));
 }
 
 TEST_F(DirectoryTest, containsNot)
 {
-    directory->add(firstKey, testValue);
-    ASSERT_TRUE(directory->contains(firstKey));
-    ASSERT_FALSE(directory->contains(secondKey));
+    directory.add(firstKey, testValue);
+    ASSERT_TRUE(directory.contains(firstKey));
+    ASSERT_FALSE(directory.contains(secondKey));
 }
 
 TEST_F(DirectoryTest, lookup)
 {
-    directory->add(firstKey, testValue);
-    directory->add(secondKey,secondTestValue);
-    std::shared_ptr<std::string> result1 = directory->lookup(firstKey);
-    std::shared_ptr<std::string> result2 = directory->lookup(secondKey);
+    directory.add(firstKey, testValue);
+    directory.add(secondKey,secondTestValue);
+    std::shared_ptr<std::string> result1 = directory.lookup(firstKey);
+    std::shared_ptr<std::string> result2 = directory.lookup(secondKey);
     ASSERT_EQ(result1, testValue);
     ASSERT_EQ(result2, secondTestValue);
 }
 
 TEST_F(DirectoryTest, remove)
 {
-    directory->add(firstKey, testValue);
-    directory->add(secondKey, secondTestValue);
-    ASSERT_TRUE(directory->contains(firstKey));
-    ASSERT_TRUE(directory->contains(secondKey));
-    directory->remove(firstKey);
-    ASSERT_FALSE(directory->contains(firstKey));
-    ASSERT_TRUE(directory->contains(secondKey));
+    directory.add(firstKey, testValue);
+    directory.add(secondKey, secondTestValue);
+    ASSERT_TRUE(directory.contains(firstKey));
+    ASSERT_TRUE(directory.contains(secondKey));
+    directory.remove(firstKey);
+    ASSERT_FALSE(directory.contains(firstKey));
+    ASSERT_TRUE(directory.contains(secondKey));
 }
 
 TEST_F(DirectoryTest, scheduledRemove)
 {
-    directory->add(firstKey, std::make_shared<std::string>("scheduledRemove_testValue"), 100);
-    ASSERT_TRUE(directory->contains(firstKey));
+    directory.add(firstKey, std::make_shared<std::string>("scheduledRemove_testValue"), 100);
+    ASSERT_TRUE(directory.contains(firstKey));
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    ASSERT_FALSE(directory->contains(firstKey));
+    ASSERT_FALSE(directory.contains(firstKey));
 }
 
 TEST_F(DirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
 {
-    Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory",  singleThreadedIOService.getIOService());
+    Directory<std::string, TrackableObject> directory("Directory",  singleThreadedIOService.getIOService());
     {
         auto tp = std::make_shared<TrackableObject>();
         ASSERT_EQ(TrackableObject::getInstances(), 1);
-        directory->add("key", tp, 100);
+        directory.add("key", tp, 100);
     }
     ASSERT_EQ(TrackableObject::getInstances(), 1) << "Directory copied / deleted object";
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete Object";
-    delete directory;
 }
 
 TEST_F(DirectoryTest, ObjectsAreDeletedIfDirectoryIsDeleted)
 {
-    Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory",  singleThreadedIOService.getIOService());
     {
+        Directory<std::string, TrackableObject> directory("Directory",  singleThreadedIOService.getIOService());
         auto tp = std::make_shared<TrackableObject>();
         ASSERT_EQ(TrackableObject::getInstances(), 1);
-        directory->add("key", tp, 100);
+        directory.add("key", tp, 100);
     }
-    delete directory;
     ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete Object";
 }
 
@@ -181,12 +174,11 @@ TEST_F(DirectoryTest, useStdStringKeys)
 
 TEST_F(DirectoryTest, lookupNonExisingKeys)
 {
-    ASSERT_TRUE(nullptr == directory->lookup("__THIS__KEY__DOES__NOT__EXIST__"));
+    ASSERT_TRUE(nullptr == directory.lookup("__THIS__KEY__DOES__NOT__EXIST__"));
 }
 
 TEST_F(DirectoryTest, useLastTTLForKey)
 {
-    Directory<std::string, std::string> directory("Directory",  singleThreadedIOService.getIOService());
     auto value = std::make_shared<std::string>("value");
     std::string key("key");
 

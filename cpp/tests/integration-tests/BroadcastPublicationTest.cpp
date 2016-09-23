@@ -41,19 +41,20 @@ using namespace joynr::tests;
 class BroadcastPublicationTest : public ::testing::Test {
 public:
     BroadcastPublicationTest() :
+        singleThreadedIOService(),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         speed1(100),
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         subscriptionId("subscriptionId"),
-        publicationManager(nullptr),
-        publicationSender(nullptr),
+        publicationManager(singleThreadedIOService.getIOService()),
+        publicationSender(),
         request(),
-        singleThreadedIOService(),
-        provider(new MockTestProvider),
-        requestCaller(new testRequestCaller(provider)),
-        filter1(new MockLocationUpdatedSelectiveFilter),
-        filter2(new MockLocationUpdatedSelectiveFilter)
+        subscriptionBroadcastListener(subscriptionId, publicationManager),
+        provider(std::make_shared<MockTestProvider>()),
+        requestCaller(std::make_shared<testRequestCaller>(provider)),
+        filter1(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
+        filter2(std::make_shared<MockLocationUpdatedSelectiveFilter>())
     {
         singleThreadedIOService.start();
     }
@@ -61,10 +62,6 @@ public:
     void SetUp(){
         //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        publicationManager = new PublicationManager(singleThreadedIOService.getIOService());
-        subscriptionBroadcastListener =
-                new SubscriptionBroadcastListener(subscriptionId, *publicationManager);
-        publicationSender = new MockPublicationSender();
 
         request.setSubscribeToName("locationUpdateSelective");
         request.setSubscriptionId(subscriptionId);
@@ -78,39 +75,36 @@ public:
 
         requestCaller->registerBroadcastListener(
                     "locationUpdateSelective",
-                    subscriptionBroadcastListener);
+                    &subscriptionBroadcastListener);
 
-        publicationManager->add(
+        publicationManager.add(
                     proxyParticipantId,
                     providerParticipantId,
                     requestCaller,
                     request,
-                    publicationSender);
+                    &publicationSender);
 
         provider->addBroadcastFilter(filter1);
         provider->addBroadcastFilter(filter2);
     }
 
     void TearDown(){
-        delete publicationManager;
-        delete publicationSender;
-        delete subscriptionBroadcastListener;
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter1.get()));
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter2.get()));
     }
 
 protected:
+    SingleThreadedIOService singleThreadedIOService;
     types::Localisation::GpsLocation gpsLocation1;
     double speed1;
 
     std::string providerParticipantId;
     std::string proxyParticipantId;
     std::string subscriptionId;
-    PublicationManager* publicationManager;
-    MockPublicationSender* publicationSender;
+    PublicationManager publicationManager;
+    MockPublicationSender publicationSender;
     BroadcastSubscriptionRequest request;
-    SubscriptionBroadcastListener* subscriptionBroadcastListener;
-    SingleThreadedIOService singleThreadedIOService;
+    SubscriptionBroadcastListener subscriptionBroadcastListener;
 
     std::shared_ptr<MockTestProvider> provider;
     std::shared_ptr<RequestCaller> requestCaller;
@@ -148,7 +142,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
     ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
     ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
 
-    EXPECT_CALL(*publicationSender, sendSubscriptionPublicationMock(
+    EXPECT_CALL(publicationSender, sendSubscriptionPublicationMock(
                     Eq(providerParticipantId),
                     Eq(proxyParticipantId),
                     _,
@@ -171,16 +165,16 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
 
     requestCaller->registerBroadcastListener(
                 "broadcastWithSingleArrayParameter",
-                subscriptionBroadcastListener);
+                &subscriptionBroadcastListener);
 
     auto mockMessageRouter = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
-    JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
-    publicationManager->add(
+    JoynrMessageSender joynrMessageSender(mockMessageRouter);
+    publicationManager.add(
                 proxyParticipantId,
                 providerParticipantId,
                 requestCaller,
                 request,
-                joynrMessageSender);
+                &joynrMessageSender);
 
     std::vector<std::string> singleParam;
     singleParam.push_back("1");
@@ -196,9 +190,8 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
                      ));
 
     provider->fireBroadcastWithSingleArrayParameter(singleParam);
-
-    delete joynrMessageSender;
 }
+
 /**
   * Trigger:    A broadcast occurs. The filter chain has a negative result.
   * Expected:   A broadcast publication is triggered
@@ -208,7 +201,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
     ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
     ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(false));
 
-    EXPECT_CALL(*publicationSender, sendSubscriptionPublicationMock(
+    EXPECT_CALL(publicationSender, sendSubscriptionPublicationMock(
                     Eq(providerParticipantId),
                     Eq(proxyParticipantId),
                     _,

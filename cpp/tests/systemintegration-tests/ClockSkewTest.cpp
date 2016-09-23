@@ -38,27 +38,16 @@ static char datestr[80];
 class ClockSkewTest : public Test {
 public:
     Settings settings;
-    MessagingSettings* messagingSettings;
+    MessagingSettings messagingSettings;
 
     ClockSkewTest() :
         settings("test-resources/HttpSystemIntegrationTest1.settings"),
-        messagingSettings(new MessagingSettings(settings))
+        messagingSettings(settings)
     {
-    }
-
-    void SetUp() {
-    }
-
-    void TearDown() {
-    }
-
-    ~ClockSkewTest(){
-        delete messagingSettings;
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ClockSkewTest);
-
 };
 
 // Function called by libcurl for each header line
@@ -88,7 +77,7 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     Logger logger("ClockSkewTest");
 
     // Get the location of the bounce proxy
-    Url bounceurl = messagingSettings->getBounceProxyUrl().getTimeCheckUrl();
+    Url bounceurl = messagingSettings.getBounceProxyUrl().getTimeCheckUrl();
     ASSERT_TRUE(bounceurl.isValid());
     std::string urlString = bounceurl.toString();
     const char *url  = urlString.c_str();

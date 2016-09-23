@@ -65,26 +65,26 @@ TEST_F(ParticipantIdStorageTest, newProviderParticipantId)
 // Test that a persisted participant id is used
 TEST_F(ParticipantIdStorageTest, persistedProviderParticipantId)
 {
-    ParticipantIdStorage *store = new ParticipantIdStorage(storageFile);
+    std::string participantId;
+    {
+        ParticipantIdStorage store(storageFile);
+        participantId = store.getProviderParticipantId("domain.myDomain",
+                                                       "interface.mytest",
+                                                       "persistMe",
+                                                       "myauthtoken");
+        ASSERT_EQ(std::string("persistMe"), participantId);
+    }
 
-    std::string participantId = store->getProviderParticipantId("domain.myDomain",
-                                                            "interface.mytest",
-                                                            "persistMe",
-                                                            "myauthtoken");
-    ASSERT_EQ(std::string("persistMe"), participantId);
-
-    // Delete the current store and create a new one
-    delete store;
-    store = new ParticipantIdStorage(storageFile);
+    // create a new store
+    ParticipantIdStorage store(storageFile);
 
     // Check that the setting was persisted
-    participantId = store->getProviderParticipantId("domain.myDomain",
-                                                    "interface.mytest",
-                                                    std::string(),
-                                                    "myauthtoken");
+    participantId = store.getProviderParticipantId("domain.myDomain",
+                                                   "interface.mytest",
+                                                   std::string(),
+                                                   "myauthtoken");
 
     ASSERT_EQ(std::string("persistMe"), participantId);
-    delete store;
 }
 
 

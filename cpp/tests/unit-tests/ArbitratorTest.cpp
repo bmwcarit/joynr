@@ -608,18 +608,16 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    MockArbitrationListener* mockArbitrationListener = new MockArbitrationListener();
-    qosArbitrator.setArbitrationListener(mockArbitrationListener);
+    MockArbitrationListener mockArbitrationListener;
+    qosArbitrator.setArbitrationListener(&mockArbitrationListener);
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
 
     qosArbitrator.startArbitration();
-
-    delete mockArbitrationListener;
 }
 
 // Test that the Arbitrator returns a NoCompatibleProviderFoundException to the listener
@@ -692,18 +690,16 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    MockArbitrationListener* mockArbitrationListener = new MockArbitrationListener();
-    keywordArbitrator.setArbitrationListener(mockArbitrationListener);
+    MockArbitrationListener mockArbitrationListener;
+    keywordArbitrator.setArbitrationListener(&mockArbitrationListener);
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
 
     keywordArbitrator.startArbitration();
-
-    delete mockArbitrationListener;
 }
 
 // Test that the Arbitrator reports a NoCompatibleProviderFoundException to the listener
@@ -763,18 +759,16 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
             .WillOnce(testing::SetArgReferee<0>(discoveryEntry1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntry2));
 
-    MockArbitrationListener* mockArbitrationListener = new MockArbitrationListener();
-    fixedParticipantArbitrator.setArbitrationListener(mockArbitrationListener);
+    MockArbitrationListener mockArbitrationListener;
+    fixedParticipantArbitrator.setArbitrationListener(&mockArbitrationListener);
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersion2);
 
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
 
     fixedParticipantArbitrator.startArbitration();
-
-    delete mockArbitrationListener;
 }
 
 // Test that the lastSeenArbitrator reports a NoCompatibleProviderFoundException to the listener
@@ -841,18 +835,16 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    MockArbitrationListener* mockArbitrationListener = new MockArbitrationListener();
-    lastSeenArbitrator.setArbitrationListener(mockArbitrationListener);
+    MockArbitrationListener mockArbitrationListener;
+    lastSeenArbitrator.setArbitrationListener(&mockArbitrationListener);
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
 
     lastSeenArbitrator.startArbitration();
-
-    delete mockArbitrationListener;
 }
 
 
