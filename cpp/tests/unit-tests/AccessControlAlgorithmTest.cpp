@@ -71,10 +71,6 @@ public:
                                            Permission::NO);
     }
 
-    void TearDown()
-    {
-    }
-
     static const std::vector<TrustLevel::Enum> ALL_TRUST_LEVELS;
     static const std::vector<Permission::Enum> ALL_PERMISSIONS;
 

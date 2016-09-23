@@ -30,10 +30,6 @@ public:
         brokerUrlMqtt(BrokerUrl("mqtt://localhost:1883/"))
     {}
 
-    void SetUp(){
-    }
-    void TearDown(){
-    }
 protected:
     BrokerUrl brokerUrlHttp;
     BrokerUrl brokerUrlMqtt;

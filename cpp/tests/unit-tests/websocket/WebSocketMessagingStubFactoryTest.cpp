@@ -49,9 +49,6 @@ public:
     {
     }
 
-    virtual void TearDown() {
-    }
-
 protected:
     ADD_LOGGER(WebSocketMessagingStubFactoryTest);
     joynr::system::RoutingTypes::WebSocketAddress webSocketServerAddress;

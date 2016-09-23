@@ -80,8 +80,7 @@ public:
     void SetUp(){
         joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
     }
-    void TearDown(){
-    }
+
 protected:
     SingleThreadedIOService singleThreadedIOService;
     std::string settingsFileName;

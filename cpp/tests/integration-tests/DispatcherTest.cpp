@@ -77,12 +77,6 @@ public:
         singleThreadIOService.start();
     }
 
-    void SetUp(){
-    }
-
-    void TearDown(){
-    }
-
     void invokeOnSuccessWithGpsLocation(
             std::function<void(const joynr::types::Localisation::GpsLocation& location)> onSuccess,
             std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {

@@ -35,9 +35,6 @@ public:
     {
     }
 
-    virtual void TearDown() {
-    }
-
 protected:
     ADD_LOGGER(MessagingSettingsTest);
     std::string testSettingsFileNameNonExistent;

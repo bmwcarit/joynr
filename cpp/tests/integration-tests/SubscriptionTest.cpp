@@ -91,10 +91,6 @@ public:
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
 
-    void TearDown(){
-
-    }
-
 protected:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;

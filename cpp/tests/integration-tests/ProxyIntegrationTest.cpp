@@ -60,15 +60,6 @@ public:
     {
     }
 
-    // Sets up the test fixture.
-    void SetUp(){
-    }
-
-    // Tears down the test fixture.
-    void TearDown(){
-
-    }
-
     ~ProxyIntegrationTest(){
         delete mockInProcessConnectorFactory;
         delete mockClientCache;

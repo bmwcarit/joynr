@@ -67,9 +67,6 @@ public:
         requestID = "requestId" + postFix;
         qosSettings = MessagingQos(456000);
     }
-    void TearDown(){
-
-    }
 
 protected:
     JoynrMessageFactory messageFactory;

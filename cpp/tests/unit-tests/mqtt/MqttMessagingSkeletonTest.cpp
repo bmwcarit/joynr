@@ -78,8 +78,6 @@ public:
         message.setHeaderReplyAddress(replyAddressSerialized);
     }
 
-    void TearDown(){
-    }
 protected:
     SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;

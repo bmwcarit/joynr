@@ -77,9 +77,6 @@ public:
                                                                   Permission::ASK);
     }
 
-    void TearDown()
-    {
-    }
 protected:
     static const std::string TEST_USER;
 private:

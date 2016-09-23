@@ -78,11 +78,6 @@ public:
         mockDiscovery()
         {}
 
-    void SetUp(){
-    }
-    void TearDown(){
-    }
-
     void testExceptionFromDiscoveryProxy(Arbitrator &arbitrator);
     void testExceptionEmptyResult(Arbitrator &arbitrator);
 
