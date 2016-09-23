@@ -79,6 +79,7 @@ public:
         publicationManager(nullptr),
         requestCaller(new joynr::tests::testRequestCaller(provider))
     {
+        singleThreadedIOService.start();
     }
 
     void SetUp(){

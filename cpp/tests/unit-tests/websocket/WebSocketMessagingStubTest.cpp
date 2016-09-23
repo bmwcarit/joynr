@@ -122,6 +122,7 @@ public:
         singleThreadedIOService(),
         webSocket(nullptr)
     {
+        singleThreadedIOService.start();
         server.start();
     }
 

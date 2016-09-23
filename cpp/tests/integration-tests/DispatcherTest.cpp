@@ -74,8 +74,8 @@ public:
         dispatcher(&messageSender, singleThreadIOService.getIOService())
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
+        singleThreadIOService.start();
     }
-
 
     void SetUp(){
     }

@@ -35,7 +35,7 @@ class DirectoryTest : public ::testing::Test
           secondKey(""),
           singleThreadedIOService()
     {
-
+        singleThreadedIOService.start();
     }
 
 

@@ -89,6 +89,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
     Settings settings;
     WebSocketSettings wsSettings(settings);
     SingleThreadedIOService singleThreadedIOService;
+    singleThreadedIOService.start();
     std::shared_ptr<MockWebSocketClient> clientWebsocket = std::make_shared<MockWebSocketClient>(wsSettings,
             singleThreadedIOService.getIOService());
     auto wrapper = std::make_shared<MockWebSocketSendInterface>();
@@ -106,6 +107,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromWebS
     auto addressCopy = joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress);
 
     SingleThreadedIOService singleThreadedIOService;
+    singleThreadedIOService.start();
     std::shared_ptr<MockWebSocketClient> websocket = std::make_shared<MockWebSocketClient>(wsSettings,
             singleThreadedIOService.getIOService());
     websocket->registerDisconnectCallback([&factory,&addressCopy](){ factory.onMessagingStubClosed(addressCopy); });
@@ -131,6 +133,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMess
     Settings settings;
     WebSocketSettings wsSettings(settings);
     SingleThreadedIOService singleThreadedIOService;
+    singleThreadedIOService.start();
     std::shared_ptr<MockWebSocketClient> websocket = std::make_shared<MockWebSocketClient>(wsSettings,
             singleThreadedIOService.getIOService());
     websocket->registerDisconnectCallback([factory,addressCopy](){ factory->onMessagingStubClosed(*addressCopy); });
@@ -163,6 +166,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     Settings settings;
     WebSocketSettings wsSettings(settings);
     SingleThreadedIOService singleThreadedIOService;
+    singleThreadedIOService.start();
     std::shared_ptr<WebSocketPpClient> websocket = std::make_shared<MockWebSocketClient>(wsSettings,
             singleThreadedIOService.getIOService());
 

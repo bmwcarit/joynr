@@ -96,7 +96,6 @@ public:
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.
         runtime = new JoynrClusterControllerRuntime(
-                nullptr,
                 std::move(settings),
                 mockMessageReceiverHttp,
                 nullptr,

@@ -204,7 +204,6 @@ set_target_properties(
     SOVERSION "${JOYNR_VERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}"
-    AUTOMOC TRUE
 )
 
 include(GenerateJoynrExports)

@@ -124,7 +124,6 @@ public:
                 .Times(1);
 
         runtime = new JoynrClusterControllerRuntime(
-                    nullptr,
                     std::make_unique<Settings>(settingsFilenameMqttWithHttpBackend),
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,
@@ -138,7 +137,6 @@ public:
                 .Times(1);
 
         runtime = new JoynrClusterControllerRuntime(
-                    nullptr,
                     std::make_unique<Settings>(settingsFilenameHttp),
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,

@@ -19,6 +19,7 @@
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
 #include <cassert>
+#include <memory>
 #include <vector>
 
 #include "joynr/Dispatcher.h"
@@ -58,6 +59,7 @@ LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
           runtimeExecutor(nullptr)
 {
     libjoynrSettings->printSettings();
+    singleThreadIOService->start();
 }
 
 LibJoynrRuntime::~LibJoynrRuntime()

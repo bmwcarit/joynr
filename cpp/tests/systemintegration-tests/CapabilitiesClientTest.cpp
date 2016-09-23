@@ -58,7 +58,7 @@ public:
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
-        runtime = new JoynrClusterControllerRuntime(nullptr, std::move(settings));
+        runtime = new JoynrClusterControllerRuntime(std::move(settings));
     }
 
     void SetUp() {

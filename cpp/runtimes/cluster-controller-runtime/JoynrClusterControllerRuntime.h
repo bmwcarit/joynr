@@ -41,7 +41,6 @@
 #include "common/dbus/DbusSettings.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
-class QCoreApplication;
 class JoynrClusterControllerRuntimeTest;
 
 namespace joynr
@@ -74,8 +73,7 @@ class ChannelUrlDirectoryProxy;
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : public JoynrRuntime
 {
 public:
-    JoynrClusterControllerRuntime(QCoreApplication* app,
-                                  std::unique_ptr<Settings> settings,
+    JoynrClusterControllerRuntime(std::unique_ptr<Settings> settings,
                                   std::shared_ptr<IMessageReceiver> httpMessageReceiver = nullptr,
                                   std::shared_ptr<IMessageSender> httpMessageSender = nullptr,
                                   std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
@@ -116,7 +114,6 @@ protected:
     SubscriptionManager* subscriptionManager;
     IMessaging* joynrMessagingSendSkeleton;
     JoynrMessageSender* joynrMessageSender;
-    QCoreApplication* app;
 
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     ClientQCache cache;
