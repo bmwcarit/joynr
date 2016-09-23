@@ -142,13 +142,11 @@ install(
 
 set(
     JoynrRuntime_PRIVATE_HEADERS
-    "libjoynr-runtime/JoynrRuntimeExecutor.h"
     "libjoynr-runtime/LibJoynrRuntime.h"
 )
 
 set(
     JoynrRuntime_SOURCES
-    "libjoynr-runtime/JoynrRuntimeExecutor.cpp"
     "JoynrRuntime.cpp"
     "libjoynr-runtime/LibJoynrRuntime.cpp"
 )
@@ -166,14 +164,12 @@ set(
 set(
     JoynrWsRuntime_PRIVATE_HEADERS
     "libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
-    "libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.h"
 )
 
 set(
     JoynrWsRuntime_SOURCES
     "libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
     "libjoynr-runtime/websocket/JoynrRuntime.cpp"
-    "libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.cpp"
 )
 
 add_library(
@@ -240,14 +236,12 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrDbusRuntime_PRIVATE_HEADERS
         "libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
-        "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.h"
     )
 
     set(
         JoynrDbusRuntime_SOURCES
         "libjoynr-runtime/dbus/LibJoynrDbusRuntime.cpp"
         "libjoynr-runtime/dbus/JoynrRuntime.cpp"
-        "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.cpp"
     )
 
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)

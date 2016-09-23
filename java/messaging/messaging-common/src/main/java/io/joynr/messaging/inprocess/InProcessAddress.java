@@ -19,10 +19,9 @@ package io.joynr.messaging.inprocess;
  * #L%
  */
 
-import io.joynr.subtypes.JoynrType;
-
 import java.io.Serializable;
 
+import io.joynr.subtypes.JoynrType;
 import joynr.system.RoutingTypes.Address;
 
 public class InProcessAddress extends Address implements Serializable, JoynrType {
@@ -55,5 +54,10 @@ public class InProcessAddress extends Address implements Serializable, JoynrType
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "InProcessAddress [" + super.toString() + ", messagingSkeleton: " + skeleton + "]";
     }
 }

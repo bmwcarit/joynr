@@ -31,9 +31,9 @@ namespace joynr
 
 INIT_LOGGER(LibJoynrWebSocketRuntime);
 
-LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
-        : LibJoynrRuntime(settings),
-          wsSettings(*settings),
+LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings)
+        : LibJoynrRuntime(std::move(settings)),
+          wsSettings(*this->settings),
           websocket(new WebSocketPpClient(wsSettings))
 {
     std::string uuid = util::createUuid();

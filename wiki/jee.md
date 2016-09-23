@@ -294,6 +294,10 @@ this by either spcifying a set of domains during lookup, or a custom
 `ArbitrationStrategyFunction` in the `DiscoveryQos`, or combine both approaches.
 See the [Java Developer Guide](java.md) for details.
 
+__IMPORTANT__: if you intend to have your logic make multiple calls to the same
+provider, then you should locally cache the proxy instance returned by the
+ServiceLocator, as the operation of creating a proxy is expensive.
+
 ## Clustering
 
 The joynr JEE integration currently supports two forms of enabling clustering.
