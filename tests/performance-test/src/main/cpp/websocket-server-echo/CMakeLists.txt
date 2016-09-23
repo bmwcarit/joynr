@@ -11,8 +11,9 @@ message(STATUS "option USE_PLATFORM_WEBSOCKETPP=" ${USE_PLATFORM_WEBSOCKETPP})
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../cpp/CMake")
 include(AddWebSocketPP)
-
+include(SetCppStandard)
 include(AddClangFormat)
+
 find_package(Boost REQUIRED COMPONENTS system thread program_options)
 
 add_executable(websocket-server-echo
