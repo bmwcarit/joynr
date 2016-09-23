@@ -16,44 +16,25 @@
  * limitations under the License.
  * #L%
  */
-#include "PrettyPrint.h"
+
+#include <boost/config.hpp>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <QtCore/QObject>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QTimer>
-#include <QtCore/QThread>
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
-class TestRunner : public QObject {
-    Q_OBJECT
-public:
-    TestRunner(int argc, char *argv[]) :
-        application(argc, argv),
-        testResults(0)
-    {
-    }
-
-    int runTests() {
-        QTimer::singleShot(0, this, SLOT(runGTest()));
-        application.exec();
-        return testResults;
-    }
-
-private Q_SLOTS:
-    void runGTest() {
-        testResults = RUN_ALL_TESTS();
-        QTimer::singleShot(0, &application, SLOT(quit()));
-    }
-
-private:
-    QCoreApplication application;
-    int testResults;
-};
+#ifdef BOOST_HAS_PTHREAD
+#include <pthread.h>
+void setThreadName(const char* name)
+{
+    pthread_setname_np(pthread_self(), name);
+}
+#else
+void setThreadName(...){}
+#endif // BOOST_HAS_PTHREAD
 
 int main(int argc, char *argv[])
 {
@@ -62,15 +43,10 @@ int main(int argc, char *argv[])
         DLT_REGISTER_APP("JOYT", argv[0]);
     #endif // JOYNR_ENABLE_DLT_LOGGING
 
-    // set the name of the main thread, used for logging
-    QThread::currentThread()->setObjectName(QString("main"));
+    setThreadName("main");
 
     // The following line must be executed to initialize Google Mock
     // (and Google Test) before running the tests.
     testing::InitGoogleMock(&argc, argv);
-
-    TestRunner testRunner(argc, argv);
-    return testRunner.runTests();
+    return RUN_ALL_TESTS();
 }
-
-#include "TestMain.moc"

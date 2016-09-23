@@ -459,7 +459,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_UnitTests
-            Qt5::Test
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -589,7 +588,6 @@ else()
 
     target_link_libraries(
             g_UnitTests
-            Qt5::Test
             ${libjoynr_test_TARGET_LIBRARIES}
         )
 
