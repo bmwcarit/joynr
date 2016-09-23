@@ -43,6 +43,7 @@ class InterfaceSubscriptionPublisherTemplate extends InterfaceTemplate {
 «warning()»
 package «packagePath»;
 
+import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.provider.SubscriptionPublisher;
 
 «FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true, false)»
@@ -61,6 +62,7 @@ public interface «className» extends SubscriptionPublisher {
 
 	«FOR broadcast : francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
+		«IF !broadcast.selective»@JoynrMulticast(name = "«broadcastName»")«ENDIF»
 		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList»);
 	«ENDFOR»
 }
