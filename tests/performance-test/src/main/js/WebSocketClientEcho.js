@@ -22,7 +22,11 @@
 var args = process.argv.slice(2);
 var port =  args[0];
 var times = args[1];
-if (!port || !times) {
+var receivedMessages=0
+var remainingMessagesToSend=times
+var startTimestamp
+
+if (!port || !times) {
     console.log("usage: node WebSocketClientEcho.js port times");
     return;
 }
@@ -49,23 +53,35 @@ var killServerMessage = "killServer";
 var totalTime;
 
 var send = function(data) {
-    times--;
-    if (times === 0) {
-        console.timeEnd("time");
+    remainingMessagesToSend--;
+
+    if (remainingMessagesToSend >= 0) {
+        ws.send(data, function (error) {
+            if (error === undefined) {
+                send(data);
+            }
+        });
+    }
+};
+
+ws.on('message', function(data, flags) {
+    receivedMessages++;
+
+    if(receivedMessages >= times) {
+        var elapsedTimeMs = Date.now() - startTimestamp;
+
+        console.log("Elapsed time : " + elapsedTimeMs + " ms");
+        console.log("Throughput   : " + (times / (elapsedTimeMs / 1000.0)) + " Msgs/s");
+
         ws.send(killServerMessage, function () {
             ws.terminate();
         });
         return;
     }
-    ws.send(data, function (error) {
-        if (error === undefined) {
-            send(data);
-        }
-    });
-};
+});
 
 ws.on('open', function open() {
     console.log("sending times:" + times);
-    console.time("time");
+    startTimestamp = Date.now();
     send(JSON.stringify(toSend));
 });
