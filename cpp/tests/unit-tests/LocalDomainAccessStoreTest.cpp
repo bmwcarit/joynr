@@ -20,7 +20,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
-#include "joynr/TypeUtil.h"
 
 using namespace ::testing;
 using namespace joynr;

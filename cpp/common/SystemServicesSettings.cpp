@@ -21,7 +21,6 @@
 #include <cassert>
 
 #include "joynr/Settings.h"
-#include "joynr/TypeUtil.h"
 
 namespace joynr
 {

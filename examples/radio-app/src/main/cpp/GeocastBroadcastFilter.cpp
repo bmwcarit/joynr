@@ -17,10 +17,12 @@
  * #L%
  */
 #include "GeocastBroadcastFilter.h"
-#include "joynr/TypeUtil.h"
-#include "joynr/serializer/Serializer.h"
+
 #include <string>
+
 #include <boost/geometry.hpp>
+
+#include "joynr/serializer/Serializer.h"
 
 INIT_LOGGER(GeocastBroadcastFilter);
 

@@ -51,7 +51,6 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/IConnector.h"
-#include "joynr/TypeUtil.h"
 #include <memory>
 
 namespace joynr {

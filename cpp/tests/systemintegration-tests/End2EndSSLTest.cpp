@@ -30,7 +30,6 @@
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/Future.h"
 #include "joynr/Util.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"

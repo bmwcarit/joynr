@@ -77,7 +77,6 @@ internalRequestObject.setParams(
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/Util.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Future.h"
 #include <cstdint>

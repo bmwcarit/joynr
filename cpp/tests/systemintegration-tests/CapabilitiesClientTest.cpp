@@ -28,7 +28,6 @@
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/types/Version.h"
 
 using namespace ::testing;

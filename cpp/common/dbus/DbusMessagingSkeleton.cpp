@@ -21,7 +21,6 @@
 
 #include "joynr/JoynrMessage.h"
 #include "common/dbus/DbusMessagingUtil.h"
-#include "joynr/TypeUtil.h"
 
 namespace joynr
 {

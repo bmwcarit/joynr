@@ -30,7 +30,6 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/TypeUtil.h"
 
 namespace joynr
 {

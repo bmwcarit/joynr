@@ -32,7 +32,6 @@
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 #include "joynr/tests/TestBroadcastWithFilteringBroadcastFilter.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"

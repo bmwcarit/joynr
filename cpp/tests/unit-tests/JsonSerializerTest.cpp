@@ -47,7 +47,6 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
