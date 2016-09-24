@@ -38,4 +38,9 @@ interface MyService {
             String someValue
 	    }
 	}
+	broadcast mySelectiveBroadcast selective {
+	    out {
+	        String someValue
+	    }
+	}
 }

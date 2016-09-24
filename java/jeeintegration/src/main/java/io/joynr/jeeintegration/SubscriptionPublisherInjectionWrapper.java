@@ -92,7 +92,8 @@ public class SubscriptionPublisherInjectionWrapper implements InvocationHandler 
                                                                Arrays.toString(args),
                                                                subscriptionPublisherClass));
         }
-        ((SubscriptionPublisherInjection) beanInstance).setSubscriptionPublisher((SubscriptionPublisher) args[0]);
+        ((SubscriptionPublisherInjection) beanInstance).setSubscriptionPublisher(SubscriptionPublisherWrapper.createWrapper((SubscriptionPublisher) args[0],
+                                                                                                                            subscriptionPublisherClass));
         return null;
     }
 }

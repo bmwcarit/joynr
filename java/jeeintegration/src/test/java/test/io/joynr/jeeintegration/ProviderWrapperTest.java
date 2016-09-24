@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.function.Consumer;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
@@ -41,7 +42,9 @@ import javax.enterprise.inject.spi.BeanManager;
 import com.google.common.collect.Sets;
 import com.google.inject.Injector;
 import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
+import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.ProviderWrapper;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
@@ -114,8 +117,30 @@ public class ProviderWrapperTest {
         MultiOutResult testMultiOutMethod();
     }
 
+    public static interface MySubscriptionPublisher extends SubscriptionPublisher {
+        @JoynrMulticast(name = "myMulticast")
+        void fireMyMulticast(String someValue);
+
+        void fireSelectiveBroadcast(String someOtherValue);
+
+        void myValueChanged(String myValue);
+    }
+
+    public static interface TestServiceSubscriptionPublisherInjection extends
+            SubscriptionPublisherInjection<MySubscriptionPublisher> {
+    }
+
     public static class TestServiceImpl implements TestServiceInterface,
-            SubscriptionPublisherInjection<SubscriptionPublisher> {
+            SubscriptionPublisherInjection<MySubscriptionPublisher> {
+
+        private Consumer<MySubscriptionPublisher> publisherFunction = null;
+
+        public TestServiceImpl() {
+        }
+
+        public TestServiceImpl(Consumer<MySubscriptionPublisher> publisherFunction) {
+            this.publisherFunction = publisherFunction;
+        }
 
         @Override
         public String testServiceMethod(int paramOne, String paramTwo) {
@@ -147,8 +172,11 @@ public class ProviderWrapperTest {
         }
 
         @Override
-        public void setSubscriptionPublisher(SubscriptionPublisher subscriptionPublisher) {
+        public void setSubscriptionPublisher(MySubscriptionPublisher subscriptionPublisher) {
             assertFalse(JoynrJeeMessageContext.getInstance().isActive());
+            if (publisherFunction != null) {
+                publisherFunction.accept(subscriptionPublisher);
+            }
         }
 
         public MultiOutResult testMultiOutMethod() {
@@ -295,10 +323,10 @@ public class ProviderWrapperTest {
         ProviderWrapper subject = createSubject();
         JoynrProvider proxy = createProxy(subject);
 
-        Method method = SubscriptionPublisherInjection.class.getMethod("setSubscriptionPublisher",
-                                                                       new Class[]{ SubscriptionPublisher.class });
+        Method method = TestServiceSubscriptionPublisherInjection.class.getMethod("setSubscriptionPublisher",
+                                                                                  new Class[]{ SubscriptionPublisher.class });
 
-        subject.invoke(proxy, method, new Object[]{ mock(SubscriptionPublisher.class) });
+        subject.invoke(proxy, method, new Object[]{ mock(MySubscriptionPublisher.class) });
         assertFalse(JoynrJeeMessageContext.getInstance().isActive());
     }
 
@@ -326,6 +354,55 @@ public class ProviderWrapperTest {
         verify(joynrCallingPincipal).setUsername(USERNAME);
     }
 
+    @Test
+    public void testMulticastPublishing() throws Throwable {
+        TestServiceImpl testService = new TestServiceImpl(publisher -> publisher.fireMyMulticast("someValue") );
+        ProviderWrapper subject = createSubject(testService);
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceSubscriptionPublisherInjection.class.getMethod("setSubscriptionPublisher",
+                                                                                  new Class[]{ SubscriptionPublisher.class });
+
+        MySubscriptionPublisher subscriptionPublisherMock = mock(MySubscriptionPublisher.class);
+        subject.invoke(proxy, method, new Object[]{ subscriptionPublisherMock });
+
+        verify(subscriptionPublisherMock).fireMyMulticast(eq("someValue"));
+    }
+
+    @Test
+    public void testPreventSelectiveBroadcast() throws Throwable {
+        ProviderWrapper subject = createSubject(new TestServiceImpl(publisher -> {
+            try {
+                publisher.fireSelectiveBroadcast("someOtherValue");
+                fail("Shouldn't be able to call a selective broadcast method.");
+            } catch (JoynrIllegalStateException e) {
+                // expected
+            }
+        }));
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceSubscriptionPublisherInjection.class.getMethod("setSubscriptionPublisher",
+            new Class[]{ SubscriptionPublisher.class });
+
+        MySubscriptionPublisher subscriptionPublisherMock = mock(MySubscriptionPublisher.class);
+        subject.invoke(proxy, method, new Object[]{ subscriptionPublisherMock });
+    }
+
+    @Test
+    public void testAllowOnChange() throws Throwable {
+        TestServiceImpl testService = new TestServiceImpl(publisher -> publisher.myValueChanged("myNewValue") );
+        ProviderWrapper subject = createSubject(testService);
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceSubscriptionPublisherInjection.class.getMethod("setSubscriptionPublisher",
+            new Class[]{ SubscriptionPublisher.class });
+
+        MySubscriptionPublisher subscriptionPublisherMock = mock(MySubscriptionPublisher.class);
+        subject.invoke(proxy, method, new Object[]{ subscriptionPublisherMock });
+
+        verify(subscriptionPublisherMock).myValueChanged(eq("myNewValue"));
+    }
+
     @SuppressWarnings("rawtypes")
     private void assertPromiseEquals(Object result, Object value) {
         assertTrue(((Promise) result).isFulfilled());
@@ -347,11 +424,15 @@ public class ProviderWrapperTest {
     }
 
     private ProviderWrapper createSubject() {
-        return createSubject(Mockito.mock(BeanManager.class));
+        return createSubject(Mockito.mock(BeanManager.class), new TestServiceImpl());
+    }
+
+    private ProviderWrapper createSubject(TestServiceImpl testServiceImpl) {
+        return createSubject(Mockito.mock(BeanManager.class), testServiceImpl);
     }
 
     @SuppressWarnings("rawtypes")
-    private ProviderWrapper createSubject(BeanManager beanManager) {
+    private ProviderWrapper createSubject(BeanManager beanManager, TestServiceImpl testServiceImpl) {
         Injector injector = mock(Injector.class);
         JoynrMessageCreator joynrMessageCreator = mock(JoynrMessageCreator.class);
         when(injector.getInstance(eq(JoynrMessageCreator.class))).thenReturn(joynrMessageCreator);
@@ -363,7 +444,7 @@ public class ProviderWrapperTest {
                                       Mockito.<CreationalContext> any())).thenReturn(joynrCallingPincipal);
         Bean<?> bean = mock(Bean.class);
         doReturn(TestServiceImpl.class).when(bean).getBeanClass();
-        doReturn(new TestServiceImpl()).when(bean).create(null);
+        doReturn(testServiceImpl).when(bean).create(null);
         ProviderWrapper subject = new ProviderWrapper(bean, beanManager, injector);
         return subject;
     }
