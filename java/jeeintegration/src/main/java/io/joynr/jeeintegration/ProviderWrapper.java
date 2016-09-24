@@ -45,6 +45,7 @@ import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.MultiValueDeferred;
 import io.joynr.provider.Promise;
+import io.joynr.provider.SubscriptionPublisher;
 import io.joynr.provider.SubscriptionPublisherInjection;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
@@ -65,6 +66,20 @@ public class ProviderWrapper implements InvocationHandler {
     private static final Logger LOG = LoggerFactory.getLogger(ProviderWrapper.class);
 
     private static final List<Method> OBJECT_METHODS = Arrays.asList(Object.class.getMethods());
+
+    private static final String SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME = "setSubscriptionPublisher";
+    // Sanity check that the method exists
+    static {
+        try {
+            SubscriptionPublisherInjection.class.getMethod(SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME,
+                                                           SubscriptionPublisher.class);
+        } catch (NoSuchMethodException e) {
+            LOG.error("Expecting to find method named {} with one argument of type {}, but not found on {}",
+                      SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME,
+                      SubscriptionPublisher.class,
+                      SubscriptionPublisherInjection.class);
+        }
+    }
 
     private Bean<?> bean;
     private BeanManager beanManager;
@@ -224,7 +239,12 @@ public class ProviderWrapper implements InvocationHandler {
         if (OBJECT_METHODS.contains(method) || isProviderMethod) {
             return this;
         }
-        return bean.create((CreationalContext) beanManager.createCreationalContext(bean));
+        Object beanInstance = bean.create((CreationalContext) beanManager.createCreationalContext(bean));
+        if (SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME.equals(method.getName())
+                && SubscriptionPublisherInjection.class.isAssignableFrom(method.getDeclaringClass())) {
+            return SubscriptionPublisherInjectionWrapper.createWrapper(beanInstance, bean.getBeanClass());
+        }
+        return beanInstance;
     }
 
     private Method getMethodFromInterfaces(Class<?> beanClass,

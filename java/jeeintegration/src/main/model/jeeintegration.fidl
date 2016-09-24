@@ -33,4 +33,9 @@ interface MyService {
 			MY_ERROR
 		}
 	}
+	broadcast myMulticast {
+        out {
+            String someValue
+	    }
+	}
 }
