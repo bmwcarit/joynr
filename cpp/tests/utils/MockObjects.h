@@ -95,7 +95,6 @@
 #include "joynr/types/Version.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
-#include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterRegistrationControlEntryChangedBroadcastFilterParameters.h"
@@ -1036,16 +1035,11 @@ private:
     std::function<void()> onConnectionClosedCallback;
 };
 
-class MockQWebSocketSendWrapper : public joynr::QWebSocketSendWrapper {
+class MockWebSocketSendInterface : public joynr::IWebSocketSendInterface {
 public:
-
-    MockQWebSocketSendWrapper(QWebSocket* websocket)
-        : QWebSocketSendWrapper(websocket)
-    {
-
-    }
-
-    MOCK_METHOD1(send, void (const std::string& message));
+    MOCK_METHOD2(send, void (const std::string& message,
+                             const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
+    MOCK_CONST_METHOD0(isInitialized, bool ());
     MOCK_CONST_METHOD0(isConnected, bool ());
 };
 

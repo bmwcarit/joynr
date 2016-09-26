@@ -18,9 +18,6 @@
  */
 #include <gtest/gtest.h>
 
-#include <QtTest/QSignalSpy>
-#include <QtCore/QTimer>
-#include <QtWebSockets/QWebSocket>
 #include <memory>
 
 #include "joynr/IMessaging.h"
@@ -94,8 +91,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockWebSocketClient> clientWebsocket = std::make_shared<MockWebSocketClient>(wsSettings,
             singleThreadedIOService.getIOService());
-    QWebSocket* serverWebsocket = new QWebSocket();
-    std::shared_ptr<MockQWebSocketSendWrapper> wrapper = std::make_shared<MockQWebSocketSendWrapper>(serverWebsocket);
+    auto wrapper = std::make_shared<MockWebSocketSendInterface>();
 
     factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), clientWebsocket->getSender());
     factory.addServer(webSocketServerAddress, wrapper);
