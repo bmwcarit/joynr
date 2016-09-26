@@ -81,20 +81,18 @@ void AbstractJoynrProvider::unregisterAttributeListener(
     }
 }
 
-void AbstractJoynrProvider::registerBroadcastListener(
-        const std::string& broadcastName,
-        SubscriptionBroadcastListener* broadcastListener)
+void AbstractJoynrProvider::registerBroadcastListener(const std::string& broadcastName,
+                                                      UnicastBroadcastListener* broadcastListener)
 {
     WriteLocker locker(lock);
     broadcastListeners[broadcastName].push_back(broadcastListener);
 }
 
-void AbstractJoynrProvider::unregisterBroadcastListener(
-        const std::string& broadcastName,
-        SubscriptionBroadcastListener* broadcastListener)
+void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broadcastName,
+                                                        UnicastBroadcastListener* broadcastListener)
 {
     WriteLocker locker(lock);
-    std::vector<SubscriptionBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+    std::vector<UnicastBroadcastListener*>& listeners = broadcastListeners[broadcastName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), broadcastListener);
     assert(listenerIt != listeners.cend());

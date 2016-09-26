@@ -27,7 +27,7 @@
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 #include "joynr/SingleThreadedIOService.h"
 
-#include "joynr/SubscriptionBroadcastListener.h"
+#include "joynr/UnicastBroadcastListener.h"
 
 using namespace ::testing;
 using ::testing::InSequence;
@@ -104,7 +104,7 @@ protected:
     PublicationManager publicationManager;
     MockPublicationSender publicationSender;
     BroadcastSubscriptionRequest request;
-    SubscriptionBroadcastListener subscriptionBroadcastListener;
+    UnicastBroadcastListener subscriptionBroadcastListener;
 
     std::shared_ptr<MockTestProvider> provider;
     std::shared_ptr<RequestCaller> requestCaller;

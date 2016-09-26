@@ -1269,8 +1269,8 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/subscription/PublicationManager.cpp \
                          libjoynr/subscription/SubscriptionAttributeListener.cpp \
                          libjoynr/subscription/SubscriptionAttributeListener.h \
-                         libjoynr/subscription/SubscriptionBroadcastListener.cpp \
-                         libjoynr/subscription/SubscriptionBroadcastListener.h \
+                         libjoynr/subscription/UnicastBroadcastListener.cpp \
+                         libjoynr/subscription/UnicastBroadcastListener.h \
                          libjoynr/subscription/SubscriptionInformation.cpp \
                          libjoynr/subscription/SubscriptionManager.cpp \
                          libjoynr/subscription/SubscriptionPublication.cpp \

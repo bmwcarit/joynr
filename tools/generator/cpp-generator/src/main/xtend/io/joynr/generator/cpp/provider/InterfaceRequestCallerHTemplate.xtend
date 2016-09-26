@@ -61,7 +61,7 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 
 namespace joynr
 {
-class SubscriptionBroadcastListener;
+class UnicastBroadcastListener;
 class SubscriptionAttributeListener;
 } // namespace joynr
 
@@ -177,14 +177,14 @@ public:
 	 * @param broadcastName The name of the broadcast for which a listener should be registered
 	 * @param broadcastListener The listener to be registered
 	 */
-	void registerBroadcastListener(const std::string& broadcastName, joynr::SubscriptionBroadcastListener* broadcastListener) override;
+	void registerBroadcastListener(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener) override;
 
 	/**
 	 * @brief Unregister a broadcast listener
 	 * @param broadcastName The name of the broadcast for which a listener should be unregistered
 	 * @param broadcastListener The listener to be unregistered
 	 */
-	void unregisterBroadcastListener(const std::string& broadcastName, joynr::SubscriptionBroadcastListener* broadcastListener) override;
+	void unregisterBroadcastListener(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener) override;
 
 	/**
 	 * @brief Get the version of the provider instance

@@ -16,13 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#ifndef SUBSCRIPTIONBROADCASTLISTENER_H
-#define SUBSCRIPTIONBROADCASTLISTENER_H
+#ifndef UNICASTBROADCASTLISTENER_H
+#define UNICASTBROADCASTLISTENER_H
 
 #include <string>
 #include <memory>
 #include <vector>
 
+#include "joynr/AbstractBroadcastListener.h"
 #include "joynr/JoynrExport.h"
 
 namespace joynr
@@ -30,18 +31,16 @@ namespace joynr
 
 class PublicationManager;
 
-/**
- * An attribute listener used for broadcast subscriptions
- */
-class JOYNR_EXPORT SubscriptionBroadcastListener
+class JOYNR_EXPORT UnicastBroadcastListener : public AbstractBroadcastListener
 {
 public:
     /**
-     * Create an broadcast listener linked to a subscription
+     * Create an unicast broadcast listener linked to a subscription
+     * An unicast broadcast listener is being used for selectiveBroadcasts
      */
-    SubscriptionBroadcastListener(const std::string& subscriptionId,
-                                  PublicationManager& publicationManager)
-            : subscriptionId(subscriptionId), publicationManager(publicationManager)
+    UnicastBroadcastListener(const std::string& subscriptionId,
+                             PublicationManager& publicationManager)
+            : AbstractBroadcastListener(publicationManager), subscriptionId(subscriptionId)
     {
     }
 
@@ -54,7 +53,6 @@ public:
 
 private:
     std::string subscriptionId;
-    PublicationManager& publicationManager;
 };
 
 } // namespace joynr
@@ -64,7 +62,7 @@ private:
 namespace joynr
 {
 template <typename BroadcastFilter, typename... Ts>
-void SubscriptionBroadcastListener::selectiveBroadcastOccurred(
+void UnicastBroadcastListener::selectiveBroadcastOccurred(
         const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
         const Ts&... values)
 {
@@ -72,11 +70,11 @@ void SubscriptionBroadcastListener::selectiveBroadcastOccurred(
 }
 
 template <typename... Ts>
-void SubscriptionBroadcastListener::broadcastOccurred(const Ts&... values)
+void UnicastBroadcastListener::broadcastOccurred(const Ts&... values)
 {
     publicationManager.broadcastOccurred(subscriptionId, values...);
 }
 
 } // namespace joynr
 
-#endif // SUBSCRIPTIONBROADCASTLISTENER_H
+#endif // UNICASTBROADCASTLISTENER_H

@@ -29,7 +29,7 @@
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionAttributeListener.h"
-#include "joynr/SubscriptionBroadcastListener.h"
+#include "joynr/UnicastBroadcastListener.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
@@ -738,7 +738,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
-    SubscriptionBroadcastListener* broadcastListener;
+    UnicastBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filterParameters;
@@ -853,7 +853,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
-    SubscriptionBroadcastListener* broadcastListener;
+    UnicastBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filterParameters;
@@ -936,7 +936,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
-    SubscriptionBroadcastListener* broadcastListener;
+    UnicastBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filterParameters;

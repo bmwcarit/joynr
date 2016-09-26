@@ -56,7 +56,7 @@ class BroadcastSubscriptionRequest;
 class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
-class SubscriptionBroadcastListener;
+class UnicastBroadcastListener;
 class SubscriptionQos;
 
 namespace exceptions
@@ -340,7 +340,7 @@ private:
 } // namespace joynr
 
 #include "joynr/SubscriptionAttributeListener.h"
-#include "joynr/SubscriptionBroadcastListener.h"
+#include "joynr/UnicastBroadcastListener.h"
 
 namespace joynr
 {
@@ -359,7 +359,7 @@ public:
     IPublicationSender* sender;
     std::shared_ptr<RequestCaller> requestCaller;
     SubscriptionAttributeListener* attributeListener;
-    SubscriptionBroadcastListener* broadcastListener;
+    UnicastBroadcastListener* broadcastListener;
     std::recursive_mutex mutex;
     DelayedScheduler::RunnableHandle publicationEndRunnableHandle;
 

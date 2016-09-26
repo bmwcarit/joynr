@@ -25,7 +25,7 @@
 namespace joynr
 {
 class SubscriptionAttributeListener;
-class SubscriptionBroadcastListener;
+class UnicastBroadcastListener;
 class IBroadcastListener;
 
 namespace types
@@ -69,7 +69,7 @@ public:
      * failures
      */
     virtual void registerBroadcastListener(const std::string& broadcastName,
-                                           SubscriptionBroadcastListener* broadcastListener) = 0;
+                                           UnicastBroadcastListener* broadcastListener) = 0;
 
     /**
      * @brief Unregister and delete a broadcast listener
@@ -78,7 +78,7 @@ public:
      * failures
      */
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
-                                             SubscriptionBroadcastListener* broadcastListener) = 0;
+                                             UnicastBroadcastListener* broadcastListener) = 0;
 
     /**
      * @brief Gets the interface name

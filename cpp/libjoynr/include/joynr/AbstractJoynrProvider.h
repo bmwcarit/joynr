@@ -28,7 +28,7 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/SubscriptionAttributeListener.h"
-#include "joynr/SubscriptionBroadcastListener.h"
+#include "joynr/UnicastBroadcastListener.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
@@ -87,7 +87,7 @@ public:
      * failures
      */
     void registerBroadcastListener(const std::string& broadcastName,
-                                   SubscriptionBroadcastListener* broadcastListener) override;
+                                   UnicastBroadcastListener* broadcastListener) override;
 
     /**
      * @brief Unregister and delete a broadcast listener
@@ -96,7 +96,7 @@ public:
      * failures
      */
     void unregisterBroadcastListener(const std::string& broadcastName,
-                                     SubscriptionBroadcastListener* broadcastListener) override;
+                                     UnicastBroadcastListener* broadcastListener) override;
 
 protected:
     /**
@@ -133,10 +133,9 @@ protected:
     {
 
         ReadLocker locker(lock);
-        const std::vector<SubscriptionBroadcastListener*>& listeners =
-                broadcastListeners[broadcastName];
+        const std::vector<UnicastBroadcastListener*>& listeners = broadcastListeners[broadcastName];
         // Inform all the broadcast listeners for this broadcast
-        for (SubscriptionBroadcastListener* listener : listeners) {
+        for (UnicastBroadcastListener* listener : listeners) {
             listener->selectiveBroadcastOccurred(filters, values...);
         }
     }
@@ -150,10 +149,9 @@ protected:
     void fireBroadcast(const std::string& broadcastName, const Ts&... values)
     {
         ReadLocker locker(lock);
-        const std::vector<SubscriptionBroadcastListener*>& listeners =
-                broadcastListeners[broadcastName];
+        const std::vector<UnicastBroadcastListener*>& listeners = broadcastListeners[broadcastName];
         // Inform all the broadcast listeners for this broadcast
-        for (SubscriptionBroadcastListener* listener : listeners) {
+        for (UnicastBroadcastListener* listener : listeners) {
             listener->broadcastOccurred(values...);
         }
     }
@@ -172,7 +170,7 @@ private:
 
     ReadWriteLock lock;
     std::map<std::string, std::vector<SubscriptionAttributeListener*>> attributeListeners;
-    std::map<std::string, std::vector<SubscriptionBroadcastListener*>> broadcastListeners;
+    std::map<std::string, std::vector<UnicastBroadcastListener*>> broadcastListeners;
 
     friend class End2EndBroadcastTest;
     friend class End2EndSubscriptionTest;
