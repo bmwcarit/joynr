@@ -702,6 +702,14 @@ The output value is returned to the consumer via a callback function.
 A broadcast is selective only if it is declared with the selective keyword in Franca, otherwise it
 is non-selective.
 
+Non-selective broadcast subscriptions can be passed optional **partitions**. A partition is a
+hierarchical list of Strings similar to a URL path. Subscribing to a partition will cause only those
+broadcasts to be sent to the consumer that match the partition. Note that the partition is set when
+subscribing on the consumer side, and must match the partition set on the provider side when the
+broadcast is performed.
+
+Example: a consumer could set a partition of "europe", "germany", "munich" to receive broadcasts for
+Munich only. The matching provider would use the same partition when sending the broadcast.
 
 The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
 by the subscribeTo call. It can be used later to update the subscription or to unsubscribe from it.
@@ -732,6 +740,8 @@ public void run() {
         int minIntervalMs;
         long expiryDateMs;
         int publicationTtlMs;
+        String partitionLevel1;
+        String partitionLevel2;
         ...
         // provide values for minIntervalMs, expiryDateMs, publicationTtlMs here
         ...
@@ -759,7 +769,8 @@ public void run() {
                     // handle error
                 }
             },
-            qos
+            qos,
+            partitionLevel1, partitionLevel2
         );
         ...
     } catch (DiscoveryException e) {
@@ -1358,6 +1369,13 @@ public void fire<Broadcast>Event {
     fire<Broadcast>(outputValue1, ... , outputValueN);
 }
 ```
+
+Optionally a **partition** can be set when firing a broadcast
+
+```java
+fire<Broadcast>(outputValue1, outputValue2, partitionLevel1, partitionLevel2, partitionLevel3);
+```
+
 ## Selective (filtered) broadcasts
 In contrast to unfiltered broadcasts, to realize selective (filtered) broadcasts, the filter logic
 has to be implemented and registered by the provider. If multiple filters are registered on the same

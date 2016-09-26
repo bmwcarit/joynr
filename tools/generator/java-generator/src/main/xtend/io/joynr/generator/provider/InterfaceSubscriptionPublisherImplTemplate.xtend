@@ -78,15 +78,15 @@ public class «className»Impl extends AbstractSubscriptionPublisher implements 
 	«ENDFOR»
 	«FOR broadcast : francaIntf.broadcasts.filter[!selective]»
 		«var broadcastName = broadcast.joynrName»
-		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {
+		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList»«IF broadcast.outputParameters.length > 0», «ENDIF»String... partitions) {
 			«IF broadcast.outArgs.length == 1 && (isArray(broadcast.outArgs.get(0)) || isByteBuffer(broadcast.outArgs.get(0).type))»
 				// passing array to varargs will cause array elements to be understood as multiple parameters.
 				// Cast to Object prevents this.
-				fireMulticast("«broadcastName»", new String[0], (Object) «broadcast.commaSeperatedUntypedOutputParameterList»);
+				fireMulticast("«broadcastName»", partitions, (Object) «broadcast.commaSeperatedUntypedOutputParameterList»);
 			«ELSEIF broadcast.outArgs.empty»
-				fireMulticast("«broadcastName»", new String[0]);
+				fireMulticast("«broadcastName»", partitions);
 			«ELSE»
-				fireMulticast("«broadcastName»", new String[0], «broadcast.commaSeperatedUntypedOutputParameterList»);
+				fireMulticast("«broadcastName»", partitions, «broadcast.commaSeperatedUntypedOutputParameterList»);
 			«ENDIF»
 		}
 

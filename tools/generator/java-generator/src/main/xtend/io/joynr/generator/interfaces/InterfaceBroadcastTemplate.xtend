@@ -114,13 +114,15 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 		@JoynrMulticast(name = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» subscriptionListener,
-				OnChangeSubscriptionQos subscriptionQos);
+				OnChangeSubscriptionQos subscriptionQos,
+				String... partitions);
 
 		@JoynrMulticast(name = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				String subscriptionId,
 				«listenerInterface» subscriptionListener,
-				OnChangeSubscriptionQos subscriptionQos);
+				OnChangeSubscriptionQos subscriptionQos,
+				String... partitions);
 	«ENDIF»
 
 	abstract void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(String subscriptionId);
