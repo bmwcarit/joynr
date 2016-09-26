@@ -33,9 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is used to {@link #createWrapper(Object, Class) create a wrapper} around a
- * bean instance which implements a {@link SubscriptionPublisherInjection} interface for
- * a given concrete {@link SubscriptionPublisher}, and intercepts the {@link SubscriptionPublisherInjection#setSubscriptionPublisher(SubscriptionPublisher) setter}
+ * This class is used to {@link #createInvocationHandler(Class) create an invocation handler}
+ * which can be used to {@link #createProxy() create a proxy} which intercepts and {@link #subscriptionPublisher stores}
+ * the subscription publisher provided by joynr so that it can be subsequently
+ * {@link #setSubsciptionPublisherOnBeanInstance(Object) set on bean instances} created to handle provider calls.
+ * The instances of this class intercept the {@link SubscriptionPublisherInjection#setSubscriptionPublisher(SubscriptionPublisher) setter}
  * method in order to in turn inject a proxy which wraps the subscription publisher with a
  * {@link SubscriptionPublisherWrapper}, so that this can verify that only multicast compatible
  * publications are made from within the JEE context.
@@ -44,20 +46,18 @@ public class SubscriptionPublisherInjectionWrapper implements InvocationHandler 
 
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionPublisherInjectionWrapper.class);
 
-    private final Object beanInstance;
     private final Class<? extends SubscriptionPublisherInjection> proxiedInterface;
     private final Class<? extends SubscriptionPublisher> subscriptionPublisherClass;
+    private SubscriptionPublisher subscriptionPublisher;
 
-    private SubscriptionPublisherInjectionWrapper(Object beanInstance,
-                                                  Class<? extends SubscriptionPublisherInjection> proxiedInterface,
+    private SubscriptionPublisherInjectionWrapper(Class<? extends SubscriptionPublisherInjection> proxiedInterface,
                                                   Class<? extends SubscriptionPublisher> subscriptionPublisherClass) {
-        this.beanInstance = beanInstance;
         this.proxiedInterface = proxiedInterface;
         this.subscriptionPublisherClass = subscriptionPublisherClass;
     }
 
-    public static Object createWrapper(Object beanInstance, Class beanClass) {
-        logger.debug("Called with {} and {}", beanInstance, beanClass);
+    public static SubscriptionPublisherInjectionWrapper createInvocationHandler(Class beanClass) {
+        logger.debug("Called with {}", beanClass);
         Class proxiedInterface = null;
         Class subscriptionPublisherClass = null;
         for (Type interfaceType : beanClass.getGenericInterfaces()) {
@@ -78,11 +78,11 @@ public class SubscriptionPublisherInjectionWrapper implements InvocationHandler 
         if (subscriptionPublisherClass == null || proxiedInterface == null) {
             throw new JoynrIllegalStateException("Cannot create subscription publisher injection wrapper proxy for class which doesn't implement the SubscriptionPublisherInjection interface for a valid SubscriptionPublisher interface.");
         }
-        return Proxy.newProxyInstance(proxiedInterface.getClassLoader(),
-                                      new Class[]{ proxiedInterface },
-                                      new SubscriptionPublisherInjectionWrapper(beanInstance,
-                                                                                proxiedInterface,
-                                                                                subscriptionPublisherClass));
+        return new SubscriptionPublisherInjectionWrapper(proxiedInterface, subscriptionPublisherClass);
+    }
+
+    public Object createProxy() {
+        return Proxy.newProxyInstance(proxiedInterface.getClassLoader(), new Class[]{ proxiedInterface }, this);
     }
 
     @Override
@@ -92,8 +92,15 @@ public class SubscriptionPublisherInjectionWrapper implements InvocationHandler 
                                                                Arrays.toString(args),
                                                                subscriptionPublisherClass));
         }
-        ((SubscriptionPublisherInjection) beanInstance).setSubscriptionPublisher(SubscriptionPublisherWrapper.createWrapper((SubscriptionPublisher) args[0],
-                                                                                                                            subscriptionPublisherClass));
+        subscriptionPublisher = (SubscriptionPublisher) args[0];
         return null;
+    }
+
+    public void setSubsciptionPublisherOnBeanInstance(Object beanInstance) {
+        if (subscriptionPublisher == null) {
+            throw new JoynrIllegalStateException("SubscriptionPublisher has not yet been set on " + this);
+        }
+        ((SubscriptionPublisherInjection) beanInstance).setSubscriptionPublisher(SubscriptionPublisherWrapper.createWrapper(subscriptionPublisher,
+                                                                                                                            subscriptionPublisherClass));
     }
 }

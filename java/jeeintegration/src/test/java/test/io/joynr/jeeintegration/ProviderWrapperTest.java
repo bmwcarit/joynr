@@ -91,6 +91,8 @@ public class ProviderWrapperTest {
         Promise<DeferredVoid> testThrowsApplicationException();
 
         Promise<Deferred<Object[]>> testMultiOutMethod();
+
+        Promise<DeferredVoid> triggerPublisherMethod();
     }
 
     public static interface TestServiceInterface {
@@ -115,6 +117,8 @@ public class ProviderWrapperTest {
         }
 
         MultiOutResult testMultiOutMethod();
+
+        void triggerPublisherMethod();
     }
 
     public static interface MySubscriptionPublisher extends SubscriptionPublisher {
@@ -134,6 +138,7 @@ public class ProviderWrapperTest {
             SubscriptionPublisherInjection<MySubscriptionPublisher> {
 
         private Consumer<MySubscriptionPublisher> publisherFunction = null;
+        private MySubscriptionPublisher subscriptionPublisher;
 
         public TestServiceImpl() {
         }
@@ -174,6 +179,11 @@ public class ProviderWrapperTest {
         @Override
         public void setSubscriptionPublisher(MySubscriptionPublisher subscriptionPublisher) {
             assertFalse(JoynrJeeMessageContext.getInstance().isActive());
+            this.subscriptionPublisher = subscriptionPublisher;
+        }
+
+        @Override
+        public void triggerPublisherMethod() {
             if (publisherFunction != null) {
                 publisherFunction.accept(subscriptionPublisher);
             }
@@ -366,19 +376,23 @@ public class ProviderWrapperTest {
         MySubscriptionPublisher subscriptionPublisherMock = mock(MySubscriptionPublisher.class);
         subject.invoke(proxy, method, new Object[]{ subscriptionPublisherMock });
 
+        Method triggerMethod = TestServiceProviderInterface.class.getMethod("triggerPublisherMethod", new Class[0]);
+        subject.invoke(proxy, triggerMethod, new Object[0]);
+
         verify(subscriptionPublisherMock).fireMyMulticast(eq("someValue"));
     }
 
     @Test
     public void testPreventSelectiveBroadcast() throws Throwable {
-        ProviderWrapper subject = createSubject(new TestServiceImpl(publisher -> {
+        TestServiceImpl testService = new TestServiceImpl(publisher -> {
             try {
                 publisher.fireSelectiveBroadcast("someOtherValue");
                 fail("Shouldn't be able to call a selective broadcast method.");
             } catch (JoynrIllegalStateException e) {
                 // expected
             }
-        }));
+        });
+        ProviderWrapper subject = createSubject(testService);
         JoynrProvider proxy = createProxy(subject);
 
         Method method = TestServiceSubscriptionPublisherInjection.class.getMethod("setSubscriptionPublisher",
@@ -386,6 +400,9 @@ public class ProviderWrapperTest {
 
         MySubscriptionPublisher subscriptionPublisherMock = mock(MySubscriptionPublisher.class);
         subject.invoke(proxy, method, new Object[]{ subscriptionPublisherMock });
+
+        Method triggerMethod = TestServiceProviderInterface.class.getMethod("triggerPublisherMethod", new Class[0]);
+        subject.invoke(proxy, triggerMethod, new Object[0]);
     }
 
     @Test
@@ -399,6 +416,9 @@ public class ProviderWrapperTest {
 
         MySubscriptionPublisher subscriptionPublisherMock = mock(MySubscriptionPublisher.class);
         subject.invoke(proxy, method, new Object[]{ subscriptionPublisherMock });
+
+        Method triggerMethod = TestServiceProviderInterface.class.getMethod("triggerPublisherMethod", new Class[0]);
+        subject.invoke(proxy, triggerMethod, new Object[0]);
 
         verify(subscriptionPublisherMock).myValueChanged(eq("myNewValue"));
     }

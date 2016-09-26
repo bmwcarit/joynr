@@ -66,17 +66,19 @@ public class SubscriptionPublisherInjectionWrapperTest {
     private MyServiceBean myServiceBean;
 
     private SubscriptionPublisherInjection subject;
+    private SubscriptionPublisherInjectionWrapper invocationHandler;
 
     @Before
     public void setup() {
-        subject = (SubscriptionPublisherInjection) SubscriptionPublisherInjectionWrapper.createWrapper(myServiceBean,
-                                                                                                       MyServiceBean.class);
+        invocationHandler = SubscriptionPublisherInjectionWrapper.createInvocationHandler(MyServiceBean.class);
+        subject = (SubscriptionPublisherInjection) invocationHandler.createProxy();
         assertNotNull(subject);
     }
 
     @Test
     public void testCreateAndCallWrapper() {
         subject.setSubscriptionPublisher(mock(MyServiceSubscriptionPublisher.class));
+        invocationHandler.setSubsciptionPublisherOnBeanInstance(myServiceBean);
         verify(myServiceBean).setSubscriptionPublisher(any());
     }
 

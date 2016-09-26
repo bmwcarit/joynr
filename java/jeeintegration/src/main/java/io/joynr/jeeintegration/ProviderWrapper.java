@@ -84,6 +84,7 @@ public class ProviderWrapper implements InvocationHandler {
     private Bean<?> bean;
     private BeanManager beanManager;
     private Injector injector;
+    private SubscriptionPublisherInjectionWrapper subscriptionPublisherInjectionWrapper;
 
     /**
      * Initialises the instance with the service interface which will be exposed and the bean reference it is meant to
@@ -239,10 +240,14 @@ public class ProviderWrapper implements InvocationHandler {
         if (OBJECT_METHODS.contains(method) || isProviderMethod) {
             return this;
         }
-        Object beanInstance = bean.create((CreationalContext) beanManager.createCreationalContext(bean));
         if (SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME.equals(method.getName())
                 && SubscriptionPublisherInjection.class.isAssignableFrom(method.getDeclaringClass())) {
-            return SubscriptionPublisherInjectionWrapper.createWrapper(beanInstance, bean.getBeanClass());
+            subscriptionPublisherInjectionWrapper = SubscriptionPublisherInjectionWrapper.createInvocationHandler(bean.getBeanClass());
+            return subscriptionPublisherInjectionWrapper.createProxy();
+        }
+        Object beanInstance = bean.create((CreationalContext) beanManager.createCreationalContext(bean));
+        if (subscriptionPublisherInjectionWrapper != null) {
+            subscriptionPublisherInjectionWrapper.setSubsciptionPublisherOnBeanInstance(beanInstance);
         }
         return beanInstance;
     }
