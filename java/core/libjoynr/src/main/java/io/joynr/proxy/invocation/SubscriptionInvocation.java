@@ -1,5 +1,7 @@
 package io.joynr.proxy.invocation;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
+
 /*
  * #%L
  * %%
@@ -21,12 +23,40 @@ package io.joynr.proxy.invocation;
 
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.SubscriptionListener;
 
 public abstract class SubscriptionInvocation extends Invocation<String> {
 
     private String subscriptionId = "";
     private final String subscriptionName;
     private final SubscriptionQos qos;
+
+    protected static boolean argsHasSubscriptionId(Object[] args) {
+        return args[0] instanceof String;
+    }
+
+    protected static SubscriptionQos getQosParameter(Object[] args) {
+        try {
+            if (argsHasSubscriptionId(args)) {
+                return (SubscriptionQos) args[2];
+            }
+            return (SubscriptionQos) args[1];
+        } catch (ClassCastException e) {
+            throw new JoynrIllegalStateException("subscribeTo must be passed a SubscriptionQos");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T extends SubscriptionListener> T getSubscriptionListener(Object[] args) {
+        try {
+            if (argsHasSubscriptionId(args)) {
+                return (T) args[1];
+            }
+            return (T) args[0];
+        } catch (ClassCastException e) {
+            throw new JoynrIllegalStateException("subscribeTo must be passed a SubscriptionListener");
+        }
+    }
 
     public SubscriptionInvocation(Future<String> future, String subscriptionName, SubscriptionQos qos) {
         this(future, subscriptionName, qos, null);

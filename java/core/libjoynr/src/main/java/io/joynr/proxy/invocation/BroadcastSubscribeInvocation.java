@@ -26,7 +26,6 @@ import java.lang.reflect.Method;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;
-import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.BroadcastFilterParameters;
 import joynr.OnChangeSubscriptionQos;
@@ -39,24 +38,38 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
     private final BroadcastFilterParameters filterParameters;
     private final Class<?>[] outParameterTypes;
 
+    private static BroadcastFilterParameters getFilterParameters(Object[] args) {
+        try {
+            if (argsHasSubscriptionId(args)) {
+                return (BroadcastFilterParameters) args[3];
+            }
+            return (BroadcastFilterParameters) args[2];
+        } catch (ClassCastException e) {
+            throw new JoynrIllegalStateException("subscribeTo must be passed a SubscriptionQos");
+        }
+    }
+
     public BroadcastSubscribeInvocation(Method method, Object[] args, Future<String> future) {
-        super(future, getSubscriptionNameFromAnnotation(method), (SubscriptionQos) args[1]);
+        super(future, getSubscriptionNameFromAnnotation(method), getQosParameter(args));
         boolean isSelectiveBroadcast = method.getAnnotation(JoynrRpcBroadcast.class) != null;
 
         // For broadcast subscriptions the args array contains the following entries:
-        // args[0] : BroadcastSubscriptionListener
-        // args[1] : OnChangeSubscriptionQos
-        // args[2] : (isSelectiveBroadcast) ? BroadcastFilterParameter : optional subscription ID
-        // args[3] : (isSelectiveBroadcast) ? optional subscription ID : not available
-        broadcastSubscriptionListener = (BroadcastSubscriptionListener) args[0];
+        // (optional) subscriptionId
+        // BroadcastSubscriptionListener
+        // OnChangeSubscriptionQos
+        // (isSelectiveBroadcast) ? BroadcastFilterParameter
+
+        broadcastSubscriptionListener = getSubscriptionListener(args);
         outParameterTypes = extractOutParameterTypes(broadcastSubscriptionListener);
 
         if (isSelectiveBroadcast) {
-            filterParameters = (BroadcastFilterParameters) args[2];
-            setSubscriptionId((args.length == 4) ? (String) args[3] : "");
+            filterParameters = getFilterParameters(args);
         } else {
             filterParameters = new BroadcastFilterParameters();
-            setSubscriptionId((args.length == 3) ? (String) args[2] : "");
+        }
+
+        if (argsHasSubscriptionId(args)) {
+            setSubscriptionId((String) args[0]);
         }
     }
 
@@ -82,6 +95,7 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
         return broadcastSubscriptionListener;
     }
 
+    @Override
     public OnChangeSubscriptionQos getQos() {
         return (OnChangeSubscriptionQos) super.getQos();
     }

@@ -290,8 +290,12 @@ public class SubscriptionManagerTest {
             }
         });
         SubscriptionQos subscriptionQos = mock(OnChangeSubscriptionQos.class);
-        Object[] args = new Object[] { listener, subscriptionQos, subscriptionId };
-
+        Object[] args;
+        if (subscriptionId == null) {
+            args = new Object[] {listener, subscriptionQos };
+        } else {
+            args = new Object[] { subscriptionId, listener, subscriptionQos };
+        }
         String multicastId = toParticipantId + "/myMulticast";
         Set<String> subscriptionIdSet = new HashSet<>();
         multicastSubscribersDirectory.put(multicastId, subscriptionIdSet);

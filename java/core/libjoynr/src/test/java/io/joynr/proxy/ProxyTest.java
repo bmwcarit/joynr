@@ -233,7 +233,7 @@ public class ProxyTest {
                                                                    (Set<String>) argThat(contains(toParticipantId)),
                                                                    Mockito.any(AttributeSubscribeInvocation.class));
 
-        Mockito.doAnswer(new Answer<Object>() { //TODO simulate resolve here ! subscription reply bastern ... handle subscriptionreply ausführen.. 
+        Mockito.doAnswer(new Answer<Object>() { //TODO simulate resolve here ! subscription reply bastern ... handle subscriptionreply ausführen..
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
@@ -585,9 +585,9 @@ public class ProxyTest {
                                                                                .setPublicationTtlMs(publicationTtl_ms);
 
         String subscriptionId = UUID.randomUUID().toString();
-        Future<String> subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
-                                                                                  subscriptionQos,
-                                                                                  subscriptionId);
+        Future<String> subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(subscriptionId,
+                                                                                  mock(LocationUpdateBroadcastListener.class),
+                                                                                  subscriptionQos);
 
         assertEquals(subscriptionId, subscriptionId2.get(500));
 
@@ -653,9 +653,9 @@ public class ProxyTest {
         }
         ;
         String subscriptionId = UUID.randomUUID().toString();
-        Future<String> subscriptionId2 = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
-                                                                         subscriptionQos,
-                                                                         subscriptionId);
+        Future<String> subscriptionId2 = proxy.subscribeToGuidanceActive(subscriptionId,
+                                                                         mock(BooleanSubscriptionListener.class),
+                                                                         subscriptionQos);
 
         assertEquals(subscriptionId, subscriptionId2.get());
 

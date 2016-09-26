@@ -641,6 +641,7 @@ The subscribeTo method can also be used to update an existing subscription, when
 ```java
     try {
         subscriptionIdFuture = <interface>Proxy.subscribeTo<Attribute>(
+            subscriptionId,
             new AttributeSubscriptionAdapter<AttributeType>() {
                 // Gets called on every received publication
                 @Override
@@ -664,8 +665,7 @@ The subscribeTo method can also be used to update an existing subscription, when
                     //   arrive in time
                 }
             },
-            qos,
-            subscriptionId
+            qos
         );
     } catch (JoynrRuntimeException e) {
         // handle error
@@ -694,10 +694,14 @@ public void run() {
 }
 ```
 
-## Subscribing to a broadcast unconditionally
+## Subscribing to a (non-selective) broadcast
 
-Broadcast subscription informs the application in case a broadcast is fired from provider side and
-returns the output values via callback.
+A broadcast subscription informs the application in case a broadcast is fired by a provider.
+The output value is returned to the consumer via a callback function.
+
+A broadcast is selective only if it is declared with the selective keyword in Franca, otherwise it
+is non-selective.
+
 
 The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
 by the subscribeTo call. It can be used later to update the subscription or to unsubscribe from it.
@@ -778,10 +782,12 @@ public void run() {
 
 ## Updating an unconditional broadcast subscription
 
-The subscribeTo method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
+The subscribeTo method can also be used to update an existing subscription, when the
+**subscriptionId** is passed as additional parameter as follows:
 
 ```java
 subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+    subscriptionId,
     new <Broadcast>BroadcastAdapter() {
         // Gets called on every received publication
         @Override
@@ -802,8 +808,7 @@ subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
             // handle error
         }
     },
-    qos,
-    subscriptionId
+    qos
 );
 ```
 
@@ -891,10 +896,11 @@ public void run() {
 ## Updating a broadcast subscription with filter parameters
 
 The subscribeTo method can also be used to update an existing subscription, when the
-**subscriptionId** is given as additional parameter as follows:
+**subscriptionId** is passed as additional parameter as follows:
 
 ```java
-        subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+        subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+            subscriptionId,
             new <Broadcast>BroadcastAdapter() {
                 // Gets called on every received publication
                 @Override
@@ -916,8 +922,7 @@ The subscribeTo method can also be used to update an existing subscription, when
                 }
             },
             qos,
-            filter,
-            subscriptionId
+            filter
         );
 ```
 
@@ -1335,7 +1340,8 @@ public Promise<<Method>Deferred>> <method>(... parameters ...) {
 ```
 
 ### Firing a broadcast
-Firing a broadcast blocks the current thread until the message is serialized.
+A broadcast can be emitted using the following method. Note that firing a broadcast blocks the
+current thread until the message is serialized.
 
 ```java
 // for any Franca type named "<Type>" used

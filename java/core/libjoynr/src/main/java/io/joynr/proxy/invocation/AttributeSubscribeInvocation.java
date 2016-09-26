@@ -35,24 +35,20 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
     private final AttributeSubscriptionListener<?> attributeSubscriptionListener;
     private final Class<?> attributeTypeReference;
 
+    /**
+     *
+     * @param method
+     * @param args contains the arguments passed to the subscribeTo call. subscribe to can be called with or
+     * without a subscriptionId in position 0.
+     * @param future
+     */
     public AttributeSubscribeInvocation(Method method, Object[] args, Future<String> future) {
-        super(future, getAttributeNameFromAnnotation(method), (SubscriptionQos) args[1]);
-        if (args[0] == null || !AttributeSubscriptionListener.class.isAssignableFrom(args[0].getClass())) {
-            throw new JoynrIllegalStateException("First parameter of subscribeTo... has to implement AttributeSubscriptionListener");
-        }
+        super(future, getAttributeNameFromAnnotation(method), getQosParameter(args));
         attributeTypeReference = getAnnotationFromMethod(method).attributeType();
+        attributeSubscriptionListener = getSubscriptionListener(args);
 
-        attributeSubscriptionListener = (AttributeSubscriptionListener<?>) args[0];
-        if (args[1] == null || !SubscriptionQos.class.isAssignableFrom(args[1].getClass())) {
-            throw new JoynrIllegalStateException("Second parameter of subscribeTo... has to be of type SubscriptionQos");
-        }
-
-        if (args.length > 2) {
-            if (args[2] != null && args[2] instanceof String) {
-                setSubscriptionId((String) args[2]);
-            } else {
-                throw new JoynrIllegalStateException("Third parameter of subscribeTo... has to be of type String");
-            }
+        if (argsHasSubscriptionId(args)) {
+            setSubscriptionId((String) args[0]);
         }
     }
 

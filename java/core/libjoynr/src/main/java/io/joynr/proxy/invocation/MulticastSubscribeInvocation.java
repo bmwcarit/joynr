@@ -26,7 +26,6 @@ import java.lang.reflect.Method;
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;
-import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
 
@@ -36,17 +35,12 @@ public class MulticastSubscribeInvocation extends SubscriptionInvocation {
     private Class<?>[] outParameterTypes;
 
     public MulticastSubscribeInvocation(Method method, Object[] args, Future<String> future) {
-        super(future, getMulticastNameFromAnnotation(method), (SubscriptionQos) args[1]);
-        if (!(args[0] instanceof BroadcastSubscriptionListener)) {
-            throw new JoynrIllegalStateException("First parameter to " + method
-                    + " must be non-null and a BroadcastSubscriptionListener");
-        } else {
-            listener = (BroadcastSubscriptionListener) args[0];
-        }
-        if (args.length > 2 && args[2] instanceof String) {
-            setSubscriptionId((String) args[2]);
-        }
+        super(future, getMulticastNameFromAnnotation(method), getQosParameter(args));
+        listener = getSubscriptionListener(args);
         outParameterTypes = extractOutParameterTypes(listener);
+        if (argsHasSubscriptionId(args)) {
+            setSubscriptionId((String) args[0]);
+        }
     }
 
     private static String getMulticastNameFromAnnotation(Method method) {
@@ -57,6 +51,7 @@ public class MulticastSubscribeInvocation extends SubscriptionInvocation {
         return multicastAnnotation.name();
     }
 
+    @Override
     public OnChangeSubscriptionQos getQos() {
         return (OnChangeSubscriptionQos) super.getQos();
     }

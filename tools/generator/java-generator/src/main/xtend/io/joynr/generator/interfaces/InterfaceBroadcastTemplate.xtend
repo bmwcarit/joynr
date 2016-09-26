@@ -106,10 +106,10 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 
 		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				String subscriptionId,
 				«listenerInterface» broadcastListener,
 				OnChangeSubscriptionQos subscriptionQos,
-				«filterParameterType» filterParameters,
-				String subscriptionId);
+				«filterParameterType» filterParameters);
 	«ELSE»
 		@JoynrMulticast(name = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
@@ -118,9 +118,9 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 
 		@JoynrMulticast(name = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				String subscriptionId,
 				«listenerInterface» subscriptionListener,
-				OnChangeSubscriptionQos subscriptionQos,
-				String subscriptionId);
+				OnChangeSubscriptionQos subscriptionQos);
 	«ENDIF»
 
 	abstract void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(String subscriptionId);
