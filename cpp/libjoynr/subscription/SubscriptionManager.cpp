@@ -21,7 +21,6 @@
 #include <chrono>
 #include <cstdint>
 #include <mutex>
-#include <sstream>
 
 #include <boost/asio/io_service.hpp>
 
@@ -35,6 +34,7 @@
 #include "joynr/SubscriptionQos.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionUtil.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -155,18 +155,6 @@ void SubscriptionManager::registerSubscription(
     subscriptionRequest.setSubscribeToName(subscribeToName);
 }
 
-std::string SubscriptionManager::createMulticastId(const std::string& providerParticipantId,
-                                                   const std::string& multicastName,
-                                                   const std::vector<std::string>& partitions)
-{
-    std::stringstream multicastId;
-    multicastId << providerParticipantId << "/" + multicastName;
-    for (auto partition : partitions) {
-        multicastId << "/" << partition;
-    }
-    return multicastId.str();
-}
-
 void SubscriptionManager::registerSubscription(
         const std::string& subscribeToName,
         const std::string& subscriberParticipantId,
@@ -178,7 +166,8 @@ void SubscriptionManager::registerSubscription(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::string multicastId = createMulticastId(providerParticipantId, subscribeToName, partitions);
+    std::string multicastId =
+            util::createMulticastId(providerParticipantId, subscribeToName, partitions);
     subscriptionRequest.setMulticastId(multicastId);
     {
         std::lock_guard<std::mutex> multicastSubscribersLocker(multicastSubscribersMutex);

@@ -162,10 +162,6 @@ private:
     //    void checkMissedPublication(const Timer::TimerId id);
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
 
-    std::string createMulticastId(const std::string& providerParticipantId,
-                                  const std::string& multicastName,
-                                  const std::vector<std::string>& partitions);
-
     class Subscription;
 
     void stopSubscription(std::shared_ptr<Subscription> subscription);
