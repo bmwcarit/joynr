@@ -164,6 +164,30 @@ public class AddressManagerTest {
         assertTrue(result.contains(one));
     }
 
+    @Test
+    public void testGetLocalAndGlobalAddresses() {
+        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        when(joynrMessage.getFrom()).thenReturn("from");
+        when(joynrMessage.getTo()).thenReturn("to");
+        String multicastId = "from/to";
+        Set<String> localParticipantIds = Sets.newHashSet("one");
+        when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(localParticipantIds);
+        Address localAddress = mock(Address.class);
+        when(routingTable.get("one")).thenReturn(localAddress);
+
+        Address globalAddress = mock(Address.class);
+        when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(globalAddress);
+
+        createAddressManager("mqtt", multicastAddressCalculator);
+
+        Set<Address> result = subject.getAddresses(joynrMessage);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(localAddress));
+        assertTrue(result.contains(globalAddress));
+    }
+
     private void createAddressManager(String primaryGlobalTransport,
                                       MulticastAddressCalculator... multicastAddressCalculators) {
         subject = new AddressManager(routingTable,

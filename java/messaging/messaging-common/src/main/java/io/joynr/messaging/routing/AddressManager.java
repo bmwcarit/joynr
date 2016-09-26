@@ -103,7 +103,7 @@ public class AddressManager {
         logger.trace("Found the following addresses for essage {}: {}", new Object[]{ message, result });
         if (result.size() == 0) {
             throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
-                    + message);
+                + message);
         }
         return result;
     }
@@ -114,14 +114,13 @@ public class AddressManager {
             if (calculatedAddress != null) {
                 result.add(calculatedAddress);
             }
-        } else if (message.isReceivedFromGlobal() || multicastAddressCalculator == null) {
-            String multicastId = message.getFrom() + "/" + message.getTo();
-            Set<String> receivers = multicastReceiversRegistry.getReceivers(multicastId);
-            for (String receiverParticipantId : receivers) {
-                Address address = routingTable.get(receiverParticipantId);
-                if (address != null) {
-                    result.add(address);
-                }
+        }
+        String multicastId = message.getFrom() + "/" + message.getTo();
+        Set<String> receivers = multicastReceiversRegistry.getReceivers(multicastId);
+        for (String receiverParticipantId : receivers) {
+            Address address = routingTable.get(receiverParticipantId);
+            if (address != null) {
+                result.add(address);
             }
         }
     }
