@@ -17,9 +17,9 @@
  * #L%
  */
 #include "joynr/JoynrRuntime.h"
-#include "libjoynr-runtime/LibJoynrRuntime.h"
 #include "JoynrWebSocketRuntimeExecutor.h"
 #include "joynr/Settings.h"
+#include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
 namespace joynr
 {

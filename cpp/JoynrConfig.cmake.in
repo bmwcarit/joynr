@@ -61,12 +61,6 @@ include(${JOYNR_CMAKE_DIR}/CheckCurlImportTargets.cmake)
 find_package(OpenSSL REQUIRED)
 include(${JOYNR_CMAKE_DIR}/CheckOpenSSLImportTargets.cmake)
 
-# QT5
-find_package(Qt5Core REQUIRED)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
-find_package(Qt5WebSockets)
-find_package(Qt5Sql REQUIRED)
-
 # Boost
 find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
@@ -103,16 +97,12 @@ set(
 # in-process configuration
 set(
     Joynr_LIB_INPROCESS_INCLUDE_DIRS
-    "${Qt5Core_INCLUDE_DIRS}"
-    "${Qt5Sql_INCLUDE_DIRS}"
     "${Joynr_LIB_COMMON_INCLUDE_DIRS}"
     @JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS@
 )
 
 set(
     Joynr_LIB_INPROCESS_LIBRARIES
-    "${Qt5Core_LIBRARIES}"
-    "${Qt5Sql_LIBRARIES}"
     "${Joynr_LIB_COMMON_LIBRARIES}"
     @JoynrConfig_LIB_INPROCESS_LIBRARIES@
 )

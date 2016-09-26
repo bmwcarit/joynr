@@ -62,7 +62,6 @@ set(
 
 set(
     JoynrClusterController_SYS_INCLUDE_DIRECTORIES
-    ${Qt5Core_INCLUDE_DIRS}
     ${CURL_INCLUDE_DIRS}
     ${MOSQUITTO_INCLUDE_DIRS}
 )
@@ -72,7 +71,6 @@ set(
     Joynr
     JoynrCommon
     cURL::curl
-    ${Qt5Sql_LIBRARIES}
 )
 
 set(
