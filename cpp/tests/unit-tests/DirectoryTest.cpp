@@ -16,13 +16,50 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
+
+#include <atomic>
+
 #include <gtest/gtest.h>
+
 #include "joynr/Directory.h"
-#include "joynr/TrackableObject.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/SingleThreadedIOService.h"
 
 using namespace joynr;
+
+class TrackableObject
+{
+public:
+    TrackableObject()
+    {
+        ++instances;
+        JOYNR_LOG_TRACE(logger,
+                        "Creating TrackableObject at address {}. Now we have {} instances.",
+                        static_cast<const void*>(this),
+                        instances);
+    }
+
+    ~TrackableObject()
+    {
+        --instances;
+        JOYNR_LOG_TRACE(logger,
+                        "Deleting TrackableObject at address {}. Now we have {} instances.",
+                        static_cast<const void*>(this),
+                        instances);
+    }
+
+    static int getInstances()
+    {
+        return instances;
+    }
+
+private:
+    static std::atomic_int instances;
+    ADD_LOGGER(TrackableObject);
+};
+
+std::atomic_int TrackableObject::instances;
+INIT_LOGGER(TrackableObject);
 
 class DirectoryTest : public ::testing::Test
 {
