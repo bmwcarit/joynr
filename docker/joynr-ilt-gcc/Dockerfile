@@ -3,17 +3,6 @@ FROM joynr-javascript:latest
 ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 
 ###################################################
-# install qt
-###################################################
-RUN dnf update -y \
-	&& dnf install -y \
-	qt5-qtbase \
-	qt5-qtbase-devel \
-	qt5-qtwebsockets \
-	qt5-qtwebsockets-devel \
-	&& dnf clean all
-
-###################################################
 # install clang 3.5 for formatting
 ###################################################
 RUN cd /tmp/ \
