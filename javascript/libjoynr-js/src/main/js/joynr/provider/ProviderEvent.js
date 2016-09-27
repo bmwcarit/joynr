@@ -29,17 +29,19 @@ define("joynr/provider/ProviderEvent", [
      * @name ProviderEvent
      * @constructor
      *
-     * @param {String} eventName the name of the event
-     * @param {Object} outputParameterProperties the output parameter names and types
-     * @param {Object} filterSettings the filter settings
+     * @param {Object}
+     *            settings the settings for this provider event
+     * @param {String}
+     *            settings.eventName the name of the event
+     * @param {Object}
+     *            settings.outputParameterProperties the output parameter names and types
+     * @param {Object}
+     *            settings.filterSettings the filter settings
      */
-    function ProviderEvent(
-            eventName,
-            outputParameterProperties,
-            filterSettings) {
+    function ProviderEvent(settings) {
         if (!(this instanceof ProviderEvent)) {
             // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-            return new ProviderEvent(eventName);
+            return new ProviderEvent(settings);
         }
 
         var callbacks = [];
@@ -55,13 +57,13 @@ define("joynr/provider/ProviderEvent", [
                 function checkFilterParameters(filterParametersInput) {
                     var filterParameters = filterParametersInput || {};
                     return SubscriptionUtil.checkFilterParameters(
-                            filterSettings,
+                            settings.filterSettings,
                             filterParameters.filterParameters,
-                            eventName);
+                            settings.eventName);
                 };
 
         this.createBroadcastOutputParameters = function createBroadcastOutputParameters() {
-            return new BroadcastOutputParameters(outputParameterProperties);
+            return new BroadcastOutputParameters(settings.outputParameterProperties);
         };
 
         /**

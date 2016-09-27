@@ -34,14 +34,18 @@ define(
                         var weakSignal;
 
                         beforeEach(function() {
-                            weakSignal = new ProviderEvent("weakSignal", [ {
-                                name : "weakSignalStation",
-                                type : "String"
-                            }
-                            ], {
-                                "a" : "reservedForTypeInfo",
-                                "b" : "reservedForTypeInfo",
-                                "c" : "reservedForTypeInfo"
+                            weakSignal = new ProviderEvent({
+                                eventName : "weakSignal",
+                                outputParameterProperties : [ {
+                                    name : "weakSignalStation",
+                                    type : "String"
+                                }
+                                ],
+                                filterSettings : {
+                                    "a" : "reservedForTypeInfo",
+                                    "b" : "reservedForTypeInfo",
+                                    "c" : "reservedForTypeInfo"
+                                }
                             });
                         });
 

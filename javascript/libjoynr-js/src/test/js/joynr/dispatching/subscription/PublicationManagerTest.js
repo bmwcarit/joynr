@@ -243,14 +243,15 @@ define(
                             };
 
                             testBroadcast =
-                                    new ProviderEvent(
-                                            testBroadcastName,
-                                            [ {
+                                    new ProviderEvent({
+                                        eventName : testBroadcastName,
+                                        outputParameterProperties : [ {
                                                 name : "param1",
                                                 type : "String"
                                             }
-                                            ],
-                                            {});
+                                        ],
+                                        filterSettings : {}
+                                    });
                             testAttribute =
                                     new ProviderAttributeNotifyReadWrite(
                                             provider,
