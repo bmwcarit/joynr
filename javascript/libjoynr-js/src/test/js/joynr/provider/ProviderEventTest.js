@@ -17,7 +17,6 @@
  * #L%
  */
 
-//TODO: some of this relies on the dummy implementation, change accordingly when implementating
 define(
         [
             "joynr/provider/ProviderEvent",
@@ -33,35 +32,17 @@ define(
                     function() {
 
                         var weakSignal;
-                        var implementation;
 
                         beforeEach(function() {
-                            implementation = {
-                                value : {
-                                    key : "value",
-                                    1 : 0,
-                                    object : {}
-                                },
-                                get : function() {
-                                    return implementation.value;
-                                },
-                                set : function(newValue) {
-                                    implementation.value = newValue;
-                                }
-                            };
-                            spyOn(implementation, "get").and.callThrough();
-                            spyOn(implementation, "set").and.callThrough();
-
-                            weakSignal =
-                                    new ProviderEvent(implementation, "weakSignal", [ {
-                                        name : "weakSignalStation",
-                                        type : "String"
-                                    }
-                                    ], {
-                                        "a" : "reservedForTypeInfo",
-                                        "b" : "reservedForTypeInfo",
-                                        "c" : "reservedForTypeInfo"
-                                    });
+                            weakSignal = new ProviderEvent("weakSignal", [ {
+                                name : "weakSignalStation",
+                                type : "String"
+                            }
+                            ], {
+                                "a" : "reservedForTypeInfo",
+                                "b" : "reservedForTypeInfo",
+                                "c" : "reservedForTypeInfo"
+                            });
                         });
 
                         it("is of correct type", function(done) {

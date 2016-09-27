@@ -194,7 +194,6 @@ class ProviderGenerator extends InterfaceJsTemplate {
 				 «appendJSDocSummaryAndWriteSeeAndDescription(event, "* ")»
 				 */
 				this.«eventName» = new dependencies.ProviderEvent(
-					implementation.«eventName»,
 					"«eventName»",
 					[
 						«FOR param : getOutputParameters(event) SEPARATOR ","»

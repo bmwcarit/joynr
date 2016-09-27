@@ -29,19 +29,17 @@ define("joynr/provider/ProviderEvent", [
      * @name ProviderEvent
      * @constructor
      *
-     * @param {Object} [implementation] the definition of the event implementation
      * @param {String} eventName the name of the event
      * @param {Object} outputParameterProperties the output parameter names and types
      * @param {Object} filterSettings the filter settings
      */
     function ProviderEvent(
-            implementation,
             eventName,
             outputParameterProperties,
             filterSettings) {
         if (!(this instanceof ProviderEvent)) {
             // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-            return new ProviderEvent(implementation, eventName);
+            return new ProviderEvent(eventName);
         }
 
         var callbacks = [];

@@ -244,7 +244,6 @@ define(
 
                             testBroadcast =
                                     new ProviderEvent(
-                                            providerSettings,
                                             testBroadcastName,
                                             [ {
                                                 name : "param1",
