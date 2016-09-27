@@ -477,6 +477,57 @@ define("joynr/dispatching/Dispatcher", [
         };
 
         /**
+         * @name Dispatcher#sendMulticastPublication
+         * @function
+         *
+         * @param {Object}
+         *            settings
+         * @param {String}
+         *            settings.from participantId of the sender
+         * @param {String}
+         *            settings.multicastName name of multicast
+         * @param {String[]}
+         *            partitions partitions for this multicast
+         * @param {Number}
+         *            settings.expiryDate time-to-live
+         * @param {SubscriptionPublication}
+         *            publication
+         * @param {?}
+         *            [publication.response]
+         * @param {?}
+         *            [publication.error]
+         * @param {String}
+         *            publication.multicastId
+         *
+         */
+        this.sendMulticastPublication = function sendMulticastPublication(settings, publication) {
+            var i, to = settings.multicastName;
+            log.info("publication", DiagnosticTags.forMulticastPublication({
+                publication : publication,
+                from : settings.from
+            }));
+
+            // Reply with the result in a JoynrMessage
+            var publicationMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST,
+                payload : JSONSerializer.stringify(publication)
+            });
+
+            if (settings.partitions !== undefined) {
+                for (i=0;i<settings.partitions.length;i++){
+                    to += "/" + settings.partitions[i];
+                }
+            }
+
+            // set reply headers
+            publicationMessage.from = settings.from;
+            publicationMessage.to = to;
+            publicationMessage.expiryDate = settings.expiryDate;
+
+            clusterControllerMessagingStub.transmit(publicationMessage);
+        };
+
+        /**
          * receives a new JoynrMessage that has to be routed to one of the managers
          *
          * @name Dispatcher#receive
