@@ -85,7 +85,6 @@ public class ProviderWrapper implements InvocationHandler {
     private Bean<?> bean;
     private BeanManager beanManager;
     private Injector injector;
-    private SubscriptionPublisherInjectionWrapper subscriptionPublisherInjectionWrapper;
 
     /**
      * Initialises the instance with the service interface which will be exposed and the bean reference it is meant to
@@ -94,8 +93,8 @@ public class ProviderWrapper implements InvocationHandler {
      * @param bean
      *            the bean reference to which calls will be delegated.
      * @param beanManager
-     *            the bean manager
-     * @param injector
+     *            the bean manager.
+     * @param injector the Guice injector.
      */
     public ProviderWrapper(Bean<?> bean, BeanManager beanManager, Injector injector) {
         this.bean = bean;
@@ -243,14 +242,9 @@ public class ProviderWrapper implements InvocationHandler {
         }
         if (SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME.equals(method.getName())
                 && SubscriptionPublisherInjection.class.isAssignableFrom(method.getDeclaringClass())) {
-            subscriptionPublisherInjectionWrapper = SubscriptionPublisherInjectionWrapper.createInvocationHandler(bean.getBeanClass());
-            return subscriptionPublisherInjectionWrapper.createProxy();
+            return SubscriptionPublisherInjectionWrapper.createInvocationHandler(bean, beanManager).createProxy();
         }
-        Object beanInstance = bean.create((CreationalContext) beanManager.createCreationalContext(bean));
-        if (subscriptionPublisherInjectionWrapper != null) {
-            subscriptionPublisherInjectionWrapper.setSubsciptionPublisherOnBeanInstance(beanInstance);
-        }
-        return beanInstance;
+        return bean.create((CreationalContext) beanManager.createCreationalContext(bean));
     }
 
     private Method getMethodFromInterfaces(Class<?> beanClass,
