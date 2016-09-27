@@ -133,5 +133,21 @@ define("joynr/dispatching/subscription/util/SubscriptionUtil", [], function() {
                 return result;
             };
 
+    /**
+     * @param {String} providerParticipantId - provider's participant ID
+     * @param {String} multicastName - the name of the multicasts
+     * @param {Array} paritions - partitions of this multicast
+     */
+    SubscriptionUtil.createMulticastId =
+            function(providerParticipantId, multicastName, partitions) {
+                var i, multicastId = providerParticipantId + "/" + multicastName;
+                if (partitions !== undefined) {
+                    for (i = 0; i < partitions.length; i++) {
+                        multicastId += ("/" + partitions[i]);
+                    }
+                }
+                return multicastId;
+            };
+
     return SubscriptionUtil;
 });

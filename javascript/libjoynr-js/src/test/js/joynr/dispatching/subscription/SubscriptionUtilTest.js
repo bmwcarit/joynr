@@ -233,6 +233,32 @@ define(
                                     info.qos.maxIntervalMs);
                         });
 
+                        it(
+                                "createMulticastId",
+                                function() {
+                                    expect(SubscriptionUtil.createMulticastId("a", "b")).toEqual(
+                                            "a/b");
+                                    expect(SubscriptionUtil.createMulticastId("a", "b", []))
+                                            .toEqual("a/b");
+                                    expect(SubscriptionUtil.createMulticastId("a", "b", [ "c"
+                                    ])).toEqual("a/b/c");
+                                    expect(SubscriptionUtil.createMulticastId("a", "b", [
+                                        "c",
+                                        "d"
+                                    ])).toEqual("a/b/c/d");
+                                    expect(SubscriptionUtil.createMulticastId("a", "b", [
+                                        "c",
+                                        "d",
+                                        "e"
+                                    ])).toEqual("a/b/c/d/e");
+                                    expect(SubscriptionUtil.createMulticastId("a", "b", [
+                                        "c",
+                                        "d",
+                                        "e",
+                                        "f"
+                                    ])).toEqual("a/b/c/d/e/f");
+                                });
+
                         it("deserialize multiple subscriptions shall work", function() {
                             var info1 =
                                     createSubscriptionInformation(
