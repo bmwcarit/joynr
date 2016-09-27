@@ -22,6 +22,7 @@ define("joynr/dispatching/Dispatcher", [
     "joynr/dispatching/types/Request",
     "joynr/dispatching/types/Reply",
     "joynr/dispatching/types/OneWayRequest",
+    "joynr/dispatching/types/BroadcastSubscriptionRequest",
     "joynr/dispatching/types/SubscriptionRequest",
     "joynr/dispatching/types/SubscriptionReply",
     "joynr/dispatching/types/SubscriptionStop",
@@ -38,6 +39,7 @@ define("joynr/dispatching/Dispatcher", [
         Request,
         Reply,
         OneWayRequest,
+        BroadcastSubscriptionRequest,
         SubscriptionRequest,
         SubscriptionReply,
         SubscriptionStop,
@@ -561,7 +563,7 @@ define("joynr/dispatching/Dispatcher", [
                                         .handleEventSubscriptionRequest(
                                                 joynrMessage.from,
                                                 joynrMessage.to,
-                                                new SubscriptionRequest(
+                                                new BroadcastSubscriptionRequest(
                                                         parsePayload(joynrMessage.payload)),
                                                 function(subscriptionReply) {
                                                     sendSubscriptionReply({
