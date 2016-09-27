@@ -26,8 +26,10 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
     "joynr/proxy/SubscriptionQos",
     "joynr/dispatching/types/SubscriptionStop",
     "joynr/dispatching/types/SubscriptionRequest",
+    "joynr/dispatching/types/MulticastSubscriptionRequest",
     "joynr/dispatching/types/BroadcastSubscriptionRequest",
     "joynr/dispatching/subscription/SubscriptionListener",
+    "joynr/dispatching/subscription/util/SubscriptionUtil",
     "joynr/util/LongTimer",
     "joynr/system/LoggerFactory",
     "uuid",
@@ -43,8 +45,10 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         SubscriptionQos,
         SubscriptionStop,
         SubscriptionRequest,
+        MulticastSubscriptionRequest,
         BroadcastSubscriptionRequest,
         SubscriptionListener,
+        SubscriptionUtil,
         LongTimer,
         LoggerFactory,
         uuid,
@@ -324,6 +328,23 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     });
                 };
 
+        function createBroadcastSubscriptionRequest(parameters) {
+            if (parameters.selective) {
+                return new BroadcastSubscriptionRequest({
+                    subscriptionId : parameters.subscriptionId || uuid(),
+                    subscribedToName : parameters.broadcastName,
+                    qos : parameters.subscriptionQos,
+                    filterParameters : parameters.filterParameters
+                });
+            }
+            return new MulticastSubscriptionRequest({
+                multicastId : SubscriptionUtil.createMulticastId(parameters.providerId, parameters.broadcastName, parameters.partitions),
+                subscriptionId : parameters.subscriptionId || uuid(),
+                subscribedToName : parameters.broadcastName,
+                qos : parameters.subscriptionQos
+            });
+        }
+
         /**
          * @name SubscriptionManager#registerBroadcastSubscription
          * @function
@@ -344,6 +365,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            only a subset of broadcasts that might be sent.
          * @param {Boolean}
          *            parameters.selective true if broadcast is selective
+         * @param {String[]}
+         *            [parameters.partitions] partitions for multicast requests
          * @param {String}
          *            parameters.subscriptionId optional parameter subscriptionId to reuse a
          *            pre-existing identifier for this concrete subscription request
@@ -364,12 +387,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 if (!isReady()) {
                     reject(new Error("SubscriptionManager is already shut down"));
                 }
-                var subscriptionRequest = new BroadcastSubscriptionRequest({
-                    subscriptionId : parameters.subscriptionId || uuid(),
-                    subscribedToName : parameters.broadcastName,
-                    qos : parameters.subscriptionQos,
-                    filterParameters : parameters.filterParameters
-                });
+
+                var subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
 
                 messagingQos = new MessagingQos({
                     ttl : calculateTtl(subscriptionRequest.qos)

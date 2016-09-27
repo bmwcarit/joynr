@@ -146,6 +146,7 @@ define("joynr/proxy/ProxyEvent", [
                                             settings.broadcastParameter));
                                 },
                                 selective : settings.selective,
+                                partitions : [], // currently set to an empty array, will be provided by the application in upcoming patches
                                 onError : subscribeParameters.onError,
                                 onSubscribed : subscribeParameters.onSubscribed,
                                 filterParameters : subscribeParameters.filterParameters
