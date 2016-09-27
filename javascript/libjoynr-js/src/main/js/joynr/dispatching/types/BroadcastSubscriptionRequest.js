@@ -55,10 +55,17 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
          * @name BroadcastSubscriptionRequest#subscriptionId
          * @type String
          */
+        this.subscriptionId = settings.subscriptionId;
+        /**
+         * @name BroadcastSubscriptionRequest#subscribedToName
+         * @type String
+         */
+        this.subscribedToName = settings.subscribedToName;
         /**
          * @name BroadcastSubscriptionRequest#qos
          * @type Object|OnChangeSubscriptionQos
          */
+        this.qos = settings.qos || defaultSettings.qos;
         /**
          * @name BroadcastSubscriptionRequest#subscribedToName
          * @type String
@@ -67,7 +74,9 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
          * @name BroadcastSubscriptionRequest#filterParameters
          * @type Object|BroadcastFilterParameters
          */
-        Util.extend(this, defaultSettings, settings);
+        if (settings.filterParameters !== undefined) {
+            this.filterParameters = settings.filterParameters;
+        }
         /**
          * The joynr type name
          *
