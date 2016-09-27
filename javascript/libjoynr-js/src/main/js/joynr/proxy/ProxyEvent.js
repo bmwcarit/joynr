@@ -112,9 +112,7 @@ define("joynr/proxy/ProxyEvent", [
          *            subscribeParameters.onSubscribed the callback to inform once the subscription request has
          *            been delivered successfully
          * @returns {Object} returns a promise that is resolved with the subscriptionId, which is to
-         *          be used to unsubscribe from this subscription later. NOTE: currently resolved
-         *          when the request is sent; later will be resolved once the subscriptionReply is
-         *          received. See TODO # 1319
+         *          be used to unsubscribe from this subscription later.
          */
         this.subscribe =
                 function subscribe(subscribeParameters) {
