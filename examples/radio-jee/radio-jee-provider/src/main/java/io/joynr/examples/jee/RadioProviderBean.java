@@ -44,6 +44,8 @@ public class RadioProviderBean implements RadioSync, SubscriptionPublisherInject
 
     private GeoLocationService geoLocationService;
 
+    private RadioSubscriptionPublisher radioSubscriptionPublisher;
+
     @Inject
     public RadioProviderBean(RadioStationDatabase radioStationDatabase, GeoLocationService geoLocationService) {
         this.radioStationDatabase = radioStationDatabase;
@@ -80,10 +82,15 @@ public class RadioProviderBean implements RadioSync, SubscriptionPublisherInject
     }
 
     @Override
-    public void setSubscriptionPublisher(RadioSubscriptionPublisher subscriptionPublisher) {
-        // Not supported by JEE integration yet, but necessary to have this method
-        // so that the application can be deployed, because the radio.fidl has
-        // subscription functionality in it.
+    public void setSubscriptionPublisher(RadioSubscriptionPublisher radioSubscriptionPublisher) {
+        this.radioSubscriptionPublisher = radioSubscriptionPublisher;
+    }
+
+    public void fireWeakSignal() {
+        if (radioSubscriptionPublisher == null) {
+            throw new IllegalStateException("No subscription publisher available.");
+        }
+        radioSubscriptionPublisher.fireWeakSignal(radioStationDatabase.getCurrentStation());
     }
 
 }
