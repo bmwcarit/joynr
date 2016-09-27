@@ -448,7 +448,9 @@ define("joynr/dispatching/Dispatcher", [
          * @param {SubscriptionPublication}
          *            publication
          * @param {?}
-         *            publication.response
+         *            [publication.response]
+         * @param {?}
+         *            [publication.error]
          * @param {String}
          *            publication.subscriptionId
          *
