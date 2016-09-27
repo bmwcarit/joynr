@@ -138,7 +138,7 @@ define("joynr/system/DiagnosticTags", [], function() {
     DiagnosticTags.forPublication = function forPublication(publicationInfo) {
         return {
             diagnosticTag : "Publication",
-            subscriptionId : publicationInfo.subscriptionId,
+            subscriptionId : publicationInfo.publication.subscriptionId,
             to : publicationInfo.to,
             from : publicationInfo.from
         };
