@@ -29,14 +29,12 @@ define("joynr/provider/ProviderEvent", [
      * @name ProviderEvent
      * @constructor
      *
-     * @param {Provider} parent is the provider object that contains this attribute
      * @param {Object} [implementation] the definition of the event implementation
      * @param {String} eventName the name of the event
      * @param {Object} outputParameterProperties the output parameter names and types
      * @param {Object} filterSettings the filter settings
      */
     function ProviderEvent(
-            parent,
             implementation,
             eventName,
             outputParameterProperties,

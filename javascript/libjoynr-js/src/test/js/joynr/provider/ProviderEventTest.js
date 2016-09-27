@@ -34,7 +34,6 @@ define(
 
                         var weakSignal;
                         var implementation;
-                        var provider;
 
                         beforeEach(function() {
                             implementation = {
@@ -52,10 +51,9 @@ define(
                             };
                             spyOn(implementation, "get").and.callThrough();
                             spyOn(implementation, "set").and.callThrough();
-                            var provider = {};
 
                             weakSignal =
-                                    new ProviderEvent(provider, implementation, "weakSignal", [ {
+                                    new ProviderEvent(implementation, "weakSignal", [ {
                                         name : "weakSignalStation",
                                         type : "String"
                                     }
