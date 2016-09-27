@@ -1,4 +1,4 @@
-package test.io.joynr.jeeintegration;
+package test.io.joynr.jeeintegration.multicast;
 
 /*
  * #%L
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.jeeintegration.SubscriptionPublisherInjectionWrapper;
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.provider.SubscriptionPublisherInjection;
 import joynr.exceptions.ApplicationException;

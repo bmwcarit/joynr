@@ -38,6 +38,7 @@ import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
 import io.joynr.messaging.JoynrMessageCreator;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Deferred;

@@ -1,4 +1,4 @@
-package io.joynr.jeeintegration;
+package io.joynr.jeeintegration.multicast;
 
 /*
  * #%L
