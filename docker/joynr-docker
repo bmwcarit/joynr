@@ -52,13 +52,14 @@ declare -a listOfImages=(
 
 function build
 {
-    echo "building repository: $repository$version"
     for image in "${listOfImages[@]}"
     do
         docker build -t ${repository}${image}${version} ${image}/
+        echo "building image: ${repository}${image}${version}"
         IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
 
         for tag in "${tags[@]}"; do
+            echo "tagging image ${repository}${image}${version} with tag ${tag}"
             docker tag ${repository}${image}${version} ${repository}${image}:${tag}
             docker tag ${repository}${image}${version} ${image}:${tag}
         done
