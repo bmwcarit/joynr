@@ -154,6 +154,13 @@ define(
              * @static
              * @readonly
              * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST = "multicast";
+            /**
+             * @static
+             * @readonly
+             * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP
              */
             JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
