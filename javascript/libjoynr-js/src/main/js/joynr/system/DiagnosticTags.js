@@ -144,5 +144,16 @@ define("joynr/system/DiagnosticTags", [], function() {
         };
     };
 
+    /**
+     * @param {Object} publicationInfo - multicast publication info
+     */
+    DiagnosticTags.forMulticastPublication = function forMulticastPublication(publicationInfo) {
+        return {
+            diagnosticTag : "MulticastPublication",
+            multicastId : publicationInfo.publication.multicastId,
+            from : publicationInfo.from
+        };
+    };
+
     return DiagnosticTags;
 });
