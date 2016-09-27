@@ -32,20 +32,7 @@ define(
                     "libjoynr-js.joynr.provider.ProviderEvent",
                     function() {
 
-                        var settings;
                         var weakSignal;
-                        var weakSignalNotifyReadOnly;
-                        var weakSignalNotifyWriteOnly;
-                        var weakSignalNotify;
-                        var weakSignalReadWrite;
-                        var weakSignalReadOnly, weakSignalWriteOnly;
-                        var weakSignalProviderEventNotifyReadWrite;
-                        var weakSignalProviderEventNotifyRead;
-                        var weakSignalProviderEventNotifyWrite;
-                        var weakSignalProviderEventNotify;
-                        var weakSignalProviderEventReadWrite;
-                        var weakSignalProviderEventRead;
-                        var weakSignalProviderEventWrite;
                         var implementation;
                         var provider;
 
@@ -67,12 +54,6 @@ define(
                             spyOn(implementation, "set").and.callThrough();
                             var provider = {};
 
-                            settings = {
-                                providerQos : new ProviderQos({
-                                    version : 123,
-                                    priority : 1234
-                                })
-                            };
                             weakSignal =
                                     new ProviderEvent(provider, implementation, "weakSignal", [ {
                                         name : "weakSignalStation",
