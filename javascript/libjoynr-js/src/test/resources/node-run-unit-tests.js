@@ -141,6 +141,7 @@ requirejs([
     "tests/joynr/capabilities/CapabilitiesRegistrarTest",
     "tests/joynr/capabilities/CapabilitiesStoreTest",
     "tests/joynr/capabilities/ParticipantIdStorageTest",
+    "tests/joynr/dispatching/types/MulticastPublicationTest",
     "tests/joynr/dispatching/types/SubscriptionPublicationTest",
     "tests/joynr/dispatching/types/RequestTest",
     "tests/joynr/dispatching/types/SubscriptionRequestTest",
