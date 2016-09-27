@@ -342,6 +342,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param {BroadcastFilterParameters}
          *            [parameters.filterParameters] filter parameters used to indicate interest in
          *            only a subset of broadcasts that might be sent.
+         * @param {Boolean}
+         *            parameters.selective true if broadcast is selective
          * @param {String}
          *            parameters.subscriptionId optional parameter subscriptionId to reuse a
          *            pre-existing identifier for this concrete subscription request

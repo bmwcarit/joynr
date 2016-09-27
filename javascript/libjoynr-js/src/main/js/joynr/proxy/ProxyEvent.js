@@ -75,6 +75,8 @@ define("joynr/proxy/ProxyEvent", [
      *            settings.dependencies the dependencies object for this function call
      * @param {SubscriptionManager}
      *            settings.dependencies.subscriptionManager
+     * @param {Boolean}
+     *            settings.selective true if the broadcast is selective
      * @param {String}
      *            settings.broadcastName the name of the broadcast as modelled in Franca
      * @param {String[]}
@@ -145,6 +147,7 @@ define("joynr/proxy/ProxyEvent", [
                                             response,
                                             settings.broadcastParameter));
                                 },
+                                selective : settings.selective,
                                 onError : subscribeParameters.onError,
                                 onSubscribed : subscribeParameters.onSubscribed,
                                 filterParameters : subscribeParameters.filterParameters

@@ -33,6 +33,8 @@ define("joynr/provider/ProviderEvent", [
      *            settings the settings for this provider event
      * @param {String}
      *            settings.eventName the name of the event
+     * @param {Boolean}
+     *            settings.selective true if the broadcast is selective
      * @param {Object}
      *            settings.outputParameterProperties the output parameter names and types
      * @param {Object}
@@ -47,6 +49,7 @@ define("joynr/provider/ProviderEvent", [
         var callbacks = [];
         var filters = [];
 
+        this.selective = settings.selective;
         /**
          * @name ProviderEvent#checkFilterParameters
          * @param {BroadcastFilterParameters} filterParameters

@@ -203,6 +203,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
 						}
 						«ENDFOR»
 					],
+					selective : «event.selective»,
 					filterSettings : {
 					«IF event.selective»
 						«FOR filterParameter : filterParameters SEPARATOR ","»
