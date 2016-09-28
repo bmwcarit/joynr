@@ -69,6 +69,7 @@ public:
         dispatcher(&messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
+        singleThreadIOService.start();
     }
 
     void SetUp(){

@@ -52,6 +52,7 @@ public:
         messageRouter(nullptr),
         joynrMessage()
     {
+        singleThreadedIOService.start();
         auto messageQueue = std::make_unique<MessageQueue>();
         this->messageQueue = messageQueue.get();
 

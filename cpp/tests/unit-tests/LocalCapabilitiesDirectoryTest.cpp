@@ -78,6 +78,7 @@ public:
               dummyParticipantId2(),
               callback()
     {
+        singleThreadedIOService.start();
         messagingSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
         settings.set(MessagingSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(), 200);
         localCapabilitiesDirectory =

@@ -28,7 +28,6 @@
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/types/Version.h"
 
 using namespace ::testing;
@@ -59,7 +58,7 @@ public:
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
-        runtime = new JoynrClusterControllerRuntime(nullptr, std::move(settings));
+        runtime = new JoynrClusterControllerRuntime(std::move(settings));
     }
 
     void SetUp() {

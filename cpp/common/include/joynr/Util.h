@@ -20,13 +20,14 @@
 #define UTIL_H
 
 #include <cstddef>
+#include <algorithm>
+#include <chrono>
+#include <iterator>
+#include <set>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include <set>
-#include <algorithm>
-#include <iterator>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
@@ -191,6 +192,16 @@ auto getKeyVectorForMap(const Map& map)
     boost::copy(map | boost::adaptors::map_keys, std::back_inserter(keys));
     return keys;
 }
+
+/**
+ * Converts a std::chrono::system_clock::time_point to milliseconds
+ */
+std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint);
+
+/**
+ * Converts a std::chrono::system_clock::time_point to a printable string
+ */
+std::string toDateString(const std::chrono::system_clock::time_point& timePoint);
 
 } // namespace util
 

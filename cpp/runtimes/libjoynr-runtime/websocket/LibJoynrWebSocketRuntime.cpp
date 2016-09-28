@@ -25,6 +25,7 @@
 #include "joynr/Semaphore.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/SingleThreadedIOService.h"
 
 namespace joynr
 {
@@ -34,7 +35,7 @@ INIT_LOGGER(LibJoynrWebSocketRuntime);
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings)
         : LibJoynrRuntime(std::move(settings)),
           wsSettings(*this->settings),
-          websocket(new WebSocketPpClient(wsSettings))
+          websocket(new WebSocketPpClient(wsSettings, singleThreadIOService->getIOService()))
 {
     std::string uuid = util::createUuid();
     // remove dashes
@@ -74,7 +75,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> set
     websocket->connect(*ccMessagingAddress);
 
     auto factory = std::make_shared<WebSocketMessagingStubFactory>();
-    factory->addServer(*ccMessagingAddress, websocket);
+    factory->addServer(*ccMessagingAddress, websocket->getSender());
 
     std::weak_ptr<WebSocketMessagingStubFactory> weakFactoryRef(factory);
     websocket->registerDisconnectCallback([weakFactoryRef, ccMessagingAddress]() {
@@ -93,6 +94,7 @@ LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
     // WebSocketLibJoynrMessagingSkeleton
     websocket->registerReceiveCallback(nullptr);
     websocket->close();
+    singleThreadIOService.reset();
 }
 
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(

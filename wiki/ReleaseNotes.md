@@ -18,7 +18,8 @@
   settings.
 * **[C++]** Build variable `USE_PLATFORM_GTEST_GMOCK` now defaults to ON so that
   it is consistent with the other `USE_PLATFORM_*` variables.
-* **[C++]**  Reduced the number of threads which are used by a cluster controller instance
+* **[C++]** Reduced the number of threads which are used by a cluster controller instance
+* **[C++]** The dependency to Qt is now fully removed.
 
 #joynr 0.20.3
 This is a minor bug fix release.

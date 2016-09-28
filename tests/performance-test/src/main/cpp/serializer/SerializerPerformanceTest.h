@@ -25,7 +25,6 @@
 
 #include "../common/PerformanceTest.h"
 #include "joynr/Request.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"

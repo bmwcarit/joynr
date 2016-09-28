@@ -236,7 +236,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaste
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
-    ownerAce.setOperation(LocalDomainAccessStore::WILDCARD);
+    ownerAce.setOperation(access_control::WILDCARD);
     localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
     std::string defaultString;
@@ -255,7 +255,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     // Setup the master with a wildcard operation
-    masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
+    masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
 
@@ -324,7 +324,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) {
     // Setup the master with a wildcard operation
-    masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
+    masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
 
@@ -380,11 +380,11 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     // Setup the master with a wildcard operation
-    masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
+    masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
 
-    ownerAce.setOperation(LocalDomainAccessStore::WILDCARD);
+    ownerAce.setOperation(access_control::WILDCARD);
     std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
 

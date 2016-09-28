@@ -61,6 +61,11 @@ ACTION_P(ReleaseSemaphore, semaphore)
 
 class PublicationManagerTest : public testing::Test {
 public:
+    PublicationManagerTest() : singleThreadedIOService()
+    {
+        singleThreadedIOService.start();
+    }
+
     void TearDown(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored broadcastsubscriptions

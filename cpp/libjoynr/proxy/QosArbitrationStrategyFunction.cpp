@@ -22,7 +22,6 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/types/CustomParameter.h"
 #include "joynr/exceptions/JoynrException.h"
 

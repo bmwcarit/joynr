@@ -19,7 +19,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/BrokerUrl.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Logger.h"
 #include "joynr/Settings.h"

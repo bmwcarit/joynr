@@ -27,7 +27,6 @@
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/Util.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/TypeUtil.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/Future.h"
 #include "joynr/JoynrMessage.h"
@@ -198,8 +197,8 @@ void LongPollingMessageReceiver::checkServerTime()
     std::chrono::system_clock::time_point localTimeBeforeRequest = std::chrono::system_clock::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();
     std::chrono::system_clock::time_point localTimeAfterRequest = std::chrono::system_clock::now();
-    std::uint64_t localTime = (TypeUtil::toMilliseconds(localTimeBeforeRequest) +
-                               TypeUtil::toMilliseconds(localTimeAfterRequest)) /
+    std::uint64_t localTime = (util::toMilliseconds(localTimeBeforeRequest) +
+                               util::toMilliseconds(localTimeAfterRequest)) /
                               2;
     if (timeCheckResult.getStatusCode() != 200) {
         JOYNR_LOG_ERROR(logger,
@@ -216,12 +215,11 @@ void LongPollingMessageReceiver::checkServerTime()
         auto minMaxTime = std::minmax(serverTime, localTime);
         std::uint64_t diff = minMaxTime.second - minMaxTime.first;
 
-        JOYNR_LOG_INFO(
-                logger,
-                "CheckServerTime [server time={}] [local time={}] [diff={} ms]",
-                TypeUtil::toDateString(JoynrTimePoint(std::chrono::milliseconds(serverTime))),
-                TypeUtil::toDateString(JoynrTimePoint(std::chrono::milliseconds(localTime))),
-                diff);
+        JOYNR_LOG_INFO(logger,
+                       "CheckServerTime [server time={}] [local time={}] [diff={} ms]",
+                       util::toDateString(JoynrTimePoint(std::chrono::milliseconds(serverTime))),
+                       util::toDateString(JoynrTimePoint(std::chrono::milliseconds(localTime))),
+                       diff);
 
         if (diff > 500) {
             JOYNR_LOG_ERROR(logger, "CheckServerTime: time difference to server is {} ms", diff);

@@ -49,25 +49,6 @@ public:
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
 
     /**
-     * @brief Register method called on disconnect
-     * @param onWebSocketDisconnected Callback method
-     * @note This is needed because of the missing signal / slot mechanism of
-     *      Qt. The ownership of objects based on @ref WebSocketSendInterface
-     *      is given to WebSocketMessagingStub. So WebSocketMessagingStub and
-     *      it needs to be informed about a disconnect
-     */
-    virtual void registerDisconnectCallback(std::function<void()> onWebSocketDisconnected) = 0;
-
-    /**
-     * @brief Register method called on message received
-     * @param onTextMessageReceived Callback method with message as parameter
-     * @note This is needed because of the missing signal / slot mechanism of
-     *      Qt. All messages will be received by the runtime.
-     */
-    virtual void registerReceiveCallback(
-            std::function<void(const std::string&)> onTextMessageReceived) = 0;
-
-    /**
      * @brief Returns whether the socket is initialized or not
      * @return Initialization flag
      */

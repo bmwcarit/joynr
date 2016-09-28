@@ -24,7 +24,6 @@
 #include "common/dbus/DbusSettings.h"
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"
 #include "joynr/Util.h"
-#include "joynr/TypeUtil.h"
 
 namespace joynr
 {

@@ -35,6 +35,11 @@ using ::testing::StrictMock;
 
 class SingleThreadedDelayedSchedulerTest : public testing::Test
 {
+public:
+    SingleThreadedDelayedSchedulerTest() : singleThreadedIOService()
+    {
+        singleThreadedIOService.start();
+    }
 protected:
     SingleThreadedIOService singleThreadedIOService;
 };

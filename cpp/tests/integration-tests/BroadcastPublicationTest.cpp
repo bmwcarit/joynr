@@ -55,6 +55,7 @@ public:
         filter1(new MockLocationUpdatedSelectiveFilter),
         filter2(new MockLocationUpdatedSelectiveFilter)
     {
+        singleThreadedIOService.start();
     }
 
     void SetUp(){

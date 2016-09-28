@@ -66,6 +66,7 @@ public:
         floatValue(123.45),
         semaphore(0)
     {
+        singleThreadedIOService.start();
     }
 
     ~TestJoynrMessagingConnectorTest()

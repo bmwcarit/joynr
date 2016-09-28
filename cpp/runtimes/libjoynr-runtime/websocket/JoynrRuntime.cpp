@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/JoynrRuntime.h"
-#include "libjoynr-runtime/LibJoynrRuntime.h"
 #include "joynr/Settings.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 

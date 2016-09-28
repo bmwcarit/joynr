@@ -55,7 +55,9 @@ public:
         mockMessagingStub(),
         callBack(),
         singleThreadedIOService()
-    {}
+    {
+        singleThreadedIOService.start();
+    }
 
 
     void SetUp(){

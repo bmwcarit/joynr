@@ -31,20 +31,17 @@ namespace joynr
 
 INIT_LOGGER(WebSocketPpClient);
 
-WebSocketPpClient::WebSocketPpClient(const WebSocketSettings& wsSettings)
+WebSocketPpClient::WebSocketPpClient(const WebSocketSettings& wsSettings,
+                                     boost::asio::io_service& ioService)
         : endpoint(),
-          thread(),
           connection(),
           isRunning(true),
-          ioService(),
           reconnectTimer(ioService),
           state(State::Disconnected),
-          onTextMessageReceivedCallback(),
-          onBinaryMessageReceived(),
-          onConnectionOpenedCallback(),
-          onConnectionClosedCallback(),
           address(),
-          reconnectSleepTimeMs(wsSettings.getReconnectSleepTimeMs())
+          reconnectSleepTimeMs(wsSettings.getReconnectSleepTimeMs()),
+          sender(nullptr),
+          receiver()
 {
     websocketpp::lib::error_code initializationError;
     endpoint.init_asio(&ioService, initializationError);
@@ -53,25 +50,23 @@ WebSocketPpClient::WebSocketPpClient(const WebSocketSettings& wsSettings)
                 logger, "error during WebSocketPp initialization: ", initializationError.message());
         return;
     }
+
     endpoint.clear_access_channels(websocketpp::log::alevel::all);
     endpoint.clear_error_channels(websocketpp::log::alevel::all);
-
     // register handlers
     using namespace std::placeholders;
     endpoint.set_open_handler(std::bind(&WebSocketPpClient::onConnectionOpened, this, _1));
     endpoint.set_fail_handler(std::bind(&WebSocketPpClient::onConnectionFailed, this, _1));
     endpoint.set_close_handler(std::bind(&WebSocketPpClient::onConnectionClosed, this, _1));
-    endpoint.set_message_handler(std::bind(&WebSocketPpClient::onMessageReceived, this, _1, _2));
+    endpoint.set_message_handler(
+            std::bind(&WebSocketPpReceiver<Client>::onMessageReceived, &receiver, _1, _2));
+
+    sender = std::make_shared<WebSocketPpSender<Client>>(endpoint);
 }
 
 WebSocketPpClient::~WebSocketPpClient()
 {
     close();
-}
-
-void WebSocketPpClient::registerReceiveCallback(std::function<void(const std::string&)> callback)
-{
-    onTextMessageReceivedCallback = std::move(callback);
 }
 
 bool WebSocketPpClient::isInitialized() const
@@ -89,10 +84,6 @@ void WebSocketPpClient::connect(system::RoutingTypes::WebSocketAddress address)
     this->address = std::move(address);
 
     reconnect();
-
-    // start the worker thread
-    // this thread will finish when the connection is closed
-    thread = std::thread(&Client::run, &endpoint);
 }
 
 void WebSocketPpClient::reconnect(const boost::system::error_code& reconnectTimerError)
@@ -125,6 +116,7 @@ void WebSocketPpClient::reconnect(const boost::system::error_code& reconnectTime
     }
 
     state = State::Connecting;
+    sender->resetConnectionHandle();
     endpoint.connect(connectionPtr);
 }
 
@@ -143,34 +135,6 @@ void WebSocketPpClient::delayedReconnect()
     }
 }
 
-void WebSocketPpClient::sendTextMessage(
-        const std::string& msg,
-        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-{
-    JOYNR_LOG_TRACE(logger, "outgoing text message \"{}\"", msg);
-    websocketpp::lib::error_code websocketError;
-    endpoint.send(connection, msg, websocketpp::frame::opcode::text, websocketError);
-    if (websocketError) {
-        onFailure(exceptions::JoynrDelayMessageException(
-                "Error sending text message via WebSocketPpClient: " + websocketError.message() +
-                ", message: " + msg));
-    }
-}
-
-void WebSocketPpClient::sendBinaryMessage(
-        const std::string& msg,
-        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-{
-    JOYNR_LOG_TRACE(logger, "outgoing binary message of size {}", msg.size());
-    websocketpp::lib::error_code websocketError;
-    endpoint.send(connection, msg, websocketpp::frame::opcode::binary, websocketError);
-    if (websocketError) {
-        onFailure(exceptions::JoynrDelayMessageException(
-                "Error sending binary message via WebSocketPpClient: " + websocketError.message() +
-                ", message: " + msg));
-    }
-}
-
 void WebSocketPpClient::close()
 {
     if (isRunning) {
@@ -180,9 +144,6 @@ void WebSocketPpClient::close()
         reconnectTimer.cancel(timerError);
         if (state == State::Connected) {
             disconnect();
-        }
-        if (thread.joinable()) {
-            thread.join();
         }
     }
 }
@@ -200,26 +161,10 @@ void WebSocketPpClient::disconnect()
     }
 }
 
-void WebSocketPpClient::send(
-        const std::string& msg,
-        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-{
-    sendTextMessage(msg, onFailure);
-}
-
-void WebSocketPpClient::registerConnectCallback(std::function<void()> callback)
-{
-    onConnectionOpenedCallback = std::move(callback);
-}
-
-void WebSocketPpClient::registerDisconnectCallback(std::function<void()> callback)
-{
-    onConnectionClosedCallback = std::move(callback);
-}
-
 void WebSocketPpClient::onConnectionOpened(ConnectionHandle hdl)
 {
     connection = hdl;
+    sender->setConnectionHandle(connection);
     state = State::Connected;
     JOYNR_LOG_DEBUG(logger, "connection established");
     if (onConnectionOpenedCallback) {
@@ -234,6 +179,7 @@ void WebSocketPpClient::onConnectionClosed(ConnectionHandle hdl)
 {
     std::ignore = hdl;
     state = State::Disconnected;
+    sender->resetConnectionHandle();
     if (!isRunning) {
         JOYNR_LOG_DEBUG(logger, "connection closed");
         if (onConnectionClosedCallback) {
@@ -248,6 +194,7 @@ void WebSocketPpClient::onConnectionClosed(ConnectionHandle hdl)
 void WebSocketPpClient::onConnectionFailed(ConnectionHandle hdl)
 {
     state = State::Disconnected;
+    sender->resetConnectionHandle();
     if (!isRunning) {
         JOYNR_LOG_DEBUG(logger, "connection closed");
     } else {
@@ -259,25 +206,45 @@ void WebSocketPpClient::onConnectionFailed(ConnectionHandle hdl)
     }
 }
 
-void WebSocketPpClient::onMessageReceived(ConnectionHandle hdl, MessagePtr message)
+void WebSocketPpClient::registerConnectCallback(std::function<void()> callback)
 {
-    std::ignore = hdl;
-    using websocketpp::frame::opcode::value;
-    const value mode = message->get_opcode();
-    if (mode == value::text) {
-        JOYNR_LOG_TRACE(logger, "incoming text message \"{}\"", message->get_payload());
-        if (onTextMessageReceivedCallback) {
-            onTextMessageReceivedCallback(message->get_payload());
-        }
-    } else if (mode == value::binary) {
-        JOYNR_LOG_TRACE(
-                logger, "incoming binary message of size {}", message->get_payload().size());
-        if (onBinaryMessageReceived) {
-            onBinaryMessageReceived(message->get_payload());
-        }
-    } else {
-        JOYNR_LOG_ERROR(logger, "received unsupported message type {}, dropping message", mode);
-    }
+    onConnectionOpenedCallback = std::move(callback);
+}
+
+void WebSocketPpClient::registerDisconnectCallback(std::function<void()> callback)
+{
+    onConnectionClosedCallback = std::move(callback);
+}
+
+// wrapper for WebSocketPpReceiver
+
+void WebSocketPpClient::registerReceiveCallback(
+        std::function<void(const std::string&)> onTextMessageReceived)
+{
+    receiver.registerReceiveCallback(onTextMessageReceived);
+}
+
+// wrapper for WebSocketPpSender
+
+void WebSocketPpClient::send(
+        const std::string& msg,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+{
+    sender->send(msg, onFailure);
+}
+
+void WebSocketPpClient::sendTextMessage(
+        const std::string& msg,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+{
+    sender->sendTextMessage(msg, onFailure);
+}
+
+void WebSocketPpClient::sendBinaryMessage(
+        const std::string& msg,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+{
+    sender->sendTextMessage(msg, onFailure);
 }
 
 } // namespace joynr

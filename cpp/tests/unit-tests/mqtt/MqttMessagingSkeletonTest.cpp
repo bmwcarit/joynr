@@ -41,7 +41,10 @@ class MqttMessagingSkeletonTest : public ::testing::Test {
 public:
     MqttMessagingSkeletonTest() :
         singleThreadedIOService(),
-        mockMessageRouter(singleThreadedIOService.getIOService()) {}
+        mockMessageRouter(singleThreadedIOService.getIOService())
+    {
+        singleThreadedIOService.start();
+    }
 
     void SetUp(){
         // create a fake message

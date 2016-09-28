@@ -36,6 +36,11 @@ using ::testing::StrictMock;
 
 class ThreadPoolDelayedSchedulerTest : public testing::Test
 {
+public:
+    ThreadPoolDelayedSchedulerTest() : singleThreadedIOService()
+    {
+        singleThreadedIOService.start();
+    }
 protected:
     SingleThreadedIOService singleThreadedIOService;
 };

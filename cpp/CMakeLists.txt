@@ -14,11 +14,6 @@ set(
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
 )
 
-# Policy for Qt linking on Windows
-if(POLICY CMP0020)
-    cmake_policy(SET CMP0020 OLD)
-endif(POLICY CMP0020)
-
 if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "setting default value 'Debug' for CMAKE_BUILD_TYPE")
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
@@ -344,56 +339,6 @@ if(ENABLE_DOXYGEN)
     )
 endif(ENABLE_DOXYGEN)
 
-message(STATUS "############ Import: Qt5 ############")
-
-# Find includes in corresponding build directories (Qt MOCs are created in current build dir)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-find_package(Qt5Core)
-find_package(Qt5WebSockets)
-find_package(Qt5Sql)
-
-# Qt-Websockets and Qt-Core is only needed for the Cluster-Controller
-
-IF(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
-
-    message(STATUS "variable Qt5Core_VERSION_STRING=${Qt5Core_VERSION_STRING}")
-    message(STATUS "variable Qt5Core_INCLUDE_DIRS=${Qt5Core_INCLUDE_DIRS}")
-    get_target_property(Qt5Core_LOCATION Qt5::Core LOCATION)
-    message(STATUS "variable Qt5::Core LOCATION=${Qt5Core_LOCATION}")
-    message(STATUS "variable Qt5Core_LIBRARIES=${Qt5Core_LIBRARIES}")
-    message(STATUS "variable Qt5Core_DEFINITIONS=${Qt5Core_DEFINITIONS}")
-
-    message(STATUS "variable Qt5WebSockets_VERSION_STRING=${Qt5WebSockets_VERSION_STRING}")
-    message(STATUS "variable Qt5WebSockets_INCLUDE_DIRS=${Qt5WebSockets_INCLUDE_DIRS}")
-    get_target_property(Qt5WebSockets_LOCATION Qt5::WebSockets LOCATION)
-    message(STATUS "variable Qt5::WebSockets LOCATION=${Qt5WebSockets_LOCATION}")
-    message(STATUS "variable Qt5WebSockets_LIBRARIES=${Qt5WebSockets_LIBRARIES}")
-    message(STATUS "variable Qt5WebSockets_DEFINITIONS=${Qt5WebSockets_DEFINITIONS}")
-
-    message(STATUS "variable Qt5Sql_VERSION_STRING=${Qt5Sql_VERSION_STRING}")
-    message(STATUS "variable Qt5Sql_INCLUDE_DIRS=${Qt5Sql_INCLUDE_DIRS}")
-    get_target_property(Qt5Sql_LOCATION Qt5::Sql LOCATION)
-    message(STATUS "variable Qt5Sql LOCATION=${Qt5Sql_LOCATION}")
-    message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
-    message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
-
-ELSE(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
-
-    SET(BUILD_CLUSTER_CONTROLLER OFF)
-
-ENDIF(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
-
-message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
-
-find_package(Qt5Test REQUIRED)
-message(STATUS "variable Qt5Test_VERSION_STRING=${Qt5Test_VERSION_STRING}")
-message(STATUS "variable Qt5Test_INCLUDE_DIRS=${Qt5Test_INCLUDE_DIRS}")
-get_target_property(Qt5Test_LOCATION Qt5::Test LOCATION)
-message(STATUS "variable Qt5::Test LOCATION=${Qt5Test_LOCATION}")
-message(STATUS "variable Qt5Test_LIBRARIES=${Qt5Test_LIBRARIES}")
-message(STATUS "variable Qt5Test_DEFINITIONS=${Qt5Test_DEFINITIONS}")
-
 ######## Add Boost ########
 
 find_package(Boost 1.58.0 REQUIRED
@@ -533,7 +478,7 @@ include(SetCppStandard)
 #Other Warnings that could be turned on:
 #-Wpedantic
 #-Wpadded
-#-Wswitch-default //but QT moc_files produce lots of warnings here.
+#-Wswitch-default
 
 message(STATUS "CMAKE_GENERATOR=" ${CMAKE_GENERATOR})
 message(STATUS "compiler CMAKE_C_COMPILER=" ${CMAKE_C_COMPILER})
@@ -691,14 +636,14 @@ endif(JOYNR_ENABLE_DLT_LOGGING)
 
 ### Add muesli ############################################################
 if (USE_PLATFORM_MUESLI)
-    find_package(muesli 0.1.2 REQUIRED CONFIG)
+    find_package(muesli 0.1.4 REQUIRED CONFIG)
 else(USE_PLATFORM_MUESLI)
     message(STATUS "############ Download: muesli ############")
 
     AddExternalProject(
         muesli
         GIT_REPOSITORY https://github.com/bmwcarit/muesli
-        GIT_TAG 0.1.2
+        GIT_TAG 0.1.4
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""

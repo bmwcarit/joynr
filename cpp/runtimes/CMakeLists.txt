@@ -87,13 +87,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
         PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
     )
 
-    target_include_directories(
-        JoynrClusterControllerRuntime
-        SYSTEM
-        PRIVATE ${Qt5WebSockets_INCLUDE_DIRS}
-        PRIVATE ${Qt5Core_INCLUDE_DIRS}
-    )
-
     AddClangFormat(JoynrClusterControllerRuntime)
 
     AddIncludeWhatYouUse(JoynrClusterControllerRuntime)
@@ -106,7 +99,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
         SOVERSION "${JOYNR_VERSION}"
         VERSION "${JOYNR_VERSION}"
         PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
-        AUTOMOC TRUE
     )
 
     GenerateJoynrExports(
@@ -117,8 +109,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_link_libraries(
         JoynrClusterControllerRuntime
         ${JoynrClusterControllerRuntime_TARGET_LIBRARIES}
-        ${Qt5WebSockets_LIBRARIES}
-        ${Qt5Core_LIBRARIES}
     )
 
     install(

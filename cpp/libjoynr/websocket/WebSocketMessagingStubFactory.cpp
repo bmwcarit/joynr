@@ -24,8 +24,8 @@
 
 #include <boost/format.hpp>
 
-#include "websocket/WebSocketMessagingStub.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "libjoynr/websocket/WebSocketMessagingStub.h"
 
 namespace joynr
 {

@@ -18,10 +18,6 @@ under the License.
 This project has dependencies to:
 --- Dynamically linked libraries by joynr binaries -----------------------------
 
-libQt5Core under GNU Lesser General Public License v2.1 (LGPL-2.1)
-libQt5WebSockets under GNU Lesser General Public License v2.1 (LGPL-2.1)
-libQt5Network under GNU Lesser General Public License v2.1 (LGPL-2.1)
-libQt5Sql under GNU Lesser General Public License v2.1 (LGPL-2.1)
 libcurl under The curl license
 libdbus under GNU General Public License version 2
 libCommonAPI under Mozilla Public License Version 2.0
@@ -42,6 +38,5 @@ Files in cpp/CMake/git-revision-description under Boost Software License (BSL-1.
 Files in cpp/CMake/code-coverage under Boost Software License (BSL-1.0)
 libgtest under BSD 3-clause License (BSD-3-clause)
 libgmock under BSD 3-clause License (BSD-3-clause)
-libQt5Test under GNU Lesser General Public License v2.1 (LGPL-2.1)
 org.genivi.commonapi:core under Mozilla Public License Version 2.0
 org.genivi.commonapi:dbus under Mozilla Public License Version 2.0

@@ -52,7 +52,6 @@ class FilterTemplate implements BroadcastTemplate {
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«serviceInterface.name».h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Parameters.h"
-#include "joynr/TypeUtil.h"
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface)»

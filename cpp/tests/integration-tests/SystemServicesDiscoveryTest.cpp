@@ -25,7 +25,6 @@
 #include "JoynrTest.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/LibjoynrSettings.h"
 
 #include "joynr/system/DiscoveryProxy.h"
@@ -97,7 +96,6 @@ public:
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.
         runtime = new JoynrClusterControllerRuntime(
-                nullptr,
                 std::move(settings),
                 mockMessageReceiverHttp,
                 nullptr,
