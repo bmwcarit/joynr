@@ -63,6 +63,11 @@ public class AddressManager {
                           PrimaryGlobalTransportHolder primaryGlobalTransport,
                           Set<MulticastAddressCalculator> multicastAddressCalculators,
                           MulticastReceiverRegistry multicastReceiverRegistry) {
+        logger.trace("Initialised with routingTable: {} primaryGlobalTransport: {} multicastAddressCalculators: {} multicastReceiverRegistry: {}",
+                     routingTable,
+                     primaryGlobalTransport.get(),
+                     multicastAddressCalculators,
+                     multicastReceiverRegistry);
         this.routingTable = routingTable;
         this.multicastReceiversRegistry = multicastReceiverRegistry;
         if (multicastAddressCalculators.size() > 1 && primaryGlobalTransport.get() == null) {
