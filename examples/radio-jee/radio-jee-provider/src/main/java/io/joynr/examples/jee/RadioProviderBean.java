@@ -24,21 +24,20 @@ import java.util.Set;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
-import org.apache.commons.lang.math.RandomUtils;
-
 import io.joynr.jeeintegration.api.ServiceProvider;
-import io.joynr.provider.SubscriptionPublisherInjection;
+import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import joynr.exceptions.ApplicationException;
 import joynr.vehicle.RadioStation;
 import joynr.vehicle.RadioSubscriptionPublisher;
 import joynr.vehicle.RadioSync;
+import org.apache.commons.lang.math.RandomUtils;
 
 /**
  * Sample implementation of the {@link RadioSync} interface.
  */
 @Stateless
 @ServiceProvider(serviceInterface = RadioSync.class)
-public class RadioProviderBean implements RadioSync, SubscriptionPublisherInjection<RadioSubscriptionPublisher> {
+public class RadioProviderBean implements RadioService {
 
     private RadioStationDatabase radioStationDatabase;
 
@@ -47,9 +46,12 @@ public class RadioProviderBean implements RadioSync, SubscriptionPublisherInject
     private RadioSubscriptionPublisher radioSubscriptionPublisher;
 
     @Inject
-    public RadioProviderBean(RadioStationDatabase radioStationDatabase, GeoLocationService geoLocationService) {
+    public RadioProviderBean(RadioStationDatabase radioStationDatabase,
+                             GeoLocationService geoLocationService,
+                             @SubscriptionPublisher RadioSubscriptionPublisher radioSubscriptionPublisher) {
         this.radioStationDatabase = radioStationDatabase;
         this.geoLocationService = geoLocationService;
+        this.radioSubscriptionPublisher = radioSubscriptionPublisher;
     }
 
     @Override
@@ -82,10 +84,6 @@ public class RadioProviderBean implements RadioSync, SubscriptionPublisherInject
     }
 
     @Override
-    public void setSubscriptionPublisher(RadioSubscriptionPublisher radioSubscriptionPublisher) {
-        this.radioSubscriptionPublisher = radioSubscriptionPublisher;
-    }
-
     public void fireWeakSignal() {
         if (radioSubscriptionPublisher == null) {
             throw new IllegalStateException("No subscription publisher available.");

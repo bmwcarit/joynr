@@ -19,26 +19,10 @@ package io.joynr.examples.jee;
  * #L%
  */
 
-import javax.inject.Inject;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import joynr.vehicle.RadioSync;
 
-@Path("/control")
-@Produces(MediaType.APPLICATION_JSON)
-public class RadioProviderRestEndpoint {
+public interface RadioService extends RadioSync {
 
-    private RadioService radioProviderBean;
+    void fireWeakSignal();
 
-    @Inject
-    public RadioProviderRestEndpoint(RadioService radioProviderBean) {
-        this.radioProviderBean = radioProviderBean;
-    }
-
-    @POST
-    @Path("/fire-weak-signal")
-    public void fireWeakSignal() {
-        radioProviderBean.fireWeakSignal();
-    }
 }
