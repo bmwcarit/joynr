@@ -860,7 +860,6 @@ define(
                                         callbackDispatcher);
                                 return;
                             }
-                            var subscriptionInterval;
                             var provider = participantIdToProvider[providerParticipantId];
                             // construct subscriptionInfo from subscriptionRequest and participantIds
                             var subscriptionInfo =
@@ -1096,7 +1095,6 @@ define(
                                         callbackDispatcher);
                                 return;
                             }
-                            var subscriptionInterval;
                             var provider = participantIdToProvider[providerParticipantId];
                             // construct subscriptionInfo from subscriptionRequest and participantIds
                             var subscriptionInfo =
