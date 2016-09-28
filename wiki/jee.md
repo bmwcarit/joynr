@@ -258,6 +258,40 @@ In order to do so, use the `@ProviderDomain` annotation on your implementing bea
 to the `@ServiceLocator` annotation. The value you provide will be used as the domain when
 registering the bean as a joynr provider.
 
+#### <a name="publishing_multicasts"></a> Publishing Multicasts
+
+If you have `broadcast` definitions in your Franca file which are __not__ `selective`, then
+you can `@Inject` the corresponding `SubscriptionPublisher` in your service implementation
+and use that to fire multicast messages to consumers.
+
+In order for the injection to work, you have to use the generated, specific subscription
+publisher interface, and have to additionally decorate the injection with the
+`@io.joynr.jeeintegration.api.SubscriptionPublisher` qualifier annotation.
+
+Here is an example of what that looks like:
+
+    @Stateless
+    @ServiceProvider(serviceInterface = MyServiceSync.class)
+    public class MyBean implements MyServiceSync {
+        private MyServiceSubscriptionPublisher myServiceSubscriptionPublisher;
+
+        @Inject
+        public MyBean(@SubscriptionPublisher MyServiceSubscriptionPublisher myServiceSubscriptionPublisher) {
+            this.myServiceSubscriptionPublisher = myServiceSubscriptionPublisher;
+        }
+
+        ... other method implementations ...
+
+        @Override
+        public void myMethod() {
+            myServiceSubscriptionPublisher.fireMyMulticast("Some value");
+        }
+    }
+
+See also the
+[Radio JEE provider bean](../examples/radio-jee/radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBean.java)
+for a working example.
+
 ### Calling services
 
 In order to call services provided by other participants (e.g. applications

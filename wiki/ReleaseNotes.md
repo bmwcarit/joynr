@@ -5,6 +5,8 @@
   `@ProviderDomain` annotation. See
   [JEE Documentation / Customising the registration domain](jee.md#provider_domain).
 * **[Java, JS, C++]** Introduce LastSeen arbitration strategy and set it as default arbitration.
+* **[JEE]** Ability to publish multicast messages by injecting the
+  subscription publisher. See [JEE Documentation / Publishing Multicasts](jee.md#publishing_multicasts).
 
 ##Other changes
 * **[Java, C++]** The local capabilities directory will periodically be checked for
