@@ -828,8 +828,10 @@ define(
                  * @function
                  *
                  * @param {SubscriptionRequest}
-                 *            subscriptionRequest incoming subscriptionRequest subscriptionStop or
-                 *            subscriptionReplyjoynrMessage containing a publication
+                 *            proxyParticipantId - participantId of proxy consuming the attribute publications
+                 *            providerParticipantId - participantId of provider producing the attribute publications
+                 *            subscriptionRequest incoming subscriptionRequest
+                 *            callbackDispatcher callback function to inform the caller about the handling result
                  * @throws {Error}
                  *             when no provider exists or the provider does not have the attribute
                  */
@@ -1061,9 +1063,11 @@ define(
                  * @name PublicationManager#handleEventSubscriptionRequest
                  * @function
                  *
-                 * @param {EventSubscriptionRequest}
-                 *            subscriptionRequest incoming subscriptionRequest subscriptionStop or
-                 *            subscriptionReplyjoynrMessage containing a publication
+                 * @param {BroadcastSubscriptionRequest}
+                 *            proxyParticipantId - participantId of proxy consuming the broadcast
+                 *            providerParticipantId - participantId of provider producing the broadcast
+                 *            subscriptionRequest incoming subscriptionRequest
+                 *            callbackDispatcher callback function to inform the caller about the handling result
                  * @throws {Error}
                  *             when no provider exists or the provider does not have the event
                  */
