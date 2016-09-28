@@ -54,7 +54,8 @@ public:
         mockDispatcher(),
         mockMessagingStub(),
         callBack(),
-        singleThreadedIOService()
+        singleThreadedIOService(),
+        messagingStub(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService()))
     {
         singleThreadedIOService.start();
     }
@@ -79,16 +80,13 @@ protected:
     MockMessaging mockMessagingStub;
     std::shared_ptr<IReplyCaller> callBack;
     SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<MockMessageRouter> messagingStub;
 };
 
 typedef JoynrMessageSenderTest JoynrMessageSenderDeathTest;
 
 
 TEST_F(JoynrMessageSenderTest, sendRequest_normal){
-
-    MockDispatcher mockDispatcher;
-    auto messagingStub = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
-
     Request request;
     request.setMethodName("methodName");
     request.setParams(42, std::string("value"));
@@ -113,10 +111,6 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
 }
 
 TEST_F(JoynrMessageSenderTest, sendOneWayRequest_normal){
-
-    MockDispatcher mockDispatcher;
-    auto messagingStub = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
-
     OneWayRequest oneWayRequest;
     oneWayRequest.setMethodName("methodName");
     oneWayRequest.setParams(42, std::string("value"));
@@ -142,9 +136,6 @@ TEST_F(JoynrMessageSenderTest, sendOneWayRequest_normal){
 
 
 TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death){
-
-    MockDispatcher mockDispatcher;
-    auto messagingStub = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
     EXPECT_CALL(*(messagingStub.get()), route(_,_)).Times(0);
 
     JoynrMessageSender joynrMessageSender(messagingStub);
@@ -156,10 +147,6 @@ TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death)
 
 
 TEST_F(JoynrMessageSenderTest, sendReply_normal){
-
-    MockDispatcher mockDispatcher;
-    auto messagingStub = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
-
     JoynrMessageSender joynrMessageSender(messagingStub);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     Reply reply;
@@ -180,10 +167,6 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
 }
 
 TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
-
-    MockDispatcher mockDispatcher;
-    auto messagingStub = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
-
     std::int64_t period = 2000;
     std::int64_t validity = 100000;
     std::int64_t alert = 4000;
@@ -211,10 +194,6 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
 }
 
 TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
-
-    MockDispatcher mockDispatcher;
-    auto messagingStub = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
-
     std::int64_t minInterval = 2000;
     std::int64_t validity = 100000;
     auto qos = std::make_shared<OnChangeSubscriptionQos>(validity, minInterval);
@@ -246,9 +225,6 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
 
 //TODO implement sending a reply to a subscription request!
 TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
-
-    MockDispatcher mockDispatcher;
-    auto messagingStub = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
     std::string payload("subscriptionReply");
     EXPECT_CALL(*(messagingStub.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)),
                                                   Property(&JoynrMessage::getPayload, Eq(payload))),_));
@@ -262,10 +238,6 @@ TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
 }
 
 TEST_F(JoynrMessageSenderTest, sendPublication_normal){
-
-    MockDispatcher mockDispatcher;
-    auto messagingStub = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
-
     JoynrMessageSender joynrMessageSender(messagingStub);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     SubscriptionPublication publication;
