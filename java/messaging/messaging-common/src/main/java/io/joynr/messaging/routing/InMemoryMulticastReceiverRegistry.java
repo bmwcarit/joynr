@@ -52,7 +52,8 @@ public class InMemoryMulticastReceiverRegistry implements MulticastReceiverRegis
     @Override
     public Set<String> getReceivers(String multicastId) {
         Set<String> receiversForMulticastId = multicastReceivers.get(multicastId);
-        return Collections.unmodifiableSet(receiversForMulticastId);
+        return (receiversForMulticastId == null) ? Collections.<String> emptySet()
+                : Collections.unmodifiableSet(receiversForMulticastId);
     }
 
     @Override
