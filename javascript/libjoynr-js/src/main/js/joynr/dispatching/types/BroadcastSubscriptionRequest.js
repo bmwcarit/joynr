@@ -85,9 +85,30 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
          */
         Typing.augmentTypeName(this, "joynr");
 
+        Object.defineProperty(BroadcastSubscriptionRequest, "_typeName", {
+            value : "joynr.BroadcastSubscriptionRequest",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
+
         return Object.freeze(this);
     }
 
+    /**
+     * The joynr type name
+     *
+     * @name Request#_typeName
+     * @type String
+     */
+    Object.defineProperty(BroadcastSubscriptionRequest, "_typeName", {
+        value : "joynr.BroadcastSubscriptionRequest",
+        readable : true,
+        writable : false,
+        enumerable : true,
+        configurable : false
+    });
     return BroadcastSubscriptionRequest;
 
 });

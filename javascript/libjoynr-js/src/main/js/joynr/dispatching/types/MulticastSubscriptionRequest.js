@@ -74,10 +74,30 @@ define("joynr/dispatching/types/MulticastSubscriptionRequest", [
          * @name MulticastSubscriptionRequest#_typeName
          * @type String
          */
-        Typing.augmentTypeName(this, "joynr");
+        Object.defineProperty(MulticastSubscriptionRequest, "_typeName", {
+            value : "joynr.MulticastSubscriptionRequest",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
 
         return Object.freeze(this);
     }
+
+    /**
+     * The joynr type name
+     *
+     * @name Request#_typeName
+     * @type String
+     */
+    Object.defineProperty(MulticastSubscriptionRequest, "_typeName", {
+        value : "joynr.MulticastSubscriptionRequest",
+        readable : true,
+        writable : false,
+        enumerable : true,
+        configurable : false
+    });
 
     return MulticastSubscriptionRequest;
 
