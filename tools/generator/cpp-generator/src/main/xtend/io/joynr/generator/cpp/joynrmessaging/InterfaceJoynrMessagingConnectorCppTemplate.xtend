@@ -24,7 +24,6 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
@@ -39,7 +38,6 @@ class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
-	@Inject private extension BroadcastUtil
 	@Inject private extension CppInterfaceUtil
 	@Inject private extension InterfaceSubscriptionUtil
 
@@ -353,7 +351,7 @@ bool «className»::usesClusterController() const{
 	«val broadcastName = broadcast.joynrName»
 	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
-		«IF isSelective(broadcast)»
+		«IF broadcast.selective»
 			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
@@ -361,7 +359,7 @@ bool «className»::usesClusterController() const{
 
 	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className)» {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
-		«IF isSelective(broadcast)»
+		«IF broadcast.selective»
 			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
 		subscriptionRequest.setSubscriptionId(subscriptionId);

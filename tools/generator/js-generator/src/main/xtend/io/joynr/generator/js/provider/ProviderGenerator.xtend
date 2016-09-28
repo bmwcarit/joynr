@@ -23,7 +23,6 @@ import io.joynr.generator.js.templates.InterfaceJsTemplate
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
@@ -39,7 +38,6 @@ class ProviderGenerator extends InterfaceJsTemplate {
 	@Inject extension GeneratorParameter
 	@Inject private extension NamingUtil
 	@Inject private extension MethodUtil
-	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
 
 	def relativePathToBase() {
@@ -207,7 +205,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
 						}
 						«ENDFOR»
 					],
-					«IF isSelective(event)»
+					«IF event.selective»
 					{
 						«FOR filterParameter : filterParameters SEPARATOR ","»
 							"«filterParameter»": "reservedForTypeInfo"
