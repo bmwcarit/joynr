@@ -26,6 +26,7 @@
 #include "ISubscriptionManager.h"
 #include "joynr/PublicationInterpreter.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/BasePublication.h"
 #include "joynr/Future.h"
 #include "joynr/SubscriptionReply.h"
 
@@ -67,9 +68,9 @@ public:
         listener->onReceive(value, values...);
     }
 
-    void execute(SubscriptionPublication&& subscriptionPublication) override
+    void execute(BasePublication&& publication) override
     {
-        PublicationInterpreter<T, Ts...>::execute(*this, std::move(subscriptionPublication));
+        PublicationInterpreter<T, Ts...>::execute(*this, std::move(publication));
     }
 
     void execute(const SubscriptionReply& subscriptionReply) override

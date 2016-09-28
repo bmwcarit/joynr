@@ -23,7 +23,7 @@
 #include <memory>
 #include <functional>
 
-#include "joynr/SubscriptionPublication.h"
+#include "joynr/BasePublication.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 
@@ -37,16 +37,15 @@ class PublicationInterpreter
 
 public:
     template <typename Callback>
-    static void execute(Callback& callback, SubscriptionPublication&& subscriptionPublication)
+    static void execute(Callback& callback, BasePublication&& publication)
     {
-        std::shared_ptr<exceptions::JoynrRuntimeException> error =
-                subscriptionPublication.getError();
+        std::shared_ptr<exceptions::JoynrRuntimeException> error = publication.getError();
         if (error) {
             callback.onError(*error);
             return;
         }
 
-        if (!subscriptionPublication.hasResponse()) {
+        if (!publication.hasResponse()) {
             callback.onError(exceptions::JoynrRuntimeException(
                     "Publication object had no response, discarded message"));
             return;
@@ -54,9 +53,8 @@ public:
 
         ResponseTuple responseTuple;
         try {
-            callGetResponse(responseTuple,
-                            std::move(subscriptionPublication),
-                            std::index_sequence_for<Ts...>{});
+            callGetResponse(
+                    responseTuple, std::move(publication), std::index_sequence_for<Ts...>{});
         } catch (const std::exception& exception) {
             callback.onError(exceptions::JoynrRuntimeException(exception.what()));
             return;
@@ -76,10 +74,10 @@ private:
 
     template <std::size_t... Indices>
     static void callGetResponse(ResponseTuple& response,
-                                SubscriptionPublication&& subscriptionPublication,
+                                BasePublication&& publication,
                                 std::index_sequence<Indices...>)
     {
-        subscriptionPublication.getResponse(std::get<Indices>(response)...);
+        publication.getResponse(std::get<Indices>(response)...);
     }
 };
 
@@ -88,10 +86,9 @@ class PublicationInterpreter<void>
 {
 public:
     template <typename Callback>
-    static void execute(Callback& callback, SubscriptionPublication&& subscriptionPublication)
+    static void execute(Callback& callback, BasePublication&& publication)
     {
-        std::shared_ptr<exceptions::JoynrRuntimeException> error =
-                subscriptionPublication.getError();
+        std::shared_ptr<exceptions::JoynrRuntimeException> error = publication.getError();
         if (error) {
             callback.onError(*error);
             return;

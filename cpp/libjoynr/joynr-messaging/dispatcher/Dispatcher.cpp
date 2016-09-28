@@ -26,6 +26,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
@@ -391,6 +392,43 @@ void Dispatcher::handleSubscriptionReplyReceived(const JoynrMessage& message)
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize subscription reply object from: {} - error: {}",
                         jsonSubscriptionReply,
+                        e.what());
+    }
+}
+
+void Dispatcher::handleMulticastReceived(const JoynrMessage& message)
+{
+    std::string jsonMulticastPublication = message.getPayload();
+
+    try {
+        MulticastPublication multicastPublication;
+        joynr::serializer::deserializeFromJson(multicastPublication, jsonMulticastPublication);
+
+        const std::string multicastId = multicastPublication.getMulticastId();
+
+        assert(subscriptionManager != nullptr);
+
+        std::forward_list<std::shared_ptr<ISubscriptionCallback>> callbacks =
+                subscriptionManager->getMulticastSubscriptionCallbacks(multicastId);
+        if (callbacks.empty()) {
+            JOYNR_LOG_ERROR(logger,
+                            "Dropping multicast publication for non/no more existing subscription "
+                            "with multicastId = {}",
+                            multicastId);
+            return;
+        }
+
+        // TODO: enable for periodic attribute subscriptions
+        // when MulticastPublication is extended by subscriptionId
+        // subscriptionManager->touchSubscriptionState(subscriptionId);
+
+        for (const auto& callback : callbacks) {
+            callback->execute(std::move(multicastPublication));
+        }
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to deserialize multicast publication object from: {} - error: {}",
+                        jsonMulticastPublication,
                         e.what());
     }
 }
