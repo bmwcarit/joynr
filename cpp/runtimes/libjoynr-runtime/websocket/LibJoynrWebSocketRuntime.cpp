@@ -94,7 +94,7 @@ LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
     // WebSocketLibJoynrMessagingSkeleton
     websocket->registerReceiveCallback(nullptr);
     websocket->close();
-    singleThreadIOService.reset();
+    singleThreadIOService->stop();
 }
 
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
