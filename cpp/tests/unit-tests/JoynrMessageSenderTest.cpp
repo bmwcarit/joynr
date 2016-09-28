@@ -55,7 +55,7 @@ public:
         mockMessagingStub(),
         callBack(),
         singleThreadedIOService(),
-        messagingStub(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService()))
+        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService()))
     {
         singleThreadedIOService.start();
     }
@@ -80,7 +80,7 @@ protected:
     MockMessaging mockMessagingStub;
     std::shared_ptr<IReplyCaller> callBack;
     SingleThreadedIOService singleThreadedIOService;
-    std::shared_ptr<MockMessageRouter> messagingStub;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
 };
 
 typedef JoynrMessageSenderTest JoynrMessageSenderDeathTest;
@@ -102,10 +102,10 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
                 request
     );
 
-    EXPECT_CALL( *(messagingStub.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST)),
+    EXPECT_CALL( *(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST)),
                                                   Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
-    JoynrMessageSender joynrMessageSender(messagingStub);
+    JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     joynrMessageSender.sendRequest(senderID, receiverID, qosSettings, request, callBack);
 }
@@ -126,19 +126,19 @@ TEST_F(JoynrMessageSenderTest, sendOneWayRequest_normal){
                 oneWayRequest
     );
 
-    EXPECT_CALL( *(messagingStub.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY)),
+    EXPECT_CALL( *(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY)),
                                                   Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
-    JoynrMessageSender joynrMessageSender(messagingStub);
+    JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     joynrMessageSender.sendOneWayRequest(senderID, receiverID, qosSettings, oneWayRequest);
 }
 
 
 TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death){
-    EXPECT_CALL(*(messagingStub.get()), route(_,_)).Times(0);
+    EXPECT_CALL(*(mockMessageRouter.get()), route(_,_)).Times(0);
 
-    JoynrMessageSender joynrMessageSender(messagingStub);
+    JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
 
     Request jsonRequest;
@@ -147,7 +147,7 @@ TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death)
 
 
 TEST_F(JoynrMessageSenderTest, sendReply_normal){
-    JoynrMessageSender joynrMessageSender(messagingStub);
+    JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     Reply reply;
     reply.setRequestReplyId(util::createUuid());
@@ -160,7 +160,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
                 reply);
 
 
-    EXPECT_CALL(*(messagingStub.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
+    EXPECT_CALL(*(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
                                                   Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
     joynrMessageSender.sendReply(senderID, receiverID, qosSettings, reply);
@@ -184,10 +184,10 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
                 subscriptionRequest);
 
 
-    EXPECT_CALL(*messagingStub, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)),
+    EXPECT_CALL(*mockMessageRouter, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)),
                                                   Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
-    JoynrMessageSender joynrMessageSender(messagingStub);
+    JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
 
     joynrMessageSender.sendSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest);
@@ -213,10 +213,10 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
                 subscriptionRequest);
 
 
-    EXPECT_CALL(*messagingStub, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)),
+    EXPECT_CALL(*mockMessageRouter, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)),
                                                   Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
-    JoynrMessageSender joynrMessageSender(messagingStub);
+    JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
 
     joynrMessageSender.sendBroadcastSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest);
@@ -226,19 +226,19 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
 //TODO implement sending a reply to a subscription request!
 TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
     std::string payload("subscriptionReply");
-    EXPECT_CALL(*(messagingStub.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)),
+    EXPECT_CALL(*(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)),
                                                   Property(&JoynrMessage::getPayload, Eq(payload))),_));
 
 
 
-    JoynrMessageSender joynrMessageSender(messagingStub);
+    JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
 
 //    joynrMessageSender.sendSubscriptionReply(util::createUuid(), payload, senderID, receiverID, qosSettings);
 }
 
 TEST_F(JoynrMessageSenderTest, sendPublication_normal){
-    JoynrMessageSender joynrMessageSender(messagingStub);
+    JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     SubscriptionPublication publication;
     publication.setSubscriptionId("ignoresubscriptionid");
@@ -249,7 +249,7 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
                 qosSettings,
                 publication);
 
-    EXPECT_CALL(*(messagingStub.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION)),
+    EXPECT_CALL(*(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION)),
                                                       Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
     joynrMessageSender.sendSubscriptionPublication(senderID, receiverID, qosSettings, std::move(publication));
