@@ -44,7 +44,7 @@ tests/robustness-test/CMakeLists.txt \
 tests/robustness-test/package.json \
 tests/system-integration-test/sit-cpp-app/CMakeLists.txt \
 tests/system-integration-test/sit-node-app/package.json \
-tests/test-base/src/main/js/package.json \
+tests/test-base/package.json \
 examples/radio-app/CMakeLists.txt \
 android/robolectric-integration-tests/src/test/AndroidManifest.xml \
 android/robolectric-unittests/src/main/AndroidManifest.xml \
@@ -54,7 +54,7 @@ java/backend-services/discovery-directory-servlet/pom.xml \
 java/backend-services/domain-access-controller-servlet/pom.xml \
 examples/radio-node/pom.xml \
 examples/radio-node/package.json \
-javascript/libjoynr-js/src/main/resources/package.json
+javascript/libjoynr-js/package.json
 
 _sed 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
 java/core/clustercontroller-standalone/README

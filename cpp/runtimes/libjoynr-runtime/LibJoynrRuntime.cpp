@@ -43,7 +43,7 @@
 namespace joynr
 {
 
-LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
+LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
         : JoynrRuntime(*settings),
           subscriptionManager(nullptr),
           inProcessPublicationSender(nullptr),
@@ -53,10 +53,9 @@ LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
           joynrMessageSender(nullptr),
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
-          settings(settings),
-          libjoynrSettings(new LibjoynrSettings(*settings)),
-          dispatcherMessagingSkeleton(nullptr),
-          runtimeExecutor(nullptr)
+          settings(std::move(settings)),
+          libjoynrSettings(new LibjoynrSettings(*this->settings)),
+          dispatcherMessagingSkeleton(nullptr)
 {
     libjoynrSettings->printSettings();
     singleThreadIOService->start();
@@ -193,18 +192,6 @@ void LibJoynrRuntime::unregisterProvider(const std::string& participantId)
 {
     assert(capabilitiesRegistrar);
     capabilitiesRegistrar->remove(participantId);
-}
-
-void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor)
-{
-    this->runtimeExecutor = std::unique_ptr<JoynrRuntimeExecutor>(runtimeExecutor);
-}
-
-LibJoynrRuntime* LibJoynrRuntime::create(JoynrRuntimeExecutor* runtimeExecutor)
-{
-    LibJoynrRuntime* runtime = runtimeExecutor->getRuntime();
-    runtime->setRuntimeExecutor(runtimeExecutor);
-    return runtime;
 }
 
 } // namespace joynr

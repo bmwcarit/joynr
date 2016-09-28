@@ -24,6 +24,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
+#include "joynr/Settings.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
 
 namespace joynr
@@ -36,7 +37,7 @@ class LibJoynrWebSocketRuntime : public LibJoynrRuntime
     WebSocketSettings wsSettings;
 
 public:
-    explicit LibJoynrWebSocketRuntime(Settings* settings);
+    explicit LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings);
     ~LibJoynrWebSocketRuntime() override;
 
 protected:

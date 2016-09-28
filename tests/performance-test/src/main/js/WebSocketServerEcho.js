@@ -1,7 +1,9 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +18,21 @@
  * limitations under the License.
  * #L%
  */
-#include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 
-#include "LibJoynrRuntime.h"
-#include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
-#include "joynr/Settings.h"
+var serverPort =  process.argv[2];
 
-namespace joynr
-{
-
-JoynrRuntimeExecutor::JoynrRuntimeExecutor(std::unique_ptr<Settings> settings)
-        : settings(std::move(settings)), runtime(), runtimeSemaphore(0)
-{
+if (!serverPort) {
+    console.log("usage: node WebSocketServerEcho.js port");
+    return;
 }
 
-LibJoynrRuntime* JoynrRuntimeExecutor::getRuntime()
-{
-    runtimeSemaphore.wait();
-    return runtime.release();
-}
+console.log("Server port is " + serverPort);
 
-} // namespace joynr
+var WebSocketServer = require("ws").Server;
+var server =  new WebSocketServer({port: serverPort});
+
+server.on('connection', function(webSocket) {
+    webSocket.on('message', function(message) {
+        webSocket.send(message);
+    });
+});
