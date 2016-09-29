@@ -86,6 +86,7 @@ private:
     void handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message);
     void handleSubscriptionStopReceived(const JoynrMessage& message);
     void handleSubscriptionReplyReceived(const JoynrMessage& message);
+    void handleMulticastSubscriptionRequestReceived(const JoynrMessage& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Dispatcher);

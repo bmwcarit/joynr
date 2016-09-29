@@ -36,6 +36,7 @@
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Util.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -354,6 +355,19 @@ void PublicationManager::add(const std::string& proxyParticipantId,
 
     subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
     saveAttributeSubscriptionRequestsMap();
+}
+
+void PublicationManager::add(const std::string& proxyParticipantId,
+                             const std::string& providerParticipantId,
+                             MulticastSubscriptionRequest& subscriptionRequest,
+                             IPublicationSender* publicationSender)
+{
+    // silently handle multicast subscription request
+    sendSubscriptionReply(publicationSender,
+                          providerParticipantId,
+                          proxyParticipantId,
+                          subscriptionRequest.getQos()->getExpiryDateMs(),
+                          subscriptionRequest.getSubscriptionId());
 }
 
 void PublicationManager::add(const std::string& proxyParticipantId,

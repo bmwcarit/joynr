@@ -40,6 +40,10 @@
 #include "joynr/ThreadSafeMap.h"
 #include "joynr/SubscriptionReply.h"
 
+#include "joynr/MessagingQos.h"
+
+#include "joynr/IDispatcher.h"
+
 namespace boost
 {
 namespace asio
@@ -53,6 +57,7 @@ namespace joynr
 
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
+class MulticastSubscriptionRequest;
 class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
@@ -111,6 +116,18 @@ public:
              const std::string& providerParticipantId,
              std::shared_ptr<RequestCaller> requestCaller,
              BroadcastSubscriptionRequest& subscriptionRequest,
+             IPublicationSender* publicationSender);
+
+    /**
+     * @brief Adds MulticastSubscriptionRequest
+     * @param proxyParticipantId
+     * @param providerParticipantId
+     * @param subscriptionRequest
+     * @param publicationSender
+     */
+    void add(const std::string& proxyParticipantId,
+             const std::string& providerParticipantId,
+             MulticastSubscriptionRequest& subscriptionRequest,
              IPublicationSender* publicationSender);
 
     /**

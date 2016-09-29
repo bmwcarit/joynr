@@ -27,6 +27,7 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/MulticastPublication.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
@@ -301,6 +302,28 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
                         e.what());
         return;
     }
+}
+
+void Dispatcher::handleMulticastSubscriptionRequestReceived(const JoynrMessage& message)
+{
+    JOYNR_LOG_TRACE(logger, "Starting handleMulticastSubscriptionRequestReceived");
+    assert(publicationManager != nullptr);
+
+    std::string jsonSubscriptionRequest = message.getPayload();
+
+    // PublicationManager is responsible for deleting SubscriptionRequests
+    MulticastSubscriptionRequest subscriptionRequest;
+    try {
+        joynr::serializer::deserializeFromJson(subscriptionRequest, jsonSubscriptionRequest);
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_ERROR(
+                logger,
+                "Unable to deserialize broadcast subscription request object from: {} - error: {}",
+                jsonSubscriptionRequest,
+                e.what());
+    }
+    publicationManager->add(
+            message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest, messageSender);
 }
 
 void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message)

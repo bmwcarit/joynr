@@ -67,6 +67,9 @@ void ReceivedMessageRunnable::run()
     } else if (message.getType() ==
                JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         dispatcher.handleBroadcastSubscriptionRequestReceived(message);
+    } else if (message.getType() ==
+               JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
+        dispatcher.handleMulticastSubscriptionRequestReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
         dispatcher.handleSubscriptionReplyReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
