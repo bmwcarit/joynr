@@ -183,10 +183,7 @@ std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> M
     std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     for (const auto& participantId : participantIds) {
-        {
-            ReadLocker lock(routingTableLock);
-            destAddress = routingTable.lookup(participantId);
-        }
+        destAddress = routingTable.lookup(participantId);
         if (destAddress) {
             addresses.push_front(destAddress);
         }
@@ -197,21 +194,28 @@ std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> M
 std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> MessageRouter::
         getDestinationAddresses(const JoynrMessage& message)
 {
+    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
-        if (message.isReceivedFromGlobal()) {
-            std::string multicastId = message.getHeaderFrom() + "/" + message.getHeaderTo();
-            std::unordered_set<std::string> multicastReceivers =
-                    multicastReceiverDirectory.getReceivers(multicastId);
-            return lookupAddresses(multicastReceivers);
-        } else {
-            assert(false && "Not implemented yet");
+        std::string multicastId = message.getHeaderTo();
+
+        // lookup local multicast receivers
+        std::unordered_set<std::string> multicastReceivers =
+                multicastReceiverDirectory.getReceivers(multicastId);
+        addresses = lookupAddresses(multicastReceivers);
+
+        if (!message.isReceivedFromGlobal()) {
+            // publish multicast globally
+            // TODO: add broker address
         }
     } else {
         const std::string destinationPartId = message.getHeaderTo();
-        std::unordered_set<std::string> participantIds;
-        participantIds.insert(destinationPartId);
-        return lookupAddresses(participantIds);
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress =
+                routingTable.lookup(destinationPartId);
+        if (destAddress) {
+            addresses.push_front(destAddress);
+        }
     }
+    return addresses;
 }
 
 /**

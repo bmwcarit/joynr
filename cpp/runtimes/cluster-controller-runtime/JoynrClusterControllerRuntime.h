@@ -144,7 +144,7 @@ protected:
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
-    std::unique_ptr<WebSocketCcMessagingSkeleton> wsCcMessagingSkeleton;
+    std::shared_ptr<WebSocketCcMessagingSkeleton> wsCcMessagingSkeleton;
     bool httpMessagingIsRunning;
     bool mqttMessagingIsRunning;
     bool doMqttMessaging;
