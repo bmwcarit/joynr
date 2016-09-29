@@ -66,6 +66,7 @@ LongPollingMessageReceiver::~LongPollingMessageReceiver()
 
 void LongPollingMessageReceiver::interrupt()
 {
+    std::unique_lock<std::mutex> lock(interruptedMutex);
     interrupted = true;
     interruptedWait.notify_all();
 }
