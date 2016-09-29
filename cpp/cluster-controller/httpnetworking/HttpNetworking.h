@@ -46,6 +46,10 @@ public:
       * To prevent this timeouts can be specified.
       */
     virtual HttpResult execute() = 0;
+
+    /**
+     * This method allows to immediately interrupt the execution of a HttpRequest.
+     */
     virtual void interrupt() = 0;
 
     virtual ~HttpRequest() = default;

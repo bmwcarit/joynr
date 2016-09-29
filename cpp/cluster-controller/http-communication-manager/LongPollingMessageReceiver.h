@@ -88,7 +88,7 @@ private:
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;
-    std::shared_ptr<HttpRequest> currentRequest;
+    std::unique_ptr<HttpRequest> currentRequest;
 };
 
 } // namespace joynr
