@@ -186,7 +186,8 @@ void LibJoynrRuntime::init(
             participantIdStorage,
             dispatcherAddress,
             messageRouter,
-            messagingSettings.getDiscoveryEntryExpiryIntervalMs());
+            messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
+            *publicationManager);
 }
 
 void LibJoynrRuntime::unregisterProvider(const std::string& participantId)

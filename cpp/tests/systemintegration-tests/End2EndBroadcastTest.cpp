@@ -254,14 +254,14 @@ public:
     {
         unsigned long delay = 0;
 
-        while (testProvider->broadcastListeners.find(broadcastName) == testProvider->broadcastListeners.cend()
+        while (testProvider->selectiveBroadcastListeners.find(broadcastName) == testProvider->selectiveBroadcastListeners.cend()
                && delay <= subscribeToBroadcastWait
         ) {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
             delay+=50;
         }
-        EXPECT_FALSE(testProvider->broadcastListeners.find(broadcastName) == testProvider->broadcastListeners.cend() ||
-                     testProvider->broadcastListeners.find(broadcastName)->second.empty());
+        EXPECT_FALSE(testProvider->selectiveBroadcastListeners.find(broadcastName) == testProvider->selectiveBroadcastListeners.cend() ||
+                     testProvider->selectiveBroadcastListeners.find(broadcastName)->second.empty());
     }
 
     ~End2EndBroadcastTest(){

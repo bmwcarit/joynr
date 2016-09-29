@@ -108,14 +108,15 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMediatorRegistrationControlEntryChangedBroadcastFilterParameters.h"
 
+#include "joynr/OneWayRequest.h"
+#include "joynr/Request.h"
+#include "joynr/SubscriptionStop.h"
+
 namespace joynr
 {
 class JoynrMessage;
 class RequestCaller;
-class Request;
 class SubscriptionReply;
-class SubscriptionStop;
-class SubscriptionStop;
 class BroadcastSubscriptionRequest;
 
 namespace exceptions

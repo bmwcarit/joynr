@@ -29,7 +29,11 @@ namespace joynr
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
 AbstractJoynrProvider::AbstractJoynrProvider()
-        : providerQos(), lock(), attributeListeners(), broadcastListeners()
+        : providerQos(),
+          lock(),
+          lockBroadcastListeners(),
+          attributeListeners(),
+          broadcastListeners()
 {
 }
 #pragma GCC diagnostic pop
@@ -85,14 +89,20 @@ void AbstractJoynrProvider::registerBroadcastListener(const std::string& broadca
                                                       UnicastBroadcastListener* broadcastListener)
 {
     WriteLocker locker(lock);
-    broadcastListeners[broadcastName].push_back(broadcastListener);
+    selectiveBroadcastListeners[broadcastName].push_back(broadcastListener);
+}
+
+void AbstractJoynrProvider::registerBroadcastListener(MulticastBroadcastListener* broadcastListener)
+{
+    WriteLocker locker(lockBroadcastListeners);
+    broadcastListeners.push_back(broadcastListener);
 }
 
 void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broadcastName,
                                                         UnicastBroadcastListener* broadcastListener)
 {
     WriteLocker locker(lock);
-    std::vector<UnicastBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+    std::vector<UnicastBroadcastListener*>& listeners = selectiveBroadcastListeners[broadcastName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), broadcastListener);
     assert(listenerIt != listeners.cend());
@@ -100,7 +110,7 @@ void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broad
     listeners.erase(listenerIt);
 
     if (listeners.empty()) {
-        broadcastListeners.erase(broadcastName);
+        selectiveBroadcastListeners.erase(broadcastName);
     }
 }
 

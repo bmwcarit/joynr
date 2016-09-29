@@ -26,6 +26,7 @@ namespace joynr
 {
 class SubscriptionAttributeListener;
 class UnicastBroadcastListener;
+class MulticastBroadcastListener;
 class IBroadcastListener;
 
 namespace types
@@ -63,13 +64,20 @@ public:
                                              SubscriptionAttributeListener* attributeListener) = 0;
 
     /**
-     * @brief Register an object that will be informed when an event occurs
+     * @brief Register a listener for unicast broadcasts
      * @param broadcastName The name of the broadcast for which publications shall be done
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
     virtual void registerBroadcastListener(const std::string& broadcastName,
                                            UnicastBroadcastListener* broadcastListener) = 0;
+
+    /**
+     * @brief Register a listener for multicast broadcasts
+     * @param broadcastListener The listener object containing the callbacks for publications and
+     * failures
+     */
+    virtual void registerBroadcastListener(MulticastBroadcastListener* broadcastListener) = 0;
 
     /**
      * @brief Unregister and delete a broadcast listener

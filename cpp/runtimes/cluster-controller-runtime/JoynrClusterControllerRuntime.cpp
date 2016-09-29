@@ -450,7 +450,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             participantIdStorage,
             dispatcherAddress,
             messageRouter,
-            messagingSettings.getDiscoveryEntryExpiryIntervalMs());
+            messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
+            *publicationManager);
 
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);

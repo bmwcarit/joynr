@@ -98,7 +98,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                     participantIdStorage,
                                                     dispatcherAddress,
                                                     messageRouter,
-                                                    std::numeric_limits<std::int64_t>::max());
+                                                    std::numeric_limits<std::int64_t>::max(),
+                                                    *publicationManager);
 
     maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
 }

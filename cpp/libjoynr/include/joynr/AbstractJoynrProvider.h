@@ -29,6 +29,7 @@
 #include "joynr/ReadWriteLock.h"
 #include "joynr/SubscriptionAttributeListener.h"
 #include "joynr/UnicastBroadcastListener.h"
+#include "joynr/MulticastBroadcastListener.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
@@ -81,13 +82,20 @@ public:
                                      SubscriptionAttributeListener* attributeListener) override;
 
     /**
-     * @brief Register an object that will be informed when an event occurs
+     * @brief Register a listener for unicast broadcasts
      * @param broadcastName The name of the broadcast for which publications shall be done
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
     void registerBroadcastListener(const std::string& broadcastName,
                                    UnicastBroadcastListener* broadcastListener) override;
+
+    /**
+     * @brief Register a listener for multicast broadcasts
+     * @param broadcastListener The listener object containing the callbacks for publications and
+     * failures
+     */
+    void registerBroadcastListener(MulticastBroadcastListener* broadcastListener) override;
 
     /**
      * @brief Unregister and delete a broadcast listener
@@ -133,7 +141,8 @@ protected:
     {
 
         ReadLocker locker(lock);
-        const std::vector<UnicastBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+        const std::vector<UnicastBroadcastListener*>& listeners =
+                selectiveBroadcastListeners[broadcastName];
         // Inform all the broadcast listeners for this broadcast
         for (UnicastBroadcastListener* listener : listeners) {
             listener->selectiveBroadcastOccurred(filters, values...);
@@ -143,16 +152,15 @@ protected:
     /**
      * @brief Called by subclasses when a selective broadcast occurs
      * @param broadcastName The name of the broadcast that occurred
-     * @param values The output values of the broadcast
+     * @param values The output values of the broadcastselectiveBroadcastListeners
      */
     template <typename... Ts>
     void fireBroadcast(const std::string& broadcastName, const Ts&... values)
     {
-        ReadLocker locker(lock);
-        const std::vector<UnicastBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+        ReadLocker locker(lockBroadcastListeners);
         // Inform all the broadcast listeners for this broadcast
-        for (UnicastBroadcastListener* listener : listeners) {
-            listener->broadcastOccurred(values...);
+        for (MulticastBroadcastListener* listener : broadcastListeners) {
+            listener->broadcastOccurred(broadcastName, values...);
         }
     }
 
@@ -169,8 +177,10 @@ private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);
 
     ReadWriteLock lock;
+    ReadWriteLock lockBroadcastListeners;
     std::map<std::string, std::vector<SubscriptionAttributeListener*>> attributeListeners;
-    std::map<std::string, std::vector<UnicastBroadcastListener*>> broadcastListeners;
+    std::map<std::string, std::vector<UnicastBroadcastListener*>> selectiveBroadcastListeners;
+    std::vector<MulticastBroadcastListener*> broadcastListeners;
 
     friend class End2EndBroadcastTest;
     friend class End2EndSubscriptionTest;
