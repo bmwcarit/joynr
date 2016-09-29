@@ -41,7 +41,6 @@
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/Future.h"
 #include "joynr/Settings.h"
-#include "joynr/TypeUtil.h"
 #include <memory>
 
 #include "common/dbus/DbusMessagingStubAdapter.h"

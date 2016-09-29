@@ -24,13 +24,6 @@
 using namespace joynr;
 
 class DispatcherUtilsTest : public ::testing::Test {
-public:
-    void SetUp(){
-    }
-    void TearDown(){
-
-    }
-
 protected:
     ADD_LOGGER(DispatcherUtilsTest);
 };

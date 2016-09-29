@@ -47,9 +47,6 @@ public:
     {
     }
 
-    virtual void TearDown() {
-    }
-
 protected:
     ADD_LOGGER(MqttMessagingStubFactoryTest);
     joynr::system::RoutingTypes::MqttAddress mqttAddress;

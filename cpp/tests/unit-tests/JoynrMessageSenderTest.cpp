@@ -55,7 +55,9 @@ public:
         mockMessagingStub(),
         callBack(),
         singleThreadedIOService()
-    {}
+    {
+        singleThreadedIOService.start();
+    }
 
 
     void SetUp(){
@@ -64,9 +66,6 @@ public:
         receiverID = "receiverID" + postFix;
         requestID = "requestId" + postFix;
         qosSettings = MessagingQos(456000);
-    }
-    void TearDown(){
-
     }
 
 protected:

@@ -50,7 +50,7 @@ public:
 
     TestJoynrMessagingConnectorTest():
         singleThreadedIOService(),
-        mockSubscriptionManager(new MockSubscriptionManager(singleThreadedIOService.getIOService())),
+        mockSubscriptionManager(singleThreadedIOService.getIOService()),
         gpsLocation(types::Localisation::GpsLocation(
                         9.0,
                         51.0,
@@ -66,11 +66,7 @@ public:
         floatValue(123.45),
         semaphore(0)
     {
-    }
-
-    ~TestJoynrMessagingConnectorTest()
-    {
-        delete mockSubscriptionManager;
+        singleThreadedIOService.start();
     }
 
     // sets the expectations on the call expected on the MessageSender from the connector
@@ -94,7 +90,7 @@ public:
     }
 
     SingleThreadedIOService singleThreadedIOService;
-    MockSubscriptionManager* mockSubscriptionManager;
+    MockSubscriptionManager mockSubscriptionManager;
     joynr::types::Localisation::GpsLocation gpsLocation;
     float floatValue;
     Semaphore semaphore;
@@ -102,7 +98,7 @@ public:
     tests::testJoynrMessagingConnector* createConnector(bool cacheEnabled) {
         return new tests::testJoynrMessagingConnector(
                     mockJoynrMessageSender,
-                    mockSubscriptionManager,
+                    &mockSubscriptionManager,
                     "myDomain",
                     proxyParticipantId,
                     providerParticipantId,
@@ -245,7 +241,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     auto mockListener = std::make_shared<MockGpsFloatSubscriptionListener>();
 
     EXPECT_CALL(
-                        *mockSubscriptionManager,
+                        mockSubscriptionManager,
                         registerSubscription(
                             Eq("locationUpdateWithSpeed"), //broadcastName
                             _,

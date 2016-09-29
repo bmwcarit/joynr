@@ -35,7 +35,7 @@ class ThreadsafeMapTest : public ::testing::Test
 {
     public:
     ThreadsafeMapTest()
-        : map(nullptr),
+        : map(),
           testValue(nullptr),
           secondTestValue(nullptr),
           firstKey(""),
@@ -43,18 +43,14 @@ class ThreadsafeMapTest : public ::testing::Test
     }
 
     void SetUp(){
-        map = new ThreadSafeMap<std::string, std::shared_ptr<std::string> >();
         testValue = std::make_shared<std::string>("testValue");
         secondTestValue = std::make_shared<std::string>("secondTestValue");
         firstKey = std::string("firstKey");
         secondKey = std::string("secondKey");
     }
-    void TearDown(){
-        delete map;
-    }
 
 protected:
-    ThreadSafeMap<std::string, std::shared_ptr<std::string> >* map;
+    ThreadSafeMap<std::string, std::shared_ptr<std::string> > map;
     std::shared_ptr<std::string> testValue;
     std::shared_ptr<std::string> secondTestValue;
     std::string firstKey;
@@ -66,47 +62,47 @@ private:
 
 TEST_F(ThreadsafeMapTest, insertAndContains)
 {
-    map->insert(firstKey, testValue);
-    ASSERT_TRUE(map->contains(firstKey));
-    map->insert(secondKey, testValue);
-    ASSERT_TRUE(map->contains(secondKey));
+    map.insert(firstKey, testValue);
+    ASSERT_TRUE(map.contains(firstKey));
+    map.insert(secondKey, testValue);
+    ASSERT_TRUE(map.contains(secondKey));
 }
 
 TEST_F(ThreadsafeMapTest, containsNot)
 {
-    map->insert(firstKey, testValue);
-    ASSERT_TRUE(map->contains(firstKey));
-    ASSERT_FALSE(map->contains(secondKey));
+    map.insert(firstKey, testValue);
+    ASSERT_TRUE(map.contains(firstKey));
+    ASSERT_FALSE(map.contains(secondKey));
 }
 
 TEST_F(ThreadsafeMapTest, value)
 {
-    map->insert(firstKey, testValue);
-    map->insert(secondKey,secondTestValue);
-    std::shared_ptr<std::string> result1 = map->value(firstKey);
-    std::shared_ptr<std::string> result2 = map->value(secondKey);
+    map.insert(firstKey, testValue);
+    map.insert(secondKey,secondTestValue);
+    std::shared_ptr<std::string> result1 = map.value(firstKey);
+    std::shared_ptr<std::string> result2 = map.value(secondKey);
     ASSERT_EQ(result1, testValue);
     ASSERT_EQ(result2, secondTestValue);
 }
 
 TEST_F(ThreadsafeMapTest, remove)
 {
-    map->insert(firstKey, testValue);
-    map->insert(secondKey, secondTestValue);
-    ASSERT_TRUE(map->contains(firstKey));
-    ASSERT_TRUE(map->contains(secondKey));
-    map->remove(firstKey);
-    ASSERT_FALSE(map->contains(firstKey));
-    ASSERT_TRUE(map->contains(secondKey));
+    map.insert(firstKey, testValue);
+    map.insert(secondKey, secondTestValue);
+    ASSERT_TRUE(map.contains(firstKey));
+    ASSERT_TRUE(map.contains(secondKey));
+    map.remove(firstKey);
+    ASSERT_FALSE(map.contains(firstKey));
+    ASSERT_TRUE(map.contains(secondKey));
 }
 
 TEST_F(ThreadsafeMapTest, take)
 {
-    map->insert(firstKey, testValue);
-    map->insert(secondKey, secondTestValue);
-    ASSERT_TRUE(map->contains(firstKey));
-    ASSERT_TRUE(map->contains(secondKey));
-    map->take(firstKey);
-    ASSERT_FALSE(map->contains(firstKey));
-    ASSERT_TRUE(map->contains(secondKey));
+    map.insert(firstKey, testValue);
+    map.insert(secondKey, secondTestValue);
+    ASSERT_TRUE(map.contains(firstKey));
+    ASSERT_TRUE(map.contains(secondKey));
+    map.take(firstKey);
+    ASSERT_FALSE(map.contains(firstKey));
+    ASSERT_TRUE(map.contains(secondKey));
 }

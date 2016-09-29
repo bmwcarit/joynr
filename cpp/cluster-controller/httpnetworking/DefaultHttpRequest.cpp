@@ -108,4 +108,9 @@ HttpResult DefaultHttpRequest::execute()
     return HttpResult(curlError, statusCode, body, headers);
 }
 
+void DefaultHttpRequest::interrupt()
+{
+    curl_easy_setopt(handle, CURLOPT_TIMEOUT_MS, 1);
+}
+
 } // namespace joynr

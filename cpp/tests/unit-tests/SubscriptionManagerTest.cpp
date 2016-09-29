@@ -58,6 +58,11 @@ using namespace joynr;
 
 class SubscriptionManagerTest : public testing::Test
 {
+public:
+    SubscriptionManagerTest() : singleThreadedIOService()
+    {
+        singleThreadedIOService.start();
+    }
 protected:
     SingleThreadedIOService singleThreadedIOService;
 };

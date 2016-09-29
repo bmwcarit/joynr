@@ -20,8 +20,6 @@
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 
-#include "joynr/TypeUtil.h"
-
 namespace joynr
 {
 

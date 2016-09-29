@@ -294,7 +294,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 	def Set<String> getBroadcastFilterParametersClassNames(FInterface serviceInterface){
 		val classNameSet = new HashSet<String>();
 		for (broadcast: serviceInterface.broadcasts) {
-			if (isSelective(broadcast)) {
+			if (broadcast.selective) {
 				classNameSet.add(
 					serviceInterface.name.toFirstUpper +
 					broadcast.joynrName.toFirstUpper +
@@ -307,7 +307,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 	def Set<String> getBroadcastFilterParametersIncludes(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
 		for (broadcast: serviceInterface.broadcasts) {
-			if (isSelective(broadcast)) {
+			if (broadcast.selective) {
 				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast));
 			}
 		}

@@ -21,7 +21,6 @@
 #include <cassert>
 
 #include "joynr/BrokerUrl.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 
 namespace joynr

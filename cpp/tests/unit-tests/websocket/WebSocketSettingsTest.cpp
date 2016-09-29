@@ -22,7 +22,6 @@
 #include "PrettyPrint.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 
 using namespace joynr;

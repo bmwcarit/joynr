@@ -87,7 +87,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 	}
 
 	def getIncludeForByteBuffer() {
-		"\"joynr/TypeUtil.h\""
+		"\"joynr/ByteBuffer.h\""
 	}
 
 	override getIncludesFor(Iterable<FBasicTypeId> datatypes) {

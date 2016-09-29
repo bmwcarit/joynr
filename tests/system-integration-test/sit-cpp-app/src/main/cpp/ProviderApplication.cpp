@@ -69,12 +69,11 @@ int main(int argc, char* argv[])
             boost::filesystem::system_complete(appFilename).parent_path().string();
     std::string pathToSettings(appDirectory + "/resources/systemintegrationtest-provider.settings");
 
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToSettings);
+    std::unique_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToSettings));
 
     joynr::Semaphore semaphore;
 
-    std::shared_ptr<SystemIntegrationTestProvider> provider(
-            new SystemIntegrationTestProvider([&]() { semaphore.notify(); }));
+    auto provider = std::make_shared<SystemIntegrationTestProvider>([&]() { semaphore.notify(); });
 
     joynr::types::ProviderQos providerQos;
     std::chrono::milliseconds millisSinceEpoch =
@@ -96,8 +95,6 @@ int main(int argc, char* argv[])
 
         // Unregister the provider
         runtime->unregisterProvider<test::SystemIntegrationTestProvider>(providerDomain, provider);
-
-        delete runtime;
 
         return successful ? 0 : -1;
     }

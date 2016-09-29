@@ -74,13 +74,7 @@ public:
         dispatcher(&messageSender, singleThreadIOService.getIOService())
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-    }
-
-
-    void SetUp(){
-    }
-
-    void TearDown(){
+        singleThreadIOService.start();
     }
 
     void invokeOnSuccessWithGpsLocation(

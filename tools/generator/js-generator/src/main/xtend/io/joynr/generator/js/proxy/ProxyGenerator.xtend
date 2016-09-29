@@ -188,7 +188,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 					],
 					messagingQos : settings.messagingQos,
 					discoveryQos : settings.discoveryQos,
-					«IF isSelective(event)»
+					«IF event.selective»
 					dependencies: {
 							subscriptionManager: settings.dependencies.subscriptionManager
 					},

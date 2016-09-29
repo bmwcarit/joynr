@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,16 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include "joynr/TrackableObject.h"
+#ifndef BYTEBUFFER_H
+#define BYTEBUFFER_H
 
-using namespace joynr;
+#include <cstdint>
+#include <vector>
 
-TEST(TrackableObjectTest, getInstancesReturnsGlobalNumberOfInstances)
+namespace joynr
 {
-    ASSERT_EQ(TrackableObject::getInstances(), 0);
-    TrackableObject* t = new TrackableObject();
-    ASSERT_EQ(TrackableObject::getInstances(), 1);
-    TrackableObject* t2 = new TrackableObject();
-    ASSERT_EQ(TrackableObject::getInstances(), 2);
-    delete t;
-    ASSERT_EQ(TrackableObject::getInstances(), 1);
-    delete t2;
-    ASSERT_EQ(TrackableObject::getInstances(), 0);
-}
 
+using ByteBuffer = std::vector<std::uint8_t>;
+
+} // namespace joynr
+#endif // BYTEBUFFER_H

@@ -70,9 +70,7 @@ public:
         subscriptionPublication.setSubscriptionId(subscriptionId);
         subscriptionPublication.setResponse("publication");
     }
-    void TearDown()
-    {
-    }
+
     void checkHeaderCreatorFromTo(const JoynrMessage& joynrMessage)
     {
         EXPECT_TRUE(joynrMessage.containsHeaderCreatorUserId());

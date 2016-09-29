@@ -21,7 +21,6 @@
 #include "PrettyPrint.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/Settings.h"
-#include "joynr/TypeUtil.h"
 
 using namespace joynr;
 

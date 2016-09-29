@@ -29,7 +29,6 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/Semaphore.h"
 
-class DispatcherIntegrationTest;
 class CapabilitiesClientTest;
 
 namespace joynr
@@ -111,7 +110,6 @@ private:
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;
 
-    friend class ::DispatcherIntegrationTest;
     friend class ::CapabilitiesClientTest;
 
     ADD_LOGGER(HttpReceiver);

@@ -1,7 +1,9 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +18,21 @@
  * limitations under the License.
  * #L%
  */
-#ifndef TRACKABLEOBJECT_H
-#define TRACKABLEOBJECT_H
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/Logger.h"
+var serverPort =  process.argv[2];
 
-namespace joynr
-{
+if (!serverPort) {
+    console.log("usage: node WebSocketServerEcho.js port");
+    return;
+}
 
-class JOYNRCOMMON_EXPORT TrackableObject
-{
-public:
-    TrackableObject();
-    virtual ~TrackableObject();
-    static int getInstances();
+console.log("Server port is " + serverPort);
 
-private:
-    static int instances;
-    ADD_LOGGER(TrackableObject);
-};
+var WebSocketServer = require("ws").Server;
+var server =  new WebSocketServer({port: serverPort});
 
-} // namespace joynr
-#endif // TRACKABLEOBJECT_H
+server.on('connection', function(webSocket) {
+    webSocket.on('message', function(message) {
+        webSocket.send(message);
+    });
+});

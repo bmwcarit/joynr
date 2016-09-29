@@ -16,10 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
+#include <memory>
+#include <string>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <memory>
+
 #include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
@@ -32,12 +34,12 @@
 #include "tests/utils/MockObjects.h"
 #include "utils/MockCallback.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include <string>
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/tests/testRequestCaller.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/PrivateCopyAssign.h"
 
 using namespace ::testing;
 
@@ -79,6 +81,7 @@ public:
         publicationManager(nullptr),
         requestCaller(new joynr::tests::testRequestCaller(provider))
     {
+        singleThreadedIOService.start();
     }
 
     void SetUp(){
@@ -88,10 +91,6 @@ public:
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-    }
-
-    void TearDown(){
-
     }
 
 protected:
@@ -349,7 +348,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
             ));
 
     auto mockMessageRouter = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
-    JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
+    auto joynrMessageSender = std::make_unique<JoynrMessageSender>(mockMessageRouter);
 
     /* ensure the serialization succeeds and the first publication and the subscriptionReply are sent to the proxy */
     EXPECT_CALL(*mockMessageRouter, route(
@@ -365,7 +364,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                 providerParticipantId,
                 requestCaller,
                 subscriptionRequest,
-                joynrMessageSender);
+                joynrMessageSender.get());
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(15)));
 
@@ -385,8 +384,6 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
 
 
     provider->listOfStringsChanged(listOfStrings);
-
-    delete joynrMessageSender;
 }
 
 /**

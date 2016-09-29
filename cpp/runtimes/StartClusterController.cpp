@@ -105,7 +105,8 @@ int main(int argc, char* argv[])
 
         // Check for errors
         if (!currentSettings.isLoaded()) {
-            JOYNR_LOG_FATAL(logger, "Settings file \"{}\" doesn't exist.", settingsFileName);
+            JOYNR_LOG_FATAL(
+                    logger, "Provided settings file {} could not be loaded.", settingsFileName);
             return 1;
         }
 

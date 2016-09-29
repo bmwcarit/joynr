@@ -23,7 +23,6 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
@@ -35,7 +34,6 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 	@Inject extension InterfaceSubscriptionUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
-	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
 
 	override generate()
@@ -134,7 +132,7 @@ public:
 
 		«produceSubscribeToBroadcastComments(broadcast)»
 		«produceSubscribeToBroadcastSignature(broadcast, francaIntf)» override {
-			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(«IF isSelective(broadcast)»
+			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(«IF broadcast.selective»
 						filterParameters,«ENDIF»
 						subscriptionListener,
 						subscriptionQos);
@@ -142,7 +140,7 @@ public:
 
 		«produceUpdateBroadcastSubscriptionComments(broadcast)»
 		«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf)» override {
-			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(«IF isSelective(broadcast)»
+			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(«IF broadcast.selective»
 						filterParameters,«ENDIF»
 						subscriptionListener,
 						subscriptionQos,

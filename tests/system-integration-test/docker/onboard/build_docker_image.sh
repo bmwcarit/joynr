@@ -9,8 +9,7 @@ REPODIR=${HOME}/.m2/repository
 DOCKER_REPOSITORY=
 MAVENSETTINGS=${HOME}/.m2/settings.xml
 BASE_DOCKER_IMAGE=joynr-runtime-environment-base:latest
-CPP_BUILD_DOCKER_IMAGE=joynr-cpp-gcc:latest
-JS_BUILD_DOCKER_IMAGE=joynr-javascript:latest
+DOCKER_IMAGE_VERSION=latest
 DOCKER_RUN_ADD_FLAGS=
 JOBS=2
 
@@ -26,6 +25,8 @@ Possible options:
 --no-node-test-build: skip building the sit-node-app
 -r, --docker-repository <docker repository>: set the value of the DOCKER_REPOSITORY variable, determining
     where the cpp base image is pulled from.
+-v, --docker-image-version <docker image version>: set the value of the DOCKER_IMAGE_VERSION variable, determining
+    where which version of the docker build images (node, cpp) should be used
 --docker-run-flags <run flags>: add some additional flags required when calling docker (e.g. \"--sig-proxy -e DEV_UID=$(id -u)\")
 --repo-dir <repository directory>: override the default maven repository directory
 --maven-settings <maven settings file>: override the location of the default maven settings file
@@ -52,6 +53,10 @@ do
 		;;
 		-r|--docker-repository)
 		DOCKER_REPOSITORY="$2"
+		shift
+		;;
+		-v|--docker-image-version)
+		DOCKER_IMAGE_VERSION="$2"
 		shift
 		;;
 		--docker-run-flags)
@@ -82,6 +87,9 @@ do
 	esac
 	shift
 done
+
+CPP_BUILD_DOCKER_IMAGE=joynr-cpp-gcc:${DOCKER_IMAGE_VERSION}
+JS_BUILD_DOCKER_IMAGE=joynr-javascript:${DOCKER_IMAGE_VERSION}
 
 function execute_in_docker {
 	if [ -z "$2" ]; then

@@ -37,7 +37,6 @@
 #include "joynr/system/IDiscovery.h"
 #include "joynr/Future.h"
 #include "joynr/Semaphore.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/IProxyBuilder.h"
 
