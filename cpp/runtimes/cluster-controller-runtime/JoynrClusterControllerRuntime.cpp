@@ -504,6 +504,7 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
+    singleThreadIOService->stop();
     stopMessaging();
 
     if (joynrDispatcher != nullptr) {
