@@ -19,11 +19,12 @@
 #ifndef HTTPNETWORKING_H
 #define HTTPNETWORKING_H
 
-#include <string>
 #include <chrono>
+#include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -177,7 +178,7 @@ public:
 class JOYNRCLUSTERCONTROLLER_EXPORT HttpNetworking
 {
 public:
-    ~HttpNetworking();
+    ~HttpNetworking() = default;
 
     static HttpNetworking* getInstance();
 
@@ -188,7 +189,7 @@ public:
     /**
       * Used internally
       */
-    ICurlHandlePool* getCurlHandlePool();
+    std::shared_ptr<ICurlHandlePool> getCurlHandlePool() const;
 
     /**
       * Sets the global proxy to the specified string in the format "host:port".
@@ -230,7 +231,7 @@ private:
     HttpNetworking();
     HttpRequestBuilder* createRequestBuilder(const std::string& url);
     static HttpNetworking* httpNetworking;
-    ICurlHandlePool* curlHandlePool;
+    std::shared_ptr<ICurlHandlePool> curlHandlePool;
 
     std::string proxy;
     std::chrono::milliseconds connectTimeout;
