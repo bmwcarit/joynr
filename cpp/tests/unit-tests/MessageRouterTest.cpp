@@ -119,6 +119,12 @@ TEST_F(MessageRouterTest, addMessageToQueue){
     EXPECT_EQ(messageQueue->getQueueLength(), 2);
 }
 
+TEST_F(MessageRouterTest, multicastMessageWillNotBeQueued) {
+    joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST);
+    messageRouter->route(joynrMessage);
+    EXPECT_EQ(messageQueue->getQueueLength(), 0);
+}
+
 MATCHER_P2(addressWithChannelId, addressType, channelId, "") {
     if (addressType == std::string("mqtt")) {
         auto mqttAddress = std::dynamic_pointer_cast<const system::RoutingTypes::MqttAddress>(arg);

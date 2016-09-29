@@ -252,7 +252,12 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
     std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
             getDestinationAddresses(message);
     // if destination address is not known
-    if (destAddresses.empty() && message.getType() != JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+    if (destAddresses.empty()) {
+        if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+            // Do not queue multicast messages for future multicast receivers.
+            return;
+        }
+
         // save the message for later delivery
         messageQueue->queueMessage(message);
         JOYNR_LOG_DEBUG(logger, "message queued: {}", message.getPayload());

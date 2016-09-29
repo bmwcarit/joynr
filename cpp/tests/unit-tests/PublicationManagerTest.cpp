@@ -1312,6 +1312,16 @@ TEST_F(PublicationManagerTest, broadcast_sendSubscriptionReplyOnSuccessfulRegist
     sendSubscriptionReplyOnSuccessfulRegistration(subscriptionRequest);
 }
 
+TEST_F(PublicationManagerTest, multicast_sendSubscriptionReplyOnSuccessfulRegistration) {
+    //SubscriptionRequest
+    MulticastSubscriptionRequest subscriptionRequest;
+    std::string subscribeToName = "testBroadcast";
+    subscriptionRequest.setSubscribeToName(subscribeToName);
+    subscriptionRequest.setMulticastId("multicastId");
+
+    sendSubscriptionReplyOnSuccessfulRegistration(subscriptionRequest);
+}
+
 void PublicationManagerTest::sendSubscriptionExceptionOnExpiredRegistration(SubscriptionRequest& subscriptionRequest)
 {
     joynr::Semaphore semaphore(0);
