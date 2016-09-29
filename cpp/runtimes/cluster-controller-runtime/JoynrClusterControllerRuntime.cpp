@@ -504,6 +504,10 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
+
+    // synchronously stop the underlying boost::asio::io_service
+    // this ensures all asynchronous operations are stopped now
+    // which allows a safe shutdown
     singleThreadIOService->stop();
     stopMessaging();
 
