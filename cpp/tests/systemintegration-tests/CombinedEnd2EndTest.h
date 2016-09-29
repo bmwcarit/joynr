@@ -20,9 +20,10 @@
 #ifndef COMBINEDEND2ENDTEST_H
 #define COMBINEDEND2ENDTEST_H
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <string>
+#include <memory>
+
+#include <gtest/gtest.h>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrRuntime.h"
@@ -40,12 +41,12 @@
 class CombinedEnd2EndTest : public testing::TestWithParam< std::tuple<std::string, std::string> >{
 public:
     CombinedEnd2EndTest();
-    ~CombinedEnd2EndTest();
+    ~CombinedEnd2EndTest() override = default;
 
-    void SetUp();
-    void TearDown();
-    joynr::JoynrRuntime* runtime1;
-    joynr::JoynrRuntime* runtime2;
+    void SetUp() override;
+    void TearDown() override;
+    std::unique_ptr<joynr::JoynrRuntime> runtime1;
+    std::unique_ptr<joynr::JoynrRuntime> runtime2;
     std::string registeredSubscriptionId;
     std::string messagingSettingsFile1;
     std::string messagingSettingsFile2;
