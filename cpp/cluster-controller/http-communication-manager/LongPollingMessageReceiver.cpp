@@ -55,7 +55,8 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
           interruptedMutex(),
           interruptedWait(),
           channelCreatedSemaphore(channelCreatedSemaphore),
-          onTextMessageReceived(onTextMessageReceived)
+          onTextMessageReceived(onTextMessageReceived),
+          currentRequest()
 {
 }
 
@@ -67,6 +68,9 @@ LongPollingMessageReceiver::~LongPollingMessageReceiver()
 void LongPollingMessageReceiver::interrupt()
 {
     std::unique_lock<std::mutex> lock(interruptedMutex);
+    if (currentRequest) {
+        currentRequest->interrupt();
+    }
     interrupted = true;
     interruptedWait.notify_all();
 }
@@ -89,7 +93,7 @@ void LongPollingMessageReceiver::run()
     JOYNR_LOG_INFO(logger, "Running lpmr with channelId {}", channelId);
     std::shared_ptr<IHttpPostBuilder> createChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
-    std::shared_ptr<HttpRequest> createChannelRequest(
+    currentRequest.reset(
             createChannelRequestBuilder->addHeader("X-Atmosphere-tracking-id", receiverId)
                     ->withContentType("application/json")
                     ->withTimeout(settings.brokerTimeout)
@@ -98,7 +102,7 @@ void LongPollingMessageReceiver::run()
     std::string channelUrl;
     while (channelUrl.empty() && !isInterrupted()) {
         JOYNR_LOG_DEBUG(logger, "sending create channel request");
-        HttpResult createChannelResult = createChannelRequest->execute();
+        HttpResult createChannelResult = currentRequest->execute();
         if (createChannelResult.getStatusCode() == 201) {
             const std::unordered_multimap<std::string, std::string>& headers =
                     createChannelResult.getHeaders();
@@ -122,15 +126,14 @@ void LongPollingMessageReceiver::run()
         std::shared_ptr<IHttpGetBuilder> longPollRequestBuilder(
                 HttpNetworking::getInstance()->createHttpGetBuilder(channelUrl));
 
-        std::shared_ptr<HttpRequest> longPollRequest(
-                longPollRequestBuilder->acceptGzip()
-                        ->addHeader("Accept", "application/json")
-                        ->addHeader("X-Atmosphere-tracking-id", receiverId)
-                        ->withTimeout(settings.longPollTimeout)
-                        ->build());
+        currentRequest.reset(longPollRequestBuilder->acceptGzip()
+                                     ->addHeader("Accept", "application/json")
+                                     ->addHeader("X-Atmosphere-tracking-id", receiverId)
+                                     ->withTimeout(settings.longPollTimeout)
+                                     ->build());
 
         JOYNR_LOG_DEBUG(logger, "sending long polling request; url: {}", channelUrl);
-        HttpResult longPollingResult = longPollRequest->execute();
+        HttpResult longPollingResult = currentRequest->execute();
         if (!isInterrupted()) {
             // TODO: remove HttpErrorCodes and use constants.
             // there is a bug in atmosphere, which currently gives back 503 instead of 200 as a
