@@ -1,3 +1,10 @@
+#joynr 0.20.4
+This is a minor bug fix release.
+
+## Other changes
+* **[C++]** Fixed an issue which caused a high CPU load when a client disconnected from a
+  cluster controller.
+
 #joynr 0.20.3
 This is a minor bug fix release.
 
