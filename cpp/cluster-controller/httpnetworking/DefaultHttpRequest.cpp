@@ -110,7 +110,9 @@ HttpResult DefaultHttpRequest::execute()
 
 void DefaultHttpRequest::interrupt()
 {
-    curl_easy_setopt(handle, CURLOPT_TIMEOUT_MS, 1);
+    if (handle != nullptr) {
+        curl_easy_setopt(handle, CURLOPT_TIMEOUT_MS, 1);
+    }
 }
 
 } // namespace joynr
