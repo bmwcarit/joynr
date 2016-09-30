@@ -77,7 +77,6 @@ class JOYNR_EXPORT PublicationManager
 {
 public:
     explicit PublicationManager(boost::asio::io_service& ioService, int maxThreads = 1);
-    explicit PublicationManager(DelayedScheduler* scheduler);
     virtual ~PublicationManager();
     /**
      * @brief Adds the SubscriptionRequest and starts runnable to poll attributes.
@@ -191,7 +190,7 @@ private:
 
     std::mutex fileWriteLock;
     // Publications are scheduled to run on a thread pool
-    DelayedScheduler* delayedScheduler;
+    std::unique_ptr<DelayedScheduler> delayedScheduler;
 
     // Support for clean shutdowns
     std::mutex shutDownMutex;

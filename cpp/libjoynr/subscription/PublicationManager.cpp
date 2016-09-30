@@ -121,32 +121,14 @@ PublicationManager::~PublicationManager()
     }
 }
 
-PublicationManager::PublicationManager(DelayedScheduler* scheduler)
-        : publications(),
-          subscriptionId2SubscriptionRequest(),
-          subscriptionId2BroadcastSubscriptionRequest(),
-          fileWriteLock(),
-          delayedScheduler(scheduler),
-          shutDownMutex(),
-          shuttingDown(false),
-          subscriptionRequestStorageFileName(),
-          broadcastSubscriptionRequestStorageFileName(),
-          queuedSubscriptionRequests(),
-          queuedSubscriptionRequestsMutex(),
-          queuedBroadcastSubscriptionRequests(),
-          queuedBroadcastSubscriptionRequestsMutex(),
-          currentScheduledPublications(),
-          currentScheduledPublicationsMutex(),
-          broadcastFilterLock()
-{
-}
-
 PublicationManager::PublicationManager(boost::asio::io_service& ioService, int maxThreads)
         : publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
           fileWriteLock(),
-          delayedScheduler(new ThreadPoolDelayedScheduler(maxThreads, "PubManager", ioService)),
+          delayedScheduler(std::make_unique<ThreadPoolDelayedScheduler>(maxThreads,
+                                                                        "PubManager",
+                                                                        ioService)),
           shutDownMutex(),
           shuttingDown(false),
           subscriptionRequestStorageFileName(),
