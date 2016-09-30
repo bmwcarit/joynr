@@ -36,6 +36,7 @@ class MessagingQos;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
 class MulticastSubscriptionRequest;
+class MulticastPublication;
 class SubscriptionStop;
 
 /**
@@ -118,6 +119,10 @@ public:
                                       const std::string& receiverParticipantId,
                                       const MessagingQos& qos,
                                       const SubscriptionStop& subscriptionStop) = 0;
+
+    virtual void sendMulticast(const std::string& fromParticipantId,
+                               const MulticastPublication& multicastPublication,
+                               const MessagingQos& messagingQos) = 0;
 };
 
 } // namespace joynr

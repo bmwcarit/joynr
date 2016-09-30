@@ -121,8 +121,10 @@ PublicationManager::~PublicationManager()
     }
 }
 
-PublicationManager::PublicationManager(DelayedScheduler* scheduler)
-        : publications(),
+PublicationManager::PublicationManager(DelayedScheduler* scheduler,
+                                       IJoynrMessageSender* messageSender)
+        : joynrMessageSender(messageSender),
+          publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
           fileWriteLock(),
@@ -141,8 +143,11 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler)
 {
 }
 
-PublicationManager::PublicationManager(boost::asio::io_service& ioService, int maxThreads)
-        : publications(),
+PublicationManager::PublicationManager(boost::asio::io_service& ioService,
+                                       IJoynrMessageSender* messageSender,
+                                       int maxThreads)
+        : joynrMessageSender(messageSender),
+          publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
           fileWriteLock(),

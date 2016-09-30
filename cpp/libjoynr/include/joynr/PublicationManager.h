@@ -28,6 +28,7 @@
 #include <boost/optional.hpp>
 
 #include "joynr/SubscriptionPublication.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/SubscriptionRequestInformation.h"
 #include "joynr/BroadcastSubscriptionRequestInformation.h"
 #include "joynr/BroadcastFilterParameters.h"
@@ -41,8 +42,7 @@
 #include "joynr/SubscriptionReply.h"
 
 #include "joynr/MessagingQos.h"
-
-#include "joynr/IDispatcher.h"
+#include "joynr/IJoynrMessageSender.h"
 
 namespace boost
 {
@@ -81,8 +81,10 @@ class SubscriptionQos;
 class JOYNR_EXPORT PublicationManager
 {
 public:
-    explicit PublicationManager(boost::asio::io_service& ioService, int maxThreads = 1);
-    explicit PublicationManager(DelayedScheduler* scheduler);
+    PublicationManager(boost::asio::io_service& ioService,
+                       IJoynrMessageSender* messageSender,
+                       int maxThreads = 1);
+    PublicationManager(DelayedScheduler* scheduler, IJoynrMessageSender* messageSender);
     virtual ~PublicationManager();
     /**
      * @brief Adds the SubscriptionRequest and starts runnable to poll attributes.
@@ -185,6 +187,19 @@ public:
     template <typename... Ts>
     void broadcastOccurred(const std::string& subscriptionId, const Ts&... values);
 
+    /**
+      * @brief Publishes a multicast broadcast publication message
+      *
+      * This method is virtual so that it can be overridden by a mock object.
+      * @param broadcastName The name of the broadcast
+      * @param providerParticipantId The participantID of the provider
+      * @param values Broadcast's value
+      */
+    template <typename... Ts>
+    void broadcastOccurred(const std::string& broadcastName,
+                           const std::string& providerParticipantId,
+                           const Ts&... values);
+
     template <typename BroadcastFilter, typename... Ts>
     void selectiveBroadcastOccurred(const std::string& subscriptionId,
                                     const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
@@ -195,6 +210,9 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
+
+    // Used for multicast publication
+    IJoynrMessageSender* joynrMessageSender;
 
     // A class that groups together the information needed for a publication
     class Publication;
@@ -421,6 +439,20 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
             }
         }
     }
+}
+
+template <typename... Ts>
+void PublicationManager::broadcastOccurred(const std::string& broadcastName,
+                                           const std::string& providerParticipantId,
+                                           const Ts&... values)
+{
+    MulticastPublication publication;
+    std::string multicastID =
+            util::createMulticastId(providerParticipantId, broadcastName, {} /*TODO: partitions*/);
+    publication.setMulticastId(multicastID);
+    publication.setResponse(values...);
+    MessagingQos mQos;
+    joynrMessageSender->sendMulticast(providerParticipantId, publication, mQos);
 }
 
 template <typename... Ts>

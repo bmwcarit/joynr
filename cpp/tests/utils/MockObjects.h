@@ -108,9 +108,12 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMediatorRegistrationControlEntryChangedBroadcastFilterParameters.h"
 
+#include "joynr/MulticastPublication.h"
+#include "joynr/MessagingQos.h"
+
 #include "joynr/OneWayRequest.h"
-#include "joynr/Request.h"
 #include "joynr/SubscriptionStop.h"
+#include "joynr/Request.h"
 
 namespace joynr
 {
@@ -469,6 +472,14 @@ public:
                 const joynr::SubscriptionPublication& subscriptionPublication
             )
     );
+
+    MOCK_METHOD3(
+            sendMulticast,
+            void (const std::string& fromParticipantId,
+                  const joynr::MulticastPublication& multicastPublication,
+                  const joynr::MessagingQos& messagingQos
+            )
+   );
 
     MOCK_METHOD4(
             sendMulticastSubscriptionRequest,

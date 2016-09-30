@@ -74,11 +74,10 @@ public:
         proxyParticipantId("proxyParticipantId"),
         requestReplyId("requestReplyId"),
         messageFactory(),
-        messageSender(mockMessageRouter),
-        dispatcher(&messageSender, singleThreadedIOService.getIOService()),
+        messageSender(std::make_unique<JoynrMessageSender>(mockMessageRouter)),
+        dispatcher(messageSender.get(), singleThreadedIOService.getIOService()),
         subscriptionManager(nullptr),
         provider(new MockTestProvider),
-        publicationManager(nullptr),
         requestCaller(new joynr::tests::testRequestCaller(provider))
     {
         singleThreadedIOService.start();
@@ -87,7 +86,7 @@ public:
     void SetUp(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
         subscriptionManager = new SubscriptionManager(singleThreadedIOService.getIOService(), mockMessageRouter);
-        publicationManager = new PublicationManager(singleThreadedIOService.getIOService());
+        publicationManager = new PublicationManager(singleThreadedIOService.getIOService(), messageSender.get());
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
@@ -112,7 +111,7 @@ protected:
     std::string requestReplyId;
 
     JoynrMessageFactory messageFactory;
-    JoynrMessageSender messageSender;
+    std::unique_ptr<JoynrMessageSender> messageSender;
     Dispatcher dispatcher;
     SubscriptionManager * subscriptionManager;
     std::shared_ptr<MockTestProvider> provider;
@@ -347,9 +346,6 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                     ReleaseSemaphore(&semaphore)
             ));
 
-    auto mockMessageRouter = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
-    auto joynrMessageSender = std::make_unique<JoynrMessageSender>(mockMessageRouter);
-
     /* ensure the serialization succeeds and the first publication and the subscriptionReply are sent to the proxy */
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
@@ -364,7 +360,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                 providerParticipantId,
                 requestCaller,
                 subscriptionRequest,
-                joynrMessageSender.get());
+                messageSender.get());
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(15)));
 

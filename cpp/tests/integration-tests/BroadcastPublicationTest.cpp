@@ -47,7 +47,8 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         subscriptionId("subscriptionId"),
-        publicationManager(singleThreadedIOService.getIOService()),
+        messageSender(new MockJoynrMessageSender()),
+        publicationManager(singleThreadedIOService.getIOService(), messageSender),
         publicationSender(),
         request(),
         subscriptionBroadcastListener(subscriptionId, publicationManager),
@@ -91,6 +92,7 @@ public:
     void TearDown(){
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter1.get()));
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter2.get()));
+        delete messageSender;
     }
 
 protected:
@@ -101,6 +103,7 @@ protected:
     std::string providerParticipantId;
     std::string proxyParticipantId;
     std::string subscriptionId;
+    IJoynrMessageSender* messageSender;
     PublicationManager publicationManager;
     MockPublicationSender publicationSender;
     BroadcastSubscriptionRequest request;

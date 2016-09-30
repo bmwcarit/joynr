@@ -62,7 +62,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
             std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = new PublicationManager(singleThreadedIOService.getIOService());
+    publicationManager = new PublicationManager(
+            singleThreadedIOService.getIOService(), joynrMessageSender.get());
     subscriptionManager =
             new SubscriptionManager(singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());

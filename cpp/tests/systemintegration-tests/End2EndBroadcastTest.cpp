@@ -252,16 +252,9 @@ public:
             std::shared_ptr<tests::testAbstractProvider> testProvider,
             const std::string& broadcastName)
     {
-        unsigned long delay = 0;
-
-        while (testProvider->selectiveBroadcastListeners.find(broadcastName) == testProvider->selectiveBroadcastListeners.cend()
-               && delay <= subscribeToBroadcastWait
-        ) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            delay+=50;
-        }
-        EXPECT_FALSE(testProvider->selectiveBroadcastListeners.find(broadcastName) == testProvider->selectiveBroadcastListeners.cend() ||
-                     testProvider->selectiveBroadcastListeners.find(broadcastName)->second.empty());
+        std::ignore = testProvider;
+        std::ignore = broadcastName;
+        std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
     }
 
     ~End2EndBroadcastTest(){

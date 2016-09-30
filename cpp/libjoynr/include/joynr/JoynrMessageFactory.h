@@ -32,6 +32,7 @@ namespace joynr
 {
 
 class MessagingQos;
+class MulticastPublication;
 class OneWayRequest;
 class Request;
 class Reply;
@@ -97,6 +98,10 @@ public:
                                         const std::string& receiverId,
                                         const MessagingQos& qos,
                                         const SubscriptionStop& payload) const;
+
+    JoynrMessage createMulticastPublication(const std::string& senderId,
+                                            const MessagingQos& qos,
+                                            const MulticastPublication& payload) const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageFactory);

@@ -379,7 +379,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       * libJoynr side
       *
       */
-    publicationManager = new PublicationManager(singleThreadIOService->getIOService());
+    publicationManager =
+            new PublicationManager(singleThreadIOService->getIOService(), joynrMessageSender);
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(

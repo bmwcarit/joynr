@@ -132,6 +132,10 @@ public:
                                      const MessagingQos& qos,
                                      SubscriptionPublication&& subscriptionPublication) override;
 
+    void sendMulticast(const std::string& fromParticipantId,
+                       const MulticastPublication& multicastPublication,
+                       const MessagingQos& messagingQos) override;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageSender);
     IDispatcher* dispatcher;

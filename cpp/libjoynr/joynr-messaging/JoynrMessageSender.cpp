@@ -209,4 +209,17 @@ void JoynrMessageSender::sendSubscriptionPublication(
     }
 }
 
+void JoynrMessageSender::sendMulticast(const std::string& fromParticipantId,
+                                       const MulticastPublication& multicastPublication,
+                                       const MessagingQos& messagingQos)
+{
+    try {
+        JoynrMessage message = messageFactory.createMulticastPublication(
+                fromParticipantId, messagingQos, multicastPublication);
+        messageRouter->route(message);
+    } catch (const std::invalid_argument& exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
+}
+
 } // namespace joynr

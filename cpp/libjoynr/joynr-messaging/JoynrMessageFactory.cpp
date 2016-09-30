@@ -24,6 +24,7 @@
 #include "joynr/OneWayRequest.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
@@ -72,6 +73,21 @@ JoynrMessage JoynrMessageFactory::createOneWayRequest(const std::string& senderI
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
+    return msg;
+}
+
+JoynrMessage JoynrMessageFactory::createMulticastPublication(
+        const std::string& senderId,
+        const MessagingQos& qos,
+        const MulticastPublication& payload) const
+{
+    JoynrMessage msg;
+    msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST);
+    initMsg(msg,
+            senderId,
+            payload.getMulticastId(),
+            qos,
+            joynr::serializer::serializeToJson(payload));
     return msg;
 }
 

@@ -47,7 +47,7 @@ public:
             mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
             mockJoynrMessageSender(new MockJoynrMessageSender()),
-            pubManager(singleThreadedIOService.getIOService())
+            pubManager(singleThreadedIOService.getIOService(), mockJoynrMessageSender)
     {
         singleThreadedIOService.start();
     }
