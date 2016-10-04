@@ -28,6 +28,7 @@
 #include <vector>
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -229,6 +230,36 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
     // This should cause our subscription callback to be called
     dispatcher.registerSubscriptionManager(&mockSubscriptionManager);
     dispatcher.receive(msg);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    dispatcher.registerSubscriptionManager(nullptr);
+}
+
+TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
+    joynr::Semaphore semaphore(0);
+    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
+    dispatcher.registerSubscriptionManager(&mockSubscriptionManager);
+
+    const std::string senderParticipantId("senderParticipantId");
+    const std::string multicastId = joynr::util::createMulticastId(
+        senderParticipantId,
+        "multicastName",
+        { "partition0", "partition1"}
+    );
+
+    joynr::MulticastPublication payload;
+    payload.setMulticastId(multicastId);
+
+    JoynrMessage message = messageFactory.createMulticastPublication(senderParticipantId, qos, payload);
+
+    auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
+
+    EXPECT_CALL(mockSubscriptionManager, getMulticastSubscriptionCallbacks(multicastId)).
+        Times(1).
+        WillOnce(Return(std::forward_list<std::shared_ptr<ISubscriptionCallback>>({mockSubscriptionCallback})));
+    EXPECT_CALL(*mockSubscriptionCallback, executePublication(_)).WillOnce(ReleaseSemaphore(&semaphore));
+
+    dispatcher.receive(message);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
     dispatcher.registerSubscriptionManager(nullptr);

@@ -925,6 +925,7 @@ public:
                                            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
     MOCK_METHOD1(unregisterSubscription, void(const std::string& subscriptionId));
     MOCK_METHOD1(touchSubscriptionState,void(const std::string& subscriptionId));
+    MOCK_METHOD1(getMulticastSubscriptionCallbacks, std::forward_list<std::shared_ptr<joynr::ISubscriptionCallback>>(const std::string& multicastId));
 };
 
 class MockSubscriptionCallback : public joynr::ISubscriptionCallback {
