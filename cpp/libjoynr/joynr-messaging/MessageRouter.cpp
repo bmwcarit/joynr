@@ -272,19 +272,34 @@ void MessageRouter::sendMessages(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
     while (true) {
-        MessageQueueItem* item = messageQueue->getNextMessageForParticipant(destinationPartId);
+        // We have to check all the time whether the messaging stub is still available because
+        // it will be deleted if a disconnect occurs (this may happen while this method
+        // is being executed).
+        auto messagingStub = messagingStubFactory->create(address);
+
+        if (messagingStub == nullptr) {
+            break;
+        }
+
+        std::unique_ptr<MessageQueueItem> item(
+                messageQueue->getNextMessageForParticipant(destinationPartId));
+
         if (!item) {
             break;
         }
+
         try {
-            sendMessage(item->getContent(), address);
+            const std::uint32_t tryCount = 0;
+            messageScheduler.schedule(
+                    new MessageRunnable(
+                            item->getContent(), messagingStub, address, *this, tryCount),
+                    std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Message with Id {} could not be sent. Error: {}",
                             item->getContent().getHeaderMessageId(),
                             e.getMessage());
         }
-        delete item;
     }
 }
 
