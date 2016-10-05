@@ -64,6 +64,7 @@
 #include "joynr/vehicle/GpsProvider.h"
 
 #include "joynr/IMessagingStubFactory.h"
+#include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 
@@ -673,6 +674,15 @@ public:
 class GlobalCapabilitiesMock {
 public:
     MOCK_METHOD1(capabilitiesReceived, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
+};
+
+class MockMessagingMulticastSubscriber : public joynr::IMessagingMulticastSubscriber
+{
+public:
+
+    MOCK_METHOD1(registerMulticastSubscription, void(const std::string& multicastId));
+    MOCK_METHOD1(unregisterMulticastSubscription, void(const std::string& multicastId));
+    MOCK_METHOD2(transmit, void (joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };
 
 class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
