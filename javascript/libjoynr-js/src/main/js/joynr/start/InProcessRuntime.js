@@ -439,8 +439,12 @@ define(
                                             channelId: channelId,
                                             messagingEndpointUrl: channelUrl
                                         });
-                                        channelMessagingStubFactory.globalAddressReady(channelAddress);
-                                        capabilityDiscovery.globalAddressReady(channelAddress);
+
+                                        mqttClient.onConnected().then(function() {
+                                            capabilityDiscovery.globalAddressReady(mqttAddress);
+                                            channelMessagingStubFactory.globalAddressReady(channelAddress);
+                                        });
+
                                         longPollingMessageReceiver
                                                 .start(clusterControllerChannelMessagingSkeleton.receiveMessage);
                                         channelMessagingSender.start();
