@@ -35,6 +35,8 @@
 namespace joynr
 {
 
+class CallContext;
+
 /**
  * @brief Abstract class that specifies the interface providers need to implement
  * and contains functionality to support listening to onChange events
@@ -166,6 +168,20 @@ protected:
      */
     [[deprecated("Will be removed by end of the year 2016. Use JoynrRuntime::registerProvider "
                  "instead.")]] types::ProviderQos providerQos;
+
+    /**
+     * @brief Returns a call context object including meta information (such as calling
+     * principal) for the current provider call.
+     *
+     * Method calls on joynr providers are executed by joynr middleware threads. These threads
+     * must not be blocked by the provider to ensure proper joynr function. Providers must
+     * spawn threads to perform computation asynchronously and release the joynr thread. The
+     * call context object is thread local and only valid in the context of the joynr middleware
+     * thread and hence must be copied by the provider for asychronous or future usage.
+     *
+     * @return The current call context
+     */
+    const CallContext& getCallContext() const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);

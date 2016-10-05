@@ -22,6 +22,7 @@
 #include <cassert>
 
 #include "joynr/Util.h"
+#include "common/CallContextStorage.h"
 
 namespace joynr
 {
@@ -104,6 +105,11 @@ void AbstractJoynrProvider::unregisterBroadcastListener(
     if (listeners.empty()) {
         broadcastListeners.erase(broadcastName);
     }
+}
+
+const CallContext& AbstractJoynrProvider::getCallContext() const
+{
+    return CallContextStorage::get();
 }
 
 } // namespace joynr

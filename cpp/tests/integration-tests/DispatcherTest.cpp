@@ -41,6 +41,8 @@
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/CallContext.h"
+#include "common/CallContextStorage.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -71,7 +73,9 @@ public:
         requestReplyId("TEST-requestReplyId"),
         messageFactory(),
         messageSender(mockMessageRouter),
-        dispatcher(&messageSender, singleThreadIOService.getIOService())
+        dispatcher(&messageSender, singleThreadIOService.getIOService()),
+        callContext(),
+        getLocationCalledSemaphore(0)
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
         singleThreadIOService.start();
@@ -82,6 +86,15 @@ public:
             std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {
         std::ignore = onError;
         onSuccess(gpsLocation1);
+    }
+
+    void invokeLocationAndSaveCallContext(
+            std::function<void(const joynr::types::Localisation::GpsLocation& location)> onSuccess,
+            std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {
+        std::ignore = onError;
+        callContext = joynr::CallContextStorage::get();
+        onSuccess(types::Localisation::GpsLocation());
+        getLocationCalledSemaphore.notify();
     }
 
 protected:
@@ -105,6 +118,8 @@ protected:
     JoynrMessageFactory messageFactory;
     JoynrMessageSender messageSender;
     Dispatcher dispatcher;
+    joynr::CallContext callContext;
+    joynr::Semaphore getLocationCalledSemaphore;
 };
 
 INIT_LOGGER(DispatcherTest);
@@ -112,7 +127,6 @@ INIT_LOGGER(DispatcherTest);
 // from JoynrDispatcher.receive(Request) to IRequestCaller.operation(params)
 // this test goes a step further and makes sure that the response is visible in Messaging
 TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
-    joynr::Semaphore semaphore(0);
 
     // Expect the mock object MockGpsRequestCaller in MockObjects.h to be called.
     // The OUT param Gpslocation is set with gpsLocation1
@@ -163,14 +177,14 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                     ),
                     _
                 )
-    ).WillOnce(ReleaseSemaphore(&semaphore));
+    ).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
 
     // test code: send the request through the dispatcher.
     // This should cause our mock messaging to receive a reply from the mock provider
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
 
     dispatcher.receive(msg);
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
@@ -232,4 +246,37 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
     dispatcher.registerSubscriptionManager(nullptr);
+}
+
+TEST_F(DispatcherTest, receive_setCallContext) {
+    const std::string expectedPrincipal("creatorUserId");
+
+    Request request;
+    request.setRequestReplyId(requestReplyId);
+    request.setMethodName("getLocation");
+    request.setParams();
+    request.setParamDatatypes(std::vector<std::string>());
+
+    JoynrMessage msg = messageFactory.createRequest(
+                proxyParticipantId,
+                providerParticipantId,
+                qos,
+                request
+    );
+    msg.setHeaderCreatorUserId(expectedPrincipal);
+
+    dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
+
+    EXPECT_CALL(
+                *mockRequestCaller,
+                getLocation(
+                    A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
+                    A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>()
+                )
+    ).WillOnce(Invoke(this, &DispatcherTest::invokeLocationAndSaveCallContext));
+
+    dispatcher.receive(msg);
+    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
+
+    EXPECT_EQ(expectedPrincipal, callContext.getPrincipal());
 }
