@@ -41,6 +41,7 @@ define(
             "joynr/messaging/channel/ChannelMessagingSkeleton",
             "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/messaging/mqtt/MqttMessagingStubFactory",
+            "joynr/messaging/mqtt/MqttMessagingSkeleton",
             "joynr/system/RoutingTypes/MqttAddress",
             "joynr/messaging/mqtt/MqttMessageReplyToAddressCalculator",
             "joynr/messaging/mqtt/SharedMqttClient",
@@ -93,6 +94,7 @@ define(
                 ChannelMessagingSkeleton,
                 ChannelAddress,
                 MqttMessagingStubFactory,
+                MqttMessagingSkeleton,
                 MqttAddress,
                 MqttMessageReplyToAddressCalculator,
                 SharedMqttClient,
@@ -156,6 +158,7 @@ define(
                 var longPollingMessageReceiver;
                 var libjoynrMessagingSkeleton;
                 var clusterControllerMessagingSkeleton;
+                var mqttMessagingSkeleton;
                 var clusterControllerChannelMessagingSkeleton;
                 var clusterControllerMessagingStub, dispatcher;
                 var typeRegistry;
@@ -423,8 +426,12 @@ define(
                                     new ChannelMessagingSkeleton({
                                         messageRouter : messageRouter
                                     });
-                            // clusterControllerChannelMessagingSkeleton
-                            // .registerListener(messageRouter.receive);
+
+                            mqttMessagingSkeleton = new MqttMessagingSkeleton({
+                                address: mqttAddress,
+                                client : mqttClient,
+                                messageRouter : messageRouter
+                            });
 
                             longPollingCreatePromise = longPollingMessageReceiver.create(channelId).then(
                                     function(channelUrl) {
