@@ -41,6 +41,7 @@ define(
             "joynr/messaging/channel/ChannelMessagingSkeleton",
             "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/system/RoutingTypes/MqttAddress",
+            "joynr/messaging/mqtt/MqttMessageReplyToAddressCalculator",
             "joynr/messaging/MessagingStubFactory",
             "joynr/messaging/routing/MessageRouter",
             "joynr/messaging/routing/MessageQueue",
@@ -90,6 +91,7 @@ define(
                 ChannelMessagingSkeleton,
                 ChannelAddress,
                 MqttAddress,
+                MqttMessageReplyToAddressCalculator,
                 MessagingStubFactory,
                 MessageRouter,
                 MessageQueue,
@@ -374,6 +376,10 @@ define(
                             var mqttAddress = new MqttAddress({
                                 brokerUri : provisioning.brokerUri,
                                 topic : channelId
+                            });
+
+                            var mqttMessageReplyToAddressCalculator = new MqttMessageReplyToAddressCalculator({
+                                replyToMqttAddress : mqttAddress
                             });
 
                             messagingStubFactory = new MessagingStubFactory({
