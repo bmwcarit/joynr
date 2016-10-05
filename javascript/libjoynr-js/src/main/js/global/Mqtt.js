@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,7 @@
  * #L%
  */
 
-// See for all options: https://gist.github.com/mattsahr/4190206
-requirejs.config({
-
-    keepBuildDir : true,
-    baseUrl : "${project.build.directory}/classes",
-
-    paths : {
-        "atmosphere" : "lib/atmosphere",
-        "log4javascript" : "lib/log4javascript_uncompressed",
-        "bluebird" : "lib/bluebird",
-        "mqtt" : "lib/mqtt",
-        "JsonParser" : "lib/JsonParser",
-        "uuid" : "lib/uuid-annotated"
-    },
-    shim : {
-        "atmosphere" : {
-            exports : "atmosphere"
-        }
-    }
+define([ "mqtt"
+], function(mqtt) {
+    return mqtt;
 });
