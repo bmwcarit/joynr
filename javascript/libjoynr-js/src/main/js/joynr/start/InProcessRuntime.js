@@ -42,6 +42,7 @@ define(
             "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/system/RoutingTypes/MqttAddress",
             "joynr/messaging/mqtt/MqttMessageReplyToAddressCalculator",
+            "joynr/messaging/mqtt/SharedMqttClient",
             "joynr/messaging/MessagingStubFactory",
             "joynr/messaging/routing/MessageRouter",
             "joynr/messaging/routing/MessageQueue",
@@ -92,6 +93,7 @@ define(
                 ChannelAddress,
                 MqttAddress,
                 MqttMessageReplyToAddressCalculator,
+                SharedMqttClient,
                 MessagingStubFactory,
                 MessageRouter,
                 MessageQueue,
@@ -380,6 +382,10 @@ define(
 
                             var mqttMessageReplyToAddressCalculator = new MqttMessageReplyToAddressCalculator({
                                 replyToMqttAddress : mqttAddress
+                            });
+
+                            var mqttClient = new SharedMqttClient({
+                                address: mqttAddress
                             });
 
                             messagingStubFactory = new MessagingStubFactory({
