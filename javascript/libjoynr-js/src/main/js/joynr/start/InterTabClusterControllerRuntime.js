@@ -40,6 +40,7 @@ define(
             "joynr/messaging/channel/ChannelMessagingStubFactory",
             "joynr/messaging/channel/ChannelMessagingSkeleton",
             "joynr/messaging/mqtt/MqttMessageReplyToAddressCalculator",
+            "joynr/messaging/mqtt/MqttMessagingStubFactory",
             "joynr/system/RoutingTypes/MqttAddress",
             "joynr/messaging/mqtt/SharedMqttClient",
             "joynr/messaging/MessagingStubFactory",
@@ -99,6 +100,7 @@ define(
                 ChannelMessagingStubFactory,
                 ChannelMessagingSkeleton,
                 MqttMessageReplyToAddressCalculator,
+                MqttMessagingStubFactory,
                 MqttAddress,
                 SharedMqttClient,
                 MessagingStubFactory,
@@ -443,7 +445,12 @@ define(
                                     BrowserAddress : new BrowserMessagingStubFactory({
                                         webMessagingStub : webMessagingStub
                                     }),
-                                    ChannelAddress : channelMessagingStubFactory
+                                    ChannelAddress : channelMessagingStubFactory,
+                                    MqttAddress : new MqttMessagingStubFactory({
+                                        client : mqttClient,
+                                        address : mqttAddress,
+                                        mqttMessageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
+                                    })
                                 }
                             });
                             messageRouter = new MessageRouter({

@@ -40,6 +40,7 @@ define(
             "joynr/messaging/channel/ChannelMessagingStubFactory",
             "joynr/messaging/channel/ChannelMessagingSkeleton",
             "joynr/system/RoutingTypes/ChannelAddress",
+            "joynr/messaging/mqtt/MqttMessagingStubFactory",
             "joynr/system/RoutingTypes/MqttAddress",
             "joynr/messaging/mqtt/MqttMessageReplyToAddressCalculator",
             "joynr/messaging/mqtt/SharedMqttClient",
@@ -91,6 +92,7 @@ define(
                 ChannelMessagingStubFactory,
                 ChannelMessagingSkeleton,
                 ChannelAddress,
+                MqttMessagingStubFactory,
                 MqttAddress,
                 MqttMessageReplyToAddressCalculator,
                 SharedMqttClient,
@@ -391,9 +393,15 @@ define(
                             messagingStubFactory = new MessagingStubFactory({
                                 messagingStubFactories : {
                                     InProcessAddress : new InProcessMessagingStubFactory(),
-                                    ChannelAddress : channelMessagingStubFactory
+                                    ChannelAddress : channelMessagingStubFactory,
+                                    MqttAddress : new MqttMessagingStubFactory({
+                                        client : mqttClient,
+                                        address : mqttAddress,
+                                        mqttMessageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
+                                    })
                                 }
                             });
+
                             messageRouter = new MessageRouter({
                                 initialRoutingTable : initialRoutingTable,
                                 persistency : persistency,
