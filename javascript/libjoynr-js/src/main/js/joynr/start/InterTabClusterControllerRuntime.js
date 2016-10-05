@@ -39,6 +39,7 @@ define(
             "joynr/messaging/channel/ChannelMessagingSender",
             "joynr/messaging/channel/ChannelMessagingStubFactory",
             "joynr/messaging/channel/ChannelMessagingSkeleton",
+            "joynr/system/RoutingTypes/MqttAddress",
             "joynr/messaging/MessagingStubFactory",
             "joynr/messaging/routing/MessageRouter",
             "joynr/messaging/routing/MessageQueue",
@@ -95,6 +96,7 @@ define(
                 ChannelMessagingSender,
                 ChannelMessagingStubFactory,
                 ChannelMessagingSkeleton,
+                MqttAddress,
                 MessagingStubFactory,
                 MessageRouter,
                 MessageQueue,
@@ -416,6 +418,11 @@ define(
                             channelMessagingStubFactory = new ChannelMessagingStubFactory({
                                 myChannelId : channelId,
                                 channelMessagingSender : channelMessagingSender
+                            });
+
+                            var mqttAddress = new MqttAddress({
+                                brokerUri : provisioning.brokerUri,
+                                topic : channelId
                             });
                             messagingStubFactory = new MessagingStubFactory({
                                 messagingStubFactories : {

@@ -40,6 +40,7 @@ define(
             "joynr/messaging/channel/ChannelMessagingStubFactory",
             "joynr/messaging/channel/ChannelMessagingSkeleton",
             "joynr/system/RoutingTypes/ChannelAddress",
+            "joynr/system/RoutingTypes/MqttAddress",
             "joynr/messaging/MessagingStubFactory",
             "joynr/messaging/routing/MessageRouter",
             "joynr/messaging/routing/MessageQueue",
@@ -88,6 +89,7 @@ define(
                 ChannelMessagingStubFactory,
                 ChannelMessagingSkeleton,
                 ChannelAddress,
+                MqttAddress,
                 MessagingStubFactory,
                 MessageRouter,
                 MessageQueue,
@@ -313,6 +315,10 @@ define(
                                 throw new Error(
                                         "bounce proxy base URL not set in provisioning.bounceProxyBaseUrl");
                             }
+                            if (Util.checkNullUndefined(provisioning.brokerUri)) {
+                                throw new Error(
+                                        "broker URI not set in provisioning.brokerUri");
+                            }
 
                             initialRoutingTable = {};
                             bounceProxyBaseUrl = provisioning.bounceProxyBaseUrl;
@@ -364,6 +370,12 @@ define(
                                 myChannelId : channelId,
                                 channelMessagingSender : channelMessagingSender
                             });
+
+                            var mqttAddress = new MqttAddress({
+                                brokerUri : provisioning.brokerUri,
+                                topic : channelId
+                            });
+
                             messagingStubFactory = new MessagingStubFactory({
                                 messagingStubFactories : {
                                     InProcessAddress : new InProcessMessagingStubFactory(),
