@@ -90,3 +90,16 @@ TEST(UtilTest, splitIntoJsonObjects)
     EXPECT_EQ(2, result.size());
     EXPECT_EQ(result.at(0), R"({"mes\\"sa{ge":{one:two}})");
 }
+
+TEST(UtilTest, createMulticastIdWithPartitions)
+{
+    EXPECT_EQ("providerParticipantId/multicastName/partition0/partition1",
+              util::createMulticastId("providerParticipantId", "multicastName", { "partition0", "partition1"}));
+}
+
+TEST(UtilTest, createMulticastIdWithoutPartitions)
+{
+    std::vector<std::string> partitions;
+    EXPECT_EQ("providerParticipantId/multicastName",
+              util::createMulticastId("providerParticipantId", "multicastName", partitions));
+}
