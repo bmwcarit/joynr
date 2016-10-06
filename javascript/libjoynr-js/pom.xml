@@ -819,7 +819,7 @@
 						<executions>
 							<execution>
 								<id>install browserify</id>
-								<phase>validate</phase>
+								<phase>process-sources</phase>
 								<configuration>
 									<executable>npm</executable>
 									<arguments>
@@ -834,7 +834,7 @@
 							</execution>
 							<execution>
 								<id>install mqtt</id>
-								<phase>validate</phase>
+								<phase>process-sources</phase>
 								<configuration>
 									<executable>npm</executable>
 									<arguments>
@@ -849,7 +849,7 @@
 							</execution>
 							<execution>
 								<id>browserify mqtt</id>
-								<phase>validate</phase>
+								<phase>process-sources</phase>
 								<configuration>
 									<executable>./cmd.js</executable>
 									<arguments>
