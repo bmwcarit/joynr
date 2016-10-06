@@ -189,6 +189,8 @@ public:
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
+    MOCK_METHOD1(registerMulticastSubscription, void(const std::string& multicastId));
+    MOCK_METHOD1(unregisterMulticastSubscription, void(const std::string& multicastId));
     MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };
 

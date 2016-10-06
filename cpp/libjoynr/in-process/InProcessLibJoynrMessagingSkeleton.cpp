@@ -17,7 +17,7 @@
  * #L%
  */
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
-#include "joynr/MessagingQos.h"
+
 #include "joynr/JoynrMessage.h"
 
 namespace joynr
@@ -26,6 +26,18 @@ namespace joynr
 InProcessLibJoynrMessagingSkeleton::InProcessLibJoynrMessagingSkeleton(IDispatcher* dispatcher)
         : dispatcher(dispatcher)
 {
+}
+
+void InProcessLibJoynrMessagingSkeleton::registerMulticastSubscription(
+        const std::string& multicastId)
+{
+    std::ignore = multicastId;
+}
+
+void InProcessLibJoynrMessagingSkeleton::unregisterMulticastSubscription(
+        const std::string& multicastId)
+{
+    std::ignore = multicastId;
 }
 
 void InProcessLibJoynrMessagingSkeleton::transmit(

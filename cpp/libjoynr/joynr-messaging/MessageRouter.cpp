@@ -20,10 +20,12 @@
 
 #include <cassert>
 #include <functional>
+#include <typeinfo>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/placeholders.hpp>
 
+#include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/IMessaging.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
@@ -668,8 +670,14 @@ std::shared_ptr<IMessagingMulticastSubscriber> MessageRouter::getMulticastSkelet
         onError(exception);
         return nullptr;
     }
-    std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
-            multicastMessagingSkeletonDirectory->getSkeleton(destAddress);
+    std::shared_ptr<IMessagingMulticastSubscriber> skeleton;
+    if (std::shared_ptr<const InProcessMessagingAddress> inProcessMessagingAddress =
+                std::dynamic_pointer_cast<const InProcessMessagingAddress>(destAddress)) {
+        skeleton = std::dynamic_pointer_cast<IMessagingMulticastSubscriber>(
+                inProcessMessagingAddress->getSkeleton());
+    } else {
+        skeleton = multicastMessagingSkeletonDirectory->getSkeleton(destAddress);
+    }
     if (!skeleton) {
         exceptions::ProviderRuntimeException error("No messaging skeleton for multicast "
                                                    "provider (providerParticipantId=" +
