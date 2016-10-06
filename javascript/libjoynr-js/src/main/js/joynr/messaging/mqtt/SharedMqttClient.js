@@ -55,6 +55,29 @@ define(
                 }
             }
 
+            function sendQueuedUnsubscriptions(client, queuedUnsubscriptions) {
+                var i, topic;
+                for (i = 0; i < queuedUnsubscriptions.length; i++) {
+                    client.unsubscribe(queuedUnsubscriptions[i]);
+                }
+                queuedUnsubscriptions = [];
+            }
+
+            function sendQueuedSubscriptions(client, queuedSubscriptions) {
+                return new Promise(function(resolve, reject) {
+                    var i, topic, subscribeObject = {};
+                    for (i = 0; i < queuedSubscriptions.length; i++) {
+                        topic = queuedSubscriptions[i];
+                        subscribeObject[topic] = 1;
+                    }
+                    client.subscribe(subscribeObject, undefined, function(err, granted) {
+                        //TODO error handling
+                        queuedSubscriptions = [];
+                        resolve();
+                    });
+                });
+            }
+
             function sendMessage(client, topic, joynrMessage, qosLevel, queuedMessages) {
                 return new Promise(function(resolve, reject){
                     try {
@@ -98,6 +121,10 @@ define(
                         var queuedMessages = [];
                         var onOpen;
                         var closed = false;
+                        var connected = false;
+
+                        var queuedSubscriptions = [];
+                        var queuedUnsubscriptions = [];
 
                         var onMessage = function(topic, payload) {
                             if (onmessageCallback !== undefined) {
@@ -117,7 +144,10 @@ define(
                         // send all queued messages, requeuing to the front in case of a problem
                         onOpen = function onOpen() {
                             try {
+                                connected = true;
                                 sendQueuedMessages(client, queuedMessages);
+                                sendQueuedUnsubscriptions(client, queuedUnsubscriptions);
+                                sendQueuedSubscriptions(client, queuedSubscriptions);
                             } catch (e) {
                                 resetConnection();
                             }
@@ -158,11 +188,19 @@ define(
                         };
 
                         this.subscribe = function(topic) {
-                            client.subscribe(topic);
+                            if (connected) {
+                                client.subscribe(topic, { qos : 1} );
+                            } else {
+                                queuedSubscriptions.push(topic);
+                            }
                         };
 
                         this.unsubscribe = function(topic) {
-                            client.unsubscribe(topic);
+                            if (connected) {
+                                client.unsubscribe(topic);
+                            } else {
+                                queuedUnsubscriptions.push(topic);
+                            }
                         };
 
                         // using the defineProperty syntax for onmessage to be able to keep
