@@ -21,7 +21,7 @@ This project has following dependencies:
    ├─ bluebird (3.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bluebird/package.json
    │  └─ bluebird (3.3.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bluebird/package.json
    ├─ jasmine-node (1.14.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node/package.json
-   │  ├─ coffee-script (1.10.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ coffee-script/package.json
+   │  ├─ coffee-script (1.11.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ coffee-script/package.json
    │  ├─ gaze (0.3.4) ── MIT (https://github.com/shama/gaze/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze/package.json
    │  │  ├─ fileset (0.1.8) ── MIT (https://github.com/mklabs/node-fileset/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze ~ fileset/package.json
    │  │  │  └─ glob (3.2.11) ── BSD 2-clause "Simplified" License (http://www.opensource.org/licenses/BSD-2-Clause) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob/package.json
@@ -53,7 +53,7 @@ This project has following dependencies:
       ├─ bluebird (3.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ bluebird/package.json
       │  └─ bluebird (3.3.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ bluebird/package.json
       ├─ jasmine-node (1.14.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node/package.json
-      │  ├─ coffee-script (1.10.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ coffee-script/package.json
+      │  ├─ coffee-script (1.11.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ coffee-script/package.json
       │  │  └─ underscore (1.8.3) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ underscore/package.json
       │  ├─ gaze (0.3.4) ── MIT (https://github.com/shama/gaze/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze/package.json
       │  │  ├─ fileset (0.1.8) ── MIT (https://github.com/mklabs/node-fileset/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze ~ fileset/package.json
@@ -82,11 +82,11 @@ This project has following dependencies:
       │  └─ underscore (1.8.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ underscore/package.json
       ├─ node-localstorage (1.3.0) ── MIT (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ node-localstorage/package.json
       │  └─ write-file-atomic (1.2.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic/package.json
-      │     ├─ graceful-fs (4.1.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ graceful-fs/package.json
+      │     ├─ graceful-fs (4.1.9) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ graceful-fs/package.json
       │     ├─ imurmurhash (0.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ imurmurhash/package.json
       │     └─ slide (1.1.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ slide/package.json
       ├─ promise (7.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ promise/package.json
-      │  └─ asap (2.0.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ promise ~ asap/package.json
+      │  └─ asap (2.0.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ promise ~ asap/package.json
       ├─ requirejs (2.1.22) ── BSD (https://github.com/jrburke/r.js/blob/master/LICENSE), MIT (https://github.com/jrburke/r.js/blob/master/LICENSE) ── node_modules/joynr ~ requirejs/package.json
       ├─ ws (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws/package.json
       │  ├─ options (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ options/README.md
