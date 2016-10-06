@@ -111,7 +111,7 @@ define([
                 done();
                 return null;
             }).catch(fail);
-        }, 10000);
+        }, 60000);
 
         it("supports all datatypes as operation arguments", function(done) {
             var i;
@@ -145,7 +145,7 @@ define([
                 done();
                 return null;
             }).catch(fail);
-        });
+        }, 60000);
 
         it("supports all datatypes as operation argument and return value", function(done) {
             var i;
@@ -170,7 +170,7 @@ define([
                 done();
                 return null;
             }).catch(fail);
-        });
+        }, 60000);
 
         it("supports multiple operation arguments", function(done) {
             var i;
@@ -204,7 +204,7 @@ define([
                 done();
                 return null;
             }).catch(fail);
-        });
+        }, 60000);
 
         afterEach(function(done) {
             IntegrationUtils.shutdownWebWorker(workerId).then(IntegrationUtils.shutdownLibjoynr).then(function() {
