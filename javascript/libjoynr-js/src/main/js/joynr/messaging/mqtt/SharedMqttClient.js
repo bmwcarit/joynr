@@ -24,12 +24,13 @@ define(
         [
             "global/Promise",
             "global/Mqtt",
+            "joynr/messaging/JoynrMessage",
             "joynr/util/Util",
             "joynr/util/JSONSerializer",
             "joynr/util/LongTimer",
             "joynr/system/LoggerFactory"
         ],
-        function(Promise, Mqtt, Util, JSONSerializer, LongTimer, LoggerFactory) {
+        function(Promise, Mqtt, JoynrMessage, Util, JSONSerializer, LongTimer, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.mqtt.SharedMqttClient");
 
             /**
@@ -98,15 +99,19 @@ define(
                         var onOpen;
                         var closed = false;
 
+                        var onMessage = function(topic, payload) {
+                            if (onmessageCallback !== undefined) {
+                                onmessageCallback(topic, new JoynrMessage(JSON.parse(payload.toString())));
+                            }
+                        };
+
                         var resetConnection = function resetConnection() {
                             if (closed) {
                                 return;
                             }
                             client = new Mqtt.connect(address.brokerUri);
                             client.on('connect', onOpen);
-                            if (onmessageCallback !== null) {
-                                client.on('message', onmessageCallback);
-                            }
+                            client.on('message', onMessage);
                         };
 
                         // send all queued messages, requeuing to the front in case of a problem
@@ -166,9 +171,7 @@ define(
                         Object.defineProperty(this, "onmessage", {
                             set : function(newCallback) {
                                 onmessageCallback = newCallback;
-                                if (typeof newCallback === "function") {
-                                    client.on('message', newCallback);
-                                } else {
+                                if (typeof newCallback !== "function") {
                                     throw new Error(
                                             "onmessage callback must be a function, but instead was of type "
                                                 + typeof newCallback);
