@@ -120,8 +120,12 @@ define(
                         var onmessageCallback = null;
                         var queuedMessages = [];
                         var onOpen;
+                        var resolve;
                         var closed = false;
                         var connected = false;
+                        var onConnectedPromise = new Promise(function(resolveTrigger) {
+                            resolve = resolveTrigger;
+                        });
 
                         var queuedSubscriptions = [];
                         var queuedUnsubscriptions = [];
@@ -141,13 +145,17 @@ define(
                             client.on('message', onMessage);
                         };
 
+                        this.onConnected = function() {
+                            return onConnectedPromise;
+                        };
+
                         // send all queued messages, requeuing to the front in case of a problem
                         onOpen = function onOpen() {
                             try {
                                 connected = true;
                                 sendQueuedMessages(client, queuedMessages);
                                 sendQueuedUnsubscriptions(client, queuedUnsubscriptions);
-                                sendQueuedSubscriptions(client, queuedSubscriptions);
+                                sendQueuedSubscriptions(client, queuedSubscriptions).then(resolve);
                             } catch (e) {
                                 resetConnection();
                             }
