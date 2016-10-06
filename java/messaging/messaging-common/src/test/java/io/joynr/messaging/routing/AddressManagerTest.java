@@ -66,8 +66,16 @@ public class AddressManagerTest {
     }
 
     @Test(expected = JoynrMessageNotSentException.class)
-    public void testNoAddressAvailable() {
+    public void testNoAddressAvailableForMulticast() {
         createAddressManager(null);
+        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        subject.getAddresses(joynrMessage);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void testNoAddressFoundForNonMulticastMessage() {
+        createAddressManager(null);
+        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_REQUEST);
         subject.getAddresses(joynrMessage);
     }
 

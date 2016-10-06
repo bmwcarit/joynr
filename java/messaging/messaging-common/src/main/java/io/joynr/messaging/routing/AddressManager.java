@@ -105,10 +105,14 @@ public class AddressManager {
                 result.add(address);
             }
         }
-        logger.trace("Found the following addresses for essage {}: {}", new Object[]{ message, result });
+        logger.trace("Found the following addresses for {}: {}", new Object[]{ message, result });
         if (result.size() == 0) {
-            throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
-                + message);
+            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+                throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
+                    + message);
+            } else {
+                throw new JoynrIllegalStateException("Unable to find address for participant with ID " + toParticipantId);
+            }
         }
         return result;
     }
