@@ -41,27 +41,6 @@ define([
 
         });
 
-        it("throws on missing params", function() {
-            // throws on missing multicastId
-            expect(function() {
-                var temp = new MulticastPublication({
-                    response : "response"
-                });
-            }).toThrow();
-
-            // throws on missing response
-            expect(function() {
-                var temp = new MulticastPublication({
-                    multicastId : "id"
-                });
-            }).toThrow();
-
-            // throws on wrong settings object type
-            expect(function() {
-                var temp = new MulticastPublication("wrong type");
-            }).toThrow();
-        });
-
         it("is constructs with correct member values", function() {
             var multicastId = "testMulticastId";
             var response = "response";

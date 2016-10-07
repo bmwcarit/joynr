@@ -52,14 +52,6 @@ define("joynr/dispatching/types/OneWayRequest", [
         }
         var i;
 
-        Typing.checkProperty(settings, [
-            "joynr.OneWayRequest",
-            "Object"
-        ], "settings");
-        Typing.checkProperty(settings.methodName, "String", "settings.methodName");
-        Typing.checkPropertyIfDefined(settings.paramDatatypes, "Array", "settings.paramDatatypes");
-        Typing.checkPropertyIfDefined(settings.params, "Array", "settings.params");
-
         if (settings.params) {
             for (i = 0; i < settings.params.length; i++) {
                 settings.params[i] = Util.ensureTypedValues(settings.params[i]);

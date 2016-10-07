@@ -34,24 +34,9 @@ define("joynr/dispatching/types/MulticastPublication", [
      *            settings.error The exception object in case of publication failure
      */
     function MulticastPublication(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(settings.multicastId, "String", "settings.multicastId");
-        if (settings.response === undefined && settings.error === undefined) {
-            throw new Error("MulticastPublication object does neither contain response nor error");
-        }
-        if (settings.error && Util.isArray(settings.response) && settings.response.length > 0) {
-            throw new Error("MulticastPublication object contains both response and error");
-        }
         if (settings.response) {
             settings.response = Util.ensureTypedValues(settings.response);
         }
-
-        Typing.checkPropertyIfDefined(settings.error, [
-            "Object",
-            "JoynrRuntimeException",
-            "PublicationMissedException",
-            "ProviderRuntimeException"
-        ], "settings.error");
 
         /**
          * @name MulticastPublication#multicastId

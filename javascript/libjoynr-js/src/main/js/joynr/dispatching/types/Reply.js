@@ -37,30 +37,11 @@ define("joynr/dispatching/types/Reply", [
      */
     function Reply(settings) {
         var i;
-        Typing.checkProperty(settings, [
-            "joynr.Reply",
-            "Object"
-        ], "settings");
-        Typing.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
-        // "response" is not set in case an exception is returned
-        Typing.checkPropertyIfDefined(settings.response, "Array", "settings.response");
         if (settings.response) {
             for (i = 0; i < settings.response.length; i++) {
                 settings.response[i] = Util.ensureTypedValues(settings.response[i]);
             }
         }
-        // if present "error" must be one of the exception types
-        Typing.checkPropertyIfDefined(settings.error, [
-            "Object",
-            "ApplicationException",
-            "DiscoveryException",
-            "IllegalAccessException",
-            "JoynrException",
-            "JoynrRuntimeException",
-            "MethodInvocationException",
-            "ProviderRuntimeException"
-        ], "settings.error");
-
         // must contain exactly one of the two alternatives
         if (!settings.response && !settings.error) {
             throw new Error("Reply object does neither contain response nor error");
