@@ -22,16 +22,6 @@ define("joynr/util/Typing", [
     "joynr/types/TypeRegistrySingleton"
 ], function(joynr, TypeRegistrySingleton) {
 
-    var translateJoynrTypeToJavascriptTypeTable = {};
-    translateJoynrTypeToJavascriptTypeTable.Boolean = "Boolean";
-    translateJoynrTypeToJavascriptTypeTable.Byte = "Number";
-    translateJoynrTypeToJavascriptTypeTable.Short = "Number";
-    translateJoynrTypeToJavascriptTypeTable.Integer = "Number";
-    translateJoynrTypeToJavascriptTypeTable.Long = "Number";
-    translateJoynrTypeToJavascriptTypeTable.Float = "Number";
-    translateJoynrTypeToJavascriptTypeTable.Double = "Number";
-    translateJoynrTypeToJavascriptTypeTable.String = "String";
-
     /**
      * @name Typing
      * @class
@@ -102,25 +92,6 @@ define("joynr/util/Typing", [
         }
         var results = /function ([$\w]+)\(/.exec(obj.constructor.toString());
         return (results && results.length > 1) ? results[1] : "";
-    };
-
-    /**
-     * Translates the Joynr Types to Javascript Types
-     *
-     * @function Typing#translateJoynrTypeToJavascriptType
-     * @param {String} joynrType the joynr type string
-     * @returns {String} the javascript type or the joynrType if not found
-     * @throws {Error} an error when input parameters are nullable (undefined or null)
-     */
-    Typing.translateJoynrTypeToJavascriptType = function(joynrType) {
-        if (joynrType === undefined || joynrType === null) {
-            throw new Error("cannot determine javascript type of \"" + joynrType + "\"");
-        }
-
-        if (joynrType.charAt(joynrType.length - 1) === ']') {
-            return "Array";
-        }
-        return translateJoynrTypeToJavascriptTypeTable[joynrType] || joynrType;
     };
 
     /**
