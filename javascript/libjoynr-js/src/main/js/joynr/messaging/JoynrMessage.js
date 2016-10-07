@@ -26,6 +26,9 @@ define(
         ],
         function(Util, uuid) {
 
+            var jmBase = uuid();
+            var jmIndex = 0;
+
             /**
              * @name JoynrMessage
              * @constructor
@@ -41,7 +44,8 @@ define(
                 settings._typeName = "joynr.JoynrMessage";
                 settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE] = "application/json";
                 settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] =
-                        settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] || uuid();
+                        settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID]
+                            || (jmBase + "_" + jmIndex);
                 settings['__proto__'] = JoynrMessage.prototype;
                 /*jslint nomen: false, sub: false */
                 return settings;
