@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,6 +43,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -54,6 +56,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
@@ -62,6 +65,7 @@ import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
+import joynr.MulticastPublication;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionReply;
@@ -92,7 +96,7 @@ public class SubscriptionManagerTest {
 
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory = spy(new ConcurrentHashMap<String, AttributeSubscriptionListener<?>>());
     private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory = spy(new ConcurrentHashMap<String, BroadcastSubscriptionListener>());
-    private ConcurrentMap<String, Set<String>> multicastSubscribersDirectory = spy(new ConcurrentHashMap<String, Set<String>>());
+    private ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory = spy(new ConcurrentHashMap<Pattern, Set<String>>());
     private ConcurrentMap<String, PubSubState> subscriptionStates = spy(new ConcurrentHashMap<String, PubSubState>());
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers = spy(new ConcurrentHashMap<String, MissedPublicationTimer>());
     private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes = spy(Maps.<String, Class<?>[]> newConcurrentMap());
@@ -117,6 +121,9 @@ public class SubscriptionManagerTest {
     @Mock
     private Dispatcher dispatcher;
 
+    @Mock
+    private MulticastWildcardRegexFactory multicastWildcardRegexFactory;
+
     @Before
     public void setUp() {
         subscriptionManager = new SubscriptionManagerImpl(attributeSubscriptionDirectory,
@@ -129,7 +136,8 @@ public class SubscriptionManagerTest {
                                                           subscriptionBroadcastTypes,
                                                           subscriptionFutureMap,
                                                           cleanupScheduler,
-                                                          dispatcher);
+                                                          dispatcher,
+                                                          multicastWildcardRegexFactory);
         subscriptionId = "testSubscription";
 
         attributeName = "testAttribute";
@@ -298,13 +306,15 @@ public class SubscriptionManagerTest {
         }
         String multicastId = toParticipantId + "/myMulticast";
         Set<String> subscriptionIdSet = new HashSet<>();
-        multicastSubscribersDirectory.put(multicastId, subscriptionIdSet);
+        Pattern multicastIdPattern = Pattern.compile(multicastId);
+        multicastSubscribersDirectory.put(multicastIdPattern, subscriptionIdSet);
+        when(multicastWildcardRegexFactory.createIdPattern(multicastId)).thenReturn(multicastIdPattern);
 
         MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method, args, future);
 
         subscriptionManager.registerMulticastSubscription(fromParticipantId, Sets.newHashSet(toParticipantId), invocation);
 
-        verify(multicastSubscribersDirectory).put(anyString(), anySet());
+        verify(multicastSubscribersDirectory).put(any(Pattern.class), anySet());
         assertEquals(1, subscriptionIdSet.size());
         if (subscriptionId != null) {
             assertEquals(subscriptionId, subscriptionIdSet.iterator().next());
@@ -407,6 +417,47 @@ public class SubscriptionManagerTest {
         subscriptionManager.handleSubscriptionReply(subscriptionReply);
         verify(futureMock).onSuccess(eq(subscriptionId));
         verify(broadcastListener).onSubscribed(eq(subscriptionId));
+    }
+
+    private interface TestBroadcastListener extends BroadcastSubscriptionListener {
+        void onReceive(String value);
+    }
+
+    @Test
+    public void testHandleMulticastSubscriptionWithWildcardSubscribers() {
+        MulticastPublication multicastPublication = new MulticastPublication(Arrays.asList("one"), "one/two/three");
+
+        Pattern subscriberOnePattern = Pattern.compile("one/[^/]+/three");
+        String subscriberOneId = "one";
+        multicastSubscribersDirectory.putIfAbsent(subscriberOnePattern, Sets.newHashSet(subscriberOneId));
+
+        Pattern subscriberTwoPattern = Pattern.compile("one/two/three");
+        String subscriberTwoId = "two";
+        multicastSubscribersDirectory.putIfAbsent(subscriberTwoPattern, Sets.newHashSet(subscriberTwoId));
+
+        Pattern subscriberThreePattern = Pattern.compile("four/five/six");
+        String subscriberThreeId = "three";
+        multicastSubscribersDirectory.putIfAbsent(subscriberThreePattern, Sets.newHashSet(subscriberThreeId));
+
+        Class[] types = new Class[]{ String.class };
+        subscriptionBroadcastTypes.putIfAbsent(subscriberOneId, types);
+        subscriptionBroadcastTypes.putIfAbsent(subscriberTwoId, types);
+        subscriptionBroadcastTypes.putIfAbsent(subscriberThreeId, types);
+
+        TestBroadcastListener listenerOne = mock(TestBroadcastListener.class);
+        broadcastSubscriptionDirectory.putIfAbsent(subscriberOneId, listenerOne);
+
+        TestBroadcastListener listenerTwo = mock(TestBroadcastListener.class);
+        broadcastSubscriptionDirectory.putIfAbsent(subscriberTwoId, listenerTwo);
+
+        TestBroadcastListener listenerThree = mock(TestBroadcastListener.class);
+        broadcastSubscriptionDirectory.putIfAbsent(subscriberThreeId, listenerThree);
+
+        subscriptionManager.handleMulticastPublication("one/two/three", new Object[]{ "value" });
+
+        verify(listenerOne).onReceive(anyString());
+        verify(listenerTwo).onReceive(anyString());
+        verify(listenerThree, never()).onReceive(anyString());
     }
 
 }
