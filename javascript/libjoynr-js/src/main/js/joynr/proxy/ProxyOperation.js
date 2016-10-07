@@ -173,6 +173,12 @@ define(
                     return new ProxyOperation(parent, settings, operationName, operationSignatures);
                 }
 
+                // passed in (right-most) messagingQos have precedence; undefined values are
+                // ignored
+                var messagingQos =
+                        new MessagingQos(Util
+                                .extend({}, parent.messagingQos, settings.messagingQos));
+
                 /**
                  * Generic operation implementation
                  *
@@ -260,14 +266,6 @@ define(
                                                 + "'. The following errors occured during signature check: "
                                                 + JSON.stringify(caughtErrors)));
                         }
-
-                        // passed in (right-most) messagingQos have precedence; undefined values are
-                        // ignored
-                        var messagingQos =
-                                new MessagingQos(Util.extend(
-                                        {},
-                                        proxyOperation.parent.messagingQos,
-                                        settings.messagingQos));
 
                         // send it through request reply manager
                         if (foundValidOperationSignature.fireAndForget === true) {
