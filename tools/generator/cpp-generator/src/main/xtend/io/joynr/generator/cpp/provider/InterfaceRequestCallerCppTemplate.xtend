@@ -50,9 +50,6 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	#include «datatype»
 «ENDFOR»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
-«IF !francaIntf.methods.empty || !francaIntf.attributes.empty»
-	#include "joynr/TypeUtil.h"
-«ENDIF»
 
 «getNamespaceStarter(francaIntf)»
 «interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider)

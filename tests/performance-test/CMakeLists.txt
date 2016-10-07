@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(performance-test-0.20.4)
+project(performance-test-0.21.0)
 
 # Compile to a bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -17,7 +17,7 @@ include(GNUInstallDirs)
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.20.4 REQUIRED)
+find_package(Joynr 0.21.0 REQUIRED)
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")
@@ -103,3 +103,14 @@ file(
     COPY ${Joynr_RESOURCES_DIR}
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     )
+
+if(NOT INSTALL_TEST_DIR)
+    set(INSTALL_TEST_DIR "${CMAKE_INSTALL_BINDIR}" CACHE PATH "Installation sub directory for tests")
+endif(NOT INSTALL_TEST_DIR)
+
+install(
+    FILES
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/performancetest-consumer.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/performancetest-provider.settings
+        DESTINATION ${INSTALL_TEST_DIR}/resources
+)

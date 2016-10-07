@@ -15,16 +15,80 @@ KIND, either express or implied. See the License for the
 specific language governing permissions and limitations
 under the License.
 
-This project has dependencies to:
+This project has following dependencies:
 
-* joynr under The Apache Software License, Version 2.0
-    the joynr NOTICE file lists transitive joynr dependencies
-    https://github.com/bmwcarit/joynr/blob/develop/javascript/NOTICE-JS
-
-
-* bluebird (https://github.com/petkaantonov/bluebird)
-  License: MIT License (https://github.com/petkaantonov/bluebird/blob/master/LICENSE)
-  Webjar: <groupId>org.webjars</groupId>
-          <artifactId>bluebird</artifactId>
-          <version>3.1.1</version>
-  npm package: version 3.1.1 (https://www.npmjs.com/package/bluebird)
+└─ performance-test ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── package.json
+   ├─ bluebird (3.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bluebird/package.json
+   │  └─ bluebird (3.3.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bluebird/package.json
+   ├─ jasmine-node (1.14.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node/package.json
+   │  ├─ coffee-script (1.11.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ coffee-script/package.json
+   │  ├─ gaze (0.3.4) ── MIT (https://github.com/shama/gaze/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze/package.json
+   │  │  ├─ fileset (0.1.8) ── MIT (https://github.com/mklabs/node-fileset/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze ~ fileset/package.json
+   │  │  │  └─ glob (3.2.11) ── BSD 2-clause "Simplified" License (http://www.opensource.org/licenses/BSD-2-Clause) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob/package.json
+   │  │  │     ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ inherits/package.json
+   │  │  │     └─ minimatch (0.3.0) ── MIT (http://github.com/isaacs/minimatch/raw/master/LICENSE) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch/package.json
+   │  │  │        ├─ lru-cache (2.7.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch ~ lru-cache/package.json
+   │  │  │        └─ sigmund (1.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch ~ sigmund/package.json
+   │  │  └─ minimatch (0.2.14) ── MIT (http://github.com/isaacs/minimatch/raw/master/LICENSE) ── node_modules/jasmine-node ~ gaze ~ minimatch/package.json
+   │  │     ├─ lru-cache (2.7.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ minimatch ~ lru-cache/package.json
+   │  │     └─ sigmund (1.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ minimatch ~ sigmund/package.json
+   │  ├─ jasmine-growl-reporter (0.0.3) ── MIT (https://raw.github.com/AlphaHydrae/jasmine-growl-reporter/master/LICENSE.txt) ── node_modules/jasmine-node ~ jasmine-growl-reporter/package.json
+   │  │  └─ growl (1.7.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ jasmine-growl-reporter ~ growl/Readme.md
+   │  ├─ jasmine-reporters (1.0.2) ── MIT (https://raw.github.com/larrymyers/jasmine-reporters/master/LICENSE) ── node_modules/jasmine-node ~ jasmine-reporters/package.json
+   │  ├─ mkdirp (0.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ mkdirp/package.json
+   │  ├─ requirejs (2.3.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ requirejs/package.json
+   │  ├─ underscore (1.8.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ underscore/package.json
+   │  └─ walkdir (0.0.11) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ walkdir/package.json
+   └─ joynr ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr/package.json
+      ├─ atmosphere.js (2.3.2) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr ~ atmosphere.js/package.json
+      │  ├─ eventsource (0.1.6) ── MIT (http://github.com/aslakhellesoy/eventsource-node/raw/master/LICENSE) ── node_modules/joynr ~ atmosphere.js ~ eventsource/package.json
+      │  │  └─ original (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original/package.json
+      │  │     └─ url-parse (1.0.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original ~ url-parse/package.json
+      │  │        ├─ querystringify (0.0.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original ~ url-parse ~ querystringify/package.json
+      │  │        └─ requires-port (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original ~ url-parse ~ requires-port/package.json
+      │  ├─ ws (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws/package.json
+      │  │  ├─ options (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ options/README.md
+      │  │  └─ ultron (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ ultron/package.json
+      │  └─ xmlhttprequest (1.8.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ xmlhttprequest/package.json
+      ├─ bluebird (3.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ bluebird/package.json
+      │  └─ bluebird (3.3.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ bluebird/package.json
+      ├─ jasmine-node (1.14.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node/package.json
+      │  ├─ coffee-script (1.11.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ coffee-script/package.json
+      │  │  └─ underscore (1.8.3) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ underscore/package.json
+      │  ├─ gaze (0.3.4) ── MIT (https://github.com/shama/gaze/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze/package.json
+      │  │  ├─ fileset (0.1.8) ── MIT (https://github.com/mklabs/node-fileset/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze ~ fileset/package.json
+      │  │  │  └─ glob (3.2.11) ── BSD 2-clause "Simplified" License (http://www.opensource.org/licenses/BSD-2-Clause) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob/package.json
+      │  │  │     ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ inherits/package.json
+      │  │  │     └─ minimatch (0.3.0) ── MIT (http://github.com/isaacs/minimatch/raw/master/LICENSE) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch/package.json
+      │  │  │        ├─ lru-cache (2.7.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch ~ lru-cache/package.json
+      │  │  │        └─ sigmund (1.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch ~ sigmund/package.json
+      │  │  └─ minimatch (0.2.14) ── MIT (http://github.com/isaacs/minimatch/raw/master/LICENSE) ── node_modules/jasmine-node ~ gaze ~ minimatch/package.json
+      │  │     ├─ lru-cache (2.7.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ minimatch ~ lru-cache/package.json
+      │  │     └─ sigmund (1.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ minimatch ~ sigmund/package.json
+      │  ├─ jasmine-growl-reporter (0.0.3) ── MIT (https://raw.github.com/AlphaHydrae/jasmine-growl-reporter/master/LICENSE.txt) ── node_modules/jasmine-node ~ jasmine-growl-reporter/package.json
+      │  │  └─ growl (1.7.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ jasmine-growl-reporter ~ growl/Readme.md
+      │  ├─ jasmine-reporters (1.0.2) ── MIT (https://raw.github.com/larrymyers/jasmine-reporters/master/LICENSE) ── node_modules/jasmine-node ~ jasmine-reporters/package.json
+      │  │  └─ mkdirp (0.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ mkdirp/package.json
+      │  ├─ requirejs (2.3.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ requirejs/package.json
+      │  └─ walkdir (0.0.11) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ walkdir/package.json
+      ├─ log4js (0.6.29) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr ~ log4js/package.json
+      │  ├─ async (0.2.10) ── MIT (https://github.com/caolan/async/raw/master/LICENSE) ── node_modules/joynr ~ log4js ~ async/package.json
+      │  ├─ readable-stream (1.0.34) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream/package.json
+      │  │  ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream ~ core-util-is/package.json
+      │  │  ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ log4js ~ readable-stream ~ inherits/package.json
+      │  │  ├─ isarray (0.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream ~ isarray/package.json
+      │  │  └─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream ~ string_decoder/package.json
+      │  ├─ semver (4.3.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ log4js ~ semver/package.json
+      │  └─ underscore (1.8.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ underscore/package.json
+      ├─ node-localstorage (1.3.0) ── MIT (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ node-localstorage/package.json
+      │  └─ write-file-atomic (1.2.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic/package.json
+      │     ├─ graceful-fs (4.1.9) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ graceful-fs/package.json
+      │     ├─ imurmurhash (0.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ imurmurhash/package.json
+      │     └─ slide (1.1.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ slide/package.json
+      ├─ promise (7.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ promise/package.json
+      │  └─ asap (2.0.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ promise ~ asap/package.json
+      ├─ requirejs (2.1.22) ── BSD (https://github.com/jrburke/r.js/blob/master/LICENSE), MIT (https://github.com/jrburke/r.js/blob/master/LICENSE) ── node_modules/joynr ~ requirejs/package.json
+      ├─ ws (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws/package.json
+      │  ├─ options (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ options/README.md
+      │  └─ ultron (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ ultron/package.json
+      └─ xmlhttprequest (1.8.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ xmlhttprequest/package.json

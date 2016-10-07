@@ -45,6 +45,7 @@ public:
             mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION)
     {
+        singleThreadedIOService.start();
     }
     void SetUp(){
         std::vector<IDispatcher*> dispatcherList;

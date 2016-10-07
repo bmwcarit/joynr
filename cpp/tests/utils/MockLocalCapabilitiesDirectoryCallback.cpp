@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,18 +23,21 @@
 using namespace joynr;
 
 MockLocalCapabilitiesDirectoryCallback::MockLocalCapabilitiesDirectoryCallback()
-    : ILocalCapabilitiesCallback(),
-      results(),
-      semaphore(1) {
+        : results(), semaphore(1)
+{
     semaphore.wait();
 }
 
-void MockLocalCapabilitiesDirectoryCallback::capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) {
-    this->results = capabilities;
+void MockLocalCapabilitiesDirectoryCallback::capabilitiesReceived(
+        const std::vector<joynr::types::DiscoveryEntry>& capabilities)
+{
+    this->results = std::move(capabilities);
     semaphore.notify();
 }
 
-std::vector<CapabilityEntry> MockLocalCapabilitiesDirectoryCallback::getResults(int timeout) {
+std::vector<joynr::types::DiscoveryEntry> MockLocalCapabilitiesDirectoryCallback::getResults(
+        int timeout)
+{
     const int waitInterval = 20;
     for (int i = 0; i < timeout; i += waitInterval) {
         std::this_thread::sleep_for(std::chrono::milliseconds(waitInterval));
@@ -47,16 +50,20 @@ std::vector<CapabilityEntry> MockLocalCapabilitiesDirectoryCallback::getResults(
     return results;
 }
 
-void MockLocalCapabilitiesDirectoryCallback::onError(const joynr::exceptions::JoynrRuntimeException& error) {
+void MockLocalCapabilitiesDirectoryCallback::onError(
+        const joynr::exceptions::JoynrRuntimeException& error)
+{
     std::ignore = error;
-    //ignore onError currently
+    // ignore onError currently
 }
 
-void MockLocalCapabilitiesDirectoryCallback::clearResults(){
+void MockLocalCapabilitiesDirectoryCallback::clearResults()
+{
     semaphore.waitFor();
     results.clear();
 }
 
-MockLocalCapabilitiesDirectoryCallback::~MockLocalCapabilitiesDirectoryCallback() {
+MockLocalCapabilitiesDirectoryCallback::~MockLocalCapabilitiesDirectoryCallback()
+{
     results.clear();
 }

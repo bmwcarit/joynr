@@ -5,6 +5,7 @@ FROM joynr-android:latest
 ###################################################
 RUN dnf install -y \
 	nodejs \
+	npm \
 	&& dnf clean all
 
 ###################################################
@@ -15,6 +16,11 @@ RUN dnf install -y \
 	freetype-devel \
 	fontconfig-devel \
 	&& dnf clean all
+
+###################################################
+# install phantomjs to avoid additional download
+###################################################
+RUN npm install -g phantomjs-prebuilt@2.1.12
 
 ###################################################
 # deploy the build scripts

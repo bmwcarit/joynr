@@ -33,7 +33,6 @@
 #include "joynr/IMessaging.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/Semaphore.h"
 
@@ -51,10 +50,9 @@ class LibJoynrRuntime : public JoynrRuntime
 {
 
 public:
-    explicit LibJoynrRuntime(Settings* settings);
+    explicit LibJoynrRuntime(std::unique_ptr<Settings> settings);
     ~LibJoynrRuntime() override;
 
-    static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
     void unregisterProvider(const std::string& participantId) override;
 
 protected:
@@ -68,7 +66,7 @@ protected:
     IDispatcher* inProcessDispatcher;
 
     // take ownership, so a pointer is used
-    Settings* settings;
+    std::unique_ptr<Settings> settings;
     // use pointer for settings object to check the configuration before initialization
     LibjoynrSettings* libjoynrSettings;
 
@@ -83,8 +81,6 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
-    std::unique_ptr<JoynrRuntimeExecutor> runtimeExecutor;
-    void setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor);
 };
 
 } // namespace joynr

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,21 +75,21 @@ private:
 // Test class
 class LocalDomainAccessControllerTest : public ::testing::Test {
 public:
-    LocalDomainAccessControllerTest() : localDomainAccessStore(nullptr), localDomainAccessController(nullptr), mockGdacProxy(nullptr)
+    LocalDomainAccessControllerTest() : localDomainAccessStorePtr(nullptr),
+                                        localDomainAccessController(),
+                                        mockGdacProxy()
     {
     }
 
-    ~LocalDomainAccessControllerTest() {
-    }
 
     void SetUp(){
         bool startWithCleanDatabase = true;
-        localDomainAccessStore = new LocalDomainAccessStore(startWithCleanDatabase);
+        auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>(startWithCleanDatabase);
+        localDomainAccessStorePtr = localDomainAccessStore.get();
         localDomainAccessController =
-                new LocalDomainAccessController(localDomainAccessStore);
-        mockGdacProxy = new MockGlobalDomainAccessControllerProxy();
-        std::shared_ptr<GlobalDomainAccessControllerProxy> mockGDACPtr(mockGdacProxy);
-        localDomainAccessController->init(mockGDACPtr);
+                std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+        mockGdacProxy = std::make_shared<MockGlobalDomainAccessControllerProxy>();
+        localDomainAccessController->init(mockGdacProxy);
 
         userDre = DomainRoleEntry(TEST_USER, DOMAINS, Role::OWNER);
         masterAce = MasterAccessControlEntry(
@@ -115,14 +115,10 @@ public:
         );
     }
 
-    void TearDown(){
-        delete localDomainAccessController;
-    }
-
 protected:
-    LocalDomainAccessStore* localDomainAccessStore;
-    LocalDomainAccessController* localDomainAccessController;
-    MockGlobalDomainAccessControllerProxy* mockGdacProxy;
+    LocalDomainAccessStore* localDomainAccessStorePtr;
+    std::unique_ptr<LocalDomainAccessController> localDomainAccessController;
+    std::shared_ptr<MockGlobalDomainAccessControllerProxy> mockGdacProxy;
     OwnerAccessControlEntry ownerAce;
     MasterAccessControlEntry masterAce;
     DomainRoleEntry userDre;
@@ -157,7 +153,7 @@ const std::string LocalDomainAccessControllerTest::joynrDomain("LocalDomainAcces
 //----- Tests ------------------------------------------------------------------
 
 TEST_F(LocalDomainAccessControllerTest, testHasRole) {
-    localDomainAccessStore->updateDomainRole(userDre);
+    localDomainAccessStorePtr->updateDomainRole(userDre);
 
     std::string defaultString;
     DefaultValue<std::string>::Set(defaultString);
@@ -168,7 +164,7 @@ TEST_F(LocalDomainAccessControllerTest, testHasRole) {
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
-    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
     std::string defaultString;
     DefaultValue<std::string>::Set(defaultString);
@@ -185,7 +181,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
-    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
     // Update the MasterACE so that it does not permit Permission::YES
     std::vector<Permission::Enum> possiblePermissions = {
@@ -193,7 +189,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
     };
     masterAce.setDefaultConsumerPermission(Permission::ASK);
     masterAce.setPossibleConsumerPermissions(possiblePermissions);
-    localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
+    localDomainAccessStorePtr->updateMasterAccessControlEntry(masterAce);
 
     std::string defaultString;
     DefaultValue<std::string>::Set(defaultString);
@@ -212,8 +208,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaster) {
     ownerAce.setRequiredTrustLevel(TrustLevel::MID);
     ownerAce.setConsumerPermission(Permission::ASK);
-    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
-    localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
+    localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStorePtr->updateMasterAccessControlEntry(masterAce);
 
     std::string defaultString;
     DefaultValue<std::string>::Set(defaultString);
@@ -240,8 +236,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaste
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
-    ownerAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
+    ownerAce.setOperation(access_control::WILDCARD);
+    localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
     std::string defaultString;
     DefaultValue<std::string>::Set(defaultString);
@@ -259,7 +255,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     // Setup the master with a wildcard operation
-    masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
+    masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
 
@@ -328,7 +324,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) {
     // Setup the master with a wildcard operation
-    masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
+    masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
 
@@ -384,11 +380,11 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     // Setup the master with a wildcard operation
-    masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
+    masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
 
-    ownerAce.setOperation(LocalDomainAccessStore::WILDCARD);
+    ownerAce.setOperation(access_control::WILDCARD);
     std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
 

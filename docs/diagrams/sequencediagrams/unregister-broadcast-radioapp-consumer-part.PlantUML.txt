@@ -1,0 +1,16 @@
+@startuml
+
+[-> RadioProxy : unsubscribeFromNewStationDiscoveredBroadcast
+RadioProxy -> RadioJoynrMessagingConnector : unsubscribeFromNewStationDiscoveredBroadcast
+RadioJoynrMessagingConnector -> SubscriptionManager : unregisterSubscription
+
+note over SubscriptionManager
+	"Task unscheduled here"
+end note
+
+SubscriptionManager -> DelayedScheduler : "unschedule(SubscriptionEndRunnable)"
+SubscriptionManager -> DelayedScheduler : "unschedule(MissedPublicationRunnable)"
+RadioJoynrMessagingConnector -> JoynrMessageSender : sendSubscriptionStop
+JoynrMessageSender -> MessageRouter : "route(SubscriptionStop)"
+
+@enduml

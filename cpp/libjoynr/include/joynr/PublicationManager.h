@@ -38,7 +38,6 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/ThreadSafeMap.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/SubscriptionReply.h"
 
 namespace boost
@@ -77,7 +76,7 @@ class SubscriptionQos;
 class JOYNR_EXPORT PublicationManager
 {
 public:
-    explicit PublicationManager(boost::asio::io_service& ioService, int maxThreads = 2);
+    explicit PublicationManager(boost::asio::io_service& ioService, int maxThreads = 1);
     explicit PublicationManager(DelayedScheduler* scheduler);
     virtual ~PublicationManager();
     /**

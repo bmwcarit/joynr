@@ -23,14 +23,10 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <QByteArray>
 
-#include "joynr/PrivateCopyAssign.h"
-
-#include "joynr/ContentWithDecayTime.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
-#include "joynr/Directory.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Thread.h"
 
@@ -38,7 +34,7 @@ namespace joynr
 {
 
 class MessageRouter;
-
+class HttpRequest;
 /**
  * Structure used for configuring the long poll message receiver
  */
@@ -62,12 +58,15 @@ public:
                                const LongPollingMessageReceiverSettings& settings,
                                std::shared_ptr<Semaphore> channelCreatedSemaphore,
                                std::function<void(const std::string&)> onTextMessageReceived);
+
+    ~LongPollingMessageReceiver();
+
     void stop() override;
     void run() override;
     void interrupt();
     bool isInterrupted();
 
-    void processReceivedInput(const QByteArray& receivedInput);
+    void processReceivedInput(const std::string& receivedInput);
     void processReceivedJsonObjects(const std::string& jsonObject);
 
 private:
@@ -89,6 +88,7 @@ private:
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;
+    std::unique_ptr<HttpRequest> currentRequest;
 };
 
 } // namespace joynr

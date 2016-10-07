@@ -28,6 +28,7 @@
 #include <exception>
 #include <random>
 
+#include "../common/PerformanceTest.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ProxyBuilder.h"
@@ -121,7 +122,7 @@ public:
         (static_cast<Impl*>(this)->*fun)(std::forward<Args>(args)...);
         const auto endLoop = Clock::now();
         auto totalDuration = std::chrono::duration_cast<ClockResolution>(endLoop - startLoop);
-        printStatistics(totalDuration);
+        PerformanceTest::printStatistics(durationVector, totalDuration);
     }
 
 protected:
@@ -178,31 +179,8 @@ protected:
     std::size_t byteArraySize;
 
 private:
-    void printStatistics(ClockResolution totalDuration)
-    {
-        using DoubleMilliSeconds = std::chrono::duration<double, std::milli>;
-        auto maxDelayDuration = std::chrono::duration_cast<DoubleMilliSeconds>(
-                *std::max_element(durationVector.cbegin(), durationVector.cend()));
-        auto minDelayDuration = std::chrono::duration_cast<DoubleMilliSeconds>(
-                *std::min_element(durationVector.cbegin(), durationVector.cend()));
-        auto sumDelayDuration = std::chrono::duration_cast<DoubleMilliSeconds>(std::accumulate(
-                durationVector.cbegin(), durationVector.cend(), ClockResolution(0)));
-        double meanDelay = sumDelayDuration.count() / messageCount;
-
-        using DoubleSeconds = std::chrono::duration<double>;
-        auto totalDurationSec = std::chrono::duration_cast<DoubleSeconds>(totalDuration);
-        double msgPerSec = messageCount / totalDurationSec.count();
-
-        std::cerr << "----- statistics -----" << std::endl;
-        std::cerr << "totalDuration:\t" << totalDurationSec.count() << " [s]" << std::endl;
-        std::cerr << "maxDelay:\t\t" << maxDelayDuration.count() << " [ms]" << std::endl;
-        std::cerr << "minDelay:\t\t" << minDelayDuration.count() << " [ms]" << std::endl;
-        std::cerr << "meanDelay:\t\t" << meanDelay << " [ms]" << std::endl;
-        std::cerr << "msg/sec:\t\t" << msgPerSec << std::endl;
-    }
-
     std::unique_ptr<JoynrRuntime> runtime;
-    std::uint64_t ttl = 10000;
+    std::uint64_t ttl = 600000;
 };
 
 class SyncEchoConsumer : public PerformanceConsumer<SyncEchoConsumer>

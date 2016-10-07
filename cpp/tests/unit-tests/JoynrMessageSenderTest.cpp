@@ -29,6 +29,7 @@
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/SingleThreadedIOService.h"
 
@@ -54,7 +55,9 @@ public:
         mockMessagingStub(),
         callBack(),
         singleThreadedIOService()
-    {}
+    {
+        singleThreadedIOService.start();
+    }
 
 
     void SetUp(){
@@ -63,9 +66,6 @@ public:
         receiverID = "receiverID" + postFix;
         requestID = "requestId" + postFix;
         qosSettings = MessagingQos(456000);
-    }
-    void TearDown(){
-
     }
 
 protected:

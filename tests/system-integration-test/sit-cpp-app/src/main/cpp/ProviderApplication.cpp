@@ -22,6 +22,9 @@
 #include <memory>
 #include <string>
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
@@ -61,12 +64,16 @@ int main(int argc, char* argv[])
     const std::string providerDomain(argv[1]);
     JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
 
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime("");
+    boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
+    std::string appDirectory =
+            boost::filesystem::system_complete(appFilename).parent_path().string();
+    std::string pathToSettings(appDirectory + "/resources/systemintegrationtest-provider.settings");
+
+    std::unique_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToSettings));
 
     joynr::Semaphore semaphore;
 
-    std::shared_ptr<SystemIntegrationTestProvider> provider(
-            new SystemIntegrationTestProvider([&]() { semaphore.notify(); }));
+    auto provider = std::make_shared<SystemIntegrationTestProvider>([&]() { semaphore.notify(); });
 
     joynr::types::ProviderQos providerQos;
     std::chrono::milliseconds millisSinceEpoch =
@@ -88,8 +95,6 @@ int main(int argc, char* argv[])
 
         // Unregister the provider
         runtime->unregisterProvider<test::SystemIntegrationTestProvider>(providerDomain, provider);
-
-        delete runtime;
 
         return successful ? 0 : -1;
     }

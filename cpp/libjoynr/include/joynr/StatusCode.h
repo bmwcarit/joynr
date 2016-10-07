@@ -19,19 +19,8 @@
 #ifndef STATUSCODE_H
 #define STATUSCODE_H
 
-#include "joynr/JoynrExport.h"
-
 #include <cstdint>
 #include <string>
-
-#ifdef WIN32
-#ifdef ERROR
-// QT5.1 leaks this global definition from windows.h
-// Because Joynr does not use windows.h directly it is safe to
-// undefine this macro
-#undef ERROR
-#endif
-#endif
 
 namespace joynr
 {

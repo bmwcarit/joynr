@@ -1,0 +1,27 @@
+@startuml
+
+[-> MessageRouter : "route(SubscriptionPublication)"
+
+MessageRouter -> InProcessLibJoynrMessagingSkeleton : transmit
+InProcessLibJoynrMessagingSkeleton -> Dispatcher : receive
+
+note over Dispatcher
+	"Task scheduled here"
+end note
+
+Dispatcher -> ThreadPool : execute
+
+ThreadPool ->> ReceivedMessageRunnable : "run <b>(Thread switch)</b>"
+ReceivedMessageRunnable -> Dispatcher : handlePublicationReceived
+Dispatcher -> SubscriptionManager : touchSubscriptionState
+Dispatcher -> "PublicationInterpreter/EnumPublicationInterpreter" : execute
+
+alt "Error"
+	"PublicationInterpreter/EnumPublicationInterpreter" -> SubscriptionCallback : onError
+	SubscriptionCallback -> RadioStationListener : onError
+else
+	"PublicationInterpreter/EnumPublicationInterpreter" -> SubscriptionCallback : onSuccess
+	SubscriptionCallback -> RadioStationListener : onReceive
+end
+
+@enduml

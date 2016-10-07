@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@
 #include <mutex>
 #include <boost/asio/io_service.hpp>
 
-#include "joynr/SubscriptionUtil.h"
-#include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/ISubscriptionCallback.h"
+#include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/SubscriptionQos.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/SubscriptionUtil.h"
 
 namespace joynr
 {

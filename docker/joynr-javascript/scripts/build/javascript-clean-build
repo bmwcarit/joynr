@@ -8,6 +8,24 @@ cd /data/src
 # exit immediately if a command exits with a non-zero status
 # print commands before they are executed
 set -e
+
+function usage
+{
+  echo "usage: javascript-clean-build [--skipTests]"
+}
+
+SKIPTESTS='false'
+
+while [ "$1" != "" ]; do
+  case $1 in
+    --skipTests )           SKIPTESTS='true'
+                            ;;
+    * )                     usage
+                            exit 1
+  esac
+  shift
+done
+
 (
   log "INSTALL JOYNR BASE MODEL, TOOLS AND INFRASTRUCTURE SERVICES"
   mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
@@ -20,5 +38,5 @@ set -e
   -Djslint.failOnError=true \
   -Dskip.copy-notice-file=true \
   -Dskip.unpack-license-info=true \
-  -DskipTests=false
+  -DskipTests=$SKIPTESTS
 )

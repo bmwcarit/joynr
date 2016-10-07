@@ -43,13 +43,17 @@ The Franca ```<Interface>``` will be used as a prefix to create the following Ja
 
 ```java
 public abstract class joynr.<Package>.<Interface>AbstractProvider
+public class joynr.<Package>.Default<Interface>Provider
 public interface joynr.<Package>.<Interface>Async
 public interface joynr.<Package>.<Interface>BroadcastInterface
+public interface joynr.<Package>.<Interface>FireAndForget
 public interface joynr.<Package>.<Interface>
 public abstract class joynr.<Package>.<Interface><Broadcast>BroadcastFilter
 public interface joynr.<Package>.<Interface>Provider
 public interface joynr.<Package>.<Interface>Proxy
 public interface joynr.<Package>.<Interface>SubscriptionInterface
+public interface joynr.<Package>.<Interface>SubscriptionPublisher
+public class joynr.<Package>.<Interface>SubscriptionPublisherImpl
 public interface joynr.<Package>.<Interface>Sync
 ```
 # Setting up a joynr deployment
@@ -65,20 +69,26 @@ configured using a ```LibjoynrWebSocketRuntimeModule```.
 For a single node deployment, it may however be simpler to combine the cluster controller logic and
 the application in a single Java process. Use a ```CCInProcessRuntimeModule``` in this case.
 
-See the Radio example, in particular ```MyRadioConsumerApplication```, for a detailed example of how
-this is done.
+See the Radio example, in particular ```MyRadioConsumerApplication``` and
+```MyRadioProviderApplication```, for a detailed example of how this is done.
 
 See the [Java Configuration Reference](JavaSettings.md) for a complete listing of all available
 configuration properties available to use in joynr Java applications.
 
-## The external transport middlewares
+## The external (global) transport middlewares
 joynr is able to communicate to other clusters via HTTP using Atmosphere, or MQTT using Eclipe Paho,
 both of which can be in operation at the same time. Guice is also used to inject the required
 functionality.
 
 After choosing which RuntimeModule you are using, override it with the
 ```AtmosphereMessagingModule``` and the ```MqttPahoModule```. See the Radio example, in particular
-```MyRadioConsumerApplication``` for a detailed example of how this is done.
+```MyRadioConsumerApplication``` and ```MyRadioProviderApplication``` for a detailed example of how
+this is done.
+
+If using more than one global transport middleware, PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT (see
+[Java Configuration Reference](JavaSettings.md)) has to be set to select the transport middleware
+which is used to register providers. Providers will be reachable via the selected global transport
+middleware.
 
 # Building a Java consumer application
 
@@ -126,8 +136,8 @@ public class MyConsumerApplication extends AbstractJoynrApplication {
 
     @Inject
     @Named(APP_CONFIG_PROVIDER_DOMAIN)
-
     private String providerDomain;
+
     private <Interface>Proxy <interface>Proxy;
 
     public static void main(String[] args) throws IOException {
@@ -198,13 +208,17 @@ Available values are as follows:
 Whenever global entries are involved, they are first searched in the local cache. In case no global entries are found in the cache, a remote lookup is triggered.
 
 The enumeration ```ArbitrationStrategy``` defines special options to select a Provider:
-
+* **LastSeen** The participant that was last refreshed (i.e. with the most current last seen date)
+will be selected
 * **NotSet** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
-* **FixedChannel** (also see FixedParticipantArbitrator)
-* **Keyword** Only entries that have a matching keyword will be considered
 * **HighestPriority** Entries will be considered according to priority
+* **Keyword** Only entries that have a matching keyword will be considered
+* **FixedChannel** select provider which matches the participantId provided as custom parameter in
+   DiscoveryQos, if existing
 * **Custom** Allows you to provide a `ArbitrationStrategyFunction` to allow custom
 selection of discovered entries
+
+**Default arbitration strategy:** LastSeen
 
 The priority is set by the provider through the call ```providerQos.setPriority()```.
 
@@ -241,14 +255,30 @@ discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_AND_GLOBAL); // optional, de
 
 ## The message quality of service
 
-The ```MesssagingQos``` class defines the roundtrip timeout for RPC requests in milliseconds.
-If no specific setting is given, the default is 60 seconds.
+The ```MesssagingQos``` class defines the roundtrip timeout for RPC requests in milliseconds
+and allows definition of additional custom message headers.
+
+If no specific setting is given, the default roundtrip timeout is 60 seconds.
+The keys of custom message headers may contain ascii alphanumeric or hyphen.
+The values of custom message headers may contain alphanumeric, space, semi-colon, colon,
+comma, plus, ampersand, question mark, hyphen, dot, star, forward slash and back slash.
+If a key or value is invalid, the API method called to introduce the custom message
+header throws an IllegalArgumentException.
 
 Example:
 
 ```java
 long ttl_ms = 60000;
+
 MessagingQos messagingQos = new MessagingQos(ttl_ms);
+// optional custom headers
+Map<String, String> customMessageHeaders = new Map<String, String>();
+customMessageHeaders.put("key1", "value1");
+...
+customMessageHeaders.put("keyN", "valueN");
+messagingQos.putAllCustomMessageHeaders(customMessageHeaders);
+...
+messagingQos.putCustomMessageHeader("anotherKey", "anotherValue");
 ```
 
 ## The run method
@@ -492,15 +522,15 @@ public void onFailure(<Method>ErrorEnum errorEnum) {
 
 The abstract class ```SubscriptionQos``` has the following members:
 
-* **expiry date** Absolute Time until notifications will be send (milliseconds)
-* **publicationTtl** Lifespan of a notification (milliseconds), it will be deleted afterwards
+* **expiryDateMs** Absolute time until notifications will be send (milliseconds)
+* **publicationTtlMs** Lifespan of a notification (milliseconds), it will be deleted afterwards
 
 ### PeriodicSubscriptionQos
 
 The class ```PeriodicSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following additional members:
 
-* **period** defines how long to wait before sending an update even if the value did not change
-* **alertAfterInterval** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
+* **periodMs** defines how long to wait before sending an update even if the value did not change
+* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
 
 This class can be used for subscriptions to attributes.
 
@@ -510,7 +540,7 @@ Note that updates will be send only based on the specified interval and not base
 
 The class ```OnChangeSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following additional members:
 
-* **minimum Interval** Minimum time to wait between successive notifications (milliseconds)
+* **minIntervalMs** Minimum time to wait between successive notifications (milliseconds)
 
 This class should be used for subscriptions to broadcasts. It can also be used for subscriptions
 to attributes if no periodic update is required.
@@ -519,8 +549,8 @@ to attributes if no periodic update is required.
 
 The class ```OnChangeWithKeepAliveSubscriptionQos``` inherits from ```OnChangeSubscriptionQos``` and has the following additional members:
 
-* **maximum Interval** Maximum time to wait between notifications, if value has not changed
-* **alertAfterInterval** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
+* **maxIntervalMs** Maximum time to wait between notifications, if value has not changed
+* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
 
 This class can be used for subscriptions to attributes. Updates will then be sent based both periodically and after a change (i.e. this acts like a combination of ```PeriodicSubscriptionQos``` and ```OnChangeSubscriptionQos```).
 
@@ -528,8 +558,19 @@ Using it for subscriptions to broadcasts is theoretically possible because of in
 
 ## Subscribing to an attribute
 
-Attribute subscription - depending on the subscription quality of service settings used - informs the application either periodically and / or on change of an attribute about the current value. The **subscriptionId** returned by the call can be used later to update the subscription or to unsubscribe from it.
-To receive the subscription, a callback has to be provided.
+Attribute subscription - depending on the subscription quality of service settings used - informs
+the application either periodically and / or on change of an attribute about the current value.
+
+The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
+by the subscribeTo call. It can be used later to update the subscription or to unsubscribe from it.
+The subscriptionId will be available when the subscription is successfully registered at the
+provider. If the subscription failed, a SubscriptionException will be returned via the callback
+(onError) and thrown by future.get().
+
+To receive the subscription, a **callback** has to be provided which is done providing a listener
+class as outlined below. Since the callback is called by a communication middleware thread, it
+should not be blocked, wait for user interaction, or do larger computation. The callback methods
+(onReceive, onSubscribed, onError) are optional. Only the required methods have to be implemented.
 
 ```java
 // for any Franca type named "<Type>" used
@@ -548,23 +589,47 @@ public void run() {
 
     <QosClass> qos = new <QosClass>(... parameters ...);
     ...
+    Future<String> subscriptionIdFuture;
     try {
-        subscriptionId = <interface>Proxy.subscribeTo<Attribute>(
+        subscriptionIdFuture = <interface>Proxy.subscribeTo<Attribute>(
             new AttributeSubscriptionAdapter<AttributeType>() {
+                // Gets called on every received publication
                 @Override
                 public void onReceive(<AttributeType> value) {
                     // handle info
                 }
 
+                // Gets called when the subscription is successfully registered at the provider
+                @Override
+                public void onSubscribed(String subscriptionId) {
+                    // save the subscriptionId for updating the subscription or unsubscribing from it
+                    // the subscriptionId can also be taken from the future returned by the subscribeTo call
+                }
+
+                // Gets called on every error that is detected on the subscription
                 @Override
                 public void onError(JoynrRuntimeException e) {
-                    // handle subscription error, e.g. missed publication
+                    // handle subscription error, e.g.:
+                    // - SubscriptionException if the subscription registration failed at the provider
+                    // - PublicationMissedException if a periodic subscription publication does not
+                    //   arrive in time
+
                 }
             },
             qos
             );
     } catch (JoynrRuntimeException e) {
         // handle error
+    }
+    ...
+    // get the subscriptionId from the Future when needed
+    String subscriptionId;
+    if (subscriptionIdFuture != null) {
+        try {
+            subscriptionId = subscriptionIdFuture.get();
+        } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
+            // handle error
+        }
     }
 }
 ```
@@ -575,16 +640,28 @@ The subscribeTo method can also be used to update an existing subscription, when
 
 ```java
     try {
-        subscriptionId = <interface>Proxy.subscribeTo<Attribute>(
+        subscriptionIdFuture = <interface>Proxy.subscribeTo<Attribute>(
             new AttributeSubscriptionAdapter<AttributeType>() {
+                // Gets called on every received publication
                 @Override
                 public void onReceive(<AttributeType> value) {
                     // handle info
                 }
 
+                // Gets called when the subscription is successfully updated at the provider
+                @Override
+                public void onSubscribed(String subscriptionId) {
+                    // save the subscriptionId for updating the subscription or unsubscribing from it
+                    // the subscriptionId can also be taken from the future returned by the subscribeTo call
+                }
+
+                // Gets called on every error that is detected on the subscription
                 @Override
                 public void onError(JoynrRuntimeException e) {
-                    // handle subscription error, e.g. missed publication
+                    // handle subscription error, e.g.:
+                    // - SubscriptionException if the subscription registration failed at the provider
+                    // - PublicationMissedException if a periodic subscription publication does not
+                    //   arrive in time
                 }
             },
             qos,
@@ -619,7 +696,19 @@ public void run() {
 
 ## Subscribing to a broadcast unconditionally
 
-Broadcast subscription informs the application in case a broadcast is fired from provider side and returns the output values via callback. The **subscriptionId** returned by the call can be used later to update the subscription or to unsubscribe from it.
+Broadcast subscription informs the application in case a broadcast is fired from provider side and
+returns the output values via callback.
+
+The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
+by the subscribeTo call. It can be used later to update the subscription or to unsubscribe from it.
+The subscriptionId will be available when the subscription is successfully registered at the
+provider. If the subscription failed, a SubscriptionException will be returned via the callback
+(onError) and thrown by future.get().
+
+To receive the subscription, a **callback** has to be provided which is done providing a listener
+class as outlined below. Since the callback is called by a communication middleware thread, it
+should not be blocked, wait for user interaction, or do larger computation. The callback methods
+(onReceive, onSubscribed, onError) are optional. Only the required methods have to be implemented.
 
 ```java
 import joynr.OnChangeSubscriptionQos;
@@ -633,7 +722,7 @@ import joynr.<Package>.<TypeCollection>.<Type>;
 public void run() {
     // setup proxy named "<interface>Proxy"
     ...
-    private String subscriptionId;
+    private Future<String> subscriptionIdFuture;
     ...
     try {
         int minIntervalMs;
@@ -645,16 +734,25 @@ public void run() {
         OnChangeSubscriptionQos qos =
             new OnChangeSubscriptionQos(minIntervalMs, expiryDateMs, publicationTtlMs);
         ...
-        subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+        subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
             new <Broadcast>BroadcastAdapter() {
+                // Gets called on every received publication
                 @Override
-                public void onReceive(... OutputParameters ...) {
-                    // handle info
+                public void onReceive(<AttributeType> value) {
+                    // handle broadcast info
                 }
 
+                // Gets called when the subscription is successfully registered at the provider
                 @Override
-                public void onError() {
-                    // handle subscription error, e.g. missed info
+                public void onSubscribed(String subscriptionId) {
+                    // save the subscriptionId for updating the subscription or unsubscribing from it
+                    // the subscriptionId can also be taken from the future returned by the subscribeTo call
+                }
+
+                // Gets called on every error that is detected on the subscription
+                @Override
+                public void onError(JoynrRuntimeException e) {
+                    // handle error
                 }
             },
             qos
@@ -666,6 +764,15 @@ public void run() {
         // handle error
     }
     ...
+    // get the subscriptionId from the Future when needed
+    String subscriptionId;
+    if (subscriptionIdFuture != null) {
+        try {
+            subscriptionId = subscriptionIdFuture.get();
+        } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
+            // handle error
+        }
+    }
 }
 ```
 
@@ -674,16 +781,25 @@ public void run() {
 The subscribeTo method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
 
 ```java
-subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
     new <Broadcast>BroadcastAdapter() {
+        // Gets called on every received publication
         @Override
-        public void onReceive(... OutputParameters ...) {
-            // handle info
+        public void onReceive(<AttributeType> value) {
+            // handle broadcast info
         }
 
+        // Gets called when the subscription is successfully updated at the provider
         @Override
-        public void onError() {
-            // handle subscription error, e.g. missed info
+        public void onSubscribed(String subscriptionId) {
+            // save the subscriptionId for updating the subscription or unsubscribing from it
+            // the subscriptionId can also be taken from the future returned by the subscribeTo call
+        }
+
+        // Gets called on every error that is detected on the subscription
+        @Override
+        public void onError(JoynrRuntimeException e) {
+            // handle error
         }
     },
     qos,
@@ -693,9 +809,20 @@ subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
 
 ## Subscribing to a broadcast with filter parameters
 
-Selective Broadcasts use filter logic implemented by the provider and filter parameters set by the consumer to send only those broadcasts from the provider to the consumer that pass the filter. The broadcast output values are passed to the consumer via callback.
-The **subscriptionId** returned by the call can be used later to update the subscription or to unsubscribe from it.
-In addition to the normal broadcast subscription, the filter parameters for this broadcast must be created and initialized as additional parameters to the ```subscribeTo``` method. These filter parameters are used to receive only those broadcasts matching the provided filter criteria.
+Selective Broadcasts use filter logic implemented by the provider and filter parameters set by the
+consumer to send only those broadcasts from the provider to the consumer that pass the filter. The
+broadcast output values are passed to the consumer via callback.
+
+The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
+by the subscribeTo call (see section
+[Subscribing to a broadcast unconditionally](#subscribing-to-a-broadcast-unconditionally)).
+
+To receive the subscription, a **callback** has to be provided (cf. section
+[Subscribing to a broadcast unconditionally](#subscribing-to-a-broadcast-unconditionally)).
+
+In addition to the normal broadcast subscription, the filter parameters for this broadcast must be
+created and initialized as additional parameters to the ```subscribeTo``` method. These filter
+parameters are used to receive only those broadcasts matching the provided filter criteria.
 
 ```java
 import joynr.OnChangeSubscriptionQos;
@@ -710,7 +837,7 @@ import joynr.<Package>.<TypeCollection>.<Type>;
 public void run() {
     // setup proxy named "<interface>Proxy"
     ...
-    private String subscriptionId;
+    private Future<String> subscriptionIdFuture;
     ...
     try {
         int minIntervalMs;
@@ -726,16 +853,25 @@ public void run() {
         // foreach BroadcastFilterAttribute of that filter
         filter.setBroadcastFilter<Attribute>(value);
         ...
-        subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+        subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
             new <Broadcast>BroadcastAdapter() {
+                // Gets called on every received publication
                 @Override
-                public void onReceive(... OutputParameters ...) {
-                    // handle info
+                public void onReceive(<AttributeType> value) {
+                    // handle broadcast info
                 }
 
+                // Gets called when the subscription is successfully registered at the provider
                 @Override
-                public void onError() {
-                    // handle subscription error, e.g. missed info
+                public void onSubscribed(String subscriptionId) {
+                    // save the subscriptionId for updating the subscription or unsubscribing from it
+                    // the subscriptionId can also be taken from the future returned by the subscribeTo call
+                }
+
+                // Gets called on every error that is detected on the subscription
+                @Override
+                public void onError(JoynrRuntimeException e) {
+                    // handle error
                 }
             },
             qos,
@@ -748,24 +884,35 @@ public void run() {
         // handle error
     }
     ...
+    // to retrieve the subscriptionId, please refer to section "subscribing to a broadcast unconditionally"
 }
 ```
 
 ## Updating a broadcast subscription with filter parameters
 
-The subscribeTo method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
+The subscribeTo method can also be used to update an existing subscription, when the
+**subscriptionId** is given as additional parameter as follows:
 
 ```java
         subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
             new <Broadcast>BroadcastAdapter() {
+                // Gets called on every received publication
                 @Override
                 public void onReceive(... OutputParameters ...) {
-                    // handle info
+                    // handle broadcast info
                 }
 
+                // Gets called when the subscription is successfully updated at the provider
                 @Override
-                public void onError() {
-                    // handle subscription error, e.g. missed info
+                public void onSubscribed(String subscriptionId) {
+                    // save the subscriptionId for updating the subscription or unsubscribing from it
+                    // the subscriptionId can also be taken from the future returned by the subscribeTo call
+                }
+
+                // Gets called on every error that is detected on the subscription
+                @Override
+                public void onError(JoynrRuntimeException e) {
+                    // handle error
                 }
             },
             qos,
@@ -1037,10 +1184,10 @@ providerQos.setSupportsOnChangeSubscriptions(true);
 ```
 
 ### The base class
-The provider class must extend the generated class ```<Interface>AbstractProvider``` and implement
-getter methods for each Franca attribute and a method for each method of the Franca interface. In
-order to send broadcasts the generated code of the super class ```<Interface>AbstractProvider```
-can be used.
+The provider class must extend the generated class ```<Interface>AbstractProvider``` (or
+Default<Interface>Provider) and implement getter methods for each Franca attribute and a method for
+each method of the Franca interface. In order to send broadcasts the generated code of the super
+class ```<Interface>AbstractProvider``` can be used.
 
 ```java
 package myPackage;
@@ -1115,6 +1262,9 @@ public Promise<DeferredVoid> set<Attribute>(<AttributeType> <attribute>) {
     deferred.resolve();
     // if an error occurs, the Deferred can be rejected with a ProviderRuntimeException
     deferred.reject(new ProviderRuntimeException(<errorMessage>));
+    // if attribute is notifiable (not marked as noSubscriptions in the Franca model),
+    // inform subscribers about the value change
+    <Attribute>Changed(<Attribute>);
     ...
     // from current thread
     return new Promise<DeferredVoid>(deferred);

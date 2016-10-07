@@ -20,12 +20,18 @@
 
 #include <cassert>
 #include <functional>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/placeholders.hpp>
-#include <boost/bind.hpp>
 
-#include "joynr/DispatcherUtils.h"
-#include "joynr/MessagingStubFactory.h"
+#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStubFactory.h"
+#include "joynr/InProcessMessagingAddress.h"
+#include "joynr/IPlatformSecurityManager.h"
+#include "joynr/JoynrMessage.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/SteadyTimer.h"
+#include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -33,10 +39,7 @@
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/types/ProviderQos.h"
 #include "cluster-controller/access-control/IAccessController.h"
-#include "joynr/IPlatformSecurityManager.h"
-#include "joynr/InProcessMessagingAddress.h"
 
 namespace joynr
 {

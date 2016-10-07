@@ -26,6 +26,8 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
@@ -35,12 +37,15 @@ import joynr.types.Version;
 public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
     private static final long serialVersionUID = 1L;
     private ProviderQosPersisted providerQosPersisted;
+    @JsonProperty("clusterControllerId")
+    private String clusterControllerId;
 
     public GlobalDiscoveryEntryPersisted() {
     }
 
-    public GlobalDiscoveryEntryPersisted(GlobalDiscoveryEntry globalDiscoveryEntryObj) {
+    public GlobalDiscoveryEntryPersisted(GlobalDiscoveryEntry globalDiscoveryEntryObj, String clusterControllerId) {
         super(globalDiscoveryEntryObj);
+        this.clusterControllerId = clusterControllerId;
         providerQosPersisted = new ProviderQosPersisted(globalDiscoveryEntryObj.getQos());
     }
 
@@ -53,7 +58,8 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
                                   long lastSeenDateMs,
                                   long expiryDateMs,
                                   String publicKeyId,
-                                  String address) {
+                                  String address,
+                                  String clusterControllerId) {
         // CHECKSTYLE ON
         super(providerVersion,
               domain,
@@ -64,6 +70,7 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
               expiryDateMs,
               publicKeyId,
               address);
+        this.clusterControllerId = clusterControllerId;
         providerQosPersisted = new ProviderQosPersisted(qos);
     }
 
@@ -140,13 +147,37 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
         getProviderVersion().setMinorVersion(minorVersion);
     }
 
+    @Column
+    public String getClusterControllerId() {
+        return clusterControllerId;
+    }
+
+    public void setClusterControllerId(String clusterControllerId) {
+        this.clusterControllerId = clusterControllerId;
+    }
+
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj);
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        GlobalDiscoveryEntryPersisted other = (GlobalDiscoveryEntryPersisted) obj;
+        if (clusterControllerId == null) {
+            if (other.clusterControllerId != null)
+                return false;
+        } else if (!clusterControllerId.equals(other.clusterControllerId))
+            return false;
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((clusterControllerId == null) ? 0 : clusterControllerId.hashCode());
+        return result;
     }
 }

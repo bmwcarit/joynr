@@ -1,7 +1,7 @@
 option(
     USE_PLATFORM_GTEST_GMOCK
     "Resolve dependency to gtest and gmock from the system?"
-    OFF
+    ON
 )
 message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
 
@@ -90,7 +90,6 @@ function(AddTest TARGET)
         ${TARGET}
         PROPERTIES
         COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-        AUTOMOC TRUE
     )
     if(NOT USE_PLATFORM_GTEST_GMOCK)
         add_dependencies(${TARGET} googletest)

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/Permission.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
-
-#include "joynr/TypeUtil.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -71,10 +69,6 @@ public:
                                            TrustLevel::LOW,
                                            std::string(),
                                            Permission::NO);
-    }
-
-    void TearDown()
-    {
     }
 
     static const std::vector<TrustLevel::Enum> ALL_TRUST_LEVELS;

@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.20.4</version>
+		<version>0.21.0</version>
 	</parent>
 
 	<properties>
@@ -492,7 +492,6 @@
 										<include>DISCLAIMER</include>
 										<include>joynr.js</include>
 										<include>libjoynr-deps*.js</include>
-										<include>package.json</include>
 										<include>require.config.node.js</include>
 										<include>joynr/**</include>
 										<include>global/LocalStorageNode.js</include>
@@ -512,6 +511,12 @@
 								</resource>
 								<resource>
 									<directory>${basedir}/wiki/npm</directory>
+								</resource>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>package.json</include>
+									</includes>
 								</resource>
 							</resources>
 						</configuration>
@@ -657,7 +662,7 @@
 						-->
 						<exclude>jsdoc3.conf.json</exclude>
 						<exclude>src/main/resources/libjoynrEndFrag.js</exclude>
-						<exclude>src/main/resources/package.json</exclude>
+						<exclude>package.json</exclude>
 						<exclude>src/test/resources/spec/support/jasmine.json</exclude>
 					</excludes>
 				</configuration>
@@ -807,6 +812,8 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
+						<!-- configuration options documentation:
+							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
 						<executions>
 							<execution>
 								<id>npm-install</id>
@@ -818,6 +825,34 @@
 									</arguments>
 									<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
 								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+
+							<!-- run nodejs based unit tests -->
+
+							<!-- maven doesn't keep the execution permission of
+								${project.build.testOutputDirectory}/node_run_unit_tests.sh.
+								So we fix it here -->
+							<execution>
+								<configuration>
+									<executable>chmod</executable>
+									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_unit_tests.sh</commandlineArgs>
+								</configuration>
+								<id>process-unit-tests-nodejs</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<configuration>
+									<executable>${project.build.testOutputDirectory}/node_run_unit_tests.sh</executable>
+									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
+								</configuration>
+								<id>run-unit-tests-nodejs</id>
+								<phase>test</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
@@ -876,41 +911,6 @@
 							<skipKarma>false</skipKarma>
 							<karmaFailureIgnore>false</karmaFailureIgnore>
 						</configuration>
-					</plugin>
-
-					<!-- run nodejs based unit tests -->
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<!-- configuration options documentation:
-							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
-						<executions>
-							<!-- maven doesn't keep the execution permission of
-								${project.build.testOutputDirectory}/node_run_unit_tests.sh.
-								So we fix it here -->
-							<execution>
-								<configuration>
-									<executable>chmod</executable>
-									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_unit_tests.sh</commandlineArgs>
-								</configuration>
-								<id>process-unit-tests-nodejs</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
-								<configuration>
-									<executable>${project.build.testOutputDirectory}/node_run_unit_tests.sh</executable>
-									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
-								</configuration>
-								<id>run-unit-tests-nodejs</id>
-								<phase>test</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
 					</plugin>
 				</plugins>
 			</build>

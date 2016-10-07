@@ -84,8 +84,8 @@ docker build \
 	--build-arg JOYNR_TEST_RPM_NAME=${testrpm} \
 	.
 
-docker tag -f ${repository}joynr-runtime-environment${version} ${repository}joynr-runtime-environment:latest
-docker tag -f ${repository}joynr-runtime-environment${version} joynr-runtime-environment:latest
+docker tag ${repository}joynr-runtime-environment${version} ${repository}joynr-runtime-environment:latest
+docker tag ${repository}joynr-runtime-environment${version} joynr-runtime-environment:latest
 
 if [ "$push_image" == "ON" ]
 then

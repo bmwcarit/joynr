@@ -249,6 +249,15 @@ See the
 [System Integration Test](../tests/system-integration-test/sit-jee-app/src/main/java/io/joynr/systemintegrationtest/jee/SystemIntegrationTestBean.java)
 for an example of its usage.
 
+#### <a name="provider_domain"></a> Customising the registration domain
+
+In some cases you might want to register your providers under a different domain than the
+application default (specified via `@JoynrLocalDomain`, see configuration documentation above).
+
+In order to do so, use the `@ProviderDomain` annotation on your implementing bean in addition
+to the `@ServiceLocator` annotation. The value you provide will be used as the domain when
+registering the bean as a joynr provider.
+
 ### Calling services
 
 In order to call services provided by other participants (e.g. applications
@@ -284,6 +293,10 @@ It is also possible to target multiple providers with one proxy. You can achieve
 this by either spcifying a set of domains during lookup, or a custom
 `ArbitrationStrategyFunction` in the `DiscoveryQos`, or combine both approaches.
 See the [Java Developer Guide](java.md) for details.
+
+__IMPORTANT__: if you intend to have your logic make multiple calls to the same
+provider, then you should locally cache the proxy instance returned by the
+ServiceLocator, as the operation of creating a proxy is expensive.
 
 ## Clustering
 
@@ -391,7 +404,9 @@ The project is sub-divided into one multi-module parent project and three subpro
    |- radio-jee-consumer
 ```
 
-In order to build the project, change to the `radio-jee` directory and call `mvn install`.
+In order to build the project you first have to have built the rest of joynr by executing
+`mvn install` from the root of the directory where you checked out joynr to. Next change
+to the `radio-jee` directory and call `mvn install`.
 
 The following describes running the example on [Payara 4.1](http://www.payara.fish). First,
 install the application server and you will also need to install an MQTT broker, e.g.
@@ -424,3 +439,12 @@ Note the `radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBe
 and `radio-jee-consumer/src/main/java/io/joynr/examples/jee/RadioConsumerRestEndpoint.java`
 classes in particular, which represent the implementation of the joynr provider for the
 Radio service, and the consumer thereof.
+
+If you want to use the radio JEE example as a template for building a joynr based JEE application
+don't forget to change the joynr dependency version in the Maven POMs to a release version. If you
+change the parent POM, which is also likely, don't forget to pull the necessary `dependencyManagement`
+entries from the joynr parent POM into your own POM.  
+You'll also likely want to change the way the FIDL file is included in the API project. In this
+example it is obtained from the `radio-app` Maven dependency, but you will probably want to have it
+in, e.g., `${project.root}/my-api/src/main/model/my.fidl`, and then reference that file directly
+in the generator configuration. See the [joynr Generator Documentation](generator.md) for details.

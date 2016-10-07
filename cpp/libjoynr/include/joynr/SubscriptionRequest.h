@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,9 @@ namespace joynr
 
 /** @class SubscriptionRequest
   * @brief SubscriptionRequest stores the information that is necessary to store a
- * subscription-Request on
+  * subscription request on
   * subscriber side, while Aribtration is handled.
   */
-
 class JOYNR_EXPORT SubscriptionRequest
 {
 public:
@@ -82,6 +81,6 @@ protected:
 
 } // namespace joynr
 
-MUESLI_REGISTER_TYPE(joynr::SubscriptionRequest, "joynr.SubscriptionRequest");
+MUESLI_REGISTER_TYPE(joynr::SubscriptionRequest, "joynr.SubscriptionRequest")
 
 #endif // SUBSCRIPTIONREQUEST_H

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,26 +19,27 @@
 #ifndef BROADCASTSUBSCRIPTIONREQUEST_H
 #define BROADCASTSUBSCRIPTIONREQUEST_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include <boost/optional.hpp>
 
 #include "joynr/SubscriptionRequest.h"
-#include "joynr/BroadcastFilterParameters.h"
-#include "joynr/OnChangeSubscriptionQos.h"
 
+#include "joynr/JoynrExport.h"
+#include "joynr/BroadcastFilterParameters.h"
 #include "joynr/Logger.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
 
-/** @class BroadcastSubscriptionRequest
-  * @brief SubscriptionRequest stores the information that is necessary to store a broadcast
-  * subscription-Request on subscriber side, while Aribtration is handled.
-  */
+class SubscriptionQos;
 
+/** @class BroadcastSubscriptionRequest
+  * @brief BroadcastSubscriptionRequest stores the information that is necessary to store
+  * a broadcast subscription request on subscriber side, while Arbitration is handled.
+  */
 class JOYNR_EXPORT BroadcastSubscriptionRequest : public SubscriptionRequest
 {
 public:

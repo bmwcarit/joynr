@@ -30,7 +30,7 @@ int main()
     using namespace generator;
     using Generators = std::tuple<String, ByteArray, ComplexStruct>;
     std::size_t length = 100;
-    std::uint64_t runs = 1000;
+    std::uint64_t runs = 100000;
     auto fun = [runs, length](auto generator) {
         using Generator = decltype(generator);
         using ParamType = typename Generator::type;

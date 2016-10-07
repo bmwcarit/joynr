@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(jsit-0.20.4)
+project(jsit-0.21.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -19,7 +19,7 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.20.4 REQUIRED)
+find_package(Joynr 0.21.0 REQUIRED)
 message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_WS_INCLUDE_DIRS=${Joynr_LIB_WS_INCLUDE_DIRS}")
@@ -38,6 +38,18 @@ if(${GENERATE_SOURCES})
         GENERATION_LANGUAGE "cpp"
     )
 endif(${GENERATE_SOURCES})
+
+######## Add Boost ########
+
+find_package(Boost 1.58.0 REQUIRED
+    COMPONENTS
+    system
+    filesystem
+)
+message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")
+message(STATUS "variable Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
+
+include_directories(${Boost_INCLUDE_DIRS})
 
 ##### Helper variables for using generated code ###########
 file(
@@ -96,10 +108,22 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
+# copy systemintegrationtest resources and settings
+file(
+    COPY "src/main/resources"
+    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
+
 # copy joynr executables
 file(
     COPY ${Joynr_EXECUTABLES}
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
+
+# Link with the joynr libraries
+set(jsit-tests_LIBRARIES
+    ${Joynr_LIB_COMMON_LIBRARIES}
+    ${Boost_LIBRARIES}
 )
 
 # Compile the provider application (requires: running cluster controller)
@@ -115,7 +139,7 @@ add_executable(
 # Link the provider application
 target_link_libraries(
     jsit-provider-ws
-    ${Joynr_LIB_COMMON_LIBRARIES}
+    ${jsit-tests_LIBRARIES}
     ${Joynr_LIB_WS_LIBRARIES}
 )
 
@@ -132,7 +156,7 @@ add_executable(
 # Link the consumer application
 target_link_libraries(
     jsit-consumer-ws
-    ${Joynr_LIB_COMMON_LIBRARIES}
+    ${jsit-tests_LIBRARIES}
     ${Joynr_LIB_WS_LIBRARIES}
 )
 
@@ -148,3 +172,14 @@ if(ENABLE_CLANG_FORMATTER)
     AddClangFormat(jsit-consumer-ws)
     AddClangFormat(jsit-provider-ws)
 endif(ENABLE_CLANG_FORMATTER)
+
+if(NOT INSTALL_TEST_DIR)
+    set(INSTALL_TEST_DIR "${CMAKE_INSTALL_BINDIR}" CACHE PATH "Installation sub directory for tests")
+endif(NOT INSTALL_TEST_DIR)
+
+install(
+    FILES
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-consumer.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-provider.settings
+    DESTINATION ${INSTALL_TEST_DIR}/resources
+)

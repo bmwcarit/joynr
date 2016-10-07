@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,17 @@
 #define UTIL_H
 
 #include <cstddef>
+#include <algorithm>
+#include <chrono>
+#include <iterator>
+#include <set>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include <set>
-#include <algorithm>
+
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm/copy.hpp>
 
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/begin_end.hpp>
@@ -162,6 +167,41 @@ bool invokeOn(const Fun& fun)
     using EndIterator = typename boost::mpl::end<Sequence>::type;
     return invokeOnImpl<BeginIterator, EndIterator>(fun);
 }
+
+template <template <typename...> class MultiMap, typename K, typename V>
+std::size_t removeAllPairsFromMultiMap(MultiMap<K, V>& map, const std::pair<K, V>& pair)
+{
+    std::size_t removedElements = 0;
+    auto range = map.equal_range(pair.first);
+    auto it = range.first;
+    while (it != range.second) {
+        if (it->second == pair.second) {
+            it = map.erase(it);
+            ++removedElements;
+        } else {
+            ++it;
+        }
+    }
+    return removedElements;
+}
+
+template <typename Map>
+auto getKeyVectorForMap(const Map& map)
+{
+    std::vector<typename Map::key_type> keys;
+    boost::copy(map | boost::adaptors::map_keys, std::back_inserter(keys));
+    return keys;
+}
+
+/**
+ * Converts a std::chrono::system_clock::time_point to milliseconds
+ */
+std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint);
+
+/**
+ * Converts a std::chrono::system_clock::time_point to a printable string
+ */
+std::string toDateString(const std::chrono::system_clock::time_point& timePoint);
 
 } // namespace util
 

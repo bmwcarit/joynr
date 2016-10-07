@@ -95,7 +95,6 @@
 #include "joynr/types/Version.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
-#include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterRegistrationControlEntryChangedBroadcastFilterParameters.h"
@@ -174,6 +173,9 @@ public:
     MOCK_METHOD3(lookup, void(
                      const std::string& participantId,
                      std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> callbackFct,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+    MOCK_METHOD3(touch, void(const std::string& clusterControllerId,
+                     std::function<void()> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
 
     void setProxyBuilder(std::unique_ptr<joynr::IProxyBuilder<joynr::infrastructure::GlobalCapabilitiesDirectoryProxy>> input) {
@@ -807,6 +809,17 @@ public:
     MOCK_METHOD1(touchSubscriptionState,void(const std::string& subscriptionId));
 };
 
+class MockSubscriptionCallback : public joynr::ISubscriptionCallback {
+public:
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
+    MOCK_METHOD1(executePublication, void(joynr::SubscriptionPublication& subscriptionPublication));
+    MOCK_METHOD1(execute, void(const joynr::SubscriptionReply& subscriptionReply));
+
+    void execute(joynr::SubscriptionPublication&& subscriptionPublication) override {
+        executePublication(subscriptionPublication);
+    }
+};
+
 class MockParticipantIdStorage : public joynr::ParticipantIdStorage {
 public:
     MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {
@@ -939,8 +952,7 @@ public:
 
 class MockLocalDomainAccessController : public joynr::LocalDomainAccessController {
 public:
-    MockLocalDomainAccessController(joynr::LocalDomainAccessStore* store):
-        LocalDomainAccessController(store){}
+    using joynr::LocalDomainAccessController::LocalDomainAccessController;
 
     MOCK_METHOD5(getConsumerPermission,
                  void(
@@ -976,7 +988,7 @@ public:
     MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings, boost::asio::io_service& ioService):
         messageRouter(ioService),
         libjoynrMockSettings(settings),
-        LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter, libjoynrMockSettings){}
+        LocalCapabilitiesDirectory(messagingSettings, nullptr, "localAddress", messageRouter, libjoynrMockSettings, ioService, "clusterControllerId"){}
 
     MOCK_METHOD3(
             lookup,
@@ -1001,8 +1013,8 @@ class MockWebSocketClient : public joynr::WebSocketPpClient
 {
 public:
 
-    MockWebSocketClient(joynr::WebSocketSettings wsSettings)
-        : WebSocketPpClient(wsSettings) {}
+    MockWebSocketClient(joynr::WebSocketSettings wsSettings, boost::asio::io_service& ioService)
+        : WebSocketPpClient(wsSettings, ioService) {}
     MOCK_METHOD0(dtorCalled, void());
     ~MockWebSocketClient() override
     {
@@ -1023,16 +1035,11 @@ private:
     std::function<void()> onConnectionClosedCallback;
 };
 
-class MockQWebSocketSendWrapper : public joynr::QWebSocketSendWrapper {
+class MockWebSocketSendInterface : public joynr::IWebSocketSendInterface {
 public:
-
-    MockQWebSocketSendWrapper(QWebSocket* websocket)
-        : QWebSocketSendWrapper(websocket)
-    {
-
-    }
-
-    MOCK_METHOD1(send, void (const std::string& message));
+    MOCK_METHOD2(send, void (const std::string& message,
+                             const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
+    MOCK_CONST_METHOD0(isInitialized, bool ());
     MOCK_CONST_METHOD0(isConnected, bool ());
 };
 

@@ -2,7 +2,7 @@
 
 function usage
 {
-    echo "usage: run-maven.sh"
+    echo "usage: start-performance-tests.sh"
 }
 
 while [ "$1" != "" ]; do

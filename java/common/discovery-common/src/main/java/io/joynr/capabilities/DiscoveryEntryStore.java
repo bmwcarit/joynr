@@ -44,4 +44,5 @@ public interface DiscoveryEntryStore {
 
     public abstract boolean hasDiscoveryEntry(DiscoveryEntry discoveryEntry);
 
+    public abstract void touch(String clusterControllerId);
 }

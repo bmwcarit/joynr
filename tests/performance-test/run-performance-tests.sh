@@ -43,7 +43,7 @@ JAVA_WARMUPS=50
 
 # For test cases with a single consumer, this constant stores the number of messages which
 # will be transmitted during the test
-SINGLECONSUMER_RUNS=1000
+SINGLECONSUMER_RUNS=5000
 
 # For test cases with several consumers, this constant stores how many consumer instances will
 # be created
@@ -66,6 +66,9 @@ JETTY_PID=""
 MOSQUITTO_PID=""
 CLUSTER_CONTROLLER_PID=""
 PROVIDER_PID=""
+
+# arguments which are passed to the C++ cluster-controller
+ADDITIONAL_CC_ARGS=""
 
 function waitUntilJettyStarted {
     started=0
@@ -135,7 +138,7 @@ function startCppClusterController {
     # ensure previously created persistence files are gone
     rm -Rf *.persist joynr.settings
 
-    ./cluster-controller 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
+    ./cluster-controller $ADDITIONAL_CC_ARGS 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
 
     # Wait long enough in order to allow the cluster controller finish its start procedure
     sleep 5
@@ -150,7 +153,7 @@ function startCppPerformanceTestProvider {
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
     cd $PERFORMANCETESTS_BIN_DIR
-    ./performance-provider-app --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    ./performance-provider-app --globalscope on --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
 
     # Wait long enough in order to allow the provider to finish the registration procedure
     sleep 5
@@ -367,9 +370,12 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:d:j:p:r:s:t:x:y:m:z:n:" OPTIONS;
+while getopts "c:d:j:p:r:s:t:x:y:m:z:n:a:" OPTIONS;
 do
     case $OPTIONS in
+        a)
+            ADDITIONAL_CC_ARGS=$OPTARG
+            ;;
         c)
             MULTICONSUMER_NUMINSTANCES=$OPTARG
             ;;
@@ -419,11 +425,13 @@ if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "JS_ASYNC" ] && [ "$TESTCASE" != "JS_SHORTCIRCUIT" ] && \
    [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
-   [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ]
+   [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
+   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] 
 then
     echo "\"$TESTCASE\" is not a valid testcase"
     echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
-JS_CONSUMER, JS_SHORTCIRCUIT, OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, CPP_SERIALIZER"
+JS_CONSUMER, JS_SHORTCIRCUIT, OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
+CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER"
     echoUsage
     exit 1
 fi
@@ -507,6 +515,15 @@ then
     then
         echo "Testcase: JS_CONSUMER for domain $DOMAINNAME" | tee -a $REPORTFILE
         performJsConsumerTest $STDOUT $REPORTFILE true OFF
+    fi
+
+    if [ "$TESTCASE" == "CPP_PROVIDER" ]
+    then
+        echo "Testcase: CPP_PROVIDER for domain $DOMAINNAME" | tee -a $REPORTFILE
+        startCppPerformanceTestProvider $STDOUT $REPORTFILE true OFF
+        # this testcase is used to start a provider which is then accessed from an external consumer
+        # in order to keep the provider running, we sleep for a long time here
+        sleep 100000000
     fi
 
     stopAnyProvider

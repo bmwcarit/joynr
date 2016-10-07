@@ -3,7 +3,7 @@ package io.joynr.capabilities.directory;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package io.joynr.capabilities.directory;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.provider.DeferredVoid;
@@ -28,7 +29,11 @@ import io.joynr.provider.Promise;
 import java.util.Arrays;
 import java.util.Collection;
 
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 
@@ -57,11 +62,23 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     @Override
     public Promise<DeferredVoid> add(GlobalDiscoveryEntry globalDiscoveryEntry) {
         DeferredVoid deferred = new DeferredVoid();
-        GlobalDiscoveryEntryPersisted discoveryEntry = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry);
+        Promise<DeferredVoid> promise = new Promise<DeferredVoid>(deferred);
+        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
+        String clusterControllerId;
+        if (address instanceof MqttAddress) {
+            clusterControllerId = ((MqttAddress) address).getTopic();
+        } else if (address instanceof ChannelAddress) {
+            clusterControllerId = ((ChannelAddress) address).getChannelId();
+        } else {
+            deferred.reject(new ProviderRuntimeException(""));
+            return promise;
+        }
+        GlobalDiscoveryEntryPersisted discoveryEntry = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
+                                                                                         clusterControllerId);
         logger.debug("registered discovery entry: {}", discoveryEntry);
         discoveryEntryStore.add(discoveryEntry);
         deferred.resolve();
-        return new Promise<DeferredVoid>(deferred);
+        return promise;
     }
 
     @Override
@@ -125,6 +142,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     @Override
     public Promise<DeferredVoid> touch(String clusterControllerId) {
         DeferredVoid deferred = new DeferredVoid();
+        discoveryEntryStore.touch(clusterControllerId);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }

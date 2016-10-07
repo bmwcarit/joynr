@@ -69,6 +69,7 @@ public:
         dispatcher(&messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
+        singleThreadIOService.start();
     }
 
     void SetUp(){
@@ -77,10 +78,6 @@ public:
         subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService());
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-    }
-
-    void TearDown(){
-
     }
 
 protected:

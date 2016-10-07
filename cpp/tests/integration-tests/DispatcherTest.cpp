@@ -31,10 +31,12 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/exceptions/SubscriptionException.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockCallback.h"
 #include "joynr/InterfaceRegistrar.h"
-
+#include "joynr/Semaphore.h"
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/types/Localisation/GpsLocation.h"
@@ -43,6 +45,10 @@
 using namespace ::testing;
 using namespace joynr;
 
+ACTION_P(ReleaseSemaphore, semaphore)
+{
+    semaphore->notify();
+}
 
 class DispatcherTest : public ::testing::Test {
 public:
@@ -68,13 +74,7 @@ public:
         dispatcher(&messageSender, singleThreadIOService.getIOService())
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-    }
-
-
-    void SetUp(){
-    }
-
-    void TearDown(){
+        singleThreadIOService.start();
     }
 
     void invokeOnSuccessWithGpsLocation(
@@ -112,6 +112,7 @@ INIT_LOGGER(DispatcherTest);
 // from JoynrDispatcher.receive(Request) to IRequestCaller.operation(params)
 // this test goes a step further and makes sure that the response is visible in Messaging
 TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
+    joynr::Semaphore semaphore(0);
 
     // Expect the mock object MockGpsRequestCaller in MockObjects.h to be called.
     // The OUT param Gpslocation is set with gpsLocation1
@@ -162,20 +163,21 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                     ),
                     _
                 )
-    );
+    ).WillOnce(ReleaseSemaphore(&semaphore));
 
     // test code: send the request through the dispatcher.
     // This should cause our mock messaging to receive a reply from the mock provider
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
 
     dispatcher.receive(msg);
-    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
+    joynr::Semaphore semaphore(0);
 
     // Expect the mock callback's onSuccess method to be called with the reply (a gps location)
-    EXPECT_CALL(*mockCallback, onSuccess(Eq(gpsLocation1)));
+    EXPECT_CALL(*mockCallback, onSuccess(Eq(gpsLocation1))).WillOnce(ReleaseSemaphore(&semaphore));
 
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
@@ -199,5 +201,35 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     dispatcher.addReplyCaller(requestReplyId, mockReplyCaller, qos);
     dispatcher.receive(msg);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+}
+
+TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCallback) {
+    joynr::Semaphore semaphore(0);
+    std::string subscriptionId = "testSubscriptionId";
+
+    //construct a subscription reply
+    SubscriptionReply reply;
+    reply.setSubscriptionId(subscriptionId);
+
+    JoynrMessage msg = messageFactory.createSubscriptionReply(
+                proxyParticipantId,
+                providerParticipantId,
+                qos,
+                reply
+    );
+
+    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService());
+    auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
+    EXPECT_CALL(mockSubscriptionManager, getSubscriptionCallback(Eq(subscriptionId))).WillOnce(Return(mockSubscriptionCallback));
+
+    EXPECT_CALL(*mockSubscriptionCallback, execute(Eq(reply))).WillOnce(ReleaseSemaphore(&semaphore));
+
+    // test code: send the subscription reply through the dispatcher.
+    // This should cause our subscription callback to be called
+    dispatcher.registerSubscriptionManager(&mockSubscriptionManager);
+    dispatcher.receive(msg);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    dispatcher.registerSubscriptionManager(nullptr);
 }

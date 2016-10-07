@@ -390,6 +390,24 @@ define(
                         };
 
                 /**
+                 * This method sends a freshness update to the global capabilities directory to update
+                 * the lastSeenDateMs of the entries registered via the local cluster controller.
+                 *
+                 * @param clusterControllerId the channelId of the local cluster controller
+                 * @param ttlMs the time to live of the freshness update message
+                 *
+                 * @returns {Object} an A+ promise
+                 */
+                this.touch = function touch(clusterControllerId, ttlMs) {
+                    return getGlobalCapabilitiesDirectoryProxy(ttlMs).then(function(globalCapabilitiesDirectoryProxy){
+                        return globalCapabilitiesDirectoryProxy.touch({clusterControllerId: clusterControllerId});
+                    }).catch(function(error) {
+                        throw new Error("Error calling operation \"touch\" of GlobalCapabilitiesDirectory because: "
+                                    + error);
+                    });
+                };
+
+                /**
                  * This method removes a capability from the global capabilities directory.
                  *
                  * @function

@@ -25,13 +25,19 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tests</artifactId>
-		<version>0.20.4</version>
+		<version>0.21.0</version>
 	</parent>
 
 	<build>
 		<resources>
 			<resource>
 				<directory>src/main/js</directory>
+			</resource>
+			<resource>
+				<directory>${basedir}</directory>
+				<includes>
+					<include>package.json</include>
+				</includes>
 			</resource>
 		</resources>
 
@@ -51,7 +57,7 @@
 						<root>.</root>
 					</roots>
 					<excludes>
-						<exclude>src/main/js/package.json</exclude>
+						<exclude>package.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

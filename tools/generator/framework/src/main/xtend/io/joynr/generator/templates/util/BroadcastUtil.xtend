@@ -2,7 +2,7 @@ package io.joynr.generator.templates.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,6 @@ public class BroadcastUtil {
 
 	@Inject
 	private extension NamingUtil
-
-	def isSelective(FBroadcast broadcast) {
-		return broadcast.selective
-	}
-
 
 	def Iterable<FArgument> getOutputParameters(FBroadcast event) {
 		if (event == null || event.outArgs.size() == 0){

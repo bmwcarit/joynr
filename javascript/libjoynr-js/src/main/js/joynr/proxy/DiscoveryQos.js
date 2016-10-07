@@ -30,7 +30,7 @@ define(
             var defaultSettings = {
                 discoveryTimeoutMs : 30000,
                 discoveryRetryDelayMs : 1000,
-                arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
+                arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
                 cacheMaxAgeMs : 0,
                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                 providerMustSupportOnChange : false,

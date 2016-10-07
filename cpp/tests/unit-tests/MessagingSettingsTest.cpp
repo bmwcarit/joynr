@@ -21,7 +21,6 @@
 #include "PrettyPrint.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Settings.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/BrokerUrl.h"
 
 using namespace joynr;
@@ -34,9 +33,6 @@ public:
         testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings"),
         testSettingsFileNameMqttWithHttpBackend("test-resources/MqttWithHttpBackendMessagingSettingsTest.settings")
     {
-    }
-
-    virtual void TearDown() {
     }
 
 protected:

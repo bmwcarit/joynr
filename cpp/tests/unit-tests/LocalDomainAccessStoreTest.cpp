@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
-#include "joynr/TypeUtil.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -140,7 +139,7 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAces) {
                                                                                                     expectedMasterAccessControlEntry.getInterfaceName(),
                                                                                                     expectedMasterAccessControlEntry.getOperation()).get());
     MasterAccessControlEntry masterAceWildcardUser(expectedMasterAccessControlEntry);
-    masterAceWildcardUser.setUid(LocalDomainAccessStore::WILDCARD);
+    masterAceWildcardUser.setUid(access_control::WILDCARD);
     localDomainAccessStore->updateMasterAccessControlEntry(masterAceWildcardUser);
 
     std::vector<MasterAccessControlEntry> masterAces = localDomainAccessStore->getMasterAccessControlEntries(TEST_DOMAIN1, TEST_INTERFACE1);
@@ -159,7 +158,7 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAces) {
 }
 
 TEST_F(LocalDomainAccessStoreTest, getMasterAceWithWildcardOperation) {
-    expectedMasterAccessControlEntry.setOperation(LocalDomainAccessStore::WILDCARD);
+    expectedMasterAccessControlEntry.setOperation(access_control::WILDCARD);
     localDomainAccessStore->updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
 
     EXPECT_EQ(expectedMasterAccessControlEntry, localDomainAccessStore->getMasterAccessControlEntry(expectedMasterAccessControlEntry.getUid(),
@@ -229,7 +228,7 @@ TEST_F(LocalDomainAccessStoreTest, getOwnerAccessControlEntry) {
                                                                                                     expectedOwnerAccessControlEntry.getInterfaceName(),
                                                                                                     expectedOwnerAccessControlEntry.getOperation()).get());
     OwnerAccessControlEntry ownerAceWildcardUser(expectedOwnerAccessControlEntry);
-    ownerAceWildcardUser.setUid(LocalDomainAccessStore::WILDCARD);
+    ownerAceWildcardUser.setUid(access_control::WILDCARD);
     EXPECT_TRUE(localDomainAccessStore->updateOwnerAccessControlEntry(ownerAceWildcardUser));
 
     std::vector<OwnerAccessControlEntry> ownerAces = localDomainAccessStore->getOwnerAccessControlEntries(TEST_DOMAIN1, TEST_INTERFACE1);

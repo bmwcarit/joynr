@@ -1,0 +1,54 @@
+@startuml
+
+WebSocketCcMessagingSkeleton <-[ : onTextMessageReceived
+WebSocketCcMessagingSkeleton -> MessageRouter : route
+MessageRouter -> MessageRouterThreadPool : "schedule(MessageRunnable)"
+MessageRouterThreadPool ->> MessageRunnable : "run <b>(Thread switched)</b>"
+MessageRunnable -> InProcessMessagingStub : transmit
+InProcessMessagingStub -> InProcessLibJoynrMessagingSkeleton : transmit
+InProcessLibJoynrMessagingSkeleton -> Dispatcher : receive
+Dispatcher -> DispatcherThreadPool : "schedule(ReceivedMessageRunnable)"
+DispatcherThreadPool ->> ReceivedMessageRunnable : "run <b>(Thread switched)</b>"
+ReceivedMessageRunnable -> Dispatcher : handleRequestReceived
+Dispatcher -> "DiscoveryRequestInterpreter/DiscoveryRequestCaller" : execute
+"DiscoveryRequestInterpreter/DiscoveryRequestCaller" -> LocalCapabilitiesDirectory : lookup
+
+alt "Entry cached or local"
+	LocalCapabilitiesDirectory -> LocalCapabilitiesDirectory : getLocalAndCachedCapabilities
+else
+	LocalCapabilitiesDirectory -> CapabilitiesClient : lookup
+	CapabilitiesClient ->> GlobalCapabilitiesDirectoryProxy : lookupAsync
+	GlobalCapabilitiesDirectoryProxy ->] : "lookup request"
+
+	note over GlobalCapabilitiesDirectoryProxy
+		"RPC call"
+	end note
+
+	alt "Successful"
+		GlobalCapabilitiesDirectoryProxy --> LocalCapabilitiesDirectory : "GlobalDiscoveryEntry (Callback, calls LocalCapabilitiesDirectory::capabilitiesReceived)"
+		loop "For each received capability"
+			note over LocalCapabilitiesDirectory
+				"TODO MessageRouter : addNextHop. 
+				 Potentially a transmitted message.
+				 Probably not since a CC is (currently)
+				 not a child router"
+			end note
+			LocalCapabilitiesDirectory -> MessageRouter : addNextHop
+			LocalCapabilitiesDirectory -> LocalCapabilitiesDirectory : insertInCache
+		end
+		LocalCapabilitiesDirectory -> LocalCapabilitiesDirectory : erasePendingLookups
+	else "Not successful"
+		GlobalCapabilitiesDirectoryProxy --> LocalCapabilitiesDirectory : "GlobalDiscoveryEntry (Callback)"
+		LocalCapabilitiesDirectory -> LocalCapabilitiesDirectory : erasePendingLookups
+	end
+end
+
+LocalCapabilitiesDirectory --> "DiscoveryRequestInterpreter/DiscoveryRequestCaller" : onSuccess
+"DiscoveryRequestInterpreter/DiscoveryRequestCaller" --> Dispatcher : onSuccess
+Dispatcher -> JoynrMessageSender : sendReply
+
+note over JoynrMessageSender
+	"Message transmitted"
+end note
+
+@enduml

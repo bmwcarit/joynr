@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import java.util.Set;
 import javax.annotation.CheckForNull;
 
 public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
+    public static final String JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS = "joynr.scheduler.capabilities.freshness";
+
     /**
      * Adds a capability to the list of registered local capabilities. May also transmit the updated list to the
      * capabilities directory.

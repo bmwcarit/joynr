@@ -21,9 +21,7 @@
 #include "cluster-controller/http-communication-manager/LongPollingMessageReceiver.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
-#include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/Future.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/serializer/Serializer.h"
@@ -33,19 +31,17 @@ namespace joynr
 
 INIT_LOGGER(HttpReceiver);
 
-HttpReceiver::HttpReceiver(const MessagingSettings& settings)
+HttpReceiver::HttpReceiver(const MessagingSettings& settings,
+                           const std::string& channelId,
+                           const std::string& receiverId)
         : channelCreatedSemaphore(std::make_shared<Semaphore>(0)),
-          channelId(),
-          receiverId(),
+          channelId(channelId),
+          receiverId(receiverId),
           globalClusterControllerAddress(),
           settings(settings),
           messageReceiver(nullptr),
           onTextMessageReceived(nullptr)
 {
-    MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
-    channelId = persist.getChannelId();
-    receiverId = persist.getReceiverId();
-
     JOYNR_LOG_DEBUG(logger, "Print settings... ");
     settings.printSettings();
     updateSettings();
@@ -106,12 +102,12 @@ void HttpReceiver::startReceiveQueue()
             std::chrono::milliseconds(settings.getCreateChannelRetryInterval())};
 
     JOYNR_LOG_DEBUG(logger, "startReceiveQueue");
-    messageReceiver = new LongPollingMessageReceiver(settings.getBounceProxyUrl(),
-                                                     channelId,
-                                                     receiverId,
-                                                     longPollSettings,
-                                                     channelCreatedSemaphore,
-                                                     onTextMessageReceived);
+    messageReceiver = std::make_unique<LongPollingMessageReceiver>(settings.getBounceProxyUrl(),
+                                                                   channelId,
+                                                                   receiverId,
+                                                                   longPollSettings,
+                                                                   channelCreatedSemaphore,
+                                                                   onTextMessageReceived);
     messageReceiver->start();
 }
 
@@ -127,11 +123,8 @@ void HttpReceiver::stopReceiveQueue()
     // currently channelCreatedSemaphore is not released here. This would be necessary if
     // stopReceivequeue is called, before channel is created.
     JOYNR_LOG_DEBUG(logger, "stopReceiveQueue");
-    if (messageReceiver != nullptr) {
-        messageReceiver->stop();
-
-        delete messageReceiver;
-        messageReceiver = nullptr;
+    if (messageReceiver) {
+        messageReceiver.reset();
     }
 }
 

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ std::int64_t& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT()
 DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
 {
     static DiscoveryQos::ArbitrationStrategy default_strategy =
-            DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY;
+            DiscoveryQos::ArbitrationStrategy::LAST_SEEN;
     return default_strategy;
 }
 

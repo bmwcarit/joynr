@@ -40,7 +40,6 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»AbstractProvider.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
-#include "joynr/TypeUtil.h"
 
 «FOR parameterType: getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»
@@ -76,7 +75,6 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 
 «FOR attribute : francaIntf.attributes»
 	«IF attribute.notifiable»
-		«var attributeType = attribute.type.resolveTypeDef»
 		«var attributeName = attribute.joynrName»
 		void «interfaceName»AbstractProvider::«attributeName»Changed(
 				const «attribute.typeName»& «attributeName»

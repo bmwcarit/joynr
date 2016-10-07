@@ -52,6 +52,7 @@ public:
         messageRouter(nullptr),
         joynrMessage()
     {
+        singleThreadedIOService.start();
         auto messageQueue = std::make_unique<MessageQueue>();
         this->messageQueue = messageQueue.get();
 
@@ -70,17 +71,13 @@ public:
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
         joynrMessage.setHeaderExpiryDate(now + std::chrono::milliseconds(100));
+        joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
     }
 
     ~MessageRouterTest() {
         std::remove(settingsFileName.c_str());
     }
 
-    void SetUp(){
-        joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
-    }
-    void TearDown(){
-    }
 protected:
     SingleThreadedIOService singleThreadedIOService;
     std::string settingsFileName;

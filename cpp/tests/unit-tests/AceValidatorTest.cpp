@@ -20,7 +20,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include "cluster-controller/access-control/AceValidator.h"
-#include "joynr/TypeUtil.h"
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr::infrastructure::DacTypes;
@@ -78,9 +77,6 @@ public:
                                                                   Permission::ASK);
     }
 
-    void TearDown()
-    {
-    }
 protected:
     static const std::string TEST_USER;
 private:

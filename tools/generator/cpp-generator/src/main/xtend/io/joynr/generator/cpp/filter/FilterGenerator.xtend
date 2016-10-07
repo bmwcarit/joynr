@@ -19,7 +19,6 @@ package io.joynr.generator.cpp.filter
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -33,9 +32,6 @@ class FilterGenerator {
 
 	@Inject
 	extension NamingUtil
-
-	@Inject
-	extension BroadcastUtil
 
 	@Inject
 	FilterParameterTemplate filterParameterTemplate;
@@ -55,7 +51,7 @@ class FilterGenerator {
 			var serviceName = fInterface.joynrName
 
 			for (broadcast : fInterface.broadcasts) {
-				if (isSelective(broadcast)) {
+				if (broadcast.selective) {
 					val filterParameterLocation = getFilterParameterLocation(headerPath, serviceName, broadcast)
 
 					generateFile(

@@ -1,0 +1,1 @@
+../../../joynr-cpp-base/scripts/build/cpp-clean-build.sh

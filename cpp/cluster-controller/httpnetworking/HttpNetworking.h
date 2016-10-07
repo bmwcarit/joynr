@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@
  */
 #ifndef HTTPNETWORKING_H
 #define HTTPNETWORKING_H
-#include "joynr/PrivateCopyAssign.h"
+
+#include <chrono>
+#include <memory>
+#include <string>
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include <string>
-#include <QByteArray>
-#include <chrono>
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -45,6 +46,11 @@ public:
       * To prevent this timeouts can be specified.
       */
     virtual HttpResult execute() = 0;
+
+    /**
+     * This method allows to immediately interrupt the execution of a HttpRequest.
+     */
+    virtual void interrupt() = 0;
 
     virtual ~HttpRequest() = default;
 };
@@ -136,7 +142,7 @@ public:
       * The caller must ensure that the pointer stays valid until the built HttpRequest is no longer
      * used.
       */
-    virtual IHttpPostBuilder* postContent(const QByteArray& data) = 0;
+    virtual IHttpPostBuilder* postContent(const std::string& data) = 0;
     ~IHttpPostBuilder() override = default;
 };
 
@@ -176,7 +182,7 @@ public:
 class JOYNRCLUSTERCONTROLLER_EXPORT HttpNetworking
 {
 public:
-    ~HttpNetworking();
+    ~HttpNetworking() = default;
 
     static HttpNetworking* getInstance();
 
@@ -187,7 +193,7 @@ public:
     /**
       * Used internally
       */
-    ICurlHandlePool* getCurlHandlePool();
+    std::shared_ptr<ICurlHandlePool> getCurlHandlePool() const;
 
     /**
       * Sets the global proxy to the specified string in the format "host:port".
@@ -229,7 +235,7 @@ private:
     HttpNetworking();
     HttpRequestBuilder* createRequestBuilder(const std::string& url);
     static HttpNetworking* httpNetworking;
-    ICurlHandlePool* curlHandlePool;
+    std::shared_ptr<ICurlHandlePool> curlHandlePool;
 
     std::string proxy;
     std::chrono::milliseconds connectTimeout;

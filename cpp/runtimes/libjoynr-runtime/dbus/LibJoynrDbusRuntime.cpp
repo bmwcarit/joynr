@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,14 @@
 #include "common/dbus/DbusSettings.h"
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"
 #include "joynr/Util.h"
-#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
 
-LibJoynrDbusRuntime::LibJoynrDbusRuntime(Settings* settings)
-        : LibJoynrRuntime(settings),
+LibJoynrDbusRuntime::LibJoynrDbusRuntime(std::unique_ptr<Settings> settings)
+        : LibJoynrRuntime(std::move(settings)),
           dbusMessageRouterAdapter(nullptr),
-          dbusSettings(new DbusSettings(*settings)),
+          dbusSettings(new DbusSettings(*this->settings)),
           libjoynrMessagingServiceUrl()
 {
     dbusSettings->printSettings();

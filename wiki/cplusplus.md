@@ -62,18 +62,18 @@ joynr::<Package>::I<Interface>Base
 joynr::<Package>::I<Interface>Connector
 joynr::<Package>::I<Interface>Subscription
 joynr::<Package>::I<Interface>Sync
+joynr::<Package>::<Interface>AbstractProvider
+joynr::<Package>::Default<Interface>Provider
 joynr::<Package>::<Interface>AsyncProxy
 joynr::<Package>::<Interface>InProcessConnector
 joynr::<Package>::<Interface>JoynrMessagingConnector
 joynr::<Package>::<Interface><Broadcast>BroadcastFilter
 joynr::<Package>::<Interface><Broadcast>BroadcastFilterParameters
 joynr::<Package>::<Interface>Provider
-joynr::<Package>::RequestCallerFactoryHelper<joynr::<Package>::<Interface>Provider>
 joynr::<Package>::<Interface>Proxy
 joynr::<Package>::<Interface>ProxyBase
 joynr::<Package>::<Interface>RequestCaller
 joynr::<Package>::<Interface>RequestInterpreter
-joynr::<Package>::<Interface>Station
 joynr::<Package>::<Interface>SyncProxy
 ```
 
@@ -125,42 +125,61 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
 
 The class ```DiscoveryQos``` configures how the search for a provider will be handled. It has the following members:
 
-* **discoveryTimeoutMs**  Timeout for discovery process (milliseconds), afterwards triggers JoynrArbitrationException
-* **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds), only younger entries will be considered. If no suitable providers are found, then depending on the discoveryScope, a remote global lookup may be triggered.
+* **discoveryTimeoutMs**  Timeout for discovery process (milliseconds), afterwards triggers
+   DiscoveryException if no provider was found or NoCompatibleProviderFoundException containing the
+   versions of the discovered incompatible providers
+* **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds), only younger
+   entries will be considered. If no suitable providers are found, then depending on the
+   discoveryScope, a remote global lookup may be triggered.
 * **arbitrationStrategy** The arbitration strategy (see below)
 * **customParameters** special parameters, that must match, e.g. keyword (see below)
 * **retryIntervalMs** The time to wait between discovery retries after encountering a discovery error.
 * **discoveryScope** default: LOCAL_AND_GLOBAL (details see below)
 
-The **discoveryScope** defines, whether a suitable provider will be searched only in the local capabilities directory or also in the global one.
+The **discoveryScope** defines, whether a suitable provider will be searched only in the local
+capabilities directory or also in the global one.
 
 Available values are as follows:
 
 * **LOCAL_ONLY** Only entries from local capabilities directory will be searched
-* **LOCAL_THEN_GLOBAL** Entries will be taken from local capabilities directory, unless no such entries exist, in which case global entries will be looked up at as well.
-* **LOCAL_AND_GLOBAL** Entries will be taken from local capabilities directory and from global capabilities directory.
+* **LOCAL_THEN_GLOBAL** Entries will be taken from local capabilities directory, unless no such
+   entries exist, in which case global entries will be looked up at as well.
+* **LOCAL_AND_GLOBAL** Entries will be taken from local capabilities directory and from global
+   capabilities directory.
 * **GLOBAL_ONLY** Only the global entries will be looked at.
 
-Whenever global entries are involved, they are first searched in the local cache. In case no global entries are found in the cache, a remote lookup is triggered.
+Whenever global entries are involved, they are first searched in the local cache. In case no global
+entries are found in the cache, a remote lookup is triggered.
 
 The enumeration ```ArbitrationStrategy``` defines special options to select a Provider:
 
-* **NOT_SET** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
-* **FIXED_PARTICIPANT** (also see FixedParticipantArbitrator)
-* **LOCAL_ONLY** (also see FixedParticipantArbitrator)
-* **KEYWORD** Only entries that have a matching keyword will be considered
+* **LAST_SEEN** The participant that was last refreshed (i.e. with the most current last seen date)
+ will be selected
 * **HIGHEST_PRIORITY** Entries will be considered according to priority
+* **KEYWORD** Only entries that have a matching keyword will be considered
+* **FIXED_PARTICIPANT** select provider which matches the participantId provided as custom parameter
+   in DiscoveryQos (see below), if existing
+* **LOCAL_ONLY** (not implemented yet, will throw DiscoveryException)
+
+**Default arbitration strategy:** LAST_SEEN
 
 The priority is set by the provider through the call ```providerQos.setPriority()```.
 
-Class ```DiscoveryQos``` also provides keys for the key-value pair for the custom Parameters of discoveryScope:
+Class ```DiscoveryQos``` also provides keys for the key-value pair for the custom Parameters of
+discoveryScope:
 
 * **KEYWORD_PARAMETER**
 
-Example for **Keyword** arbitration strategy:
+Example for **KEYWORD** arbitration strategy:
 
 ```cpp
 discoveryQos.addCustomParameter(DiscoveryQos::KEYWORD_PARAMETER(), "keyword");
+```
+
+Example for **FIXED_PARTICIPANT** arbitration strategy:
+
+```cpp
+discoveryQos.addCustomParameter("fixedParticipantId", "participantId");
 ```
 
 Example for the creation of a DiscoveryQos class object:
@@ -178,14 +197,31 @@ discoveryQos.setRetryIntervalMs(1000); // optional, default 1000
 
 ## The message quality of service
 
-The ```MesssagingQos``` class defines the roundtrip timeout for RPC requests in milliseconds.
-If no specific setting is given, the default is 60 seconds.
+The ```MesssagingQos``` class defines the roundtrip timeout for RPC requests in milliseconds
+and allows definition of additional custom message headers.
+
+If no specific setting is given, the default roundtrip timeout is 60 seconds.
+The keys of custom message headers may contain ascii alphanumeric or hyphen.
+The values of custom message headers may contain alphanumeric, space, semi-colon, colon,
+comma, plus, ampersand, question mark, hyphen, dot, star, forward slash and back slash.
+If a key or value is invalid, the API method called to introduce the custom message
+header throws a std::invalid_argument exception.
 
 Example:
 
 ```cpp
 long ttl_ms = 60000;
 MessagingQos messagingQos(ttl_ms);
+// optional custom headers
+std::unordered_map<std::string, std::string> customHeaders;
+customHeaders.emplace("key1", "value1");
+...
+customHeaders.emplace("keyN", "valueN");
+messagingQos.putAllCustomMessageHeaders(customHeaders);
+...
+std::string anotherKey("anotherKey");
+std::string anotherValue("anotherValue");
+messagingQos.putCustomMessageHeader(anotherKey, anotherValue);
 ```
 
 ## Creating a proxy
@@ -243,7 +279,10 @@ Note that the message order on Joynr RPCs will not be preserved.
 ```
 
 ## Asynchronous Remote Procedure calls
-Using asynchronous method calls allows the current thread to continue its work. For this purpose a callback has to be provided for the API call in order to receive the result and error respectively. Note the current thread will still be blocked until the Joynr message is internally set up and serialized. It will then be enqueued and handled by a Joynr Middleware thread.
+Using asynchronous method calls allows the current thread to continue its work. For this purpose a
+callback has to be provided for the API call in order to receive the result and error respectively.
+Note the current thread will still be blocked until the Joynr message is internally set up and
+serialized. It will then be enqueued and handled by a Joynr Middleware thread.
 The message order on Joynr RPCs will not be preserved.
 If no return type exists, the term ```Void``` is used instead.
 
@@ -268,13 +307,16 @@ std::function<void(const joynr::exceptions::JoynrException&)> onError =
 
 future = <interface>Proxy-><method>(... arguments ..., [onSuccess [, onError]]);
 try {
-    future->get(retval1 [, ..., retvalN ]);
-} catch (joynr::exceptions::JoynrRuntimeException& e) {
+    std::uint16_t optionalTimeoutMs = 500;
+    future->get([optionalTimeoutMs, ]retval1 [, ..., retvalN ]);
+} catch (const joynr::exceptions::JoynrRuntimeException& e) {
     // error handling
-} catch (joynr::exceptions::ApplicationException& e) {
+} catch (const joynr::exceptions::ApplicationException& e) {
     // If error enumerations are defined for the called method, ApplicationExceptions must also
     // be caught. The ApplicationException serves as container for the actual error enumeration
     // which can be retrieved by calling e.getError().
+} catch (const joynr::exceptions::JoynrTimeOutException& e) {
+    // handle timeout
 }
 ```
 
@@ -318,14 +360,30 @@ This class can be used for subscriptions to attributes. Updates will then be sen
 
 Using it for subscriptions to broadcasts is theoretically possible because of inheritance but makes no sense (in this case the additional members will be ignored).
 
+
 ## Subscribing to an attribute
 
-Attribute subscription - depending on the subscription quality of service settings used - informs the application either periodically and / or on change of an attribute about the current value. The **subscriptionId** returned by the call can be used later to update the subscription or to unsubscribe from it.
-To receive the subscription, a callback has to be provided which is done providing a listener class as outlined below.
+Attribute subscription - depending on the subscription quality of service settings used - informs
+the application either periodically and / or on change of an attribute about the current value.
+
+The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
+by the subscribeTo call. It can be used later to update the subscription or to unsubscribe from it.
+The subscriptionId will be available when the subscription is successfully registered at the
+provider. If the subscription failed, a SubscriptionException will be returned via the callback
+(onError) and thrown by future.get(subscriptionId).
+
+To receive the subscription, a **callback** has to be provided which is done providing a listener
+class as outlined below. Since the callback is called by a communication middleware thread, it
+should not be blocked, wait for user interaction, or do larger computation. The callback methods
+(onReceive, onSubscribed, onError) are optional. Only the required methods have to be implemented.
 
 ```cpp
 // for any Franca type named "<Type>" used
 #include "joynr/<Package>/<TypeCollection>/<Type>.h"
+
+#include "joynr/SubscriptionListener.h"
+#include "joynr/exceptions/SubscriptionException.h"
+#include "joynr/exceptions/JoynrException.h"
 
 class <AttributeType>Listener : public SubscriptionListener<<AttributeType>>
 {
@@ -340,38 +398,70 @@ class <AttributeType>Listener : public SubscriptionListener<<AttributeType>>
         {
         }
 
+        // Gets called on every received publication
         void onReceive(const <AttributeType>& value)
         {
             // handle publication
         }
 
+        // Gets called when the subscription is successfully registered at the provider
+        void onSubscribed(const std::string& subscriptionId)
+        {
+            // save the subscriptionId for updating the subscription or unsubscribing from it
+            // the subscriptionId can also be taken from the future returned by the subscribeTo call
+        }
+
+        // Gets called on every error that is detected on the subscription
         void onError(const joynr::exceptions::JoynrRuntimeException& error)
         {
-            // handle error
+            // handle error, e.g.:
+            // - SubscriptionException if the subscription registration failed at the provider
+            // - PublicationMissedException if a periodic subscription publication does not arrive
+            //   in time
         }
 };
 
-std::shared_ptr<ISubscriptionListener<AttributeType>> listener(
-    new <AttributeType>Listener();
-);
+auto listener = std::make_shared<ISubscriptionListener<AttributeType>>();
 
-<QosClass> qos;
+auto qos = std::make_shared<<QosClass>>();
 // define details of qos by calling its setters here
 
-std::string subscriptionId = proxy->subscribeTo<Attribute>(listener, qos);
+std::shared_ptr<Future<std::string>> subscriptionIdFuture = proxy->subscribeTo<Attribute>(
+    listener,
+    qos
+);
+
+...
+
+// get the subscriptionId from the Future when needed
+std::string subscriptionId;
+try {
+    std::uint16_t optionalTimeoutMs = 500;
+    subscriptionIdFuture->get([optionalTimeoutMs, ]subscriptionId);
+} catch (const jonyr::exceptions::SubscriptionException& e) {
+    // handle subscription error
+} catch (const joynr::exceptions::JoynrTimeOutException& e) {
+    // handle timeout
+}
 ```
 
 ## Updating an attribute subscription
 
-The ```subscribeTo``` method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
+The ```subscribeTo``` method can also be used to update an existing subscription, when the
+**subscriptionId** is given as additional parameter as follows:
 
 ```cpp
-subscriptionId = proxy->subscribeTo<Attribute>(listener, qos, subscriptionId);
+std::shared_ptr<Future<std::string>> subscriptionIdFuture = proxy->subscribeTo<Attribute>(
+    listener,
+    qos,
+    subscriptionId
+);
 ```
 
 ## Unsubscribing from an attribute
 
-Unsubscribing from an attribute subscription also requires the **subscriptionId** returned by the earlier subscribeTo call.
+Unsubscribing from an attribute subscription also requires the **subscriptionId** returned by the
+earlier subscribeTo call.
 
 ```cpp
 proxy->unsubscribeFrom<Attribute>(subscriptionId);
@@ -379,11 +469,27 @@ proxy->unsubscribeFrom<Attribute>(subscriptionId);
 
 ## Subscribing to a broadcast unconditionally
 
-Broadcast subscription informs the application in case a broadcast is fired from provider side and returns the output values via callback. The **subscriptionId** returned by the call can be used later to update the subscription or to unsubscribe from it. To receive the subscription, a callback has to be provided which is done providing a listener class as outlined below.
+Broadcast subscription informs the application in case a broadcast is fired from provider side and
+returns the output values via callback.
+
+The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
+by the subscribeTo call. It can be used later to update the subscription or to unsubscribe from it.
+The subscriptionId will be available when the subscription is successfully registered at the
+provider. If the subscription failed, a SubscriptionException will be returned via the callback
+(onError) and thrown by future.get(subscriptionId).
+
+To receive the subscription, a **callback** has to be provided which is done providing a listener
+class as outlined below. Since the callback is called by a communication middleware thread, it
+should not be blocked, wait for user interaction, or do larger computation. The callback methods
+(onReceive, onSubscribed, onError) are optional. Only the required methods have to be implemented.
 
 ```cpp
 // for any Franca type named "<Type>" used
 #include "joynr/<Package>/<TypeCollection>/<Type>.h"
+
+#include "joynr/SubscriptionListener.h"
+#include "joynr/exceptions/SubscriptionException.h"
+#include "joynr/exceptions/JoynrException.h"
 
 class <Broadcast>Listener : public SubscriptionListener<<OutputType1>[, ... <OutputTypeN>]>
 {
@@ -398,41 +504,80 @@ class <Broadcast>Listener : public SubscriptionListener<<OutputType1>[, ... <Out
         {
         }
 
+        // Gets called on every received publication
         void onReceive(<OutputType1> value1[, ... <OutputTypeN> valueN])
         {
             // handle broadcast
         }
+
+        // Gets called when the subscription is successfully registered at the provider
+        void onSubscribed(const std::string& subscriptionId)
+        {
+            // save the subscriptionId for updating the subscription or unsubscribing from it
+            // the subscriptionId can also be taken from the future returned by the subscribeTo call
+        }
+
+        // Gets called on every error that is detected on the subscription
+        void onError(const joynr::exceptions::JoynrRuntimeException& error)
+        {
+            // handle error
+        }
 };
 
-std::shared_ptr<ISubscriptionListener<OutputType1>[, ... <OutputTypeN>]> listener(
-    new <Broadcast>Listener();
-);
+auto listener = std::make_shared<ISubscriptionListener<OutputType1>[, ... <OutputTypeN>]>();
 
-OnChangeSubscriptionQos qos;
+auto qos = std::make_shared<OnChangeSubscriptionQos>();
 // define details of qos by calling its setters here
 
-std::string subscriptionId;
+std::shared_ptr<Future<std::string>> subscriptionIdFuture = proxy->subscribeTo<Broadcast>Broadcast(
+    listener,
+    qos
+);
 
-subscriptionId = proxy->subscribeTo<Broadcast>Broadcast(listener, qos);
+...
+
+// get the subscriptionId from the Future when needed
+std::string subscriptionId;
+try {
+    std::uint16_t optionalTimeoutMs = 500;
+    subscriptionIdFuture->get([optionalTimeoutMs, ]subscriptionId);
+} catch (const jonyr::exceptions::SubscriptionException& e) {
+    // handle subscription error
+} catch (const joynr::exceptions::JoynrTimeOutException& e) {
+    // handle timeout
+}
 ```
 
 ## Updating an unconditional broadcast subscription
 
-The subscribeTo method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
+The subscribeTo method can also be used to update an existing subscription, when the
+**subscriptionId** is given as additional parameter as follows:
 
 ```cpp
-subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
-    listener,
-    qos,
-    subscriptionId
+std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+    <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+            listener,
+            qos,
+            subscriptionId
 );
 ```
 
 ## Subscribing to a broadcast with filter parameters
 
-Selective Broadcasts use filter logic implemented by the provider and filter parameters set by the consumer to send only those broadcasts from the provider to the consumer that pass the filter. The broadcast output values are passed to the consumer via callback.
-The **subscriptionId** returned by the call can be used later to update the subscription or to unsubscribe from it.
-In addition to the normal broadcast subscription, the filter parameters for this broadcast must be created and initialized as additional parameters to the ```subscribeTo``` method. These filter parameters are used to receive only those broadcasts matching the provided filter criteria.
+Selective Broadcasts use filter logic implemented by the provider and filter parameters set by the
+consumer to send only those broadcasts from the provider to the consumer that pass the filter. The
+broadcast output values are passed to the consumer via callback.
+
+The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
+by the subscribeTo call (see section
+[Subscribing to a broadcast unconditionally](#subscribing-to-a-broadcast-unconditionally)).
+
+To receive the subscription, a **callback** has to be provided (cf. section
+[Subscribing to a broadcast unconditionally](#subscribing-to-a-broadcast-unconditionally)).
+
+In addition to the normal broadcast subscription, the **filter parameters** for this broadcast must
+be created and initialized as additional parameters to the ```subscribeTo``` method. These filter
+parameters are used to receive only those broadcasts matching the provided filter criteria.
 
 ```cpp
 // for any Franca type named "<Type>" used
@@ -445,26 +590,23 @@ In addition to the normal broadcast subscription, the filter parameters for this
 // for class <Broadcast>Listener please refer to
 // section "subscribing to a broadcast unconditionally"
 ...
-std::shared_ptr<ISubscriptionListener<OutputType1>[, ... <OutputTypeN>]> listener(
-    new <Broadcast>Listener();
-);
+auto listener = std::make_shared<ISubscriptionListener<OutputType1>[, ... <OutputTypeN>]>();
 
-OnChangeSubscriptionQos qos;
+auto qos = std::make_shared<OnChangeSubscriptionQos>();
 // define details of qos by calling its setters here
-
-std::string subscriptionId;
 
 // create filterparams instance on stack
 <Package>::<Interface><Broadcast>BroadcastFilterParams <broadcast>BroadcastFilterParams;
 // set filter attributes by calling setters on the
 // filter parameter instance
 
-subscriptionId =
+std::shared_ptr<Future<std::string>> subscriptionIdFuture =
     proxy->subscribeTo<Broadcast>Broadcast(
         <broadcast>BroadcastFilterParams,
         listener,
         qos
     );
+// to retrieve the subscriptionId, please refer to section "subscribing to a broadcast unconditionally"
 ```
 
 ## Updating a broadcast subscription with filter parameters
@@ -472,11 +614,12 @@ subscriptionId =
 The subscribeTo method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
 
 ```cpp
-subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
-    <broadcast>BroadcastFilterParams,
-    listener,
-    qos,
-    subscriptionId
+std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+    <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+            <broadcast>BroadcastFilterParams,
+            listener,
+            qos,
+            subscriptionId
 );
 ```
 
@@ -664,6 +807,7 @@ void My<Interface>Provider::set<Attribute>(
 {
     // handle and store the new Value
     ...
+    // if attribute is notifiable (not marked as noSubscriptions in the Franca model),
     // inform subscribers about the value change
     <Attribute>Changed(<Attribute>);
     ...

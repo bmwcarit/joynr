@@ -20,6 +20,7 @@ This project has dependencies to:
   Apache Groovy under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License
   Apache HttpCore under Apache License
+  Apache Log4j under The Apache Software License, Version 2.0
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
@@ -39,11 +40,14 @@ This project has dependencies to:
   io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.tests.system-integration-test:sit-cpp-app under The Apache Software License, Version 2.0
+  io.joynr.tests.system-integration-test:sit-java-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-node-app under The Apache Software License, Version 2.0
   io.joynr.tests:system-integration-test under The Apache Software License, Version 2.0
@@ -59,7 +63,13 @@ This project has dependencies to:
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   jeeintegration under The Apache Software License, Version 2.0
+  Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Client under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JUnit under Common Public License Version 1.0
+  libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logging under The Apache Software License, Version 2.0
@@ -67,5 +77,6 @@ This project has dependencies to:
   Reflections under WTFPL
   SLF4J API Module under MIT License
   SLF4J JDK14 Binding under MIT License
+  SLF4J LOG4J-12 Binding under MIT License
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
 

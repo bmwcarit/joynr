@@ -1,0 +1,1 @@
+../../../joynr-cpp-base/scripts/build/cpp-generate.sh

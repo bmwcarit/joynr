@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr-messaging/DummyPlatformSecurityManager.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/MessagingQos.h"
+#include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 
 namespace joynr
 {

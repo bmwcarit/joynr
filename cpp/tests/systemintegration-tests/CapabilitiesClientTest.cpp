@@ -28,7 +28,6 @@
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/types/Version.h"
 
 using namespace ::testing;
@@ -45,7 +44,7 @@ static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystem
 class CapabilitiesClientTest : public TestWithParam< std::string > {
 public:
     ADD_LOGGER(CapabilitiesClientTest);
-    JoynrClusterControllerRuntime* runtime;
+    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
 
@@ -59,7 +58,7 @@ public:
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
-        runtime = new JoynrClusterControllerRuntime(nullptr, std::move(settings));
+        runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(settings));
     }
 
     void SetUp() {
@@ -74,10 +73,6 @@ public:
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
-    }
-
-    ~CapabilitiesClientTest(){
-        delete runtime;
     }
 
 private:

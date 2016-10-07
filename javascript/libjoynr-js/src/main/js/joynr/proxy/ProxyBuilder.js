@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,17 +122,17 @@ define("joynr/proxy/ProxyBuilder", [
          *            settings.discoveryQos - the settings object determining arbitration
          *            parameters
          * @param {MessagingQos}
-         *            settings.messagingQos - the settings object determining arbitration parameters
+         *            settings.messagingQos - the settings object determining messaging quality of
+         *            service parameters
          * @param {Boolean}
          *            settings.freeze - define if the returned proxy object should be frozen
          * @param {Object}
          *            settings.loggingContext - optional logging context will be appended to logging
-         *            messages created in the name of
-         *            this proxy
+         *            messages created in the name of this proxy
          * @returns {Object} an A Promise object, that will provide the proxy object upon completed
          *            arbitration, callback signatures: then({*Proxy} proxy), {Error} error)
          * @throws {Error}
-         *             if arbitrator was not provided
+         *            if arbitrator was not provided
          */
         this.build =
                 function build(ProxyConstructor, settings) {

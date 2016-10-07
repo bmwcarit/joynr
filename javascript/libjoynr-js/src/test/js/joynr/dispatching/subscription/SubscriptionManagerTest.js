@@ -234,6 +234,7 @@ define([
                                 proxyId : "subscriber",
                                 providerId : "provider",
                                 attributeName : "testAttribute",
+                                attributeType : "String",
                                 qos : new OnChangeWithKeepAliveSubscriptionQos({
                                     alertAfterIntervalMs : alertAfterIntervalMs,
                                     expiryDateMs : Date.now() + 50 + 2 * alertAfterIntervalMs
@@ -273,6 +274,7 @@ define([
                                         proxyId : "subscriber",
                                         providerId : "provider",
                                         attributeName : "testAttribute",
+                                        attributeType : "String",
                                         qos : new OnChangeWithKeepAliveSubscriptionQos({
                                             alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS,
                                             expiryDateMs : Date.now() + ttl
@@ -365,6 +367,7 @@ define([
                                 providerId : "provider",
                                 messagingQos : new MessagingQos(),
                                 attributeName : "testAttribute",
+                                attributeType : "String",
                                 qos : new OnChangeWithKeepAliveSubscriptionQos({
                                     alertAfterIntervalMs : alertAfterIntervalMs,
                                     expiryDateMs : Date.now() + 50 + 2 * alertAfterIntervalMs
@@ -518,6 +521,7 @@ define([
                                         proxyId : "subscriber",
                                         providerId : "provider",
                                         attributeName : "testAttribute",
+                                        attributeType : "String",
                                         qos : new OnChangeWithKeepAliveSubscriptionQos({
                                             alertAfterIntervalMs : alertAfterIntervalMs,
                                             expiryDateMs : Date.now() + 5 * alertAfterIntervalMs
@@ -591,6 +595,7 @@ define([
                                 proxyId : "subscriber",
                                 providerId : "provider",
                                 attributeName : "testAttribute",
+                                attributeType : "String",
                                 qos : new OnChangeSubscriptionQos(),
                                 onReceive : publicationReceivedSpy,
                                 onError : publicationErrorSpy,
@@ -655,6 +660,7 @@ define([
                                 proxyId : "subscriber",
                                 providerId : "provider",
                                 attributeName : "testAttribute",
+                                attributeType : "String",
                                 qos : new OnChangeSubscriptionQos(),
                                 onReceive : publicationReceivedSpy,
                                 onError : publicationErrorSpy,

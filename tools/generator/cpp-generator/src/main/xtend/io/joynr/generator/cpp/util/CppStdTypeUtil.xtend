@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 	}
 
 	def getIncludeForByteBuffer() {
-		"\"joynr/TypeUtil.h\""
+		"\"joynr/ByteBuffer.h\""
 	}
 
 	override getIncludesFor(Iterable<FBasicTypeId> datatypes) {

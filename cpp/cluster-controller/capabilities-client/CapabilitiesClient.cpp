@@ -129,6 +129,15 @@ void CapabilitiesClient::lookup(
             onError);
 }
 
+void CapabilitiesClient::touch(
+        const std::string& clusterControllerId,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
+{
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->touchAsync(clusterControllerId, onSuccess, onError);
+}
+
 void CapabilitiesClient::setProxyBuilder(std::unique_ptr<
         IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> inCapabilitiesProxyBuilder)
 {

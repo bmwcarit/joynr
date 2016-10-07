@@ -23,7 +23,6 @@
 #include <chrono>
 #include <functional>
 
-#include <QCoreApplication>
 #include <boost/algorithm/string/predicate.hpp>
 #include <mosquittopp.h>
 #include "websocket/WebSocketCcMessagingSkeleton.h"
@@ -34,6 +33,7 @@
 #include "cluster-controller/http-communication-manager/HttpSender.h"
 #include "cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
+#include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 #include "cluster-controller/mqtt/MqttReceiver.h"
 #include "cluster-controller/mqtt/MqttSender.h"
@@ -93,13 +93,11 @@ namespace joynr
 INIT_LOGGER(JoynrClusterControllerRuntime);
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
-        QCoreApplication* app,
         std::unique_ptr<Settings> settings,
         std::shared_ptr<IMessageReceiver> httpMessageReceiver,
         std::shared_ptr<IMessageSender> httpMessageSender,
         std::shared_ptr<IMessageReceiver> mqttMessageReceiver,
         std::shared_ptr<IMessageSender> mqttMessageSender)
-
         : JoynrRuntime(*settings),
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
@@ -107,7 +105,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           subscriptionManager(nullptr),
           joynrMessagingSendSkeleton(nullptr),
           joynrMessageSender(nullptr),
-          app(app),
           localCapabilitiesDirectory(nullptr),
           cache(),
           libJoynrMessagingSkeleton(nullptr),
@@ -237,8 +234,11 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     });
     system::RoutingTypes::WebSocketAddress wsAddress =
             wsSettings.createClusterControllerMessagingAddress();
-    wsCcMessagingSkeleton = std::make_unique<WebSocketCcMessagingSkeleton>(
-            messageRouter, wsMessagingStubFactory, wsAddress);
+    wsCcMessagingSkeleton =
+            std::make_unique<WebSocketCcMessagingSkeleton>(singleThreadIOService->getIOService(),
+                                                           messageRouter,
+                                                           wsMessagingStubFactory,
+                                                           wsAddress);
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
     /* LibJoynr */
@@ -258,6 +258,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     std::string httpSerializedGlobalClusterControllerAddress;
     std::string mqttSerializedGlobalClusterControllerAddress;
 
+    MessagingPropertiesPersistence persist(
+            messagingSettings.getMessagingPropertiesPersistenceFilename());
+    std::string clusterControllerId = persist.getChannelId();
+    std::string receiverId = persist.getReceiverId();
     /**
       * ClusterController side HTTP
       *
@@ -270,7 +274,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                            "The http message receiver supplied is NULL, creating the default "
                            "http MessageReceiver");
 
-            httpMessageReceiver = std::make_shared<HttpReceiver>(messagingSettings);
+            httpMessageReceiver = std::make_shared<HttpReceiver>(
+                    messagingSettings, clusterControllerId, receiverId);
 
             assert(httpMessageReceiver != nullptr);
 
@@ -315,7 +320,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                            "The mqtt message receiver supplied is NULL, creating the default "
                            "mqtt MessageReceiver");
 
-            mqttMessageReceiver = std::make_shared<MqttReceiver>(messagingSettings);
+            mqttMessageReceiver = std::make_shared<MqttReceiver>(
+                    messagingSettings, clusterControllerId, receiverId);
 
             assert(mqttMessageReceiver != nullptr);
         }
@@ -403,7 +409,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                          capabilitiesClient,
                                                          channelGlobalCapabilityDir,
                                                          *messageRouter,
-                                                         libjoynrSettings);
+                                                         libjoynrSettings,
+                                                         singleThreadIOService->getIOService(),
+                                                         clusterControllerId);
     localCapabilitiesDirectory->loadPersistedFile();
     // importPersistedLocalCapabilitiesDirectory();
 
@@ -496,6 +504,11 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
+
+    // synchronously stop the underlying boost::asio::io_service
+    // this ensures all asynchronous operations are stopped now
+    // which allows a safe shutdown
+    singleThreadIOService->stop();
     stopMessaging();
 
     if (joynrDispatcher != nullptr) {
@@ -560,21 +573,14 @@ void JoynrClusterControllerRuntime::stopMessaging()
 
 void JoynrClusterControllerRuntime::runForever()
 {
-    app->exec();
+    singleThreadIOService->join();
 }
 
 JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(
         std::unique_ptr<Settings> settings,
         const std::string& discoveryEntriesFile)
 {
-    // Only allow one QCoreApplication instance
-    static int argc = 0;
-    static char* argv[] = {nullptr};
-    static QCoreApplication* coreApplication =
-            (QCoreApplication::instance() == nullptr) ? new QCoreApplication(argc, argv) : nullptr;
-
-    JoynrClusterControllerRuntime* runtime =
-            new JoynrClusterControllerRuntime(coreApplication, std::move(settings));
+    JoynrClusterControllerRuntime* runtime = new JoynrClusterControllerRuntime(std::move(settings));
 
     assert(runtime->localCapabilitiesDirectory);
     runtime->localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);
@@ -594,6 +600,7 @@ void JoynrClusterControllerRuntime::start()
     startMessaging();
     registerRoutingProvider();
     registerDiscoveryProvider();
+    singleThreadIOService->start();
 }
 
 void JoynrClusterControllerRuntime::stop(bool deleteChannel)
@@ -602,6 +609,7 @@ void JoynrClusterControllerRuntime::stop(bool deleteChannel)
         this->deleteChannel();
     }
     stopMessaging();
+    singleThreadIOService->stop();
 }
 
 void JoynrClusterControllerRuntime::waitForChannelCreation()

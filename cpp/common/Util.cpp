@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,6 +132,18 @@ void logSerializedMessage(Logger& logger,
     } else {
         JOYNR_LOG_DEBUG(logger, "{} {}, length {}", explanation, message, message.length());
     }
+}
+
+std::string toDateString(const std::chrono::system_clock::time_point& timePoint)
+{
+    std::time_t time = std::chrono::system_clock::to_time_t(timePoint);
+    return std::ctime(&time);
+}
+
+std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint)
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch())
+            .count();
 }
 
 } // namespace util

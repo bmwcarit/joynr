@@ -30,6 +30,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
 
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClientModule;
 import io.joynr.jeeintegration.messaging.JeeHttpMessagingModule;
 import io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule;
@@ -68,6 +69,8 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                             .toInstance(scheduledExecutorService);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP))
+                                            .toInstance(scheduledExecutorService);
+        bind(ScheduledExecutorService.class).annotatedWith(Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))
                                             .toInstance(scheduledExecutorService);
         bind(ExecutorService.class).toInstance(scheduledExecutorService);
 

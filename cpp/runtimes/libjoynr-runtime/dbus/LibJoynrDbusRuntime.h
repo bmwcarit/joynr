@@ -34,7 +34,7 @@ class Settings;
 class LibJoynrDbusRuntime : public LibJoynrRuntime
 {
 public:
-    explicit LibJoynrDbusRuntime(Settings* settings);
+    explicit LibJoynrDbusRuntime(std::unique_ptr<Settings> settings);
     ~LibJoynrDbusRuntime() override;
 
 protected:

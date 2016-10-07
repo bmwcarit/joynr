@@ -67,7 +67,7 @@ public class ConsumerRestEndpoint {
     public String triggerTests() {
         StringBuffer result = new StringBuffer();
         for (String domainPrefix : domainPrefixProvider.getDomainPrefixes()) {
-            for (String appendValue : new String[]{ ".jee", ".cpp", ".node" }) {
+            for (String appendValue : new String[]{ ".jee", ".cpp", ".java", ".node" }) {
                 callProducer(domainPrefix + appendValue, result);
             }
         }

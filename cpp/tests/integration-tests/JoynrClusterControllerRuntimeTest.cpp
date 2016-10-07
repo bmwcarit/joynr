@@ -27,7 +27,6 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -36,7 +35,7 @@
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
-#include "QSemaphore"
+#include "joynr/Semaphore.h"
 #include "joynr/serializer/Serializer.h"
 #include "JoynrTest.h"
 
@@ -51,20 +50,20 @@ using testing::AtLeast;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
 class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
     std::string settingsFilenameMqttWithHttpBackend;
     std::string settingsFilenameHttp;
-    JoynrClusterControllerRuntime* runtime;
+    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
     joynr::types::Localisation::GpsLocation gpsLocation;
     std::shared_ptr<MockMessageReceiver> mockHttpMessageReceiver;
     std::shared_ptr<MockMessageSender> mockHttpMessageSender;
     std::shared_ptr<MockMessageReceiver> mockMqttMessageReceiver;
     std::shared_ptr<MockMessageSender> mockMqttMessageSender;
-    QSemaphore semaphore;
+    Semaphore semaphore;
 
     JoynrClusterControllerRuntimeTest() :
         settingsFilenameMqttWithHttpBackend("test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"),
@@ -114,7 +113,6 @@ public:
         if (runtime) {
             runtime->deleteChannel();
             runtime->stopMessaging();
-            delete runtime;
         }
     }
 
@@ -124,8 +122,7 @@ public:
         EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
 
-        runtime = new JoynrClusterControllerRuntime(
-                    nullptr,
+        runtime = std::make_unique<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(settingsFilenameMqttWithHttpBackend),
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,
@@ -138,8 +135,7 @@ public:
         EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
 
-        runtime = new JoynrClusterControllerRuntime(
-                    nullptr,
+        runtime = std::make_unique<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(settingsFilenameHttp),
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,
@@ -230,8 +226,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
                 mockTestProvider
     );
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->createProxyBuilder<tests::testProxy>(domain);
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
+            runtime->createProxyBuilder<tests::testProxy>(domain));
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -239,11 +235,11 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
-    tests::testProxy* testProxy = testProxyBuilder
+    std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build();
+            ->build());
 
     std::shared_ptr<Future<types::Localisation::GpsLocation> > future(testProxy->getLocationAsync());
     future->wait(500);
@@ -253,8 +249,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     joynr::types::Localisation::GpsLocation actualValue;
     future->get(actualValue);
     EXPECT_EQ(gpsLocation, actualValue);
-    delete testProxy;
-    delete testProxyBuilder;
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArguments)
@@ -275,8 +269,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
                 mockTestProvider
     );
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->createProxyBuilder<tests::testProxy>(domain);
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
+            runtime->createProxyBuilder<tests::testProxy>(domain));
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -284,11 +278,11 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
-    tests::testProxy* testProxy = testProxyBuilder
+    std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build();
+            ->build());
 
     std::shared_ptr<Future<int> > future(testProxy->sumIntsAsync(ints));
     future->wait(500);
@@ -298,8 +292,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     int actualValue;
     future->get(actualValue);
     EXPECT_EQ(sum, actualValue);
-    delete testProxy;
-    delete testProxyBuilder;
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
@@ -325,19 +317,19 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                 mockTestProvider
     );
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->createProxyBuilder<tests::testProxy>(domain);
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
+            runtime->createProxyBuilder<tests::testProxy>(domain));
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
-    tests::testProxy* testProxy = testProxyBuilder
+    std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build();
+            ->build());
 
     auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
     EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
@@ -357,8 +349,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     });
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     testProxy->unsubscribeFromLocation(subscriptionId);
-    delete testProxy;
-    delete testProxyBuilder;
 }
 
 
@@ -384,19 +374,19 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
                 mockTestProvider
     );
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->createProxyBuilder<tests::testProxy>(domain);
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
+            runtime->createProxyBuilder<tests::testProxy>(domain));
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
-    tests::testProxy* testProxy = testProxyBuilder
+    std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build();
+            ->build());
 
     auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
 
@@ -415,15 +405,11 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     JOYNR_ASSERT_NO_THROW({
         future->get(5000, subscriptionId);
     });
-    ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
 
     testProxy->unsubscribeFromLocation(subscriptionId);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
-    ASSERT_FALSE(semaphore.tryAcquire(1, 1000));
-
-    delete testProxyBuilder;
-    delete testProxy;
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
 }
-

@@ -29,6 +29,9 @@ consumerBase.initialize().then(function() {
     return consumerBase.echoString()
         .then(consumerBase.echoComplexStruct)
         .then(consumerBase.echoByteArray)
+        .then(function(){
+             return consumerBase.echoByteArray(1000);
+        })
         .then(function() {
             console.log("SUCCEEDED");
             process.exit(0);

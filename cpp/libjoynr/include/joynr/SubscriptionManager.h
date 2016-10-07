@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,13 @@
 #include <memory>
 #include <cstdint>
 
-#include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionManager.h"
-#include "joynr/SubscriptionRequest.h"
 #include "joynr/ObjectWithDecayTime.h"
-#include "joynr/MessagingQos.h"
 #include "joynr/Runnable.h"
-#include "joynr/ReadWriteLock.h"
-#include "joynr/ThreadSafeMap.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
+#include "joynr/ThreadSafeMap.h"
 
 namespace boost
 {
@@ -46,15 +42,16 @@ class io_service;
 
 namespace joynr
 {
-class SubscriptionQos;
+class ISubscriptionCallback;
 class DelayedScheduler;
+class SubscriptionQos;
+class SubscriptionRequest;
 /**
   * @class SubscriptionManager
   * @brief The subscription manager is used by the proxy (via the appropriate connector)
   * to manage a subscription. This includes the registration and unregistration of attribute
   * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application
- * and
-  * packaged into a callback by the connector.
+  * and packaged into a callback by the connector.
   * This listener is notified (via the callback) when a subscription is missed or when a publication
   * arrives.
   */
@@ -66,13 +63,14 @@ public:
 
     explicit SubscriptionManager(boost::asio::io_service& ioService);
     explicit SubscriptionManager(DelayedScheduler* scheduler);
+
     /**
-     * @brief Subscribe to an attribute. Modifies the subscription request to include all
-     * necessary information (side effect). Takes ownership of the ISubscriptionCallback, i.e.
+     * @brief Subscribe to an attribute or broadcast. Modifies the subscription request to include
+     * all necessary information (side effect). Takes ownership of the ISubscriptionCallback, i.e.
      * deletes the callback when no longer required.
      *
-     * @param attributeName
-     * @param attributeSubscriptionCaller
+     * @param subscribeToName
+     * @param subscriptionCaller
      * @param qos
      * @param subscriptionRequest
      */

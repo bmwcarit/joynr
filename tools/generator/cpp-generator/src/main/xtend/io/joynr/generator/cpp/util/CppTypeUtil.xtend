@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -294,7 +294,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 	def Set<String> getBroadcastFilterParametersClassNames(FInterface serviceInterface){
 		val classNameSet = new HashSet<String>();
 		for (broadcast: serviceInterface.broadcasts) {
-			if (isSelective(broadcast)) {
+			if (broadcast.selective) {
 				classNameSet.add(
 					serviceInterface.name.toFirstUpper +
 					broadcast.joynrName.toFirstUpper +
@@ -307,7 +307,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 	def Set<String> getBroadcastFilterParametersIncludes(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
 		for (broadcast: serviceInterface.broadcasts) {
-			if (isSelective(broadcast)) {
+			if (broadcast.selective) {
 				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast));
 			}
 		}

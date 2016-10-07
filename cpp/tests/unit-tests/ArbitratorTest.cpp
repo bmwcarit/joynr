@@ -21,14 +21,18 @@
 #include <string>
 #include <unordered_set>
 #include "joynr/DiscoveryQos.h"
-#include "joynr/QosArbitrator.h"
-#include "joynr/KeywordArbitrator.h"
-#include "joynr/DefaultArbitrator.h"
+#include "joynr/Arbitrator.h"
 #include "joynr/exceptions/NoCompatibleProviderFoundException.h"
 #include "joynr/types/Version.h"
+#include "joynr/ArbitrationStrategyFunction.h"
+#include "joynr/LastSeenArbitrationStrategyFunction.h"
+#include "joynr/QosArbitrationStrategyFunction.h"
+#include "joynr/FixedParticipantArbitrationStrategyFunction.h"
+#include "joynr/KeywordArbitrationStrategyFunction.h"
 
 #include "tests/utils/MockObjects.h"
 
+using ::testing::AtLeast;
 using ::testing::Throw;
 
 using namespace joynr;
@@ -36,35 +40,162 @@ using namespace joynr;
 static const std::string domain("unittest-domain");
 static const std::string interfaceName("unittest-interface");
 
+ACTION_P(ReleaseSemaphore,semaphore)
+{
+    semaphore->notify();
+}
+
+MATCHER_P(discoveryException, msg, "") {
+    return arg.getTypeName() == joynr::exceptions::DiscoveryException::TYPE_NAME() && arg.getMessage() == msg;
+}
+class MockArbitrator : public Arbitrator {
+public:
+    MockArbitrator(const std::string& domain,
+                       const std::string& interfaceName,
+                       const joynr::types::Version& interfaceVersion,
+                       joynr::system::IDiscoverySync& discoveryProxy,
+                       const DiscoveryQos& discoveryQos,
+                       std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction) : Arbitrator(domain,
+                               interfaceName,
+                               interfaceVersion,
+                               discoveryProxy,
+                               discoveryQos,
+                               std::move(arbitrationStrategyFunction)){};
+
+    MOCK_METHOD0(attemptArbitration, void (void));
+};
+
 class ArbitratorTest : public ::testing::Test {
 public:
     ArbitratorTest() :
+        lastSeenArbitrationStrategyFunction(std::make_unique<const LastSeenArbitrationStrategyFunction>()),
+        qosArbitrationStrategyFunction(std::make_unique<const QosArbitrationStrategyFunction>()),
+        keywordArbitrationStrategyFunction(std::make_unique<const KeywordArbitrationStrategyFunction>()),
+        fixedParticipantArbitrationStrategyFunction(std::make_unique<const FixedParticipantArbitrationStrategyFunction>()),
         lastSeenDateMs(0),
         expiryDateMs(0),
         publicKeyId("publicKeyId"),
         mockDiscovery()
-    {}
+        {}
 
-    void SetUp(){
-    }
-    void TearDown(){
-    }
+    void testExceptionFromDiscoveryProxy(Arbitrator &arbitrator);
+    void testExceptionEmptyResult(Arbitrator &arbitrator);
 
-    void testExceptionFromDiscoveryProxy(ProviderArbitrator &arbitrator);
-    void testExceptionEmptyResult(ProviderArbitrator &arbitrator);
+    std::unique_ptr<const ArbitrationStrategyFunction> lastSeenArbitrationStrategyFunction;
+    std::unique_ptr<const ArbitrationStrategyFunction> qosArbitrationStrategyFunction;
+    std::unique_ptr<const ArbitrationStrategyFunction> keywordArbitrationStrategyFunction;
+    std::unique_ptr<const ArbitrationStrategyFunction> fixedParticipantArbitrationStrategyFunction;
+
 protected:
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
     std::string publicKeyId;
+    static joynr::Logger logger;
     MockDiscovery mockDiscovery;
 };
 
-// Test that the QosArbitrator selects the provider with the highest priority
+INIT_LOGGER(ArbitratorTest);
+
+TEST_F(ArbitratorTest, arbitrationTimeout) {
+    types::Version providerVersion;
+    std::int64_t discoveryTimeoutMs = std::chrono::milliseconds(1000).count();
+    std::int64_t retryIntervalMs = std::chrono::milliseconds(450).count();
+    DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
+    discoveryQos.setRetryIntervalMs(retryIntervalMs);
+    Semaphore semaphore;
+    auto mockArbitrator = std::make_unique<MockArbitrator>("domain",
+                    "interfaceName",
+                    providerVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(lastSeenArbitrationStrategyFunction));
+    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
+    mockArbitrator->setArbitrationListener(mockArbitrationListener.get());
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)))
+            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationError(discoveryException("Arbitration could not be finished in time.")));
+
+    auto start = std::chrono::system_clock::now();
+
+    EXPECT_CALL(*mockArbitrator, attemptArbitration()).Times(AtLeast(1));
+    mockArbitrator->startArbitration();
+
+    // Wait for timeout
+    // Wait for more than discoveryTimeoutMs milliseconds since it might take some time until the 
+    // timeout is reported
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryTimeoutMs * 10)));
+
+    auto now = std::chrono::system_clock::now();
+
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+
+    JOYNR_LOG_DEBUG(logger, "Time elapsed for unsuccessful arbitration : {}", elapsed.count());
+    ASSERT_GE(elapsed.count(), discoveryTimeoutMs);
+    mockArbitrator->removeArbitrationListener();
+}
+
+// Test that the Arbitrator selects the last seen provider
+TEST_F(ArbitratorTest, getLastSeen) {
+    DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
+    joynr::types::Version providerVersion(47, 11);
+    Arbitrator lastSeenArbitrator(domain,
+                    interfaceName,
+                    providerVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(lastSeenArbitrationStrategyFunction));
+
+    std::int64_t latestLastSeenDateMs = 7;
+    std::string lastSeenParticipantId = std::to_string(latestLastSeenDateMs);
+    types::ProviderQos providerQos(
+                      std::vector<types::CustomParameter>(),// custom provider parameters
+                      42,                                   // priority
+                      joynr::types::ProviderScope::GLOBAL,  // discovery scope
+                      false                                 // supports on change notifications
+    );
+
+    // Create a list of discovery entries
+    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    for (std::int64_t i = 0; i <= latestLastSeenDateMs; i++) {
+        int64_t lastSeenDateMs = i;   std::string participantId = std::to_string(i);
+        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+                                 providerVersion,
+                                 domain,
+                                 interfaceName,
+                                 participantId,
+                                 providerQos,
+                                 lastSeenDateMs,
+                                 expiryDateMs,
+                                 publicKeyId
+        ));
+    }
+
+    // Check that the correct participant was selected
+    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
+    lastSeenArbitrator.setArbitrationListener(mockArbitrationListener.get());
+    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(lastSeenParticipantId)));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
+
+    lastSeenArbitrator.startArbitration();
+}
+
+// Test that the Arbitrator selects the provider with the highest priority
 TEST_F(ArbitratorTest, getHighestPriority) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     joynr::types::Version providerVersion(47, 11);
-    QosArbitrator qosArbitrator(domain, interfaceName, providerVersion, mockDiscovery, discoveryQos);
+    Arbitrator qosArbitrator(domain,
+                    interfaceName,
+                    providerVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(qosArbitrationStrategyFunction));
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
@@ -95,16 +226,27 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     }
 
     // Check that the correct participant was selected
-    qosArbitrator.receiveCapabilitiesLookupResults(discoveryEntries);
-    EXPECT_EQ(participantId.back(), qosArbitrator.getParticipantId());
+    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
+    qosArbitrator.setArbitrationListener(mockArbitrationListener.get());
+    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(participantId.back())));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
+
+    qosArbitrator.startArbitration();
 }
 
-// Test that the QosArbitrator selects a provider with compatible version
+// Test that the Arbitrator selects a provider with compatible version
 TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     joynr::types::Version expectedVersion(47, 11);
-    QosArbitrator qosArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator qosArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(qosArbitrationStrategyFunction));
 
     // Create a list of discovery entries
     types::ProviderQos providerQos(
@@ -139,27 +281,44 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
     }
 
     // Check that the correct participant was selected
-    qosArbitrator.receiveCapabilitiesLookupResults(discoveryEntries);
-    EXPECT_EQ(expectedParticipantId, qosArbitrator.getParticipantId());
+    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
+    qosArbitrator.setArbitrationListener(mockArbitrationListener.get());
+    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(expectedParticipantId)));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
+
+    qosArbitrator.startArbitration();
 }
 
-// Test that the QosArbitrator selects a provider that supports onChange subscriptions
+// Test that the Arbitrator selects a provider that supports onChange subscriptions
 TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setProviderMustSupportOnChange(true);
     joynr::types::Version providerVersion(47, 11);
-    QosArbitrator qosArbitrator(domain, interfaceName, providerVersion, mockDiscovery, discoveryQos);
+    Arbitrator qosArbitrator(domain,
+                    interfaceName,
+                    providerVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(qosArbitrationStrategyFunction));
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
     std::vector<std::string> participantId;
     for (int priority = 0; priority < 8; priority++) {
-        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(), priority, types::ProviderScope::GLOBAL, false));
+        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(),
+                                priority,
+                                types::ProviderScope::GLOBAL,
+                                false));
         participantId.push_back(std::to_string(priority));
     }
     for (int priority = 0; priority < 2; priority++) {
-        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(), priority, types::ProviderScope::GLOBAL, true));
+        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(),
+                                priority,
+                                types::ProviderScope::GLOBAL,
+                                true));
         participantId.push_back("onChange_%1" + std::to_string(priority));
     }
 
@@ -179,11 +338,17 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     }
 
     // Check that the correct participant was selected
-    qosArbitrator.receiveCapabilitiesLookupResults(discoveryEntries);
-    EXPECT_EQ(participantId.back(), qosArbitrator.getParticipantId());
+    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
+    qosArbitrator.setArbitrationListener(mockArbitrationListener.get());
+    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(participantId.back())));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
+
+    qosArbitrator.startArbitration();
 }
 
-// Test that the KeywordArbitrator selects the provider with the correct keyword
+// Test that the Arbitrator selects the provider with the correct keyword
 TEST_F(ArbitratorTest, getKeywordProvider) {
     // Search for this keyword value
     const std::string keywordValue("unittests-keyword");
@@ -192,14 +357,22 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version providerVersion(47, 11);
-    KeywordArbitrator keywordArbitrator(domain, interfaceName, providerVersion, mockDiscovery, discoveryQos);
+    Arbitrator qosArbitrator(domain,
+                    interfaceName,
+                    providerVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(keywordArbitrationStrategyFunction));
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
     std::vector<std::string> participantId;
     for (int priority = 0; priority < 8; priority++) {
         // Entries with no parameters
-        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(), priority, types::ProviderScope::GLOBAL, false));
+        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(),
+                                priority,
+                                types::ProviderScope::GLOBAL,
+                                false));
         participantId.push_back(std::to_string(priority));
     }
 
@@ -235,11 +408,17 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     }
 
     // Check that the correct participant was selected
-    keywordArbitrator.receiveCapabilitiesLookupResults(discoveryEntries);
-    EXPECT_EQ(participantId.back(), keywordArbitrator.getParticipantId());
+    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
+    qosArbitrator.setArbitrationListener(mockArbitrationListener.get());
+    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(participantId.back())));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
+
+    qosArbitrator.startArbitration();
 }
 
-// Test that the KeywordArbitrator selects the provider with compatible version
+// Test that the Arbitrator selects the provider with compatible version
 TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
     // Search for this keyword value
     const std::string keywordValue("unittests-keyword");
@@ -248,7 +427,12 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version expectedVersion(47, 11);
-    KeywordArbitrator keywordArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator qosArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(keywordArbitrationStrategyFunction));
 
     // Create a list of discovery entries with the correct keyword
     std::vector<types::CustomParameter> parameterList;
@@ -285,8 +469,14 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
     }
 
     // Check that the correct participant was selected
-    keywordArbitrator.receiveCapabilitiesLookupResults(discoveryEntries);
-    EXPECT_EQ(expectedParticipantId, keywordArbitrator.getParticipantId());
+    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
+    qosArbitrator.setArbitrationListener(mockArbitrationListener.get());
+    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(expectedParticipantId)));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
+    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
+
+    qosArbitrator.startArbitration();
 }
 
 TEST_F(ArbitratorTest, retryFiveTimes) {
@@ -312,9 +502,14 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
     discoveryQos.setRetryIntervalMs(100);
     discoveryQos.setDiscoveryTimeoutMs(450);
     joynr::types::Version providerVersion(47, 11);
-    DefaultArbitrator arbitrator(domain, interfaceName, providerVersion, mockDiscovery, discoveryQos);
+    Arbitrator lastSeenArbitrator(domain,
+                    interfaceName,
+                    providerVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(lastSeenArbitrationStrategyFunction));
 
-    arbitrator.startArbitration();
+    lastSeenArbitrator.startArbitration();
 }
 
 /*
@@ -349,7 +544,7 @@ MATCHER_P(noCompatibleProviderFoundException, expectedVersions, "") {
     return true;
 }
 
-// Test that the QosArbitrator reports a NoCompatibleProviderFoundException to the listener
+// Test that the Arbitrator reports a NoCompatibleProviderFoundException to the listener
 // containing the versions that were found during the last retry
 TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundException) {
     DiscoveryQos discoveryQos;
@@ -357,7 +552,12 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
     discoveryQos.setDiscoveryTimeoutMs(199);
     discoveryQos.setRetryIntervalMs(100);
     joynr::types::Version expectedVersion(47, 11);
-    QosArbitrator qosArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator qosArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(qosArbitrationStrategyFunction));
 
     // Create a list of discovery entries
     types::ProviderQos providerQos(
@@ -408,21 +608,19 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    MockArbitrationListener* mockArbitrationListener = new MockArbitrationListener();
-    qosArbitrator.setArbitrationListener(mockArbitrationListener);
+    MockArbitrationListener mockArbitrationListener;
+    qosArbitrator.setArbitrationListener(&mockArbitrationListener);
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
 
     qosArbitrator.startArbitration();
-
-    delete mockArbitrationListener;
 }
 
-// Test that the KeywordArbitrator returns a NoCompatibleProviderFoundException to the listener
+// Test that the Arbitrator returns a NoCompatibleProviderFoundException to the listener
 // containing the versions that were found during the last retry
 TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundException) {
     // Search for this keyword value
@@ -434,7 +632,12 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
     discoveryQos.setRetryIntervalMs(100);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version expectedVersion(47, 11);
-    KeywordArbitrator keywordArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator keywordArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(keywordArbitrationStrategyFunction));
 
     // Create a list of discovery entries with the correct keyword
     std::vector<types::CustomParameter> parameterList;
@@ -487,21 +690,19 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    MockArbitrationListener* mockArbitrationListener = new MockArbitrationListener();
-    keywordArbitrator.setArbitrationListener(mockArbitrationListener);
+    MockArbitrationListener mockArbitrationListener;
+    keywordArbitrator.setArbitrationListener(&mockArbitrationListener);
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
 
     keywordArbitrator.startArbitration();
-
-    delete mockArbitrationListener;
 }
 
-// Test that the FixedParticipantArbitrator reports a NoCompatibleProviderFoundException to the listener
+// Test that the Arbitrator reports a NoCompatibleProviderFoundException to the listener
 // containing the versions that were found during the last retry
 TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFoundException) {
     // Search for this keyword value
@@ -513,7 +714,12 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
     discoveryQos.setRetryIntervalMs(100);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     joynr::types::Version expectedVersion(47, 11);
-    FixedParticipantArbitrator fixedParticipantArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator fixedParticipantArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(fixedParticipantArbitrationStrategyFunction));
 
     // Create a discovery entries with the correct participantId
     std::vector<types::CustomParameter> parameterList;
@@ -549,33 +755,36 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
                              publicKeyId
     );
 
-    EXPECT_CALL(mockDiscovery, lookup(_,_))
+    EXPECT_CALL(mockDiscovery, lookup(_,Eq(participantId)))
             .WillOnce(testing::SetArgReferee<0>(discoveryEntry1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntry2));
 
-    MockArbitrationListener* mockArbitrationListener = new MockArbitrationListener();
-    fixedParticipantArbitrator.setArbitrationListener(mockArbitrationListener);
+    MockArbitrationListener mockArbitrationListener;
+    fixedParticipantArbitrator.setArbitrationListener(&mockArbitrationListener);
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersion2);
 
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
 
     fixedParticipantArbitrator.startArbitration();
-
-    delete mockArbitrationListener;
 }
 
-// Test that the DefaultArbitrator reports a NoCompatibleProviderFoundException to the listener
+// Test that the lastSeenArbitrator reports a NoCompatibleProviderFoundException to the listener
 // containing the versions that were found during the last retry
 TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
     DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::NOT_SET);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
     discoveryQos.setDiscoveryTimeoutMs(199);
     discoveryQos.setRetryIntervalMs(100);
     joynr::types::Version expectedVersion(47, 11);
-    DefaultArbitrator defaultArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator lastSeenArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(lastSeenArbitrationStrategyFunction));
 
     // Create a list of discovery entries
     types::ProviderQos providerQos(
@@ -626,18 +835,16 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    MockArbitrationListener* mockArbitrationListener = new MockArbitrationListener();
-    defaultArbitrator.setArbitrationListener(mockArbitrationListener);
+    MockArbitrationListener mockArbitrationListener;
+    lastSeenArbitrator.setArbitrationListener(&mockArbitrationListener);
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
+    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
 
-    defaultArbitrator.startArbitration();
-
-    delete mockArbitrationListener;
+    lastSeenArbitrator.startArbitration();
 }
 
 
@@ -645,7 +852,6 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
  * Tests that the arbitrators report the exception from the discoveryProxy if the lookup fails
  * during the last retry
  */
-
 MATCHER_P(exceptionFromDiscoveryProxy, originalException, "") {
     std::string expectedErrorMsg = "Unable to lookup provider (domain: " + domain +
             ", interface: " + interfaceName + ") from discovery. Error: " +
@@ -653,7 +859,7 @@ MATCHER_P(exceptionFromDiscoveryProxy, originalException, "") {
     return arg.getMessage() == expectedErrorMsg;
 }
 
-void ArbitratorTest::testExceptionFromDiscoveryProxy(ProviderArbitrator &arbitrator){
+void ArbitratorTest::testExceptionFromDiscoveryProxy(Arbitrator &arbitrator){
     exceptions::JoynrRuntimeException exception1("first exception");
     exceptions::JoynrRuntimeException expectedException("expected exception");
     EXPECT_CALL(mockDiscovery, lookup(_,_,_,_))
@@ -675,7 +881,12 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsExceptionFromDiscoveryProxy) {
     discoveryQos.setDiscoveryTimeoutMs(199);
     discoveryQos.setRetryIntervalMs(100);
     joynr::types::Version expectedVersion(47, 11);
-    QosArbitrator qosArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator qosArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(qosArbitrationStrategyFunction));
 
     testExceptionFromDiscoveryProxy(qosArbitrator);
 }
@@ -690,7 +901,12 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsExceptionFromDiscoveryProxy) {
     discoveryQos.setRetryIntervalMs(100);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version expectedVersion(47, 11);
-    KeywordArbitrator keywordArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator keywordArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(keywordArbitrationStrategyFunction));
 
     testExceptionFromDiscoveryProxy(keywordArbitrator);
 }
@@ -705,11 +921,16 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsExceptionFromDiscoveryP
     discoveryQos.setRetryIntervalMs(100);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     joynr::types::Version expectedVersion(47, 11);
-    FixedParticipantArbitrator fixedParticipantArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator fixedParticipantArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(fixedParticipantArbitrationStrategyFunction));
 
     exceptions::JoynrRuntimeException exception1("first exception");
     exceptions::JoynrRuntimeException expectedException("expected exception");
-    EXPECT_CALL(mockDiscovery, lookup(_,_))
+    EXPECT_CALL(mockDiscovery, lookup(_,Eq(participantId)))
             .WillOnce(Throw(exception1))
             .WillRepeatedly(Throw(expectedException));
 
@@ -722,15 +943,20 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsExceptionFromDiscoveryP
     fixedParticipantArbitrator.startArbitration();
 }
 
-TEST_F(ArbitratorTest, getDefaultReturnsExceptionFromDiscoveryProxy) {
+TEST_F(ArbitratorTest, getLastSeenReturnsExceptionFromDiscoveryProxy) {
     DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::NOT_SET);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
     discoveryQos.setDiscoveryTimeoutMs(199);
     discoveryQos.setRetryIntervalMs(100);
     joynr::types::Version expectedVersion(47, 11);
-    DefaultArbitrator defaultArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator lastSeenArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(lastSeenArbitrationStrategyFunction));
 
-    testExceptionFromDiscoveryProxy(defaultArbitrator);
+    testExceptionFromDiscoveryProxy(lastSeenArbitrator);
 }
 
 
@@ -744,7 +970,7 @@ MATCHER_P(exceptionEmptyResult, originalException, "") {
     return arg.getMessage() == expectedErrorMsg;
 }
 
-void ArbitratorTest::testExceptionEmptyResult(ProviderArbitrator &arbitrator){
+void ArbitratorTest::testExceptionEmptyResult(Arbitrator &arbitrator){
     // discovery entries for first lookup
     types::ProviderQos providerQos(
                       std::vector<types::CustomParameter>(),// custom provider parameters
@@ -788,7 +1014,12 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsExceptionEmptyResult) {
     discoveryQos.setDiscoveryTimeoutMs(199);
     discoveryQos.setRetryIntervalMs(100);
     joynr::types::Version expectedVersion(47, 11);
-    QosArbitrator qosArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator qosArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(qosArbitrationStrategyFunction));
 
     testExceptionEmptyResult(qosArbitrator);
 }
@@ -803,20 +1034,30 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsExceptionEmptyResult) {
     discoveryQos.setRetryIntervalMs(100);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version expectedVersion(47, 11);
-    KeywordArbitrator keywordArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator keywordArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(keywordArbitrationStrategyFunction));
 
     testExceptionEmptyResult(keywordArbitrator);
 }
 
-// FixedParticipantArbitrator has no special exception for empty results
+// Arbitrator has no special exception for empty results
 
-TEST_F(ArbitratorTest, getDefaultReturnsExceptionEmptyResult) {
+TEST_F(ArbitratorTest, getLastSeenReturnsExceptionEmptyResult) {
     DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::NOT_SET);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
     discoveryQos.setDiscoveryTimeoutMs(199);
     discoveryQos.setRetryIntervalMs(100);
     joynr::types::Version expectedVersion(47, 11);
-    DefaultArbitrator defaultArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+    Arbitrator lastSeenArbitrator(domain,
+                    interfaceName,
+                    expectedVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(lastSeenArbitrationStrategyFunction));
 
-    testExceptionEmptyResult(defaultArbitrator);
+    testExceptionEmptyResult(lastSeenArbitrator);
 }

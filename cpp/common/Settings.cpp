@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ Settings::Settings(const std::string& filename) : filename(filename), propertyTr
     try {
         ptree::read_ini(filename, propertyTree);
         loaded = true;
-    } catch (const ptree::ini_parser_error&) {
+    } catch (const ptree::ini_parser_error& e) {
+        JOYNR_LOG_ERROR(logger, "Could not read settings file: {}", e.what());
         // The file does not exist or is an invalid format.
         // Match the behaviour of QSettings and ignore/overwrite
         // But leave loaded as false

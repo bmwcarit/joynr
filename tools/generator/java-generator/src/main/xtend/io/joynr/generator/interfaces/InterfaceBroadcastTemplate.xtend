@@ -3,7 +3,7 @@ package io.joynr.generator.interfaces
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package io.joynr.generator.interfaces
 
 import com.google.inject.Inject
 import io.joynr.generator.templates.InterfaceTemplate
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
@@ -30,7 +29,6 @@ class InterfaceBroadcastTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension NamingUtil
-	@Inject extension BroadcastUtil
 	@Inject extension TemplateBase
 
 	override generate() {
@@ -78,7 +76,7 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 		}
 	}
 
-	«IF isSelective(broadcast)»
+	«IF broadcast.selective»
 		public class «filterParameterType» extends BroadcastFilterParameters {
 			public «filterParameterType»() {};
 

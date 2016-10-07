@@ -137,9 +137,20 @@ transmission.
 * **User property**: `joynr.messaging.sendmsgretryintervalms`
 * **Default value**: `3000`
 
+### PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
+
+The cluster controller sends a freshness update message to the global discovery directory every
+PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS milliseconds. The global discovery directory
+updates the ```lastSeenDateMs``` of all capabilities registered via this cluster controller.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.capabilities.freshnessupdateintervalms`
+* **Default value**: `3600000`
+
 ##MessagingPropertyKeys
 
-### `BOUNCE_PROXY_URL`
+### `PROPERTY_BOUNCE_PROXY_URL`
 The root URL of the BounceProxy backend service when using HTTP messaging. The cluster controller
 uses this service to create a receive channel (message queue). Messages are posted to the receive
 channel in the backend. The cluster controller polls the channel to download the incoming messages.
@@ -149,7 +160,16 @@ channel in the backend. The cluster controller polls the channel to download the
 * **User property**: `joynr.messaging.bounceproxyurl`
 * **Default value**: `http://localhost:8080/bounceproxy/`
 
-### `DISCOVERYDIRECTORYURL`
+### `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT`
+Select primary global transport middleware which will be used to register providers. The provider
+will be reachable via the selected global transport middleware.
+
+* **REQUIRED if using more than one global transport**
+* **Type**: String
+* **User property**: `joynr.messaging.primaryglobaltransport`
+* **Default value**: NOT SET
+
+### `CAPABILITYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
 appropriate entry in the local capabilities directory.
@@ -313,6 +333,20 @@ Possible values are:
  * `wss`
 * **User property**: `joynr.messaging.cc.protocol`
 * **Default value**: `ws`
+
+
+## <a name="ExpiredDiscoveryEntryCacheCleaner"></a>ExpiredDiscoveryEntryCacheCleaner
+
+### `DISCOVERY_ENTRY_CACHE_CLEANUP_INTERVAL`
+The time interval in minutes at which the capabilities cache will be searched for expired
+discovery entries, and these will be expunged from the cache. Applies to both local and
+global cached discovery entries.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.cc.discovery.entry.cache.cleanup.interval`
+* **Default value**: `60`
+
 
 ## JEE Integration
 

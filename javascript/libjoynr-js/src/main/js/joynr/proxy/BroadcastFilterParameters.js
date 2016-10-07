@@ -2,7 +2,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,25 +60,43 @@ define("joynr/proxy/BroadcastFilterParameters", [
         var parameterName;
         var funcName;
 
-        for (parameterName in filterParameterProperties) {
-            if (filterParameterProperties.hasOwnProperty(parameterName)) {
-                funcName =
-                        "set" + parameterName.charAt(0).toUpperCase() + parameterName.substring(1);
-                //filter[funcName] = makeSetterFunction(filter, parameterName);
-                Object.defineProperty(this, funcName, {
-                    configurable : false,
-                    writable : false,
-                    enumerable : false,
-                    value : makeSetterFunction(this, parameterName)
-                });
+        if (filterParameterProperties === undefined) {
+            var filterParameters = null;
+            Object.defineProperty(this, 'filterParameters', {
+                readable : true,
+                enumerable : true,
+                configurable : false,
+                get : function() {
+                    return filterParameters;
+                },
+                set : function(value) {
+                    filterParameters = value;
+                }
+            });
+        } else {
+            for (parameterName in filterParameterProperties) {
+                if (filterParameterProperties.hasOwnProperty(parameterName)) {
+                    funcName =
+                            "set"
+                                + parameterName.charAt(0).toUpperCase()
+                                + parameterName.substring(1);
+                    //filter[funcName] = makeSetterFunction(filter, parameterName);
+                    Object.defineProperty(this, funcName, {
+                        configurable : false,
+                        writable : false,
+                        enumerable : false,
+                        value : makeSetterFunction(this, parameterName)
+                    });
+                }
             }
+
+            /**
+             * @name BroadcastFilterParameters#filterParameters
+             * @type Object
+             */
+            this.filterParameters = {};
         }
 
-        /**
-         * @name BroadcastFilterParameters#filterParameters
-         * @type Object
-         */
-        this.filterParameters = {};
     }
 
     return BroadcastFilterParameters;

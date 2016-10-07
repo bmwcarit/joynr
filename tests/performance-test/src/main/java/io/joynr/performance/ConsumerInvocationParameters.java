@@ -45,7 +45,15 @@ public class ConsumerInvocationParameters {
      * Determines the test case which shall be performed.
      */
     enum TESTCASE {
-        SEND_STRING, SEND_STRUCT, SEND_BYTEARRAY
+        SEND_STRING, SEND_STRUCT, SEND_BYTEARRAY, SEND_BYTEARRAY_WITH_SIZE_TIMES_K
+    }
+
+    public enum RuntimeConfig {
+        IN_PROCESS_CC, WEBSOCKET
+    }
+
+    public enum BackendConfig {
+        MQTT
     }
 
     private static final String CMDLINE_OPTIONNAME_DOMAINNAME = "domain";
@@ -56,6 +64,11 @@ public class ConsumerInvocationParameters {
     private static final String CMDLINE_OPTIONNAME_STRINGDATALENGTH = "stringdatalength";
     private static final String CMDLINE_OPTIONNAME_BYTEARRAYSIZE = "bytearraysize";
     private static final String CMDLINE_OPTIONNAME_DISCOVERYSCOPE = "discoveryscope";
+    private static final String CMDLINE_OPTIONNAME_RUNTIMECFG = "runtimeconfig";
+    private static final String CMDLINE_OPTIONNAME_BACKENDCFG = "backendconfig";
+    private static final String CMDLINE_OPTIONNAME_MQTTBROKERURI = "mqttbrokeruri";
+    private static final String CMDLINE_OPTIONNAME_CC_HOST = "cchost";
+    private static final String CMDLINE_OPTIONNAME_CC_PORT = "ccport";
 
     private static String domainName = "";
     private static int numberOfRuns = 1;
@@ -65,6 +78,11 @@ public class ConsumerInvocationParameters {
     private static int stringDataLength = 10;
     private static int byteArraySize = 100;
     private static DiscoveryScope discoveryScope = DiscoveryScope.LOCAL_ONLY;
+    private RuntimeConfig runtimeConfig = RuntimeConfig.IN_PROCESS_CC;
+    private BackendConfig backendConfig = BackendConfig.MQTT;
+    private String mqttBrokerUri = "tcp://localhost:1883";
+    private String ccHost = "localhost";
+    private String ccPort = "4242";
 
     public ConsumerInvocationParameters(String[] args) throws Exception {
         CommandLine commandLine = parseCommandLineArgs(args);
@@ -105,10 +123,34 @@ public class ConsumerInvocationParameters {
 
         // getParsedOptionValue seems not to work for enumerations.
         testCase = TESTCASE.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_TESTCASE));
+        if (testCase == TESTCASE.SEND_BYTEARRAY_WITH_SIZE_TIMES_K) {
+            testCase = TESTCASE.SEND_BYTEARRAY;
+            byteArraySize = byteArraySize * 1000;
+        }
         communicationMode = COMMUNICATIONMODE.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_SYNCMODE));
 
         if (commandLine.hasOption(CMDLINE_OPTIONNAME_DISCOVERYSCOPE)) {
             discoveryScope = DiscoveryScope.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_DISCOVERYSCOPE));
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_BACKENDCFG)) {
+            backendConfig = BackendConfig.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_BACKENDCFG));
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_MQTTBROKERURI)) {
+            mqttBrokerUri = commandLine.getOptionValue(CMDLINE_OPTIONNAME_MQTTBROKERURI);
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_RUNTIMECFG)) {
+            runtimeConfig = RuntimeConfig.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_RUNTIMECFG));
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_CC_HOST)) {
+            ccHost = commandLine.getOptionValue(CMDLINE_OPTIONNAME_CC_HOST);
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_CC_PORT)) {
+            ccPort = commandLine.getOptionValue(CMDLINE_OPTIONNAME_CC_PORT);
         }
     }
 
@@ -188,6 +230,52 @@ public class ConsumerInvocationParameters {
                                         + "LOCAL_ONLY or LOCAL_THEN_GLOBAL. Default is LOCAL_ONLY.")
                                 .build());
 
+        options.addOption(Option.builder("runtime")
+                                .longOpt(CMDLINE_OPTIONNAME_RUNTIMECFG)
+                                .required(false)
+                                .hasArg()
+                                .argName("runtime")
+                                .type(RuntimeConfig.class)
+                                .desc("Runtime module configuration. " + "Default is " + runtimeConfig.toString())
+                                .build());
+
+        options.addOption(Option.builder("backend")
+                                .longOpt(CMDLINE_OPTIONNAME_BACKENDCFG)
+                                .required(false)
+                                .hasArg()
+                                .argName("backend")
+                                .type(BackendConfig.class)
+                                .desc("Backend configuration. At the moment only MQTT is supported. Default is "
+                                        + backendConfig.toString())
+                                .build());
+
+        options.addOption(Option.builder("mbu")
+                                .longOpt(CMDLINE_OPTIONNAME_MQTTBROKERURI)
+                                .required(false)
+                                .hasArg()
+                                .argName("uri")
+                                .type(String.class)
+                                .desc("MQTT broker URI. Default is " + mqttBrokerUri)
+                                .build());
+
+        options.addOption(Option.builder("ch")
+                                .longOpt(CMDLINE_OPTIONNAME_CC_HOST)
+                                .required(false)
+                                .hasArg()
+                                .argName("cluster-controller host")
+                                .type(String.class)
+                                .desc("Host of the cluster-controller for websocket connections. Default is " + ccHost)
+                                .build());
+
+        options.addOption(Option.builder("cp")
+                                .longOpt(CMDLINE_OPTIONNAME_CC_PORT)
+                                .required(false)
+                                .hasArg()
+                                .argName("cluster-controller port")
+                                .type(String.class)
+                                .desc("Port of the cluster-controller for websocket connections. Default is " + ccPort)
+                                .build());
+
         CommandLineParser parser = new DefaultParser();
 
         try {
@@ -229,5 +317,25 @@ public class ConsumerInvocationParameters {
 
     public DiscoveryScope getDiscoveryScope() {
         return discoveryScope;
+    }
+
+    public String getMqttBrokerUri() {
+        return mqttBrokerUri;
+    }
+
+    public RuntimeConfig getRuntimeMode() {
+        return runtimeConfig;
+    }
+
+    public BackendConfig getBackendTransportMode() {
+        return backendConfig;
+    }
+
+    public String getCcHost() {
+        return ccHost;
+    }
+
+    public String getCcPort() {
+        return ccPort;
     }
 }

@@ -44,6 +44,9 @@ public class GlobalCapabilitiesDirectoryClient {
     private static final long TTL_30_DAYS_IN_MS = 30L * 24L * 60L * 60L * 1000L;
     private final String domain;
     private final ProxyBuilderFactory proxyBuilderFactory;
+    @Inject
+    @Named(MessagingPropertyKeys.CHANNELID)
+    private String localChannelId;
 
     @Inject
     public GlobalCapabilitiesDirectoryClient(ProxyBuilderFactory proxyBuilderFactory,
@@ -106,4 +109,9 @@ public class GlobalCapabilitiesDirectoryClient {
         }, domains, interfaceName);
 
     }
+
+    public void touch(long ttl) {
+        getProxy(ttl).touch(localChannelId);
+    }
+
 }

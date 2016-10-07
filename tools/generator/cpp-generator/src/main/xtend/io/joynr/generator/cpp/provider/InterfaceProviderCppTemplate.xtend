@@ -22,7 +22,6 @@ import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
-import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.NamingUtil
 
@@ -32,7 +31,6 @@ class InterfaceProviderCppTemplate extends InterfaceTemplate {
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
-	@Inject private extension InterfaceUtil
 
 	override generate() {
 		var selector = TypeSelector::defaultTypeSelector
@@ -44,7 +42,6 @@ class InterfaceProviderCppTemplate extends InterfaceTemplate {
 #include "joynr/InterfaceRegistrar.h"
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
-#include "joynr/TypeUtil.h"
 «FOR parameterType: getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»

@@ -55,7 +55,7 @@ public:
     // Todo: should be changed to a std::shared_ptr or reference.
     Dispatcher(JoynrMessageSender* messageSender,
                boost::asio::io_service& ioService,
-               int maxThreads = 4);
+               int maxThreads = 1);
 
     ~Dispatcher() override;
 

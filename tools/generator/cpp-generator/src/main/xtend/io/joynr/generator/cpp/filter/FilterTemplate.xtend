@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.filter
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.BroadcastTemplate
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
 
@@ -53,7 +52,6 @@ class FilterTemplate implements BroadcastTemplate {
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«serviceInterface.name».h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Parameters.h"
-#include "joynr/TypeUtil.h"
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface)»

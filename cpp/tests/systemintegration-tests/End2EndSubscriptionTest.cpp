@@ -28,7 +28,6 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -74,12 +73,12 @@ public:
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = new JoynrClusterControllerRuntime(nullptr, std::move(settings1));
+        runtime1 = new JoynrClusterControllerRuntime(std::move(settings1));
 
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = new JoynrClusterControllerRuntime(nullptr, std::move(settings2));
+        runtime2 = new JoynrClusterControllerRuntime(std::move(settings2));
     }
 
     void SetUp() {

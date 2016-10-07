@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@
  * #L%
  */
 #include "joynr/JoynrRuntime.h"
-#include "libjoynr-runtime/LibJoynrRuntime.h"
-#include "JoynrWebSocketRuntimeExecutor.h"
 #include "joynr/Settings.h"
+#include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
 namespace joynr
 {
@@ -36,6 +35,6 @@ JoynrRuntime* JoynrRuntime::createRuntime(const std::string& pathToLibjoynrSetti
 
 JoynrRuntime* JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
 {
-    return LibJoynrRuntime::create(new JoynrWebSocketRuntimeExecutor(std::move(settings)));
+    return new LibJoynrWebSocketRuntime(std::move(settings));
 }
 } // namespace joynr

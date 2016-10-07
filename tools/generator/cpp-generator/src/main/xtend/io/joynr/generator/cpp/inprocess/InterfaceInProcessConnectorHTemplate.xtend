@@ -58,7 +58,6 @@ class InterfaceInProcessConnectorHTemplate extends InterfaceTemplate{
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Logger.h"
-#include "joynr/TypeUtil.h"
 
 «FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
