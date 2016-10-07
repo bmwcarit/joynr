@@ -36,66 +36,15 @@ define(
              *            settings.type the message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
              */
             function JoynrMessage(settings) {
-                Object.defineProperties(this, {
-                    /**
-                     * The joynr type name
-                     *
-                     * @name JoynrMessage#_typeName
-                     * @type String
-                     */
-                    "_typeName" : {
-                        value : "joynr.JoynrMessage",
-                        readable : true,
-                        writable : false,
-                        enumerable : true,
-                        configurable : false
-                    },
-                    /**
-                     * The message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
-                     *
-                     * @name JoynrMessage#type
-                     * @type String
-                     */
-                    "type" : {
-                        value : settings.type,
-                        readable : true,
-                        writable : false,
-                        enumerable : true,
-                        configurable : false
-                    },
-                    /**
-                     * The message header holding additional values
-                     *
-                     * @name JoynrMessage#header
-                     * @type Object
-                     */
-                    "header" : {
-                        value : settings.header || {},
-                        readable : true,
-                        writable : false,
-                        enumerable : true,
-                        configurable : false
-                    },
-                    /**
-                     * The serialized message payload
-                     *
-                     * @name JoynrMessage#payload
-                     * @type String
-                     */
-                    "payload" : {
-                        value : settings.payload || "",
-                        readable : true,
-                        writable : false,
-                        enumerable : true,
-                        configurable : false
-                    }
-                });
-
-                this.header[JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE] = "application/json";
-
-                if (this.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] === undefined) {
-                    this.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] = uuid();
-                }
+                settings.header = settings.header || {};
+                /*jslint nomen: true, sub: true*/
+                settings._typeName = "joynr.JoynrMessage";
+                settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE] = "application/json";
+                settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] =
+                        settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] || uuid();
+                settings['__proto__'] = JoynrMessage.prototype;
+                /*jslint nomen: false, sub: false */
+                return settings;
             }
 
             /**

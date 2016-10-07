@@ -80,27 +80,22 @@ define("joynr/dispatching/Dispatcher", [
          * @function
          * @private
          *
-         * @param {String}
-         *            payload of a JoynrMessage
+         * @param {Object}
+         *            joynrMessage the joynr message
          * @returns payload if the payload is parsable JSON, this is parsed and returned as as an object; otherwise the payload itself
          *          is returned
          *
          */
-        function parsePayload(payload) {
-            if (typeof payload !== "string") {
-                // TODO handle error properly
-                log.error("payload is not of type string, cannot deserialize!");
-            }
-
+        function parsePayload(joynrMessage) {
             try {
-                return JSON.parse(payload);
+                return JSON.parse(joynrMessage.payload);
             } catch (e) {
                 // TODO handle error properly
                 log.error("error while deserializing: " + e);
             }
 
             // TODO: handle errors correctly with respect to return value
-            return payload;
+            return joynrMessage.payload;
         }
 
         /**
@@ -442,18 +437,20 @@ define("joynr/dispatching/Dispatcher", [
          */
         function sendReply(settings) {
             // reply with the result in a JoynrMessage
-            var message = new JoynrMessage({
+            var joynrMessage = new JoynrMessage({
                 type : settings.messageType,
-                payload : settings.reply
+                payload : settings.reply,
+                header : {
+                    from : settings.from,
+                    to : settings.to,
+                    expiryDate : settings.expiryDate
+                }
             });
 
-            // set headers
-            message.from = settings.from;
-            message.to = settings.to;
-            message.expiryDate = settings.expiryDate;
-            message.setCustomHeaders(settings.customHeaders);
+            // set custom headers
+            joynrMessage.setCustomHeaders(settings.customHeaders);
 
-            clusterControllerMessagingStub.transmit(message);
+            clusterControllerMessagingStub.transmit(joynrMessage);
         }
         /**
          * @private
@@ -597,13 +594,13 @@ define("joynr/dispatching/Dispatcher", [
             // Reply with the result in a JoynrMessage
             var publicationMessage = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST,
-                payload : JSONSerializer.stringify(publication)
+                payload : JSONSerializer.stringify(publication),
+                header : {
+                    from : settings.from,
+                    to : publication.multicastId,
+                    expiryDate : settings.expiryDate
+                }
             });
-
-            // set reply headers
-            publicationMessage.from = settings.from;
-            publicationMessage.to = publication.multicastId;
-            publicationMessage.expiryDate = settings.expiryDate;
 
             clusterControllerMessagingStub.transmit(publicationMessage);
         };
@@ -618,15 +615,12 @@ define("joynr/dispatching/Dispatcher", [
          */
         this.receive =
                 function receive(joynrMessage) {
-                    log.debug("received message with id \""
-                        + joynrMessage.msgId
-                        + "\" and the following payload: "
-                        + joynrMessage.payload);
+                    log.debug("received message with id \"" + joynrMessage.msgId);
                     switch (joynrMessage.type) {
 
                         case JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST:
                             try {
-                                var request = new Request(parsePayload(joynrMessage.payload));
+                                var request = new Request(parsePayload(joynrMessage));
 
                                 requestReplyManager.handleRequest(
                                         joynrMessage.to,
@@ -648,7 +642,7 @@ define("joynr/dispatching/Dispatcher", [
                         case JoynrMessage.JOYNRMESSAGE_TYPE_REPLY:
                             try {
                                 requestReplyManager.handleReply(new Reply(
-                                        parsePayload(joynrMessage.payload)));
+                                        parsePayload(joynrMessage)));
                             } catch (errorInReply) {
                                 // TODO handle error in handling the reply
                                 log.error("error handling reply: " + errorInReply);
@@ -659,7 +653,7 @@ define("joynr/dispatching/Dispatcher", [
                             try {
                                 requestReplyManager.handleOneWayRequest(
                                         joynrMessage.to,
-                                        new OneWayRequest(parsePayload(joynrMessage.payload)));
+                                        new OneWayRequest(parsePayload(joynrMessage)));
                             } catch (errorInOneWayRequest) {
                                 log.error("error handling one way: " + errorInOneWayRequest);
                             }
@@ -667,21 +661,18 @@ define("joynr/dispatching/Dispatcher", [
 
                         case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST:
                             try {
-                                publicationManager
-                                        .handleSubscriptionRequest(
-                                                joynrMessage.from,
-                                                joynrMessage.to,
-                                                new SubscriptionRequest(
-                                                        parsePayload(joynrMessage.payload)),
-                                                function(subscriptionReply) {
-                                                    sendSubscriptionReply({
-                                                        from : joynrMessage.to,
-                                                        to : joynrMessage.from,
-                                                        expiryDate : joynrMessage.expiryDate,
-                                                        customHeaders : joynrMessage
-                                                                .getCustomHeaders()
-                                                    }, subscriptionReply);
-                                                });
+                                publicationManager.handleSubscriptionRequest(
+                                        joynrMessage.from,
+                                        joynrMessage.to,
+                                        new SubscriptionRequest(parsePayload(joynrMessage)),
+                                        function(subscriptionReply) {
+                                            sendSubscriptionReply({
+                                                from : joynrMessage.to,
+                                                to : joynrMessage.from,
+                                                expiryDate : joynrMessage.expiryDate,
+                                                customHeaders : joynrMessage.getCustomHeaders()
+                                            }, subscriptionReply);
+                                        });
                             } catch (errorInSubscriptionRequest) {
                                 // TODO handle error in handling the subscriptionRequest
                                 log.error("error handling subscriptionRequest: "
@@ -691,19 +682,21 @@ define("joynr/dispatching/Dispatcher", [
 
                         case JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST:
                             try {
-                                publicationManager.handleBroadcastSubscriptionRequest(
-                                        joynrMessage.from,
-                                        joynrMessage.to,
-                                        new BroadcastSubscriptionRequest(
-                                                parsePayload(joynrMessage.payload)),
-                                        function(subscriptionReply) {
-                                            sendSubscriptionReply({
-                                                from : joynrMessage.to,
-                                                to : joynrMessage.from,
-                                                expiryDate : joynrMessage.expiryDate,
-                                                customHeaders : joynrMessage.getCustomHeaders()
-                                            }, subscriptionReply);
-                                        });
+                                publicationManager
+                                        .handleBroadcastSubscriptionRequest(
+                                                joynrMessage.from,
+                                                joynrMessage.to,
+                                                new BroadcastSubscriptionRequest(
+                                                        parsePayload(joynrMessage)),
+                                                function(subscriptionReply) {
+                                                    sendSubscriptionReply({
+                                                        from : joynrMessage.to,
+                                                        to : joynrMessage.from,
+                                                        expiryDate : joynrMessage.expiryDate,
+                                                        customHeaders : joynrMessage
+                                                                .getCustomHeaders()
+                                                    }, subscriptionReply);
+                                                });
                             } catch (errorInBroadcastSubscriptionRequest) {
                                 // TODO handle error in handling the subscriptionRequest
                                 log.error("error handling broadcastSubscriptionRequest: "
@@ -713,19 +706,21 @@ define("joynr/dispatching/Dispatcher", [
 
                         case JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST:
                             try {
-                                publicationManager.handleMulticastSubscriptionRequest(
-                                        joynrMessage.from,
-                                        joynrMessage.to,
-                                        new MulticastSubscriptionRequest(
-                                                parsePayload(joynrMessage.payload)),
-                                        function(subscriptionReply) {
-                                            sendSubscriptionReply({
-                                                from : joynrMessage.to,
-                                                to : joynrMessage.from,
-                                                expiryDate : joynrMessage.expiryDate,
-                                                customHeaders : joynrMessage.getCustomHeaders()
-                                            }, subscriptionReply);
-                                        });
+                                publicationManager
+                                        .handleMulticastSubscriptionRequest(
+                                                joynrMessage.from,
+                                                joynrMessage.to,
+                                                new MulticastSubscriptionRequest(
+                                                        parsePayload(joynrMessage)),
+                                                function(subscriptionReply) {
+                                                    sendSubscriptionReply({
+                                                        from : joynrMessage.to,
+                                                        to : joynrMessage.from,
+                                                        expiryDate : joynrMessage.expiryDate,
+                                                        customHeaders : joynrMessage
+                                                                .getCustomHeaders()
+                                                    }, subscriptionReply);
+                                                });
                             } catch (errorInMulticastSubscriptionRequest) {
                                 // TODO handle error in handling the subscriptionRequest
                                 log.error("error handling multicastSubscriptionRequest: "
@@ -736,7 +731,7 @@ define("joynr/dispatching/Dispatcher", [
                         case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY:
                             try {
                                 subscriptionManager.handleSubscriptionReply(new SubscriptionReply(
-                                        parsePayload(joynrMessage.payload)));
+                                        parsePayload(joynrMessage)));
                             } catch (errorInSubscriptionReply) {
                                 // TODO handle error in handling the subscriptionReply
                                 log.error("error handling subscriptionReply: "
@@ -747,7 +742,7 @@ define("joynr/dispatching/Dispatcher", [
                         case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP:
                             try {
                                 publicationManager.handleSubscriptionStop(new SubscriptionStop(
-                                        parsePayload(joynrMessage.payload)));
+                                        parsePayload(joynrMessage)));
                             } catch (errorInSubscriptionStop) {
                                 // TODO handle error in handling the subscriptionStop
                                 log.error("error handling subscriptionStop: "
@@ -758,7 +753,7 @@ define("joynr/dispatching/Dispatcher", [
                         case JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION:
                             try {
                                 subscriptionManager.handlePublication(new SubscriptionPublication(
-                                        parsePayload(joynrMessage.payload)));
+                                        parsePayload(joynrMessage)));
                             } catch (errorInPublication) {
                                 // TODO handle error in handling the publication
                                 log.error("error handling publication: " + errorInPublication);
@@ -769,7 +764,7 @@ define("joynr/dispatching/Dispatcher", [
                             try {
                                 subscriptionManager
                                         .handleMulticastPublication(new MulticastPublication(
-                                                parsePayload(joynrMessage.payload)));
+                                                parsePayload(joynrMessage)));
                             } catch (errorInMulticastPublication) {
                                 // TODO handle error in handling the multicast publication
                                 log.error("error handling multicast publication: "
