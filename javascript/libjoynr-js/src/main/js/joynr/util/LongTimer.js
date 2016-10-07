@@ -35,6 +35,28 @@ define("joynr/util/LongTimer", [], function() {
     var highestTimeoutId = -1;
     LongTimer.timeoutMap = {};
 
+    function timeoutPortion(timeoutId) {
+        // retrieve timeout object
+        var timeoutObj = LongTimer.timeoutMap[timeoutId];
+
+        // timeout has been cancelled
+        if (timeoutObj === undefined) {
+            return;
+        }
+
+        // if timeout elapsed, remove timeout object and call function
+        if (timeoutObj.remainingTimeout === 0) {
+            delete LongTimer.timeoutMap[timeoutId];
+            timeoutObj.func.apply(this, timeoutObj.args);
+            return;
+        }
+
+        // recalculate remaining timeout and start next portion of timeout
+        var timeToWait = Math.min(LongTimer.maxTime, timeoutObj.remainingTimeout);
+        timeoutObj.remainingTimeout -= timeToWait;
+        timeoutObj.currentTimeout = setTimeout(timeoutPortion, timeToWait, timeoutId);
+    }
+
     /**
      * Implementation for long (>2^31-1 ms) window.setTimeout only allows intervals of 2^31-1 ms
      * (because of SignedInt32 representation)
@@ -52,41 +74,27 @@ define("joynr/util/LongTimer", [], function() {
         // get next timeout id
         var timeoutId = ++highestTimeoutId;
 
-        function timeoutPortion() {
-            // retrieve timeout object
-            var timeoutObj = LongTimer.timeoutMap[timeoutId];
-
-            // timeout has been cancelled
-            if (timeoutObj === undefined) {
-                return;
-            }
-
-            // if timeout elapsed, remove timeout object and call function
-            if (timeoutObj.remainingTimeout === 0) {
-                delete LongTimer.timeoutMap[timeoutId];
-                timeoutObj.func.apply(this, timeoutObj.args);
-                return;
-            }
-
-            // recalculate remaining timeout and start next portion of timeout
-            var timeToWait = Math.min(LongTimer.maxTime, timeoutObj.remainingTimeout);
-            timeoutObj.remainingTimeout -= timeToWait;
-            timeoutObj.currentTimeout = setTimeout(timeoutPortion, timeToWait, timeoutId);
-        }
-
-        // put timeout object into map
-        LongTimer.timeoutMap[timeoutId] = {
-            func : func,
-            remainingTimeout : timeout,
-            args : Array.prototype.slice.call(arguments, 2)
-        // get the arbitrary arguments
-        };
-
-        // start timeout
-        if (timeout === 0) {
-            setTimeout(timeoutPortion, 0);
+        if (timeout <= LongTimer.maxTime) {
+            // put timeout object into map
+            LongTimer.timeoutMap[timeoutId] = {
+                currentTimeout : setTimeout.apply(null, arguments)
+            };
         } else {
-            timeoutPortion();
+
+            // put timeout object into map
+            LongTimer.timeoutMap[timeoutId] = {
+                func : func,
+                remainingTimeout : timeout,
+                args : Array.prototype.slice.call(arguments, 2)
+            // get the arbitrary arguments
+            };
+
+            // start timeout
+            if (timeout === 0) {
+                setTimeout(timeoutPortion, 0, timeoutId);
+            } else {
+                timeoutPortion(timeoutId);
+            }
         }
 
         // return id to
@@ -113,7 +121,7 @@ define("joynr/util/LongTimer", [], function() {
 
         // stop javascript interval and remove timeout object
         clearTimeout(timeoutObj.currentTimeout);
-        delete LongTimer.timeoutMap[timeoutId];
+        LongTimer.timeoutMap[timeoutId] = undefined;
     };
 
     var highestIntervalId = -1;
