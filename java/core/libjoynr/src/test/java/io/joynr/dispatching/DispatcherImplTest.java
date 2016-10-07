@@ -198,16 +198,12 @@ public class DispatcherImplTest {
                                      objectMapperMock);
 
         String fromParticipantId = "fromParticipantId";
-        String multicastName = "multicastName";
-        String[] partitions = new String[]{ "one", "two" };
         MulticastPublication multicastPublication = mock(MulticastPublication.class);
         MessagingQos messagingQos = mock(MessagingQos.class);
 
-        fixture.sendMulticast(fromParticipantId, multicastName, partitions, multicastPublication, messagingQos);
+        fixture.sendMulticast(fromParticipantId, multicastPublication, messagingQos);
 
         verify(joynrMessageFactoryMock).createMulticast(eq(fromParticipantId),
-                                                        eq(multicastName),
-                                                        eq(partitions),
                                                         eq(multicastPublication),
                                                         eq(messagingQos));
         verify(messageRouterMock).route(Mockito.<JoynrMessage> any());

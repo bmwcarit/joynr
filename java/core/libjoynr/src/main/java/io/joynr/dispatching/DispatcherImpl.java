@@ -356,13 +356,9 @@ public class DispatcherImpl implements Dispatcher {
 
     @Override
     public void sendMulticast(String fromParticipantId,
-                              String multicastName,
-                              String[] partitions,
                               MulticastPublication multicastPublication,
                               MessagingQos messagingQos) {
         JoynrMessage message = joynrMessageFactory.createMulticast(fromParticipantId,
-                                                                   multicastName,
-                                                                   partitions,
                                                                    multicastPublication,
                                                                    messagingQos);
         messageRouter.route(message);

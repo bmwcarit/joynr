@@ -745,7 +745,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         String multicastId = MulticastIdUtil.createMulticastId(providerParticipantId, multicastName, partitions);
         MulticastPublication multicastPublication = new MulticastPublication(Arrays.asList(values), multicastId);
         MessagingQos messagingQos = new MessagingQos();
-        dispatcher.sendMulticast(providerParticipantId, multicastName, partitions, multicastPublication, messagingQos);
+        dispatcher.sendMulticast(providerParticipantId, multicastPublication, messagingQos);
     }
 
     @Override

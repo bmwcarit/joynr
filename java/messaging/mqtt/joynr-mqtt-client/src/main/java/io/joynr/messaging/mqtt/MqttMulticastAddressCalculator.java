@@ -39,10 +39,7 @@ public class MqttMulticastAddressCalculator implements MulticastAddressCalculato
     public Address calculate(JoynrMessage message) {
         Address result = null;
         if (globalAddress != null) {
-            String fromParticipantId = message.getFrom();
-            String multicastNameAndPartitions = message.getTo();
-            String topic = fromParticipantId + "/" + multicastNameAndPartitions;
-            result = new MqttAddress(globalAddress.getBrokerUri(), topic);
+            result = new MqttAddress(globalAddress.getBrokerUri(), message.getTo());
         }
         return result;
     }

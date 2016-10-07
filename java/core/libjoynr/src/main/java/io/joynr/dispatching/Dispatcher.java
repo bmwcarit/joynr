@@ -50,11 +50,7 @@ public interface Dispatcher extends MessageArrivedListener {
                                SubscriptionReply subscriptionReply,
                                MessagingQos qosSettings);
 
-    void sendMulticast(String fromParticipantId,
-                       String multicastName,
-                       String[] partitions,
-                       MulticastPublication multicastPublication,
-                       MessagingQos messagingQos);
+    void sendMulticast(String fromParticipantId, MulticastPublication multicastPublication, MessagingQos messagingQos);
 
     /**
      * @param clear indicates whether the channel should be closed

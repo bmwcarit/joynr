@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,7 +50,6 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -259,38 +259,16 @@ public class JoynrMessageFactoryTest {
 
     @Test
     public void testCreateMulticastMessage() {
-        String multicastName = "multicastName";
-        String[] partitions = new String[]{ "one", "two" };
-        MulticastPublication multicastPublication = mock(MulticastPublication.class);
+        String multicastId = "multicastId";
+        MulticastPublication multicastPublication = new MulticastPublication(Collections.emptyList(), multicastId);
 
         JoynrMessage joynrMessage = joynrMessageFactory.createMulticast(fromParticipantId,
-                                                                        multicastName,
-                                                                        partitions,
                                                                         multicastPublication,
                                                                         messagingQos);
 
         assertNotNull(joynrMessage);
         assertEquals(fromParticipantId, joynrMessage.getFrom());
-        assertEquals(multicastName + "/" + StringUtils.join(partitions, "/"), joynrMessage.getTo());
-        assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
-        assertTrue(joynrMessage.getPayload().contains(MulticastPublication.class.getName()));
-    }
-
-    @Test
-    public void testCreateMulticastMessageWithoutPartitions() {
-        String multicastName = "multicastName";
-        String[] partitions = new String[0];
-        MulticastPublication multicastPublication = mock(MulticastPublication.class);
-
-        JoynrMessage joynrMessage = joynrMessageFactory.createMulticast(fromParticipantId,
-                                                                        multicastName,
-                                                                        partitions,
-                                                                        multicastPublication,
-                                                                        messagingQos);
-
-        assertNotNull(joynrMessage);
-        assertEquals(fromParticipantId, joynrMessage.getFrom());
-        assertEquals(multicastName, joynrMessage.getTo());
+        assertEquals(multicastId, joynrMessage.getTo());
         assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
         assertTrue(joynrMessage.getPayload().contains(MulticastPublication.class.getName()));
     }

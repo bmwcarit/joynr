@@ -40,7 +40,6 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,17 +156,11 @@ public class JoynrMessageFactory {
     }
 
     public JoynrMessage createMulticast(String fromParticipantId,
-                                        String multicastName,
-                                        String[] partitions,
                                         MulticastPublication multicastPublication,
                                         MessagingQos messagingQos) {
-        String to = multicastName;
-        if (partitions != null && partitions.length > 0) {
-            to += "/" + StringUtils.join(partitions, '/');
-        }
         return createMessage(JoynrMessage.MESSAGE_TYPE_MULTICAST,
                              fromParticipantId,
-                             to,
+                             multicastPublication.getMulticastId(),
                              multicastPublication,
                              messagingQos);
     }

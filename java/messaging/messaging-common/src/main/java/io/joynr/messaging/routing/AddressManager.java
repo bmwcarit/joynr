@@ -124,8 +124,7 @@ public class AddressManager {
                 result.add(calculatedAddress);
             }
         }
-        String multicastId = message.getFrom() + "/" + message.getTo();
-        Set<String> receivers = multicastReceiversRegistry.getReceivers(multicastId);
+        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getTo());
         for (String receiverParticipantId : receivers) {
             Address address = routingTable.get(receiverParticipantId);
             if (address != null) {
