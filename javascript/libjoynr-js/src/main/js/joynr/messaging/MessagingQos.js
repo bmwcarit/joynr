@@ -27,6 +27,7 @@ define(
         ],
         function(defaultMessagingSettings, LoggerFactory, Util, MessagingQosEffort) {
 
+            var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
             var defaultSettings = {
                 ttl : 60000,
                 customHeaders : {}
@@ -45,7 +46,6 @@ define(
              */
             function MessagingQos(settings) {
                 var errorMsg;
-                var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
 
                 if (!(this instanceof MessagingQos)) {
                     // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
