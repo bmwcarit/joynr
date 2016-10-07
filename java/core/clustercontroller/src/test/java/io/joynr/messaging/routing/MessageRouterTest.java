@@ -56,6 +56,7 @@ import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -75,7 +76,7 @@ public class MessageRouterTest {
     private AddressManager addressManager = spy(new AddressManager(routingTable,
                                                                    new AddressManager.PrimaryGlobalTransportHolder(null),
                                                                    Sets.<MulticastAddressCalculator> newHashSet(),
-                                                                   new InMemoryMulticastReceiverRegistry()));
+                                                                   new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory())));
 
     @Mock
     private ChannelMessagingStubFactory messagingStubFactoryMock;

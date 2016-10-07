@@ -20,30 +20,47 @@ package io.joynr.messaging.routing;
  */
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class InMemoryMulticastReceiverRegistry implements MulticastReceiverRegistry {
 
-    private ConcurrentMap<String, Set<String>> multicastReceivers = Maps.newConcurrentMap();
+    private static final Logger logger = LoggerFactory.getLogger(InMemoryMulticastReceiverRegistry.class);
+
+    private final MulticastWildcardRegexFactory multicastWildcardRegexFactory;
+
+    private ConcurrentMap<Pattern, Set<String>> multicastReceivers = Maps.newConcurrentMap();
+
+    @Inject
+    public InMemoryMulticastReceiverRegistry(MulticastWildcardRegexFactory multicastWildcardRegexFactory) {
+        this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
+    }
 
     @Override
     public void registerMulticastReceiver(String multicastId, String participantId) {
-        if (!multicastReceivers.containsKey(multicastId)) {
-            multicastReceivers.putIfAbsent(multicastId, new HashSet<String>());
+        Pattern idPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
+        logger.debug("Compiled pattern {} for multicast ID {}", idPattern, multicastId);
+        if (!multicastReceivers.containsKey(idPattern)) {
+            multicastReceivers.putIfAbsent(idPattern, new HashSet<String>());
         }
-        multicastReceivers.get(multicastId).add(participantId);
+        multicastReceivers.get(idPattern).add(participantId);
     }
 
     @Override
     public void unregisterMulticastReceiver(String multicastId, String participantId) {
-        Set<String> participants = multicastReceivers.get(multicastId);
+        Set<String> participants = multicastReceivers.get(multicastWildcardRegexFactory.createIdPattern(multicastId));
         if (participants != null) {
             participants.remove(participantId);
         }
@@ -51,13 +68,21 @@ public class InMemoryMulticastReceiverRegistry implements MulticastReceiverRegis
 
     @Override
     public Set<String> getReceivers(String multicastId) {
-        Set<String> receiversForMulticastId = multicastReceivers.get(multicastId);
-        return (receiversForMulticastId == null) ? Collections.<String> emptySet()
-                : Collections.unmodifiableSet(receiversForMulticastId);
+        Set<String> result = new HashSet<>();
+        for (Map.Entry<Pattern, Set<String>> entry : multicastReceivers.entrySet()) {
+            if (entry.getKey().matcher(multicastId).matches()) {
+                result.addAll(entry.getValue());
+            }
+        }
+        return result;
     }
 
     @Override
     public Map<String, Set<String>> getReceivers() {
-        return Collections.unmodifiableMap(multicastReceivers);
+        Map<String, Set<String>> result = new HashMap<>();
+        for (Map.Entry<Pattern, Set<String>> entry : multicastReceivers.entrySet()) {
+            result.put(entry.getKey().pattern(), Collections.unmodifiableSet(entry.getValue()));
+        }
+        return result;
     }
 }
