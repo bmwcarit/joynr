@@ -62,46 +62,6 @@ define([
             done();
         });
 
-        it("throws on null, undefined or wrongly typed parameters", function(done) {
-            expect(function() {
-                LongTimer.setTimeout(undefined, 123);
-            }).toThrow();
-            expect(function() {
-                LongTimer.setTimeout(null, 123);
-            }).toThrow();
-            expect(function() {
-                LongTimer.setTimeout(function() {}, undefined);
-            }).toThrow();
-            expect(function() {
-                LongTimer.setTimeout(function() {}, null);
-            }).toThrow();
-            expect(function() {
-                LongTimer.setTimeout(123, 123);
-            }).toThrow();
-            expect(function() {
-                LongTimer.setTimeout(function() {}, function() {});
-            }).toThrow();
-            expect(function() {
-                LongTimer.setTimeout(function() {}, 0);
-            }).not.toThrow();
-            expect(function() {
-                LongTimer.clearTimeout();
-            }).toThrow();
-            expect(function() {
-                LongTimer.clearTimeout(undefined);
-            }).toThrow();
-            expect(function() {
-                LongTimer.clearTimeout(null);
-            }).toThrow();
-            expect(function() {
-                LongTimer.clearTimeout("asdf");
-            }).toThrow();
-            expect(function() {
-                LongTimer.clearTimeout(0);
-            }).not.toThrow();
-            done();
-        });
-
         it("provides a timeoutId", function(done) {
             var timeoutId = LongTimer.setTimeout(function() {}, 0);
             expect(timeoutId).toBeDefined();
@@ -216,46 +176,6 @@ define([
 
         afterEach(function(done) {
             jasmine.clock().uninstall();
-            done();
-        });
-
-        it("throws on null, undefined or wrongly typed parameters", function(done) {
-            expect(function() {
-                LongTimer.setInterval(undefined, 123);
-            }).toThrow();
-            expect(function() {
-                LongTimer.setInterval(null, 123);
-            }).toThrow();
-            expect(function() {
-                LongTimer.setInterval(function() {}, undefined);
-            }).toThrow();
-            expect(function() {
-                LongTimer.setInterval(function() {}, null);
-            }).toThrow();
-            expect(function() {
-                LongTimer.setInterval(123, 123);
-            }).toThrow();
-            expect(function() {
-                LongTimer.setInterval(function() {}, function() {});
-            }).toThrow();
-            expect(function() {
-                LongTimer.setInterval(function() {}, 0);
-            }).not.toThrow();
-            expect(function() {
-                LongTimer.clearInterval();
-            }).toThrow();
-            expect(function() {
-                LongTimer.clearInterval(undefined);
-            }).toThrow();
-            expect(function() {
-                LongTimer.clearInterval(null);
-            }).toThrow();
-            expect(function() {
-                LongTimer.clearInterval("asdf");
-            }).toThrow();
-            expect(function() {
-                LongTimer.clearInterval(0);
-            }).not.toThrow();
             done();
         });
 
