@@ -100,8 +100,7 @@ define("joynr/util/Typing", [
         if (obj === null || obj === undefined) {
             throw new Error("cannot determine the type of an undefined object");
         }
-        var funcNameRegex = /function ([$\w]+)\(/;
-        var results = funcNameRegex.exec(obj.constructor.toString());
+        var results = /function ([$\w]+)\(/.exec(obj.constructor.toString());
         return (results && results.length > 1) ? results[1] : "";
     };
 
