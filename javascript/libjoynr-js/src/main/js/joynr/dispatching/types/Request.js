@@ -28,6 +28,9 @@ define("joynr/dispatching/types/Request", [
         params : []
     };
 
+    var rrBase = uuid();
+    var rrIndex = 0;
+
     /**
      * @name Request
      * @constructor
@@ -80,7 +83,8 @@ define("joynr/dispatching/types/Request", [
          * @name Request#requestReplyId
          * @type String
          */
-        this.requestReplyId = settings.requestReplyId || uuid();
+
+        this.requestReplyId = settings.requestReplyId || (rrBase + "_" + rrIndex++);
         /**
          * The joynr type name
          *
