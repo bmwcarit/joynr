@@ -51,55 +51,27 @@ define("joynr/dispatching/types/Request", [
      *            settings.params.array
      */
     function Request(settings) {
-        if (!(this instanceof Request)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new Request(settings);
-        }
         var i;
+        settings.requestReplyId = settings.requestReplyId || (rrBase + "_" + rrIndex++);
 
-        /**
-         * @name Request#methodName
-         * @type String
-         */
-        this.methodName = settings.methodName;
-        /**
-         * @name Request#paramDatatypes
-         * @type Array
-         */
-        this.paramDatatypes = settings.paramDatatypes;
-        /**
-         * @name Request#params
-         * @type Array
-         */
         if (settings.params) {
-            this.params = [];
             for (i = 0; i < settings.params.length; i++) {
-                this.params[i] = Util.ensureTypedValues(settings.params[i]);
+                settings.params[i] = Util.ensureTypedValues(settings.params[i]);
             }
         }
 
-        /**
-         * @name Request#requestReplyId
-         * @type String
-         */
-
-        this.requestReplyId = settings.requestReplyId || (rrBase + "_" + rrIndex++);
         /**
          * The joynr type name
          *
          * @name Request#_typeName
          * @type String
          */
-        Object.defineProperty(this, "_typeName", {
-            value : "joynr.Request",
-            readable : true,
-            writable : false,
-            enumerable : true,
-            configurable : false
-        });
+        /*jslint nomen: true, sub: true*/
+        settings._typeName = "joynr.Request";
+        settings['__proto__'] = Request.prototype;
+        /*jslint nomen: false, sub: false */
 
-        return Object.freeze(this);
+        return settings;
     }
 
     return Request;
