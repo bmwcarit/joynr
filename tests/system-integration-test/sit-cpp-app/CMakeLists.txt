@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.11)
 project(jsit-0.21.0)
 
 # Compile to a bin directory current directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetCppStandard.cmake)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/CMake")
