@@ -74,4 +74,16 @@ public class MqttMessagingSkeletonTest {
         subject.registerMulticastSubscription(multicastId);
         verify(mqttClient, never()).subscribe(anyString());
     }
+
+    @Test
+    public void testMultilevelWildcardTranslated() {
+        String multicastId = "one/two/*";
+
+        subject.registerMulticastSubscription(multicastId);
+        verify(mqttClient).subscribe(eq("one/two/#"));
+
+        subject.unregisterMulticastSubscription(multicastId);
+        verify(mqttClient).unsubscribe("one/two/#");
+    }
+
 }
