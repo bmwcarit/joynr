@@ -1,3 +1,12 @@
+#joynr 0.22.0
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JS]** Introduced mqtt messaging layer, allowing javascript runtimes including
+  cluster controller functionality to connect to a mqtt broker.
+
 #joynr 0.21.0
 
 ##API relevant changes
