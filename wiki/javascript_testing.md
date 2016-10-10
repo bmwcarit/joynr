@@ -18,6 +18,14 @@ mvn clean install -P javascript
 cd javascript/libjoynr-js
 ```
 
+In addition, a mosquitto broker must be running locally supporting web socket connections on port 9001. An exemplary mosquitto configuration can
+be found under javascript/libjoynr-js/src/test/resources/mosquitto-test.conf, allowing to start the broker via the follwing command:
+
+```
+cd <JOYNR_REPO>/javascript/libjoynr-js
+mosquitto -c src/test/resources/mosquitto-test.conf
+```
+
 ### Running tests
 
 The tests can then be run in automatic mode using
