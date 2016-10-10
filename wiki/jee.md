@@ -344,6 +344,8 @@ fire-and-forget semantics for outgoing messages.
 
 ## Overriding Jackson library used at runtime
 
+### glassfish-web.xml
+
 joynr ships with a newer version of Jackson than is used by Glassfish / Payara 4.1.
 Generally, this shouldn't be a problem. If, however, you observe errors relating
 to the JSON serialisation, try setting up your WAR to use the Jackson libraries
@@ -360,6 +362,102 @@ In order to do this, you must provide the following content in the
 	</glassfish-web-app>
 
 ... here, the `<class-loader delegate="false" />` part is the relevant bit.
+
+### Deactivate MoxyJson
+
+Apparently GF4 ships with MoxyJson which may cause problems like this, when you try to parse JSON within your application.
+
+    [2016-09-01T16:27:37.782+0200] [Payara 4.1] [SEVERE] []   [org.glassfish.jersey.message.internal.WriterInterceptorExecutor] [tid: _ThreadID=28 _ThreadName=http-listener-1(3)] [timeMillis: 1472740057782] [levelValue: 1000] [[MessageBodyWriter not found for media type=application/json, type=class xxx.JsonClass, genericType=class xxx.JsonClass.]]
+
+There are two possible solutions available.
+
+Preferred solution:
+
+To integrate your own dependency you need to disable the MoxyJson with the below code.
+
+    @ApplicationPath("/")
+    public class ApplicationConfig extends Application {
+    
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Map<String, Object> getProperties() {
+        final Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put("jersey.config.server.disableMoxyJson", true);
+    
+        return properties;
+      }
+    }
+
+Then add your own dependencies, e.g. in this case only those two because the others are referenced by the joynr lib itself.
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.jaxrs</groupId>
+      <artifactId>jackson-jaxrs-json-provider</artifactId>
+      <version>2.6.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-xml</artifactId>
+      <version>2.6.2</version>
+    </dependency>
+
+Finally in case you're using JSON: Not setting a value to the @JsonProperty annotations will cause a No MessageBodyWriter found exception. To avoid that use the following on relevant getters of your class.
+
+    @JsonProperty("randomName")
+    public String getRandomName(){
+    ...
+    }
+
+
+Alternative:
+
+Worse than above you'll need to disable MoxyJson, register each service individually, and fix a bug when using `ResourceConfig` of GF.
+
+    @ApplicationPath("/")
+    public class ApplicationConfig extends ResourceConfig {
+   
+    /**
+    * The default constructor.
+    */
+    public ApplicationConfig() {
+   
+    // Disable Moxy and use Jackson
+    this.property(ServerProperties.MOXY_JSON_FEATURE_DISABLE, true);
+   
+    // Register own provider classes
+    this.register(Fully.Qualified.Path.To.Your.Service.class);
+   
+    // Register Jackson provider
+    // Workaround for GF4.1 bug for details: https://java.net/jira/browse/GLASSFISH-21141
+    final ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new JaxbAnnotationModule());
+    this.register(new JacksonJaxbJsonProvider(mapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS));
+    }
+    }
+
+You'll need an additional dependency for the `ResourceConfig` class.
+
+     <dependency>
+      <groupId>com.fasterxml.jackson.jaxrs</groupId>
+      <artifactId>jackson-jaxrs-json-provider</artifactId>
+      <version>2.6.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-xml</artifactId>
+      <version>2.6.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.main.extras</groupId>
+      <artifactId>glassfish-embedded-all</artifactId>
+      <version>4.1.1</version>
+      <scope>provided</scope>
+    </dependency>
+
+Finally the same as above - be aware to use `@JsonProperty` with a set value.
 
 ## Message Processors
 
