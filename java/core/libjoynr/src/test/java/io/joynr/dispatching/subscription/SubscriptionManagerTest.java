@@ -285,7 +285,12 @@ public class SubscriptionManagerTest {
         testRegisterMulticastSubscription(subscriptionId);
     }
 
-    private void testRegisterMulticastSubscription(String subscriptionId) throws Exception {
+    @Test
+    public void testRegisterMulticastSubscriptionWithPartitions() throws Exception {
+        testRegisterMulticastSubscription(null, "one", "two", "three");
+    }
+
+    private void testRegisterMulticastSubscription(String subscriptionId, String ... partitions) throws Exception {
         Method method = TestMulticastSubscriptionInterface.class.getMethod("subscribeToMyMulticast", new Class[0]);
         BroadcastSubscriptionListener listener = spy(new BroadcastSubscriptionListener() {
             @Override
@@ -300,11 +305,11 @@ public class SubscriptionManagerTest {
         SubscriptionQos subscriptionQos = mock(OnChangeSubscriptionQos.class);
         Object[] args;
         if (subscriptionId == null) {
-            args = new Object[] {listener, subscriptionQos };
+            args = new Object[] {listener, subscriptionQos, partitions };
         } else {
-            args = new Object[] { subscriptionId, listener, subscriptionQos };
+            args = new Object[] { subscriptionId, listener, subscriptionQos, partitions };
         }
-        String multicastId = toParticipantId + "/myMulticast";
+        String multicastId = MulticastIdUtil.createMulticastId(toParticipantId, "myMulticast", partitions);
         Set<String> subscriptionIdSet = new HashSet<>();
         Pattern multicastIdPattern = Pattern.compile(multicastId);
         multicastSubscribersDirectory.put(multicastIdPattern, subscriptionIdSet);

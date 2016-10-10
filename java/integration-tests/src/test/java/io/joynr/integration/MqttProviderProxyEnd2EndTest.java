@@ -42,7 +42,6 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
@@ -101,7 +100,6 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         semaphore.acquire();
     }
 
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMulticastWithPartitions() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
@@ -123,7 +121,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
 
-        provider.fireEmptyBroadcast();
+        provider.fireEmptyBroadcast("one", "two", "three");
         semaphore.acquire();
         if (errors.size() > 0) {
             fail("Got errors. " + errors);

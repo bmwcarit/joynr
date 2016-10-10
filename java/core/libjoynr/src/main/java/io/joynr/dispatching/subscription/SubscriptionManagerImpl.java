@@ -231,7 +231,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                               final MulticastSubscribeInvocation multicastSubscribeInvocation) {
         for (String toParticipantId : toParticipantIds) {
             final String multicastId = MulticastIdUtil.createMulticastId(toParticipantId,
-                                                                         multicastSubscribeInvocation.getSubscriptionName());
+                                                                         multicastSubscribeInvocation.getSubscriptionName(),
+                                                                         multicastSubscribeInvocation.getPartitions());
             registerSubscription(fromParticipantId,
                                  toParticipantIds,
                                  multicastSubscribeInvocation,
