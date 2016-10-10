@@ -424,9 +424,14 @@ define(
                                 webMessagingSkeleton : webMessagingSkeleton
                             });
 
+                            var channelMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
+                                //replyToAddress is provided later
+                            });
+
                             channelMessagingStubFactory = new ChannelMessagingStubFactory({
                                 myChannelId : channelId,
-                                channelMessagingSender : channelMessagingSender
+                                channelMessagingSender : channelMessagingSender,
+                                messageReplyToAddressCalculator : channelMessageReplyToAddressCalculator
                             });
 
                             var mqttAddress = new MqttAddress({
@@ -494,6 +499,7 @@ define(
                                         });
                                         mqttClient.onConnected().then(function() {
                                             capabilityDiscovery.globalAddressReady(mqttAddress);
+                                            channelMessageReplyToAddressCalculator.setReplyToAddress(channelAddress);
                                             channelMessagingStubFactory.globalAddressReady(channelAddress);
                                         });
                                         longPollingMessageReceiver
