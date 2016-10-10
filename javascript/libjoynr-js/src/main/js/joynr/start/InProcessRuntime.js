@@ -602,6 +602,10 @@ define(
                                 });
                             });
 
+                            if (mqttMessagingSkeleton !== undefined) {
+                                mqttMessagingSkeleton.shutdown();
+                            }
+
                             if (channelMessagingSender !== undefined) {
                                 channelMessagingSender.shutdown();
                             }
