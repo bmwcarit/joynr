@@ -127,4 +127,44 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
             fail("Got errors. " + errors);
         }
     }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testMulticastWithPartitionsAndWildcards() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class).setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        final List<String> errors = new ArrayList<>();
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new OnChangeSubscriptionQos(), "one", "+", "three");
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new OnChangeSubscriptionQos(), "one", "*");
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new OnChangeSubscriptionQos(), "one", "two", "three");
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                errors.add("Received multicast on partition which wasn't published to: four/five/six");
+            }
+        }, new OnChangeSubscriptionQos(), "four", "five", "six");
+
+        // wait to allow the subscription request to arrive at the provider
+        Thread.sleep(500);
+
+        provider.fireEmptyBroadcast("one", "two", "three");
+        semaphore.acquire(3);
+        if (errors.size() > 0) {
+            fail("Got errors. " + errors);
+        }
+    }
 }
