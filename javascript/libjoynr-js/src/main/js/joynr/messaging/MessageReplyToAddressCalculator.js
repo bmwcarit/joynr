@@ -32,10 +32,30 @@ define(
              * @param {Address} settings.replyToAddress the address the reply should be send to
              */
             function MessageReplyToAddressCalculator(settings) {
-                var replyToAddress = JSONSerializer.stringify(settings.replyToAddress);
+                var replyToAddress;
+
+                var checkForExistingReplyToAddress =
+                        function() {
+                            if (replyToAddress === undefined) {
+                                throw new Error(
+                                        "MessageReplyToAddressCalculator: replyToAddress not specified!");
+                            }
+                        };
+
+                /**
+                 * Helper function allowing to share the reply to address with the calculator after object creation
+                 */
+                this.setReplyToAddress = function(address) {
+                    replyToAddress = JSONSerializer.stringify(address);
+                    if (address !== undefined) {
+                        //disable check implementation
+                        checkForExistingReplyToAddress = function() {};
+                    }
+                };
 
                 this.setReplyTo =
                         function(message) {
+                            checkForExistingReplyToAddress();
                             var type = message.type;
                             if ((type !== undefined)
                                 && (message.replyChannelId === undefined)
@@ -45,6 +65,10 @@ define(
                                 message.replyChannelId = replyToAddress;
                             }
                         };
+
+                if (settings.replyToAddress !== undefined) {
+                    this.setReplyToAddress(settings.replyToAddress);
+                }
             }
 
             return MessageReplyToAddressCalculator;
