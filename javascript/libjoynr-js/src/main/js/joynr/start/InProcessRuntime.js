@@ -43,7 +43,7 @@ define(
             "joynr/messaging/mqtt/MqttMessagingStubFactory",
             "joynr/messaging/mqtt/MqttMessagingSkeleton",
             "joynr/system/RoutingTypes/MqttAddress",
-            "joynr/messaging/mqtt/MqttMessageReplyToAddressCalculator",
+            "joynr/messaging/MessageReplyToAddressCalculator",
             "joynr/messaging/mqtt/SharedMqttClient",
             "joynr/messaging/MessagingStubFactory",
             "joynr/messaging/routing/MessageRouter",
@@ -96,7 +96,7 @@ define(
                 MqttMessagingStubFactory,
                 MqttMessagingSkeleton,
                 MqttAddress,
-                MqttMessageReplyToAddressCalculator,
+                MessageReplyToAddressCalculator,
                 SharedMqttClient,
                 MessagingStubFactory,
                 MessageRouter,
@@ -385,8 +385,8 @@ define(
                                 topic : channelId
                             });
 
-                            var mqttMessageReplyToAddressCalculator = new MqttMessageReplyToAddressCalculator({
-                                replyToMqttAddress : mqttAddress
+                            var mqttMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
+                                replyToAddress : mqttAddress
                             });
 
                             var mqttClient = new SharedMqttClient({
@@ -400,7 +400,7 @@ define(
                                     MqttAddress : new MqttMessagingStubFactory({
                                         client : mqttClient,
                                         address : mqttAddress,
-                                        mqttMessageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
+                                        messageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
                                     })
                                 }
                             });

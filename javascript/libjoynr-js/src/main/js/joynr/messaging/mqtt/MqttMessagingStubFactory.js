@@ -17,53 +17,48 @@
  * #L%
  */
 
-define(
-        "joynr/messaging/mqtt/MqttMessagingStubFactory",
-        [
-            "joynr/util/Util",
-            "joynr/messaging/mqtt/MqttMessagingStub",
-            "joynr/system/RoutingTypes/MqttAddress"
-        ],
-        function(Util, MqttMessagingStub, MqttAddress) {
+define("joynr/messaging/mqtt/MqttMessagingStubFactory", [
+    "joynr/util/Util",
+    "joynr/messaging/mqtt/MqttMessagingStub",
+    "joynr/system/RoutingTypes/MqttAddress"
+], function(Util, MqttMessagingStub, MqttAddress) {
 
-            /**
-             * @constructor
-             * @name MqttMessagingStubFactory
-             * @param {Object}
-             *            settings
-             * @param {SharedMqttClient}
-             *            settings.client the mqtt client
-             * @param {MqttAddress}
-             *            settings.address 
-             * @param {MqttMessageReplyToAddressCalculator} mqttMessageReplyToAddressCalculator calculates the replyTo address
-             */
-            var MqttMessagingStubFactory =
-                    function MqttMessagingStubFactory(settings) {
-                        Util.checkProperty(settings, "Object", "settings");
-                        Util.checkProperty(settings.address, "MqttAddress", "address");
-                        Util.checkProperty(settings.client, "SharedMqttClient", "client");
-                        Util.checkProperty(
-                                settings.mqttMessageReplyToAddressCalculator,
-                                "MqttMessageReplyToAddressCalculator",
-                                "mqttMessageReplyToAddressCalculator");
+    /**
+     * @constructor
+     * @name MqttMessagingStubFactory
+     * @param {Object}
+     *            settings
+     * @param {SharedMqttClient}
+     *            settings.client the mqtt client
+     * @param {MqttAddress}
+     *            settings.address 
+     * @param {MessageReplyToAddressCalculator} messageReplyToAddressCalculator calculates the replyTo address
+     */
+    var MqttMessagingStubFactory =
+            function MqttMessagingStubFactory(settings) {
+                Util.checkProperty(settings, "Object", "settings");
+                Util.checkProperty(settings.address, "MqttAddress", "address");
+                Util.checkProperty(settings.client, "SharedMqttClient", "client");
+                Util.checkProperty(
+                        settings.messageReplyToAddressCalculator,
+                        "MessageReplyToAddressCalculator",
+                        "messageReplyToAddressCalculator");
 
-                        /**
-                         * @name MqttMessagingStubFactory#build
-                         * @function
-                         */
-                        this.build =
-                                function build(address) {
-                                    Util.checkProperty(address, "MqttAddress", "address");
+                /**
+                 * @name MqttMessagingStubFactory#build
+                 * @function
+                 */
+                this.build = function build(address) {
+                    Util.checkProperty(address, "MqttAddress", "address");
 
-                                    return new MqttMessagingStub(
-                                            {
-                                                address : address,
-                                                client : settings.client,
-                                                mqttMessageReplyToAddressCalculator : settings.mqttMessageReplyToAddressCalculator
-                                            });
-                                };
-                    };
+                    return new MqttMessagingStub({
+                        address : address,
+                        client : settings.client,
+                        messageReplyToAddressCalculator : settings.messageReplyToAddressCalculator
+                    });
+                };
+            };
 
-            return MqttMessagingStubFactory;
+    return MqttMessagingStubFactory;
 
-        });
+});

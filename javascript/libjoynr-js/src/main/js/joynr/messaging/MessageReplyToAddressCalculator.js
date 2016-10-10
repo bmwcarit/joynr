@@ -18,7 +18,7 @@
  */
 
 define(
-        "joynr/messaging/mqtt/MqttMessageReplyToAddressCalculator",
+        "joynr/messaging/MessageReplyToAddressCalculator",
         [
             "joynr/messaging/JoynrMessage",
             "joynr/util/JSONSerializer"
@@ -26,13 +26,13 @@ define(
         function(JoynrMessage, JSONSerializer) {
 
             /**
-             * @name MqttMessageReplyToAddressCalculator
+             * @name MessageReplyToAddressCalculator
              * @constructor
              * @param {Object} settings the settings object for this constructor call
-             * @param {MqttAddress} settings.replyToMqttAddress the mqtt address the reply should be send to
+             * @param {Address} settings.replyToAddress the address the reply should be send to
              */
-            function MqttMessageReplyToAddressCalculator(settings) {
-                var replyToAddress = JSONSerializer.stringify(settings.replyToMqttAddress);
+            function MessageReplyToAddressCalculator(settings) {
+                var replyToAddress = JSONSerializer.stringify(settings.replyToAddress);
 
                 this.setReplyTo =
                         function(message) {
@@ -47,6 +47,6 @@ define(
                         };
             }
 
-            return MqttMessageReplyToAddressCalculator;
+            return MessageReplyToAddressCalculator;
 
         });

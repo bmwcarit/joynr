@@ -34,7 +34,7 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
      * @param {Object} settings the settings object for this constructor call
      * @param {MqttAddress} settings.address the mqtt address of the message destination
      * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
-     * @param {MqttMessageReplyToAddressCalculator} mqttMessageReplyToAddressCalculator calculates the replyTo address
+     * @param {MessageReplyToAddressCalculator} messageReplyToAddressCalculator calculates the replyTo address
      */
     function MqttMessagingStub(settings) {
         var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
@@ -48,9 +48,9 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
         Util.checkProperty(settings.address, "MqttAddress", "settings.address");
         Util.checkProperty(settings.client, "SharedMqttClient", "settings.client");
         Util.checkProperty(
-                settings.mqttMessageReplyToAddressCalculator,
-                "MqttMessageReplyToAddressCalculator",
-                "settings.mqttMessageReplyToAddressCalculator");
+                settings.messageReplyToAddressCalculator,
+                "MessageReplyToAddressCalculator",
+                "settings.messageReplyToAddressCalculator");
 
         /**
          * @name MqttMessagingStub#transmit
@@ -59,7 +59,7 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
          * @param {Object|JoynrMessage} message the message to transmit
          */
         this.transmit = function transmit(message) {
-            settings.mqttMessageReplyToAddressCalculator.setReplyTo(message);
+            settings.messageReplyToAddressCalculator.setReplyTo(message);
 
             log.debug("transmit message: \"" + JSONSerializer.stringify(message) + "\"");
             var topic = settings.address.topic;
