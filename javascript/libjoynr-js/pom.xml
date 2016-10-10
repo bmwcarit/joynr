@@ -818,54 +818,6 @@
 							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
 						<executions>
 							<execution>
-								<id>install browserify</id>
-								<phase>process-sources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-										<argument>browserify</argument>
-									</arguments>
-									<workingDirectory>${basedir}</workingDirectory>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>install mqtt</id>
-								<phase>process-sources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-										<argument>mqtt@${mqtt.version}</argument>
-									</arguments>
-									<workingDirectory>${basedir}</workingDirectory>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>browserify mqtt</id>
-								<phase>process-sources</phase>
-								<configuration>
-									<executable>./cmd.js</executable>
-									<arguments>
-										<argument>${basedir}/node_modules/mqtt/mqtt.js</argument>
-										<argument>-s</argument>
-										<argument>mqtt</argument>
-										<argument>-o</argument>
-										<argument>${project.build.directory}/classes/lib/mqtt.js</argument>
-									</arguments>
-									<workingDirectory>${basedir}/node_modules/browserify/bin</workingDirectory>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
 								<id>npm-install</id>
 								<phase>generate-test-resources</phase>
 								<configuration>
@@ -961,6 +913,74 @@
 							<skipKarma>false</skipKarma>
 							<karmaFailureIgnore>false</karmaFailureIgnore>
 						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>create-mqtt-module</id>
+			<activation>
+				<property>
+					<name>!skipMqttModuleCreation</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<!-- configuration options documentation:
+							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
+						<executions>
+							<execution>
+								<id>install browserify</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+										<argument>browserify</argument>
+									</arguments>
+									<workingDirectory>${basedir}</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>install mqtt</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+										<argument>mqtt@${mqtt.version}</argument>
+									</arguments>
+									<workingDirectory>${basedir}</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>browserify mqtt</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<executable>./cmd.js</executable>
+									<arguments>
+										<argument>${basedir}/node_modules/mqtt/mqtt.js</argument>
+										<argument>-s</argument>
+										<argument>mqtt</argument>
+										<argument>-o</argument>
+										<argument>${project.build.directory}/classes/lib/mqtt.js</argument>
+									</arguments>
+									<workingDirectory>${basedir}/node_modules/browserify/bin</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
 					</plugin>
 				</plugins>
 			</build>
