@@ -53,12 +53,12 @@ bool SubscriptionInformation::operator==(
            providerId == subscriptionInformation.getProviderId();
 }
 
-std::string SubscriptionInformation::getProxyId() const
+const std::string& SubscriptionInformation::getProxyId() const
 {
     return proxyId;
 }
 
-std::string SubscriptionInformation::getProviderId() const
+const std::string& SubscriptionInformation::getProviderId() const
 {
     return providerId;
 }
