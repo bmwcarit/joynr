@@ -46,6 +46,7 @@
 #include "joynr/SubscriptionQos.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/exceptions/SubscriptionException.h"
+#include "common/CallContextStorage.h"
 
 namespace joynr
 {
@@ -220,8 +221,10 @@ void PublicationManager::add(const std::string& proxyParticipantId,
                              IPublicationSender* publicationSender)
 {
     assert(requestCaller);
-    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(
-            proxyParticipantId, providerParticipantId, subscriptionRequest);
+    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(proxyParticipantId,
+                                                                        providerParticipantId,
+                                                                        CallContextStorage::get(),
+                                                                        subscriptionRequest);
     handleAttributeSubscriptionRequest(requestInfo, requestCaller, publicationSender);
 }
 
@@ -344,8 +347,10 @@ void PublicationManager::add(const std::string& proxyParticipantId,
     JOYNR_LOG_DEBUG(logger,
                     "Added subscription for non existing provider (adding subscriptionRequest "
                     "to queue).");
-    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(
-            proxyParticipantId, providerParticipantId, subscriptionRequest);
+    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(proxyParticipantId,
+                                                                        providerParticipantId,
+                                                                        CallContextStorage::get(),
+                                                                        subscriptionRequest);
     {
         std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
         queuedSubscriptionRequests.insert(
@@ -920,7 +925,10 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         JOYNR_LOG_DEBUG(logger, "run: executing requestInterpreter= {}", attributeGetter);
         Request dummyRequest;
         dummyRequest.setMethodName(attributeGetter);
+
+        CallContextStorage::set(subscriptionRequest->getCallContext());
         requestInterpreter->execute(requestCaller, dummyRequest, onSuccess, onError);
+        CallContextStorage::invalidate();
     }
 }
 

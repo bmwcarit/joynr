@@ -268,6 +268,9 @@ bool «className»::usesClusterController() const{
 				assert(caller);
 				std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 
+				joynr::CallContext callContext;
+				callContext.setPrincipal(securityManager->getCurrentProcessUserId());
+
 				if(!requestCaller) {
 					assert(publicationManager != nullptr);
 					/**

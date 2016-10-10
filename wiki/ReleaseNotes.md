@@ -1,3 +1,13 @@
+#joynr 0.22.0
+
+## API relevant changes
+* **[C++]** During a provider call a call context can be queried which provides the creator user id
+  field from the joynr message. Please delete the broadcastsubscriptionrequest-persistence-file and
+  subscriptionrequest-persistence-file because the file format changed.
+
+## Other changes
+None.
+
 #joynr 0.21.1
 This is a minor bug fix release.
 

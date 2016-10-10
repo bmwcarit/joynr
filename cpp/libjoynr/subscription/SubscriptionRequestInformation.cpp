@@ -24,17 +24,30 @@ namespace joynr
 SubscriptionRequestInformation::SubscriptionRequestInformation(
         const std::string& proxyParticipantId,
         const std::string& providerParticipantId,
+        const CallContext& callContext,
         const SubscriptionRequest& subscriptionRequest)
         : SubscriptionRequest(subscriptionRequest),
-          SubscriptionInformation(proxyParticipantId, providerParticipantId)
+          SubscriptionInformation(proxyParticipantId, providerParticipantId),
+          callContext(callContext)
 {
+}
+
+const CallContext& SubscriptionRequestInformation::getCallContext() const
+{
+    return callContext;
+}
+
+void SubscriptionRequestInformation::setCallContext(const CallContext& callContext)
+{
+    this->callContext = callContext;
 }
 
 bool SubscriptionRequestInformation::operator==(
         const SubscriptionRequestInformation& subscriptionRequestInformation) const
 {
     return SubscriptionRequest::operator==(subscriptionRequestInformation) &&
-           SubscriptionInformation::operator==(subscriptionRequestInformation);
+           SubscriptionInformation::operator==(subscriptionRequestInformation) &&
+           callContext == subscriptionRequestInformation.getCallContext();
 }
 
 std::string SubscriptionRequestInformation::toString() const
