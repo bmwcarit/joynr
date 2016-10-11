@@ -69,6 +69,7 @@ namespace joynr {
 	class InProcessAddress;
 	class ISubscriptionManager;
 	class PublicationManager;
+	class IPlatformSecurityManager;
 	template <class ... Ts> class Future;
 	template <typename... Ts> class ISubscriptionListener;
 
@@ -116,6 +117,7 @@ public:
 				joynr::ISubscriptionManager* subscriptionManager,
 				joynr::PublicationManager* publicationManager,
 				joynr::InProcessPublicationSender* inProcessPublicationSender,
+				std::shared_ptr<joynr::IPlatformSecurityManager> securityManager,
 				const std::string& proxyParticipantId,
 				const std::string& providerParticipantId,
 				std::shared_ptr<joynr::InProcessAddress> address
@@ -146,6 +148,7 @@ private:
 	joynr::ISubscriptionManager* subscriptionManager;
 	joynr::PublicationManager* publicationManager;
 	joynr::InProcessPublicationSender* inProcessPublicationSender;
+	std::shared_ptr<joynr::IPlatformSecurityManager> securityManager;
 };
 «getNamespaceEnder(francaIntf)»
 

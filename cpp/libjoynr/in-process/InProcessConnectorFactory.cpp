@@ -18,6 +18,7 @@
  */
 
 #include "joynr/InProcessConnectorFactory.h"
+#include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 
 namespace joynr
 {
@@ -32,7 +33,8 @@ InProcessConnectorFactory::InProcessConnectorFactory(
         : subscriptionManager(subscriptionManager),
           publicationManager(publicationManager),
           inProcessPublicationSender(inProcessPublicationSender),
-          requestCallerDirectory(requestCallerDirectory)
+          requestCallerDirectory(requestCallerDirectory),
+          securityManager(std::make_shared<DummyPlatformSecurityManager>())
 {
 }
 
