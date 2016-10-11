@@ -22,8 +22,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
-#include <tuple>
 #include <numeric>
+#include <string>
+#include <tuple>
+#include <vector>
 #include "PrettyPrint.h"
 
 #include "joynr/types/Localisation/GpsLocation.h"
@@ -122,7 +124,10 @@ public:
         joynr::tests::testAbstractProvider::fireLocationUpdateSelective(location);
     }
 
-    void fireBroadcastWithSingleArrayParameter(const std::vector<std::string>& singleParam) override
+    void fireBroadcastWithSingleArrayParameter(
+            const std::vector<std::string>& singleParam,
+            const std::vector<std::string>& partitions = std::vector<std::string>()
+    ) override
     {
         joynr::tests::testAbstractProvider::fireBroadcastWithSingleArrayParameter(singleParam);
     }

@@ -88,12 +88,16 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	«val broadcastName = broadcast.joynrName»
 	void «interfaceName»AbstractProvider::fire«broadcastName.toFirstUpper»(
 			«IF !broadcast.outputParameters.empty»
-			«broadcast.commaSeperatedTypedConstOutputParameterList»
+				«broadcast.commaSeperatedTypedConstOutputParameterList»«IF !broadcast.selective»,«ENDIF»
+			«ENDIF»
+			«IF !broadcast.selective»
+				const std::vector<std::string>& partitions
 			«ENDIF»
 	) {
 		«IF broadcast.selective»
 		fireSelectiveBroadcast(
 		«ELSE»
+		std::ignore = partitions;
 		fireBroadcast(
 		«ENDIF»
 				"«broadcastName»"«

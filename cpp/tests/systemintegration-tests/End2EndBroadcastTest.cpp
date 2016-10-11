@@ -16,9 +16,12 @@
  * limitations under the License.
  * #L%
  */
+#include <algorithm>
+#include <cctype>
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <cstdint>
+#include <vector>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <gtest/gtest.h>
@@ -59,26 +62,37 @@ public:
         tests::testAbstractProvider::locationChanged(location);
     }
 
-    void fireLocation(const joynr::types::Localisation::GpsLocation& location) override {
+    void fireLocation(
+            const joynr::types::Localisation::GpsLocation& location,
+            const std::vector<std::string>& partitions = std::vector<std::string>()
+    ) override {
         tests::testAbstractProvider::fireLocation(location);
     }
 
-    void fireBroadcastWithEnumOutput(const joynr::tests::testTypes::TestEnum::Enum& testEnum) override {
+    void fireBroadcastWithEnumOutput(
+            const joynr::tests::testTypes::TestEnum::Enum& testEnum,
+            const std::vector<std::string>& partitions = std::vector<std::string>()
+    ) override {
         tests::testAbstractProvider::fireBroadcastWithEnumOutput(testEnum);
     }
 
-    void fireLocationUpdate(const joynr::types::Localisation::GpsLocation& location) override {
+    void fireLocationUpdate(
+            const joynr::types::Localisation::GpsLocation& location,
+            const std::vector<std::string>& partitions = std::vector<std::string>()
+    ) override {
         tests::testAbstractProvider::fireLocationUpdate(location);
     }
 
     void fireEmptyBroadcast(
+            const std::vector<std::string>& partitions = std::vector<std::string>()
     ) override {
         tests::testAbstractProvider::fireEmptyBroadcast();
     }
 
     void fireLocationUpdateWithSpeed(
             const joynr::types::Localisation::GpsLocation& location,
-            const float& currentSpeed
+            const float& currentSpeed,
+            const std::vector<std::string>& partitions = std::vector<std::string>()
     ) override {
         tests::testAbstractProvider::fireLocationUpdateWithSpeed(location, currentSpeed);
     }
@@ -87,7 +101,10 @@ public:
         tests::testAbstractProvider::fireLocationUpdateSelective(location);
     }
 
-    void fireBroadcastWithByteBufferParameter(const joynr::ByteBuffer& byteBufferParameter) override {
+    void fireBroadcastWithByteBufferParameter(
+            const joynr::ByteBuffer& byteBufferParameter,
+            const std::vector<std::string>& partitions = std::vector<std::string>()
+    ) override {
         tests::testAbstractProvider::fireBroadcastWithByteBufferParameter(byteBufferParameter);
     }
 
@@ -332,12 +349,23 @@ protected:
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName,
                                           T... expectedValues) {
-        testOneShotBroadcastSubscriptionWithFiltering(subscriptionListener,
-                                                      subscribeTo,
-                                                      fireBroadcast,
-                                                      broadcastName,
-                                                      std::nullptr_t{},
-                                                      expectedValues...);
+        std::vector<std::string> partitions({}); // TODO test with real partitions
+        std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+
+        std::shared_ptr<tests::testProxy> testProxy = buildProxy();
+
+        std::int64_t minInterval_ms = 50;
+        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                    500000,   // validity_ms
+                    minInterval_ms);  // minInterval_ms
+
+        subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);
+        waitForBroadcastSubscriptionArrivedAtProvider(testProvider, broadcastName);
+
+        (*testProvider.*fireBroadcast)(expectedValues..., partitions);
+
+        // Wait for a subscription message to arrive
+        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     }
 
     template <typename BroadcastFilter>

@@ -125,10 +125,17 @@ public:
 		 «FOR parameter: getOutputParameters(broadcast)»
 		 * @param «parameter.name» the value for the broadcast output parameter «parameter.name»
 		 «ENDFOR»
+		 «IF !broadcast.selective»
+		 * @param partitions optional list of partitions for this broadcast. Broadcast notifications
+		 * are only sent to subscribers for these partitions.
+		 «ENDIF»
 		 */
 		void fire«broadcastName.toFirstUpper»(
 				«IF !broadcast.outputParameters.empty»
-					«broadcast.commaSeperatedTypedConstOutputParameterList»
+					«broadcast.commaSeperatedTypedConstOutputParameterList»«IF !broadcast.selective»,«ENDIF»
+				«ENDIF»
+				«IF !broadcast.selective»
+					const std::vector<std::string>& partitions = std::vector<std::string>()
 				«ENDIF»
 		) override;
 	«ENDFOR»
