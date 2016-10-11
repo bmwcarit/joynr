@@ -52,11 +52,13 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
+import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.GlobalAddressProvider;
@@ -135,13 +137,33 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     @Override
     public JoynrRuntime create(Set<Class<?>> providerInterfaceClasses) {
-        LOG.info("Fetching consolidated joynr properties to use.");
+        LOG.info("Creating clusterable participant IDs for discovered providers.");
+        createClusterableParticipantIds(providerInterfaceClasses);
         LOG.info("Provisioning access control for {}", providerInterfaceClasses);
         provisionAccessControl(joynrProperties, joynrLocalDomain, getProviderInterfaceNames(providerInterfaceClasses));
         LOG.info(format("Creating application with joynr properties:%n%s", joynrProperties));
         JoynrRuntime runtime = getInjector().getInstance(JoynrRuntime.class);
         LOG.info("Created runtime: {}", runtime);
         return runtime;
+    }
+
+    private void createClusterableParticipantIds(Set<Class<?>> providerInterfaceClasses) {
+        for (Class<?> joynrProviderClass : providerInterfaceClasses) {
+            String participantIdKey = createParticipantIdKey(joynrProviderClass);
+            joynrProperties.put(participantIdKey, createClusterableParticipantId(joynrProviderClass));
+        }
+    }
+
+    private String createClusterableParticipantId(Class<?> joynrProviderClass) {
+        String key = getLocalDomain() + "." + joynrProperties.getProperty(MessagingPropertyKeys.CHANNELID) + "."
+                + getInterfaceName(joynrProviderClass);
+        return key.replace("/", ".");
+    }
+
+    private String createParticipantIdKey(Class<?> joynrProviderClass) {
+        String key = PropertiesFileParticipantIdStorage.JOYNR_PARTICIPANT_PREFIX + getLocalDomain() + "."
+                + getInterfaceName(joynrProviderClass);
+        return key.replace("/", ".");
     }
 
     @Override
