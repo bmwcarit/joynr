@@ -57,7 +57,6 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
-import io.joynr.provider.JoynrProvider;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.GlobalAddressProvider;
@@ -135,7 +134,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     }
 
     @Override
-    public JoynrRuntime create(Set<Class<? extends JoynrProvider>> providerInterfaceClasses) {
+    public JoynrRuntime create(Set<Class<?>> providerInterfaceClasses) {
         LOG.info("Fetching consolidated joynr properties to use.");
         LOG.info("Provisioning access control for {}", providerInterfaceClasses);
         provisionAccessControl(joynrProperties, joynrLocalDomain, getProviderInterfaceNames(providerInterfaceClasses));
@@ -186,15 +185,15 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         return defaultJoynrProperties;
     }
 
-    private String[] getProviderInterfaceNames(Set<Class<? extends JoynrProvider>> providerInterfaceClasses) {
+    private String[] getProviderInterfaceNames(Set<Class<?>> providerInterfaceClasses) {
         Set<String> providerInterfaceNames = new HashSet<>();
-        for (Class<? extends JoynrProvider> providerInterfaceClass : providerInterfaceClasses) {
+        for (Class<?> providerInterfaceClass : providerInterfaceClasses) {
             providerInterfaceNames.add(getInterfaceName(providerInterfaceClass));
         }
         return providerInterfaceNames.toArray(new String[providerInterfaceNames.size()]);
     }
 
-    private String getInterfaceName(Class<? extends JoynrProvider> providerInterfaceClass) {
+    private String getInterfaceName(Class<?> providerInterfaceClass) {
         try {
             Field interfaceNameField = providerInterfaceClass.getField("INTERFACE_NAME");
             return (String) interfaceNameField.get(providerInterfaceClass);
