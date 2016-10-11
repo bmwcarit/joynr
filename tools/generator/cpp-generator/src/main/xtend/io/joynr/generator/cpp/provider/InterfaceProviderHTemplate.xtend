@@ -194,7 +194,9 @@ public:
 		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete
 		 * provider to signal an occured event. It is used to implement broadcast
 		 * publications.
-		 * @param «broadcastName» the new broadcast value
+		«FOR parameter: getOutputParameters(broadcast)»
+			 * @param «parameter.name» the value for the broadcast output parameter «parameter.name»
+		«ENDFOR»
 		 */
 		virtual void fire«broadcastName.toFirstUpper»(
 				«IF !broadcast.outputParameters.empty»
