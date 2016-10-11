@@ -365,22 +365,16 @@ In order to do this, you must provide the following content in the
 
 ### Deactivate MoxyJson
 
-Apparently GF4 ships with MoxyJson which may cause problems like this, when you try to parse JSON within your application.
+Apparently Glassfish / Payara 4.1 ships with MoxyJson which may cause problems like
+the following, when you try to parse JSON within your application.
 
     [2016-09-01T16:27:37.782+0200] [Payara 4.1] [SEVERE] []   [org.glassfish.jersey.message.internal.WriterInterceptorExecutor] [tid: _ThreadID=28 _ThreadName=http-listener-1(3)] [timeMillis: 1472740057782] [levelValue: 1000] [[MessageBodyWriter not found for media type=application/json, type=class xxx.JsonClass, genericType=class xxx.JsonClass.]]
-
-There are two possible solutions available.
-
-Preferred solution:
 
 To integrate your own dependency you need to disable the MoxyJson with the below code.
 
     @ApplicationPath("/")
     public class ApplicationConfig extends Application {
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
       public Map<String, Object> getProperties() {
         final Map<String, Object> properties = new HashMap<String, Object>();
@@ -390,7 +384,8 @@ To integrate your own dependency you need to disable the MoxyJson with the below
       }
     }
 
-Then add your own dependencies, e.g. in this case only those two because the others are referenced by the joynr lib itself.
+Then add your own dependencies, e.g. in this case only the following because the others 
+are referenced by the joynr lib itself. Be aware to check the version of the joynr referenced libs.
 
     <dependency>
       <groupId>com.fasterxml.jackson.jaxrs</groupId>
@@ -403,61 +398,19 @@ Then add your own dependencies, e.g. in this case only those two because the oth
       <version>2.6.2</version>
     </dependency>
 
-Finally in case you're using JSON: Not setting a value to the @JsonProperty annotations will cause a No MessageBodyWriter found exception. To avoid that use the following on relevant getters of your class.
+Finally in case you're using JSON: Not setting a value to the @JsonProperty annotations will 
+cause a NoMessageBodyWriter found exception. To avoid that use the following on relevant getters of your class.
 
     @JsonProperty("randomName")
     public String getRandomName(){
     ...
     }
 
+Here are some references:
 
-Alternative:
-
-Worse than above you'll need to disable MoxyJson, register each service individually, and fix a bug when using `ResourceConfig` of GF.
-
-    @ApplicationPath("/")
-    public class ApplicationConfig extends ResourceConfig {
-
-    /**
-    * The default constructor.
-    */
-    public ApplicationConfig() {
-
-    // Disable Moxy and use Jackson
-    this.property(ServerProperties.MOXY_JSON_FEATURE_DISABLE, true);
-
-    // Register own provider classes
-    this.register(Fully.Qualified.Path.To.Your.Service.class);
-
-    // Register Jackson provider
-    // Workaround for GF4.1 bug for details: https://java.net/jira/browse/GLASSFISH-21141
-    final ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(new JaxbAnnotationModule());
-    this.register(new JacksonJaxbJsonProvider(mapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS));
-    }
-    }
-
-You'll need an additional dependency for the `ResourceConfig` class.
-
-     <dependency>
-      <groupId>com.fasterxml.jackson.jaxrs</groupId>
-      <artifactId>jackson-jaxrs-json-provider</artifactId>
-      <version>2.6.2</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-xml</artifactId>
-      <version>2.6.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.glassfish.main.extras</groupId>
-      <artifactId>glassfish-embedded-all</artifactId>
-      <version>4.1.1</version>
-      <scope>provided</scope>
-    </dependency>
-
-Finally the same as above - be aware to use `@JsonProperty` with a set value.
+* Moxy in general: https://blogs.oracle.com/theaquarium/entry/moxy_is_the_new_default
+* Correct property: https://jersey.java.net/documentation/latest/appendix-properties.html
+* Override for the property: https://jersey.java.net/documentation/latest/deployment.html or http://blog.payara.fish/building-restful-java-ee-microservices-with-payara-embedded
 
 ## Message Processors
 
