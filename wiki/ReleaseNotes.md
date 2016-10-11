@@ -1,3 +1,14 @@
+#joynr 0.21.1
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Catch websocket exception if connection is not valid anymore. This caused
+  the cluster-controller to crash.
+* **[C++]** Fixed installation path of system integration tests.
+
 #joynr 0.21.0
 
 ##API relevant changes

@@ -92,10 +92,16 @@ public:
      */
     bool isConnected() const override
     {
-        if (typename Endpoint::connection_ptr connection =
-                    endpoint.get_con_from_hdl(connectionHandle)) {
-            return connection->get_state() == websocketpp::session::state::open;
+        try {
+            if (typename Endpoint::connection_ptr connection =
+                        endpoint.get_con_from_hdl(connectionHandle)) {
+                return connection->get_state() == websocketpp::session::state::open;
+            }
+        } catch (websocketpp::exception e) {
+            JOYNR_LOG_ERROR(
+                    logger, "websocket not connected (websocketpp error message: %1)", e.what());
         }
+
         return false;
     }
 
