@@ -92,26 +92,27 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 			«ENDIF»
 	) {
 		«IF broadcast.selective»
-		fireSelectiveBroadcast
+		fireSelectiveBroadcast(
 		«ELSE»
-		fireBroadcast
+		fireBroadcast(
 		«ENDIF»
-		("«broadcastName»"
-		«IF broadcast.selective»
-		, «broadcastName»Filters
-		«ENDIF»
-		«IF !broadcast.outputParameters.empty»
-			,
-			«FOR parameter : broadcast.outputParameters SEPARATOR ','»
-				«parameter.joynrName»
-			«ENDFOR»
-		«ENDIF»
+				"«broadcastName»"«
+				»«IF broadcast.selective»«
+				»,
+				«broadcastName»Filters«
+				»«ENDIF»«
+				»«IF !broadcast.outputParameters.empty»«
+				»,
+				«FOR parameter : broadcast.outputParameters SEPARATOR ','»
+					«parameter.joynrName»
+				«ENDFOR»
+			«ENDIF»
 		);
 	}
 
 	«IF broadcast.selective»
 		«val broadCastFilterClassName = interfaceName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
-		void  «interfaceName»AbstractProvider::addBroadcastFilter(std::shared_ptr<«broadCastFilterClassName»> filter)
+		void «interfaceName»AbstractProvider::addBroadcastFilter(std::shared_ptr<«broadCastFilterClassName»> filter)
 		{
 			«broadcastName»Filters.push_back(std::move(filter));
 		}
