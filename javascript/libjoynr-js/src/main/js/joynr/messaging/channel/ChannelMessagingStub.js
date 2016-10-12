@@ -34,24 +34,6 @@ define("joynr/messaging/channel/ChannelMessagingStub", [
      * @param {MessageReplyToAddressCalculator} settings.messageReplyToAddressCalculator calculates the replyTo address
      */
     function ChannelMessagingStub(settings) {
-        Util.checkProperty(settings.channelMessagingSender, [
-            "Object",
-            "ChannelMessagingSender"
-        ], "settings.channelMessagingSender");
-        Util.checkProperty(
-                settings.destinationChannelAddress,
-                "ChannelAddress",
-                "settings.destinationChannelAddress");
-        Util
-                .checkProperty(
-                        settings.myChannelAddress,
-                        "ChannelAddress",
-                        "settings.myChannelAddress");
-
-        Util.checkProperty(
-                settings.messageReplyToAddressCalculator,
-                "MessageReplyToAddressCalculator",
-                "settings.messageReplyToAddressCalculator");
 
         /**
          * @name ChannelMessagingStub#transmit

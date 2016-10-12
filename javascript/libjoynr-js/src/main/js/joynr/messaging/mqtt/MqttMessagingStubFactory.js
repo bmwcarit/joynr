@@ -31,7 +31,7 @@ define("joynr/messaging/mqtt/MqttMessagingStubFactory", [
      * @param {SharedMqttClient}
      *            settings.client the mqtt client
      * @param {MqttAddress}
-     *            settings.address 
+     *            settings.address
      * @param {MessageReplyToAddressCalculator} messageReplyToAddressCalculator calculates the replyTo address
      */
     var MqttMessagingStubFactory =

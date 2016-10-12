@@ -39,19 +39,6 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
     function MqttMessagingStub(settings) {
         var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
 
-        Util.checkProperty(settings, "Object", "settings");
-
-        if (settings.client === undefined) {
-            throw new Error("MqttMessagingStub constructor parameter \"client\" is undefined");
-        }
-
-        Util.checkProperty(settings.address, "MqttAddress", "settings.address");
-        Util.checkProperty(settings.client, "SharedMqttClient", "settings.client");
-        Util.checkProperty(
-                settings.messageReplyToAddressCalculator,
-                "MessageReplyToAddressCalculator",
-                "settings.messageReplyToAddressCalculator");
-
         /**
          * @name MqttMessagingStub#transmit
          * @function

@@ -174,11 +174,6 @@ define(
                          *            qosLevel qos level for message
                          */
                         this.send = function send(topic, joynrMessage, qosLevel) {
-                            try {
-                                Util.checkProperty(joynrMessage, "JoynrMessage", "joynrMessage");
-                            } catch (e) {
-                                throw e;
-                            }
                             return sendMessage(client, topic, joynrMessage, qosLevel, queuedMessages).catch(function(e1) {
                                     resetConnection();
                                 });
