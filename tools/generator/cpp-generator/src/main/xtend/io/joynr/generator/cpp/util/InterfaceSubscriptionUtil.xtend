@@ -136,11 +136,17 @@ void «IF className != null»«className»::«ENDIF»unsubscribeFrom«attribute.
 	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean updateSubscription, String className)
 '''
 «val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
-std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className»::«ENDIF»subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(«IF broadcast.selective»
-			const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,«ENDIF»
-			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos«IF updateSubscription»,
-			std::string& subscriptionId«ENDIF»)
+std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className»::«ENDIF»subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
+			«IF broadcast.selective»
+			const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+			«ENDIF»
+			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»>> subscriptionListener,
+			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos«
+			»«IF updateSubscription»«
+			»,
+			std::string& subscriptionId«
+			»«ENDIF»
+)
 '''
 
 	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface) {
