@@ -88,6 +88,7 @@ define(
                 var globalAddress, globalAddressSerialized;
                 var typeRegistry = TypeRegistrySingleton.getInstance();
                 var queuedGlobalDiscoveryEntries = [];
+                var queuedGlobalLookups = [];
 
                 if (!localCapabilitiesStore
                     || !localCapabilitiesStore.lookup
@@ -147,20 +148,8 @@ define(
                     });
                 }
 
-                /**
-                 * expects a capabilities array which is then filled with any that are found from the proxy
-                 *
-                 * @function
-                 * @name CapabilityDiscovery#lookupGlobalCapabilities
-                 *
-                 * @param {String} domains - the domains
-                 * @param {String} interfaceName - the interface name
-                 * @param {Number} ttl - time to live of joynr messages triggered by the returning proxy
-                 * @param {Array} capabilities - the capabilities array to be filled
-                 *
-                 * @returns {Array} - the capabilities array filled with the capabilities found in the global capabilities directory
-                 */
-                function lookupGlobalCapabilities(domains, interfaceName, ttl, capabilities) {
+                function lookupGlobal(domains, interfaceName, ttl, capabilities) {
+
                     return getGlobalCapabilitiesDirectoryProxy(ttl).then(function(globalCapabilitiesDirectoryProxy){
                         return globalCapabilitiesDirectoryProxy.lookup({
                             domains : domains,
@@ -195,6 +184,37 @@ define(
                             });
                         });
                     });
+                }
+                /**
+                 * expects a capabilities array which is then filled with any that are found from the proxy
+                 *
+                 * @function
+                 * @name CapabilityDiscovery#lookupGlobalCapabilities
+                 *
+                 * @param {String} domains - the domains
+                 * @param {String} interfaceName - the interface name
+                 * @param {Number} ttl - time to live of joynr messages triggered by the returning proxy
+                 * @param {Array} capabilities - the capabilities array to be filled
+                 *
+                 * @returns {Array} - the capabilities array filled with the capabilities found in the global capabilities directory
+                 */
+                function lookupGlobalCapabilities(domains, interfaceName, ttl, capabilities) {
+                    var promise;
+                    if (! globalAddressSerialized) {
+                        promise = new Promise(function (resolve, reject) {
+                            queuedGlobalLookups.push({
+                                domains: domains,
+                                interfaceName: interfaceName,
+                                ttl: ttl,
+                                capabilities: capabilities,
+                                resolve: resolve,
+                                reject: reject
+                            });
+                        });
+                    } else {
+                        promise = lookupGlobal(domains,interfaceName, ttl, capabilities);
+                    }
+                    return promise;
                 }
 
                 /**
@@ -233,13 +253,18 @@ define(
                  *            globalAddress the address used to register discovery entries globally
                  */
                 this.globalAddressReady = function globalAddressReady(newGlobalAddress) {
-                    var i;
+                    var i, parameters;
                     globalAddress = newGlobalAddress;
                     globalAddressSerialized = JSON.stringify(newGlobalAddress);
                     for (i=0;i<queuedGlobalDiscoveryEntries.length;i++) {
                         addGlobalQueued(queuedGlobalDiscoveryEntries[i]);
                     }
                     queuedGlobalDiscoveryEntries = [];
+                    for (i=0;i<queuedGlobalLookups.length;i++) {
+                        parameters = queuedGlobalLookups[i];
+                        lookupGlobal(parameters.domains, parameters.interfaceName, parameters.ttl, parameters.capabilities).then(parameters.resolve).catch(parameters.reject);
+                    }
+                    queuedGlobalLookups = [];
                 };
 
                 /**

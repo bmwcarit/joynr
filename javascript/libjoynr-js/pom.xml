@@ -39,8 +39,10 @@
 		<bluebird.version>3.1.1</bluebird.version>
 		<log4javascript.version>1.4.10</log4javascript.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
+		<mqtt.version>2.0.1</mqtt.version>
 		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
 		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
+		<joynr.provisioning.brokerUri>tcp://127.0.0.1:9001</joynr.provisioning.brokerUri>
 		<joynr.provisioning.bounceProxyBaseUrl>http://127.0.0.1:8080</joynr.provisioning.bounceProxyBaseUrl>
 		<joynr.provisioning.testTtl>5000</joynr.provisioning.testTtl>
 	</properties>
@@ -911,6 +913,74 @@
 							<skipKarma>false</skipKarma>
 							<karmaFailureIgnore>false</karmaFailureIgnore>
 						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>create-mqtt-module</id>
+			<activation>
+				<property>
+					<name>!skipMqttModuleCreation</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<!-- configuration options documentation:
+							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
+						<executions>
+							<execution>
+								<id>install browserify</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+										<argument>browserify</argument>
+									</arguments>
+									<workingDirectory>${basedir}</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>install mqtt</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+										<argument>mqtt@${mqtt.version}</argument>
+									</arguments>
+									<workingDirectory>${basedir}</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>browserify mqtt</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<executable>./cmd.js</executable>
+									<arguments>
+										<argument>${basedir}/node_modules/mqtt/mqtt.js</argument>
+										<argument>-s</argument>
+										<argument>mqtt</argument>
+										<argument>-o</argument>
+										<argument>${project.build.directory}/classes/lib/mqtt.js</argument>
+									</arguments>
+									<workingDirectory>${basedir}/node_modules/browserify/bin</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
 					</plugin>
 				</plugins>
 			</build>

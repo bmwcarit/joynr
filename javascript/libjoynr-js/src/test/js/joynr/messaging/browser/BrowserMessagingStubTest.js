@@ -47,50 +47,6 @@ define([ "joynr/messaging/browser/BrowserMessagingStub"
             expect(typeof browserMessagingStub.transmit === "function").toBeTruthy();
         });
 
-        it("throws on missing or wrongly typed arguments in constructur", function() {
-            expect(function() {
-                browserMessagingStub = new BrowserMessagingStub(); // settings object is undefined
-            }).toThrow();
-
-            expect(function() {
-                browserMessagingStub = new BrowserMessagingStub(""); // settings object is of wrong type
-            }).toThrow();
-
-            expect(function() {
-                browserMessagingStub = new BrowserMessagingStub({}); // webMessagingStub is missing
-            }).toThrow();
-
-            expect(function() {
-                browserMessagingStub = new BrowserMessagingStub({
-                    webMessagingStub : "" // webMessagingStub is of wrong type
-                });
-            }).toThrow();
-
-            expect(function() {
-                browserMessagingStub = new BrowserMessagingStub({ // everything's fine here
-                    webMessagingStub : webMessagingStub
-                });
-            }).not.toThrow();
-        });
-
-        it("throws on missing or wrongly typed arguments in transmit", function() {
-            expect(function() {
-                browserMessagingStub.transmit(undefined);
-            }).toThrow();
-            expect(function() {
-                browserMessagingStub.transmit(null);
-            }).toThrow();
-            expect(function() {
-                browserMessagingStub.transmit("");
-            }).toThrow();
-            expect(function() {
-                browserMessagingStub.transmit({});
-            }).toThrow();
-            expect(function() {
-                browserMessagingStub.transmit(joynrMessage);
-            }).not.toThrow();
-        });
-
         it("calls correctly webMessagingStub.transmit correctly", function() {
             browserMessagingStub.transmit(joynrMessage);
             expect(webMessagingStub.transmit).toHaveBeenCalledWith({

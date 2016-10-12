@@ -28,6 +28,9 @@ importScripts("LocalStorageSimulator.js");
 
 importScripts("../../jar-classes/joynr.js");
 importScripts("../joynr/provisioning/provisioning_cc.js");
+
+var document = { URL: window.joynr.provisioning.brokerUri };
+
 importScripts("provisioning_end2end_common.js");
 
 importScripts("../joynr/datatypes/exampleTypes/Country.js");

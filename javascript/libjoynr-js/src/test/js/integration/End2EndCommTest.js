@@ -665,7 +665,7 @@ define([
                                 done();
                                 return null;
                             }).catch(fail);
-                        });
+                        }, 20000);
 
                         it("subscribe to weakSignal broadcast having ByteBuffer as output parameter", function(done) {
                             var mySpy;
@@ -804,7 +804,7 @@ define([
                                 done();
                                 return null;
                             }).catch(fail);
-                        });
+                        }, 30000);
 
                         it("subscribe to enumArrayAttribute", function(done) {
                             var attributeName = "enumArrayAttribute";

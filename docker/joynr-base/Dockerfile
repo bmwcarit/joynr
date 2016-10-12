@@ -68,6 +68,7 @@ RUN dnf update -y \
     mosquitto-devel \
     && sed -i "s/#max_queued_messages 100/max_queued_messages 0/" /etc/mosquitto/mosquitto.conf \
     && sed -i "s/#user mosquitto/user joynr/" /etc/mosquitto/mosquitto.conf \
+    && sed -i "s/#listener/listener 1883\n\nlistener 9001\nprotocol websockets/" /etc/mosquitto/mosquitto.conf \
     && dnf clean all
 
 ###################################################

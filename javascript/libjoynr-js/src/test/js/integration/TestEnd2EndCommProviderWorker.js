@@ -22,12 +22,16 @@
 
 // anything that you load here is served through the jsTestDriverServer, if you add an entry you
 // have to make it available through the jsTestDriverIntegrationTests.conf
+
 importScripts("WorkerUtils.js");
 importScripts("../joynr/provisioning/provisioning_root.js");
 importScripts("LocalStorageSimulator.js");
 
 importScripts("../../jar-classes/joynr.js");
 importScripts("../joynr/provisioning/provisioning_cc.js");
+
+var document = { URL: window.joynr.provisioning.brokerUri };
+
 importScripts("provisioning_end2end_common.js");
 importScripts("../joynr/vehicle/RadioProvider.js");
 importScripts("../joynr/vehicle/radiotypes/RadioStation.js");
