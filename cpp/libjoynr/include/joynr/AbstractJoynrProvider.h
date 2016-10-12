@@ -155,12 +155,14 @@ protected:
      * @param values The output values of the broadcastselectiveBroadcastListeners
      */
     template <typename... Ts>
-    void fireBroadcast(const std::string& broadcastName, const Ts&... values)
+    void fireBroadcast(const std::string& broadcastName,
+                       const std::vector<std::string>& partitions,
+                       const Ts&... values)
     {
         ReadLocker locker(lockBroadcastListeners);
         // Inform all the broadcast listeners for this broadcast
         for (MulticastBroadcastListener* listener : broadcastListeners) {
-            listener->broadcastOccurred(broadcastName, values...);
+            listener->broadcastOccurred(broadcastName, partitions, values...);
         }
     }
 

@@ -54,7 +54,9 @@ public:
                                     const Ts&... values);
 
     template <typename... Ts>
-    void broadcastOccurred(const std::string& broadcastName, const Ts&... values);
+    void broadcastOccurred(const std::string& broadcastName,
+                           const std::vector<std::string>& partitions,
+                           const Ts&... values);
 
 private:
     const std::string providerParticipantId;
@@ -77,9 +79,11 @@ void MulticastBroadcastListener::selectiveBroadcastOccurred(
 
 template <typename... Ts>
 void MulticastBroadcastListener::broadcastOccurred(const std::string& broadcastName,
+                                                   const std::vector<std::string>& partitions,
                                                    const Ts&... values)
 {
-    publicationManager.broadcastOccurred(broadcastName, providerParticipantId, values...);
+    publicationManager.broadcastOccurred(
+            broadcastName, providerParticipantId, partitions, values...);
 }
 
 } // namespace joynr

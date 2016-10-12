@@ -97,20 +97,20 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 		«IF broadcast.selective»
 		fireSelectiveBroadcast(
 		«ELSE»
-		std::ignore = partitions;
 		fireBroadcast(
 		«ENDIF»
-				"«broadcastName»"«
-				»«IF broadcast.selective»«
-				»,
-				«broadcastName»Filters«
+				"«broadcastName»",
+				«IF broadcast.selective»
+					«broadcastName»Filters«
+				»«ELSE»
+					partitions«
 				»«ENDIF»«
 				»«IF !broadcast.outputParameters.empty»«
 				»,
 				«FOR parameter : broadcast.outputParameters SEPARATOR ','»
 					«parameter.joynrName»
 				«ENDFOR»
-			«ENDIF»
+				«ENDIF»
 		);
 	}
 

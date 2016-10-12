@@ -193,11 +193,13 @@ public:
       * This method is virtual so that it can be overridden by a mock object.
       * @param broadcastName The name of the broadcast
       * @param providerParticipantId The participantID of the provider
+      * @param partitions list of partitions the broadcast applies to
       * @param values Broadcast's value
       */
     template <typename... Ts>
     void broadcastOccurred(const std::string& broadcastName,
                            const std::string& providerParticipantId,
+                           const std::vector<std::string>& partitions,
                            const Ts&... values);
 
     template <typename BroadcastFilter, typename... Ts>
@@ -444,11 +446,12 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
 template <typename... Ts>
 void PublicationManager::broadcastOccurred(const std::string& broadcastName,
                                            const std::string& providerParticipantId,
+                                           const std::vector<std::string>& partitions,
                                            const Ts&... values)
 {
     MulticastPublication publication;
     std::string multicastID =
-            util::createMulticastId(providerParticipantId, broadcastName, {} /*TODO: partitions*/);
+            util::createMulticastId(providerParticipantId, broadcastName, partitions);
     publication.setMulticastId(multicastID);
     publication.setResponse(values...);
     MessagingQos mQos;
