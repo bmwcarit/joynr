@@ -30,8 +30,9 @@ namespace joynr
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
 AbstractJoynrProvider::AbstractJoynrProvider()
         : providerQos(),
-          lock(),
+          lockAttributeListeners(),
           lockBroadcastListeners(),
+          lockSelectiveBroadcastListeners(),
           attributeListeners(),
           broadcastListeners()
 {
@@ -64,7 +65,7 @@ void AbstractJoynrProvider::registerAttributeListener(
         const std::string& attributeName,
         SubscriptionAttributeListener* attributeListener)
 {
-    WriteLocker locker(lock);
+    WriteLocker locker(lockAttributeListeners);
     attributeListeners[attributeName].push_back(attributeListener);
 }
 
@@ -72,7 +73,7 @@ void AbstractJoynrProvider::unregisterAttributeListener(
         const std::string& attributeName,
         SubscriptionAttributeListener* attributeListener)
 {
-    WriteLocker locker(lock);
+    WriteLocker locker(lockAttributeListeners);
     std::vector<SubscriptionAttributeListener*>& listeners = attributeListeners[attributeName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), attributeListener);
@@ -88,7 +89,7 @@ void AbstractJoynrProvider::unregisterAttributeListener(
 void AbstractJoynrProvider::registerBroadcastListener(const std::string& broadcastName,
                                                       UnicastBroadcastListener* broadcastListener)
 {
-    WriteLocker locker(lock);
+    WriteLocker locker(lockSelectiveBroadcastListeners);
     selectiveBroadcastListeners[broadcastName].push_back(broadcastListener);
 }
 
@@ -101,7 +102,7 @@ void AbstractJoynrProvider::registerBroadcastListener(MulticastBroadcastListener
 void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broadcastName,
                                                         UnicastBroadcastListener* broadcastListener)
 {
-    WriteLocker locker(lock);
+    WriteLocker locker(lockSelectiveBroadcastListeners);
     std::vector<UnicastBroadcastListener*>& listeners = selectiveBroadcastListeners[broadcastName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), broadcastListener);

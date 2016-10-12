@@ -115,7 +115,7 @@ protected:
     template <typename T>
     void onAttributeValueChanged(const std::string& attributeName, const T& value)
     {
-        ReadLocker locker(lock);
+        ReadLocker locker(lockAttributeListeners);
 
         if (attributeListeners.find(attributeName) != attributeListeners.cend()) {
             std::vector<SubscriptionAttributeListener*>& listeners =
@@ -140,7 +140,7 @@ protected:
                                 const Ts&... values)
     {
 
-        ReadLocker locker(lock);
+        ReadLocker locker(lockSelectiveBroadcastListeners);
         const std::vector<UnicastBroadcastListener*>& listeners =
                 selectiveBroadcastListeners[broadcastName];
         // Inform all the broadcast listeners for this broadcast
@@ -176,8 +176,9 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);
 
-    ReadWriteLock lock;
+    ReadWriteLock lockAttributeListeners;
     ReadWriteLock lockBroadcastListeners;
+    ReadWriteLock lockSelectiveBroadcastListeners;
     std::map<std::string, std::vector<SubscriptionAttributeListener*>> attributeListeners;
     std::map<std::string, std::vector<UnicastBroadcastListener*>> selectiveBroadcastListeners;
     std::vector<MulticastBroadcastListener*> broadcastListeners;
