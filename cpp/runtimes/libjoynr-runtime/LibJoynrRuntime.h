@@ -22,6 +22,7 @@
 
 #include <string>
 #include <memory>
+#include <functional>
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -35,6 +36,7 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/Semaphore.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {

@@ -173,11 +173,13 @@ void LibJoynrRuntime::init(
 
     std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder(
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain));
-    joynr::system::IDiscoverySync* proxy =
+
+    joynr::system::DiscoveryProxy* proxy =
             discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
                     ->setCached(false)
                     ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                     ->build();
+
     discoveryProxy->setDiscoveryProxy(std::unique_ptr<joynr::system::IDiscoverySync>(proxy));
     capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
             dispatcherList,
