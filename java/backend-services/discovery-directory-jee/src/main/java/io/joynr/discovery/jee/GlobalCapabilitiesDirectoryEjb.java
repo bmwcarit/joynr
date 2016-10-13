@@ -79,7 +79,13 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         }
         GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
                                                                                  clusterControllerId);
-        entityManager.persist(entity);
+        GlobalDiscoveryEntryPersisted persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class,
+                                                                     entity.getParticipantId());
+        if (persisted == null) {
+            entityManager.persist(entity);
+        } else {
+            entityManager.merge(entity);
+        }
     }
 
     @Override

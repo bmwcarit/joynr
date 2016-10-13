@@ -151,4 +151,15 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         assertTrue(initialLastSeen < persisted.getLastSeenDateMs());
     }
 
+    @Test
+    public void testAddTwice() throws Exception {
+        subject.add(testGlobalDiscoveryEntry);
+        subject.add(testGlobalDiscoveryEntry);
+
+        GlobalDiscoveryEntry[] persisted = subject.lookup(new String[]{ testGlobalDiscoveryEntry.getDomain() },
+                                                          testGlobalDiscoveryEntry.getInterfaceName());
+        assertNotNull(persisted);
+        assertEquals(1, persisted.length);
+    }
+
 }
