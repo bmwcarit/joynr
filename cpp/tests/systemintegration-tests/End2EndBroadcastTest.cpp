@@ -20,6 +20,7 @@
 #include <string>
 #include <cstdint>
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -273,6 +274,13 @@ private:
     DISALLOW_COPY_AND_ASSIGN(End2EndBroadcastTest);
 
 protected:
+    bool usesHttpTransport() {
+        std::string brokerProtocol = messagingSettings1.getBrokerUrl()
+                .getBrokerChannelsBaseUrl().getProtocol();
+        return (boost::iequals(brokerProtocol, "http")
+                || boost::iequals(brokerProtocol, "https"));
+    }
+
     std::shared_ptr<MyTestProvider> registerProvider() {
         auto testProvider = std::make_shared<MyTestProvider>();
         providerParticipantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
@@ -383,6 +391,9 @@ protected:
 } // namespace joynr
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
 
     testOneShotBroadcastSubscription(expectedTestEnum,
@@ -396,6 +407,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
     joynr::ByteBuffer expectedByteBuffer {0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0};
 
     testOneShotBroadcastSubscription(expectedByteBuffer,
@@ -471,6 +485,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithFiltering) {
 }
 
 TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -548,6 +565,9 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 }
 
 TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -595,6 +615,9 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -647,6 +670,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 }
 
 TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -681,6 +707,9 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
 }
 
 TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -731,6 +760,9 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
 
     MockSubscriptionListenerZeroTypes* mockListener = new MockSubscriptionListenerZeroTypes();
 
@@ -777,6 +809,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
 
     MockGpsFloatSubscriptionListener* mockListener = new MockGpsFloatSubscriptionListener();
 
@@ -949,6 +984,9 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
 
     MockGpsSubscriptionListener* mockListenerAttribute = new MockGpsSubscriptionListener();
     MockGpsSubscriptionListener* mockListenerBroadcast = new MockGpsSubscriptionListener();
