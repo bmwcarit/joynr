@@ -46,7 +46,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
-import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
+import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
@@ -147,9 +147,9 @@ public class DefaultJoynrRuntimeFactoryTest {
                                        .getInstance(Key.get(Properties.class,
                                                             Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES)));
         assertNotNull(properties);
-        String key = (PropertiesFileParticipantIdStorage.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME).toLowerCase()
-                                                                                                                                  .replace("/",
-                                                                                                                                           ".");
+        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME).toLowerCase()
+                                                                                                                    .replace("/",
+                                                                                                                             ".");
         assertTrue(properties.containsKey(key));
         String value = properties.getProperty(key);
         assertNotNull(value);
@@ -159,9 +159,9 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Test
     public void testNoOverrideForManuallyAddedParticipantIds() throws Exception {
         Properties joynrProperties = new Properties();
-        String key = (PropertiesFileParticipantIdStorage.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME).toLowerCase()
-                                                                                                                                  .replace("/",
-                                                                                                                                           ".");
+        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME).toLowerCase()
+                                                                                                                    .replace("/",
+                                                                                                                             ".");
         joynrProperties.setProperty(key, "myvalue");
         createFixture(joynrProperties);
 

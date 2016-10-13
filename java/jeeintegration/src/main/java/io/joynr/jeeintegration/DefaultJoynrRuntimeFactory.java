@@ -52,7 +52,7 @@ import com.google.inject.multibindings.Multibinder;
 import io.joynr.ProvidedBy;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
-import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
+import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
@@ -150,7 +150,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     private void createClusterableParticipantIds(Set<Class<?>> providerInterfaceClasses) {
         for (Class<?> joynrProviderClass : providerInterfaceClasses) {
-            String participantIdKey = createParticipantIdKey(joynrProviderClass);
+            String participantIdKey = ParticipantIdKeyUtil.getProviderParticipantIdKey(getLocalDomain(),
+                                                                                       joynrProviderClass);
             if (!joynrProperties.containsKey(participantIdKey)) {
                 joynrProperties.put(participantIdKey, createClusterableParticipantId(joynrProviderClass));
             }
@@ -161,12 +162,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         String key = getLocalDomain() + "." + joynrProperties.getProperty(MessagingPropertyKeys.CHANNELID) + "."
                 + getInterfaceName(joynrProviderClass);
         return key.replace("/", ".");
-    }
-
-    private String createParticipantIdKey(Class<?> joynrProviderClass) {
-        String key = PropertiesFileParticipantIdStorage.JOYNR_PARTICIPANT_PREFIX + getLocalDomain() + "."
-                + getInterfaceName(joynrProviderClass);
-        return key.toLowerCase().replace("/", ".");
     }
 
     @Override
