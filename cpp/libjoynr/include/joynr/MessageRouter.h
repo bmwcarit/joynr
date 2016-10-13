@@ -55,6 +55,7 @@ class IAccessController;
 class IMessaging;
 class IMessagingMulticastSubscriber;
 class IMessagingStubFactory;
+class IMulticastAddressCalculator;
 class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class JoynrMessage;
@@ -90,6 +91,7 @@ public:
                           multicastMessagingSkeletonDirectory,
                   std::unique_ptr<IPlatformSecurityManager> securityManager,
                   boost::asio::io_service& ioService,
+                  std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                   int maxThreads = 1,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
@@ -193,6 +195,7 @@ private:
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
     ThreadPoolDelayedScheduler messageScheduler;
+    std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     std::unique_ptr<joynr::system::RoutingProxy> parentRouter;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress;

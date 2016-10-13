@@ -26,6 +26,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
+#include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/Request.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
@@ -80,11 +81,16 @@ public:
         singleThreadedIOService(),
         messageRouter(nullptr)
     {
+        std::unique_ptr<IMulticastAddressCalculator> addresscalculator =
+                std::make_unique<MqttMulticastAddressCalculator>(
+                    std::make_shared<const joynr::system::RoutingTypes::MqttAddress>()
+                );
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
         messageRouter = std::make_unique<MessageRouter>(std::unique_ptr<MessagingStubFactory>(messagingStubFactory),
                                                         std::shared_ptr<MulticastMessagingSkeletonDirectory>(),
                                                         std::unique_ptr<IPlatformSecurityManager>(),
-                                                        singleThreadedIOService.getIOService());
+                                                        singleThreadedIOService.getIOService(),
+                                                        std::move(addresscalculator));
         qos.setTtl(10000);
     }
 

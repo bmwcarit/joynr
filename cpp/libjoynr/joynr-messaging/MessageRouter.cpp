@@ -30,6 +30,7 @@
 #include "joynr/IMessaging.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStubFactory.h"
+#include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/JoynrMessage.h"
@@ -91,6 +92,7 @@ MessageRouter::MessageRouter(
         std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory,
         std::unique_ptr<IPlatformSecurityManager> securityManager,
         boost::asio::io_service& ioService,
+        std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         int maxThreads,
         std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
@@ -100,6 +102,7 @@ MessageRouter::MessageRouter(
           routingTableLock(),
           multicastReceiverDirectory(),
           messageScheduler(maxThreads, "MessageRouter", ioService),
+          addressCalculator(std::move(addressCalculator)),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(),
@@ -205,9 +208,13 @@ std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> M
                 multicastReceiverDirectory.getReceivers(multicastId);
         addresses = lookupAddresses(multicastReceivers);
 
-        if (!message.isReceivedFromGlobal()) {
-            // publish multicast globally
-            // TODO: add broker address
+        // add global transport address if message is NOT received from global
+        if (!message.isReceivedFromGlobal() && addressCalculator) {
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> globalTransport =
+                    addressCalculator->compute(message);
+            if (globalTransport) {
+                addresses.push_front(globalTransport);
+            }
         }
     } else {
         const std::string destinationPartId = message.getHeaderTo();

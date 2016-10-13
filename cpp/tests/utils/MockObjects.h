@@ -115,6 +115,8 @@
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Request.h"
 
+#include "joynr/IMulticastAddressCalculator.h"
+
 namespace joynr
 {
 class JoynrMessage;
@@ -348,6 +350,7 @@ public:
                       std::shared_ptr<joynr::MulticastMessagingSkeletonDirectory>(),
                       std::unique_ptr<joynr::IPlatformSecurityManager>(),
                       ioService,
+                      std::unique_ptr<joynr::IMulticastAddressCalculator>(),
                       0)
     {
         EXPECT_CALL(

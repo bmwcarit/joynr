@@ -32,6 +32,7 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/MessagingStubFactory.h"
+#include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
@@ -65,10 +66,16 @@ public:
 
         messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
 
+        std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
+                std::make_unique<MqttMulticastAddressCalculator>(
+                    std::make_shared<const joynr::system::RoutingTypes::MqttAddress>()
+                );
+
         messageRouter = std::make_unique<MessageRouter>(messagingStubFactory,
                                                         multicastMessagingSkeletonDirectory,
                                                         std::unique_ptr<IPlatformSecurityManager>(),
                                                         singleThreadedIOService.getIOService(),
+                                                        std::move(addressCalculator),
                                                         6, std::move(messageQueue));
         // provision global capabilities directory
         auto addressCapabilitiesDirectory =
@@ -267,11 +274,14 @@ TEST_F(MessageRouterTest, restoreRoutingTable) {
     std::remove(routingTablePersistenceFilename.c_str());
 
     auto messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
+    auto addressCalculator = std::make_unique<MqttMulticastAddressCalculator>(
+                std::make_shared<const joynr::system::RoutingTypes::MqttAddress>());
     auto messageRouter = std::make_unique<MessageRouter>(
                 messagingStubFactory,
                 std::make_shared<MulticastMessagingSkeletonDirectory>(),
                 std::unique_ptr<IPlatformSecurityManager>(),
-                singleThreadedIOService.getIOService());
+                singleThreadedIOService.getIOService(),
+                std::move(addressCalculator));
     std::string participantId = "myParticipantId";
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
 
@@ -279,11 +289,14 @@ TEST_F(MessageRouterTest, restoreRoutingTable) {
     messageRouter->loadRoutingTable(routingTablePersistenceFilename);
     messageRouter->addProvisionedNextHop(participantId, address); // Saves the RoutingTable to the persistence file.
 
+    addressCalculator = std::make_unique<MqttMulticastAddressCalculator>(
+                std::make_shared<const joynr::system::RoutingTypes::MqttAddress>());
     messageRouter = std::make_unique<MessageRouter>(
                 messagingStubFactory,
                 std::make_shared<MulticastMessagingSkeletonDirectory>(),
                 std::unique_ptr<IPlatformSecurityManager>(),
-                singleThreadedIOService.getIOService());
+                singleThreadedIOService.getIOService(),
+                std::move(addressCalculator));
 
     messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 
@@ -453,6 +466,7 @@ TEST_F(MessageRouterTest, unregisterMulticastReceiver_ChildRouter_CallsParentRou
     messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory),
                                                     std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(),
                                                     singleThreadedIOService.getIOService());
+
     // Set all attributes which are required to make the message router a child message router.
     messageRouter->setParentRouter(std::move(mockRoutingProxy), parentAddress, std::string("parentParticipantId"));
 

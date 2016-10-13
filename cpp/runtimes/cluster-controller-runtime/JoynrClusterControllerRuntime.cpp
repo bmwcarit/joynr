@@ -44,9 +44,11 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/HttpMulticastAddressCalculator.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessageReceiver.h"
 #include "joynr/IMessageSender.h"
+#include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/InProcessAddress.h"
 #include "joynr/InProcessConnectorFactory.h"
@@ -55,6 +57,7 @@
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/JoynrMessageSender.h"
+#include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/LocalDiscoveryAggregator.h"
@@ -150,6 +153,49 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     libjoynrSettings.printSettings();
     wsSettings.printSettings();
 
+    const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
+    assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());
+    const BrokerUrl bounceProxyUrl = messagingSettings.getBounceProxyUrl();
+    assert(bounceProxyUrl.getBrokerChannelsBaseUrl().isValid());
+
+    // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP
+    const Url url = brokerUrl.getBrokerChannelsBaseUrl();
+    std::string brokerProtocol = url.getProtocol();
+    std::string bounceproxyProtocol = bounceProxyUrl.getBrokerChannelsBaseUrl().getProtocol();
+
+    std::transform(brokerProtocol.begin(), brokerProtocol.end(), brokerProtocol.begin(), ::toupper);
+    std::transform(bounceproxyProtocol.begin(),
+                   bounceproxyProtocol.end(),
+                   bounceproxyProtocol.begin(),
+                   ::toupper);
+
+    std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
+
+    if (brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
+                                  joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT)) {
+        JOYNR_LOG_INFO(logger, "MQTT-Messaging");
+        auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
+                brokerUrl.toString(), "");
+        addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(globalAddress);
+        doMqttMessaging = true;
+    } else {
+        JOYNR_LOG_INFO(logger, "HTTP-Messaging");
+        auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
+                brokerUrl.toString(), "");
+        addressCalculator = std::make_unique<joynr::HttpMulticastAddressCalculator>(globalAddress);
+        doHttpMessaging = true;
+    }
+
+    if (!doHttpMessaging && boost::starts_with(bounceproxyProtocol, "HTTP")) {
+        JOYNR_LOG_INFO(logger, "HTTP-Messaging");
+        doHttpMessaging = true;
+    }
+
+    std::string capabilitiesDirectoryChannelId =
+            messagingSettings.getCapabilitiesDirectoryChannelId();
+    std::string capabilitiesDirectoryParticipantId =
+            messagingSettings.getCapabilitiesDirectoryParticipantId();
+
     // Initialise security manager
     std::unique_ptr<IPlatformSecurityManager> securityManager =
             std::make_unique<DummyPlatformSecurityManager>();
@@ -168,43 +214,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     messageRouter = std::make_shared<MessageRouter>(messagingStubFactory,
                                                     multicastMessagingSkeletonDirectory,
                                                     std::move(securityManager),
-                                                    singleThreadIOService->getIOService());
+                                                    singleThreadIOService->getIOService(),
+                                                    std::move(addressCalculator));
     messageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
-
-    const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
-    assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());
-    const BrokerUrl bounceProxyUrl = messagingSettings.getBounceProxyUrl();
-    assert(bounceProxyUrl.getBrokerChannelsBaseUrl().isValid());
-
-    // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP
-    const Url url = brokerUrl.getBrokerChannelsBaseUrl();
-    std::string brokerProtocol = url.getProtocol();
-    std::string bounceproxyProtocol = bounceProxyUrl.getBrokerChannelsBaseUrl().getProtocol();
-
-    std::transform(brokerProtocol.begin(), brokerProtocol.end(), brokerProtocol.begin(), ::toupper);
-    std::transform(bounceproxyProtocol.begin(),
-                   bounceproxyProtocol.end(),
-                   bounceproxyProtocol.begin(),
-                   ::toupper);
-
-    if (brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
-                                  joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT)) {
-        JOYNR_LOG_INFO(logger, "MQTT-Messaging");
-        doMqttMessaging = true;
-    } else {
-        JOYNR_LOG_INFO(logger, "HTTP-Messaging");
-        doHttpMessaging = true;
-    }
-
-    if (!doHttpMessaging && boost::starts_with(bounceproxyProtocol, "HTTP")) {
-        JOYNR_LOG_INFO(logger, "HTTP-Messaging");
-        doHttpMessaging = true;
-    }
-
-    std::string capabilitiesDirectoryChannelId =
-            messagingSettings.getCapabilitiesDirectoryChannelId();
-    std::string capabilitiesDirectoryParticipantId =
-            messagingSettings.getCapabilitiesDirectoryParticipantId();
 
     // provision global capabilities directory
     if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {
