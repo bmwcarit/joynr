@@ -24,6 +24,7 @@ package test.io.joynr.jeeintegration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,14 +43,20 @@ import javax.enterprise.inject.spi.BeanManager;
 import com.google.common.collect.Sets;
 import com.google.inject.Binding;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
+import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.runtime.JoynrRuntime;
 import joynr.JoynrMessage;
 import joynr.Request;
+import joynr.jeeintegration.servicelocator.MyService;
+import joynr.jeeintegration.servicelocator.MyServiceSync;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -60,6 +67,7 @@ import org.mockito.Mockito;
 public class DefaultJoynrRuntimeFactoryTest {
 
     private static final String LOCAL_DOMAIN = "local-domain";
+    private static final String CHANNEL_ID = "channel_id";
 
     private ScheduledExecutorService scheduledExecutorService;
 
@@ -81,7 +89,7 @@ public class DefaultJoynrRuntimeFactoryTest {
         Properties joynrPropertiesValues = new Properties();
         joynrPropertiesValues.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/");
         joynrPropertiesValues.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
-        joynrPropertiesValues.setProperty("joynr.jeeintegration.broker.uri", "http://localhost:18080");
+        joynrPropertiesValues.setProperty(MessagingPropertyKeys.CHANNELID, CHANNEL_ID);
         when(joynrProperties.get()).thenReturn(joynrPropertiesValues);
         Instance<String> joynrLocalDomain = mock(Instance.class);
         when(joynrLocalDomain.get()).thenReturn(LOCAL_DOMAIN);
@@ -120,6 +128,23 @@ public class DefaultJoynrRuntimeFactoryTest {
                                                                  new Request("name", new Object[0], new Class[0]),
                                                                  new MessagingQos());
         assertEquals("test", request.getHeader().get("test"));
+    }
+
+    @Test
+    public void testClusterableParticipantIdsAdded() {
+        JoynrRuntime joynrRuntime = fixture.create(Sets.newHashSet(MyServiceSync.class));
+        assertNotNull(joynrRuntime);
+        Properties properties = fixture.getInjector()
+                                       .getInstance(Key.get(Properties.class,
+                                                            Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES)));
+        assertNotNull(properties);
+        String key = (PropertiesFileParticipantIdStorage.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME).toLowerCase()
+                                                                                                                                  .replace("/",
+                                                                                                                                           ".");
+        assertTrue(properties.containsKey(key));
+        String value = properties.getProperty(key);
+        assertNotNull(value);
+        assertEquals((LOCAL_DOMAIN + "." + CHANNEL_ID + "." + MyService.INTERFACE_NAME).replace("/", "."), value);
     }
 
 }

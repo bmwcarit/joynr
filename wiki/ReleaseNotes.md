@@ -1,3 +1,14 @@
+#joynr 0.21.1
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Catch websocket exception if connection is not valid anymore. This caused
+  the cluster-controller to crash.
+* **[C++]** Fixed installation path of system integration tests.
+
 #joynr 0.21.0
 
 ##API relevant changes
@@ -20,6 +31,13 @@
   it is consistent with the other `USE_PLATFORM_*` variables.
 * **[C++]** Reduced the number of threads which are used by a cluster controller instance
 * **[C++]** The dependency to Qt is now fully removed.
+
+#joynr 0.20.4
+This is a minor bug fix release.
+
+## Other changes
+* **[C++]** Fixed an issue which caused a high CPU load when a client disconnected from a
+  cluster controller.
 
 #joynr 0.20.3
 This is a minor bug fix release.

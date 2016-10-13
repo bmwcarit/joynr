@@ -24,12 +24,9 @@
 #include <mutex>
 #include <string>
 
-#include "joynr/PrivateCopyAssign.h"
-
-#include "joynr/ContentWithDecayTime.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
-#include "joynr/Directory.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Thread.h"
 
@@ -91,7 +88,7 @@ private:
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;
-    std::shared_ptr<HttpRequest> currentRequest;
+    std::unique_ptr<HttpRequest> currentRequest;
 };
 
 } // namespace joynr

@@ -104,7 +104,22 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         GlobalDiscoveryEntry result = subject.lookup("participantId");
         assertNotNull(result);
         assertTrue(result instanceof GlobalDiscoveryEntryPersisted);
-        assertEquals(TOPIC_NAME, ((GlobalDiscoveryEntryPersisted) result).getClusterControllerId());
+        GlobalDiscoveryEntryPersisted persisted = (GlobalDiscoveryEntryPersisted) result;
+        assertEquals(TOPIC_NAME, persisted.getClusterControllerId());
+        assertEquals(testGlobalDiscoveryEntry.getDomain(), persisted.getDomain());
+    }
+
+    @Test
+    public void testAddAndLookupMultiDomain() throws Exception {
+        subject.add(testGlobalDiscoveryEntry);
+        entityManager.flush();
+        entityManager.clear();
+        GlobalDiscoveryEntry[] result = subject.lookup(new String[]{ testGlobalDiscoveryEntry.getDomain() },
+                                                       testGlobalDiscoveryEntry.getInterfaceName());
+        assertNotNull(result);
+        assertEquals(1, result.length);
+        assertTrue(result[0] instanceof GlobalDiscoveryEntryPersisted);
+        assertEquals(TOPIC_NAME, ((GlobalDiscoveryEntryPersisted) result[0]).getClusterControllerId());
     }
 
     @Test

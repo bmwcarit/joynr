@@ -19,6 +19,12 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.UUID;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -36,14 +42,11 @@ import joynr.types.GlobalDiscoveryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.UUID;
-
 @Singleton
 public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage {
+
+    public static final String JOYNR_PARTICIPANT_PREFIX = "joynr.participant.";
+
     private static final Logger logger = LoggerFactory.getLogger(PropertiesFileParticipantIdStorage.class);
     private final GlobalDiscoveryEntry capabilitiesDirectoryEntry;
     private final GlobalDiscoveryEntry domainAccessControllerEntry;
@@ -126,7 +129,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     }
 
     private static String getProviderParticipantIdKey(String domain, String interfaceName) {
-        String token = "joynr.participant." + domain + "." + interfaceName;
+        String token = JOYNR_PARTICIPANT_PREFIX + domain + "." + interfaceName;
         return token.replace('/', '.');
     }
 
