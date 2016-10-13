@@ -57,7 +57,6 @@ import joynr.JoynrMessage;
 import joynr.Request;
 import joynr.jeeintegration.servicelocator.MyService;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -82,14 +81,20 @@ public class DefaultJoynrRuntimeFactoryTest {
         }
     }
 
+    private void createFixture() throws Exception {
+        createFixture(null);
+    }
+
     @SuppressWarnings("unchecked")
-    @Before
-    public void setup() throws Exception {
+    private void createFixture(Properties additionalProperties) throws Exception {
         Instance<Properties> joynrProperties = mock(Instance.class);
         Properties joynrPropertiesValues = new Properties();
         joynrPropertiesValues.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/");
         joynrPropertiesValues.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         joynrPropertiesValues.setProperty(MessagingPropertyKeys.CHANNELID, CHANNEL_ID);
+        if (additionalProperties != null) {
+            joynrPropertiesValues.putAll(additionalProperties);
+        }
         when(joynrProperties.get()).thenReturn(joynrPropertiesValues);
         Instance<String> joynrLocalDomain = mock(Instance.class);
         when(joynrLocalDomain.get()).thenReturn(LOCAL_DOMAIN);
@@ -105,14 +110,16 @@ public class DefaultJoynrRuntimeFactoryTest {
     }
 
     @Test
-    public void testGetLocalDomain() {
+    public void testGetLocalDomain() throws Exception {
+        createFixture();
         String result = fixture.getLocalDomain();
         assertNotNull(result);
         assertEquals(LOCAL_DOMAIN, result);
     }
 
     @Test
-    public void testJoynrMessageProcessorAdded() {
+    public void testJoynrMessageProcessorAdded() throws Exception {
+        createFixture();
         Injector injector = fixture.getInjector();
         List<Binding<JoynrMessageProcessor>> bindings = injector.findBindingsByType(new TypeLiteral<JoynrMessageProcessor>() {
         });
@@ -120,7 +127,8 @@ public class DefaultJoynrRuntimeFactoryTest {
     }
 
     @Test
-    public void testJoynrMessageProcessUsed() {
+    public void testJoynrMessageProcessUsed() throws Exception {
+        createFixture();
         Injector injector = fixture.getInjector();
         JoynrMessageFactory joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
         JoynrMessage request = joynrMessageFactory.createRequest("from",
@@ -131,7 +139,8 @@ public class DefaultJoynrRuntimeFactoryTest {
     }
 
     @Test
-    public void testClusterableParticipantIdsAdded() {
+    public void testClusterableParticipantIdsAdded() throws Exception {
+        createFixture();
         JoynrRuntime joynrRuntime = fixture.create(Sets.newHashSet(MyServiceSync.class));
         assertNotNull(joynrRuntime);
         Properties properties = fixture.getInjector()
@@ -145,6 +154,27 @@ public class DefaultJoynrRuntimeFactoryTest {
         String value = properties.getProperty(key);
         assertNotNull(value);
         assertEquals((LOCAL_DOMAIN + "." + CHANNEL_ID + "." + MyService.INTERFACE_NAME).replace("/", "."), value);
+    }
+
+    @Test
+    public void testNoOverrideForManuallyAddedParticipantIds() throws Exception {
+        Properties joynrProperties = new Properties();
+        String key = (PropertiesFileParticipantIdStorage.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME).toLowerCase()
+                                                                                                                                  .replace("/",
+                                                                                                                                           ".");
+        joynrProperties.setProperty(key, "myvalue");
+        createFixture(joynrProperties);
+
+        JoynrRuntime joynrRuntime = fixture.create(Sets.newHashSet(MyServiceSync.class));
+        assertNotNull(joynrRuntime);
+        Properties properties = fixture.getInjector()
+                                       .getInstance(Key.get(Properties.class,
+                                                            Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES)));
+        assertNotNull(properties);
+        assertTrue(properties.containsKey(key));
+        String value = properties.getProperty(key);
+        assertNotNull(value);
+        assertEquals("myvalue", value);
     }
 
 }

@@ -151,7 +151,9 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private void createClusterableParticipantIds(Set<Class<?>> providerInterfaceClasses) {
         for (Class<?> joynrProviderClass : providerInterfaceClasses) {
             String participantIdKey = createParticipantIdKey(joynrProviderClass);
-            joynrProperties.put(participantIdKey, createClusterableParticipantId(joynrProviderClass));
+            if (!joynrProperties.containsKey(participantIdKey)) {
+                joynrProperties.put(participantIdKey, createClusterableParticipantId(joynrProviderClass));
+            }
         }
     }
 
@@ -164,7 +166,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private String createParticipantIdKey(Class<?> joynrProviderClass) {
         String key = PropertiesFileParticipantIdStorage.JOYNR_PARTICIPANT_PREFIX + getLocalDomain() + "."
                 + getInterfaceName(joynrProviderClass);
-        return key.replace("/", ".");
+        return key.toLowerCase().replace("/", ".");
     }
 
     @Override
