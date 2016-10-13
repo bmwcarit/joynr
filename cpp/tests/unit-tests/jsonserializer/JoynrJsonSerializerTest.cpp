@@ -85,7 +85,6 @@ TEST_F(JoynrJsonSerializerTest, receivedFromGlobalAttributeIsIgnoredBySerializat
     JoynrMessage deserializedMsg;
     joynr::serializer::deserializeFromJson(deserializedMsg, json);
 
-    EXPECT_EQ(msg, deserializedMsg);
     EXPECT_FALSE(deserializedMsg.isReceivedFromGlobal());
 }
 
