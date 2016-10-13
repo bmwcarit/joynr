@@ -20,6 +20,7 @@ package io.joynr.discovery.jee;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -103,9 +104,10 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         entityManager.clear();
         GlobalDiscoveryEntry result = subject.lookup("participantId");
         assertNotNull(result);
-        assertTrue(result instanceof GlobalDiscoveryEntryPersisted);
-        GlobalDiscoveryEntryPersisted persisted = (GlobalDiscoveryEntryPersisted) result;
-        assertEquals(TOPIC_NAME, persisted.getClusterControllerId());
+        assertTrue(result instanceof GlobalDiscoveryEntry);
+        assertFalse(result instanceof GlobalDiscoveryEntryPersisted);
+        GlobalDiscoveryEntry persisted = (GlobalDiscoveryEntry) result;
+        assertEquals(testGlobalDiscoveryEntry.getInterfaceName(), persisted.getInterfaceName());
         assertEquals(testGlobalDiscoveryEntry.getDomain(), persisted.getDomain());
     }
 
@@ -118,8 +120,10 @@ public class GlobalCapabilitiesDirectoryEjbTest {
                                                        testGlobalDiscoveryEntry.getInterfaceName());
         assertNotNull(result);
         assertEquals(1, result.length);
-        assertTrue(result[0] instanceof GlobalDiscoveryEntryPersisted);
-        assertEquals(TOPIC_NAME, ((GlobalDiscoveryEntryPersisted) result[0]).getClusterControllerId());
+        assertTrue(result[0] instanceof GlobalDiscoveryEntry);
+        assertFalse(result[0] instanceof GlobalDiscoveryEntryPersisted);
+        assertEquals(testGlobalDiscoveryEntry.getDomain(), ((GlobalDiscoveryEntry) result[0]).getDomain());
+        assertEquals(testGlobalDiscoveryEntry.getInterfaceName(), ((GlobalDiscoveryEntry) result[0]).getInterfaceName());
     }
 
     @Test
