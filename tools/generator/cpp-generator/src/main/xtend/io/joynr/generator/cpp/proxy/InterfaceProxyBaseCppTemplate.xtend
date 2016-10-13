@@ -61,7 +61,6 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 {
 }
 
-//tm todo: this could probably moved into async proxy, by setting the IArbitrationListener in the ProxyBase
 void «className»::handleArbitrationFinished(
 		const std::string &providerParticipantId,
 		bool useInProcessConnector

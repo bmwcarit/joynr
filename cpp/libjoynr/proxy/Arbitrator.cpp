@@ -54,27 +54,32 @@ Arbitrator::Arbitrator(
           arbitrationError("Arbitration could not be finished in time."),
           arbitrationStrategyFunction(std::move(arbitrationStrategyFunction)),
           participantId(""),
-          arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
-          listener(nullptr),
-          listenerSemaphore(0)
+          arbitrationFinished(false)
 {
 }
 
-void Arbitrator::startArbitration()
+void Arbitrator::startArbitration(
+        std::function<void(const std::string& participantId)> onSuccess,
+        std::function<void(const exceptions::DiscoveryException& exception)> onError)
 {
+    onSuccessCallback = onSuccess;
+    onErrorCallback = onError;
+
     Semaphore semaphore;
+    arbitrationFinished = false;
 
     // Arbitrate until successful or timed out
     auto start = std::chrono::system_clock::now();
 
     while (true) {
         attemptArbitration();
-        // Finish on success or failure
-        if (arbitrationStatus != ArbitrationStatus::ArbitrationRunning)
+
+        if (arbitrationFinished) {
             return;
+        }
 
-        // If there are no suitable providers
-
+        // If there are no suitable providers, retry the arbitration after the retry interval
+        // elapsed
         auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
 
@@ -98,10 +103,10 @@ void Arbitrator::startArbitration()
 
     // If this point is reached the arbitration timed out
     if (!discoveredIncompatibleVersions.empty()) {
-        notifyArbitrationListener(
+        onErrorCallback(
                 exceptions::NoCompatibleProviderFoundException(discoveredIncompatibleVersions));
     } else {
-        notifyArbitrationListener(arbitrationError);
+        onErrorCallback(arbitrationError);
     }
 }
 
@@ -192,87 +197,12 @@ void Arbitrator::receiveCapabilitiesLookupResults(
             res = arbitrationStrategyFunction->select(
                     discoveryQos.getCustomParameters(), preFilteredDiscoveryEntries);
         } catch (const exceptions::DiscoveryException& e) {
-            arbitrationError.setMessage(e.getMessage());
+            arbitrationError = e;
         }
-        if (!res.empty())
-            notifyArbitrationListener(res);
-    }
-}
-
-std::string Arbitrator::getParticipantId()
-{
-    if (participantId.empty()) {
-        throw exceptions::DiscoveryException(
-                "ParticipantId is empty: Called getParticipantId() before "
-                "arbitration has finished / Arbitrator did not set "
-                "participantId.");
-    }
-    return participantId;
-}
-
-void Arbitrator::setParticipantId(std::string participantId)
-{
-    this->participantId = participantId;
-    if (listenerSemaphore.waitFor()) {
-        assert(listener != nullptr);
-        listener->setParticipantId(participantId);
-        listenerSemaphore.notify();
-    }
-}
-
-void Arbitrator::notifyArbitrationListener(const std::string& participantId)
-{
-    setParticipantId(participantId);
-    setArbitrationStatus(ArbitrationStatus::ArbitrationSuccessful);
-}
-
-void Arbitrator::notifyArbitrationListener(const exceptions::DiscoveryException& error)
-{
-    setArbitrationError(error);
-    setArbitrationStatus(ArbitrationStatus::ArbitrationCanceledForever);
-}
-
-void Arbitrator::setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus)
-{
-    this->arbitrationStatus = arbitrationStatus;
-    if (listenerSemaphore.waitFor()) {
-        try {
-            assert(listener != nullptr);
-            listener->setArbitrationStatus(arbitrationStatus);
-        } catch (const exceptions::DiscoveryException& e) {
-            JOYNR_LOG_ERROR(
-                    logger, "Exception while setting arbitration status: {}", e.getMessage());
-            listenerSemaphore.notify();
-            throw;
+        if (!res.empty()) {
+            onSuccessCallback(res);
+            arbitrationFinished = true;
         }
-        listenerSemaphore.notify();
-    }
-}
-
-void Arbitrator::setArbitrationError(const exceptions::DiscoveryException& error)
-{
-    if (listenerSemaphore.waitFor()) {
-        assert(listener != nullptr);
-        listener->setArbitrationError(error);
-        listenerSemaphore.notify();
-    }
-}
-
-void Arbitrator::removeArbitrationListener()
-{
-    if (listener != nullptr) {
-        this->listener = nullptr;
-        listenerSemaphore.wait();
-    }
-}
-
-void Arbitrator::setArbitrationListener(IArbitrationListener* listener)
-{
-    this->listener = listener;
-    listenerSemaphore.notify();
-    if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
-        listener->setParticipantId(participantId);
-        listener->setArbitrationStatus(arbitrationStatus);
     }
 }
 

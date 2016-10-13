@@ -27,8 +27,6 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/ProxyFactory.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/ArbitrationStatus.h"
-#include "joynr/IArbitrationListener.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/Arbitrator.h"
 #include "joynr/ArbitratorFactory.h"
@@ -55,7 +53,7 @@ class ICapabilities;
  * arbitration is done.
  */
 template <class T>
-class ProxyBuilder : public IArbitrationListener, public IProxyBuilder<T>
+class ProxyBuilder : public IProxyBuilder<T>
 {
 public:
     /**
@@ -110,83 +108,8 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
-    /**
-     * @brief Waits a specified time for the arbitration to complete
-     *
-     * Throws an JoynrArbitrationException if the arbitration is canceled
-     * or waits for the time specified in timeout (in milliseconds) for the
-     * arbitration to complete.
-     *
-     * @param timeout The timeout value in milliseconds
-     */
-    void waitForArbitrationAndCheckStatus(std::uint16_t timeout);
-
-    /**
-     * @brief Waits predefined time for the arbitration to complete until
-     *
-     *  Calls waitForArbitrationAndCheckStatus(std::uint16_t timeout) using the
-     * one-way time-to-live value predefined in the MessagingQos.
-     */
-    void waitForArbitrationAndCheckStatus();
-
-    /**
-     * @brief Determine the arbitration status
-     *
-     * setArbitrationStatus is called by the arbitrator when the status changes.
-     *
-     * @param arbitrationStatus The arbitration status to set
-     */
-    void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus) override;
-
-    /**
-     * @brief Sets the participantId
-     *
-     * If the arbitration finished successfully the arbitrator uses setParticipantId
-     * to set the  arbitration result.
-     *
-     * @param participantId The participant's id
-     */
-    void setParticipantId(const std::string& participantId) override;
-
-    /**
-     * @brief Sets the exception that happened during the arbitrationSemaphore
-     *
-     * If the arbitration is not successful the arbitrator uses setError to report
-     * the error via a DiscoveryException.
-     *
-     * @param error The exception that happened during the arbitration
-     */
-    void setArbitrationError(const exceptions::DiscoveryException& error) override;
-
-    /*
-     * arbitrationFinished is called when the arbitrationStatus is set to successful and the
-     * channelId has been set to a non empty string. The implementation differs for
-     * synchronous and asynchronous communication.
-     */
-
-    /**
-     * @brief Wait for arbitration to finish until specified time interval is expired
-     *
-     * waitForArbitration(std::uint16_t timeout) is used internally before a remote action is
-     *executed to
-     * check whether arbitration is already completed.
-     *
-     * @param timeout specifies the maximal time to wait in milliseconds.
-     */
-    void waitForArbitration(std::uint16_t timeout);
-
-    /**
-     * @brief Wait for arbitration to finish until predefined time interval is expired
-     *
-     * waitForArbitration() has the same functionality as waitForArbitration(std::uint16_t timeout),
-     *but
-     * uses the one-way time-to-live value predefined in the MessagingQos.
-     */
-    void waitForArbitration();
-
     std::string domain;
     bool cached;
-    bool hasArbitrationStarted;
     MessagingQos messagingQos;
     ProxyFactory* proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
@@ -194,13 +117,11 @@ private:
     Arbitrator* arbitrator;
     Semaphore arbitrationSemaphore;
     std::string participantId;
-    exceptions::DiscoveryException arbitrationError;
-    ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
-    std::int64_t discoveryTimeout;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
+    DiscoveryQos discoveryQos;
 };
 
 template <class T>
@@ -214,20 +135,17 @@ ProxyBuilder<T>::ProxyBuilder(
         std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
           cached(false),
-          hasArbitrationStarted(false),
           messagingQos(),
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
           discoveryProxy(discoveryProxy),
           arbitrator(nullptr),
-          arbitrationSemaphore(1),
+          arbitrationSemaphore(0),
           participantId(""),
-          arbitrationError("Arbitration could not be finished in time."),
-          arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
-          discoveryTimeout(-1),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
-          messagingMaximumTtlMs(messagingMaximumTtlMs)
+          messagingMaximumTtlMs(messagingMaximumTtlMs),
+          discoveryQos()
 {
 }
 
@@ -235,7 +153,6 @@ template <class T>
 ProxyBuilder<T>::~ProxyBuilder()
 {
     if (arbitrator != nullptr) {
-        arbitrator->removeArbitrationListener();
         // question: it is only safe to delete the arbitrator here, if the proxybuilder will not be
         // deleted
         // before all arbitrations are finished.
@@ -251,7 +168,42 @@ template <class T>
 T* ProxyBuilder<T>::build()
 {
     T* proxy = proxyFactory->createProxy<T>(domain, messagingQos, cached);
-    waitForArbitrationAndCheckStatus();
+
+    joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
+    arbitrator = ArbitratorFactory::createArbitrator(
+            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
+
+    exceptions::DiscoveryException arbitrationError;
+    bool arbitrationErrorOccured = false;
+
+    auto arbitrationSucceeds =
+            [this, &arbitrationError, &arbitrationErrorOccured](const std::string& participantId) {
+        this->participantId = participantId;
+
+        if (participantId.empty()) {
+            arbitrationError =
+                    exceptions::DiscoveryException("Arbitration was set to successfull by "
+                                                   "arbitrator but ParticipantId is empty");
+            arbitrationErrorOccured = true;
+        }
+        arbitrationSemaphore.notify();
+    };
+
+    auto arbitrationFails = [this, &arbitrationError, &arbitrationErrorOccured](
+            const exceptions::DiscoveryException& exception) {
+        arbitrationError = exception;
+        arbitrationErrorOccured = true;
+        arbitrationSemaphore.notify();
+    };
+
+    arbitrator->startArbitration(arbitrationSucceeds, arbitrationFails);
+
+    // Waiting for the discovery timeout is done in the arbitrator
+    arbitrationSemaphore.wait();
+
+    if (arbitrationErrorOccured) {
+        throw arbitrationError;
+    }
 
     bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
 
@@ -302,86 +254,8 @@ template <class T>
 */
 ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQos)
 {
-    // if DiscoveryQos is set, arbitration will be started. It shall be avoided that the
-    // setDiscoveryQos method can be called twice
-    assert(!hasArbitrationStarted);
-    discoveryTimeout = discoveryQos.getDiscoveryTimeoutMs();
-    joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
-    arbitrator = ArbitratorFactory::createArbitrator(
-            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
-    arbitrationSemaphore.wait();
-    arbitrator->setArbitrationListener(this);
-    arbitrator->startArbitration();
-    hasArbitrationStarted = true;
+    this->discoveryQos = discoveryQos;
     return this;
-}
-
-template <class T>
-void ProxyBuilder<T>::setArbitrationStatus(
-        ArbitrationStatus::ArbitrationStatusType arbitrationStatus)
-{
-    this->arbitrationStatus = arbitrationStatus;
-    if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
-        if (!participantId.empty()) {
-            arbitrationSemaphore.notify();
-        } else {
-            throw exceptions::DiscoveryException("Arbitration was set to successfull by "
-                                                 "arbitrator but ParticipantId is empty");
-        }
-    } else if (arbitrationStatus == ArbitrationStatus::ArbitrationCanceledForever) {
-        throw exceptions::DiscoveryException("Arbitration canceled forever.");
-    } else {
-        throw exceptions::DiscoveryException("Arbitration finished without success.");
-    }
-}
-
-template <class T>
-void ProxyBuilder<T>::setParticipantId(const std::string& participantId)
-{
-    this->participantId = participantId;
-}
-
-template <class T>
-void ProxyBuilder<T>::setArbitrationError(const exceptions::DiscoveryException& error)
-{
-    this->arbitrationError = error;
-}
-
-template <class T>
-void ProxyBuilder<T>::waitForArbitrationAndCheckStatus()
-{
-    waitForArbitrationAndCheckStatus(discoveryTimeout);
-}
-
-template <class T>
-void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(std::uint16_t timeout)
-{
-    switch (arbitrationStatus) {
-    case ArbitrationStatus::ArbitrationSuccessful:
-        break;
-    case ArbitrationStatus::ArbitrationRunning:
-        arbitrationSemaphore.waitFor(std::chrono::milliseconds(timeout));
-        waitForArbitrationAndCheckStatus(50);
-        break;
-    case ArbitrationStatus::ArbitrationCanceledForever:
-        throw arbitrationError;
-        break;
-    }
-}
-
-template <class T>
-void ProxyBuilder<T>::waitForArbitration()
-{
-    waitForArbitration(discoveryTimeout);
-}
-
-template <class T>
-void ProxyBuilder<T>::waitForArbitration(std::uint16_t timeout)
-{
-    if (!arbitrationSemaphore.waitFor(std::chrono::milliseconds(timeout))) {
-        throw arbitrationError;
-    }
-    arbitrationSemaphore.notify();
 }
 
 } // namespace joynr
