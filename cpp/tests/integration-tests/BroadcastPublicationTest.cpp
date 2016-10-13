@@ -47,11 +47,13 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         subscriptionId("subscriptionId"),
-        messageSender(new MockJoynrMessageSender()),
+        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
+        messageSender(new JoynrMessageSender(mockMessageRouter)),
         publicationManager(singleThreadedIOService.getIOService(), messageSender),
         publicationSender(),
         request(),
         subscriptionBroadcastListener(subscriptionId, publicationManager),
+        multicastBroadcastListener(providerParticipantId, publicationManager),
         provider(std::make_shared<MockTestProvider>()),
         requestCaller(std::make_shared<testRequestCaller>(provider)),
         filter1(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
@@ -85,6 +87,7 @@ public:
                     request,
                     &publicationSender);
 
+        provider->registerBroadcastListener(&multicastBroadcastListener);
         provider->addBroadcastFilter(filter1);
         provider->addBroadcastFilter(filter2);
     }
@@ -103,11 +106,13 @@ protected:
     std::string providerParticipantId;
     std::string proxyParticipantId;
     std::string subscriptionId;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
     IJoynrMessageSender* messageSender;
     PublicationManager publicationManager;
     MockPublicationSender publicationSender;
     BroadcastSubscriptionRequest request;
     UnicastBroadcastListener subscriptionBroadcastListener;
+    MulticastBroadcastListener multicastBroadcastListener;
 
     std::shared_ptr<MockTestProvider> provider;
     std::shared_ptr<RequestCaller> requestCaller;
@@ -159,36 +164,13 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
 
 TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) {
 
-    auto qos =  std::make_shared<OnChangeSubscriptionQos>(
-                800, // validity_ms
-                0 // minInterval_ms
-    );
-    request.setQos(qos);
-    request.setFilterParameters(filterParameters);
+    const std::vector<std::string> singleParam = {"A", "B"};
 
-    requestCaller->registerBroadcastListener(
-                "broadcastWithSingleArrayParameter",
-                &subscriptionBroadcastListener);
-
-    auto mockMessageRouter = std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService());
-    JoynrMessageSender joynrMessageSender(mockMessageRouter);
-    publicationManager.add(
-                proxyParticipantId,
-                providerParticipantId,
-                requestCaller,
-                request,
-                &joynrMessageSender);
-
-    std::vector<std::string> singleParam;
-    singleParam.push_back("1");
-    singleParam.push_back("2");
-
-    /* ensure the serialization succeeds and the first publication is sent to the proxy */
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
                          A<JoynrMessage>(),
                          Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
-                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId))),
+                         Property(&JoynrMessage::getHeaderTo, Eq(providerParticipantId+"/broadcastWithSingleArrayParameter"))),
                      _
                      ));
 
@@ -216,4 +198,3 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
 
     provider->fireLocationUpdateSelective(gpsLocation1);
 }
-

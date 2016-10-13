@@ -137,6 +137,11 @@ public:
         joynr::tests::testAbstractProvider::listOfStringsChanged(listOfStrings);
     }
 
+    void registerBroadcastListener(joynr::MulticastBroadcastListener* broadcastListener) override
+    {
+        joynr::tests::testAbstractProvider::registerBroadcastListener(broadcastListener);
+    }
+
     MOCK_METHOD2(
             getLocation,
             void(
