@@ -157,7 +157,8 @@ void «className»::handleArbitrationFinished(
 		«ELSE»
 			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					subscriptionListener,
-					subscriptionQos);
+					subscriptionQos,
+					partitions);
 		«ENDIF»
 	}
 
@@ -174,15 +175,16 @@ void «className»::handleArbitrationFinished(
 		}
 		«IF broadcast.selective»
 			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						subscriptionId,
 						filterParameters,
 						subscriptionListener,
-						subscriptionQos,
-						subscriptionId);
+						subscriptionQos);
 		«ELSE»
 			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						subscriptionId,
 						subscriptionListener,
 						subscriptionQos,
-						subscriptionId);
+						partitions);
 		«ENDIF»
 	}
 «ENDFOR»

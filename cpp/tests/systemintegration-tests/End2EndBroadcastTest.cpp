@@ -563,7 +563,7 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     // update subscription, much longer minInterval_ms
     subscriptionQos->setMinIntervalMs(5000);
-    future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
+    future = testProxy->subscribeToLocationUpdateBroadcast(subscriptionId, subscriptionListener2, subscriptionQos);
 
     JOYNR_ASSERT_NO_THROW({
         future->get(5000, subscriptionId);
@@ -768,7 +768,7 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
     std::string subscriptionId = subscriptionIdFromFuture;
     subscriptionIdFromFuture.clear();
     subscriptionIdFromListener.clear();
-    subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos, subscriptionId);
+    subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(subscriptionId, subscriptionListener, subscriptionQos);
 
     // Wait for a subscription reply message to arrive
     JOYNR_EXPECT_NO_THROW(

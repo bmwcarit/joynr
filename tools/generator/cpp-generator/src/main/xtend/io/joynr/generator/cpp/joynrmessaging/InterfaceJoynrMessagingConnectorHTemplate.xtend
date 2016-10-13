@@ -170,7 +170,7 @@ public:
 	«produceAsyncMethodDeclarations(francaIntf, false, true)»
 	«produceFireAndForgetMethodDeclarations(francaIntf, false)»
 
-	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false)»
+	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false, true)»
 };
 «getNamespaceEnder(francaIntf)»
 

@@ -375,6 +375,8 @@ bool «className»::usesClusterController() const{
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF broadcast.selective»
 			subscriptionRequest.setFilterParameters(filterParameters);
+		«ELSE»
+			std::ignore = partitions;
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					subscriptionListener,
@@ -386,6 +388,8 @@ bool «className»::usesClusterController() const{
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF broadcast.selective»
 			subscriptionRequest.setFilterParameters(filterParameters);
+		«ELSE»
+			std::ignore = partitions;
 		«ENDIF»
 		subscriptionRequest.setSubscriptionId(subscriptionId);
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(

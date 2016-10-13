@@ -24,6 +24,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FAttribute
 import org.franca.core.franca.FBroadcast
+import org.eclipse.xtext.util.formallang.StringProduction.ProdElement
 
 class InterfaceSubscriptionUtil {
 	@Inject	extension InterfaceUtil
@@ -133,36 +134,48 @@ void «IF className != null»«className»::«ENDIF»unsubscribeFrom«attribute.
 		return produceUnsubscribeFromAttributeSignature(attribute, null)
 	}
 
-	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean updateSubscription, String className)
+	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean updateSubscription, String className, boolean hTemplate)
 '''
 «val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className»::«ENDIF»subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
+			«IF updateSubscription»
+			std::string& subscriptionId,
+			«ENDIF»
 			«IF broadcast.selective»
 			const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 			«ENDIF»
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»>> subscriptionListener,
 			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos«
-			»«IF updateSubscription»«
+			»«IF !broadcast.selective»«
 			»,
-			std::string& subscriptionId«
+			const std::vector<std::string>& partitions«IF hTemplate» = std::vector<std::string>()«ENDIF»«
 			»«ENDIF»
 )
 '''
 
 	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface) {
-		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, null)
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, null, false)
 	}
 
+	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean hTemplate) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, null, hTemplate)
+	}
+
+
 	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, String className) {
-		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, className)
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, className, false)
 	}
 
 	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface) {
-		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, null)
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, null, false)
+	}
+
+	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface, boolean hTemplate) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, null, hTemplate)
 	}
 
 	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface, String className) {
-		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, className)
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, className, false)
 	}
 
 	def produceUnsubscribeFromBroadcastSignature(FBroadcast broadcast, String className)
@@ -174,7 +187,11 @@ void «IF className != null»«className»::«ENDIF»unsubscribeFrom«broadcast.
 		produceUnsubscribeFromBroadcastSignature(broadcast, null)
 	}
 
-	def produceSubscribeUnsubscribeMethodDeclarations(FInterface serviceInterface, boolean pure)
+	def produceSubscribeUnsubscribeMethodDeclarations(FInterface serviceInterface, boolean pure) {
+		produceSubscribeUnsubscribeMethodDeclarations(serviceInterface, pure, false)
+	}
+
+	def produceSubscribeUnsubscribeMethodDeclarations(FInterface serviceInterface, boolean pure, boolean hTemplate)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 		«produceSubscribeToAttributeComments(attribute)»
@@ -189,10 +206,10 @@ void «IF className != null»«className»::«ENDIF»unsubscribeFrom«broadcast.
 	«ENDFOR»
 	«FOR broadcast: serviceInterface.broadcasts»
 		«produceSubscribeToBroadcastComments(broadcast)»
-		«IF pure»virtual «ENDIF»«produceSubscribeToBroadcastSignature(broadcast, serviceInterface)» «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»«produceSubscribeToBroadcastSignature(broadcast, serviceInterface, hTemplate)» «IF pure»= 0«ELSE»override«ENDIF»;
 
 		«produceUpdateBroadcastSubscriptionComments(broadcast)»
-		«IF pure»virtual «ENDIF»«produceUpdateBroadcastSubscriptionSignature(broadcast, serviceInterface)» «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»«produceUpdateBroadcastSubscriptionSignature(broadcast, serviceInterface, hTemplate)» «IF pure»= 0«ELSE»override«ENDIF»;
 
 		«produceUnsubscribeFromBroadcastComments(broadcast)»
 		«IF pure»virtual «ENDIF»«produceUnsubscribeFromBroadcastSignature(broadcast)» «IF pure»= 0«ELSE»override«ENDIF»;

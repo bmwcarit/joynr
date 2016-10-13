@@ -78,7 +78,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 		"<vector>"
 	}
 
-	def getIncludeForString() {
+	override def getIncludeForString() {
 		"<string>"
 	}
 

@@ -364,6 +364,13 @@ bool «className»::usesClusterController() const{
 			subscriptionRequest.setFilterParameters(filterParameters);
 		«ELSE»
 			auto subscriptionRequest = std::make_shared<joynr::MulticastSubscriptionRequest>();
+			subscriptionRequest->setMulticastId(
+					joynr::util::createMulticastId(
+							providerParticipantId,
+							"«broadcastName»",
+							partitions
+					)
+			);
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
@@ -375,7 +382,13 @@ bool «className»::usesClusterController() const{
 			subscriptionRequest.setSubscriptionId(subscriptionId);
 		«ELSE»
 			auto subscriptionRequest = std::make_shared<joynr::MulticastSubscriptionRequest>();
-			subscriptionRequest->setSubscriptionId(subscriptionId);
+			subscriptionRequest->setMulticastId(
+					joynr::util::createMulticastId(
+							providerParticipantId,
+							"«broadcastName»",
+							partitions
+					)
+			);			subscriptionRequest->setSubscriptionId(subscriptionId);
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
