@@ -26,8 +26,6 @@
 #include "joynr/StatusCode.h"
 #include "joynr/types/DiscoveryEntry.h"
 
-#define EXPECT_EQ_QBYTEARRAY(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.constData() << std::endl << "Expected: " << a.constData() << std::endl
-
 //void initPretty(void);
 
 namespace joynr {
