@@ -91,6 +91,7 @@
 #include "joynr/IProxyBuilder.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
+#include "joynr/exceptions/JoynrException.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 
@@ -154,6 +155,8 @@ public:
     MOCK_METHOD1_T(setMessagingQos, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
     MOCK_METHOD1_T(setDiscoveryQos, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
     MOCK_METHOD0_T(build, T*());
+    MOCK_METHOD2_T(buildAsync, void(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
+                                    std::function<void(const joynr::exceptions::DiscoveryException&)>));
 };
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {

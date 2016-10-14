@@ -20,11 +20,18 @@
 #ifndef IPROXYBUILDER_H
 #define IPROXYBUILDER_H
 
+#include <functional>
+#include <memory>
+
 namespace joynr
 {
 
 class MessagingQos;
 class DiscoveryQos;
+namespace exceptions
+{
+class DiscoveryException;
+}
 
 /**
  * @brief Interface to create a proxy object for the given interface T.
@@ -43,6 +50,17 @@ public:
      * @return The proxy object
      */
     virtual T* build() = 0;
+
+    /**
+     * @brief Build the proxy object asynchronously
+     *
+     * @param onSucess: Will be invoked when building the proxy succeeds. The created proxy is
+     * passed as the parameter.
+     * @param onError: Will be invoked when the proxy could not be created. An exception, which
+     * describes the error, is passed as the parameter.
+     */
+    virtual void buildAsync(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
+                            std::function<void(const exceptions::DiscoveryException&)> onError) = 0;
 
     /**
      * @brief Sets whether the object is to be cached

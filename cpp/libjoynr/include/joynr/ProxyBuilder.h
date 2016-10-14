@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <functional>
 
 #include "joynr/MessagingQos.h"
 #include "joynr/ProxyFactory.h"
@@ -34,7 +35,6 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/Future.h"
-#include "joynr/Semaphore.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/IProxyBuilder.h"
 
@@ -85,6 +85,17 @@ public:
     T* build() override;
 
     /**
+     * @brief Build the proxy object asynchronously
+     *
+     * @param onSucess: Will be invoked when building the proxy succeeds. The created proxy is
+     * passed as the parameter.
+     * @param onError: Will be invoked when the proxy could not be created. An exception, which
+     * describes the error, is passed as the parameter.
+     */
+    void buildAsync(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
+                    std::function<void(const exceptions::DiscoveryException&)> onError) override;
+
+    /**
      * @brief Sets whether the object is to be cached
      * @param cached True, if the object is to be cached, false otherwise
      * @return The ProxyBuilder object
@@ -115,8 +126,6 @@ private:
     IRequestCallerDirectory* requestCallerDirectory;
     joynr::system::IDiscoverySync& discoveryProxy;
     Arbitrator* arbitrator;
-    Semaphore arbitrationSemaphore;
-    std::string participantId;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
@@ -140,8 +149,6 @@ ProxyBuilder<T>::ProxyBuilder(
           requestCallerDirectory(requestCallerDirectory),
           discoveryProxy(discoveryProxy),
           arbitrator(nullptr),
-          arbitrationSemaphore(0),
-          participantId(""),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
           messagingMaximumTtlMs(messagingMaximumTtlMs),
@@ -167,66 +174,49 @@ ProxyBuilder<T>::~ProxyBuilder()
 template <class T>
 T* ProxyBuilder<T>::build()
 {
-    T* proxy = proxyFactory->createProxy<T>(domain, messagingQos, cached);
+    Future<std::unique_ptr<T>> proxyFuture;
 
+    auto onSuccess =
+            [&proxyFuture](std::unique_ptr<T> proxy) { proxyFuture.onSuccess(std::move(proxy)); };
+
+    auto onError = [&proxyFuture](const exceptions::DiscoveryException& exception) {
+        proxyFuture.onError(std::make_shared<exceptions::DiscoveryException>(exception));
+    };
+
+    buildAsync(onSuccess, onError);
+
+    std::unique_ptr<T> createdProxy;
+    proxyFuture.get(createdProxy);
+
+    return createdProxy.release();
+}
+
+template <class T>
+void ProxyBuilder<T>::buildAsync(
+        std::function<void(std::unique_ptr<T> proxy)> onSuccess,
+        std::function<void(const exceptions::DiscoveryException& exception)> onError)
+{
     joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
     arbitrator = ArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
-    exceptions::DiscoveryException arbitrationError;
-    bool arbitrationErrorOccured = false;
-
-    auto arbitrationSucceeds =
-            [this, &arbitrationError, &arbitrationErrorOccured](const std::string& participantId) {
-        this->participantId = participantId;
-
+    auto arbitrationSucceeds = [this, onSuccess, onError](const std::string& participantId) {
         if (participantId.empty()) {
-            arbitrationError =
-                    exceptions::DiscoveryException("Arbitration was set to successfull by "
-                                                   "arbitrator but ParticipantId is empty");
-            arbitrationErrorOccured = true;
+            onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
+                                                   "arbitrator but ParticipantId is empty"));
+            return;
         }
-        arbitrationSemaphore.notify();
+
+        bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
+        std::unique_ptr<T> proxy(proxyFactory->createProxy<T>(domain, messagingQos, cached));
+        proxy->handleArbitrationFinished(participantId, useInProcessConnector);
+
+        messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
+
+        onSuccess(std::move(proxy));
     };
 
-    auto arbitrationFails = [this, &arbitrationError, &arbitrationErrorOccured](
-            const exceptions::DiscoveryException& exception) {
-        arbitrationError = exception;
-        arbitrationErrorOccured = true;
-        arbitrationSemaphore.notify();
-    };
-
-    arbitrator->startArbitration(arbitrationSucceeds, arbitrationFails);
-
-    // Waiting for the discovery timeout is done in the arbitrator
-    arbitrationSemaphore.wait();
-
-    if (arbitrationErrorOccured) {
-        throw arbitrationError;
-    }
-
-    bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
-
-    proxy->handleArbitrationFinished(participantId, useInProcessConnector);
-    // add next hop to dispatcher
-
-    /*
-     * synchronously wait until the proxy participantId is registered in the
-     * routing table(s)
-    */
-    auto future = std::make_shared<Future<void>>();
-    auto onSuccess = [future]() { future->onSuccess(); };
-    messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress, onSuccess);
-
-    // Wait until the result becomes available
-    do {
-        try {
-            future->wait(100);
-        } catch (const exceptions::JoynrException&) {
-        }
-    } while (future->getStatus() == StatusCodeEnum::IN_PROGRESS);
-
-    return proxy;
+    arbitrator->startArbitration(arbitrationSucceeds, onError);
 }
 
 template <class T>
