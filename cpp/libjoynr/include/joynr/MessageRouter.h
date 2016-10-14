@@ -98,6 +98,7 @@ public:
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                   std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
                   boost::asio::io_service& ioService,
+                  std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                   int maxThreads = 1,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 

@@ -30,17 +30,21 @@
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
+#include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/SingleThreadedIOService.h"
 
 using ::testing::Return;
 using ::testing::Pointee;
 using ::testing::Truly;
+using ::testing::InvokeArgument;
+
 using namespace joynr;
 
 ACTION_P(ReleaseSemaphore, semaphore)
@@ -58,7 +62,10 @@ public:
         messagingStubFactory(nullptr),
         messageRouter(nullptr),
         joynrMessage(),
-        multicastMessagingSkeletonDirectory(std::make_shared<MulticastMessagingSkeletonDirectory>())
+        multicastMessagingSkeletonDirectory(std::make_shared<MulticastMessagingSkeletonDirectory>()),
+        brokerURL("mqtt://globalTransport.example.com"),
+        mqttTopic(""),
+        globalTransport(std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerURL, mqttTopic))
     {
         singleThreadedIOService.start();
         auto messageQueue = std::make_unique<MessageQueue>();
@@ -67,16 +74,18 @@ public:
         messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
 
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
-                std::make_unique<MqttMulticastAddressCalculator>(
-                    std::make_shared<const joynr::system::RoutingTypes::MqttAddress>()
-                );
+                std::make_unique<MqttMulticastAddressCalculator>(globalTransport);
 
-        messageRouter = std::make_unique<MessageRouter>(messagingStubFactory,
-                                                        multicastMessagingSkeletonDirectory,
-                                                        std::unique_ptr<IPlatformSecurityManager>(),
-                                                        singleThreadedIOService.getIOService(),
-                                                        std::move(addressCalculator),
-                                                        6, std::move(messageQueue));
+        messageRouter = std::make_unique<MessageRouter>(
+            messagingStubFactory,
+            multicastMessagingSkeletonDirectory,
+            std::unique_ptr<IPlatformSecurityManager>(),
+            singleThreadedIOService.getIOService(),
+            std::move(addressCalculator),
+            6,
+            std::move(messageQueue)
+        );
+
         // provision global capabilities directory
         auto addressCapabilitiesDirectory =
                 std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
@@ -102,6 +111,9 @@ protected:
     std::unique_ptr<MessageRouter> messageRouter;
     JoynrMessage joynrMessage;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
+    std::string brokerURL;
+    std::string mqttTopic;
+    std::shared_ptr<const joynr::system::RoutingTypes::MqttAddress> globalTransport;
     void routeMessageToAddress();
 
 private:
@@ -305,20 +317,22 @@ TEST_F(MessageRouterTest, restoreRoutingTable) {
     messageRouter->route(joynrMessage);
 }
 
-TEST_F(MessageRouterTest, registerMulticastReceiver_ChildRouter_callsParentRouter) {
+TEST_F(MessageRouterTest, addMulticastReceiver_ChildRouter_callsParentRouter) {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
     auto mockRoutingProxyRef = mockRoutingProxy.get();
-    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
+    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
 
     messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory),
-                                                    std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(),
-                                                    singleThreadedIOService.getIOService());
+                                                    std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(),
+                                                    singleThreadedIOService.getIOService(),
+                                                    nullptr);
     // Set all attributes which are required to make the message router a child message router.
     messageRouter->setParentRouter(std::move(mockRoutingProxy), parentAddress, std::string("parentParticipantId"));
 
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
+    messageRouter->addProvisionedNextHop(providerParticipantId, parentAddress);
 
     // Call shall be forwarded to the parent proxy
     EXPECT_CALL(*mockRoutingProxyRef,
@@ -328,10 +342,43 @@ TEST_F(MessageRouterTest, registerMulticastReceiver_ChildRouter_callsParentRoute
         subscriberParticipantId,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
 }
 
-TEST_F(MessageRouterTest, registerMulticastReceiverForMqttProvider_NonChildRouter_callsSkeleton) {
+TEST_F(MessageRouterTest, addMulticastReceiverForInProcessProvider_ChildRouter_doesNotCallParentRouter) {
+    bool successCallbackCalled = false;
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
+    auto mockRoutingProxyRef = mockRoutingProxy.get();
+    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
+
+    messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory),
+                                                    std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(),
+                                                    singleThreadedIOService.getIOService(),
+                                                    nullptr);
+    // Set all attributes which are required to make the message router a child message router.
+    messageRouter->setParentRouter(std::move(mockRoutingProxy), parentAddress, std::string("parentParticipantId"));
+
+    const std::string multicastId("multicastId");
+    const std::string subscriberParticipantId("subscriberParticipantId");
+
+    const std::string providerParticipantId("providerParticipantId");
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>();
+    auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+
+    EXPECT_CALL(*mockRoutingProxyRef,
+        addMulticastReceiverAsync(_, _, _, _, _)).Times(0);
+
+    messageRouter->addMulticastReceiver(multicastId,
+        subscriberParticipantId,
+        providerParticipantId,
+        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
+    EXPECT_TRUE(successCallbackCalled);
+}
+
+TEST_F(MessageRouterTest, addMulticastReceiverForMqttProvider_NonChildRouter_callsSkeleton) {
+    bool successCallbackCalled = false;
     const std::string subscriberParticipantId("subscriberPartId1");
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastId("participantId1/methodName/partition0");
@@ -350,11 +397,13 @@ TEST_F(MessageRouterTest, registerMulticastReceiverForMqttProvider_NonChildRoute
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
+    EXPECT_TRUE(successCallbackCalled);
 }
 
-TEST_F(MessageRouterTest, registerMulticastReceiverForHttpProvider_NonChildRouter_callsSkeleton) {
+TEST_F(MessageRouterTest, addMulticastReceiverForHttpProvider_NonChildRouter_callsSkeleton) {
+    bool successCallbackCalled = false;
     const std::string subscriberParticipantId("subscriberPartId1");
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastId("participantId1/methodName/partition0");
@@ -372,11 +421,13 @@ TEST_F(MessageRouterTest, registerMulticastReceiverForHttpProvider_NonChildRoute
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
+    EXPECT_TRUE(successCallbackCalled);
 }
 
-TEST_F(MessageRouterTest, registerMulticastReceiverForWebSocketProvider_NonChildRouter_callsSkeleton) {
+TEST_F(MessageRouterTest, addMulticastReceiverForWebSocketProvider_NonChildRouter_callsSkeleton) {
+    bool successCallbackCalled = false;
     const std::string subscriberParticipantId("subscriberPartId1");
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastId("participantId1/methodName/partition0");
@@ -394,11 +445,13 @@ TEST_F(MessageRouterTest, registerMulticastReceiverForWebSocketProvider_NonChild
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
+    EXPECT_TRUE(successCallbackCalled);
 }
 
-TEST_F(MessageRouterTest, registerMulticastReceiverForInProcessProvider_NonChildRouter_callsSkeleton) {
+TEST_F(MessageRouterTest, addMulticastReceiverForInProcessProvider_NonChildRouter_succeeds) {
+    bool successCallbackCalled = false;
     const std::string subscriberParticipantId("subscriberPartId1");
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastId("participantId1/methodName/partition0");
@@ -408,16 +461,16 @@ TEST_F(MessageRouterTest, registerMulticastReceiverForInProcessProvider_NonChild
     auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
     messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
 
-    EXPECT_CALL(*skeleton, registerMulticastSubscription(multicastId));
-
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
+
+    EXPECT_TRUE(successCallbackCalled);
 }
 
-TEST_F(MessageRouterTest, registerMulticastReceiver_NonChildRouter_FailsIfAddressNotAvailable) {
+TEST_F(MessageRouterTest, addMulticastReceiver_failsIfProviderAddressNotAvailable) {
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
@@ -427,7 +480,7 @@ TEST_F(MessageRouterTest, registerMulticastReceiver_NonChildRouter_FailsIfAddres
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        []() { },
+        []() { FAIL() << "onSuccess called"; },
         [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&)
         {
             errorCallbackCalled = true;
@@ -436,7 +489,7 @@ TEST_F(MessageRouterTest, registerMulticastReceiver_NonChildRouter_FailsIfAddres
     EXPECT_EQ(errorCallbackCalled, true);
 }
 
-TEST_F(MessageRouterTest, registerMulticastReceiver_NonChildRouter_FailsIfSkeletonNotAvailable) {
+TEST_F(MessageRouterTest, addMulticastReceiver_NonChildRouter_failsIfSkeletonNotAvailable) {
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
@@ -449,7 +502,7 @@ TEST_F(MessageRouterTest, registerMulticastReceiver_NonChildRouter_FailsIfSkelet
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        []() { },
+        []() { FAIL() << "onSuccess called"; },
         [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&)
         {
             errorCallbackCalled = true;
@@ -458,14 +511,15 @@ TEST_F(MessageRouterTest, registerMulticastReceiver_NonChildRouter_FailsIfSkelet
     EXPECT_EQ(errorCallbackCalled, true);
 }
 
-TEST_F(MessageRouterTest, unregisterMulticastReceiver_ChildRouter_CallsParentRouter) {
+TEST_F(MessageRouterTest, removeMulticastReceiver_ChildRouter_CallsParentRouter) {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
     auto mockRoutingProxyRef = mockRoutingProxy.get();
-    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
+    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
 
     messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory),
-                                                    std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(),
-                                                    singleThreadedIOService.getIOService());
+                                                    std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(),
+                                                    singleThreadedIOService.getIOService(),
+                                                    nullptr);
 
     // Set all attributes which are required to make the message router a child message router.
     messageRouter->setParentRouter(std::move(mockRoutingProxy), parentAddress, std::string("parentParticipantId"));
@@ -474,11 +528,13 @@ TEST_F(MessageRouterTest, unregisterMulticastReceiver_ChildRouter_CallsParentRou
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
 
+    messageRouter->addProvisionedNextHop(providerParticipantId, parentAddress);
+
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
 
     // Call shall be forwarded to the parent proxy
     EXPECT_CALL(*mockRoutingProxyRef,
@@ -488,10 +544,112 @@ TEST_F(MessageRouterTest, unregisterMulticastReceiver_ChildRouter_CallsParentRou
         subscriberParticipantId,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
 }
 
-TEST_F(MessageRouterTest, unregisterMulticastReceiverOfStandaloneProvider_NonChildRouter_callsSkeleton) {
+TEST_F(MessageRouterTest, removeMulticastReceiverOfInProcessProvider_ChildRouter_doesNotCallParentRouter) {
+    bool successCallbackCalled = false;
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
+    auto mockRoutingProxyRef = mockRoutingProxy.get();
+    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
+
+    messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory),
+                                                    std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(),
+                                                    singleThreadedIOService.getIOService(),
+                                                    nullptr);
+
+    // Set all attributes which are required to make the message router a child message router.
+    messageRouter->setParentRouter(std::move(mockRoutingProxy), parentAddress, std::string("parentParticipantId"));
+
+    const std::string multicastId("multicastId");
+    const std::string subscriberParticipantId("subscriberParticipantId");
+    const std::string providerParticipantId("providerParticipantId");
+
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>();
+    auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+
+    messageRouter->addMulticastReceiver(multicastId,
+        subscriberParticipantId,
+        providerParticipantId,
+        []() { },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
+
+    EXPECT_CALL(*mockRoutingProxyRef,
+        removeMulticastReceiverAsync(_, _, _, _, _)).Times(0);
+
+    messageRouter->removeMulticastReceiver(multicastId,
+        subscriberParticipantId,
+        providerParticipantId,
+        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
+    EXPECT_TRUE(successCallbackCalled);
+}
+
+TEST_F(MessageRouterTest, removeMulticastReceiver_failsIfProviderAddressNotAvailable) {
+    bool errorCallbackCalled = false;
+    const std::string multicastId("multicastId");
+    const std::string subscriberParticipantId("subscriberParticipantId");
+    const std::string providerParticipantId("providerParticipantId");
+
+    auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+
+    auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
+    multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(
+                skeleton);
+
+    messageRouter->addMulticastReceiver(multicastId,
+        subscriberParticipantId,
+        providerParticipantId,
+        []() { },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
+
+    messageRouter->removeNextHop(providerParticipantId);
+
+    messageRouter->removeMulticastReceiver(multicastId,
+        subscriberParticipantId,
+        providerParticipantId,
+        []() { FAIL() << "onSuccess called"; },
+        [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){ errorCallbackCalled = true; });
+    EXPECT_TRUE(errorCallbackCalled);
+}
+
+TEST_F(MessageRouterTest, removeMulticastReceiver_NonChildRouter_failsIfSkeletonNotAvailable) {
+    bool errorCallbackCalled = false;
+    const std::string multicastId("multicastId");
+    const std::string subscriberParticipantId("subscriberParticipantId");
+    const std::string providerParticipantId("providerParticipantId");
+
+    auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+
+    auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
+    multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(
+                skeleton);
+
+    messageRouter->addMulticastReceiver(
+        multicastId,
+        subscriberParticipantId,
+        providerParticipantId,
+        []() { },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
+
+    multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::WebSocketClientAddress>();
+
+    messageRouter->removeMulticastReceiver(
+        multicastId,
+        subscriberParticipantId,
+        providerParticipantId,
+        []() { FAIL() << "onSuccess called"; },
+        [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){ errorCallbackCalled = true; }
+    );
+    EXPECT_TRUE(errorCallbackCalled);
+}
+
+TEST_F(MessageRouterTest, removeMulticastReceiverOfStandaloneProvider_NonChildRouter_callsSkeleton) {
+    bool successCallbackCalled = false;
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
@@ -505,23 +663,65 @@ TEST_F(MessageRouterTest, unregisterMulticastReceiverOfStandaloneProvider_NonChi
     multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
                 skeleton);
 
-    messageRouter->addMulticastReceiver(multicastId,
+    messageRouter->addMulticastReceiver(
+        multicastId,
         subscriberParticipantId,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
 
     // The message router shall unregister the subscription at the multicast skeleton
-    EXPECT_CALL(*skeleton, unregisterMulticastSubscription(multicastId));
+    EXPECT_CALL(*skeleton, unregisterMulticastSubscription(multicastId)).Times(1);
 
-    messageRouter->removeMulticastReceiver(multicastId,
+    messageRouter->removeMulticastReceiver(
+        multicastId,
+        subscriberParticipantId,
+        providerParticipantId,
+        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
+    EXPECT_TRUE(successCallbackCalled);
+}
+
+TEST_F(MessageRouterTest, removeMulticastReceiverOfWebSocketProvider_NonChildRouter_callsSkeleton) {
+    bool successCallbackCalled = false;
+    const std::string multicastId("multicastId");
+    const std::string subscriberParticipantId("subscriberParticipantId");
+    const std::string providerParticipantId("providerParticipantId");
+
+    auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
+
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+
+    auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
+
+    multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::WebSocketAddress>(
+                skeleton);
+
+    messageRouter->addMulticastReceiver(
+        multicastId,
         subscriberParticipantId,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
+
+    // The message router shall unregister the subscription at the multicast skeleton
+    EXPECT_CALL(*skeleton, unregisterMulticastSubscription(multicastId)).Times(1);
+
+    messageRouter->removeMulticastReceiver(
+        multicastId,
+        subscriberParticipantId,
+        providerParticipantId,
+        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
+    EXPECT_TRUE(successCallbackCalled);
 }
 
-TEST_F(MessageRouterTest, unregisterMulticastReceiverOfInProcessProvider_NonChildRouter_callsSkeleton) {
+TEST_F(MessageRouterTest, removeMulticastReceiverOfInProcessProvider_NonChildRouter_succeeds) {
+    bool successCallbackCalled = false;
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
@@ -535,16 +735,16 @@ TEST_F(MessageRouterTest, unregisterMulticastReceiverOfInProcessProvider_NonChil
         subscriberParticipantId,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
 
-    // The message router shall unregister the subscription at the multicast skeleton
-    EXPECT_CALL(*skeleton, unregisterMulticastSubscription(multicastId));
-
-    messageRouter->removeMulticastReceiver(multicastId,
+    messageRouter->removeMulticastReceiver(
+        multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
+    EXPECT_TRUE(successCallbackCalled);
 }
 
 TEST_F(MessageRouterTest, routeMulticastMessageFromWebSocketProvider_multicastMsgIsSentToAllMulticastRecivers) {
@@ -553,6 +753,12 @@ TEST_F(MessageRouterTest, routeMulticastMessageFromWebSocketProvider_multicastMs
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastNameAndPartitions("multicastName/partition0");
     const std::string multicastId(providerParticipantId + "/" + multicastNameAndPartitions);
+
+    // create a new pointer representin the multicast address
+    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> multicastAddress(
+                new joynr::system::RoutingTypes::MqttAddress(*globalTransport)
+    );
+    multicastAddress->setTopic(multicastId);
 
     auto expectedAddress1 = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("subscriberTopic1");
     auto expectedAddress2 = std::make_shared<const joynr::InProcessMessagingAddress>();
@@ -566,25 +772,29 @@ TEST_F(MessageRouterTest, routeMulticastMessageFromWebSocketProvider_multicastMs
     multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(
                 skeleton);
 
-    messageRouter->addMulticastReceiver(multicastId,
+    messageRouter->addMulticastReceiver(
+        multicastId,
         subscriberParticipantId1,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
 
-    messageRouter->addMulticastReceiver(multicastId,
+    messageRouter->addMulticastReceiver(
+        multicastId,
         subscriberParticipantId2,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
 
     joynrMessage.setType(joynr::JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST);
     joynrMessage.setHeaderFrom(providerParticipantId);
     joynrMessage.setHeaderTo(multicastId);
-    joynrMessage.setReceivedFromGlobal(true);
 
-    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress1))));
-    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress2))));
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress1)))).Times(1);
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress2)))).Times(1);
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*multicastAddress)))).Times(1);
 
     messageRouter->route(joynrMessage);
 }
@@ -596,6 +806,12 @@ TEST_F(MessageRouterTest, routeMulticastMessageFromInProcessProvider_multicastMs
     const std::string multicastNameAndPartitions("multicastName/partition0");
     const std::string multicastId(providerParticipantId + "/" + multicastNameAndPartitions);
 
+    // create a new pointer representin the multicast address
+    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> multicastAddress(
+                new joynr::system::RoutingTypes::MqttAddress(*globalTransport)
+    );
+    multicastAddress->setTopic(multicastId);
+
     auto expectedAddress1 = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("subscriberTopic1");
     auto expectedAddress2 = std::make_shared<const joynr::InProcessMessagingAddress>();
     auto mockInProcessMessagingSkeleton = std::make_shared<MockInProcessMessagingSkeleton>();
@@ -605,25 +821,29 @@ TEST_F(MessageRouterTest, routeMulticastMessageFromInProcessProvider_multicastMs
     messageRouter->addProvisionedNextHop(subscriberParticipantId2, expectedAddress2);
     messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
 
-    messageRouter->addMulticastReceiver(multicastId,
+    messageRouter->addMulticastReceiver(
+        multicastId,
         subscriberParticipantId1,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
 
-    messageRouter->addMulticastReceiver(multicastId,
+    messageRouter->addMulticastReceiver(
+        multicastId,
         subscriberParticipantId2,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
 
     joynrMessage.setType(joynr::JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST);
     joynrMessage.setHeaderFrom(providerParticipantId);
     joynrMessage.setHeaderTo(multicastId);
-    joynrMessage.setReceivedFromGlobal(true);
 
-    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress1))));
-    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress2))));
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress1)))).Times(1);
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress2)))).Times(1);
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*multicastAddress)))).Times(1);
 
     messageRouter->route(joynrMessage);
 }
@@ -634,6 +854,12 @@ TEST_F(MessageRouterTest, routeMulticastMessageFromGlobalProvider_multicastMsgIs
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastNameAndPartitions("multicastName/partition0");
     const std::string multicastId(providerParticipantId + "/" + multicastNameAndPartitions);
+
+    // create a new pointer representin the multicast address
+    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> multicastAddress(
+                new joynr::system::RoutingTypes::MqttAddress(*globalTransport)
+    );
+    multicastAddress->setTopic(multicastId);
 
     auto expectedAddress1 = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("subscriberTopic1");
     auto expectedAddress2 = std::make_shared<const joynr::InProcessMessagingAddress>();
@@ -647,25 +873,28 @@ TEST_F(MessageRouterTest, routeMulticastMessageFromGlobalProvider_multicastMsgIs
     multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
                 skeleton);
 
-    messageRouter->addMulticastReceiver(multicastId,
+    messageRouter->addMulticastReceiver(
+        multicastId,
         subscriberParticipantId1,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
 
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId2,
         providerParticipantId,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
 
     joynrMessage.setType(joynr::JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST);
     joynrMessage.setHeaderFrom(providerParticipantId);
     joynrMessage.setHeaderTo(multicastId);
     joynrMessage.setReceivedFromGlobal(true);
 
-    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress1))));
-    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress2))));
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress1)))).Times(1);
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress2)))).Times(1);
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*multicastAddress)))).Times(0);
 
     messageRouter->route(joynrMessage);
 }
@@ -703,31 +932,37 @@ TEST_F(MessageRouterTest, routeMulticastMessageFromGlobalProvider_multicastMsgIs
                 skeleton);
     multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::ChannelAddress>(
                 skeleton);
-    messageRouter->addMulticastReceiver(multicastIdMqttProvider,
+
+    messageRouter->addMulticastReceiver(
+        multicastIdMqttProvider,
         subscriberParticipantIdMqtt,
         providerParticipantIdMqtt,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
-    messageRouter->addMulticastReceiver(multicastIdHttpProvider,
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
+
+    messageRouter->addMulticastReceiver(
+        multicastIdHttpProvider,
         subscriberParticipantIdHttp,
         providerParticipantIdHttp,
         []() { },
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
+
     EXPECT_CALL(
             *messagingStubFactory,
             create(Truly(IsAddressOfType<const system::RoutingTypes::WebSocketClientAddress>))
-    )
-            .Times(2);
+    ).Times(2);
+
     EXPECT_CALL(
             *messagingStubFactory,
             create(Truly(IsAddressOfType<const system::RoutingTypes::MqttAddress>))
-    )
-            .Times(0);
+    ).Times(0);
+
     EXPECT_CALL(
             *messagingStubFactory,
             create(Truly(IsAddressOfType<const system::RoutingTypes::ChannelAddress>))
-     )
-            .Times(0);
+     ).Times(0);
 
     joynrMessage.setType(joynr::JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST);
     joynrMessage.setReceivedFromGlobal(true);
@@ -738,5 +973,70 @@ TEST_F(MessageRouterTest, routeMulticastMessageFromGlobalProvider_multicastMsgIs
 
     joynrMessage.setHeaderFrom(providerParticipantIdHttp);
     joynrMessage.setHeaderTo(multicastIdHttpProvider);
+    messageRouter->route(joynrMessage);
+}
+
+TEST_F(MessageRouterTest, routeMulticastMessageFromLocalProvider_multicastMsgIsSentToAllMulticastReceivers) {
+
+    MockRoutingProxy *mockRoutingProxy = new MockRoutingProxy();
+
+    ON_CALL(
+        *mockRoutingProxy,
+        addMulticastReceiverAsync(_,_,_,_,_)
+    ).WillByDefault(
+        DoAll(
+            InvokeArgument<3>(),
+            Return(nullptr)
+        )
+    );
+
+    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(
+                joynr::system::RoutingTypes::WebSocketProtocol::Enum::WS,
+                "host",
+                4242,
+                "path"
+    );
+
+    std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
+            std::make_unique<WebSocketMulticastAddressCalculator>(parentAddress);
+
+    messageRouter = std::make_unique<MessageRouter>(
+                messagingStubFactory,
+                std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(),
+                singleThreadedIOService.getIOService(),
+                std::move(addressCalculator)
+    );
+
+    messageRouter->setParentRouter(
+                std::unique_ptr<MockRoutingProxy>(mockRoutingProxy),
+                parentAddress,
+                std::string("parentParticipantId")
+    );
+
+    const std::string subscriberParticipantId1("subscriberPartId");
+    const std::string providerParticipantId("providerParticipantId");
+    const std::string multicastNameAndPartitions("multicastName/partition0");
+    const std::string multicastId(providerParticipantId + "/" + multicastNameAndPartitions);
+    const std::shared_ptr<const joynr::InProcessMessagingAddress> expectedAddress =
+            std::make_shared<const joynr::InProcessMessagingAddress>();
+
+    messageRouter->addProvisionedNextHop(providerParticipantId, parentAddress);
+    messageRouter->addProvisionedNextHop(subscriberParticipantId1, expectedAddress);
+
+    messageRouter->addMulticastReceiver(
+        multicastId,
+        subscriberParticipantId1,
+        providerParticipantId,
+        [](){ },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
+
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*parentAddress)))).Times(1);
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress)))).Times(1);
+
+    joynrMessage.setType(joynr::JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST);
+    joynrMessage.setHeaderFrom(providerParticipantId);
+    joynrMessage.setHeaderTo(multicastId);
+
     messageRouter->route(joynrMessage);
 }

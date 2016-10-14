@@ -122,6 +122,7 @@ MessageRouter::MessageRouter(
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
         boost::asio::io_service& ioService,
+        std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         int maxThreads,
         std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
@@ -131,6 +132,7 @@ MessageRouter::MessageRouter(
           routingTableLock(),
           multicastReceiverDirectory(),
           messageScheduler(maxThreads, "MessageRouter", ioService),
+          addressCalculator(std::move(addressCalculator)),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(incomingAddress),

@@ -44,6 +44,7 @@ class JoynrMessageSender;
 class MessageRouter;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
+class IMulticastAddressCalculator;
 class Settings;
 
 class LibJoynrRuntime : public JoynrRuntime
@@ -77,7 +78,8 @@ protected:
 
     void init(std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
-              std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress);
+              std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress,
+              std::unique_ptr<IMulticastAddressCalculator> addressCalculator);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);

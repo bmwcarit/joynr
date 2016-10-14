@@ -216,9 +216,15 @@ void JoynrMessageSender::sendMulticast(const std::string& fromParticipantId,
     try {
         JoynrMessage message = messageFactory.createMulticastPublication(
                 fromParticipantId, messagingQos, multicastPublication);
+        assert(messageRouter);
         messageRouter->route(message);
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "MulticastPublication with multicastId {} could not be sent. Error: {}",
+                        multicastPublication.getMulticastId(),
+                        e.getMessage());
     }
 }
 
