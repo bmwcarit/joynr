@@ -1,6 +1,5 @@
-/*jslint newcap: true, nomen: true */
-/*global xit: true */
-
+/*jslint es5: true, newcap: true, nomen: true */
+/*global fail: true, xit: true */
 /*
  * #%L
  * %%
@@ -34,7 +33,8 @@ define(
             "joynr/datatypes/exampleTypes/ComplexRadioStation",
             "joynr/datatypes/exampleTypes/ComplexStruct",
             "joynr/datatypes/exampleTypes/Country",
-            "joynr/tests/testTypes/TestEnum"
+            "joynr/tests/testTypes/TestEnum",
+            "global/Promise"
         ],
         function(
                 Typing,
@@ -49,7 +49,8 @@ define(
                 ComplexRadioStation,
                 ComplexStruct,
                 Country,
-                TestEnum) {
+                TestEnum,
+                Promise) {
 
             function MyCustomObj() {}
             function _TestConstructor123_() {}
@@ -70,6 +71,26 @@ define(
                 this.d = d;
                 this.e = e;
             }
+
+            beforeEach(function(done) {
+                var datatypePromises =
+                        [
+                            "joynr.vehicle.radiotypes.RadioStation",
+                            "joynr.datatypes.exampleTypes.ComplexRadioStation",
+                            "joynr.datatypes.exampleTypes.ComplexStruct",
+                            "joynr.datatypes.exampleTypes.Country",
+                            "joynr.tests.testTypes.TestEnum"
+                        ].map(function(datatype) {
+                            return TypeRegistrySingleton.getInstance().getTypeRegisteredPromise(
+                                    datatype,
+                                    1000);
+                        });
+
+                Promise.all(datatypePromises).then(function() {
+                    done();
+                    return null;
+                }).catch(fail);
+            });
 
             describe("libjoynr-js.joynr.Typing", function() {
                 it("is defined and of correct type", function(done) {
