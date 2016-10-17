@@ -457,3 +457,87 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
                             registeredSubscriptionCallbacks_multicast3.end()), 1);
     ASSERT_EQ(*registeredSubscriptionCallbacks_multicast3.begin(), subscriptionCallback3);
 }
+
+TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_changedPartitions_callsMessageRouter)
+{
+    std::string partition1 = "partition1";
+    std::string partition2 = "partition2";
+    std::vector<std::string> partitions1 = {partition1};
+    std::string multicastId1 = providerParticipantId1 + "/" + subscribeToName + "/" + partition1;
+    MulticastSubscriptionRequest subscriptionRequest1;
+
+    EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
+        multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
+
+    subscriptionManager.registerSubscription(
+        subscribeToName,
+        subscriberParticipantId,
+        providerParticipantId1,
+        partitions1,
+        subscriptionCallback,
+        qos,
+        subscriptionRequest1,
+        [](){},
+        [](const joynr::exceptions::ProviderRuntimeException&){});
+
+    testing::Mock::VerifyAndClearExpectations(mockMessageRouter.get());
+
+    std::vector<std::string> partitions2 = {partition2};
+    std::string multicastId2 = providerParticipantId1 + "/" + subscribeToName + "/" + partition2;
+    MulticastSubscriptionRequest subscriptionRequest2;
+    subscriptionRequest2.setSubscriptionId(subscriptionRequest1.getSubscriptionId());
+
+    EXPECT_CALL(*mockMessageRouter, removeMulticastReceiver(
+        multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
+    EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
+        multicastId2, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
+
+    subscriptionManager.registerSubscription(
+        subscribeToName,
+        subscriberParticipantId,
+        providerParticipantId1,
+        partitions2,
+        subscriptionCallback,
+        qos,
+        subscriptionRequest2,
+        [](){},
+        [](const joynr::exceptions::ProviderRuntimeException&){});
+}
+
+TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_samePartitions_doesNotCallMessageRouter)
+{
+    MulticastSubscriptionRequest subscriptionRequest1;
+
+    EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
+        multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
+
+    subscriptionManager.registerSubscription(
+        subscribeToName,
+        subscriberParticipantId,
+        providerParticipantId1,
+        partitions,
+        subscriptionCallback,
+        qos,
+        subscriptionRequest1,
+        [](){},
+        [](const joynr::exceptions::ProviderRuntimeException&){});
+
+    testing::Mock::VerifyAndClearExpectations(mockMessageRouter.get());
+
+    MulticastSubscriptionRequest subscriptionRequest2;
+    subscriptionRequest2.setSubscriptionId(subscriptionRequest1.getSubscriptionId());
+
+    EXPECT_CALL(*mockMessageRouter, removeMulticastReceiver(_, _, _, _, _)).Times(0);
+    EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(_, _, _, _, _)).Times(0);
+
+    subscriptionManager.registerSubscription(
+        subscribeToName,
+        subscriberParticipantId,
+        providerParticipantId1,
+        partitions,
+        subscriptionCallback,
+        qos,
+        subscriptionRequest2,
+        [](){},
+        [](const joynr::exceptions::ProviderRuntimeException&){});
+}

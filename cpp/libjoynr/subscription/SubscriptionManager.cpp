@@ -170,8 +170,24 @@ void SubscriptionManager::registerSubscription(
             util::createMulticastId(providerParticipantId, subscribeToName, partitions);
     subscriptionRequest.setMulticastId(multicastId);
     {
-        std::lock_guard<std::mutex> multicastSubscribersLocker(multicastSubscribersMutex);
+        std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
         std::string subscriptionId = subscriptionRequest.getSubscriptionId();
+
+        // remove pre-exisiting multicast subscription
+        if (subscriptions.contains(subscriptionId)) {
+            std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
+            std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
+            std::string oldMulticastId = subscription->multicastId;
+            if (multicastId != oldMulticastId) {
+                unregisterSubscription(subscriptionId);
+            } else {
+                // do not call message router if multicast id has not changed
+                subscriptions.remove(subscriptionId);
+                stopSubscription(subscription);
+            }
+        }
+
+        // register multicast subscription
         registerSubscription(subscribeToName, subscriptionCaller, qos, subscriptionRequest);
         std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
         {
@@ -221,7 +237,7 @@ void SubscriptionManager::unregisterSubscription(const std::string& subscription
     JOYNR_LOG_DEBUG(
             logger, "Called unregister / unsubscribe on subscription id= {}", subscriptionId);
     {
-        std::lock_guard<std::mutex> multicastSubscribersLocker(multicastSubscribersMutex);
+        std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
         std::string multicastId = subscription->multicastId;
         if (!multicastId.empty()) {
             stopSubscription(subscription);
@@ -348,7 +364,7 @@ std::forward_list<std::shared_ptr<ISubscriptionCallback>> SubscriptionManager::
 {
     std::forward_list<std::shared_ptr<ISubscriptionCallback>> callbacks;
     {
-        std::lock_guard<std::mutex> multicastSubscribersLocker(multicastSubscribersMutex);
+        std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
         auto subscriptionIds = multicastSubscribers.getReceivers(multicastId);
         for (const auto& subscriptionId : subscriptionIds) {
             auto callback = getSubscriptionCallback(subscriptionId);

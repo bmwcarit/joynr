@@ -169,7 +169,7 @@ private:
     ThreadSafeMap<std::string, std::shared_ptr<Subscription>> subscriptions;
 
     MulticastReceiverDirectory multicastSubscribers;
-    std::mutex multicastSubscribersMutex;
+    std::recursive_mutex multicastSubscribersMutex;
 
     std::shared_ptr<MessageRouter> messageRouter;
 
