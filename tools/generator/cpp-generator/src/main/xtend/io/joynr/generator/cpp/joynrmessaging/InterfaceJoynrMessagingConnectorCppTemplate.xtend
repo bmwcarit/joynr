@@ -388,7 +388,8 @@ bool «className»::usesClusterController() const{
 							"«broadcastName»",
 							partitions
 					)
-			);			subscriptionRequest->setSubscriptionId(subscriptionId);
+			);
+			subscriptionRequest->setSubscriptionId(subscriptionId);
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
