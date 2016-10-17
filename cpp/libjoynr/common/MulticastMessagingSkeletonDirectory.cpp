@@ -30,7 +30,8 @@ INIT_LOGGER(MulticastMessagingSkeletonDirectory);
 std::shared_ptr<IMessagingMulticastSubscriber> MulticastMessagingSkeletonDirectory::getSkeleton(
         std::shared_ptr<const system::RoutingTypes::Address> address)
 {
-    std::type_index typeIndex(typeid(*address));
+    const system::RoutingTypes::Address& addressRef = *address;
+    std::type_index typeIndex(typeid(addressRef));
     JOYNR_LOG_DEBUG(logger, "get messaging skeleton for address type {}", typeIndex.name());
     std::lock_guard<std::recursive_mutex> lock(mutex);
     if (contains(address)) {
@@ -45,7 +46,9 @@ bool MulticastMessagingSkeletonDirectory::contains(
         std::shared_ptr<const system::RoutingTypes::Address> address)
 {
     std::lock_guard<std::recursive_mutex> lock(mutex);
-    return multicastSkeletons.find(std::type_index(typeid(*address))) != multicastSkeletons.cend();
+    const system::RoutingTypes::Address& addressRef = *address;
+    std::type_index typeIndex(typeid(addressRef));
+    return multicastSkeletons.find(typeIndex) != multicastSkeletons.cend();
 }
 
 } // namespace joynr
