@@ -18,6 +18,9 @@
 # #L%
 ###
 
+# Give the JEE Discovery Directory a chance to start ...
+sleep 30
+
 echo "Onboard RUN END TO END TEST"
 
 echo "ENVIRONMENT"
@@ -69,17 +72,13 @@ CONSUMER_DOMAIN_PREFIXES=$CONSUMER_DOMAIN_PREFIXES$DOMAIN_PREFIX
 echo "start cluster controller + providers with domain prefix $DOMAIN_PREFIX"
 (
 	cd ${CPP_HOME}/bin
-
 	./cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings & CLUSTER_CONTROLLER_PID=$!
-
 	./jsit-provider-ws $DOMAIN_PREFIX.cpp runForever & CPP_PROVIDER_PID=$!
 
 	cd ${NODE_APP_HOME}
-
 	npm run-script startprovider --sit-node-app:domain=$DOMAIN_PREFIX.node --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242 & NODE_PROVIDER_PID=$!
 
 	cd ${JAVA_APP_HOME}
-
 	java -cp *.jar io.joynr.systemintegrationtest.ProviderApplication $DOMAIN_PREFIX.java runForever & JAVA_PROVIDER_PID=$!
 )
 
