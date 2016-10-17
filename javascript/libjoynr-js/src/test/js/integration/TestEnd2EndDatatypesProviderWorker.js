@@ -40,6 +40,7 @@ importScripts("TestEnd2EndDatatypesTestData.js");
 importScripts("../../classes/lib/bluebird.js");
 
 var Promise = Promise.Promise;
+var providerDomain;
 
 // attribute values for provider
 var currentAttributeValue, isOn = true;
@@ -66,12 +67,14 @@ function setter(value) {
     currentAttributeValue = value;
 }
 
-function initializeTest(provisioningSuffix) {
+function initializeTest(provisioningSuffix, providedDomain) {
     return new Promise(function(resolve, reject) {
+
+        providerDomain = (providedDomain !== undefined ? providedDomain : domain);
 
         // set joynr provisioning
         localStorage.setItem(
-                "joynr.participants." + domain + interfaceNameDatatypes,
+                "joynr.participants." + providerDomain + interfaceNameDatatypes,
                 providerParticipantIdDatatypes + provisioningSuffix);
         joynr.provisioning.channelId = providerChannelIdDatatypes + provisioningSuffix;
         joynr.provisioning.logging = {
@@ -134,7 +137,7 @@ function initializeTest(provisioningSuffix) {
             });
 
             // register provider at the given domain
-            joynr.registration.registerProvider(domain, datatypesProvider, providerQos).then(
+            joynr.registration.registerProvider(providerDomain, datatypesProvider, providerQos).then(
                     function() {
                         // signal test driver that we are ready
                         resolve(joynr);
@@ -156,6 +159,6 @@ function startTest() {
 }
 
 function terminateTest() {
-    return joynr.registration.unregisterProvider(domain, datatypesProvider);
+    return joynr.registration.unregisterProvider(providerDomain, datatypesProvider);
 
 }

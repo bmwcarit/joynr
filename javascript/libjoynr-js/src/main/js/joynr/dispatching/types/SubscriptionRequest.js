@@ -77,7 +77,7 @@ define("joynr/dispatching/types/SubscriptionRequest", [
          * @type String
          */
 
-        Object.defineProperty(SubscriptionRequest, "_typeName", {
+        Object.defineProperty(this, "_typeName", {
             value : "joynr.SubscriptionRequest",
             readable : true,
             writable : false,

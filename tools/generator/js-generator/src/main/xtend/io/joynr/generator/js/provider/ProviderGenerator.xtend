@@ -228,8 +228,6 @@ class ProviderGenerator extends InterfaceJsTemplate {
 
 			this.interfaceName = "«getFQN(francaIntf)»";
 
-			this.id = dependencies.uuid();
-
 			return Object.freeze(this);
 		};
 

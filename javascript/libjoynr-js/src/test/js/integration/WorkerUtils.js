@@ -45,6 +45,7 @@ var WorkerUtils = (function() {
     pub.postLog = function(msg) {
         postMessage({
             type : "log",
+            level : "info",
             message : msg
         });
     };

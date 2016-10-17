@@ -79,12 +79,15 @@ define("joynr/provider/ProviderEvent", [
          *
          * @param {BroadcastOutputParameters}
          *     broadcastOutputParameters the broadcast output parameters
+         * @param {String[]}
+         *     [partitions] - the partitions to be used for multicasts
          */
-        this.fire = function fire(broadcastOutputParameters) {
+        this.fire = function fire(broadcastOutputParameters, partitions) {
             // the Util.fire method accepts exactly one argument for the callback
             var data = {
                 broadcastOutputParameters : broadcastOutputParameters,
-                filters : filters
+                filters : filters,
+                partitions : partitions || []
             };
             Util.fire(callbacks, data);
         };

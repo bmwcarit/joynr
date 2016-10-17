@@ -35,12 +35,16 @@ define(
             "joynr/dispatching/types/OneWayRequest",
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/Reply",
+            "joynr/dispatching/types/BroadcastSubscriptionRequest",
+            "joynr/dispatching/types/MulticastSubscriptionRequest",
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionStop",
+            "joynr/dispatching/types/MulticastPublication",
             "joynr/dispatching/types/SubscriptionPublication",
             "joynr/tests/testTypes/TestEnum",
-            "joynr/types/TypeRegistrySingleton"
+            "joynr/types/TypeRegistrySingleton",
+            "uuid"
         ],
         function(
                 Util,
@@ -56,12 +60,16 @@ define(
                 OneWayRequest,
                 Request,
                 Reply,
+                BroadcastSubscriptionRequest,
+                MulticastSubscriptionRequest,
                 SubscriptionRequest,
                 SubscriptionReply,
                 SubscriptionStop,
+                MulticastPublication,
                 SubscriptionPublication,
                 TestEnum,
-                TypeRegistrySingleton) {
+                TypeRegistrySingleton,
+                uuid) {
 
             var providerId = "providerId";
             var proxyId = "proxyId";
@@ -70,8 +78,10 @@ define(
                     "libjoynr-js.joynr.dispatching.Dispatcher",
                     function() {
 
-                        var dispatcher, requestReplyManager, subscriptionManager, publicationManager, clusterControllerMessagingStub, securityManager, subscriptionId =
-                                "mySubscriptionId", requestReplyId = "requestReplyId";
+                        var dispatcher, requestReplyManager, subscriptionManager, publicationManager, messageRouter, clusterControllerMessagingStub, securityManager;
+                        var subscriptionId = "mySubscriptionId-" + uuid();
+                        var multicastId = "multicastId-" + uuid();
+                        var requestReplyId = "requestReplyId";
 
                         /**
                          * Called before each test.
@@ -84,11 +94,31 @@ define(
                             ]);
                             subscriptionManager = jasmine.createSpyObj("SubscriptionManager", [
                                 "handleSubscriptionReply",
+                                "handleMulticastPublication",
                                 "handlePublication"
                             ]);
-                            publicationManager = jasmine.createSpyObj("PublicationManager", [
-                                "handleSubscriptionRequest",
-                                "handleSubscriptionStop"
+                            var sendSubscriptionReply = function(
+                                    proxyParticipantId,
+                                    providerParticipantId,
+                                    subscriptionRequest,
+                                    callbackDispatcher) {
+                                callbackDispatcher(new SubscriptionReply({
+                                    subscriptionId : subscriptionRequest.subscriptionId
+                                }));
+                            };
+
+                            publicationManager = {
+                                handleSubscriptionRequest : sendSubscriptionReply,
+                                handleMulticastSubscriptionRequest : sendSubscriptionReply,
+                                handleSubscriptionStop : function() {}
+                            };
+                            spyOn(publicationManager, "handleSubscriptionRequest").and.callThrough();
+                            spyOn(publicationManager, "handleMulticastSubscriptionRequest").and.callThrough();
+                            spyOn(publicationManager, "handleSubscriptionStop");
+
+                            messageRouter = jasmine.createSpyObj("MessageRouter", [
+                                "addMulticastReceiver",
+                                "removeMulticastReceiver"
                             ]);
                             clusterControllerMessagingStub =
                                     jasmine.createSpyObj(
@@ -107,6 +137,7 @@ define(
                             dispatcher.registerRequestReplyManager(requestReplyManager);
                             dispatcher.registerSubscriptionManager(subscriptionManager);
                             dispatcher.registerPublicationManager(publicationManager);
+                            dispatcher.registerMessageRouter(messageRouter);
 
                             /*
                              * Make sure 'TestEnum' is properly registered as a type.
@@ -145,6 +176,9 @@ define(
                                     expect(dispatcher.sendOneWayRequest).toBeDefined();
                                     expect(typeof dispatcher.sendOneWayRequest === "function")
                                             .toBeTruthy();
+                                    expect(dispatcher.sendBroadcastSubscriptionRequest).toBeDefined();
+                                    expect(typeof dispatcher.sendBroadcastSubscriptionRequest === "function")
+                                            .toBeTruthy();
                                     expect(dispatcher.sendSubscriptionRequest).toBeDefined();
                                     expect(typeof dispatcher.sendSubscriptionRequest === "function")
                                             .toBeTruthy();
@@ -159,24 +193,31 @@ define(
                                     done();
                                 });
 
+                        function receiveJoynrMessage(parameters){
+                            var joynrMessage = new JoynrMessage({
+                                type : parameters.type,
+                                payload : JSON.stringify(parameters.payload)
+                            });
+                            joynrMessage.setHeader(
+                                    JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
+                                    proxyId);
+                            joynrMessage.setHeader(
+                                    JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
+                                    providerId);
+                            dispatcher.receive(joynrMessage);
+                        }
+
                         it(
                                 "forwards subscription request to Publication Manager",
-                                function(done) {
+                                function() {
                                     var payload = {
                                         subscribedToName : "attributeName",
                                         subscriptionId : subscriptionId
                                     };
-                                    var joynrMessage = new JoynrMessage({
+                                    receiveJoynrMessage({
                                         type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
-                                        payload : JSON.stringify(payload)
+                                        payload : payload
                                     });
-                                    joynrMessage.setHeader(
-                                            JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
-                                            proxyId);
-                                    joynrMessage.setHeader(
-                                            JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
-                                            providerId);
-                                    dispatcher.receive(joynrMessage);
                                     expect(publicationManager.handleSubscriptionRequest)
                                             .toHaveBeenCalled();
                                     expect(publicationManager.handleSubscriptionRequest)
@@ -185,7 +226,31 @@ define(
                                                     providerId,
                                                     new SubscriptionRequest(payload),
                                                     jasmine.any(Function));
-                                    done();
+                                });
+
+                        it(
+                                "forwards multicast subscription request to Publication Manager",
+                                function() {
+                                    var payload = {
+                                        subscribedToName : "multicastEvent",
+                                        subscriptionId : subscriptionId,
+                                        multicastId : multicastId
+                                    };
+                                    receiveJoynrMessage({
+                                        type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+                                        payload : payload
+                                    });
+                                    expect(publicationManager.handleMulticastSubscriptionRequest)
+                                            .toHaveBeenCalled();
+                                    expect(publicationManager.handleMulticastSubscriptionRequest)
+                                            .toHaveBeenCalledWith(
+                                                    proxyId,
+                                                    providerId,
+                                                    new MulticastSubscriptionRequest(payload),
+                                                    jasmine.any(Function));
+                                    expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
+                                    var sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+                                    expect(sentMessage.payload).toMatch("{\"subscriptionId\":\"" + subscriptionId + "\",\"_typeName\":\"joynr.SubscriptionReply\"}");
                                 });
 
                         it("forwards subscription reply to Subscription Manager", function(done) {
@@ -221,19 +286,41 @@ define(
                                     done();
                                 });
 
+                        function receivePublication(parameters) {
+                            var joynrMessage = new JoynrMessage({
+                                type : parameters.type,
+                                payload : JSON.stringify(parameters.payload)
+                            });
+                            dispatcher.receive(joynrMessage);
+                        }
+
                         it("forwards publication to Subscription Manager", function(done) {
                             var payload = {
                                 subscriptionId : subscriptionId,
                                 response : "myResponse"
                             };
-                            var joynrMessage = new JoynrMessage({
+                            receivePublication({
                                 type : JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION,
-                                payload : JSON.stringify(payload)
+                                payload : payload
                             });
-                            dispatcher.receive(joynrMessage);
                             expect(subscriptionManager.handlePublication).toHaveBeenCalled();
                             expect(subscriptionManager.handlePublication).toHaveBeenCalledWith(
                                     new SubscriptionPublication(payload));
+                            done();
+                        });
+
+                        it("forwards multicast publication to Subscription Manager", function(done) {
+                            var payload = {
+                                multicastId : multicastId,
+                                response : "myResponse"
+                            };
+                            receivePublication({
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST,
+                                payload : payload
+                            });
+                            expect(subscriptionManager.handleMulticastPublication).toHaveBeenCalled();
+                            expect(subscriptionManager.handleMulticastPublication).toHaveBeenCalledWith(
+                                    new MulticastPublication(payload));
                             done();
                         });
 
@@ -310,6 +397,46 @@ define(
                             expect(requestReplyManager.handleReply).toHaveBeenCalledWith(reply);
                             done();
                         });
+
+                        function sendAndCheckBroadcastSubscriptionRequest(request, expectedType) {
+                            var sentMessage;
+                            var messagingQos = new MessagingQos();
+                            dispatcher.sendBroadcastSubscriptionRequest({
+                                from : "from",
+                                to : "to",
+                                messagingQos : messagingQos,
+                                subscriptionRequest : request
+                            });
+                            expect(clusterControllerMessagingStub.transmit)
+                            .toHaveBeenCalled();
+                            sentMessage =
+                                clusterControllerMessagingStub.transmit.calls
+                                .mostRecent().args[0];
+                            expect(sentMessage.type).toEqual(
+                                    expectedType);
+                        }
+
+                        it(
+                                "is able to send multicast subscription request",
+                                function() {
+                                    var multicastId = "multicastId";
+                                    sendAndCheckBroadcastSubscriptionRequest(new MulticastSubscriptionRequest({
+                                        subscribedToName : "multicastEvent",
+                                        subscriptionId : "subscriptionId",
+                                        multicastId : multicastId
+                                    }), JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
+                                    expect(messageRouter.addMulticastReceiver).toHaveBeenCalled();
+                                    expect(messageRouter.addMulticastReceiver.calls.argsFor(0)[0].multicastId).toEqual(multicastId);
+                                });
+
+                        it(
+                                "is able to send selective broadcast subscription request",
+                                function() {
+                                    sendAndCheckBroadcastSubscriptionRequest(new BroadcastSubscriptionRequest({
+                                        subscribedToName : "broadcastEvent",
+                                        subscriptionId : "subscriptionId"
+                                    }), JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
+                                });
 
                         it(
                                 "enriches requests with custom headers",

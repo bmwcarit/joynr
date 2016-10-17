@@ -21,11 +21,10 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
     "global/Promise",
     "global/Mqtt",
     "joynr/messaging/JoynrMessage",
-    "joynr/messaging/MessagingQosEffort",
     "joynr/util/UtilInternal",
     "joynr/util/JSONSerializer",
     "joynr/system/LoggerFactory"
-], function(Promise, Mqtt, JoynrMessage, MessagingQosEffort, Util, JSONSerializer, LoggerFactory) {
+], function(Promise, Mqtt, JoynrMessage, Util, JSONSerializer, LoggerFactory) {
 
     /**
      * @name MqttMessagingStub
@@ -54,18 +53,10 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
                 topic += MqttMessagingStub.PRIORITY_LOW + message.to;
             }
 
-            var qosLevel = MqttMessagingStub.DEFAULT_QOS_LEVEL;
-            if (MessagingQosEffort.BEST_EFFORT === message.effort) {
-                qosLevel = MqttMessagingStub.BEST_EFFORT_QOS_LEVEL;
-            }
-
-            return settings.client.send(topic, message, qosLevel);
+            return settings.client.send(topic, message);
         };
 
     }
-
-    MqttMessagingStub.DEFAULT_QOS_LEVEL = 1;
-    MqttMessagingStub.BEST_EFFORT_QOS_LEVEL = 0;
 
     MqttMessagingStub.PRIORITY_LOW = "/low/";
 

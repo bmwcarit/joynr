@@ -54,7 +54,7 @@ var byteBufferAttribute = null;
 var stringMapAttribute = null;
 var typeDefForStruct = null;
 var typeDefForPrimitive = null;
-
+var mixedSubscriptionsValue = "interval";
 var providerDomain;
 var libjoynrAsync;
 
@@ -126,7 +126,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
             });
 
             radioProvider.mixedSubscriptions.registerGetter(function() {
-                return "interval";
+                return mixedSubscriptionsValue;
             });
 
             radioProvider.mixedSubscriptions.registerSetter(function(value) {
@@ -364,8 +364,8 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 };
             });
 
-            radioProvider.triggerBroadcasts.registerOperation(function(opArgs) {
-                var i, outputParams, broadcast;
+            function triggerBroadcastsInternal(opArgs) {
+                var outputParams, broadcast;
                 if (opArgs.broadcastName === "broadcastWithEnum") {
                     //broadcastWithEnum
                     broadcast = radioProvider.broadcastWithEnum;
@@ -391,10 +391,25 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     }));
                     outputParams.setTypeDefPrimitiveOutput(123456);
                 }
-                for (i = 0; i < opArgs.times; i++) {
-                    broadcast.fire(outputParams);
-                }
-            });
+                setTimeout(function(opArgs, broadcast, outputParams) {
+                    var i;
+                    for (i = 0; i < opArgs.times; i++) {
+                        if (opArgs.hierarchicBroadcast && opArgs.partitions !== undefined) {
+                            var j, hierarchicPartitions = [];
+                            broadcast.fire(outputParams, hierarchicPartitions);
+                            for (j=0;j<opArgs.partitions.length;j++) {
+                                hierarchicPartitions.push(opArgs.partitions[j]);
+                                broadcast.fire(outputParams, hierarchicPartitions);
+                            }
+                        } else {
+                            broadcast.fire(outputParams, opArgs.partitions);
+                        }
+                    }
+                },0, opArgs, broadcast, outputParams);
+            }
+
+            radioProvider.triggerBroadcasts.registerOperation(triggerBroadcastsInternal);
+            radioProvider.triggerBroadcastsWithPartitions.registerOperation(triggerBroadcastsInternal);
 
             radioProvider.methodFireAndForgetWithoutParams.registerOperation(function(opArgs) {
                 var broadcast = radioProvider.fireAndForgetCallArrived;
@@ -439,9 +454,11 @@ function startTest() {
         }, valueChangedInterval);
 
         libjoynrAsync.util.LongTimer.setTimeout(function() {
-            radioProvider.mixedSubscriptions.valueChanged("valueChanged1");
+            mixedSubscriptionsValue = "valueChanged1";
+            radioProvider.mixedSubscriptions.valueChanged(mixedSubscriptionsValue);
             libjoynrAsync.util.LongTimer.setTimeout(function() {
-                radioProvider.mixedSubscriptions.valueChanged("valueChanged2");
+                mixedSubscriptionsValue = "valueChanged2";
+                radioProvider.mixedSubscriptions.valueChanged(mixedSubscriptionsValue);
             }, 10);
         }, mixedSubscriptionDelay);
         resolve(libjoynrAsync.participantIdStorage.getParticipantId(

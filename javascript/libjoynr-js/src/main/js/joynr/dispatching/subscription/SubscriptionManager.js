@@ -81,6 +81,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         var subscriptionReplyCallers = {};
         var started = true;
 
+        var multicastSubscribers = {};
+
         function isReady() {
             return started;
         }
@@ -219,8 +221,29 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 
         }
 
+        function removeRequestFromMulticastSubscribers(multicastId, subscriptionId) {
+            var i,subscribers;
+            if (multicastSubscribers[multicastId] === undefined) {
+                return;
+            }
+            subscribers = multicastSubscribers[multicastId];
+            for(i=0;i<subscribers.length;i++) {
+                if (subscribers[i] === subscriptionId) {
+                    subscribers.splice(i,1);
+                    if (subscribers.length === 0) {
+                        delete multicastSubscribers[multicastId];
+                    }
+                    return;
+                }
+            }
+        }
+
         function cleanupSubscription(subscriptionId) {
             if (subscriptionInfos[subscriptionId] !== undefined) {
+                var subscriptionInfo = subscriptionInfos[subscriptionId];
+                if (subscriptionInfo.multicastId !== undefined) {
+                    removeRequestFromMulticastSubscribers(subscriptionInfo.multicastId, subscriptionId);
+                }
                 delete subscriptionInfos[subscriptionId];
             }
             if (subscriptionListeners[subscriptionId] !== undefined) {
@@ -328,21 +351,39 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     });
                 };
 
+        function addRequestToMulticastSubscribers(multicastId, subscriptionId) {
+            var i,subscribers;
+            if (multicastSubscribers[multicastId] === undefined) {
+                multicastSubscribers[multicastId] = [];
+            }
+            subscribers = multicastSubscribers[multicastId];
+            for(i=0;i<subscribers.length;i++) {
+                if (subscribers[i] === subscriptionId) {
+                    return;
+                }
+            }
+            subscribers.push(subscriptionId);
+        }
+
         function createBroadcastSubscriptionRequest(parameters) {
+            var i, request;
             if (parameters.selective) {
-                return new BroadcastSubscriptionRequest({
+                request = new BroadcastSubscriptionRequest({
                     subscriptionId : parameters.subscriptionId || uuid(),
                     subscribedToName : parameters.broadcastName,
                     qos : parameters.subscriptionQos,
                     filterParameters : parameters.filterParameters
                 });
+            } else {
+                request = new MulticastSubscriptionRequest({
+                    multicastId : SubscriptionUtil.createMulticastId(parameters.providerId, parameters.broadcastName, parameters.partitions),
+                    subscriptionId : parameters.subscriptionId || uuid(),
+                    subscribedToName : parameters.broadcastName,
+                    qos : parameters.subscriptionQos
+                });
+                addRequestToMulticastSubscribers(request.multicastId, request.subscriptionId);
             }
-            return new MulticastSubscriptionRequest({
-                multicastId : SubscriptionUtil.createMulticastId(parameters.providerId, parameters.broadcastName, parameters.partitions),
-                subscriptionId : parameters.subscriptionId || uuid(),
-                subscribedToName : parameters.broadcastName,
-                qos : parameters.subscriptionQos
-            });
+            return request;
         }
 
         /**
@@ -467,6 +508,39 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         };
 
         /**
+         * @name SubscriptionManager#handleMulticastPublication
+         * @function
+         * @param publication
+         *            {MulticastPublication} incoming multicast publication
+         */
+        this.handleMulticastPublication =
+                function handleMulticastPublication(publication) {
+                    var i,subscribers=multicastSubscribers[publication.multicastId];
+                    if (subscribers === undefined) {
+                        throw new Error("Publication cannot be handled, as no subscription with "
+                                + "multicastId " + publication.multicastId + " is known.");
+                    }
+                    for (i=0;i<subscribers.length;i++) {
+                        var subscriptionListener = subscriptionListeners[subscribers[i]];
+                        if (publication.error) {
+                            if (subscriptionListener.onError) {
+                                subscriptionListener.onError(publication.error);
+                            } else {
+                                log.debug("subscriptionListener with Id \"" + subscribers[i]
+                                        + "\" has no onError callback. Skipping error publication");
+                            }
+                        } else if (publication.response) {
+                            if (subscriptionListener.onReceive) {
+                                subscriptionListener.onReceive(publication.response);
+                            } else {
+                                log.debug("subscriptionListener with Id \"" + subscribers[i]
+                                + "\" has no onReceive callback. Skipping multicast publication");
+                            }
+                        }
+                    }
+                };
+
+        /**
          * @name SubscriptionManager#handlePublication
          * @function
          * @param publication
@@ -484,15 +558,15 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                         if (subscriptionListener.onError) {
                             subscriptionListener.onError(publication.error);
                         } else {
-                            throw new Error("no subscription error handler registered for publication "
-                                + JSONSerializer.stringify(publication));
+                            log.debug("subscriptionListener with Id \"" + publication.subscriptionId
+                            + "\" has no onError callback. Skipping error publication");
                         }
                     } else if (publication.response) {
                         if (subscriptionListener.onReceive) {
                             subscriptionListener.onReceive(publication.response);
                         } else {
-                            throw new Error("no subscription listener registered for publication "
-                                + JSONSerializer.stringify(publication));
+                            log.debug("subscriptionListener with Id \"" + publication.subscriptionId
+                            + "\" has no onReceive callback. Skipping publication");
                         }
                     }
                 };
@@ -525,12 +599,23 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 subscriptionId : settings.subscriptionId
             });
 
-            var promise = dispatcher.sendSubscriptionStop({
-                from : subscriptionInfo.proxyId,
-                to : subscriptionInfo.providerId,
-                messagingQos : settings.messagingQos,
-                subscriptionStop : subscriptionStop
-            });
+            var promise;
+            if (subscriptionInfo.multicastId !== undefined) {
+                promise = dispatcher.sendMulticastSubscriptionStop({
+                    from : subscriptionInfo.proxyId,
+                    to : subscriptionInfo.providerId,
+                    messagingQos : settings.messagingQos,
+                    multicastId : subscriptionInfo.multicastId,
+                    subscriptionStop : subscriptionStop
+                });
+            } else {
+                promise = dispatcher.sendSubscriptionStop({
+                    from : subscriptionInfo.proxyId,
+                    to : subscriptionInfo.providerId,
+                    messagingQos : settings.messagingQos,
+                    subscriptionStop : subscriptionStop
+                });
+            }
 
             if (publicationCheckTimerIds[settings.subscriptionId] !== undefined) {
                 LongTimer.clearTimeout(publicationCheckTimerIds[settings.subscriptionId]);
@@ -540,6 +625,22 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             cleanupSubscription(settings.subscriptionId);
 
             return promise;
+        };
+
+        this.hasMulticastSubscriptions = function() {
+            return Object.keys(multicastSubscribers).length > 0;
+        };
+
+        this.hasOpenSubscriptions = function() {
+            var hasSubscriptionInfos = Object.keys(subscriptionInfos).length > 0;
+            var hasSubscriptionListeners = Object.keys(subscriptionListeners).length > 0;
+            var hasPublicationCheckTimerIds = Object.keys(publicationCheckTimerIds).length > 0;
+            var hasSubscriptionReplyCallers = Object.keys(subscriptionReplyCallers).length > 0;
+            return hasSubscriptionInfos ||
+                   hasSubscriptionListeners ||
+                   hasPublicationCheckTimerIds ||
+                   hasSubscriptionReplyCallers ||
+                   this.hasMulticastSubscriptions();
         };
 
         /**

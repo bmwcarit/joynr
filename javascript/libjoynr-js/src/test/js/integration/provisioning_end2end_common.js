@@ -19,7 +19,6 @@
 
 (function() {
     var setupProvisionedData = function(obj) {
-        obj.domain = "End2EndTestDomain";
         obj.interfaceNameComm = "vehicle/Radio";
         obj.interfaceNameDatatypes = "datatypes/Datatypes";
         obj.proxyChannelId = "End2EndTestProxyChannel";

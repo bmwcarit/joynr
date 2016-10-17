@@ -70,13 +70,16 @@ define(
                 var that = this;
                 var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageRouter");
                 var listener, routingProxy, messagingStub;
-                var queuedAddNextHopCalls = [], queuedRemoveNextHopCalls = [];
+                var queuedAddNextHopCalls = [], queuedRemoveNextHopCalls = [], queuedAddMulticastReceiverCalls = [], queuedRemoveMulticastReceiverCalls = [];
                 var routingTable = settings.initialRoutingTable || {};
                 var id = settings.joynrInstanceId;
                 var persistency = settings.persistency;
                 var incomingAddress = settings.incomingAddress;
                 var parentMessageRouterAddress = settings.parentMessageRouterAddress;
                 var typeRegistry = settings.typeRegistry;
+                var multicastAddressCalculator = settings.multicastAddressCalculator;
+                var messagingSkeletonFactory = settings.messagingSkeletonFactory;
+                var multicastReceiversRegistry = {};
 
                 // if (settings.routingTable === undefined) {
                 // throw new Error("routing table is undefined");
@@ -190,7 +193,7 @@ define(
                  */
                 this.setRoutingProxy =
                         function setRoutingProxy(newRoutingProxy) {
-                            var hop, participantId, errorFct;
+                            var hop, participantId, errorFct, receiver, queuedCall;
 
                             errorFct = function(error) {
                                 if (!isReady()) {
@@ -210,24 +213,40 @@ define(
                                 }
                                 for (hop in queuedAddNextHopCalls) {
                                     if (queuedAddNextHopCalls.hasOwnProperty(hop)) {
-                                        var queuedHopCall = queuedAddNextHopCalls[hop];
-                                        if (queuedHopCall.participantId !== routingProxy.proxyParticipantId) {
+                                        queuedCall = queuedAddNextHopCalls[hop];
+                                        if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
                                             that.addNextHopToParentRoutingTable(
-                                                    queuedHopCall.participantId).then(
-                                                    queuedHopCall.resolve).catch(queuedHopCall.reject);
+                                                    queuedCall.participantId).then(
+                                                    queuedCall.resolve).catch(queuedCall.reject);
                                         }
                                     }
                                 }
                                 for (hop in queuedRemoveNextHopCalls) {
                                     if (queuedRemoveNextHopCalls.hasOwnProperty(hop)) {
-                                        var queuedCall = queuedRemoveNextHopCalls[hop];
+                                        queuedCall = queuedRemoveNextHopCalls[hop];
                                         that.removeNextHop(queuedCall.participantId).then(
+                                                queuedCall.resolve).catch(queuedCall.reject);
+                                    }
+                                }
+                                for (receiver in queuedAddMulticastReceiverCalls) {
+                                    if (queuedAddMulticastReceiverCalls.hasOwnProperty(receiver)) {
+                                        queuedCall = queuedAddMulticastReceiverCalls[receiver];
+                                        routingProxy.addMulticastReceiver(queuedCall.parameters).then(
+                                                queuedCall.resolve).catch(queuedCall.reject);
+                                    }
+                                }
+                                for (receiver in queuedRemoveMulticastReceiverCalls) {
+                                    if (queuedRemoveMulticastReceiverCalls.hasOwnProperty(receiver)) {
+                                        queuedCall = queuedRemoveMulticastReceiverCalls[receiver];
+                                        routingProxy.removeMulticastReceiver(queuedCall.parameters).then(
                                                 queuedCall.resolve).catch(queuedCall.reject);
                                     }
                                 }
                             }
                             queuedAddNextHopCalls = undefined;
                             queuedRemoveNextHopCalls = undefined;
+                            queuedAddMulticastReceiverCalls = undefined;
+                            queuedRemoveMulticastReceiverCalls = undefined;
                         };
 
                 /**
@@ -277,6 +296,77 @@ define(
                 };
 
                 /**
+                 * Get the address to which the passed in message should be sent to.
+                 * This is a multicast address calculated from the header content of the message.
+                 *
+                 * @param message the message for which we want to find an address to send it to.
+                 * @return the address to send the message to. Will not be null, because if an address can't be determined an exception is thrown.
+                 */
+                function getAddressesForMulticast (joynrMessage) {
+                    var i, result = [], address;
+                    if (!joynrMessage.isReceivedFromGlobal) {
+                        address = multicastAddressCalculator.calculate(joynrMessage);
+                        if (address !== undefined) {
+                            result.push(address);
+                        }
+                    }
+                    var receivers = multicastReceiversRegistry[joynrMessage.to];
+                    if (receivers !== undefined) {
+                        for (i=0;i<receivers.length;i++){
+                            address = routingTable[receivers[i]];
+                            if (address !== undefined) {
+                                result.push(address);
+                            }
+                        }
+                    }
+                    return result;
+                }
+
+                /**
+                 * Helper function to route a message once the address is known
+                 */
+                function routeInternal (address, joynrMessage) {
+                    var errorMsg;
+                    // Error: The participant is not registered yet.
+                    // remote provider participants are registered by capabilitiesDirectory on lookup
+                    // local providers are registered by capabilitiesDirectory on register
+                    // replyCallers are registered when they are created
+                    if (address === undefined) {
+                        errorMsg =
+                                "No message receiver found for participantId: "
+                                    + joynrMessage.to
+                                    + ". Queuing request message.";
+                        log.info(errorMsg, DiagnosticTags
+                                .forJoynrMessage(joynrMessage));
+                        settings.messageQueue.putMessage(joynrMessage);
+                        throw new Error(errorMsg);
+                    } else {
+                        messagingStub =
+                                settings.messagingStubFactory
+                                        .createMessagingStub(address);
+                        if (messagingStub === undefined) {
+                            errorMsg =
+                                    "No message receiver found for participantId: "
+                                        + joynrMessage.to
+                                        + " queuing message.";
+                            log.info(errorMsg, DiagnosticTags
+                                    .forJoynrMessage(joynrMessage));
+                            throw new Error(errorMsg);
+                        } else {
+                            return messagingStub.transmit(joynrMessage).then(function() {
+                                //succeeded, do nothing
+                                return null;
+                            }).catch(function(error) {
+                                //error while transmitting message
+                                log.debug("Error while transmitting message: " + error);
+                                //TODO queue message and retry later
+                                return null;
+                            });
+                        }
+                    }
+                }
+
+                /**
                  * @name MessageRouter#route
                  * @function
                  *
@@ -286,39 +376,14 @@ define(
                  */
                 this.route =
                         function route(joynrMessage) {
-                                return that.resolveNextHop(joynrMessage.to).then(function(address) {
-                                        var errorMsg;
-                                        // Error: The participant is not registered yet.
-                                        // remote provider participants are registered by capabilitiesDirectory on lookup
-                                        // local providers are registered by capabilitiesDirectory on register
-                                        // replyCallers are registered when they are created
-                                        if (address === undefined) {
-                                            errorMsg =
-                                                    "No message receiver found for participantId: "
-                                                        + joynrMessage.to
-                                                        + ". Queuing request message.";
-                                            log.info(errorMsg, DiagnosticTags
-                                                    .forJoynrMessage(joynrMessage));
-                                            settings.messageQueue.putMessage(joynrMessage);
-                                            throw new Error(errorMsg);
-                                        } else {
-                                            messagingStub =
-                                                    settings.messagingStubFactory
-                                                            .createMessagingStub(address);
-                                            if (messagingStub === undefined) {
-                                                errorMsg =
-                                                        "No message receiver found for participantId: "
-                                                            + joynrMessage.to
-                                                            + " queuing message.";
-                                                log.info(errorMsg, DiagnosticTags
-                                                        .forJoynrMessage(joynrMessage));
-                                                throw new Error(errorMsg);
-                                            } else {
-                                                return messagingStub.transmit(joynrMessage);
-                                            }
-                                        }
-                            });
-                        };
+                    function forwardToRouteInternal(address) {
+                        return routeInternal(address, joynrMessage);
+                    }
+                    if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST) {
+                        return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal));
+                    }
+                    return that.resolveNextHop(joynrMessage.to).then(forwardToRouteInternal);
+                };
 
                 /**
                  * Registers the next hop with this specific participant Id
@@ -375,6 +440,117 @@ define(
                         };
 
                 /**
+                 * Adds a new receiver for the identified multicasts.
+                 *
+                 * @name RoutingTable#addMulticastReceiver
+                 * @function
+                 *
+                 * @param {Object}
+                 *            parameters - object containing parameters
+                 * @param {String}
+                 *            parameters.multicastId
+                 * @param {String}
+                 *            parameters.subscriberParticipantId
+                 * @param {String}
+                 *            parameters.providerParticipantId
+                 */
+                this.addMulticastReceiver = function addMulticastReceiver(parameters) {
+                    //1. handle call in local router
+                    //1.a store receiver in multicastReceiverRegistry
+                    if (multicastReceiversRegistry[parameters.multicastId] === undefined) {
+                        multicastReceiversRegistry[parameters.multicastId] = [];
+
+                        //1.b the first receiver for this multicastId -> inform MessagingSkeleton about receiver
+                        var skeleton = messagingSkeletonFactory.getSkeleton(routingTable[parameters.providerParticipantId]);
+                        if (skeleton !== undefined && skeleton.registerMulticastSubscription !== undefined) {
+                            skeleton.registerMulticastSubscription(parameters.multicastId);
+                        }
+                    }
+
+                    multicastReceiversRegistry[parameters.multicastId].push(parameters.subscriberParticipantId);
+
+                    //2. forward call to parent router (if available)
+                    var promise;
+                    if (routingProxy !== undefined) {
+                        promise = routingProxy.addMulticastReceiver(parameters);
+                    } else {
+                        if (parentMessageRouterAddress !== undefined) {
+                            promise = new Promise(function(resolve, reject){
+                                queuedAddMulticastReceiverCalls[queuedAddMulticastReceiverCalls.length] =
+                                {
+                                    parameters : parameters,
+                                    resolve : resolve,
+                                    reject : reject
+                                };
+                            });
+                        } else {
+                            promise = Promise.resolve();
+                        }
+                    }
+                    return promise;
+                };
+
+                /**
+                 * Removes a receiver for the identified multicasts.
+                 *
+                 * @name RoutingTable#removeMulticastReceiver
+                 * @function
+                 *
+                 * @param {Object}
+                 *            parameters - object containing parameters
+                 * @param {String}
+                 *            parameters.multicastId
+                 * @param {String}
+                 *            parameters.subscriberParticipantId
+                 * @param {String}
+                 *            parameters.providerParticipantId
+                 */
+                this.removeMulticastReceiver = function removeMulticastReceiver(parameters) {
+                    //1. handle call in local router
+                    //1.a remove receiver from multicastReceiverRegistry
+                    if (multicastReceiversRegistry[parameters.multicastId] !== undefined) {
+                        var i, receivers = multicastReceiversRegistry[parameters.multicastId];
+                        for (i = 0; i < receivers.length; i++) {
+                            if (receivers[i] === parameters.subscriberParticipantId) {
+                                receivers.splice(i, 1);
+                                break;
+                            }
+                        }
+                        if (receivers.length === 0) {
+                            delete multicastReceiversRegistry[parameters.multicastId];
+
+                            //1.b no receiver anymore for this multicastId -> inform MessagingSkeleton about removed receiver
+                            var skeleton = messagingSkeletonFactory.getSkeleton(routingTable[parameters.providerParticipantId]);
+                            if (skeleton !== undefined && skeleton.unregisterMulticastSubscription !== undefined) {
+                                skeleton.unregisterMulticastSubscription(parameters.multicastId);
+                            }
+
+                        }
+                    }
+
+
+                    //2. forward call to parent router (if available)
+                    var promise;
+                    if (routingProxy !== undefined) {
+                        promise = routingProxy.removeMulticastReceiver(parameters);
+                    } else {
+                        if (parentMessageRouterAddress !== undefined) {
+                            promise = new Promise(function(resolve, reject){
+                                queuedRemoveMulticastReceiverCalls[queuedRemoveMulticastReceiverCalls.length] =
+                                {
+                                    parameters : parameters,
+                                    resolve : resolve,
+                                    reject : reject
+                                };
+                            });
+                        } else {
+                            promise = Promise.resolve();
+                        }
+                    }
+                    return promise;
+                };
+
+                /**
                  * @function MessageRouter#participantRegistered
                  *
                  * @param {String} participantId
@@ -418,6 +594,10 @@ define(
                     }
                 };
 
+                this.hasMulticastReceivers = function() {
+                    return Object.keys(multicastReceiversRegistry).length > 0;
+                };
+
                 /**
                  * Shutdown the message router
                  *
@@ -431,11 +611,23 @@ define(
                         });
                         queuedAddNextHopCalls = [];
                     }
-                    if (queuedAddNextHopCalls !== undefined) {
+                    if (queuedRemoveNextHopCalls !== undefined) {
                         queuedRemoveNextHopCalls.forEach(function(call) {
                             call.reject("Message Router has been shut down");
                         });
                         queuedRemoveNextHopCalls = [];
+                    }
+                    if (queuedAddMulticastReceiverCalls !== undefined) {
+                        queuedAddMulticastReceiverCalls.forEach(function(call) {
+                            call.reject("Message Router has been shut down");
+                        });
+                        queuedAddMulticastReceiverCalls = [];
+                    }
+                    if (queuedRemoveMulticastReceiverCalls !== undefined) {
+                        queuedRemoveMulticastReceiverCalls.forEach(function(call) {
+                            call.reject("Message Router has been shut down");
+                        });
+                        queuedRemoveMulticastReceiverCalls = [];
                     }
                     started = false;
                     settings.messageQueue.shutdown();

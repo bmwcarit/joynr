@@ -154,6 +154,16 @@ define([ "joynr/messaging/JoynrMessage"
             done();
         });
 
+        it("allows to change receivedFromGlobal", function() {
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : "hello"
+            });
+            expect(joynrMessage.isReceivedFromGlobal).toBe(false);
+            joynrMessage.setReceivedFromGlobal(true);
+            expect(joynrMessage.isReceivedFromGlobal).toBe(true);
+        });
+
         it("has comfort functions for setting values", function(done) {
             var joynrMessage = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST

@@ -74,7 +74,7 @@ define("joynr/dispatching/types/MulticastSubscriptionRequest", [
          * @name MulticastSubscriptionRequest#_typeName
          * @type String
          */
-        Object.defineProperty(MulticastSubscriptionRequest, "_typeName", {
+        Object.defineProperty(this, "_typeName", {
             value : "joynr.MulticastSubscriptionRequest",
             readable : true,
             writable : false,

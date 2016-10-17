@@ -227,6 +227,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                 case 's':
                     provider.shuffleStations();
                     break;
+                case 'p':
+                    provider.fireWeakSignalEventWithPartition();
+                    break;
                 case 'w':
                     provider.fireWeakSignalEvent();
                     break;
@@ -235,7 +238,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                     break;
                 default:
                     LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n"
-                            + " w\tto fire weak signal event\n" + " n\tto fire station discovered event\n");
+                            + " w\tto fire weak signal event\n"
+                            + " p\tto fire weak signal event with country of current station as partition\n"
+                            + " n\tto fire station discovered event\n");
                     break;
                 }
             }

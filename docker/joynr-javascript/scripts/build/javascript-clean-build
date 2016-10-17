@@ -34,7 +34,7 @@ done
 echo '####################################################'
 echo '# start services'
 echo '####################################################'
-mosquitto -c /etc/mosquitto/mosquitto.conf &
+mosquitto -c /etc/mosquitto/mosquitto.conf -v &
 MOSQUITTO_PID=$!
 
 (

@@ -25,12 +25,13 @@ define(
             "global/Promise",
             "global/Mqtt",
             "joynr/messaging/JoynrMessage",
+            "joynr/messaging/MessagingQosEffort",
             "joynr/util/Util",
             "joynr/util/JSONSerializer",
             "joynr/util/LongTimer",
             "joynr/system/LoggerFactory"
         ],
-        function(Promise, Mqtt, JoynrMessage, Util, JSONSerializer, LongTimer, LoggerFactory) {
+        function(Promise, Mqtt, JoynrMessage, MessagingQosEffort, Util, JSONSerializer, LongTimer, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.mqtt.SharedMqttClient");
 
             /**
@@ -63,12 +64,12 @@ define(
                 queuedUnsubscriptions = [];
             }
 
-            function sendQueuedSubscriptions(client, queuedSubscriptions) {
+            function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
                 return new Promise(function(resolve, reject) {
                     var i, topic, subscribeObject = {};
                     for (i = 0; i < queuedSubscriptions.length; i++) {
                         topic = queuedSubscriptions[i];
-                        subscribeObject[topic] = 1;
+                        subscribeObject[topic] = qosLevel;
                     }
                     client.subscribe(subscribeObject, undefined, function(err, granted) {
                         //TODO error handling
@@ -78,10 +79,10 @@ define(
                 });
             }
 
-            function sendMessage(client, topic, joynrMessage, qosLevel, queuedMessages) {
+            function sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages) {
                 return new Promise(function(resolve, reject){
                     try {
-                        client.publish(topic, JSONSerializer.stringify(joynrMessage), { qos : qosLevel });
+                        client.publish(topic, JSONSerializer.stringify(joynrMessage), { qos : sendQosLevel });
                         resolve();
                         // Error is thrown if the socket is no longer open, so requeue to the front
                     } catch (e) {
@@ -90,7 +91,7 @@ define(
                             message : joynrMessage,
                             resolve : resolve,
                             options : {
-                                qos : qosLevel,
+                                qos : sendQosLevel,
                             },
                             topic : topic
                         });
@@ -126,6 +127,11 @@ define(
                         var onConnectedPromise = new Promise(function(resolveTrigger) {
                             resolve = resolveTrigger;
                         });
+                        var qosLevel = SharedMqttClient.DEFAULT_QOS_LEVEL;
+
+                        if (settings.provisioning.qosLevel !== undefined) {
+                            qosLevel = settings.provisioning.qosLevel;
+                        }
 
                         var queuedSubscriptions = [];
                         var queuedUnsubscriptions = [];
@@ -155,7 +161,7 @@ define(
                                 connected = true;
                                 sendQueuedMessages(client, queuedMessages);
                                 sendQueuedUnsubscriptions(client, queuedUnsubscriptions);
-                                sendQueuedSubscriptions(client, queuedSubscriptions).then(resolve);
+                                sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel).then(resolve);
                             } catch (e) {
                                 resetConnection();
                             }
@@ -170,11 +176,14 @@ define(
                          *            topic the topic to publish the message
                          * @param {JoynrMessage}
                          *            joynrMessage the joynr message to transmit
-                         * @param {Number}
-                         *            qosLevel qos level for message
                          */
-                        this.send = function send(topic, joynrMessage, qosLevel) {
-                            return sendMessage(client, topic, joynrMessage, qosLevel, queuedMessages).catch(function(e1) {
+                        this.send = function send(topic, joynrMessage) {
+                            var sendQosLevel = qosLevel;
+                            if (MessagingQosEffort.BEST_EFFORT === joynrMessage.effort) {
+                                sendQosLevel = SharedMqttClient.BEST_EFFORT_QOS_LEVEL;
+                            }
+
+                            return sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages).catch(function(e1) {
                                     resetConnection();
                                 });
                         };
@@ -192,7 +201,7 @@ define(
 
                         this.subscribe = function(topic) {
                             if (connected) {
-                                client.subscribe(topic, { qos : 1} );
+                                client.subscribe(topic, { qos : qosLevel} );
                             } else {
                                 queuedSubscriptions.push(topic);
                             }
@@ -226,6 +235,9 @@ define(
                         });
 
                     };
+
+            SharedMqttClient.DEFAULT_QOS_LEVEL = 1;
+            SharedMqttClient.BEST_EFFORT_QOS_LEVEL = 0;
 
             return SharedMqttClient;
         });

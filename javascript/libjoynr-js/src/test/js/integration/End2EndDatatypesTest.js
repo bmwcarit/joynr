@@ -28,6 +28,7 @@ define([
     "integration/TestEnd2EndDatatypesTestData",
     "integration/IntegrationUtils",
     "joynr/provisioning/provisioning_cc",
+    "uuid",
     "global/WaitsFor"
 ], function(
         Promise,
@@ -37,28 +38,29 @@ define([
         TestEnd2EndDatatypesTestData,
         IntegrationUtils,
         provisioning,
+        uuid,
         waitsFor) {
     describe("libjoynr-js.integration.end2end.datatypes", function() {
 
         var datatypesProxy, provisioningSuffix, workerId;
 
         beforeEach(function(done) {
-            var testProvisioning = null;
             datatypesProxy = undefined;
-            provisioningSuffix = "-" + Date.now();
-            testProvisioning = IntegrationUtils.getProvisioning(provisioning, provisioningSuffix);
+            var domain = "End2EndDatatypesTest" + "-" + uuid();
+            var testProvisioning = IntegrationUtils.getProvisioning(provisioning, domain);
             joynr.load(testProvisioning).then(function(newJoynr){
                 joynr = newJoynr;
                 IntegrationUtils.initialize(joynr);
 
                 IntegrationUtils.initializeWebWorker(
                         "TestEnd2EndDatatypesProviderWorker",
-                        provisioningSuffix).then(function(newWorkerId) {
+                        provisioningSuffix,
+                        domain).then(function(newWorkerId) {
                     workerId = newWorkerId;
                     return IntegrationUtils.startWebWorker(workerId);
                 }).then(
                         function() {
-                            return IntegrationUtils.buildProxy(DatatypesProxy).then(
+                            return IntegrationUtils.buildProxy(DatatypesProxy, domain).then(
                                     function(newDatatypesProxy) {
                                         datatypesProxy = newDatatypesProxy;
                                         done();

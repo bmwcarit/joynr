@@ -102,6 +102,10 @@ define("joynr/proxy/ProxyEvent", [
          * @param {String}
          *            [subscribeParameters.subscriptionId] optional subscriptionId. Used to refresh or
          *            reinstate an existing subscription.
+         * @param {String[]}
+         *            [subscribeParameters.partitions] optional parameter for multicast subscriptions.
+         *            This parameter becomes relevant for non selective broadcasts and specifies the interested partitions
+         *            of publications. It is interpreted hierarchically.
          * @param {Function}
          *            subscribeParameters.onReceive this function is called when an event as been
          *            received. method signature: "void onReceive({?}value)"
@@ -146,7 +150,7 @@ define("joynr/proxy/ProxyEvent", [
                                             settings.broadcastParameter));
                                 },
                                 selective : settings.selective,
-                                partitions : [], // currently set to an empty array, will be provided by the application in upcoming patches
+                                partitions : subscribeParameters.partitions || [],
                                 onError : subscribeParameters.onError,
                                 onSubscribed : subscribeParameters.onSubscribed,
                                 filterParameters : subscribeParameters.filterParameters

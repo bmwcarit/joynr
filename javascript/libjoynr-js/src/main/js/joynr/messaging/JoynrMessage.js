@@ -132,6 +132,14 @@ define(
              * @static
              * @readonly
              * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST =
+                    "multicastSubscriptionRequest";
+            /**
+             * @static
+             * @readonly
+             * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST
              */
             JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST =
@@ -364,6 +372,17 @@ define(
                     });
                 });
             }(headerProperties));
+
+            JoynrMessage.prototype.isReceivedFromGlobal = false;
+
+            Object.defineProperty(JoynrMessage.prototype, "setReceivedFromGlobal", {
+                enumerable : false,
+                configurable : false,
+                writable : false,
+                value : function(receivedFromGlobal) {
+                    this.isReceivedFromGlobal = receivedFromGlobal;
+                }
+            });
 
             return JoynrMessage;
 

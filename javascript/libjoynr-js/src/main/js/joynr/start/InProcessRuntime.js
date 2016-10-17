@@ -45,6 +45,8 @@ define(
             "joynr/system/RoutingTypes/MqttAddress",
             "joynr/messaging/MessageReplyToAddressCalculator",
             "joynr/messaging/mqtt/SharedMqttClient",
+            "joynr/messaging/mqtt/MqttMulticastAddressCalculator",
+            "joynr/messaging/MessagingSkeletonFactory",
             "joynr/messaging/MessagingStubFactory",
             "joynr/messaging/routing/MessageRouter",
             "joynr/messaging/routing/MessageQueue",
@@ -98,6 +100,8 @@ define(
                 MqttAddress,
                 MessageReplyToAddressCalculator,
                 SharedMqttClient,
+                MqttMulticastAddressCalculator,
+                MessagingSkeletonFactory,
                 MessagingStubFactory,
                 MessageRouter,
                 MessageQueue,
@@ -152,6 +156,7 @@ define(
                 var typedCapabilities;
                 var channelMessagingSender;
                 var channelMessagingStubFactory;
+                var messagingSkeletonFactory;
                 var messagingStubFactory;
                 var messageRouter;
                 var communicationModule;
@@ -395,8 +400,11 @@ define(
                             });
 
                             var mqttClient = new SharedMqttClient({
-                                address: mqttAddress
+                                address: mqttAddress,
+                                provisioning : provisioning.mqtt || {}
                             });
+
+                            messagingSkeletonFactory = new MessagingSkeletonFactory();
 
                             messagingStubFactory = new MessagingStubFactory({
                                 messagingStubFactories : {
@@ -416,6 +424,10 @@ define(
                                 joynrInstanceId : channelId,
                                 typeRegistry : typeRegistry,
                                 messagingStubFactory : messagingStubFactory,
+                                messagingSkeletonFactory : messagingSkeletonFactory,
+                                multicastAddressCalculator : new MqttMulticastAddressCalculator({
+                                    globalAddress : mqttAddress
+                                }),
                                 messageQueue : new MessageQueue(messageQueueSettings)
                             });
 
@@ -449,11 +461,13 @@ define(
                                             capabilityDiscovery.globalAddressReady(mqttAddress);
                                             channelMessageReplyToAddressCalculator.setReplyToAddress(channelAddress);
                                             channelMessagingStubFactory.globalAddressReady(channelAddress);
+                                            return null;
                                         });
 
                                         longPollingMessageReceiver
                                                 .start(clusterControllerChannelMessagingSkeleton.receiveMessage);
                                         channelMessagingSender.start();
+                                        return null;
                                     });
 
                             // link up clustercontroller messaging to dispatcher
@@ -473,6 +487,11 @@ define(
                             libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                             libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
+                            messagingSkeletonFactory.setSkeletons({
+                                InProcessAddress : libjoynrMessagingSkeleton,
+                                ChannelAddress : clusterControllerChannelMessagingSkeleton,
+                                MqttAddress : mqttMessagingSkeleton
+                            });
                             requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                             subscriptionManager = new SubscriptionManager(dispatcher);
                             publicationManager =
@@ -481,6 +500,7 @@ define(
                             dispatcher.registerRequestReplyManager(requestReplyManager);
                             dispatcher.registerSubscriptionManager(subscriptionManager);
                             dispatcher.registerPublicationManager(publicationManager);
+                            dispatcher.registerMessageRouter(messageRouter);
 
                             localCapabilitiesStore = new CapabilitiesStore(CapabilitiesUtil.toDiscoveryEntries(defaultLibjoynrSettings.capabilities || []));
                             globalCapabilitiesCache = new CapabilitiesStore(typedCapabilities);

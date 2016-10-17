@@ -67,10 +67,6 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
          */
         this.qos = settings.qos || defaultSettings.qos;
         /**
-         * @name BroadcastSubscriptionRequest#subscribedToName
-         * @type String
-         */
-        /**
          * @name BroadcastSubscriptionRequest#filterParameters
          * @type Object|BroadcastFilterParameters
          */
@@ -85,7 +81,7 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
          */
         Typing.augmentTypeName(this, "joynr");
 
-        Object.defineProperty(BroadcastSubscriptionRequest, "_typeName", {
+        Object.defineProperty(this, "_typeName", {
             value : "joynr.BroadcastSubscriptionRequest",
             readable : true,
             writable : false,

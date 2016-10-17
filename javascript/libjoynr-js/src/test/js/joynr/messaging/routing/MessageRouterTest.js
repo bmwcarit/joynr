@@ -28,7 +28,8 @@ define([
             "joynr/start/TypeRegistry",
             "global/Promise",
             "Date",
-            "global/WaitsFor"
+            "global/WaitsFor",
+            "uuid"
         ],
         function(
                 MessageRouter,
@@ -38,7 +39,8 @@ define([
                 TypeRegistry,
                 Promise,
                 Date,
-                waitsFor) {
+                waitsFor,
+                uuid) {
             var fakeTime;
 
             function increaseFakeTime(time_ms) {
@@ -48,12 +50,15 @@ define([
             describe(
                     "libjoynr-js.joynr.messaging.routing.MessageRouter",
                     function() {
-                        var store, typeRegistry, receiverParticipantId, receiverParticipantId2, joynrMessage, joynrMessage2, myChannelId, persistencySpy, otherChannelId, resultObj, address, messagingStubSpy, messagingStubFactorySpy, messageQueueSpy, messageRouter, routingProxySpy, parentMessageRouterAddress, incomingAddress;
+                        var store, typeRegistry, receiverParticipantId, receiverParticipantId2, joynrMessage, joynrMessage2;
+                        var myChannelId, persistencySpy, otherChannelId, resultObj, address;
+                        var messagingStubSpy, messagingSkeletonSpy, messagingStubFactorySpy, messagingSkeletonFactorySpy;
+                        var messageQueueSpy, messageRouter, routingProxySpy, parentMessageRouterAddress, incomingAddress;
+                        var multicastAddressCalculatorSpy;
 
                         var createMessageRouter =
                                 function(
                                         persistency,
-                                        messagingStubFactory,
                                         messageQueue,
                                         incomingAddress,
                                         parentMessageRouterAddress) {
@@ -61,7 +66,9 @@ define([
                                         initialRoutingTable : [],
                                         persistency : persistency,
                                         joynrInstanceId : "joynrInstanceID",
-                                        messagingStubFactory : messagingStubFactory,
+                                        messagingStubFactory : messagingStubFactorySpy,
+                                        messagingSkeletonFactory : messagingSkeletonFactorySpy,
+                                        multicastAddressCalculator : multicastAddressCalculatorSpy,
                                         messageQueue : messageQueue,
                                         incomingAddress : incomingAddress,
                                         parentMessageRouterAddress : parentMessageRouterAddress,
@@ -70,10 +77,9 @@ define([
                                 };
 
                         var createRootMessageRouter =
-                                function(persistency, messagingStubFactory, messageQueue) {
+                                function(persistency, messageQueue) {
                                     return createMessageRouter(
                                             persistency,
-                                            messagingStubFactory,
                                             messageQueue,
                                             undefined,
                                             undefined);
@@ -109,8 +115,18 @@ define([
                             address = {
                                 addressInformation : "some info"
                             };
+                            multicastAddressCalculatorSpy = jasmine.createSpyObj("multicastAddressCalculator", [ "calculate" ]);
+                            multicastAddressCalculatorSpy.calculate.and.returnValue(new BrowserAddress({
+                                windowId : "incomingAddress"
+                            }));
+
                             messagingStubSpy = jasmine.createSpyObj("messagingStub", [ "transmit"
                             ]);
+                            messagingSkeletonSpy = jasmine.createSpyObj("messagingSkeletonSpy", [
+                                "registerMulticastSubscription",
+                                "unregisterMulticastSubscription"
+                            ]);
+
                             messagingStubSpy.transmit.and.returnValue(Promise.resolve({
                                 myKey : "myValue"
                             }));
@@ -119,7 +135,16 @@ define([
                                             "messagingStubFactorySpy",
                                             [ "createMessagingStub"
                                             ]);
+
+                            messagingSkeletonFactorySpy =
+                                jasmine.createSpyObj(
+                                        "messagingSkeletonFactorySpy",
+                                        [ "getSkeleton"
+                                        ]);
+
                             messagingStubFactorySpy.createMessagingStub.and.returnValue(messagingStubSpy);
+
+                            messagingSkeletonFactorySpy.getSkeleton.and.returnValue(messagingSkeletonSpy);
 
                             messageQueueSpy = jasmine.createSpyObj("messageQueueSpy", [
                                 "putMessage",
@@ -164,7 +189,6 @@ define([
                                     messageRouter =
                                             createRootMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy);
 
                                     channelAddress = new ChannelAddress({
@@ -194,7 +218,6 @@ define([
                                     messageRouter =
                                             createRootMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy);
 
                                     browserAddress = new BrowserAddress({
@@ -222,7 +245,6 @@ define([
                                     messageRouter =
                                             createMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
@@ -245,7 +267,6 @@ define([
                                     messageRouter =
                                             createRootMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy);
                                     joynrMessage2.expiryDate = Date.now() + 2000;
 
@@ -278,7 +299,6 @@ define([
                                     messageRouter =
                                             createRootMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy);
                                     var messageQueue = [];
                                     messageQueue[0] = joynrMessage2;
@@ -332,7 +352,6 @@ define([
                                     messageRouter =
                                             createRootMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy);
                                     joynrMessage2.expiryDate = Date.now() + 2000;
 
@@ -367,13 +386,210 @@ define([
                                     }).catch(fail);
                                 });
 
+
+                        describe("addMulticastReceiver", function() {
+                            var parameters;
+                            beforeEach(function() {
+                                parameters = {
+                                    multicastId : "multicastId- " + uuid(),
+                                    subscriberParticipantId : "subscriberParticipantId",
+                                    providerParticipantId : "providerParticipantId"
+                                };
+
+                                messageRouter =
+                                    createMessageRouter(
+                                            persistencySpy,
+                                            messageQueueSpy,
+                                            incomingAddress,
+                                            parentMessageRouterAddress);
+
+                                routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
+                                    "addMulticastReceiver"
+                                ]);
+    
+                               routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
+
+                               expect(messageRouter.hasMulticastReceivers()).toBe(false);
+                            });
+
+                            it("calls matching skeleton", function() {
+                                messageRouter.addMulticastReceiver(parameters);
+
+                                expect(messagingSkeletonSpy.registerMulticastSubscription).toHaveBeenCalled();
+
+                                expect(messagingSkeletonSpy.registerMulticastSubscription).toHaveBeenCalledWith(parameters.multicastId);
+
+                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
+                            });
+
+                            it("calls routing proxy if available", function() {
+                                messageRouter.setRoutingProxy(routingProxySpy);
+
+                                messageRouter.addMulticastReceiver(parameters);
+
+                                expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
+
+                                expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
+
+                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
+                            });
+
+                            it("queues calls and forwards them once proxy is available", function() {
+                                messageRouter.addMulticastReceiver(parameters);
+
+                                messageRouter.setRoutingProxy(routingProxySpy);
+
+                                expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
+
+                                expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
+
+                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
+                            });
+                        });
+
+                        describe("removeMulticastReceiver", function() {
+                            var parameters;
+                            beforeEach(function() {
+                                parameters = {
+                                    multicastId : "multicastId- " + uuid(),
+                                    subscriberParticipantId : "subscriberParticipantId",
+                                    providerParticipantId : "providerParticipantId"
+                                };
+
+                                messageRouter =
+                                    createMessageRouter(
+                                            persistencySpy,
+                                            messageQueueSpy,
+                                            incomingAddress,
+                                            parentMessageRouterAddress);
+
+                                routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
+                                    "addMulticastReceiver",
+                                    "removeMulticastReceiver"
+                                ]);
+
+                                routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
+                                routingProxySpy.removeMulticastReceiver.and.returnValue(Promise.resolve());
+
+                                expect(messageRouter.hasMulticastReceivers()).toBe(false);
+                                /* addMulticastReceiver is already tested, but added here for
+                                 * checking proper removeMulticastReceiver functionality */
+                                messageRouter.addMulticastReceiver(parameters);
+                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
+                            });
+
+                            it("calls matching skeleton registration and unregistration", function() {
+                                messageRouter.removeMulticastReceiver(parameters);
+
+                                expect(messagingSkeletonSpy.unregisterMulticastSubscription).toHaveBeenCalled();
+
+                                expect(messagingSkeletonSpy.unregisterMulticastSubscription).toHaveBeenCalledWith(parameters.multicastId);
+                                expect(messageRouter.hasMulticastReceivers()).toBe(false);
+                            });
+
+                            it("calls routing proxy if available", function() {
+                                messageRouter.setRoutingProxy(routingProxySpy);
+
+                                messageRouter.removeMulticastReceiver(parameters);
+
+                                expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalled();
+
+                                expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalledWith(parameters);
+
+                                expect(messageRouter.hasMulticastReceivers()).toBe(false);
+                            });
+
+                            it("queues calls and forwards them once proxy is available", function() {
+                                messageRouter.removeMulticastReceiver(parameters);
+
+                                messageRouter.setRoutingProxy(routingProxySpy);
+
+                                expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalled();
+
+                                expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalledWith(parameters);
+
+                                expect(messageRouter.hasMulticastReceivers()).toBe(false);
+                            });
+                        });
+
+                        describe("route multicast messages", function() {
+                            var parameters;
+                            var multicastMessage;
+                            beforeEach(function() {
+                                parameters = {
+                                    multicastId : "multicastId- " + uuid(),
+                                    subscriberParticipantId : "subscriberParticipantId",
+                                    providerParticipantId : "providerParticipantId"
+                                };
+
+                                multicastMessage = new JoynrMessage({
+                                    type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+                                });
+                                multicastMessage.expiryDate = 9360686108031;
+                                multicastMessage.to = parameters.multicastId;
+                                multicastMessage.from = "senderParticipantId";
+                                multicastMessage.payload = "hello";
+
+                                messageRouter =
+                                    createRootMessageRouter(
+                                            persistencySpy,
+                                            messageQueueSpy);
+
+                                /* add routing table entry for parameters.subscriberParticipantId,
+                                 * otherwise messaging stub call can be executed by the message router
+                                 */
+                                messageRouter.addNextHop(parameters.subscriberParticipantId, new BrowserAddress());
+                            });
+
+                            it("never, if message is received from global and NO local receiver", function() {
+                                multicastMessage.setReceivedFromGlobal(true);
+                                messageRouter.route(multicastMessage);
+                                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+                            });
+
+                            it("once, if message is received from global and has local receiver", function() {
+                                messageRouter.addMulticastReceiver(parameters);
+                                multicastMessage.setReceivedFromGlobal(true);
+                                messageRouter.route(multicastMessage);
+                                expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                                expect(messagingStubSpy.transmit.calls.count()).toBe(1);
+                            });
+
+                            it("once, if message is NOT received from global and NO local receiver", function() {
+                                messageRouter.route(multicastMessage);
+                                expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                                expect(messagingStubSpy.transmit.calls.count()).toBe(1);
+                            });
+
+                            it("twice, if message is received from global and local receiver available", function() {
+                                messageRouter.addMulticastReceiver(parameters);
+                                messageRouter.route(multicastMessage);
+                                expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                                expect(messagingStubSpy.transmit.calls.count()).toBe(2);
+                            });
+
+                            it("three times, if message is received from global and two local receivers available", function() {
+                                messageRouter.addMulticastReceiver(parameters);
+                                var parametersForSndReceiver = {
+                                    multicastId : parameters.multicastId,
+                                    subscriberParticipantId : "subscriberParticipantId2",
+                                    providerParticipantId : "providerParticipantId"
+                                };
+                                messageRouter.addMulticastReceiver(parametersForSndReceiver);
+                                messageRouter.addNextHop(parametersForSndReceiver.subscriberParticipantId, new BrowserAddress());
+                                messageRouter.route(multicastMessage);
+                                expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                                expect(messagingStubSpy.transmit.calls.count()).toBe(3);
+                            });
+
+                        });
+
                         it(
                                 "routes messages using the messagingStubFactory and messageStub",
                                 function(done) {
                                     messageRouter =
                                             createRootMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy);
 
                                     messageRouter.addNextHop(joynrMessage.to, address);
@@ -402,7 +618,6 @@ define([
                             messageRouter =
                                     createRootMessageRouter(
                                             persistencySpy,
-                                            messagingStubFactorySpy,
                                             messageQueueSpy);
 
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
@@ -429,7 +644,6 @@ define([
                                     messageRouter =
                                             createMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
@@ -464,7 +678,6 @@ define([
                                     messageRouter =
                                             createMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
@@ -493,7 +706,6 @@ define([
                                     messageRouter =
                                             createMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
@@ -535,7 +747,6 @@ define([
                                     messageRouter =
                                             createMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
@@ -575,7 +786,6 @@ define([
                                     messageRouter =
                                             createMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
@@ -619,7 +829,6 @@ define([
                                     messageRouter =
                                             createMessageRouter(
                                                     persistencySpy,
-                                                    messagingStubFactorySpy,
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
@@ -668,7 +877,6 @@ define([
                                     messageRouter =
                                         createMessageRouter(
                                                 persistencySpy,
-                                                messagingStubFactorySpy,
                                                 messageQueueSpy,
                                                 incomingAddress,
                                                 parentMessageRouterAddress);
@@ -689,7 +897,6 @@ define([
                                     messageRouter =
                                         createMessageRouter(
                                                 persistencySpy,
-                                                messagingStubFactorySpy,
                                                 messageQueueSpy,
                                                 incomingAddress,
                                                 parentMessageRouterAddress);

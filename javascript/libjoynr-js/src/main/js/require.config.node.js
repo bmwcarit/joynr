@@ -33,7 +33,7 @@ var requirejsConfig = {
         "atmosphere" : "lib/atmosphereNode",
         "log4javascript" : "lib/log4javascriptNode",
         "global/WebSocket" : "global/WebSocketNode",
-
+        "global/Mqtt" : "global/Mqtt",
         "joynr/Runtime" : "joynr/Runtime.websocket.libjoynr"
     }
 };

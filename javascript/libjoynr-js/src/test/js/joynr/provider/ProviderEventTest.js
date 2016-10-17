@@ -97,7 +97,8 @@ define(
 
                             var data = {
                                 broadcastOutputParameters : value,
-                                filters : []
+                                filters : [],
+                                partitions : []
                             };
 
                             expect(spy1).toHaveBeenCalled();
@@ -169,7 +170,8 @@ define(
                             var data = {
                                 broadcastOutputParameters : value,
                                 filters : [ filterFunc
-                                ]
+                                ],
+                                partitions : []
                             };
                             var filterParameters = {};
 

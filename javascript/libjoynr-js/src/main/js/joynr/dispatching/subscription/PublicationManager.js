@@ -25,6 +25,9 @@ define(
             "global/Promise",
             "joynr/proxy/SubscriptionQos",
             "joynr/proxy/PeriodicSubscriptionQos",
+            "joynr/dispatching/types/BroadcastSubscriptionRequest",
+            "joynr/dispatching/types/SubscriptionRequest",
+            "joynr/dispatching/types/MulticastPublication",
             "joynr/dispatching/types/SubscriptionPublication",
             "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionStop",
@@ -44,6 +47,9 @@ define(
                 Promise,
                 SubscriptionQos,
                 PeriodicSubscriptionQos,
+                BroadcastSubscriptionRequest,
+                SubscriptionRequest,
+                MulticastPublication,
                 SubscriptionPublication,
                 SubscriptionReply,
                 SubscriptionStop,
@@ -95,11 +101,13 @@ define(
                 // queued subscriptions for deferred providers
                 var queuedProviderParticipantIdToSubscriptionRequestsMapping = {};
 
-                // map: provider.id+attributeName -> subscriptionIds -> subscription
+                // map: providerId+attributeName -> subscriptionIds -> subscription
                 var onChangeProviderAttributeToSubscriptions = {};
 
-                // map: provider.id+eventName -> subscriptionIds -> subscription
+                // map: providerId+eventName -> subscriptionIds -> subscription
                 var onChangeProviderEventToSubscriptions = {};
+
+                var multicastSubscriptions = {};
 
                 var subscriptionPersistenceKey =
                         PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX + "_" + joynrInstanceId;
@@ -326,6 +334,14 @@ define(
                 }
 
                 /**
+                 * @name PublicationManager#getProviderIdEventKey
+                 * @private
+                 */
+                function getProviderIdEventKey(providerId, eventName) {
+                    return providerId + "." + eventName;
+                }
+
+                /**
                  * Gives the list of subscriptions for the given providerId and attribute name
                  * @name PublicationManager#getSubscriptionsForProviderAttribute
                  * @private
@@ -448,14 +464,6 @@ define(
                 // Broadcast specific implementation
 
                 /**
-                 * @name PublicationManager#getProviderIdEventKey
-                 * @private
-                 */
-                function getProviderIdEventKey(providerId, eventName) {
-                    return providerId + "." + eventName;
-                }
-
-                /**
                  * Gives the list of subscriptions for the given providerId and event name
                  * @name PublicationManager#getSubscriptionsForProviderEvent
                  * @private
@@ -476,6 +484,19 @@ define(
                     return onChangeProviderEventToSubscriptions[key];
                 }
 
+                function prepareMulticastPublication(providerId, eventName, partitions, outputParameters) {
+                    var multicastId = SubscriptionUtil.createMulticastId(providerId, eventName, partitions);
+                    var publication = new MulticastPublication({
+                        response : outputParameters,
+                        multicastId : multicastId
+                    });
+                    dispatcher.sendMulticastPublication({
+                        from : providerId,
+                        expiryDate : (Date.now() + SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS).toString()//TODO: what should be the ttl?
+                    }, publication
+                    );
+                }
+
                 /**
                  * @name PublicationManager#publishEventValue
                  * @private
@@ -489,18 +510,23 @@ define(
                  *            value
                  */
                 function publishEventValue(providerId, eventName, event, data) {
+                    var value = data.broadcastOutputParameters;
                     if (!isReady()) {
                         throw new Error("event publication for providerId \""
                                 + providerId + "and eventName " + eventName
                                 + " is not forwarded to subscribers, as the publication manager is "
                                 + "already shut down");
                     }
+                    if (!event.selective) {
+                        //handle multicast
+                        prepareMulticastPublication(providerId, eventName, data.partitions, value.outputParameters);
+                        return;
+                    }
                     var publish;
                     var i;
                     var filterParameters;
                     var subscriptionId, subscriptions =
                         getSubscriptionsForProviderEvent(providerId, eventName);
-                    var value = data.broadcastOutputParameters;
                     var filters = data.filters;
                     if (!subscriptions) {
                         log.error("ProviderEvent "
@@ -559,7 +585,7 @@ define(
                     var key = getProviderIdEventKey(providerId, eventName);
 
                     eventObserverFunctions[key] = function(data) {
-                        publishEventValue(providerId, eventName, event, data);
+                        publishEventValue(providerId, eventName, event, data || {});
                     };
                     event.registerObserver(eventObserverFunctions[key]);
                 }
@@ -574,6 +600,35 @@ define(
                 }
 
                 // End of broadcast specific implementation
+
+                function addRequestToMulticastSubscriptions(multicastId, subscriptionId) {
+                    var i, subscriptions;
+                    if (multicastSubscriptions[multicastId] === undefined) {
+                        multicastSubscriptions[multicastId] = [];
+                    }
+                    subscriptions = multicastSubscriptions[multicastId];
+                    for(i=0;i<subscriptions.length;i++) {
+                        if (subscriptions[i] === subscriptionId) {
+                            return;
+                        }
+                    }
+                    subscriptions.push(subscriptionId);
+                }
+
+                function removeRequestFromMulticastSubscriptions(multicastId, subscriptionId) {
+                    if (multicastId !== undefined && multicastSubscriptions[multicastId] !== undefined) {
+                        var i;
+                        for (i=0; i < multicastSubscriptions[multicastId].length; i++) {
+                            if ( multicastSubscriptions[multicastId][i] === subscriptionId) {
+                                multicastSubscriptions[multicastId].splice(i,1);
+                                break;
+                            }
+                        }
+                        if (multicastSubscriptions[multicastId].length === 0) {
+                            delete multicastSubscriptions[multicastId];
+                        }
+                    }
+                }
 
                 /**
                  * Removes a subscription, stops scheduled timers
@@ -626,47 +681,55 @@ define(
                         return;
                     }
 
-                    var subscriptions;
+                    var subscription;
 
                     if (subscriptionInfo.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE) {
                         // This is an attribute subscription
 
                         var attributeName = subscriptionInfo.subscribedToName;
 
-                        // find all subscriptions for the attribute/provider.id
-                        subscriptions =
-                                getSubscriptionsForProviderAttribute(provider.id, attributeName);
-                        if (subscriptions === undefined) {
+                        var attributeSubscriptions =
+                                getSubscriptionsForProviderAttribute(providerParticipantId, attributeName);
+                        if (attributeSubscriptions === undefined) {
                             log.error("ProviderAttribute "
                                 + attributeName
                                 + " for providerId "
-                                + provider.id
+                                + providerParticipantId
                                 + " is not registered or notifiable");
                             // TODO: proper error handling for empty subscription map =>
                             // ProviderAttribute is not notifiable or not registered
                             return;
+                        }
+                        subscription = attributeSubscriptions[subscriptionId];
+                        delete attributeSubscriptions[subscriptionId];
+                        if (Object.keys(attributeSubscriptions).length === 0) {
+                            resetSubscriptionsForProviderAttribute(providerParticipantId, attributeName);
                         }
                     } else {
                         // subscriptionInfo.type === SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
                         // This is a event subscription
                         var eventName = subscriptionInfo.subscribedToName;
 
-                        // find all subscriptions for the event/provider.id
-                        subscriptions =
-                                getSubscriptionsForProviderEvent(provider.id, eventName);
-                        if (subscriptions === undefined) {
+                        // find all subscriptions for the event/providerParticipantId
+                        var eventSubscriptions =
+                                getSubscriptionsForProviderEvent(providerParticipantId, eventName);
+                        if (eventSubscriptions === undefined) {
                             log.error("ProviderEvent "
                                 + eventName
                                 + " for providerId "
-                                + provider.id
+                                + providerParticipantId
                                 + " is not registered or notifiable");
                             // TODO: proper error handling for empty subscription map =>
                             return;
                         }
+                        subscription = eventSubscriptions[subscriptionId];
+                        delete eventSubscriptions[subscriptionId];
+                        if (Object.keys(eventSubscriptions).length === 0) {
+                            resetSubscriptionsForProviderEvent(providerParticipantId, eventName);
+                        }
                     }
 
                     // make sure subscription exists
-                    var subscription = subscriptions[subscriptionId];
                     if (subscription === undefined) {
                         log.error("no subscription found for subscriptionId " + subscriptionId);
                         // TODO: proper error handling when subscription does not exist
@@ -683,8 +746,8 @@ define(
                         LongTimer.clearTimeout(subscription.endDateTimeout);
                     }
 
-                    // remove subscription
-                    delete subscriptions[subscriptionId];
+                    removeRequestFromMulticastSubscriptions(subscription.multicastId, subscriptionId);
+
                     delete subscriptionInfos[subscriptionId];
 
                     persistency.removeItem(subscriptionId);
@@ -941,7 +1004,7 @@ define(
 
                             // make sure a ProviderAttribute is registered
                             var subscriptions =
-                                    getSubscriptionsForProviderAttribute(provider.id, attributeName);
+                                    getSubscriptionsForProviderAttribute(providerParticipantId, attributeName);
                             if (subscriptions === undefined) {
                                 exception = new SubscriptionException({
                                     detailMessage: "error handling subscription request: "
@@ -949,7 +1012,7 @@ define(
                                         + ". ProviderAttribute "
                                         + attributeName
                                         + " for providerId "
-                                        + provider.id
+                                        + providerParticipantId
                                         + " is not registered or notifiable",
                                     subscriptionId : subscriptionId
                                 });
@@ -979,7 +1042,7 @@ define(
                                             + "for ProviderAttribute "
                                             + attributeName
                                             + " for providerId "
-                                            + provider.id
+                                            + providerParticipantId
                                             + " lies in the past",
                                         subscriptionId : subscriptionId
                                     });
@@ -1056,10 +1119,210 @@ define(
                                     callbackDispatcher);
                         };
 
+                function handleBroadcastSubscriptionRequestInternal(proxyParticipantId,
+                                providerParticipantId,
+                                subscriptionRequest,
+                                callbackDispatcher,
+                                multicast) {
+                    var requestType = multicast ? "multicast" : "broadcast" + " subscription request";
+                    var exception;
+                    if (!isReady()) {
+                        exception = new SubscriptionException({
+                            detailMessage: "error handling " + requestType + ": "
+                                + JSONSerializer.stringify(subscriptionRequest)
+                                + "and provider ParticipantId "
+                                + providerParticipantId
+                                + ": joynr runtime already shut down",
+                            subscriptionId : subscriptionRequest.subscriptionId
+                        });
+                        log.debug(exception.detailMessage);
+                        callbackDispatcherAsync(
+                                {
+                                    error : exception,
+                                    subscriptionId : subscriptionRequest.subscriptionId
+                                },
+                                callbackDispatcher);
+                        return;
+                    }
+                    var provider = participantIdToProvider[providerParticipantId];
+                    // construct subscriptionInfo from subscriptionRequest and participantIds
+
+                    var subscriptionInfo =
+                        new SubscriptionInformation(
+                                multicast ? SubscriptionInformation.SUBSCRIPTION_TYPE_MULTICAST : SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST,
+                                proxyParticipantId,
+                                providerParticipantId,
+                                subscriptionRequest);
+
+                    var subscriptionId = subscriptionInfo.subscriptionId;
+
+                    // in case the subscriptionId is already used in a previous
+                    // subscription, remove this one
+                    removeSubscription(subscriptionId);
+
+                    // make sure the provider is registered
+                    if (provider === undefined) {
+                        log.warn("Provider with participantId "
+                                + providerParticipantId
+                                + "not found. Queueing " + requestType + "...");
+                        queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
+                        var pendingSubscriptions =
+                            queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
+                        if (pendingSubscriptions === undefined) {
+                            pendingSubscriptions = [];
+                            queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId] =
+                                pendingSubscriptions;
+                        }
+                        pendingSubscriptions[pendingSubscriptions.length] =
+                            subscriptionInfo;
+                        return;
+                    }
+
+                    // make sure the provider contains the event being subscribed to
+                    var eventName = subscriptionRequest.subscribedToName;
+                    var event = provider[eventName];
+                    if (event === undefined) {
+                        exception = new SubscriptionException({
+                            detailMessage: "error handling " + requestType + ": "
+                                + JSONSerializer.stringify(subscriptionRequest)
+                                + ". Provider: "
+                                + providerParticipantId
+                                + " misses event "
+                                + eventName,
+                            subscriptionId : subscriptionId
+                        });
+                        log.error(exception.detailMessage);
+                        callbackDispatcherAsync(
+                                {
+                                    error : exception,
+                                    subscriptionId : subscriptionId
+                                },
+                                callbackDispatcher);
+                        return;
+                    }
+
+                    // make sure a ProviderEvent is registered
+                    var subscriptions =
+                            getSubscriptionsForProviderEvent(providerParticipantId, eventName);
+                    if (subscriptions === undefined) {
+                        exception = new SubscriptionException({
+                            detailMessage: "error handling " + requestType + ": "
+                                + JSONSerializer.stringify(subscriptionRequest)
+                                + ". ProviderEvent "
+                                + eventName
+                                + " for providerId "
+                                + providerParticipantId
+                                + " is not registered",
+                            subscriptionId : subscriptionId
+                        });
+                        log.error(exception.detailMessage);
+                        callbackDispatcherAsync(
+                                {
+                                    error : exception,
+                                    subscriptionId : subscriptionId
+                                },
+                                callbackDispatcher);
+                        return;
+                    }
+
+                    // if endDate is defined (also exclude default value 0 for
+                    // the expiryDateMs qos-property)
+                    if (subscriptionInfo.qos.expiryDateMs !== undefined
+                        && subscriptionInfo.qos.expiryDateMs !== SubscriptionQos.NO_EXPIRY_DATE) {
+                        var timeToEndDate = subscriptionRequest.qos.expiryDateMs - Date.now();
+
+                        // if endDate lies in the past => don't add the subscription
+                        if (timeToEndDate <= 0) {
+                            exception = new SubscriptionException({
+                                detailMessage: "error handling " + requestType + ": "
+                                    + JSONSerializer.stringify(subscriptionRequest)
+                                    + ". expiryDateMs "
+                                    + subscriptionRequest.qos.expiryDateMs
+                                    + "for ProviderEvent "
+                                    + eventName
+                                    + " for providerId "
+                                    + providerParticipantId
+                                    + " lies in the past",
+                                subscriptionId : subscriptionId
+                            });
+                            log.error(exception.detailMessage);
+                            callbackDispatcherAsync(
+                                    {
+                                        error : exception,
+                                        subscriptionId : subscriptionId
+                                    },
+                                    callbackDispatcher);
+                            return;
+                        }
+
+                        // schedule to remove subscription from internal maps
+                        subscriptionInfo.endDateTimeout =
+                                LongTimer.setTimeout(function subscriptionReachedEndDate() {
+                                    removeSubscription(subscriptionId);
+                                }, timeToEndDate);
+                    }
+
+                    if (multicast) {
+                        var multicastId = subscriptionInfo.multicastId;
+                        if (event.selective) {
+                            exception = new SubscriptionException({
+                                detailMessage: "error handling multicast subscription request: "
+                                    + JSONSerializer.stringify(subscriptionRequest)
+                                    + ". Provider: "
+                                    + providerParticipantId
+                                    + " event "
+                                    + eventName + " is marked as selective, which is not allowed for multicasts",
+                                    subscriptionId : subscriptionId
+                            });
+                            log.error(exception.detailMessage);
+                            callbackDispatcherAsync(
+                                    {
+                                        error : exception,
+                                        subscriptionId : subscriptionId
+                                    },
+                                    callbackDispatcher);
+                            return;
+                        }
+                        addRequestToMulticastSubscriptions(multicastId, subscriptionId);
+                    } else {
+                        var checkResult = event.checkFilterParameters(subscriptionRequest.filterParameters);
+                        if (checkResult.caughtErrors.length !== 0) {
+                            exception = new SubscriptionException({
+                                detailMessage: "The incoming subscription request does not contain the expected filter parameters to subscribe to broadcast "
+                                    + eventName
+                                    + " for providerId "
+                                    + providerParticipantId + ": "
+                                    + JSON.stringify(checkResult.caughtErrors),
+                                    subscriptionId : subscriptionId
+                            });
+                            log.error(exception.detailMessage);
+                            callbackDispatcherAsync(
+                                    {
+                                        error : exception,
+                                        subscriptionId : subscriptionId
+                                    },
+                                    callbackDispatcher);
+                            return;
+                        }
+                    }
+
+                    // save subscriptionInfo to subscriptionId => subscription and
+                    // ProviderEvent => subscription map
+                    subscriptionInfos[subscriptionId] = subscriptionInfo;
+                    subscriptions[subscriptionId] = subscriptionInfo;
+
+                    persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
+                    storeSubscriptions();
+                    callbackDispatcherAsync(
+                            {
+                                subscriptionId : subscriptionId
+                            },
+                            callbackDispatcher);
+                }
                 /**
-                 * Handles EventSubscriptionRequests
+                 * Handles BroadcastSubscriptionRequests
                  *
-                 * @name PublicationManager#handleEventSubscriptionRequest
+                 * @name PublicationManager#handleBroadcastSubscriptionRequest
                  * @function
                  *
                  * @param {BroadcastSubscriptionRequest}
@@ -1070,170 +1333,44 @@ define(
                  * @throws {Error}
                  *             when no provider exists or the provider does not have the event
                  */
-                this.handleEventSubscriptionRequest =
-                        function handleEventSubscriptionRequest(
+                this.handleBroadcastSubscriptionRequest =
+                        function handleBroadcastSubscriptionRequest(
                                 proxyParticipantId,
                                 providerParticipantId,
                                 subscriptionRequest,
                                 callbackDispatcher) {
-                            var exception;
-                            if (!isReady()) {
-                                exception = new SubscriptionException({
-                                    detailMessage: "error handling subscription request: "
-                                        + JSONSerializer.stringify(subscriptionRequest)
-                                        + "and provider ParticipantId "
-                                        + providerParticipantId
-                                        + ": joynr runtime already shut down",
-                                    subscriptionId : subscriptionRequest.subscriptionId
-                                });
-                                log.debug(exception.detailMessage);
-                                callbackDispatcherAsync(
-                                        {
-                                            error : exception,
-                                            subscriptionId : subscriptionRequest.subscriptionId
-                                        },
-                                        callbackDispatcher);
-                                return;
-                            }
-                            var provider = participantIdToProvider[providerParticipantId];
-                            // construct subscriptionInfo from subscriptionRequest and participantIds
-                            var subscriptionInfo =
-                                    new SubscriptionInformation(
-                                            SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST,
-                                            proxyParticipantId,
-                                            providerParticipantId,
-                                            subscriptionRequest);
+                    return handleBroadcastSubscriptionRequestInternal(proxyParticipantId,
+                                                              providerParticipantId,
+                                                              subscriptionRequest,
+                                                              callbackDispatcher,
+                                                              false);
+                };
 
-                            var subscriptionId = subscriptionInfo.subscriptionId;
-
-                            // in case the subscriptionId is already used in a previous
-                            // subscription, remove this one
-                            removeSubscription(subscriptionId);
-
-                            // make sure the provider is registered
-                            if (provider === undefined) {
-                                log.error("Provider with participantId "
-                                    + providerParticipantId
-                                    + "not found. Queueing subscription request...");
-                                queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
-                                var pendingSubscriptions =
-                                        queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
-                                if (pendingSubscriptions === undefined) {
-                                    pendingSubscriptions = [];
-                                    queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId] =
-                                            pendingSubscriptions;
-                                }
-                                pendingSubscriptions[pendingSubscriptions.length] =
-                                        subscriptionInfo;
-                                return;
-                            }
-
-                            // make sure the provider contains the event being subscribed to
-                            var eventName = subscriptionRequest.subscribedToName;
-                            var event = provider[eventName];
-                            if (event === undefined) {
-                                exception = new SubscriptionException({
-                                    detailMessage: "error handling broadcast subscription request: "
-                                        + JSONSerializer.stringify(subscriptionRequest)
-                                        + ". Provider: "
-                                        + providerParticipantId
-                                        + " misses event "
-                                        + eventName,
-                                    subscriptionId : subscriptionId
-                                });
-                                log.error(exception.detailMessage);
-                                callbackDispatcherAsync(
-                                        {
-                                            error : exception,
-                                            subscriptionId : subscriptionId
-                                        },
-                                        callbackDispatcher);
-                                return;
-                            }
-
-                            var checkResult = event.checkFilterParameters(subscriptionRequest.filterParameters);
-                            if (checkResult.caughtErrors.length !== 0) {
-                                log.error("The incoming subscription request does not contain the expected filter parameters to subscribe to broadcast "
-                                        + eventName
-                                        + " for providerId "
-                                        + provider.id + ": "
-                                        + JSON.stringify(checkResult.caughtErrors));
-                                    return;
-                            }
-                            // make sure a ProviderEvent is registered
-                            var subscriptions =
-                                    getSubscriptionsForProviderEvent(provider.id, eventName);
-                            if (subscriptions === undefined) {
-                                exception = new SubscriptionException({
-                                    detailMessage: "error handling broadcast subscription request: "
-                                        + JSONSerializer.stringify(subscriptionRequest)
-                                        + ". ProviderEvent "
-                                        + eventName
-                                        + " for providerId "
-                                        + provider.id
-                                        + " is not registered",
-                                    subscriptionId : subscriptionId
-                                });
-                                log.error(exception.detailMessage);
-                                callbackDispatcherAsync(
-                                        {
-                                            error : exception,
-                                            subscriptionId : subscriptionId
-                                        },
-                                        callbackDispatcher);
-                                return;
-                            }
-
-                            // if endDate is defined (also exclude default value 0 for
-                            // the expiryDateMs qos-property)
-                            if (subscriptionInfo.qos.expiryDateMs !== undefined
-                                && subscriptionInfo.qos.expiryDateMs !== SubscriptionQos.NO_EXPIRY_DATE) {
-                                var timeToEndDate = subscriptionRequest.qos.expiryDateMs - Date.now();
-
-                                // if endDate lies in the past => don't add the subscription
-                                if (timeToEndDate <= 0) {
-                                    exception = new SubscriptionException({
-                                        detailMessage: "error handling subscription request: "
-                                            + JSONSerializer.stringify(subscriptionRequest)
-                                            + ". expiryDateMs "
-                                            + subscriptionRequest.qos.expiryDateMs
-                                            + "for ProviderEvent "
-                                            + eventName
-                                            + " for providerId "
-                                            + provider.id
-                                            + " lies in the past",
-                                        subscriptionId : subscriptionId
-                                    });
-                                    log.error(exception.detailMessage);
-                                    callbackDispatcherAsync(
-                                            {
-                                                error : exception,
-                                                subscriptionId : subscriptionId
-                                            },
-                                            callbackDispatcher);
-                                    return;
-                                }
-
-                                // schedule to remove subscription from internal maps
-                                subscriptionInfo.endDateTimeout =
-                                        LongTimer.setTimeout(function subscriptionReachedEndDate() {
-                                            removeSubscription(subscriptionId);
-                                        }, timeToEndDate);
-                            }
-
-                            // save subscriptionInfo to subscriptionId => subscription and
-                            // ProviderEvent => subscription map
-                            subscriptionInfos[subscriptionId] = subscriptionInfo;
-                            subscriptions[subscriptionId] = subscriptionInfo;
-
-                            persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
-                            storeSubscriptions();
-                            callbackDispatcherAsync(
-                                    {
-                                        subscriptionId : subscriptionId
-                                    },
-                                    callbackDispatcher);
-                        };
+                /**
+                * Handles MulticastSubscriptionRequests
+                *
+                * @name PublicationManager#handleMulticastSubscriptionRequest
+                * @function
+                *
+                * @param {MulticastSubscriptionRequest}
+                *            providerParticipantId - participantId of provider producing the multicast
+                *            subscriptionRequest incoming subscriptionRequest
+                *            callbackDispatcher callback function to inform the caller about the handling result
+                * @throws {Error}
+                *             when no provider exists or the provider does not have the event
+                */
+               this.handleMulticastSubscriptionRequest =
+                       function handleMulticastSubscriptionRequest(
+                               proxyParticipantId,
+                               providerParticipantId,
+                               subscriptionRequest,
+                               callbackDispatcher) {
+                   return handleBroadcastSubscriptionRequestInternal(proxyParticipantId,
+                           providerParticipantId,
+                           subscriptionRequest,
+                           callbackDispatcher,
+                           true);
+               };
 
                 /**
                  * Unregisters all attributes of a provider to handle subscription requests
@@ -1258,7 +1395,7 @@ define(
                                     // and adds it if this is the case
                                     if (providerAttributeIsNotifiable(provider[propertyName])) {
                                         removePublicationAttribute(
-                                                provider.id,
+                                                participantId,
                                                 propertyName,
                                                 provider[propertyName]);
                                     }
@@ -1267,7 +1404,7 @@ define(
                                     // and adds it if this is the case
                                     if (propertyIsProviderEvent(provider[propertyName])) {
                                         removePublicationEvent(
-                                                provider.id,
+                                                participantId,
                                                 propertyName,
                                                 provider[propertyName]);
                                     }
@@ -1307,7 +1444,7 @@ define(
                                     // and adds it if this is the case
                                     if (providerAttributeIsNotifiable(provider[propertyName])) {
                                         addPublicationAttribute(
-                                                provider.id,
+                                                participantId,
                                                 propertyName,
                                                 provider[propertyName]);
                                     }
@@ -1316,7 +1453,7 @@ define(
                                     // and adds it if this is the case
                                     if (propertyIsProviderEvent(provider[propertyName])) {
                                         addPublicationEvent(
-                                                provider.id,
+                                                participantId,
                                                 propertyName,
                                                 provider[propertyName]);
                                     }
@@ -1332,19 +1469,28 @@ define(
                                                 pendingSubscriptions[pendingSubscription];
                                         delete pendingSubscriptions[pendingSubscription];
 
-                                        if (subscriptionObject.filterParameters === undefined) {
+                                        /*jslint nomen:true*/
+                                        if (subscriptionObject._typeName === SubscriptionRequest._typeName) {
                                             // call attribute subscription handler
                                             this.handleSubscriptionRequest(
                                                 subscriptionObject.proxyParticipantId,
                                                 subscriptionObject.providerParticipantId,
                                                 subscriptionObject);
                                         } else {
-                                            // call event subscription handler
-                                            this.handleEventSubscriptionRequest(
-                                                subscriptionObject.proxyParticipantId,
-                                                subscriptionObject.providerParticipantId,
-                                                subscriptionObject);
+                                            // call broadcast subscription handler
+                                            if (subscriptionObject._typeName === BroadcastSubscriptionRequest._typeName) {
+                                                this.handleBroadcastSubscriptionRequest(
+                                                        subscriptionObject.proxyParticipantId,
+                                                        subscriptionObject.providerParticipantId,
+                                                        subscriptionObject);
+                                            } else {
+                                                this.handleMulticastSubscriptionRequest(
+                                                        subscriptionObject.proxyParticipantId,
+                                                        subscriptionObject.providerParticipantId,
+                                                        subscriptionObject);
+                                            }
                                         }
+                                        /*jslint nomen:false*/
                                     }
                                 }
                             }
@@ -1374,10 +1520,28 @@ define(
                                         if (item !== null && item !== undefined) {
                                             try {
                                                 subscriptionInfo = JSON.parse(item);
-                                                this.handleSubscriptionRequest(
+                                                /*jslint nomen:true*/
+                                                if (subscriptionInfo._typeName === SubscriptionRequest._typeName) {
+                                                    // call attribute subscription handler
+                                                    this.handleSubscriptionRequest(
                                                         subscriptionInfo.proxyParticipantId,
                                                         subscriptionInfo.providerParticipantId,
                                                         subscriptionInfo);
+                                                } else {
+                                                    // call broadcast subscription handler
+                                                    if (subscriptionInfo._typeName === BroadcastSubscriptionRequest._typeName) {
+                                                        this.handleBroadcastSubscriptionRequest(
+                                                                subscriptionInfo.proxyParticipantId,
+                                                                subscriptionInfo.providerParticipantId,
+                                                                subscriptionInfo);
+                                                    } else {
+                                                        this.handleMulticastSubscriptionRequest(
+                                                                subscriptionInfo.proxyParticipantId,
+                                                                subscriptionInfo.providerParticipantId,
+                                                                subscriptionInfo);
+                                                    }
+                                                }
+                                                /*jslint nomen:false*/
                                             } catch (err) {
                                                 throw new Error(err);
                                             }
@@ -1387,6 +1551,28 @@ define(
                             }
                         };
 
+                this.hasMulticastSubscriptions = function() {
+                    return Object.keys(multicastSubscriptions).length > 0;
+                };
+
+                this.hasSubscriptions = function() {
+                    var hasSubscriptionInfos = Object.keys(subscriptionInfos).length > 0;
+
+                    var hasQueuedSubscriptionInfos = Object.keys(queuedSubscriptionInfos).length > 0;
+
+                    var hasQueuedProviderParticipantIdToSubscriptionRequestsMapping = Object.keys(queuedProviderParticipantIdToSubscriptionRequestsMapping).length > 0;
+
+                    var hasOnChangeProviderAttributeToSubscriptions = Object.keys(onChangeProviderAttributeToSubscriptions).length > 0;
+
+                    var hasOnChangeProviderEventToSubscriptions = Object.keys(onChangeProviderEventToSubscriptions).length > 0;
+
+                    return hasSubscriptionInfos ||
+                           hasQueuedSubscriptionInfos ||
+                           hasQueuedProviderParticipantIdToSubscriptionRequestsMapping ||
+                           hasOnChangeProviderAttributeToSubscriptions ||
+                           hasOnChangeProviderEventToSubscriptions ||
+                           this.hasMulticastSubscriptions();
+                };
 
                 /**
                  * Shutdown the publication manager

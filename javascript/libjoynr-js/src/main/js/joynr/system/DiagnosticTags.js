@@ -109,6 +109,35 @@ define("joynr/system/DiagnosticTags", [], function() {
     /**
      * @param {Object} subscriptionRequestInfo
      */
+    DiagnosticTags.forMulticastSubscriptionRequest =
+            function forMulticastSubscriptionRequest(subscriptionRequestInfo) {
+                return {
+                    diagnosticTag : "MulticastSubscriptionRequest",
+                    eventName : subscriptionRequestInfo.subscriptionRequest.subscribedToName,
+                    subscriptionId : subscriptionRequestInfo.subscriptionRequest.subscriptionId,
+                    multicastId : subscriptionRequestInfo.subscriptionRequest.multicastId,
+                    to : subscriptionRequestInfo.to,
+                    from : subscriptionRequestInfo.from
+                };
+            };
+
+    /**
+     * @param {Object} subscriptionRequestInfo
+     */
+    DiagnosticTags.forBroadcastSubscriptionRequest =
+            function forBroadcastSubscriptionRequest(subscriptionRequestInfo) {
+                return {
+                    diagnosticTag : "BroadcastSubscriptionRequest",
+                    eventName : subscriptionRequestInfo.subscriptionRequest.subscribedToName,
+                    subscriptionId : subscriptionRequestInfo.subscriptionRequest.subscriptionId,
+                    to : subscriptionRequestInfo.to,
+                    from : subscriptionRequestInfo.from
+                };
+            };
+
+    /**
+     * @param {Object} subscriptionRequestInfo
+     */
     DiagnosticTags.forSubscriptionRequest =
             function forSubscriptionRequest(subscriptionRequestInfo) {
                 return {
