@@ -1,7 +1,7 @@
 option(
     ENABLE_CLANG_FORMATTER
     "Use clang-formatter to format source code?"
-    ON
+    OFF
 )
 message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 

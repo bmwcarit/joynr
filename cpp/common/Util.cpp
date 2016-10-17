@@ -23,6 +23,7 @@
 #include <cctype>
 #include <iterator>
 #include <stdexcept>
+#include <sstream>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -119,6 +120,18 @@ std::string createUuid()
     return boost::uuids::to_string(uuidGenerator());
 }
 
+std::string createMulticastId(const std::string& providerParticipantId,
+                              const std::string& multicastName,
+                              const std::vector<std::string>& partitions)
+{
+    std::stringstream multicastId;
+    multicastId << providerParticipantId << "/" + multicastName;
+    for (const auto& partition : partitions) {
+        multicastId << "/" << partition;
+    }
+    return multicastId.str();
+}
+
 void logSerializedMessage(Logger& logger,
                           const std::string& explanation,
                           const std::string& message)
@@ -132,6 +145,18 @@ void logSerializedMessage(Logger& logger,
     } else {
         JOYNR_LOG_DEBUG(logger, "{} {}, length {}", explanation, message, message.length());
     }
+}
+
+std::string toDateString(const std::chrono::system_clock::time_point& timePoint)
+{
+    std::time_t time = std::chrono::system_clock::to_time_t(timePoint);
+    return std::ctime(&time);
+}
+
+std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint)
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch())
+            .count();
 }
 
 } // namespace util

@@ -129,7 +129,7 @@ define([
 
                             var resolvedPromise = Promise.resolve(arbitratedCaps);
                             arbitratorSpy.startArbitration.and.returnValue(resolvedPromise);
-                        
+                            messageRouterSpy.addNextHop.and.returnValue(resolvedPromise);
                             proxyBuilder = new ProxyBuilder({
                                 arbitrator : arbitratorSpy
                             }, {

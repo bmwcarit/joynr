@@ -26,8 +26,6 @@
 #include "joynr/infrastructure/DacTypes/Permission.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
 
-#include "joynr/TypeUtil.h"
-
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr::infrastructure::DacTypes;
@@ -71,10 +69,6 @@ public:
                                            TrustLevel::LOW,
                                            std::string(),
                                            Permission::NO);
-    }
-
-    void TearDown()
-    {
     }
 
     static const std::vector<TrustLevel::Enum> ALL_TRUST_LEVELS;

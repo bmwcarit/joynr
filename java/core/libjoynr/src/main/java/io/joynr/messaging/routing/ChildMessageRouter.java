@@ -19,12 +19,22 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.SystemServicesSettings;
+import joynr.JoynrMessage;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
@@ -36,10 +46,6 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-
 /**
  * MessageRouter implementation which adds hops to its parent and tries to resolve unknown addresses at its parent
  */
@@ -47,33 +53,51 @@ import java.util.concurrent.ScheduledExecutorService;
 public class ChildMessageRouter extends MessageRouterImpl {
      private Logger logger = LoggerFactory.getLogger(ChildMessageRouter.class);
 
+    private static interface DeferrableRegistration {
+        void register();
+    }
+
     private Address parentRouterMessagingAddress;
     private RoutingProxy parentRouter;
     private Address incomingAddress;
     private Set<String> deferredParentHopsParticipantIds = new HashSet<>();
+    private Map<String, DeferrableRegistration> deferredMulticastRegististrations = new HashMap<>();
 
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public ChildMessageRouter(RoutingTable routingTable,
                               @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
                               @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                               @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                              MessagingStubFactory messagingStubFactory) {
-        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory);
+                              MessagingStubFactory messagingStubFactory, MessagingSkeletonFactory messagingSkeletonFactory, AddressManager addressManager, MulticastReceiverRegistry multicastReceiverRegistry) {
+        // CHECKSTYLE:ON
+        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory, messagingSkeletonFactory, addressManager, multicastReceiverRegistry);
         this.incomingAddress = incomingAddress;
     }
 
     @Override
-    protected Address getAddress(String toParticipantId) {
-        Address address = super.getAddress(toParticipantId);
-        if (address == null && parentRouter != null) {
+    protected Set<Address> getAddresses(JoynrMessage message) {
+        Set<Address> result;
+        JoynrRuntimeException noAddressException = null;
+        try {
+            result = super.getAddresses(message);
+        } catch (JoynrMessageNotSentException | JoynrIllegalStateException e) {
+            noAddressException = e;
+            result = new HashSet<>();
+        }
+        String toParticipantId = message.getTo();
+        if (result.isEmpty() && parentRouter != null) {
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {
                 super.addNextHop(toParticipantId, parentRouterMessagingAddress);
-                address = parentRouterMessagingAddress;
+                result.add(parentRouterMessagingAddress);
             }
         }
-        return address;
+        if (result.isEmpty() && noAddressException != null) {
+            throw noAddressException;
+        }
+        return result;
     }
 
     @Override
@@ -104,6 +128,36 @@ public class ChildMessageRouter extends MessageRouterImpl {
         }
     }
 
+    @Override
+    public void addMulticastReceiver(final String multicastId, final String subscriberParticipantId, final String providerParticipantId) {
+        super.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        DeferrableRegistration registerWithParent = new DeferrableRegistration() {
+            @Override
+            public void register() {
+                parentRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+            }
+        };
+        if (parentRouter != null) {
+            registerWithParent.register();
+        } else {
+            synchronized (deferredMulticastRegististrations) {
+                deferredMulticastRegististrations.put(multicastId + subscriberParticipantId + providerParticipantId,
+                    registerWithParent);
+            }
+        }
+    }
+
+    @Override
+    public void removeMulticastReceiver(String multicastId, String subscriberParticipantId,
+        String providerParticipantId) {
+        super.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        if (parentRouter == null) {
+            synchronized (deferredMulticastRegististrations) {
+                deferredMulticastRegististrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
+            }
+        }
+    }
+
     public void setParentRouter(RoutingProxy parentRouter,
                                 Address parentRouterMessagingAddress,
                                 String parentRoutingProviderParticipantId,
@@ -115,6 +169,11 @@ public class ChildMessageRouter extends MessageRouterImpl {
         addNextHopToParent(routingProxyParticipantId);
         for (String participantIds : deferredParentHopsParticipantIds) {
             addNextHopToParent(participantIds);
+        }
+        synchronized (deferredMulticastRegististrations) {
+            for (DeferrableRegistration registerWithParent : deferredMulticastRegististrations.values()) {
+                registerWithParent.register();
+            }
         }
         deferredParentHopsParticipantIds.clear();
     }

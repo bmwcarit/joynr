@@ -18,7 +18,6 @@
  */
 #include "DbusSettings.h"
 #include "joynr/Settings.h"
-#include "joynr/TypeUtil.h"
 
 #include <cassert>
 

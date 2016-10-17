@@ -82,6 +82,7 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/SubscriptionManager.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/IMessageSender.h"
@@ -95,7 +96,6 @@
 #include "joynr/types/Version.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
-#include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterRegistrationControlEntryChangedBroadcastFilterParameters.h"
@@ -357,6 +357,18 @@ public:
             const std::string& participantId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+    MOCK_METHOD5(addMulticastReceiver, void(
+            const std::string& multicastId,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+    MOCK_METHOD5(removeMulticastReceiver, void(
+            const std::string& multicastId,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 };
 
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {
@@ -447,7 +459,17 @@ public:
                 const joynr::SubscriptionPublication& subscriptionPublication
             )
     );
-    
+
+    MOCK_METHOD4(
+            sendMulticastSubscriptionRequest,
+            void(
+                const std::string& senderParticipantId,
+                const std::string& receiverParticipantId,
+                const joynr::MessagingQos& qos,
+                const joynr::MulticastSubscriptionRequest& subscriptionRequest
+            )
+    );
+
     void sendSubscriptionPublication(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,
@@ -1014,8 +1036,8 @@ class MockWebSocketClient : public joynr::WebSocketPpClient
 {
 public:
 
-    MockWebSocketClient(joynr::WebSocketSettings wsSettings)
-        : WebSocketPpClient(wsSettings) {}
+    MockWebSocketClient(joynr::WebSocketSettings wsSettings, boost::asio::io_service& ioService)
+        : WebSocketPpClient(wsSettings, ioService) {}
     MOCK_METHOD0(dtorCalled, void());
     ~MockWebSocketClient() override
     {
@@ -1036,16 +1058,11 @@ private:
     std::function<void()> onConnectionClosedCallback;
 };
 
-class MockQWebSocketSendWrapper : public joynr::QWebSocketSendWrapper {
+class MockWebSocketSendInterface : public joynr::IWebSocketSendInterface {
 public:
-
-    MockQWebSocketSendWrapper(QWebSocket* websocket)
-        : QWebSocketSendWrapper(websocket)
-    {
-
-    }
-
-    MOCK_METHOD1(send, void (const std::string& message));
+    MOCK_METHOD2(send, void (const std::string& message,
+                             const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
+    MOCK_CONST_METHOD0(isInitialized, bool ());
     MOCK_CONST_METHOD0(isConnected, bool ());
 };
 

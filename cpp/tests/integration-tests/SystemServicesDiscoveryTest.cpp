@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include <string>
 #include <memory>
+#include <string>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -25,7 +25,6 @@
 #include "JoynrTest.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/LibjoynrSettings.h"
 
 #include "joynr/system/DiscoveryProxy.h"
@@ -43,12 +42,12 @@ public:
     std::unique_ptr<Settings> settings;
     std::string discoveryDomain;
     std::string discoveryProviderParticipantId;
-    JoynrClusterControllerRuntime* runtime;
+    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
     std::shared_ptr<IMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<IMessageReceiver> mockMessageReceiverMqtt;
     DiscoveryQos discoveryQos;
-    ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
-    joynr::system::DiscoveryProxy* discoveryProxy;
+    std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder;
+    std::unique_ptr<joynr::system::DiscoveryProxy> discoveryProxy;
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
     std::string publicKeyId;
@@ -96,8 +95,7 @@ public:
 
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = new JoynrClusterControllerRuntime(
-                nullptr,
+        runtime = std::make_unique<JoynrClusterControllerRuntime>(
                 std::move(settings),
                 mockMessageReceiverHttp,
                 nullptr,
@@ -109,13 +107,12 @@ public:
     ~SystemServicesDiscoveryTest(){
         runtime->deleteChannel();
         runtime->stopMessaging();
-        delete runtime;
         std::remove(settingsFilename.c_str());
     }
 
     void SetUp(){
-        discoveryProxyBuilder = runtime
-                ->createProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain);
+        discoveryProxyBuilder.reset(runtime
+                ->createProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain));
     }
 
     void TearDown(){
@@ -124,8 +121,6 @@ public:
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
-        delete discoveryProxy;
-        delete discoveryProxyBuilder;
     }
 
 private:
@@ -136,21 +131,21 @@ private:
 TEST_F(SystemServicesDiscoveryTest, discoveryProviderIsAvailable)
 {
     JOYNR_EXPECT_NO_THROW(
-        discoveryProxy = discoveryProxyBuilder
+        discoveryProxy.reset(discoveryProxyBuilder
                 ->setMessagingQos(MessagingQos(5000))
                 ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
-                ->build();
+                ->build());
     );
 }
 
 TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
 {
-    discoveryProxy = discoveryProxyBuilder
+    discoveryProxy.reset(discoveryProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build();
+            ->build());
 
     std::vector<joynr::types::DiscoveryEntry> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
@@ -172,11 +167,11 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
 
 TEST_F(SystemServicesDiscoveryTest, add)
 {
-    discoveryProxy = discoveryProxyBuilder
+    discoveryProxy.reset(discoveryProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build();
+            ->build());
 
     std::vector<joynr::types::DiscoveryEntry> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
@@ -231,11 +226,11 @@ TEST_F(SystemServicesDiscoveryTest, add)
 
 TEST_F(SystemServicesDiscoveryTest, remove)
 {
-    discoveryProxy = discoveryProxyBuilder
+    discoveryProxy.reset(discoveryProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build();
+            ->build());
 
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");

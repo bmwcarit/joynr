@@ -129,6 +129,19 @@ exports.implementation = {
         self.currentStation.valueChanged(stationsList[currentStationIndex]);
         return false;
     },
+    fireWeakSignal : function() {
+        var broadcast = myRadioProvider.weakSignal;
+        var outputParams = broadcast.createBroadcastOutputParameters();
+        outputParams.setWeakSignalStation(stationsList[currentStationIndex]);
+        broadcast.fire(outputParams);
+    },
+    fireWeakSignalWithPartition : function() {
+        var broadcast = myRadioProvider.weakSignal;
+        var outputParams = broadcast.createBroadcastOutputParameters();
+        var currentStation = stationsList[currentStationIndex];
+        outputParams.setWeakSignalStation(currentStation);
+        broadcast.fire(outputParams, [ currentStation.country.name ]);
+    },
     getLocationOfCurrentStation : function() {
         prettyLog("radioProvider.getLocationOfCurrentStation",
                   "called");

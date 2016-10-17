@@ -41,7 +41,6 @@
 #include "joynr/Request.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Reply.h"
 
 namespace joynr

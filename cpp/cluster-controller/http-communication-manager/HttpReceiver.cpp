@@ -22,7 +22,6 @@
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/Future.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/serializer/Serializer.h"

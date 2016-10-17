@@ -107,7 +107,7 @@ public:
                 localDomainAccessControllerMock
         )
     {
-
+        singleThreadedIOService.start();
     }
 
     ~AccessControllerTest() = default;

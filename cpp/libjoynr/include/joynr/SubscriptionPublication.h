@@ -21,15 +21,15 @@
 
 #include <vector>
 
+#include "joynr/BasePublication.h"
 #include "joynr/BaseReply.h"
 #include "joynr/JoynrExport.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
 
-class JOYNR_EXPORT SubscriptionPublication : public BaseReply
+class JOYNR_EXPORT SubscriptionPublication : public BasePublication
 {
 public:
     SubscriptionPublication();
@@ -45,25 +45,19 @@ public:
     bool operator==(const SubscriptionPublication& other) const;
     bool operator!=(const SubscriptionPublication& other) const;
 
-    const static SubscriptionPublication NULL_RESPONSE;
-
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
-
-    std::shared_ptr<exceptions::JoynrRuntimeException> getError() const;
-    void setError(std::shared_ptr<exceptions::JoynrRuntimeException> error);
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(subscriptionId), MUESLI_NVP(error));
+        archive(muesli::BaseClass<BasePublication>(this), MUESLI_NVP(subscriptionId));
     }
 
 private:
     // printing SubscriptionPublication with google-test and google-mock
     friend void PrintTo(const SubscriptionPublication& subscriptionPublication, ::std::ostream* os);
     std::string subscriptionId;
-    std::shared_ptr<exceptions::JoynrRuntimeException> error;
 };
 
 } // namespace joynr

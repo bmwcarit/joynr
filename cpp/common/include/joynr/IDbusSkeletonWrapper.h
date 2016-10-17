@@ -23,7 +23,6 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include "joynr/Logger.h"
-#include "joynr/TypeUtil.h"
 
 #include <string>
 #include <CommonAPI/CommonAPI.h>

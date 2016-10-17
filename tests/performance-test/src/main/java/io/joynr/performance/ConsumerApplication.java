@@ -23,7 +23,7 @@ import java.util.Properties;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.messaging.AtmosphereMessagingModule;
@@ -37,7 +37,6 @@ import io.joynr.performance.ConsumerInvocationParameters.RuntimeConfig;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -57,21 +56,15 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
         try {
             invocationParameters = new ConsumerInvocationParameters(args);
+
+            JoynrApplication consumerApp = createJoynrApplication();
+
+            consumerApp.run();
+            consumerApp.shutdown();
         } catch (Exception exception) {
             System.err.println(exception.getMessage());
             System.exit(-1);
         }
-
-        Properties appConfig = new Properties();
-        Properties joynrConfig = new Properties();
-
-        Module runtimeModule = getRuntimeModule(joynrConfig);
-
-        JoynrApplication consumerApp = new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(ConsumerApplication.class,
-                                                                                                                                         appConfig));
-
-        consumerApp.run();
-        consumerApp.shutdown();
     }
 
     private static Module getRuntimeModule(Properties joynrConfig) {
@@ -94,7 +87,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
             if (invocationParameters.getBackendTransportMode() == BackendConfig.MQTT) {
                 joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParameters.getMqttBrokerUri());
-                joynrConfig.put(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+                joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
             }
         }
@@ -339,5 +332,35 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         }
 
         return true;
+    }
+
+    private static JoynrApplication createJoynrApplication() throws Exception {
+        Properties joynrConfig = createJoynrConfig();
+        Module runtimeModule = getRuntimeModule(joynrConfig);
+
+        Properties appConfig = new Properties();
+
+        JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
+                                                                        runtimeModule,
+                                                                        new StaticDomainAccessControlProvisioningModule());
+
+        JoynrApplication joynrApplication = injectorFactory.createApplication(new JoynrApplicationModule(ConsumerApplication.class,
+                                                                                                         appConfig));
+
+        return joynrApplication;
+    }
+
+    private static Properties createJoynrConfig() throws Exception {
+        Properties joynrConfig = new Properties();
+
+        if (invocationParameters.getBackendTransportMode() == BackendConfig.MQTT) {
+            joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParameters.getMqttBrokerUri());
+            joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+        }
+
+        joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
+        joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, invocationParameters.getDomainName());
+
+        return joynrConfig;
     }
 }

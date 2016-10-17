@@ -25,8 +25,10 @@ define(
             "global/Promise",
             "joynr/dispatching/subscription/PublicationManager",
             "joynr/messaging/MessagingQos",
+            "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/BroadcastSubscriptionRequest",
+            "joynr/dispatching/types/MulticastSubscriptionRequest",
             "joynr/dispatching/types/SubscriptionStop",
             "joynr/provider/ProviderAttribute",
             "joynr/provider/ProviderEvent",
@@ -37,6 +39,7 @@ define(
             "joynr/types/ProviderQos",
             "joynr/types/ProviderScope",
             "joynr/dispatching/types/SubscriptionPublication",
+            "joynr/dispatching/subscription/util/SubscriptionUtil",
             "joynr/exceptions/SubscriptionException",
             "joynr/util/LongTimer",
             "uuid",
@@ -48,8 +51,10 @@ define(
                 Promise,
                 PublicationManager,
                 MessagingQos,
+                SubscriptionReply,
                 SubscriptionRequest,
                 BroadcastSubscriptionRequest,
+                MulticastSubscriptionRequest,
                 SubscriptionStop,
                 ProviderAttribute,
                 ProviderEvent,
@@ -60,6 +65,7 @@ define(
                 ProviderQos,
                 ProviderScope,
                 SubscriptionPublication,
+                SubscriptionUtil,
                 SubscriptionException,
                 LongTimer,
                 uuid,
@@ -80,6 +86,7 @@ define(
                         var subscriptionLength, asyncTestAttribute, testAttribute, providerSettings;
                         var testAttributeNotNotifiable, testAttributeNotNotifiableName;
                         var testBroadcastName, testBroadcast;
+                        var testNonSelectiveBroadcastName, testNonSelectiveBroadcast;
 
                         function createSubscriptionRequest(
                                 isAttribute,
@@ -206,6 +213,7 @@ define(
                             fakeTime = 123456789;
                             testAttributeName = "testAttribute";
                             testBroadcastName = "testBroadcast";
+                            testNonSelectiveBroadcastName = "testNonSelectiveBroadcastName";
                             testAttributeNotNotifiableName = "testAttributeNotNotifiable";
                             asyncTestAttributeName = "asyncTestAttribute";
                             value = "the value";
@@ -215,7 +223,7 @@ define(
                             asyncGetterCallDelay = 10;
                             subscriptionLength = (maxNrOfTimes + 1) * maxIntervalMs;
 
-                            dispatcherSpy = jasmine.createSpyObj("Dispatcher", [ "sendPublication"
+                            dispatcherSpy = jasmine.createSpyObj("Dispatcher", [ "sendPublication", "sendMulticastPublication"
                             ]);
                             publicationManager =
                                     new PublicationManager(
@@ -226,10 +234,8 @@ define(
                             provider =
                                     jasmine.createSpyObj("Provider", [ "registerOnChangeListener"
                                     ]);
-                            provider.id = uuid();
 
                             providerSettings = {
-                                id : provider.id,
                                 providerQos : new ProviderQos({
                                     version : 123,
                                     priority : 1234,
@@ -241,16 +247,30 @@ define(
                             };
 
                             testBroadcast =
-                                    new ProviderEvent(
-                                            provider,
-                                            providerSettings,
-                                            testBroadcastName,
-                                            [ {
+                                    new ProviderEvent({
+                                        eventName : testBroadcastName,
+                                        outputParameterProperties : [ {
                                                 name : "param1",
                                                 type : "String"
                                             }
-                                            ],
-                                            {});
+                                        ],
+                                        selective : true,
+                                        filterSettings : {
+                                            "positionOfInterest": "reservedForTypeInfo"
+                                        }
+                                    });
+
+                            testNonSelectiveBroadcast =
+                                new ProviderEvent({
+                                    eventName : testNonSelectiveBroadcastName,
+                                    outputParameterProperties : [ {
+                                            name : "param1",
+                                            type : "String"
+                                        }
+                                    ],
+                                    selective : false
+                                });
+
                             testAttribute =
                                     new ProviderAttributeNotifyReadWrite(
                                             provider,
@@ -274,6 +294,7 @@ define(
 
                             provider[testAttributeName] = testAttribute;
                             provider[testBroadcastName] = testBroadcast;
+                            provider[testNonSelectiveBroadcastName] = testNonSelectiveBroadcast;
                             provider[testAttributeNotNotifiableName] = testAttributeNotNotifiable;
                             spyOn(testAttribute, "get").and.returnValue("attributeValue");
                             spyOn(testAttributeNotNotifiable, "get").and.returnValue("attributeValue");
@@ -328,6 +349,7 @@ define(
                                             subscriptionLength,
                                             true,
                                             minIntervalMs);
+                            expect(publicationManager.hasSubscriptions()).toBe(false);
                             done();
                         });
 
@@ -356,7 +378,7 @@ define(
                                         expect(
                                             publicationManager
                                             .hasSubscriptionsForProviderAttribute(
-                                                provider.id,
+                                                providerId,
                                                 testAttributeName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -395,7 +417,7 @@ define(
                                         expect(
                                             publicationManager
                                             .hasSubscriptionsForProviderAttribute(
-                                                provider.id,
+                                                providerId,
                                                 testAttributeName)).toBeFalsy();
                                         done();
                                         return null;
@@ -416,7 +438,7 @@ define(
                                     callbackDispatcher);
                             expect(
                                 publicationManager.hasSubscriptionsForProviderAttribute(
-                                provider.id,
+                                providerId,
                                 testAttributeName)).toBeTruthy();
                             increaseFakeTime(1);
 
@@ -430,7 +452,7 @@ define(
                                 stopSubscription(onChangeSubscriptionRequest);
                                 expect(
                                         publicationManager.hasSubscriptionsForProviderAttribute(
-                                                provider.id,
+                                                providerId,
                                                 testAttributeName)).toBeFalsy();
                                 done();
                                 return null;
@@ -451,7 +473,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -501,7 +523,7 @@ define(
                                         expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeFalsy();
                                         done();
                                         return null;
@@ -549,7 +571,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeFalsy();
                                     // reset first publication
                                     testAttribute.get.calls.reset();
@@ -580,7 +602,7 @@ define(
                                 callbackDispatcher);
                             expect(
                                 publicationManager.hasSubscriptionsForProviderAttribute(
-                                    provider.id,
+                                    providerId,
                                     testAttributeName)).toBeTruthy();
                             increaseFakeTime(1);
 
@@ -630,7 +652,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeFalsy();
                                     done();
                                 }, asyncGetterCallDelay);
@@ -653,7 +675,7 @@ define(
                                     expect(
                                         publicationManager
                                         .hasSubscriptionsForProviderAttribute(
-                                            provider.id,
+                                            providerId,
                                             testAttributeName)).toBeTruthy();
                                     // reset first publication
                                     testAttribute.get.calls.reset();
@@ -698,7 +720,7 @@ define(
 
                             expect(
                                     publicationManager.hasSubscriptionsForProviderAttribute(
-                                            provider.id,
+                                            providerId,
                                             testAttributeName)).toBeTruthy();
 
                             // reset first publication
@@ -716,7 +738,7 @@ define(
                             stopSubscription(onChangeSubscriptionRequest);
                             expect(
                                     publicationManager.hasSubscriptionsForProviderAttribute(
-                                            provider.id,
+                                            providerId,
                                             testAttributeName)).toBeFalsy();
                             done();
                         });
@@ -737,7 +759,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeFalsy();
                                     // reset first publication
                                     testAttribute.get.calls.reset();
@@ -757,7 +779,7 @@ define(
                                                 expect(
                                                         publicationManager
                                                                 .hasSubscriptionsForProviderAttribute(
-                                                                        provider.id,
+                                                                        providerId,
                                                                         testAttributeName))
                                                         .toBeFalsy();
                                                 done();
@@ -775,7 +797,7 @@ define(
                                     callbackDispatcher);
                             expect(
                                     publicationManager.hasSubscriptionsForProviderAttribute(
-                                            provider.id,
+                                            providerId,
                                             testAttributeName)).toBeTruthy();
                             increaseFakeTime(1);
 
@@ -806,7 +828,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeFalsy();
                                     done();
                                 }, asyncGetterCallDelay);
@@ -829,7 +851,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -858,7 +880,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderAttribute(
-                                                                provider.id,
+                                                                providerId,
                                                                 testAttributeName)).toBeFalsy();
                                         dispatcherSpy.sendPublication.calls.reset();
 
@@ -889,7 +911,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             asyncTestAttributeName))
                                             .toBeTruthy();
                                     // wait until the first publication occurs
@@ -978,7 +1000,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderAttribute(
-                                                                provider.id,
+                                                                providerId,
                                                                 asyncTestAttributeName))
                                                 .toBeFalsy();
                                         done();
@@ -1002,7 +1024,7 @@ define(
                                     expect(
                                         publicationManager
                                         .hasSubscriptionsForProviderAttribute(
-                                            provider.id,
+                                            providerId,
                                             testAttributeName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -1054,7 +1076,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderAttribute(
-                                                                provider.id,
+                                                                providerId,
                                                                 testAttributeName)).toBeFalsy();
                                         done();
                                         return null;
@@ -1075,7 +1097,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -1122,7 +1144,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderAttribute(
-                                                                provider.id,
+                                                                providerId,
                                                                 testAttributeName)).toBeFalsy();
                                         done();
                                         return null;
@@ -1144,7 +1166,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -1191,7 +1213,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderAttribute(
-                                                                provider.id,
+                                                                providerId,
                                                                 testAttributeName)).toBeFalsy();
                                         done();
                                         return null;
@@ -1212,7 +1234,7 @@ define(
                                     expect(
                                         publicationManager
                                         .hasSubscriptionsForProviderAttribute(
-                                            provider.id,
+                                            providerId,
                                             testAttributeName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -1252,7 +1274,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderAttribute(
-                                                                provider.id,
+                                                                providerId,
                                                                 testAttributeName)).toBeFalsy();
                                         done();
                                         return null;
@@ -1284,7 +1306,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -1331,7 +1353,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderAttribute(
-                                                                provider.id,
+                                                                providerId,
                                                                 testAttributeName)).toBeFalsy();
                                         done();
                                         return null;
@@ -1353,7 +1375,7 @@ define(
                                     expect(
                                         publicationManager
                                         .hasSubscriptionsForProviderAttribute(
-                                            provider.id,
+                                            providerId,
                                             testAttributeName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -1487,7 +1509,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderAttribute(
-                                                                provider.id,
+                                                                providerId,
                                                                 testAttributeName)).toBeFalsy();
                                         testAttribute.get.calls.reset();
                                         dispatcherSpy.sendPublication.calls.reset();
@@ -1514,7 +1536,7 @@ define(
                                     expect(
                                         publicationManager
                                         .hasSubscriptionsForProviderAttribute(
-                                            provider.id,
+                                            providerId,
                                             testAttributeName)).toBeFalsy();
                                     // reset first publication
                                     testAttribute.get.calls.reset();
@@ -1531,7 +1553,7 @@ define(
                                     expect(
                                         publicationManager
                                         .hasSubscriptionsForProviderAttribute(
-                                            provider.id,
+                                            providerId,
                                             testAttributeName)).toBeFalsy();
                                     done();
                                 });
@@ -1545,7 +1567,7 @@ define(
                                 callbackDispatcher);
                             expect(
                                 publicationManager.hasSubscriptionsForProviderAttribute(
-                                    provider.id,
+                                    providerId,
                                     testAttributeName)).toBeTruthy();
                             increaseFakeTime(1);
 
@@ -1568,7 +1590,7 @@ define(
                                 stopSubscription(mixedSubscriptionRequest);
                                 expect(
                                         publicationManager.hasSubscriptionsForProviderAttribute(
-                                                provider.id,
+                                                providerId,
                                                 testAttributeName)).toBeFalsy();
                                 done();
                                 return null;
@@ -1589,7 +1611,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -1619,7 +1641,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderAttribute(
-                                                                provider.id,
+                                                                providerId,
                                                                 testAttributeName)).toBeFalsy();
                                         testAttribute.get.calls.reset();
                                         dispatcherSpy.sendPublication.calls.reset();
@@ -1648,7 +1670,7 @@ define(
                                     publicationManager.addPublicationProvider(
                                             providerId,
                                             provider);
-                                    publicationManager.handleEventSubscriptionRequest(
+                                    publicationManager.handleBroadcastSubscriptionRequest(
                                             proxyId,
                                             providerId,
                                             onChangeBroadcastSubscriptionRequest,
@@ -1657,7 +1679,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderEvent(
-                                                            provider.id,
+                                                            providerId,
                                                             testBroadcastName)).toBeTruthy();
                                     increaseFakeTime(1);
 
@@ -1682,7 +1704,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderEvent(
-                                                                provider.id,
+                                                                providerId,
                                                                 testBroadcastName)).toBeFalsy();
 
                                         increaseFakeTime(maxIntervalMs); // increase interval
@@ -1720,7 +1742,7 @@ define(
                                     expect(
                                             publicationManager
                                                     .hasSubscriptionsForProviderAttribute(
-                                                            provider.id,
+                                                            providerId,
                                                             testAttributeName)).toBeTruthy();
                                     //increase the fake time to ensure proper async processing of the subscription request
                                     increaseFakeTime(1);
@@ -1750,7 +1772,7 @@ define(
                                         expect(
                                                 publicationManager
                                                         .hasSubscriptionsForProviderAttribute(
-                                                                provider.id,
+                                                                providerId,
                                                                 testAttributeName)).toBeFalsy();
                                         done();
                                         return null;
@@ -1893,7 +1915,7 @@ define(
                                 filterParameters : {}
                             });
                             publicationManager.addPublicationProvider(providerId, provider);
-                            publicationManager.handleEventSubscriptionRequest(
+                            publicationManager.handleBroadcastSubscriptionRequest(
                                     proxyId,
                                     providerId,
                                     request,
@@ -1915,6 +1937,117 @@ define(
                             increaseFakeTime(1);
                         });
 
+                        it("rejects broadcast subscription if filter parameters are wrong", function(done) {
+                            var request = new BroadcastSubscriptionRequest({
+                                subscriptionId : "subscriptionId" + uuid(),
+                                subscribedToName : testBroadcastName,
+                                qos : new OnChangeSubscriptionQos(),
+                                filterParameters : {
+                                    filterParameters : {
+                                        "corruptFilterParameter": "value"
+                                    }
+                                }
+                            });
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleBroadcastSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    request,
+                                    callbackDispatcher);
+
+                            waitsFor(function() {
+                                return callbackDispatcher.calls.count() === 1;
+                            }, "callbackDispatcher got called", 1000).then(function() {
+                                expect(callbackDispatcher).toHaveBeenCalled();
+                                var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                                expect(error).toBeDefined();
+                                expect(error instanceof SubscriptionException);
+                                expect(error.subscriptionId).toBeDefined();
+                                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                                expect(error.detailMessage).toMatch(/Filter parameter positionOfInterest for broadcast/);
+                                done();
+                                return null;
+                            }).catch(fail);
+                            increaseFakeTime(1);
+                        });
+
+                        function handleMulticastSubscriptionRequest() {
+                            var request = new MulticastSubscriptionRequest({
+                                subscriptionId : "subscriptionId" + uuid(),
+                                multicastId : SubscriptionUtil.createMulticastId(providerId, testNonSelectiveBroadcastName, []),
+                                subscribedToName : testNonSelectiveBroadcastName,
+                                qos : new OnChangeSubscriptionQos()
+                            });
+                            publicationManager.handleMulticastSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    request,
+                                    callbackDispatcher);
+                            return request;
+                        }
+
+                        it("registers multicast subscription", function(done) {
+                            expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
+                            publicationManager.addPublicationProvider(providerId, provider);
+
+                            var request = handleMulticastSubscriptionRequest();
+
+                            waitsFor(function() {
+                                return callbackDispatcher.calls.count() === 1;
+                            }, "callbackDispatcher got called", 1000).then(function() {
+                                expect(callbackDispatcher).toHaveBeenCalled();
+                                var response = callbackDispatcher.calls.mostRecent().args[0];
+                                expect(response.error).toBeUndefined();
+                                expect(response.subscriptionId).toEqual(request.subscriptionId);
+                                expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
+                                done();
+                                return null;
+                            }).catch(fail);
+                            increaseFakeTime(1);
+                        });
+
+                        it("registers and unregisters multicast subscription", function() {
+                            expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
+                            publicationManager.addPublicationProvider(providerId, provider);
+
+                            var request = handleMulticastSubscriptionRequest();
+                            expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
+
+                            expect(publicationManager.hasSubscriptions()).toBe(true);
+                            publicationManager.handleSubscriptionStop({
+                                subscriptionId : request.subscriptionId
+                            });
+                            expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
+                            expect(publicationManager.hasSubscriptions()).toBe(false);
+                        });
+
+
+                        it("registers for multicast subscription and sends multicast publication", function() {
+                            var broadcastOutputParameters =
+                                testNonSelectiveBroadcast.createBroadcastOutputParameters();
+                            broadcastOutputParameters.setParam1("param1");
+
+                            expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
+                            publicationManager.addPublicationProvider(providerId, provider);
+
+                            var request = handleMulticastSubscriptionRequest();
+                            expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
+
+                            testNonSelectiveBroadcast.fire(broadcastOutputParameters);
+
+                            expect(dispatcherSpy.sendMulticastPublication).toHaveBeenCalled();
+
+                            var settings = dispatcherSpy.sendMulticastPublication.calls.argsFor(0)[0];
+                            var multicastPublication = dispatcherSpy.sendMulticastPublication.calls.argsFor(0)[1];
+
+                            expect(multicastPublication.multicastId).toEqual(request.multicastId);
+
+                            publicationManager.handleSubscriptionStop({
+                                subscriptionId : request.subscriptionId
+                            });
+                            expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
+                        });
+
                         it("rejects broadcast subscription if broadcast does not exist", function(done) {
                             var request = new BroadcastSubscriptionRequest({
                                 subscriptionId : "subscriptionId" + uuid(),
@@ -1923,7 +2056,7 @@ define(
                                 filterParameters : {}
                             });
                             publicationManager.addPublicationProvider(providerId, provider);
-                            publicationManager.handleEventSubscriptionRequest(
+                            publicationManager.handleBroadcastSubscriptionRequest(
                                     proxyId,
                                     providerId,
                                     request,
@@ -1945,6 +2078,64 @@ define(
                             increaseFakeTime(1);
                         });
 
+                        it(
+                                " throws exception when called while shut down",
+                                function(done) {
+                                    publicationManager.shutdown();
+                                    var callbackDispatcherSpy = jasmine.createSpy('callbackDispatcherSpy');
+
+                                    expect(function() {
+                                        publicationManager.removePublicationProvider(
+                                                "providerParticipantId",
+                                                {});
+                                    }).toThrow();
+
+                                    expect(function() {
+                                        publicationManager.addPublicationProvider(
+                                                "providerParticipantId",
+                                                {});
+                                    }).toThrow();
+
+                                    expect(function() {
+                                        publicationManager.restore();
+                                    }).toThrow();
+
+                                    publicationManager.handleSubscriptionRequest(
+                                            "proxyParticipantId",
+                                            "providerParticipantId",
+                                            {
+                                                subscriptionId : "subscriptionId"
+                                            },
+                                            callbackDispatcherSpy);
+                                    increaseFakeTime(1);
+                                    waitsFor(function() {
+                                        return callbackDispatcherSpy.calls.count() === 1;
+                                    }, "callbackDispatcher for attributes got called", 1000).then(function() {
+                                        expect(callbackDispatcherSpy).toHaveBeenCalled();
+                                        expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
+                                        expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
+                                        return null;
+                                    }).then(function() {
+                                        callbackDispatcherSpy.calls.reset();
+                                        publicationManager.handleBroadcastSubscriptionRequest(
+                                                "proxyParticipantId",
+                                                "providerParticipantId",
+                                                {
+                                                    subscriptionId : "subscriptionId"
+                                                },
+                                                callbackDispatcherSpy);
+                                        increaseFakeTime(1);
+                                        waitsFor(function() {
+                                            return callbackDispatcherSpy.calls.count() === 1;
+                                        }, "callbackDispatcher for events got called", 1000).then(function() {
+                                            expect(callbackDispatcherSpy).toHaveBeenCalled();
+                                            expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
+                                            expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
+                                            done();
+                                            return null;
+                                        });
+                                    }).catch(fail);
+                                });
                     });
 
         });

@@ -17,7 +17,6 @@
  * #L%
  */
 
-//TODO: some of this relies on the dummy implementation, change accordingly when implementating
 define(
         [
             "joynr/provider/ProviderEvent",
@@ -32,57 +31,22 @@ define(
                     "libjoynr-js.joynr.provider.ProviderEvent",
                     function() {
 
-                        var settings;
                         var weakSignal;
-                        var weakSignalNotifyReadOnly;
-                        var weakSignalNotifyWriteOnly;
-                        var weakSignalNotify;
-                        var weakSignalReadWrite;
-                        var weakSignalReadOnly, weakSignalWriteOnly;
-                        var weakSignalProviderEventNotifyReadWrite;
-                        var weakSignalProviderEventNotifyRead;
-                        var weakSignalProviderEventNotifyWrite;
-                        var weakSignalProviderEventNotify;
-                        var weakSignalProviderEventReadWrite;
-                        var weakSignalProviderEventRead;
-                        var weakSignalProviderEventWrite;
-                        var implementation;
-                        var provider;
 
                         beforeEach(function() {
-                            implementation = {
-                                value : {
-                                    key : "value",
-                                    1 : 0,
-                                    object : {}
-                                },
-                                get : function() {
-                                    return implementation.value;
-                                },
-                                set : function(newValue) {
-                                    implementation.value = newValue;
+                            weakSignal = new ProviderEvent({
+                                eventName : "weakSignal",
+                                outputParameterProperties : [ {
+                                    name : "weakSignalStation",
+                                    type : "String"
                                 }
-                            };
-                            spyOn(implementation, "get").and.callThrough();
-                            spyOn(implementation, "set").and.callThrough();
-                            var provider = {};
-
-                            settings = {
-                                providerQos : new ProviderQos({
-                                    version : 123,
-                                    priority : 1234
-                                })
-                            };
-                            weakSignal =
-                                    new ProviderEvent(provider, implementation, "weakSignal", [ {
-                                        name : "weakSignalStation",
-                                        type : "String"
-                                    }
-                                    ], {
-                                        "a" : "reservedForTypeInfo",
-                                        "b" : "reservedForTypeInfo",
-                                        "c" : "reservedForTypeInfo"
-                                    });
+                                ],
+                                filterSettings : {
+                                    "a" : "reservedForTypeInfo",
+                                    "b" : "reservedForTypeInfo",
+                                    "c" : "reservedForTypeInfo"
+                                }
+                            });
                         });
 
                         it("is of correct type", function(done) {
@@ -133,7 +97,8 @@ define(
 
                             var data = {
                                 broadcastOutputParameters : value,
-                                filters : []
+                                filters : [],
+                                partitions : []
                             };
 
                             expect(spy1).toHaveBeenCalled();
@@ -205,7 +170,8 @@ define(
                             var data = {
                                 broadcastOutputParameters : value,
                                 filters : [ filterFunc
-                                ]
+                                ],
+                                partitions : []
                             };
                             var filterParameters = {};
 

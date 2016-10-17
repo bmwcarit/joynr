@@ -29,7 +29,10 @@ void messageReceived(Server* server, websocketpp::connection_hdl hdl, Server::me
 {
     messageCount++;
     std::string payload = message->get_payload();
+
+#ifndef NDEBUG
     std::cout << "received: " << messageCount << std::endl;
+#endif
 
     // killServer message
     if (payload == "killServer") {

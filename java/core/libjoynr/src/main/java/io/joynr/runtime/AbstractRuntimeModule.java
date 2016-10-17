@@ -38,6 +38,7 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.CapabilitiesRegistrarImpl;
@@ -71,8 +72,11 @@ import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.inprocess.InProcessMessageSerializerFactory;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
+import io.joynr.messaging.routing.InMemoryMulticastReceiverRegistry;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.MulticastAddressCalculator;
+import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
@@ -90,6 +94,8 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+    @SuppressWarnings("URF_UNREAD_FIELD")
+    Multibinder<MulticastAddressCalculator> multicastAddressCalculators;
 
     @Override
     protected void configure() {
@@ -124,6 +130,9 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
         });
 
+        multicastAddressCalculators = Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
+        });
+
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);
         bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
         bind(SubscriptionManager.class).to(SubscriptionManagerImpl.class);
@@ -135,6 +144,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(ParticipantIdStorage.class).to(PropertiesFileParticipantIdStorage.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
+        bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();
         install(new StaticCapabilitiesProvisioningModule());
 
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();

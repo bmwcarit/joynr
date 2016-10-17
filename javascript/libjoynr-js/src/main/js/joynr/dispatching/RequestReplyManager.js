@@ -76,6 +76,23 @@ define(
                 }
 
                 /**
+                 * deletes stored reply caller object correctly
+                 *
+                 * @name RequestReplyManager#deleteReplyCaller
+                 * @function
+                 *
+                 * @param {String}
+                 *            requestReplyId
+                 */
+                function deleteReplyCaller(requestReplyId) {
+                    var replyCaller = replyCallers[requestReplyId];
+                    if (replyCaller && replyCaller.replyCallMissedTimer) {
+                        LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
+                    }
+                    delete replyCallers[requestReplyId];
+                }
+
+                /**
                  * @name RequestReplyManager#sendRequest
                  * @function
                  *
@@ -101,7 +118,7 @@ define(
                         }, settings.messagingQos.ttl);
                         // resolve will be called upon successful response
                         dispatcher.sendRequest(settings).catch(function(error) {
-                            delete replyCallers[settings.request.requestReplyId];
+                            deleteReplyCaller(settings.request.requestReplyId);
                             reject(error);
                         });
                     });
@@ -167,7 +184,7 @@ define(
                 this.addReplyCaller = function addReplyCaller(requestReplyId, replyCaller, ttl_ms) {
                     checkIfReady();
                     replyCallers[requestReplyId] = replyCaller;
-                    LongTimer.setTimeout(function replyCallMissed() {
+                    replyCaller.replyCallMissedTimer = LongTimer.setTimeout(function replyCallMissed() {
                         var replyCaller = replyCallers[requestReplyId];
                         if (replyCaller === undefined) {
                             return;
@@ -437,6 +454,9 @@ define(
                                 } else {
                                     replyCaller.resolve(reply.response);
                                 }
+                                if (replyCaller.replyCallMissedTimer) {
+                                    LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
+                                }
                                 delete replyCallers[reply.requestReplyId];
                             } catch (e) {
                                 log.error("exception thrown during handling reply "
@@ -453,6 +473,19 @@ define(
                  * @name RequestReplyManager#shutdown
                  */
                 this.shutdown = function shutdown() {
+                    var requestReplyId;
+                    for (requestReplyId in replyCallers) {
+                        if (replyCallers.hasOwnProperty(requestReplyId)) {
+                            var replyCaller = replyCallers[requestReplyId];
+                            if (replyCaller) {
+                                if (replyCaller.replyCallMissedTimer !== undefined) {
+                                    LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
+                                }
+                                replyCaller.reject(new Error("RequestReplyManager is already shut down"));
+                            }
+                        }
+                    }
+                    replyCallers = {};
                     started = false;
                 };
             }

@@ -69,18 +69,15 @@ public:
         dispatcher(&messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
+        singleThreadIOService.start();
     }
 
     void SetUp(){
         //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService());
+        subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-    }
-
-    void TearDown(){
-
     }
 
 protected:

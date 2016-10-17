@@ -19,6 +19,7 @@
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
 #include <cassert>
+#include <memory>
 #include <vector>
 
 #include "joynr/Dispatcher.h"
@@ -34,7 +35,7 @@
 #include "joynr/MessagingStubFactory.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/system/DiscoveryProxy.h"
-#include "joynr/TypeUtil.h"
+#include "joynr/system/RoutingProxy.h"
 #include "joynr/Util.h"
 #include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
@@ -42,7 +43,7 @@
 namespace joynr
 {
 
-LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
+LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
         : JoynrRuntime(*settings),
           subscriptionManager(nullptr),
           inProcessPublicationSender(nullptr),
@@ -52,12 +53,12 @@ LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
           joynrMessageSender(nullptr),
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
-          settings(settings),
-          libjoynrSettings(new LibjoynrSettings(*settings)),
-          dispatcherMessagingSkeleton(nullptr),
-          runtimeExecutor(nullptr)
+          settings(std::move(settings)),
+          libjoynrSettings(new LibjoynrSettings(*this->settings)),
+          dispatcherMessagingSkeleton(nullptr)
 {
     libjoynrSettings->printSettings();
+    singleThreadIOService->start();
 }
 
 LibJoynrRuntime::~LibJoynrRuntime()
@@ -106,7 +107,8 @@ void LibJoynrRuntime::init(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
             libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
-    subscriptionManager = new SubscriptionManager(singleThreadIOService->getIOService());
+    subscriptionManager =
+            new SubscriptionManager(singleThreadIOService->getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadIOService->getIOService());
 
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
@@ -191,18 +193,6 @@ void LibJoynrRuntime::unregisterProvider(const std::string& participantId)
 {
     assert(capabilitiesRegistrar);
     capabilitiesRegistrar->remove(participantId);
-}
-
-void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor)
-{
-    this->runtimeExecutor = std::unique_ptr<JoynrRuntimeExecutor>(runtimeExecutor);
-}
-
-LibJoynrRuntime* LibJoynrRuntime::create(JoynrRuntimeExecutor* runtimeExecutor)
-{
-    LibJoynrRuntime* runtime = runtimeExecutor->getRuntime();
-    runtime->setRuntimeExecutor(runtimeExecutor);
-    return runtime;
 }
 
 } // namespace joynr

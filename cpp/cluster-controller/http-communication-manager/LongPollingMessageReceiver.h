@@ -37,7 +37,7 @@ namespace joynr
 {
 
 class MessageRouter;
-
+class HttpRequest;
 /**
  * Structure used for configuring the long poll message receiver
  */
@@ -91,6 +91,7 @@ private:
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;
+    std::shared_ptr<HttpRequest> currentRequest;
 };
 
 } // namespace joynr

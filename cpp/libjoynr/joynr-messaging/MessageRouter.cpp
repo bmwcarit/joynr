@@ -20,12 +20,19 @@
 
 #include <cassert>
 #include <functional>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/placeholders.hpp>
-#include <boost/bind.hpp>
 
-#include "joynr/DispatcherUtils.h"
-#include "joynr/MessagingStubFactory.h"
+#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStubFactory.h"
+#include "joynr/InProcessMessagingAddress.h"
+#include "joynr/IPlatformSecurityManager.h"
+#include "joynr/JoynrMessage.h"
+#include "joynr/MulticastReceiverDirectory.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/SteadyTimer.h"
+#include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -33,10 +40,7 @@
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/types/ProviderQos.h"
 #include "cluster-controller/access-control/IAccessController.h"
-#include "joynr/IPlatformSecurityManager.h"
-#include "joynr/InProcessMessagingAddress.h"
 
 namespace joynr
 {
@@ -86,6 +90,7 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
           messagingStubFactory(std::move(messagingStubFactory)),
           routingTable("MessageRouter-RoutingTable", ioService, filterFun),
           routingTableLock(),
+          multicastReceiverDirectory(),
           messageScheduler(maxThreads, "MessageRouter", ioService),
           parentRouter(nullptr),
           parentAddress(nullptr),
@@ -112,6 +117,7 @@ MessageRouter::MessageRouter(
           messagingStubFactory(std::move(messagingStubFactory)),
           routingTable("MessageRouter-RoutingTable", ioService, filterFun),
           routingTableLock(),
+          multicastReceiverDirectory(),
           messageScheduler(maxThreads, "MessageRouter", ioService),
           parentRouter(nullptr),
           parentAddress(nullptr),
@@ -164,6 +170,43 @@ bool MessageRouter::isChildMessageRouter()
     return parentRouter && parentAddress;
 }
 
+std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> MessageRouter::
+        lookupAddresses(const std::unordered_set<std::string>& participantIds)
+{
+    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
+    for (const auto& participantId : participantIds) {
+        {
+            ReadLocker lock(routingTableLock);
+            destAddress = routingTable.lookup(participantId);
+        }
+        if (destAddress) {
+            addresses.push_front(destAddress);
+        }
+    }
+    return addresses;
+}
+
+std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> MessageRouter::
+        getDestinationAddresses(const JoynrMessage& message)
+{
+    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+        if (message.isReceivedFromGlobal()) {
+            std::string multicastId = message.getHeaderFrom() + "/" + message.getHeaderTo();
+            std::unordered_set<std::string> multicastReceivers =
+                    multicastReceiverDirectory.getReceivers(multicastId);
+            return lookupAddresses(multicastReceivers);
+        } else {
+            assert(false && "Not implemented yet");
+        }
+    } else {
+        const std::string destinationPartId = message.getHeaderTo();
+        std::unordered_set<std::string> participantIds;
+        participantIds.insert(destinationPartId);
+        return lookupAddresses(participantIds);
+    }
+}
+
 /**
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
@@ -192,16 +235,11 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
                     "Route message with Id {} and payload {}",
                     message.getHeaderMessageId(),
                     message.getPayload());
-    // search for the destination address
-    const std::string destinationPartId = message.getHeaderTo();
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress(nullptr);
-
-    {
-        ReadLocker lock(routingTableLock);
-        destAddress = routingTable.lookup(destinationPartId);
-    }
+    // search for the destination addresses
+    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
+            getDestinationAddresses(message);
     // if destination address is not known
-    if (!destAddress) {
+    if (destAddresses.empty() && message.getType() != JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
         // save the message for later delivery
         messageQueue->queueMessage(message);
         JOYNR_LOG_DEBUG(logger, "message queued: {}", message.getPayload());
@@ -209,6 +247,7 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {
             std::lock_guard<std::mutex> lock(parentResolveMutex);
+            const std::string destinationPartId = message.getHeaderTo();
             if (runningParentResolves.find(destinationPartId) == runningParentResolves.end()) {
                 runningParentResolves.insert(destinationPartId);
                 std::function<void(const bool&)> onSuccess =
@@ -244,16 +283,19 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
         return;
     }
 
-    if (accessController) {
-        // Access control checks are asynchronous, callback will send message
-        // if access is granted
-        auto callback = std::make_shared<ConsumerPermissionCallback>(*this, message, destAddress);
-        accessController->hasConsumerPermission(message, callback);
-        return;
-    }
+    for (std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress : destAddresses) {
+        if (accessController) {
+            // Access control checks are asynchronous, callback will send message
+            // if access is granted
+            auto callback =
+                    std::make_shared<ConsumerPermissionCallback>(*this, message, destAddress);
+            accessController->hasConsumerPermission(message, callback);
+            return;
+        }
 
-    // If this point is reached, the message can be sent without delay
-    sendMessage(message, destAddress, tryCount);
+        // If this point is reached, the message can be sent without delay
+        sendMessage(message, destAddress, tryCount);
+    }
 }
 
 void MessageRouter::removeRunningParentResolvers(const std::string& destinationPartId)
@@ -582,6 +624,58 @@ void MessageRouter::resolveNextHop(
         resolved = routingTable.contains(participantId);
     }
     onSuccess(resolved);
+}
+
+void MessageRouter::addMulticastReceiver(
+        const std::string& multicastId,
+        const std::string& subscriberParticipantId,
+        const std::string& providerParticipantId,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::function<void()> onSuccessWrapper =
+            [this, multicastId, subscriberParticipantId, onSuccess]() {
+        multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
+        onSuccess();
+    };
+    if (isChildMessageRouter()) {
+        std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+                [onError](const exceptions::JoynrException& error) {
+            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        };
+        parentRouter->addMulticastReceiverAsync(multicastId,
+                                                subscriberParticipantId,
+                                                providerParticipantId,
+                                                onSuccessWrapper,
+                                                onErrorWrapper);
+    } else {
+        // TODO perform transport level multicast subscription
+        onSuccessWrapper();
+    }
+}
+
+void MessageRouter::removeMulticastReceiver(
+        const std::string& multicastId,
+        const std::string& subscriberParticipantId,
+        const std::string& providerParticipantId,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+    if (isChildMessageRouter()) {
+        std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+                [onError](const exceptions::JoynrException& error) {
+            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        };
+        parentRouter->removeMulticastReceiverAsync(multicastId,
+                                                   subscriberParticipantId,
+                                                   providerParticipantId,
+                                                   onSuccess,
+                                                   onErrorWrapper);
+    } else {
+        // TODO perform transport level multicast unsubscription
+        onSuccess();
+    }
 }
 
 /**

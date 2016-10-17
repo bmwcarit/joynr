@@ -122,17 +122,17 @@ define("joynr/proxy/ProxyBuilder", [
          *            settings.discoveryQos - the settings object determining arbitration
          *            parameters
          * @param {MessagingQos}
-         *            settings.messagingQos - the settings object determining arbitration parameters
+         *            settings.messagingQos - the settings object determining messaging quality of
+         *            service parameters
          * @param {Boolean}
          *            settings.freeze - define if the returned proxy object should be frozen
          * @param {Object}
          *            settings.loggingContext - optional logging context will be appended to logging
-         *            messages created in the name of
-         *            this proxy
+         *            messages created in the name of this proxy
          * @returns {Object} an A Promise object, that will provide the proxy object upon completed
          *            arbitration, callback signatures: then({*Proxy} proxy), {Error} error)
          * @throws {Error}
-         *             if arbitrator was not provided
+         *            if arbitrator was not provided
          */
         this.build =
                 function build(ProxyConstructor, settings) {
@@ -206,7 +206,12 @@ define("joynr/proxy/ProxyBuilder", [
                                             }
                                             dependencies.messageRouter.addNextHop(
                                                     proxy.proxyParticipantId,
-                                                    dependencies.libjoynrMessagingAddress);
+                                                    dependencies.libjoynrMessagingAddress).catch(function(error){
+                                                        log.debug("Exception occured while registering the address for interface "
+                                                                + proxy.interfaceName + ", domain " + proxy.domain
+                                                                + ", proxyParticipantId " + proxy.proxyParticipantId
+                                                                + " to message router");
+                                                    });
                                             dependencies.messageRouter
                                                     .setToKnown(proxy.providerParticipantId);
 

@@ -19,20 +19,22 @@
 #ifndef WEBSOCKETCCMESSAGINGSKELETON_H
 #define WEBSOCKETCCMESSAGINGSKELETON_H
 
-#include <vector>
+#include <map>
+#include <memory>
+#include <mutex>
 
-#include <QtCore/QObject>
-#include <QtNetwork/QAbstractSocket>
-#include <QtWebSockets/qwebsocketprotocol.h>
+#include <boost/asio/io_service.hpp>
+#include <websocketpp/config/asio.hpp>
+#include <websocketpp/server.hpp>
+
+#include "libjoynr/websocket/WebSocketPpReceiver.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
 
 #include "joynr/IMessaging.h"
-
-class QWebSocketServer;
-class QWebSocket;
 
 namespace joynr
 {
@@ -53,10 +55,13 @@ class WebSocketAddress;
  * @class WebSocketCcMessagingSkeleton
  * @brief Messaging skeleton for the cluster controller
  */
-class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT WebSocketCcMessagingSkeleton : public QObject,
-                                                                          public IMessaging
+class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT WebSocketCcMessagingSkeleton : public IMessaging
 {
-    Q_OBJECT
+    using Config = websocketpp::config::asio;
+    using MessagePtr = Config::message_type::ptr;
+    using Server = websocketpp::server<Config>;
+    using ConnectionHandle = websocketpp::connection_hdl;
+
 public:
     /**
      * @brief Constructor
@@ -65,6 +70,7 @@ public:
      * @param serverAddress Address of the server
      */
     WebSocketCcMessagingSkeleton(
+            boost::asio::io_service& ioService,
             std::shared_ptr<MessageRouter> messageRouter,
             std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
             const system::RoutingTypes::WebSocketAddress& serverAddress);
@@ -78,25 +84,26 @@ public:
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
-private Q_SLOTS:
-    void onNewConnection();
-    void onTextMessageReceived(const QString& message);
-    void onSocketDisconnected();
-    void onAcceptError(QAbstractSocket::SocketError socketError);
-    void onServerError(QWebSocketProtocol::CloseCode closeCode);
-
 private:
-    DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
-    bool isInitializationMessage(const QString& message);
-    ADD_LOGGER(WebSocketCcMessagingSkeleton);
-    /*! Websocket server listening for incoming connections */
-    QWebSocketServer* webSocketServer;
+    void onConnectionClosed(ConnectionHandle hdl);
+    void onInitMessageReceived(ConnectionHandle hdl, MessagePtr message);
+    void onTextMessageReceived(const std::string& message);
+
+    Server endpoint;
+    WebSocketPpReceiver<Server> receiver;
     /*! List of client connections */
-    std::vector<QWebSocket*> clients;
+    std::map<ConnectionHandle,
+             joynr::system::RoutingTypes::WebSocketClientAddress,
+             std::owner_less<ConnectionHandle>> clients;
     /*! Router for incoming messages */
+    std::mutex clientsMutex;
     std::shared_ptr<MessageRouter> messageRouter;
     /*! Factory to build outgoing messaging stubs */
     std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
+
+    ADD_LOGGER(WebSocketCcMessagingSkeleton);
+    DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
+    bool isInitializationMessage(const std::string& message);
 };
 
 } // namespace joynr

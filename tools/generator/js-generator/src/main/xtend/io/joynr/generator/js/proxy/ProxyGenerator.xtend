@@ -188,10 +188,11 @@ class ProxyGenerator extends InterfaceJsTemplate {
 					],
 					messagingQos : settings.messagingQos,
 					discoveryQos : settings.discoveryQos,
-					«IF isSelective(event)»
+					«IF event.selective»
 					dependencies: {
 							subscriptionManager: settings.dependencies.subscriptionManager
 					},
+					selective : «event.selective»,
 					«IF filterParameters.size > 0»
 					filterParameters: {
 						«FOR filterParameter : filterParameters SEPARATOR ","»

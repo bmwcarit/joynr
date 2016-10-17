@@ -24,15 +24,14 @@
 #include "common/dbus/DbusSettings.h"
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"
 #include "joynr/Util.h"
-#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
 
-LibJoynrDbusRuntime::LibJoynrDbusRuntime(Settings* settings)
-        : LibJoynrRuntime(settings),
+LibJoynrDbusRuntime::LibJoynrDbusRuntime(std::unique_ptr<Settings> settings)
+        : LibJoynrRuntime(std::move(settings)),
           dbusMessageRouterAdapter(nullptr),
-          dbusSettings(new DbusSettings(*settings)),
+          dbusSettings(new DbusSettings(*this->settings)),
           libjoynrMessagingServiceUrl()
 {
     dbusSettings->printSettings();

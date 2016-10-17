@@ -19,27 +19,22 @@
 #ifndef MESSAGEROUTER_H
 #define MESSAGEROUTER_H
 #include <chrono>
-#include <unordered_set>
+#include <forward_list>
+#include <memory>
 #include <mutex>
 #include <string>
-#include <memory>
+#include <unordered_set>
 
+#include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/Directory.h"
-#include "joynr/JoynrExport.h"
-#include "joynr/ObjectWithDecayTime.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/IMessaging.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/system/RoutingProxy.h"
-#include "joynr/system/RoutingAbstractProvider.h"
-#include "joynr/MessageQueue.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
-#include "joynr/Runnable.h"
-#include "joynr/Semaphore.h"
 #include "joynr/Logger.h"
-#include "joynr/SteadyTimer.h"
+#include "joynr/MessageQueue.h"
+#include "joynr/MulticastReceiverDirectory.h"
+#include "joynr/ObjectWithDecayTime.h"
+#include "joynr/Runnable.h"
+#include "joynr/system/RoutingAbstractProvider.h"
 
 namespace boost
 {
@@ -56,14 +51,19 @@ class error_code;
 namespace joynr
 {
 
-class IMessagingStubFactory;
-class JoynrMessagingEndpointAddress;
 class IAccessController;
+class IMessaging;
+class IMessagingStubFactory;
 class IPlatformSecurityManager;
+class JoynrMessage;
+class JoynrMessagingEndpointAddress;
+class SteadyTimer;
+class ThreadPoolDelayedScheduler;
 
 namespace system
 {
 class Address;
+class RoutingProxy;
 } // namespace system
 
 /**
@@ -137,6 +137,20 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
+    void addMulticastReceiver(
+            const std::string& multicastId,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    void removeMulticastReceiver(
+            const std::string& multicastId,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
     void removeNextHop(const std::string& participantId,
                        std::function<void()> onSuccess = nullptr,
                        std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
@@ -172,6 +186,7 @@ private:
     using RoutingTable = Directory<std::string, const joynr::system::RoutingTypes::Address>;
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
+    MulticastReceiverDirectory multicastReceiverDirectory;
     ThreadPoolDelayedScheduler messageScheduler;
     std::unique_ptr<joynr::system::RoutingProxy> parentRouter;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress;
@@ -187,6 +202,11 @@ private:
 
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
+
+    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
+    getDestinationAddresses(const JoynrMessage& message);
+    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
+            const std::unordered_set<std::string>& participantIds);
 
     void addNextHopToParent(std::string participantId,
                             std::function<void(void)> callbackFct = nullptr,

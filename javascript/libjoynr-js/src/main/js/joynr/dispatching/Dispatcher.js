@@ -22,32 +22,40 @@ define("joynr/dispatching/Dispatcher", [
     "joynr/dispatching/types/Request",
     "joynr/dispatching/types/Reply",
     "joynr/dispatching/types/OneWayRequest",
+    "joynr/dispatching/types/BroadcastSubscriptionRequest",
+    "joynr/dispatching/types/MulticastSubscriptionRequest",
     "joynr/dispatching/types/SubscriptionRequest",
     "joynr/dispatching/types/SubscriptionReply",
     "joynr/dispatching/types/SubscriptionStop",
     "joynr/dispatching/types/SubscriptionPublication",
+    "joynr/dispatching/types/MulticastPublication",
     "joynr/messaging/JoynrMessage",
     "joynr/messaging/MessagingQosEffort",
     "joynr/messaging/inprocess/InProcessAddress",
     "joynr/system/DiagnosticTags",
     "joynr/util/UtilInternal",
     "joynr/util/JSONSerializer",
+    "joynr/util/Typing",
     "joynr/system/LoggerFactory"
 ], function(
         Promise,
         Request,
         Reply,
         OneWayRequest,
+        BroadcastSubscriptionRequest,
+        MulticastSubscriptionRequest,
         SubscriptionRequest,
         SubscriptionReply,
         SubscriptionStop,
         SubscriptionPublication,
+        MulticastPublication,
         JoynrMessage,
         MessagingQosEffort,
         InProcessAddress,
         DiagnosticTags,
         Util,
         JSONSerializer,
+        Typing,
         LoggerFactory) {
 
     /**
@@ -65,6 +73,7 @@ define("joynr/dispatching/Dispatcher", [
         var requestReplyManager;
         var subscriptionManager;
         var publicationManager;
+        var messageRouter;
 
         /**
          * @name Dispatcher#parsePayload
@@ -139,6 +148,18 @@ define("joynr/dispatching/Dispatcher", [
                 function registerRequestReplyManager(newRequestReplyManager) {
                     requestReplyManager = newRequestReplyManager;
                 };
+
+        /**
+         * @name Dispatcher#registerMessageRouter
+         * @function
+         *
+         * @param {MessageRouter}
+         *            newMessageRouter
+         *
+         */
+        this.registerMessageRouter = function registerMessageRouter(newMessageRouter) {
+            messageRouter = newMessageRouter;
+        };
 
         /**
          * @name Dispatcher#registerSubscriptionManager
@@ -242,6 +263,17 @@ define("joynr/dispatching/Dispatcher", [
                     return sendJoynrMessage(oneWayRequestMessage, settings);
                 };
 
+        function getJoynrMessageType(subscriptionRequest) {
+            var type = Typing.getObjectType(subscriptionRequest);
+            switch (type) {
+                case "BroadcastSubscriptionRequest":
+                    return JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
+                case "MulticastSubscriptionRequest":
+                    return JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST;
+                default:
+                    return JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+            }
+        }
         /**
          * @name Dispatcher#sendSubscriptionRequest
          * @function
@@ -293,22 +325,72 @@ define("joynr/dispatching/Dispatcher", [
          * @returns {Object}  promise object that is resolved when the request is sent by the messaging stub
          */
         this.sendBroadcastSubscriptionRequest =
-                function sendSubscriptionRequest(settings) {
-                    log.info("broadcast subscription to "
-                        + settings.subscriptionRequest.subscribedToName, DiagnosticTags
-                            .forSubscriptionRequest({
-                                subscriptionRequest : settings.subscriptionRequest,
-                                to : settings.to,
-                                from : settings.from
-                            }));
+                function sendBroadcastSubscriptionRequest(settings) {
+                    var type = getJoynrMessageType(settings.subscriptionRequest);
 
                     var requestMessage = new JoynrMessage({
-                        type : JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
+                        type : type,
                         payload : JSONSerializer.stringify(settings.subscriptionRequest)
                     });
 
+                    if (type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
+                        log.info("broadcast subscription to "
+                            + settings.subscriptionRequest.subscribedToName, DiagnosticTags
+                                .forMulticastSubscriptionRequest({
+                                    subscriptionRequest : settings.subscriptionRequest,
+                                    to : settings.to,
+                                    from : settings.from
+                                }));
+                        if (messageRouter !== undefined) {
+                            messageRouter.addMulticastReceiver({
+                                multicastId : settings.subscriptionRequest.multicastId,
+                                subscriberParticipantId : settings.from,
+                                providerParticipantId : settings.to
+                            });
+                        }
+                    } else {
+                        log.info("broadcast subscription to "
+                            + settings.subscriptionRequest.subscribedToName, DiagnosticTags
+                                .forBroadcastSubscriptionRequest({
+                                    subscriptionRequest : settings.subscriptionRequest,
+                                    to : settings.to,
+                                    from : settings.from
+                                }));
+
+                    }
                     return sendJoynrMessage(requestMessage, settings);
                 };
+
+        /**
+         * @name Dispatcher#sendMulticastSubscriptionStop
+         * @function
+         *
+         * @param {Object}
+         *            settings
+         * @param {String}
+         *            settings.from participantId of the sender
+         * @param {String}
+         *            settings.to participantId of the receiver
+         * @param {String}
+         *            settings.multicastId of the multicast
+         * @param {SubscriptionStop}
+         *            settings.subscriptionStop
+         * @param {MessagingQos}
+         *            settings.messagingQos the messaging Qos object for the ttl
+         * @returns {Object} A+ promise object
+         */
+        this.sendMulticastSubscriptionStop = function sendMulticastSubscriptionStop(settings) {
+            var result = this.sendSubscriptionStop(settings);
+            if (messageRouter !== undefined) {
+                messageRouter.removeMulticastReceiver({
+                    multicastId : settings.multicastId,
+                    subscriberParticipantId : settings.from,
+                    providerParticipantId : settings.to
+                });
+            }
+            return result;
+        };
+
         /**
          * @name Dispatcher#sendSubscriptionStop
          * @function
@@ -431,6 +513,21 @@ define("joynr/dispatching/Dispatcher", [
             sendReply(settings);
         }
 
+        function sendPublicationInternal(settings, type, publication) {
+            // create JoynrMessage for the publication
+            var publicationMessage = new JoynrMessage({
+                type : type,
+                payload : JSONSerializer.stringify(publication)
+            });
+
+            // set reply headers
+            publicationMessage.from = settings.from;
+            publicationMessage.to = settings.to;
+            publicationMessage.expiryDate = settings.expiryDate;
+
+            clusterControllerMessagingStub.transmit(publicationMessage);
+        }
+
         /**
          * @name Dispatcher#sendPublication
          * @function
@@ -446,27 +543,66 @@ define("joynr/dispatching/Dispatcher", [
          * @param {SubscriptionPublication}
          *            publication
          * @param {?}
-         *            publication.response
+         *            [publication.response]
+         * @param {?}
+         *            [publication.error]
          * @param {String}
          *            publication.subscriptionId
          *
          */
-        this.sendPublication = function sendPublication(settings, publication) {
-            log.info("publication", DiagnosticTags.forPublication({
+        this.sendPublication =
+                function sendPublication(settings, publication) {
+                    log.info("publication", DiagnosticTags.forPublication({
+                        publication : publication,
+                        to : settings.to,
+                        from : settings.from
+                    }));
+
+                    sendPublicationInternal(
+                            settings,
+                            JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION,
+                            publication);
+                };
+
+        /**
+         * @name Dispatcher#sendMulticastPublication
+         * @function
+         *
+         * @param {Object}
+         *            settings
+         * @param {String}
+         *            settings.from participantId of the sender
+         * @param {String}
+         *            settings.multicastName name of multicast
+         * @param {String[]}
+         *            partitions partitions for this multicast
+         * @param {Number}
+         *            settings.expiryDate time-to-live
+         * @param {SubscriptionPublication}
+         *            publication
+         * @param {?}
+         *            [publication.response]
+         * @param {?}
+         *            [publication.error]
+         * @param {String}
+         *            publication.multicastId
+         *
+         */
+        this.sendMulticastPublication = function sendMulticastPublication(settings, publication) {
+            log.info("publication", DiagnosticTags.forMulticastPublication({
                 publication : publication,
-                to : settings.to,
                 from : settings.from
             }));
 
             // Reply with the result in a JoynrMessage
             var publicationMessage = new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION,
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST,
                 payload : JSONSerializer.stringify(publication)
             });
 
             // set reply headers
             publicationMessage.from = settings.from;
-            publicationMessage.to = settings.to;
+            publicationMessage.to = publication.multicastId;
             publicationMessage.expiryDate = settings.expiryDate;
 
             clusterControllerMessagingStub.transmit(publicationMessage);
@@ -557,25 +693,45 @@ define("joynr/dispatching/Dispatcher", [
 
                         case JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST:
                             try {
-                                publicationManager
-                                        .handleEventSubscriptionRequest(
-                                                joynrMessage.from,
-                                                joynrMessage.to,
-                                                new SubscriptionRequest(
-                                                        parsePayload(joynrMessage.payload)),
-                                                function(subscriptionReply) {
-                                                    sendSubscriptionReply({
-                                                        from : joynrMessage.to,
-                                                        to : joynrMessage.from,
-                                                        expiryDate : joynrMessage.expiryDate,
-                                                        customHeaders : joynrMessage
-                                                                .getCustomHeaders()
-                                                    }, subscriptionReply);
-                                                });
-                            } catch (errorInEventSubscriptionRequest) {
+                                publicationManager.handleBroadcastSubscriptionRequest(
+                                        joynrMessage.from,
+                                        joynrMessage.to,
+                                        new BroadcastSubscriptionRequest(
+                                                parsePayload(joynrMessage.payload)),
+                                        function(subscriptionReply) {
+                                            sendSubscriptionReply({
+                                                from : joynrMessage.to,
+                                                to : joynrMessage.from,
+                                                expiryDate : joynrMessage.expiryDate,
+                                                customHeaders : joynrMessage.getCustomHeaders()
+                                            }, subscriptionReply);
+                                        });
+                            } catch (errorInBroadcastSubscriptionRequest) {
                                 // TODO handle error in handling the subscriptionRequest
-                                log.error("error handling eventSubscriptionRequest: "
-                                    + errorInEventSubscriptionRequest);
+                                log.error("error handling broadcastSubscriptionRequest: "
+                                    + errorInBroadcastSubscriptionRequest);
+                            }
+                            break;
+
+                        case JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST:
+                            try {
+                                publicationManager.handleMulticastSubscriptionRequest(
+                                        joynrMessage.from,
+                                        joynrMessage.to,
+                                        new MulticastSubscriptionRequest(
+                                                parsePayload(joynrMessage.payload)),
+                                        function(subscriptionReply) {
+                                            sendSubscriptionReply({
+                                                from : joynrMessage.to,
+                                                to : joynrMessage.from,
+                                                expiryDate : joynrMessage.expiryDate,
+                                                customHeaders : joynrMessage.getCustomHeaders()
+                                            }, subscriptionReply);
+                                        });
+                            } catch (errorInMulticastSubscriptionRequest) {
+                                // TODO handle error in handling the subscriptionRequest
+                                log.error("error handling multicastSubscriptionRequest: "
+                                    + errorInMulticastSubscriptionRequest);
                             }
                             break;
 
@@ -611,6 +767,18 @@ define("joynr/dispatching/Dispatcher", [
                             }
                             break;
 
+                        case JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST:
+                            try {
+                                subscriptionManager
+                                        .handleMulticastPublication(new MulticastPublication(
+                                                parsePayload(joynrMessage.payload)));
+                            } catch (errorInMulticastPublication) {
+                                // TODO handle error in handling the multicast publication
+                                log.error("error handling multicast publication: "
+                                    + errorInMulticastPublication);
+                            }
+                            break;
+
                         default:
                             log.error("unknown JoynrMessage type : "
                                 + joynrMessage.type
@@ -620,7 +788,22 @@ define("joynr/dispatching/Dispatcher", [
                                 + JSONSerializer.stringify(joynrMessage));
                             break;
                     }
+                    return Promise.resolve();
                 };
+        /**
+         * Shutdown the dispatcher
+         *
+         * @function
+         * @name dispatcher#shutdown
+         */
+        this.shutdown = function shutdown() {
+            log.debug("Dispatcher shut down");
+            /* do nothing, as either the managers on the layer above (RRM, PM, SM) or
+             * the message router on the layer below are implementing the
+             * correct handling when the runtime is shut down
+             */
+
+        };
     }
 
     return Dispatcher;

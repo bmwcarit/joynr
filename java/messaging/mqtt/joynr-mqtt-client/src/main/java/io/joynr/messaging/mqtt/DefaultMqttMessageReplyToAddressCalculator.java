@@ -22,6 +22,7 @@ package io.joynr.messaging.mqtt;
 import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+import static joynr.JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -44,7 +45,8 @@ public class DefaultMqttMessageReplyToAddressCalculator implements MqttMessageRe
         String type = message.getType();
         if (type != null
                 && message.getReplyTo() == null
-                && (type.equals(MESSAGE_TYPE_REQUEST) || type.equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST) || type.equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST))) {
+                && (type.equals(MESSAGE_TYPE_REQUEST) || type.equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                        || type.equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) || type.equals(MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST))) {
             message.setReplyTo(RoutingTypesUtil.toAddressString(replyToMqttAddress));
         }
     }

@@ -24,6 +24,7 @@ define([
             "joynr/dispatching/subscription/SubscriptionManager",
             "joynr/messaging/MessagingQos",
             "joynr/start/settings/defaultMessagingSettings",
+            "joynr/dispatching/types/MulticastSubscriptionRequest",
             "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/SubscriptionStop",
@@ -45,6 +46,7 @@ define([
                 SubscriptionManager,
                 MessagingQos,
                 defaultMessagingSettings,
+                MulticastSubscriptionRequest,
                 SubscriptionReply,
                 SubscriptionRequest,
                 SubscriptionStop,
@@ -82,6 +84,7 @@ define([
                             dispatcherSpy = jasmine.createSpyObj("DispatcherSpy", [
                                 "sendSubscriptionRequest",
                                 "sendBroadcastSubscriptionRequest",
+                                "sendMulticastSubscriptionStop",
                                 "sendSubscriptionStop"
                             ]);
 
@@ -110,6 +113,7 @@ define([
                             dispatcherSpyOnError = jasmine.createSpyObj("DispatcherSpyOnError", [
                                 "sendSubscriptionRequest",
                                 "sendBroadcastSubscriptionRequest",
+                                "sendMulticastSubscriptionStop",
                                 "sendSubscriptionStop"
                             ]);
 
@@ -507,6 +511,101 @@ define([
 
                         });
 
+                        function createDummyBroadcastSubscriptionRequest(parameters) {
+                            var onReceiveSpy = jasmine.createSpy('onReceiveSpy');
+                            var onErrorSpy = jasmine.createSpy('onErrorSpy');
+                            return {
+                                proxyId : "proxy",
+                                providerId : "provider",
+                                broadcastName : parameters.broadcastName,
+                                broadcastParameter : [
+                                     {
+                                         name : "param1",
+                                         type : "String",
+                                     }
+                                ],
+                                qos : new OnChangeSubscriptionQos({
+                                    expiryDateMs : Date.now() + 250
+                                }),
+                                partitions: parameters.partitions,
+                                selective: parameters.selective,
+                                onReceive : onReceiveSpy,
+                                onError : onErrorSpy
+                            };
+                        }
+
+                        it("register multicast subscription request", function(done) {
+                            var request = createDummyBroadcastSubscriptionRequest({
+                                broadcastName : "broadcastName",
+                                selective : false
+                            });
+                            expect(subscriptionManager.hasMulticastSubscriptions()).toBe(false);
+                            subscriptionManager.registerBroadcastSubscription(request).then(function() {
+                                expect(dispatcherSpy.sendBroadcastSubscriptionRequest).toHaveBeenCalled();
+                                var forwardedRequest = dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].subscriptionRequest;
+                                expect(forwardedRequest instanceof MulticastSubscriptionRequest).toBe(true);
+                                expect(forwardedRequest.subscribedToName).toEqual(request.broadcastName);
+                                expect(subscriptionManager.hasMulticastSubscriptions()).toBe(true);
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        it("register and unregisters multicast subscription request", function(done) {
+                            var request = createDummyBroadcastSubscriptionRequest({
+                                broadcastName : "broadcastName",
+                                selective : false
+                            });
+                            expect(subscriptionManager.hasMulticastSubscriptions()).toBe(false);
+                            subscriptionManager.registerBroadcastSubscription(request).then(function(subscriptionId) {
+                                expect(subscriptionManager.hasMulticastSubscriptions()).toBe(true);
+                                return subscriptionManager.unregisterSubscription({
+                                    subscriptionId : subscriptionId
+                                });
+                            }).then(function() {
+                                expect(subscriptionManager.hasMulticastSubscriptions()).toBe(false);
+                                expect(subscriptionManager.hasOpenSubscriptions()).toBe(false);
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        it("is able to handle multicast publications", function(done) {
+                            var request = createDummyBroadcastSubscriptionRequest({
+                                broadcastName : "broadcastName",
+                                selective : false
+                            });
+                            var response = [ "response" ];
+                            subscriptionManager.registerBroadcastSubscription(request).then(function(subscriptionId) {
+                                request.subscriptionId = subscriptionId;
+                                request.multicastId = dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].subscriptionRequest.multicastId;
+                                subscriptionManager.handleMulticastPublication({
+                                    multicastId : request.multicastId,
+                                    response: response
+                                });
+                                return null;
+                            }).then(function(){
+                                expect(request.onReceive).toHaveBeenCalled();
+                                expect(request.onReceive).toHaveBeenCalledWith(response);
+                                //stop subscription
+                                request.onReceive.calls.reset();
+                                return subscriptionManager.unregisterSubscription({
+                                    subscriptionId : request.subscriptionId
+                                });
+                            }).then(function(){
+                                //send another publication and do not expect calls
+                                expect(subscriptionManager.hasOpenSubscriptions()).toBe(false);
+                                expect(function() {
+                                    subscriptionManager.handleMulticastPublication({
+                                        multicastId : request.multicastId,
+                                        response: response
+                                    });
+                                }).toThrow();
+                                expect(request.onReceive).not.toHaveBeenCalled();
+                                done();
+                            }).catch(fail);
+                        });
+
                         it(
                                 "sends out subscriptionStop and stops alerts on unsubscribe",
                                 function(done) {
@@ -723,5 +822,20 @@ define([
 
                             increaseFakeTime(1);
                         });
-              });
+
+                        it(
+                                " throws exception when called while shut down",
+                                function(done) {
+                                    subscriptionManager.shutdown();
+
+                                    subscriptionManager.registerSubscription({}).then(fail).catch(function() {
+                                        return subscriptionManager.registerBroadcastSubscription({}).then(fail);
+                                    }).catch(function() {
+                                        expect(function() {
+                                            subscriptionManager.unregisterSubscription({});
+                                        }).toThrow();
+                                        done();
+                                    });
+                                });
+                        });
         });

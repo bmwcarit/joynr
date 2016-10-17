@@ -17,10 +17,14 @@
  * #L%
  */
 
-#include <limits>
 #include <cstdint>
 #include <cstdlib>
+#include <limits>
+#include <memory>
 #include <string>
+
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include "joynr/DiscoveryQos.h"
 #include "joynr/JoynrRuntime.h"
@@ -56,11 +60,16 @@ int main(int argc, char* argv[])
     std::string providerDomain(argv[1]);
     JOYNR_LOG_INFO(logger, "Create proxy for domain {}", providerDomain);
 
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime("");
+    boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
+    std::string appDirectory =
+            boost::filesystem::system_complete(appFilename).parent_path().string();
+    std::string pathToSettings(appDirectory + "/resources/systemintegrationtest-consumer.settings");
+
+    std::unique_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToSettings));
 
     // Create proxy builder
-    ProxyBuilder<test::SystemIntegrationTestProxy>* proxyBuilder =
-            runtime->createProxyBuilder<test::SystemIntegrationTestProxy>(providerDomain);
+    std::unique_ptr<ProxyBuilder<test::SystemIntegrationTestProxy>> proxyBuilder(
+            runtime->createProxyBuilder<test::SystemIntegrationTestProxy>(providerDomain));
 
     // Find the provider with the highest priority set in ProviderQos
     DiscoveryQos discoveryQos;
@@ -82,10 +91,11 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy to communicate with the provider
-    test::SystemIntegrationTestProxy* proxy = proxyBuilder->setMessagingQos(MessagingQos())
-                                                      ->setDiscoveryQos(discoveryQos)
-                                                      ->setCached(false)
-                                                      ->build();
+    std::unique_ptr<test::SystemIntegrationTestProxy> proxy(
+            proxyBuilder->setMessagingQos(MessagingQos())
+                    ->setDiscoveryQos(discoveryQos)
+                    ->setCached(false)
+                    ->build());
 
     bool success = true;
 
@@ -102,15 +112,12 @@ int main(int argc, char* argv[])
                        addendA,
                        addendB,
                        sum);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         // exception sink
         success = false;
-        JOYNR_LOG_INFO(logger, "SIT RESULT error: C++ consumer -> {}", providerDomain);
+        JOYNR_LOG_INFO(
+                logger, "SIT RESULT error: \"{}\" : C++ consumer -> {}", e.what(), providerDomain);
     }
 
-    delete proxy;
-    delete proxyBuilder;
-    delete runtime;
-
-    return success ? 0 : -1;
+    return success ? 0 : 1;
 }

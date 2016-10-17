@@ -109,6 +109,11 @@ public class MyRadioProvider extends RadioAbstractProvider {
         fireWeakSignal(currentStation);
     }
 
+    public void fireWeakSignalEventWithPartition() {
+        LOG.info(PRINT_BORDER + "fire weakSignalEvent with partition: " + currentStation + PRINT_BORDER);
+        fireWeakSignal(currentStation, currentStation.getCountry().name());
+    }
+
     public void fireNewStationDiscoveredEvent() {
         RadioStation discoveredStation = currentStation;
         GeoPosition geoPosition = countryGeoPositionMap.get(discoveredStation.getCountry());

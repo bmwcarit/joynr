@@ -20,15 +20,16 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/OneWayRequest.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr-messaging/DummyPlatformSecurityManager.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/MessagingQos.h"
+#include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 
 namespace joynr
 {
@@ -94,6 +95,18 @@ JoynrMessage JoynrMessageFactory::createSubscriptionRequest(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
+    return msg;
+}
+
+JoynrMessage JoynrMessageFactory::createMulticastSubscriptionRequest(
+        const std::string& senderId,
+        const std::string& receiverId,
+        const MessagingQos& qos,
+        const MulticastSubscriptionRequest& payload) const
+{
+    JoynrMessage msg;
+    msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }

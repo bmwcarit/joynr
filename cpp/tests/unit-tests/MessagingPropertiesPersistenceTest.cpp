@@ -20,7 +20,6 @@
 
 #include <gtest/gtest.h>
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
-#include "joynr/TypeUtil.h"
 
 #include <cstdio>
 

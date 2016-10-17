@@ -40,6 +40,7 @@ class SubscriptionStop;
 class SubscriptionReply;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
+class MulticastSubscriptionRequest;
 
 /**
   * The JoynrMessageFactory creates JoynrMessages. It sets the headers and
@@ -74,6 +75,12 @@ public:
                                            const std::string& receiverId,
                                            const MessagingQos& qos,
                                            const SubscriptionRequest& payload) const;
+
+    JoynrMessage createMulticastSubscriptionRequest(
+            const std::string& senderId,
+            const std::string& receiverId,
+            const MessagingQos& qos,
+            const MulticastSubscriptionRequest& payload) const;
 
     JoynrMessage createBroadcastSubscriptionRequest(
             const std::string& senderId,

@@ -19,12 +19,11 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
-import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
-import io.joynr.pubsub.publication.BroadcastFilter;
-
 import java.io.IOException;
 import java.util.List;
 
+import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
+import io.joynr.pubsub.publication.BroadcastFilter;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 
@@ -56,6 +55,8 @@ public interface PublicationManager {
     void attributeValueChanged(String subscriptionId, Object value);
 
     void broadcastOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values);
+
+    void multicastOccurred(String providerParticipantId, String multicastName, String[] partitions, Object... values);
 
     void sendSubscriptionPublication(SubscriptionPublication publication, PublicationInformation information)
                                                                                                              throws IOException;

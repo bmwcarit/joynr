@@ -47,7 +47,6 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
 #include "joynr/Util.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Request.h"
 #include "joynr/OneWayRequest.h"
 #include "joynr/BaseReply.h"

@@ -18,7 +18,6 @@ package io.joynr.generator.filter
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
@@ -30,8 +29,6 @@ class FilterGenerator {
 	@Inject
 	extension JoynrJavaGeneratorExtensions
 	@Inject
-	extension BroadcastUtil
-	@Inject
 	extension NamingUtil
 
 	@Inject
@@ -40,7 +37,7 @@ class FilterGenerator {
 	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
 		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
 		for (broadcast : fInterface.broadcasts) {
-			if (isSelective(broadcast)) {
+			if (broadcast.selective) {
 				val fileName = path + fInterface.joynrName + broadcast.joynrName.toFirstUpper + "BroadcastFilter.java"
 				generateFile(
 					fsa,

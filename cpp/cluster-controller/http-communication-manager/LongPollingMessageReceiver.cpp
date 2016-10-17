@@ -27,7 +27,6 @@
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/Util.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/TypeUtil.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/Future.h"
 #include "joynr/JoynrMessage.h"
@@ -56,7 +55,8 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
           interruptedMutex(),
           interruptedWait(),
           channelCreatedSemaphore(channelCreatedSemaphore),
-          onTextMessageReceived(onTextMessageReceived)
+          onTextMessageReceived(onTextMessageReceived),
+          currentRequest()
 {
 }
 
@@ -67,6 +67,10 @@ LongPollingMessageReceiver::~LongPollingMessageReceiver()
 
 void LongPollingMessageReceiver::interrupt()
 {
+    std::unique_lock<std::mutex> lock(interruptedMutex);
+    if (currentRequest) {
+        currentRequest->interrupt();
+    }
     interrupted = true;
     interruptedWait.notify_all();
 }
@@ -89,7 +93,7 @@ void LongPollingMessageReceiver::run()
     JOYNR_LOG_INFO(logger, "Running lpmr with channelId {}", channelId);
     std::shared_ptr<IHttpPostBuilder> createChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
-    std::shared_ptr<HttpRequest> createChannelRequest(
+    currentRequest.reset(
             createChannelRequestBuilder->addHeader("X-Atmosphere-tracking-id", receiverId)
                     ->withContentType("application/json")
                     ->withTimeout(settings.brokerTimeout)
@@ -98,7 +102,7 @@ void LongPollingMessageReceiver::run()
     std::string channelUrl;
     while (channelUrl.empty() && !isInterrupted()) {
         JOYNR_LOG_DEBUG(logger, "sending create channel request");
-        HttpResult createChannelResult = createChannelRequest->execute();
+        HttpResult createChannelResult = currentRequest->execute();
         if (createChannelResult.getStatusCode() == 201) {
             const std::unordered_multimap<std::string, std::string>& headers =
                     createChannelResult.getHeaders();
@@ -122,15 +126,14 @@ void LongPollingMessageReceiver::run()
         std::shared_ptr<IHttpGetBuilder> longPollRequestBuilder(
                 HttpNetworking::getInstance()->createHttpGetBuilder(channelUrl));
 
-        std::shared_ptr<HttpRequest> longPollRequest(
-                longPollRequestBuilder->acceptGzip()
-                        ->addHeader("Accept", "application/json")
-                        ->addHeader("X-Atmosphere-tracking-id", receiverId)
-                        ->withTimeout(settings.longPollTimeout)
-                        ->build());
+        currentRequest.reset(longPollRequestBuilder->acceptGzip()
+                                     ->addHeader("Accept", "application/json")
+                                     ->addHeader("X-Atmosphere-tracking-id", receiverId)
+                                     ->withTimeout(settings.longPollTimeout)
+                                     ->build());
 
         JOYNR_LOG_DEBUG(logger, "sending long polling request; url: {}", channelUrl);
-        HttpResult longPollingResult = longPollRequest->execute();
+        HttpResult longPollingResult = currentRequest->execute();
         if (!isInterrupted()) {
             // TODO: remove HttpErrorCodes and use constants.
             // there is a bug in atmosphere, which currently gives back 503 instead of 200 as a
@@ -198,8 +201,8 @@ void LongPollingMessageReceiver::checkServerTime()
     std::chrono::system_clock::time_point localTimeBeforeRequest = std::chrono::system_clock::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();
     std::chrono::system_clock::time_point localTimeAfterRequest = std::chrono::system_clock::now();
-    std::uint64_t localTime = (TypeUtil::toMilliseconds(localTimeBeforeRequest) +
-                               TypeUtil::toMilliseconds(localTimeAfterRequest)) /
+    std::uint64_t localTime = (util::toMilliseconds(localTimeBeforeRequest) +
+                               util::toMilliseconds(localTimeAfterRequest)) /
                               2;
     if (timeCheckResult.getStatusCode() != 200) {
         JOYNR_LOG_ERROR(logger,
@@ -216,12 +219,11 @@ void LongPollingMessageReceiver::checkServerTime()
         auto minMaxTime = std::minmax(serverTime, localTime);
         std::uint64_t diff = minMaxTime.second - minMaxTime.first;
 
-        JOYNR_LOG_INFO(
-                logger,
-                "CheckServerTime [server time={}] [local time={}] [diff={} ms]",
-                TypeUtil::toDateString(JoynrTimePoint(std::chrono::milliseconds(serverTime))),
-                TypeUtil::toDateString(JoynrTimePoint(std::chrono::milliseconds(localTime))),
-                diff);
+        JOYNR_LOG_INFO(logger,
+                       "CheckServerTime [server time={}] [local time={}] [diff={} ms]",
+                       util::toDateString(JoynrTimePoint(std::chrono::milliseconds(serverTime))),
+                       util::toDateString(JoynrTimePoint(std::chrono::milliseconds(localTime))),
+                       diff);
 
         if (diff > 500) {
             JOYNR_LOG_ERROR(logger, "CheckServerTime: time difference to server is {} ms", diff);

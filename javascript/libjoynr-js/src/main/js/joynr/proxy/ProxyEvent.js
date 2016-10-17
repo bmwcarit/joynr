@@ -75,6 +75,8 @@ define("joynr/proxy/ProxyEvent", [
      *            settings.dependencies the dependencies object for this function call
      * @param {SubscriptionManager}
      *            settings.dependencies.subscriptionManager
+     * @param {Boolean}
+     *            settings.selective true if the broadcast is selective
      * @param {String}
      *            settings.broadcastName the name of the broadcast as modelled in Franca
      * @param {String[]}
@@ -100,6 +102,10 @@ define("joynr/proxy/ProxyEvent", [
          * @param {String}
          *            [subscribeParameters.subscriptionId] optional subscriptionId. Used to refresh or
          *            reinstate an existing subscription.
+         * @param {String[]}
+         *            [subscribeParameters.partitions] optional parameter for multicast subscriptions.
+         *            This parameter becomes relevant for non selective broadcasts and specifies the interested partitions
+         *            of publications. It is interpreted hierarchically.
          * @param {Function}
          *            subscribeParameters.onReceive this function is called when an event as been
          *            received. method signature: "void onReceive({?}value)"
@@ -110,9 +116,7 @@ define("joynr/proxy/ProxyEvent", [
          *            subscribeParameters.onSubscribed the callback to inform once the subscription request has
          *            been delivered successfully
          * @returns {Object} returns a promise that is resolved with the subscriptionId, which is to
-         *          be used to unsubscribe from this subscription later. NOTE: currently resolved
-         *          when the request is sent; later will be resolved once the subscriptionReply is
-         *          received. See TODO # 1319
+         *          be used to unsubscribe from this subscription later.
          */
         this.subscribe =
                 function subscribe(subscribeParameters) {
@@ -145,6 +149,8 @@ define("joynr/proxy/ProxyEvent", [
                                             response,
                                             settings.broadcastParameter));
                                 },
+                                selective : settings.selective,
+                                partitions : subscribeParameters.partitions || [],
                                 onError : subscribeParameters.onError,
                                 onSubscribed : subscribeParameters.onSubscribed,
                                 filterParameters : subscribeParameters.filterParameters

@@ -87,13 +87,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
         PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
     )
 
-    target_include_directories(
-        JoynrClusterControllerRuntime
-        SYSTEM
-        PRIVATE ${Qt5WebSockets_INCLUDE_DIRS}
-        PRIVATE ${Qt5Core_INCLUDE_DIRS}
-    )
-
     AddClangFormat(JoynrClusterControllerRuntime)
 
     AddIncludeWhatYouUse(JoynrClusterControllerRuntime)
@@ -106,7 +99,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
         SOVERSION "${JOYNR_VERSION}"
         VERSION "${JOYNR_VERSION}"
         PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
-        AUTOMOC TRUE
     )
 
     GenerateJoynrExports(
@@ -117,8 +109,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_link_libraries(
         JoynrClusterControllerRuntime
         ${JoynrClusterControllerRuntime_TARGET_LIBRARIES}
-        ${Qt5WebSockets_LIBRARIES}
-        ${Qt5Core_LIBRARIES}
     )
 
     install(
@@ -142,13 +132,11 @@ install(
 
 set(
     JoynrRuntime_PRIVATE_HEADERS
-    "libjoynr-runtime/JoynrRuntimeExecutor.h"
     "libjoynr-runtime/LibJoynrRuntime.h"
 )
 
 set(
     JoynrRuntime_SOURCES
-    "libjoynr-runtime/JoynrRuntimeExecutor.cpp"
     "JoynrRuntime.cpp"
     "libjoynr-runtime/LibJoynrRuntime.cpp"
 )
@@ -166,14 +154,12 @@ set(
 set(
     JoynrWsRuntime_PRIVATE_HEADERS
     "libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
-    "libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.h"
 )
 
 set(
     JoynrWsRuntime_SOURCES
     "libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
     "libjoynr-runtime/websocket/JoynrRuntime.cpp"
-    "libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.cpp"
 )
 
 add_library(
@@ -240,14 +226,12 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrDbusRuntime_PRIVATE_HEADERS
         "libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
-        "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.h"
     )
 
     set(
         JoynrDbusRuntime_SOURCES
         "libjoynr-runtime/dbus/LibJoynrDbusRuntime.cpp"
         "libjoynr-runtime/dbus/JoynrRuntime.cpp"
-        "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.cpp"
     )
 
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)

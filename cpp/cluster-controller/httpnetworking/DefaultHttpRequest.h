@@ -38,6 +38,7 @@ class DefaultHttpRequest : public HttpRequest
 public:
     DefaultHttpRequest(void* handle, const std::string& content, curl_slist* headers);
     HttpResult execute() override;
+    void interrupt() override;
     ~DefaultHttpRequest() override;
 
 private:

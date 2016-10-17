@@ -37,7 +37,6 @@
 #include "tests/utils/MockObjects.h"
 
 #include "joynr/Future.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Logger.h"
 
 using namespace ::testing;

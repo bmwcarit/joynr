@@ -258,6 +258,40 @@ In order to do so, use the `@ProviderDomain` annotation on your implementing bea
 to the `@ServiceLocator` annotation. The value you provide will be used as the domain when
 registering the bean as a joynr provider.
 
+#### <a name="publishing_multicasts"></a> Publishing Multicasts
+
+If you have `broadcast` definitions in your Franca file which are __not__ `selective`, then
+you can `@Inject` the corresponding `SubscriptionPublisher` in your service implementation
+and use that to fire multicast messages to consumers.
+
+In order for the injection to work, you have to use the generated, specific subscription
+publisher interface, and have to additionally decorate the injection with the
+`@io.joynr.jeeintegration.api.SubscriptionPublisher` qualifier annotation.
+
+Here is an example of what that looks like:
+
+    @Stateless
+    @ServiceProvider(serviceInterface = MyServiceSync.class)
+    public class MyBean implements MyServiceSync {
+        private MyServiceSubscriptionPublisher myServiceSubscriptionPublisher;
+
+        @Inject
+        public MyBean(@SubscriptionPublisher MyServiceSubscriptionPublisher myServiceSubscriptionPublisher) {
+            this.myServiceSubscriptionPublisher = myServiceSubscriptionPublisher;
+        }
+
+        ... other method implementations ...
+
+        @Override
+        public void myMethod() {
+            myServiceSubscriptionPublisher.fireMyMulticast("Some value");
+        }
+    }
+
+See also the
+[Radio JEE provider bean](../examples/radio-jee/radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBean.java)
+for a working example.
+
 ### Calling services
 
 In order to call services provided by other participants (e.g. applications
@@ -293,6 +327,10 @@ It is also possible to target multiple providers with one proxy. You can achieve
 this by either spcifying a set of domains during lookup, or a custom
 `ArbitrationStrategyFunction` in the `DiscoveryQos`, or combine both approaches.
 See the [Java Developer Guide](java.md) for details.
+
+__IMPORTANT__: if you intend to have your logic make multiple calls to the same
+provider, then you should locally cache the proxy instance returned by the
+ServiceLocator, as the operation of creating a proxy is expensive.
 
 ## Clustering
 

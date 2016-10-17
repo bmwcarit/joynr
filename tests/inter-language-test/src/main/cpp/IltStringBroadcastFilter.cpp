@@ -17,10 +17,11 @@
  * #L%
  */
 #include "IltStringBroadcastFilter.h"
-#include "joynr/TypeUtil.h"
+
+#include <string>
+
 #include "joynr/serializer/Serializer.h"
 #include "IltUtil.h"
-#include <string>
 
 INIT_LOGGER(IltStringBroadcastFilter);
 

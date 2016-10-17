@@ -29,7 +29,6 @@ import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
-import io.joynr.runtime.GlobalAddressProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +64,7 @@ public class JoynrConfigurationProvider {
     public Properties getJoynrProperties() {
         Properties joynrProperties = new Properties();
         readAndSetProperty(joynrProperties, MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
-        readAndSetProperty(joynrProperties, GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+        readAndSetProperty(joynrProperties, MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         readAndSetProperty(joynrProperties,
                            MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
                            "/discovery-directory-jee/messaging");

@@ -74,13 +74,7 @@ public:
         dispatcher(&messageSender, singleThreadIOService.getIOService())
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-    }
-
-
-    void SetUp(){
-    }
-
-    void TearDown(){
+        singleThreadIOService.start();
     }
 
     void invokeOnSuccessWithGpsLocation(
@@ -225,7 +219,7 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
                 reply
     );
 
-    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService());
+    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
     auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
     EXPECT_CALL(mockSubscriptionManager, getSubscriptionCallback(Eq(subscriptionId))).WillOnce(Return(mockSubscriptionCallback));
 

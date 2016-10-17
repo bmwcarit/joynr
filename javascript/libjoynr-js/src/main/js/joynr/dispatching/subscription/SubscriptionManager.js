@@ -26,8 +26,10 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
     "joynr/proxy/SubscriptionQos",
     "joynr/dispatching/types/SubscriptionStop",
     "joynr/dispatching/types/SubscriptionRequest",
+    "joynr/dispatching/types/MulticastSubscriptionRequest",
     "joynr/dispatching/types/BroadcastSubscriptionRequest",
     "joynr/dispatching/subscription/SubscriptionListener",
+    "joynr/dispatching/subscription/util/SubscriptionUtil",
     "joynr/util/LongTimer",
     "joynr/system/LoggerFactory",
     "uuid",
@@ -43,8 +45,10 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         SubscriptionQos,
         SubscriptionStop,
         SubscriptionRequest,
+        MulticastSubscriptionRequest,
         BroadcastSubscriptionRequest,
         SubscriptionListener,
+        SubscriptionUtil,
         LongTimer,
         LoggerFactory,
         uuid,
@@ -75,6 +79,13 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         // stores the object which is returned by setTimeout mapped to the subscriptionId
         var publicationCheckTimerIds = {};
         var subscriptionReplyCallers = {};
+        var started = true;
+
+        var multicastSubscribers = {};
+
+        function isReady() {
+            return started;
+        }
 
         /**
          * @param {String}
@@ -210,8 +221,29 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 
         }
 
+        function removeRequestFromMulticastSubscribers(multicastId, subscriptionId) {
+            var i,subscribers;
+            if (multicastSubscribers[multicastId] === undefined) {
+                return;
+            }
+            subscribers = multicastSubscribers[multicastId];
+            for(i=0;i<subscribers.length;i++) {
+                if (subscribers[i] === subscriptionId) {
+                    subscribers.splice(i,1);
+                    if (subscribers.length === 0) {
+                        delete multicastSubscribers[multicastId];
+                    }
+                    return;
+                }
+            }
+        }
+
         function cleanupSubscription(subscriptionId) {
             if (subscriptionInfos[subscriptionId] !== undefined) {
+                var subscriptionInfo = subscriptionInfos[subscriptionId];
+                if (subscriptionInfo.multicastId !== undefined) {
+                    removeRequestFromMulticastSubscribers(subscriptionInfo.multicastId, subscriptionId);
+                }
                 delete subscriptionInfos[subscriptionId];
             }
             if (subscriptionListeners[subscriptionId] !== undefined) {
@@ -265,6 +297,9 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         this.registerSubscription =
                 function registerSubscription(settings) {
                     return new Promise(function(resolve, reject) {
+                        if (!isReady()) {
+                            reject(new Error("SubscriptionManager is already shut down"));
+                        }
                         var subscriptionId = settings.subscriptionId || uuid();
                         // log.debug("Registering Subscription Id " + subscriptionId);
 
@@ -316,6 +351,41 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     });
                 };
 
+        function addRequestToMulticastSubscribers(multicastId, subscriptionId) {
+            var i,subscribers;
+            if (multicastSubscribers[multicastId] === undefined) {
+                multicastSubscribers[multicastId] = [];
+            }
+            subscribers = multicastSubscribers[multicastId];
+            for(i=0;i<subscribers.length;i++) {
+                if (subscribers[i] === subscriptionId) {
+                    return;
+                }
+            }
+            subscribers.push(subscriptionId);
+        }
+
+        function createBroadcastSubscriptionRequest(parameters) {
+            var i, request;
+            if (parameters.selective) {
+                request = new BroadcastSubscriptionRequest({
+                    subscriptionId : parameters.subscriptionId || uuid(),
+                    subscribedToName : parameters.broadcastName,
+                    qos : parameters.subscriptionQos,
+                    filterParameters : parameters.filterParameters
+                });
+            } else {
+                request = new MulticastSubscriptionRequest({
+                    multicastId : SubscriptionUtil.createMulticastId(parameters.providerId, parameters.broadcastName, parameters.partitions),
+                    subscriptionId : parameters.subscriptionId || uuid(),
+                    subscribedToName : parameters.broadcastName,
+                    qos : parameters.subscriptionQos
+                });
+                addRequestToMulticastSubscribers(request.multicastId, request.subscriptionId);
+            }
+            return request;
+        }
+
         /**
          * @name SubscriptionManager#registerBroadcastSubscription
          * @function
@@ -334,6 +404,10 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param {BroadcastFilterParameters}
          *            [parameters.filterParameters] filter parameters used to indicate interest in
          *            only a subset of broadcasts that might be sent.
+         * @param {Boolean}
+         *            parameters.selective true if broadcast is selective
+         * @param {String[]}
+         *            [parameters.partitions] partitions for multicast requests
          * @param {String}
          *            parameters.subscriptionId optional parameter subscriptionId to reuse a
          *            pre-existing identifier for this concrete subscription request
@@ -351,12 +425,11 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             var messagingQos;
 
             return new Promise(function(resolve, reject) {
-                var subscriptionRequest = new BroadcastSubscriptionRequest({
-                    subscriptionId : parameters.subscriptionId || uuid(),
-                    subscribedToName : parameters.broadcastName,
-                    qos : parameters.subscriptionQos,
-                    filterParameters : parameters.filterParameters
-                });
+                if (!isReady()) {
+                    reject(new Error("SubscriptionManager is already shut down"));
+                }
+
+                var subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
 
                 messagingQos = new MessagingQos({
                     ttl : calculateTtl(subscriptionRequest.qos)
@@ -435,6 +508,39 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         };
 
         /**
+         * @name SubscriptionManager#handleMulticastPublication
+         * @function
+         * @param publication
+         *            {MulticastPublication} incoming multicast publication
+         */
+        this.handleMulticastPublication =
+                function handleMulticastPublication(publication) {
+                    var i,subscribers=multicastSubscribers[publication.multicastId];
+                    if (subscribers === undefined) {
+                        throw new Error("Publication cannot be handled, as no subscription with "
+                                + "multicastId " + publication.multicastId + " is known.");
+                    }
+                    for (i=0;i<subscribers.length;i++) {
+                        var subscriptionListener = subscriptionListeners[subscribers[i]];
+                        if (publication.error) {
+                            if (subscriptionListener.onError) {
+                                subscriptionListener.onError(publication.error);
+                            } else {
+                                log.debug("subscriptionListener with Id \"" + subscribers[i]
+                                        + "\" has no onError callback. Skipping error publication");
+                            }
+                        } else if (publication.response) {
+                            if (subscriptionListener.onReceive) {
+                                subscriptionListener.onReceive(publication.response);
+                            } else {
+                                log.debug("subscriptionListener with Id \"" + subscribers[i]
+                                + "\" has no onReceive callback. Skipping multicast publication");
+                            }
+                        }
+                    }
+                };
+
+        /**
          * @name SubscriptionManager#handlePublication
          * @function
          * @param publication
@@ -452,15 +558,15 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                         if (subscriptionListener.onError) {
                             subscriptionListener.onError(publication.error);
                         } else {
-                            throw new Error("no subscription error handler registered for publication "
-                                + JSONSerializer.stringify(publication));
+                            log.debug("subscriptionListener with Id \"" + publication.subscriptionId
+                            + "\" has no onError callback. Skipping error publication");
                         }
                     } else if (publication.response) {
                         if (subscriptionListener.onReceive) {
                             subscriptionListener.onReceive(publication.response);
                         } else {
-                            throw new Error("no subscription listener registered for publication "
-                                + JSONSerializer.stringify(publication));
+                            log.debug("subscriptionListener with Id \"" + publication.subscriptionId
+                            + "\" has no onReceive callback. Skipping publication");
                         }
                     }
                 };
@@ -477,6 +583,10 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @returns {Object} A promise object
          */
         this.unregisterSubscription = function unregisterSubscription(settings) {
+            if (!isReady()) {
+                throw new Error("SubscriptionManager is already shut down");
+            }
+
             var subscriptionInfo = subscriptionInfos[settings.subscriptionId];
             var errorMessage;
             if (subscriptionInfo === undefined) {
@@ -489,12 +599,23 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 subscriptionId : settings.subscriptionId
             });
 
-            var promise = dispatcher.sendSubscriptionStop({
-                from : subscriptionInfo.proxyId,
-                to : subscriptionInfo.providerId,
-                messagingQos : settings.messagingQos,
-                subscriptionStop : subscriptionStop
-            });
+            var promise;
+            if (subscriptionInfo.multicastId !== undefined) {
+                promise = dispatcher.sendMulticastSubscriptionStop({
+                    from : subscriptionInfo.proxyId,
+                    to : subscriptionInfo.providerId,
+                    messagingQos : settings.messagingQos,
+                    multicastId : subscriptionInfo.multicastId,
+                    subscriptionStop : subscriptionStop
+                });
+            } else {
+                promise = dispatcher.sendSubscriptionStop({
+                    from : subscriptionInfo.proxyId,
+                    to : subscriptionInfo.providerId,
+                    messagingQos : settings.messagingQos,
+                    subscriptionStop : subscriptionStop
+                });
+            }
 
             if (publicationCheckTimerIds[settings.subscriptionId] !== undefined) {
                 LongTimer.clearTimeout(publicationCheckTimerIds[settings.subscriptionId]);
@@ -506,6 +627,50 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             return promise;
         };
 
+        this.hasMulticastSubscriptions = function() {
+            return Object.keys(multicastSubscribers).length > 0;
+        };
+
+        this.hasOpenSubscriptions = function() {
+            var hasSubscriptionInfos = Object.keys(subscriptionInfos).length > 0;
+            var hasSubscriptionListeners = Object.keys(subscriptionListeners).length > 0;
+            var hasPublicationCheckTimerIds = Object.keys(publicationCheckTimerIds).length > 0;
+            var hasSubscriptionReplyCallers = Object.keys(subscriptionReplyCallers).length > 0;
+            return hasSubscriptionInfos ||
+                   hasSubscriptionListeners ||
+                   hasPublicationCheckTimerIds ||
+                   hasSubscriptionReplyCallers ||
+                   this.hasMulticastSubscriptions();
+        };
+
+        /**
+         * Shutdown the subscription manager
+         *
+         * @function
+         * @name SubscriptionManager#shutdown
+         */
+        this.shutdown = function shutdown() {
+            var subscriptionId;
+            for (subscriptionId in publicationCheckTimerIds) {
+                if (publicationCheckTimerIds.hasOwnProperty(subscriptionId)) {
+                    var timerId = publicationCheckTimerIds[subscriptionId];
+                    if (timerId !== undefined) {
+                        LongTimer.clearTimeout(timerId);
+                    }
+                }
+            }
+            publicationCheckTimerIds = {};
+            for (subscriptionId in subscriptionReplyCallers) {
+                if (subscriptionReplyCallers.hasOwnProperty(subscriptionId)) {
+                    var subscriptionReplyCaller = subscriptionReplyCallers[subscriptionId];
+                    if (subscriptionReplyCaller) {
+                        subscriptionReplyCaller.reject(new Error("Subscription Manager is already shut down"));
+                    }
+                }
+            }
+            subscriptionReplyCallers = {};
+            started = false;
+        };
     }
 
     return SubscriptionManager;

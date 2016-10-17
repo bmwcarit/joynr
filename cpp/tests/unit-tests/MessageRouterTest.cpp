@@ -52,6 +52,7 @@ public:
         messageRouter(nullptr),
         joynrMessage()
     {
+        singleThreadedIOService.start();
         auto messageQueue = std::make_unique<MessageQueue>();
         this->messageQueue = messageQueue.get();
 
@@ -79,8 +80,7 @@ public:
     void SetUp(){
         joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
     }
-    void TearDown(){
-    }
+
 protected:
     SingleThreadedIOService singleThreadedIOService;
     std::string settingsFileName;

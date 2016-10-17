@@ -25,7 +25,6 @@
 #include <CommonAPI/CommonAPI.h>
 
 #include "joynr/Logger.h"
-#include "joynr/TypeUtil.h"
 
 #include <string>
 #include <chrono>

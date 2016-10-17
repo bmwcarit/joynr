@@ -40,7 +40,6 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»AbstractProvider.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
-#include "joynr/TypeUtil.h"
 
 «FOR parameterType: getDataTypeIncludesFor(francaIntf)»
 	#include «parameterType»

@@ -19,7 +19,6 @@ package io.joynr.generator.cpp.util
 
 import com.google.inject.Inject
 import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -29,7 +28,6 @@ import org.franca.core.franca.FBroadcast
 class InterfaceSubscriptionUtil {
 	@Inject	extension InterfaceUtil
 	@Inject	extension AttributeUtil
-	@Inject	extension BroadcastUtil
 	@Inject	extension NamingUtil
 	@Inject	extension CppStdTypeUtil
 
@@ -69,7 +67,7 @@ class InterfaceSubscriptionUtil {
 	def produceSubscribeToBroadcastComments(FBroadcast broadcast)
 '''
 /**
- * @brief subscribes to «IF isSelective(broadcast)»selective «ENDIF»broadcast «broadcast.joynrName.toFirstUpper»«IF isSelective(broadcast)» with filter parameters
+ * @brief subscribes to «IF broadcast.selective»selective «ENDIF»broadcast «broadcast.joynrName.toFirstUpper»«IF broadcast.selective» with filter parameters
  * @param filterParameters The filter parameters for selection of suitable broadcasts«ENDIF»
  * @param subscriptionListener The listener callback providing methods to call on publication and failure
  * @param subscriptionQos The subscription quality of service settings
@@ -82,7 +80,7 @@ class InterfaceSubscriptionUtil {
 	def produceUpdateBroadcastSubscriptionComments(FBroadcast broadcast)
 '''
 /**
- * @brief updates an existing subscription to «IF isSelective(broadcast)»selective «ENDIF»broadcast «broadcast.joynrName.toFirstUpper»«IF isSelective(broadcast)» with filter parameters
+ * @brief updates an existing subscription to «IF broadcast.selective»selective «ENDIF»broadcast «broadcast.joynrName.toFirstUpper»«IF broadcast.selective» with filter parameters
  * @param filterParameters The filter parameters for selection of suitable broadcasts«ENDIF»
  * @param subscriptionListener The listener callback providing methods to call on publication and failure
  * @param subscriptionQos The subscription quality of service settings
@@ -138,7 +136,7 @@ void «IF className != null»«className»::«ENDIF»unsubscribeFrom«attribute.
 	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean updateSubscription, String className)
 '''
 «val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
-std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className»::«ENDIF»subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(«IF isSelective(broadcast)»
+std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className»::«ENDIF»subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(«IF broadcast.selective»
 			const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,«ENDIF»
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos«IF updateSubscription»,

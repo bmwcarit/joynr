@@ -25,18 +25,17 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.Address;
 
 public class GlobalAddressProvider implements Provider<Address> {
 
-    public static final String PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT = "joynr.messaging.primaryglobaltransport";
-
     private Set<GlobalAddressFactory<? extends Address>> addressFactories;
 
     @Inject(optional = true)
-    @Named(PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT)
+    @Named(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT)
     /**
      * primaryGlobalTransport is optional, but must be set if more than one GlobalAddressFactory is registered.
      * The primary address is how remote cluster controllers can reach this cluster controller's providers
@@ -96,7 +95,7 @@ public class GlobalAddressProvider implements Provider<Address> {
                 throw new IllegalStateException("no global transport was registered");
             } else if (addressFactories.size() > 1) {
                 throw new IllegalStateException("multiple global transports were registered but "
-                        + PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT + " was not set.");
+                        + MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT + " was not set.");
             }
         }
         return addressFactory;

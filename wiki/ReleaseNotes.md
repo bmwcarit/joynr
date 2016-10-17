@@ -1,3 +1,12 @@
+#joynr 0.22.0
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JS]** Introduced mqtt messaging layer, allowing javascript runtimes including
+  cluster controller functionality to connect to a mqtt broker.
+
 #joynr 0.21.0
 
 ##API relevant changes
@@ -5,6 +14,8 @@
   `@ProviderDomain` annotation. See
   [JEE Documentation / Customising the registration domain](jee.md#provider_domain).
 * **[Java, JS, C++]** Introduce LastSeen arbitration strategy and set it as default arbitration.
+* **[JEE]** Ability to publish multicast messages by injecting the
+  subscription publisher. See [JEE Documentation / Publishing Multicasts](jee.md#publishing_multicasts).
 
 ##Other changes
 * **[Java, C++]** The local capabilities directory will periodically be checked for
@@ -18,7 +29,17 @@
   settings.
 * **[C++]** Build variable `USE_PLATFORM_GTEST_GMOCK` now defaults to ON so that
   it is consistent with the other `USE_PLATFORM_*` variables.
-* **[C++]**  Reduced the number of threads which are used by a cluster controller instance
+* **[C++]** Reduced the number of threads which are used by a cluster controller instance
+* **[C++]** The dependency to Qt is now fully removed.
+
+#joynr 0.20.3
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+## Other changes
+* **[JS]** Fix bug which resulted in improper shutdown of joynr.
 
 #joynr 0.20.2
 This is a minor bug fix release.

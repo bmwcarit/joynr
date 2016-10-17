@@ -19,6 +19,7 @@
 #ifndef SINGLETHREADEDIOSERVICE_H
 #define SINGLETHREADEDIOSERVICE_H
 
+#include <memory>
 #include <thread>
 
 #include <boost/asio/io_service.hpp>
@@ -29,15 +30,24 @@ namespace joynr
 class SingleThreadedIOService
 {
 public:
-    SingleThreadedIOService()
-            : ioService(),
-              ioServiceWork(ioService),
-              ioServiceThread(&runIOService, std::ref(ioService))
+    SingleThreadedIOService() : ioService(), ioServiceWork(), ioServiceThread()
     {
     }
 
     ~SingleThreadedIOService()
     {
+        stop();
+    }
+
+    void start()
+    {
+        ioServiceWork = std::make_unique<boost::asio::io_service::work>(ioService);
+        ioServiceThread = std::thread(&runIOService, std::ref(ioService));
+    }
+
+    void stop()
+    {
+        ioServiceWork.reset();
         ioService.stop();
 
         if (ioServiceThread.joinable()) {
@@ -50,6 +60,13 @@ public:
         return ioService;
     }
 
+    void join()
+    {
+        if (ioServiceThread.joinable()) {
+            ioServiceThread.join();
+        }
+    }
+
 private:
     static void runIOService(boost::asio::io_service& ioService)
     {
@@ -58,7 +75,7 @@ private:
 
 private:
     boost::asio::io_service ioService;
-    boost::asio::io_service::work ioServiceWork;
+    std::unique_ptr<boost::asio::io_service::work> ioServiceWork;
     std::thread ioServiceThread;
 };
 

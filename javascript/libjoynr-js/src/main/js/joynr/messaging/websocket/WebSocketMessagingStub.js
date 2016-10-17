@@ -28,26 +28,18 @@ define("joynr/messaging/websocket/WebSocketMessagingStub", [ "joynr/util/Util"
      * @param {SharedWebSocket}
      *            settings.sharedWebSocket to which messages are sent on the clustercontroller.
      */
-    var WebSocketMessagingStub =
-            function WebSocketMessagingStub(settings) {
-                var sharedWebSocket;
+    var WebSocketMessagingStub = function WebSocketMessagingStub(settings) {
+        var sharedWebSocket = settings.sharedWebSocket;
 
-                Util.checkProperty(settings, "Object", "settings");
-                Util.checkProperty(
-                        settings.sharedWebSocket,
-                        "SharedWebSocket",
-                        "settings.sharedWebSocket");
-                sharedWebSocket = settings.sharedWebSocket;
-
-                /**
-                 * @name WebSocketMessagingStub#transmit
-                 * @function
-                 * @param {JoynrMessage}
-                 *            joynrMessage the joynr message to transmit
-                 */
-                this.transmit = function transmit(joynrMessage) {
-                    return sharedWebSocket.send(joynrMessage);
-                };
-            };
+        /**
+         * @name WebSocketMessagingStub#transmit
+         * @function
+         * @param {JoynrMessage}
+         *            joynrMessage the joynr message to transmit
+         */
+        this.transmit = function transmit(joynrMessage) {
+            return sharedWebSocket.send(joynrMessage);
+        };
+    };
     return WebSocketMessagingStub;
 });

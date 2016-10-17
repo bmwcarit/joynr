@@ -55,19 +55,24 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
          * @name BroadcastSubscriptionRequest#subscriptionId
          * @type String
          */
-        /**
-         * @name BroadcastSubscriptionRequest#qos
-         * @type Object|OnChangeSubscriptionQos
-         */
+        this.subscriptionId = settings.subscriptionId;
         /**
          * @name BroadcastSubscriptionRequest#subscribedToName
          * @type String
          */
+        this.subscribedToName = settings.subscribedToName;
+        /**
+         * @name BroadcastSubscriptionRequest#qos
+         * @type Object|OnChangeSubscriptionQos
+         */
+        this.qos = settings.qos || defaultSettings.qos;
         /**
          * @name BroadcastSubscriptionRequest#filterParameters
          * @type Object|BroadcastFilterParameters
          */
-        Util.extend(this, defaultSettings, settings);
+        if (settings.filterParameters !== undefined) {
+            this.filterParameters = settings.filterParameters;
+        }
         /**
          * The joynr type name
          *
@@ -76,9 +81,30 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
          */
         Typing.augmentTypeName(this, "joynr");
 
+        Object.defineProperty(this, "_typeName", {
+            value : "joynr.BroadcastSubscriptionRequest",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
+
         return Object.freeze(this);
     }
 
+    /**
+     * The joynr type name
+     *
+     * @name Request#_typeName
+     * @type String
+     */
+    Object.defineProperty(BroadcastSubscriptionRequest, "_typeName", {
+        value : "joynr.BroadcastSubscriptionRequest",
+        readable : true,
+        writable : false,
+        enumerable : true,
+        configurable : false
+    });
     return BroadcastSubscriptionRequest;
 
 });

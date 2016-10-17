@@ -20,7 +20,6 @@
 #include "common/dbus/DbusMessagingUtil.h"
 #include "joynr/JoynrMessage.h"
 #include <CommonAPI/CommonAPI.h>
-#include "joynr/TypeUtil.h"
 #include "joynr/FormatString.h"
 
 namespace joynr

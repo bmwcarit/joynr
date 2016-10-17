@@ -35,11 +35,6 @@ public class BroadcastUtil {
 	@Inject
 	private extension NamingUtil
 
-	def isSelective(FBroadcast broadcast) {
-		return broadcast.selective
-	}
-
-
 	def Iterable<FArgument> getOutputParameters(FBroadcast event) {
 		if (event == null || event.outArgs.size() == 0){
 			return new HashSet<FArgument>
