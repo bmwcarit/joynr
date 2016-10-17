@@ -85,8 +85,10 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     @Override
     public void registerMulticastSubscription(String multicastId) {
         multicastSubscriptionCount.putIfAbsent(multicastId, new AtomicInteger());
-        mqttClient.subscribe(multicastId);
-        multicastSubscriptionCount.get(multicastId).incrementAndGet();
+        int numberOfSubscriptions = multicastSubscriptionCount.get(multicastId).incrementAndGet();
+        if (numberOfSubscriptions == 1) {
+            mqttClient.subscribe(translateWildcard(multicastId));
+        }
     }
 
     @Override
@@ -95,9 +97,17 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
         if (subscribersCount != null) {
             int remainingCount = subscribersCount.decrementAndGet();
             if (remainingCount == 0) {
-                mqttClient.unsubscribe(multicastId);
+                mqttClient.unsubscribe(translateWildcard(multicastId));
             }
         }
+    }
+
+    private String translateWildcard(String multicastId) {
+        String topic = multicastId;
+        if (topic.endsWith("/*")) {
+            topic = topic.replaceFirst("/\\*$", "/#");
+        }
+        return topic;
     }
 
     @Override

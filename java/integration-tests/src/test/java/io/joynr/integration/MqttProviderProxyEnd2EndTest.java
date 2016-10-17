@@ -18,23 +18,31 @@ package io.joynr.integration;
  * limitations under the License.
  * #L%
  */
-import java.util.Properties;
 
-import io.joynr.messaging.MessagingPropertyKeys;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Semaphore;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.servlet.ServletUtil;
+import joynr.OnChangeSubscriptionQos;
+import joynr.tests.testBroadcastInterface;
+import joynr.tests.testProxy;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
 
@@ -69,5 +77,94 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 
         return application.getRuntime();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testSimpleMulticast() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+        testProxy proxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                                         .setMessagingQos(messagingQos)
+                                         .setDiscoveryQos(discoveryQos)
+                                         .build();
+        proxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new OnChangeSubscriptionQos());
+
+        // wait to allow the subscription request to arrive at the provider
+        Thread.sleep(500);
+
+        provider.fireEmptyBroadcast();
+        semaphore.acquire();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testMulticastWithPartitions() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class).setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        final List<String> errors = new ArrayList<>();
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                errors.add("On receive called on listener with no partitions.");
+            }
+        }, new OnChangeSubscriptionQos());
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new OnChangeSubscriptionQos(), "one", "two", "three");
+
+        // wait to allow the subscription request to arrive at the provider
+        Thread.sleep(500);
+
+        provider.fireEmptyBroadcast("one", "two", "three");
+        semaphore.acquire();
+        if (errors.size() > 0) {
+            fail("Got errors. " + errors);
+        }
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testMulticastWithPartitionsAndWildcards() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class).setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        final List<String> errors = new ArrayList<>();
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new OnChangeSubscriptionQos(), "one", "+", "three");
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new OnChangeSubscriptionQos(), "one", "*");
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new OnChangeSubscriptionQos(), "one", "two", "three");
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                errors.add("Received multicast on partition which wasn't published to: four/five/six");
+            }
+        }, new OnChangeSubscriptionQos(), "four", "five", "six");
+
+        // wait to allow the subscription request to arrive at the provider
+        Thread.sleep(500);
+
+        provider.fireEmptyBroadcast("one", "two", "three");
+        semaphore.acquire(3);
+        if (errors.size() > 0) {
+            fail("Got errors. " + errors);
+        }
     }
 }

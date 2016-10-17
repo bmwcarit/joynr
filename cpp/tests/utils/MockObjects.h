@@ -82,6 +82,7 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/SubscriptionManager.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/IMessageSender.h"
@@ -458,7 +459,17 @@ public:
                 const joynr::SubscriptionPublication& subscriptionPublication
             )
     );
-    
+
+    MOCK_METHOD4(
+            sendMulticastSubscriptionRequest,
+            void(
+                const std::string& senderParticipantId,
+                const std::string& receiverParticipantId,
+                const joynr::MessagingQos& qos,
+                const joynr::MulticastSubscriptionRequest& subscriptionRequest
+            )
+    );
+
     void sendSubscriptionPublication(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,

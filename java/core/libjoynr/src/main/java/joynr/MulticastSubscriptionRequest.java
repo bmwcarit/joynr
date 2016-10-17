@@ -25,7 +25,7 @@ public class MulticastSubscriptionRequest extends SubscriptionRequest {
 
     private static final long serialVersionUID = 1L;
 
-    private final String multicastId;
+    private String multicastId;
 
     public MulticastSubscriptionRequest(String multicastId,
                                         String subscriptionId,
@@ -35,8 +35,15 @@ public class MulticastSubscriptionRequest extends SubscriptionRequest {
         this.multicastId = multicastId;
     }
 
+    public MulticastSubscriptionRequest() {
+    }
+
     public String getMulticastId() {
         return multicastId;
+    }
+
+    public void setMulticastId(String multicastId) {
+        this.multicastId = multicastId;
     }
 
     @Override

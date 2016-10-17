@@ -752,8 +752,6 @@ public class PublicationManagerTest {
         publicationManager.multicastOccurred(providerParticipantId, multicastName, partitions, "one", 1);
 
         verify(dispatcher).sendMulticast(eq(providerParticipantId),
-                                         eq(multicastName),
-                                         eq(partitions),
                                          Mockito.<MulticastPublication> any(),
                                          Mockito.<MessagingQos> any());
     }

@@ -25,12 +25,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -40,6 +42,7 @@ import com.google.inject.name.Named;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
@@ -62,7 +65,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> subscriptionListenerDirectory;
     private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionListenerDirectory;
-    private ConcurrentMap<String, Set<String>> multicastSubscribersDirectory;
+    private ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory;
     private ConcurrentMap<String, Future<String>> subscriptionFutureMap;
     private ConcurrentMap<String, Class<?>> subscriptionTypes;
     private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes;
@@ -76,10 +79,12 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     private ScheduledExecutorService cleanupScheduler;
     private Dispatcher dispatcher;
 
+    private final MulticastWildcardRegexFactory multicastWildcardRegexFactory;
+
     @Inject
     public SubscriptionManagerImpl(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
-                                   Dispatcher dispatcher) {
-        super();
+                                   Dispatcher dispatcher,
+                                   MulticastWildcardRegexFactory multicastWildcardRegexFactory) {
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
         this.subscriptionListenerDirectory = Maps.newConcurrentMap();
@@ -91,12 +96,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.subscriptionTypes = Maps.newConcurrentMap();
         this.subscriptionBroadcastTypes = Maps.newConcurrentMap();
         this.subscriptionFutureMap = Maps.newConcurrentMap();
+        this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
     }
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public SubscriptionManagerImpl(ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory,
                                    ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory,
-                                   ConcurrentMap<String, Set<String>> multicastSubscribersDirectory,
+                                   ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory,
                                    ConcurrentMap<String, PubSubState> subscriptionStates,
                                    ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
                                    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
@@ -104,7 +110,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                    ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes,
                                    ConcurrentMap<String, Future<String>> subscriptionFutureMap,
                                    ScheduledExecutorService cleanupScheduler,
-                                   Dispatcher dispatcher) {
+                                   Dispatcher dispatcher,
+                                   MulticastWildcardRegexFactory multicastWildcardRegexFactory) {
         super();
         this.subscriptionListenerDirectory = attributeSubscriptionDirectory;
         this.broadcastSubscriptionListenerDirectory = broadcastSubscriptionDirectory;
@@ -117,6 +124,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
         this.subscriptionFutureMap = subscriptionFutureMap;
+        this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
     }
 
     private void cancelExistingSubscriptionEndRunnable(String subscriptionId) {
@@ -223,7 +231,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                               final MulticastSubscribeInvocation multicastSubscribeInvocation) {
         for (String toParticipantId : toParticipantIds) {
             final String multicastId = MulticastIdUtil.createMulticastId(toParticipantId,
-                                                                         multicastSubscribeInvocation.getSubscriptionName());
+                                                                         multicastSubscribeInvocation.getSubscriptionName(),
+                                                                         multicastSubscribeInvocation.getPartitions());
             registerSubscription(fromParticipantId,
                                  toParticipantIds,
                                  multicastSubscribeInvocation,
@@ -232,11 +241,12 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                      public SubscriptionRequest execute() {
                                          String subscriptionId = multicastSubscribeInvocation.getSubscriptionId();
                                          logger.debug("Multicast subscription registered with Id: " + subscriptionId);
-                                         if (!multicastSubscribersDirectory.containsKey(multicastId)) {
-                                             multicastSubscribersDirectory.putIfAbsent(multicastId,
+                                         Pattern multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
+                                         if (!multicastSubscribersDirectory.containsKey(multicastIdPattern)) {
+                                             multicastSubscribersDirectory.putIfAbsent(multicastIdPattern,
                                                                                        Sets.<String> newHashSet());
                                          }
-                                         multicastSubscribersDirectory.get(multicastId).add(subscriptionId);
+                                         multicastSubscribersDirectory.get(multicastIdPattern).add(subscriptionId);
                                          subscriptionBroadcastTypes.put(multicastId,
                                                                         multicastSubscribeInvocation.getOutParameterTypes());
                                          broadcastSubscriptionListenerDirectory.put(subscriptionId,
@@ -318,8 +328,12 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public void handleMulticastPublication(String multicastId, Object[] publicizedValues) {
-        for (String subscriptionId : multicastSubscribersDirectory.get(multicastId)) {
-            handleBroadcastPublication(subscriptionId, publicizedValues);
+        for (Map.Entry<Pattern, Set<String>> entry : multicastSubscribersDirectory.entrySet()) {
+            if (entry.getKey().matcher(multicastId).matches()) {
+                for (String subscriptionId : entry.getValue()) {
+                    handleBroadcastPublication(subscriptionId, publicizedValues);
+                }
+            }
         }
     }
 

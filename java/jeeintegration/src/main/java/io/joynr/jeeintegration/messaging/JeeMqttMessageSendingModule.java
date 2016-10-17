@@ -25,7 +25,6 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
-
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
@@ -34,8 +33,10 @@ import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
 import io.joynr.messaging.mqtt.MqttMessageReplyToAddressCalculator;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
+import io.joynr.messaging.mqtt.MqttMulticastAddressCalculator;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
+import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -94,6 +95,11 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
 
         bind(MqttClientFactory.class).to(MqttPahoClientFactory.class);
         bind(MqttMessageReplyToAddressCalculator.class).toProvider(SharedSubscriptionReplyToAddressCalculatorProvider.class);
+
+        Multibinder<MulticastAddressCalculator> multicastAddressCalculators = Multibinder.newSetBinder(binder(),
+                                                                                                       new TypeLiteral<MulticastAddressCalculator>() {
+                                                                                                       });
+        multicastAddressCalculators.addBinding().to(MqttMulticastAddressCalculator.class);
     }
 
 }

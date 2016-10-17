@@ -63,6 +63,11 @@ public class AddressManager {
                           PrimaryGlobalTransportHolder primaryGlobalTransport,
                           Set<MulticastAddressCalculator> multicastAddressCalculators,
                           MulticastReceiverRegistry multicastReceiverRegistry) {
+        logger.trace("Initialised with routingTable: {} primaryGlobalTransport: {} multicastAddressCalculators: {} multicastReceiverRegistry: {}",
+                     routingTable,
+                     primaryGlobalTransport.get(),
+                     multicastAddressCalculators,
+                     multicastReceiverRegistry);
         this.routingTable = routingTable;
         this.multicastReceiversRegistry = multicastReceiverRegistry;
         if (multicastAddressCalculators.size() > 1 && primaryGlobalTransport.get() == null) {
@@ -100,10 +105,14 @@ public class AddressManager {
                 result.add(address);
             }
         }
-        logger.trace("Found the following addresses for essage {}: {}", new Object[]{ message, result });
+        logger.trace("Found the following addresses for {}: {}", new Object[]{ message, result });
         if (result.size() == 0) {
-            throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
-                + message);
+            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+                throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
+                    + message);
+            } else {
+                throw new JoynrIllegalStateException("Unable to find address for participant with ID " + toParticipantId);
+            }
         }
         return result;
     }
@@ -115,8 +124,7 @@ public class AddressManager {
                 result.add(calculatedAddress);
             }
         }
-        String multicastId = message.getFrom() + "/" + message.getTo();
-        Set<String> receivers = multicastReceiversRegistry.getReceivers(multicastId);
+        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getTo());
         for (String receiverParticipantId : receivers) {
             Address address = routingTable.get(receiverParticipantId);
             if (address != null) {

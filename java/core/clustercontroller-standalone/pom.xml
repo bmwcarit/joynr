@@ -1,39 +1,54 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>core</artifactId>
-        <groupId>io.joynr.java</groupId>
-        <version>0.21.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+<!--
+  #%L
+  %%
+  Copyright (C) 2011 - 2016 BMW Car IT GmbH
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
 
-    <groupId>io.joynr.java.core</groupId>
-    <artifactId>clustercontroller-standalone</artifactId>
+       http://www.apache.org/licenses/LICENSE-2.0
 
-    <dependencies>
-        <dependency>
-            <groupId>io.joynr.java.core</groupId>
-            <artifactId>clustercontroller-websocket-runtime</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.joynr.java.messaging.mqtt</groupId>
-            <artifactId>joynr-mqtt-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>core</artifactId>
+		<groupId>io.joynr.java</groupId>
+		<version>0.21.0-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>io.joynr.java.core</groupId>
+	<artifactId>clustercontroller-standalone</artifactId>
+
+	<dependencies>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>clustercontroller-websocket-runtime</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<artifactId>joynr-mqtt-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- Console I/O framework used in the demo app -->
 		<dependency>
 			<groupId>jline</groupId>
 			<artifactId>jline</artifactId>
 			<version>2.12</version>
 		</dependency>
-        <dependency>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -66,8 +81,8 @@
 						</goals>
 						<configuration>
 							<excludes>**/*.class,**/*.xtend,**/MANIFEST.MF,**/*.xmi,**/*.properties,
-							**/maven/,**/*.gif,**/*.jar,**/*.xtext,**/*.mwe2,**/*.tokens,**/*.so,
-							**/*.Extensions,**/*.jnilib,**/*.dll,**/*.dtd</excludes>
+								**/maven/,**/*.gif,**/*.jar,**/*.xtext,**/*.mwe2,**/*.tokens,**/*.so,
+								**/*.Extensions,**/*.jnilib,**/*.dll,**/*.dtd</excludes>
 							<useSubDirectoryPerArtifact>true</useSubDirectoryPerArtifact>
 							<includeScope>compile</includeScope>
 							<outputDirectory>${project.build.directory}/WEB-INF/lib</outputDirectory>
@@ -102,7 +117,7 @@
 						<configuration>
 							<tasks>
 								<copy todir="${project.build.directory}/classes/WEB-INF/lib/"
-									includeEmptyDirs="false">
+										includeEmptyDirs="false">
 									<fileset dir="${project.build.directory}/WEB-INF/lib/" includes="**/*" />
 								</copy>
 							</tasks>
@@ -115,7 +130,7 @@
 			</plugin>
 			<plugin>
 				<!-- zip it all together, removing some further directories that the excludes
-				from the other plugins didnt seem to be able to remove -->
+				  from the other plugins didnt seem to be able to remove -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
@@ -135,6 +150,25 @@
 						</manifestEntries>
 					</archive>
 				</configuration>
+			</plugin>
+
+			<!-- Build jar with complete dependencies -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

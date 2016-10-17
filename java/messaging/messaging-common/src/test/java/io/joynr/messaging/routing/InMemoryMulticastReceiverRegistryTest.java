@@ -20,25 +20,38 @@ package io.joynr.messaging.routing;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class InMemoryMulticastReceiverRegistryTest {
 
     private InMemoryMulticastReceiverRegistry subject;
 
+    @Mock
+    private MulticastWildcardRegexFactory multicastWildcardRegexFactory;
+
     @Before
     public void setup() {
-        subject = new InMemoryMulticastReceiverRegistry();
+        subject = new InMemoryMulticastReceiverRegistry(multicastWildcardRegexFactory);
     }
 
     @Test
     public void testAddAndRetrieveAndRemove() {
         String multicastId = "multicastId";
+        when(multicastWildcardRegexFactory.createIdPattern(multicastId)).thenReturn(Pattern.compile(multicastId));
         String participantId = "participantId";
         subject.registerMulticastReceiver(multicastId, participantId);
         Set<String> result = subject.getReceivers(multicastId);
@@ -49,6 +62,51 @@ public class InMemoryMulticastReceiverRegistryTest {
         result = subject.getReceivers(multicastId);
         assertNotNull(result);
         assertEquals(0, result.size());
+    }
+
+    @Test
+    public void testRetrieveWithSinglePartitionWildcard() {
+        String wildcardId = "one/+/three";
+        when(multicastWildcardRegexFactory.createIdPattern(wildcardId)).thenReturn(Pattern.compile("one/[^/]+/three"));
+
+        String partitionedId = "one/two/three";
+        when(multicastWildcardRegexFactory.createIdPattern(partitionedId)).thenReturn(Pattern.compile(partitionedId));
+
+        String nonMatchingId = "four/five/six";
+        when(multicastWildcardRegexFactory.createIdPattern(nonMatchingId)).thenReturn(Pattern.compile(nonMatchingId));
+
+        String participantIdOne = "123";
+        String participantIdTwo = "456";
+        String participantIdThree = "789";
+
+        subject.registerMulticastReceiver(wildcardId, participantIdOne);
+        subject.registerMulticastReceiver(partitionedId, participantIdTwo);
+        subject.registerMulticastReceiver(nonMatchingId, participantIdThree);
+
+        Set<String> result = subject.getReceivers(partitionedId);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(participantIdOne));
+        assertTrue(result.contains(participantIdTwo));
+        assertFalse(result.contains(participantIdThree));
+    }
+
+    @Test
+    public void testRetrieveWithMultiLevelWildcard() {
+        String wildcardId = "one/two/*";
+        when(multicastWildcardRegexFactory.createIdPattern(wildcardId)).thenReturn(Pattern.compile("one/two/.*"));
+
+        String partitionedId = "one/two/three/four";
+        String participantId = "123";
+
+        subject.registerMulticastReceiver(wildcardId, participantId);
+
+        Set<String> result = subject.getReceivers(partitionedId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(participantId, result.iterator().next());
     }
 
 }

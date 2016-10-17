@@ -23,6 +23,7 @@
 #include <cctype>
 #include <iterator>
 #include <stdexcept>
+#include <sstream>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -117,6 +118,18 @@ std::string createUuid()
     static std::mutex uuidMutex;
     std::lock_guard<std::mutex> uuidLock(uuidMutex);
     return boost::uuids::to_string(uuidGenerator());
+}
+
+std::string createMulticastId(const std::string& providerParticipantId,
+                              const std::string& multicastName,
+                              const std::vector<std::string>& partitions)
+{
+    std::stringstream multicastId;
+    multicastId << providerParticipantId << "/" + multicastName;
+    for (const auto& partition : partitions) {
+        multicastId << "/" << partition;
+    }
+    return multicastId.str();
 }
 
 void logSerializedMessage(Logger& logger,

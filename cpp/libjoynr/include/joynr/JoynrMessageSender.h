@@ -39,6 +39,7 @@ class Reply;
 class MessagingQos;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
+class MulticastSubscriptionRequest;
 class SubscriptionReply;
 class SubscriptionStop;
 class SubscriptionPublication;
@@ -109,6 +110,12 @@ public:
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
             const BroadcastSubscriptionRequest& subscriptionRequest) override;
+
+    void sendMulticastSubscriptionRequest(
+            const std::string& senderParticipantId,
+            const std::string& receiverParticipantId,
+            const MessagingQos& qos,
+            const MulticastSubscriptionRequest& subscriptionRequest) override;
 
     void sendSubscriptionReply(const std::string& senderParticipantId,
                                const std::string& receiverParticipantId,

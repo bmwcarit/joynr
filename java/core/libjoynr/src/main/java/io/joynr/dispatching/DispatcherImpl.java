@@ -187,7 +187,8 @@ public class DispatcherImpl implements Dispatcher {
                 logger.debug("Parsed one way request from message payload :" + message.getPayload());
                 handle(oneWayRequest, message.getTo(), expiryDate);
             } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
-                    || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
+                    || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)
+                    || JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST.equals(type)) {
                 SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
                                                                                  SubscriptionRequest.class);
                 logger.debug("Parsed subscription request from message payload :" + message.getPayload());
@@ -355,13 +356,9 @@ public class DispatcherImpl implements Dispatcher {
 
     @Override
     public void sendMulticast(String fromParticipantId,
-                              String multicastName,
-                              String[] partitions,
                               MulticastPublication multicastPublication,
                               MessagingQos messagingQos) {
         JoynrMessage message = joynrMessageFactory.createMulticast(fromParticipantId,
-                                                                   multicastName,
-                                                                   partitions,
                                                                    multicastPublication,
                                                                    messagingQos);
         messageRouter.route(message);

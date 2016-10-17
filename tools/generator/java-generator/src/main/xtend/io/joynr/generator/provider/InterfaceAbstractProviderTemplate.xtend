@@ -109,11 +109,20 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 		}
 	«ENDFOR»
 
-	«FOR broadcast : francaIntf.broadcasts»
+	«FOR broadcast : francaIntf.broadcasts.filter[selective]»
 		«var broadcastName = broadcast.joynrName»
 		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {
 			if («interfaceName.toFirstLower»SubscriptionPublisher != null) {
 				«interfaceName.toFirstLower»SubscriptionPublisher.fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedUntypedOutputParameterList»);
+			}
+		}
+
+	«ENDFOR»
+	«FOR broadcast : francaIntf.broadcasts.filter[!selective]»
+		«var broadcastName = broadcast.joynrName»
+		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList»«IF broadcast.outputParameters.length > 0», «ENDIF»String... partitions) {
+			if («interfaceName.toFirstLower»SubscriptionPublisher != null) {
+				«interfaceName.toFirstLower»SubscriptionPublisher.fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedUntypedOutputParameterList»«IF broadcast.outputParameters.length > 0», «ENDIF»partitions);
 			}
 		}
 
