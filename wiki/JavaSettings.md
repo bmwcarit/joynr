@@ -172,7 +172,10 @@ will be reachable via the selected global transport middleware.
 ### `CAPABILITYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
-appropriate entry in the local capabilities directory.
+appropriate entry in the local capabilities directory.  
+If the capabilities directory is using MQTT as its primary transport, then the URL you set here
+is that of the MQTT broker configured for the capabilities directory. E.g.
+`tcp://mqttbroker:1883`.  
 See also the static capabilities provisioning documentation below.
 
 * **OPTIONAL** (see static capabilities provisioning)
