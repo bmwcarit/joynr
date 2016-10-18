@@ -120,6 +120,7 @@ TEST_F(MessageRouterTest, addMessageToQueue){
 }
 
 TEST_F(MessageRouterTest, multicastMessageWillNotBeQueued) {
+    joynrMessage.setReceivedFromGlobal(true);
     joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST);
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
