@@ -197,16 +197,15 @@ define("joynr/dispatching/Dispatcher", [
          *            settings.request
          * @returns {Object} A+ promise object
          */
-        this.sendRequest =
-                function sendRequest(settings) {
-                    // Create a JoynrMessage with the Request
-                    var requestMessage = new JoynrMessage({
-                        type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
-                        payload : JSONSerializer.stringify(settings.request)
-                    });
-                    if (settings.messagingQos.customHeaders) {
-                        requestMessage.setCustomHeaders(settings.messagingQos.customHeaders);
-                    }
+        this.sendRequest = function sendRequest(settings) {
+            // Create a JoynrMessage with the Request
+            var requestMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : JSONSerializer.stringify(settings.request)
+            });
+            if (settings.messagingQos.customHeaders) {
+                requestMessage.setCustomHeaders(settings.messagingQos.customHeaders);
+            }
 
             log.info("calling " + settings.request.methodName + ".", DiagnosticTags.forRequest({
                 request : settings.request,
@@ -214,8 +213,8 @@ define("joynr/dispatching/Dispatcher", [
                 from : settings.from
             }));
 
-                    return sendJoynrMessage(requestMessage, settings);
-                };
+            return sendJoynrMessage(requestMessage, settings);
+        };
 
         /**
          * @name Dispatcher#sendOneWayRequest
