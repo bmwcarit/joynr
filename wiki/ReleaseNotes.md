@@ -4,6 +4,8 @@
 * **[C++]** During a provider call a call context can be queried which provides the creator user id
   field from the joynr message. Please delete the broadcastsubscriptionrequest-persistence-file and
   subscriptionrequest-persistence-file because the file format changed.
+* **[C++]** Introduced async proxy creation. ProxyBuilder now provides a buildAsync method which
+  accepts a success and an error callback as parameters.
 
 ## Other changes
 None.

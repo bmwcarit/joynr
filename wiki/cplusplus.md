@@ -255,6 +255,23 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
     }
 ```
 
+Use the buildAsync method of ProxyBuilder to create a proxy asynchronously:
+
+```cpp
+    auto onSuccess = [](std::unique_ptr<<Package>::<Interface>Proxy> proxy) {
+        // Process the created proxy here
+    }
+
+    auto onError = [](const exceptions::DiscoveryException& exception) {
+        // Handle the exception here
+    }
+
+    proxyBuilder->setMessagingQos(messagingQos)
+        ->setCached(false)
+        ->setDiscoveryQos(discoveryQos)
+        ->buildAsync(onSuccess, onError);
+```
+
 ## Synchronous Remote procedure calls
 While the provider executes the call asynchronously in any case, the consumer will wait until the call is finished, i.e. the thread will be blocked.
 Note that the message order on Joynr RPCs will not be preserved.
