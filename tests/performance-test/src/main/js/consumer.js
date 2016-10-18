@@ -29,11 +29,11 @@ consumerBase.initialize().then(function() {
     return consumerBase.echoComplexStruct()
         .then(consumerBase.echoString)
         .then(consumerBase.echoByteArray)
+        .then(consumerBase.shutdown)
         .then(function() {
             console.log("SUCCEEDED");
             process.exit(0);
-        })
-        .then(consumerBase.shutdown);
+        });
 }).catch(function(error) {
     console.log("Error while performing test: " + error);
     throw error;
