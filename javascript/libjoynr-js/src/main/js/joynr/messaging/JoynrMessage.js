@@ -29,6 +29,8 @@ define(
             var jmBase = uuid();
             var jmIndex = 0;
 
+            Util.enrichObjectWithSetPrototypeOf();
+
             /**
              * @name JoynrMessage
              * @constructor
@@ -40,14 +42,14 @@ define(
              */
             function JoynrMessage(settings) {
                 settings.header = settings.header || {};
-                /*jslint nomen: true, sub: true*/
+                /*jslint nomen: true*/
                 settings._typeName = "joynr.JoynrMessage";
                 settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE] = "application/json";
                 settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] =
                         settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID]
                             || (jmBase + "_" + jmIndex);
-                settings['__proto__'] = JoynrMessage.prototype;
-                /*jslint nomen: false, sub: false */
+                Object.setPrototypeOf(settings, JoynrMessage.prototype);
+                /*jslint nomen: false*/
                 return settings;
             }
 

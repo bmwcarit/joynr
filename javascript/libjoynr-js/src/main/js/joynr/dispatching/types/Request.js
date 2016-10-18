@@ -31,6 +31,8 @@ define("joynr/dispatching/types/Request", [
     var rrBase = uuid();
     var rrIndex = 0;
 
+    Util.enrichObjectWithSetPrototypeOf();
+
     /**
      * @name Request
      * @constructor
@@ -66,10 +68,10 @@ define("joynr/dispatching/types/Request", [
          * @name Request#_typeName
          * @type String
          */
-        /*jslint nomen: true, sub: true*/
+        /*jslint nomen: true*/
         settings._typeName = "joynr.Request";
-        settings['__proto__'] = Request.prototype;
-        /*jslint nomen: false, sub: false */
+        /*jslint nomen: false */
+        Object.setPrototypeOf(settings, Request.prototype);
 
         return settings;
     }

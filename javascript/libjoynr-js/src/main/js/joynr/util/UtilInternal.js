@@ -263,6 +263,15 @@ define("joynr/util/UtilInternal", [
         }
     };
 
+    UtilInternal.enrichObjectWithSetPrototypeOf = function() {
+        //if Object.setPrototypeOf already exists? -> do nothing;
+        Object.setPrototypeOf = Object.setPrototypeOf || function(object, prototype) {
+            /*jslint sub: true*/
+            object['__proto__'] = prototype;
+            /*jslint sub: false*/
+        };
+    };
+
     UtilInternal.extend(UtilInternal, UtilExternal);
     return UtilInternal;
 
