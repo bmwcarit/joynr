@@ -38,6 +38,7 @@ import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
 import io.joynr.messaging.JoynrMessageCreator;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Deferred;
@@ -92,8 +93,8 @@ public class ProviderWrapper implements InvocationHandler {
      * @param bean
      *            the bean reference to which calls will be delegated.
      * @param beanManager
-     *            the bean manager
-     * @param injector
+     *            the bean manager.
+     * @param injector the Guice injector.
      */
     public ProviderWrapper(Bean<?> bean, BeanManager beanManager, Injector injector) {
         this.bean = bean;
@@ -239,12 +240,11 @@ public class ProviderWrapper implements InvocationHandler {
         if (OBJECT_METHODS.contains(method) || isProviderMethod) {
             return this;
         }
-        Object beanInstance = bean.create((CreationalContext) beanManager.createCreationalContext(bean));
         if (SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME.equals(method.getName())
                 && SubscriptionPublisherInjection.class.isAssignableFrom(method.getDeclaringClass())) {
-            return SubscriptionPublisherInjectionWrapper.createWrapper(beanInstance, bean.getBeanClass());
+            return SubscriptionPublisherInjectionWrapper.createInvocationHandler(bean, beanManager).createProxy();
         }
-        return beanInstance;
+        return bean.create((CreationalContext) beanManager.createCreationalContext(bean));
     }
 
     private Method getMethodFromInterfaces(Class<?> beanClass,

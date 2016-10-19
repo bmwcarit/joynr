@@ -29,9 +29,24 @@ Skeleton) layers only.
 * A MulticastId is a composite of the provider's participantId, the name of
   the broadcast as modelled in Franca IDL, and an optional partition.
 * A partition is a list of strings that represent a hierarchy similar to a URL
-  path or an MQTT (sub)topic.
+  path or an MQTT (sub)topic. See the section on partitions for more information.
   A MulticastId can thus be calculated from information available to the
   consumer at discovery.
+
+###Partitions
+A partition allows finer control of whom should receive a given multicast message. A single
+broadcast can thus be modeled in Franca. At runtime, consumers can subscribe at runtime for a subset
+of all publications being sent. The fireBrodcast method called by the provider allows the provider
+to state which partition the broadcast is for.
+
+####Partition Syntax and Wildcards 
+
+* A partition segment may contain ascii characters A-Z, a-z and 0-9, and is case-sensitive.
+* A partition segment can be wild-carded at a single level using the + character.
+Example: a/+/c matches a/b/c and a/a/c but does not match a/b/d or a/b/c/d.
+* A partition sequence may also end with the multi-level wildcard \*, which matches any number of
+sub-partitions below the wildcard.
+Example: a/b/* matches a/b/c, a/b/d and a/b/c/d, but does not match a/c/d.
 
 ###Registering to receive multicast messages
 When an application subscribes to a broadcast, its libjoynr calls

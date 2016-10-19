@@ -193,11 +193,9 @@ class ProviderGenerator extends InterfaceJsTemplate {
 				 * @summary The «eventName» event is GENERATED FROM THE INTERFACE DESCRIPTION
 				 «appendJSDocSummaryAndWriteSeeAndDescription(event, "* ")»
 				 */
-				this.«eventName» = new dependencies.ProviderEvent(
-					this,
-					implementation.«eventName»,
-					"«eventName»",
-					[
+				this.«eventName» = new dependencies.ProviderEvent({
+					eventName : "«eventName»",
+					outputParameterProperties : [
 						«FOR param : getOutputParameters(event) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
@@ -205,16 +203,15 @@ class ProviderGenerator extends InterfaceJsTemplate {
 						}
 						«ENDFOR»
 					],
+					selective : «event.selective»,
+					filterSettings : {
 					«IF event.selective»
-					{
 						«FOR filterParameter : filterParameters SEPARATOR ","»
 							"«filterParameter»": "reservedForTypeInfo"
 						«ENDFOR»
-					}
-					«ELSE»
-					{}
 					«ENDIF»
-				);
+					}
+				});
 				if (implementation.«eventName») {
 					implementation.«eventName».createBroadcastOutputParameters = this.«eventName».createBroadcastOutputParameters;
 					implementation.«eventName».fire = this.«eventName».fire;
@@ -230,8 +227,6 @@ class ProviderGenerator extends InterfaceJsTemplate {
 			});
 
 			this.interfaceName = "«getFQN(francaIntf)»";
-
-			this.id = dependencies.uuid();
 
 			return Object.freeze(this);
 		};

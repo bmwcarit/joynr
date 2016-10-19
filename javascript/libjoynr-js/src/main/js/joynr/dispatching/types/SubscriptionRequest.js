@@ -76,10 +76,31 @@ define("joynr/dispatching/types/SubscriptionRequest", [
          * @name SubscriptionRequest#_typeName
          * @type String
          */
-        Typing.augmentTypeName(this, "joynr");
+
+        Object.defineProperty(this, "_typeName", {
+            value : "joynr.SubscriptionRequest",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
 
         return Object.freeze(this);
     }
+
+    /**
+     * The joynr type name
+     *
+     * @name Request#_typeName
+     * @type String
+     */
+    Object.defineProperty(SubscriptionRequest, "_typeName", {
+        value : "joynr.SubscriptionRequest",
+        readable : true,
+        writable : false,
+        enumerable : true,
+        configurable : false
+    });
 
     return SubscriptionRequest;
 

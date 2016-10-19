@@ -29,13 +29,6 @@ define("joynr/messaging/browser/BrowserMessagingStub", [ "joynr/util/Util"
      * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
      */
     function BrowserMessagingStub(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkPropertyIfDefined(settings.windowId, "String", "settings.windowId");
-        Util.checkProperty(
-                settings.webMessagingStub,
-                "WebMessagingStub",
-                "settings.webMessagingStub");
-
         /**
          * @name BrowserMessagingStub#transmit
          * @function
@@ -43,8 +36,6 @@ define("joynr/messaging/browser/BrowserMessagingStub", [ "joynr/util/Util"
          * @param {JoynrMessage} joynrMessage the joynr message to transmit
          */
         this.transmit = function transmit(joynrMessage) {
-            Util.checkProperty(joynrMessage, "JoynrMessage", "joynrMessage");
-
             return settings.webMessagingStub.transmit({
                 windowId : settings.windowId,
                 message : joynrMessage

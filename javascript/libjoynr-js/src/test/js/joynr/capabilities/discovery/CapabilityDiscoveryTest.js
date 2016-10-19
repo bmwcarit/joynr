@@ -264,6 +264,7 @@ define([
                                                     messageRouterSpy,
                                                     proxyBuilderSpy,
                                                     "io.joynr");
+                                    capabilityDiscovery.globalAddressReady(address);
 
                                     capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
@@ -436,6 +437,7 @@ define([
                                             messageRouterSpy,
                                             proxyBuilderSpy,
                                             "io.joynr");
+                            capabilityDiscovery.globalAddressReady(address);
                             var discoveryQos = new DiscoveryQos({
                                 cacheMaxAge : 0,
                                 discoveryScope : discoveryScope
@@ -883,6 +885,7 @@ define([
                                                     messageRouterSpy,
                                                     proxyBuilderSpy,
                                                     "io.joynr");
+                                    capabilityDiscovery.globalAddressReady(address);
                                     capabilityDiscovery.lookup([domain, domain], interfaceName, discoveryQos).then(function() {
                                         fail("unexpected success");
                                     }).catch(function(error) {

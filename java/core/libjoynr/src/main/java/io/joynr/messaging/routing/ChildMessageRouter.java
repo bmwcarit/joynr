@@ -28,7 +28,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.SystemServicesSettings;
@@ -77,10 +79,10 @@ public class ChildMessageRouter extends MessageRouterImpl {
     @Override
     protected Set<Address> getAddresses(JoynrMessage message) {
         Set<Address> result;
-        JoynrMessageNotSentException noAddressException = null;
+        JoynrRuntimeException noAddressException = null;
         try {
             result = super.getAddresses(message);
-        } catch (JoynrMessageNotSentException e) {
+        } catch (JoynrMessageNotSentException | JoynrIllegalStateException e) {
             noAddressException = e;
             result = new HashSet<>();
         }

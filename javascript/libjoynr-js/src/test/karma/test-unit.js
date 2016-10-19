@@ -33,6 +33,7 @@ require.config({
         "atmosphere" : "lib/atmosphere",
         "log4javascript" : "lib/log4javascript",
         "bluebird" : "lib/bluebird",
+        "mqtt" : "lib/mqtt",
         "JsonParser" : "lib/JsonParser",
         "uuid" : "lib/uuid-annotated",
         "global/WebSocket": "../test-classes/global/WebSocketMock",

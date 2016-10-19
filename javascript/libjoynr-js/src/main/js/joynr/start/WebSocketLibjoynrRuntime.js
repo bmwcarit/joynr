@@ -36,6 +36,8 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/messaging/websocket/SharedWebSocket",
     "joynr/messaging/websocket/WebSocketMessagingSkeleton",
     "joynr/messaging/websocket/WebSocketMessagingStubFactory",
+    "joynr/messaging/websocket/WebSocketMulticastAddressCalculator",
+    "joynr/messaging/MessagingSkeletonFactory",
     "joynr/messaging/MessagingStubFactory",
     "joynr/messaging/routing/MessageRouter",
     "joynr/messaging/routing/MessageQueue",
@@ -84,6 +86,8 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         SharedWebSocket,
         WebSocketMessagingSkeleton,
         WebSocketMessagingStubFactory,
+        WebSocketMulticastAddressCalculator,
+        MessagingSkeletonFactory,
         MessagingStubFactory,
         MessageRouter,
         MessageQueue,
@@ -136,6 +140,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         var initialRoutingTable;
         var untypedCapabilities;
         var typedCapabilities;
+        var messagingSkeletonFactory;
         var messagingStubFactory;
         var messageRouter;
         var libjoynrMessagingSkeleton;
@@ -345,9 +350,11 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     });
 
                     webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-                        sharedWebSocket : sharedWebSocket
+                        sharedWebSocket : sharedWebSocket,
+                        mainTransport : true
                     });
 
+                    messagingSkeletonFactory = new MessagingSkeletonFactory();
                     messagingStubFactory = new MessagingStubFactory({
                         messagingStubFactories : {
                             InProcessAddress : new InProcessMessagingStubFactory(),
@@ -362,8 +369,12 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                         persistency : persistency,
                         typeRegistry : typeRegistry,
                         joynrInstanceId : uuid(),
+                        messagingSkeletonFactory : messagingSkeletonFactory,
                         messagingStubFactory : messagingStubFactory,
                         messageQueue : new MessageQueue(messageQueueSettings),
+                        multicastAddressCalculator : new WebSocketMulticastAddressCalculator({
+                            globalAddress : ccAddress
+                        }),
                         parentMessageRouterAddress : ccAddress,
                         incomingAddress : localAddress
                     });
@@ -380,6 +391,11 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                     libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
+                    messagingSkeletonFactory.setSkeletons({
+                        InProcessAddress : libjoynrMessagingSkeleton,
+                        WebSocketAddress : webSocketMessagingSkeleton
+                    });
+
                     requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                     subscriptionManager = new SubscriptionManager(dispatcher);
                     publicationManager =
@@ -388,6 +404,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     dispatcher.registerRequestReplyManager(requestReplyManager);
                     dispatcher.registerSubscriptionManager(subscriptionManager);
                     dispatcher.registerPublicationManager(publicationManager);
+                    dispatcher.registerMessageRouter(messageRouter);
 
                     participantIdStorage = new ParticipantIdStorage(persistency, uuid);
                     discovery = new InProcessStub();

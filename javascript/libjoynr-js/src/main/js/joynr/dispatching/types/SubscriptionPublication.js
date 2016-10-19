@@ -58,11 +58,17 @@ define("joynr/dispatching/types/SubscriptionPublication", [
          * @name SubscriptionPublication#subscriptionId
          * @type String
          */
+        this.subscriptionId = settings.subscriptionId;
         /**
          * @name SubscriptionPublication#response
          * @type Object
          */
-        Util.extend(this, settings);
+        this.response = settings.response;
+        /**
+         * @name SubscriptionPublication#error
+         * @type Object
+         */
+        this.error = settings.error;
 
         /**
          * The joynr type name

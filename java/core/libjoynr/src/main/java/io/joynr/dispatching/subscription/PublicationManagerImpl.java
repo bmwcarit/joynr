@@ -291,12 +291,17 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         dispatcher.sendSubscriptionReply(providerParticipantId, proxyParticipantId, subscriptionReply, messagingQos);
     }
 
-    private void handleMulticastSubscriptionRequest(String providerParticipantId,
+    private void handleMulticastSubscriptionRequest(String proxyParticipantId,
+                                                    String providerParticipantId,
                                                     MulticastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
         logger.debug("Received multicast subscription request {} for provider with participant ID {}",
                      subscriptionRequest,
                      providerParticipantId);
+        dispatcher.sendSubscriptionReply(providerParticipantId,
+                                         proxyParticipantId,
+                                         new SubscriptionReply(subscriptionRequest.getSubscriptionId()),
+                                         createMessagingQos(subscriptionRequest.getQos()));
     }
 
     private void addSubscriptionRequest(String proxyParticipantId,
@@ -320,7 +325,8 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                    (BroadcastSubscriptionRequest) subscriptionRequest,
                                                    providerContainer);
             } else if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
-                handleMulticastSubscriptionRequest(providerParticipantId,
+                handleMulticastSubscriptionRequest(proxyParticipantId,
+                                                   providerParticipantId,
                                                    (MulticastSubscriptionRequest) subscriptionRequest,
                                                    providerContainer);
             } else {
@@ -739,7 +745,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         String multicastId = MulticastIdUtil.createMulticastId(providerParticipantId, multicastName, partitions);
         MulticastPublication multicastPublication = new MulticastPublication(Arrays.asList(values), multicastId);
         MessagingQos messagingQos = new MessagingQos();
-        dispatcher.sendMulticast(providerParticipantId, multicastName, partitions, multicastPublication, messagingQos);
+        dispatcher.sendMulticast(providerParticipantId, multicastPublication, messagingQos);
     }
 
     @Override

@@ -19,6 +19,7 @@
 
 (function() {
     var setupProvisionedData = function(provisioning) {
+        provisioning.brokerUri = "${joynr.provisioning.brokerUri}";
         provisioning.bounceProxyBaseUrl = "${joynr.provisioning.bounceProxyBaseUrl}";
         provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
 

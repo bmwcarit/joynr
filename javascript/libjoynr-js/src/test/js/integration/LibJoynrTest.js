@@ -58,7 +58,7 @@ define([
         }
 
         beforeEach(function(done) {
-            provisioningSuffix = "-" + Date.now();
+            provisioningSuffix = "LibJoynrTest-" + Date.now();
             testProvisioning = IntegrationUtils.getProvisioning(provisioning, provisioningSuffix);
             joynr.load(testProvisioning).then(function(newJoynr) {
                 joynr = newJoynr;
@@ -128,13 +128,15 @@ define([
 
             require([ "joynr/vehicle/RadioProxy"
             ], function(RadioProxy) {
+                var domain = "LibJoynrTest-" + Date.now();
                 IntegrationUtils.initializeWebWorker(
                         "TestEnd2EndCommProviderWorker",
-                        provisioningSuffix).then(function(newWorkerId) {
+                        provisioningSuffix,
+                        domain).then(function(newWorkerId) {
                     workerId = newWorkerId;
                     return IntegrationUtils.startWebWorker(workerId);
                 }).then(function() {
-                    return IntegrationUtils.buildProxy(RadioProxy);
+                    return IntegrationUtils.buildProxy(RadioProxy, domain);
                 }).then(function(newRadioProxy) {
                     radioProxy = newRadioProxy;
                     testMutability(radioProxy, "isOn");

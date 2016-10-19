@@ -39,6 +39,7 @@ define([
         var listener2 = null;
         var data = null;
         var event = null;
+        var multicastEvent;
         var ccAddress = new WebSocketAddress({
             protocol : "ws",
             host : "host",
@@ -62,7 +63,8 @@ define([
             spyOn(sharedWebSocket, "send").and.callThrough();
 
             webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-                sharedWebSocket : sharedWebSocket
+                sharedWebSocket : sharedWebSocket,
+                mainTransport : true
             });
 
             listener1 = jasmine.createSpy("listener1");
@@ -73,6 +75,10 @@ define([
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
             });
             event.data = JSON.stringify(data);
+            multicastEvent = new MessageEvent();
+            multicastEvent.data = JSON.stringify(new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+            }));
             done();
         });
 
@@ -92,9 +98,15 @@ define([
         it("throws if arguments are missing or of wrong type", function(done) {
             expect(function() {
                 webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-                    sharedWebSocket : sharedWebSocket
+                    sharedWebSocket : sharedWebSocket,
+                    mainTransport : true
                 });
             }).not.toThrow(); // correct call
+            expect(function() {
+                webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
+                    sharedWebSocket : sharedWebSocket
+                });
+            }).toThrow(); // mainTransport missing
             expect(function() {
                 webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({});
             }).toThrow(); // incorrect call
@@ -151,6 +163,29 @@ define([
             expect(listener2).toHaveBeenCalled();
             expect(listener2.calls.count()).toBe(1);
             done();
+        });
+
+        function receiveMessageAndCheckForIsReceivedFromGlobalFlag(expectedValue) {
+            webSocketMessagingSkeleton.registerListener(listener1);
+
+            sharedWebSocket.onmessage(multicastEvent);
+
+            expect(listener1).toHaveBeenCalled();
+            expect(listener1.calls.count()).toBe(1);
+            expect(listener1.calls.argsFor(0)[0].isReceivedFromGlobal).toBe(expectedValue);
+        }
+
+        it("sets isReceivedFromGlobal if web socket is main transport", function() {
+            receiveMessageAndCheckForIsReceivedFromGlobalFlag(true);
+        });
+
+        it("does not set isReceivedFromGlobal if web socket is NOT main transport", function() {
+            webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
+                sharedWebSocket : sharedWebSocket,
+                mainTransport : false
+            });
+
+            receiveMessageAndCheckForIsReceivedFromGlobalFlag(false);
         });
 
     });

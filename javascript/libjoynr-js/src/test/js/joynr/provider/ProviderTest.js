@@ -201,6 +201,8 @@ define(
                                                 .createSpy("methodFireAndForget"),
                                         weakSignal : jasmine.createSpy("weakSignal"),
                                         triggerBroadcasts : jasmine.createSpy("triggerBroadcasts"),
+                                        triggerBroadcastsWithPartitions : jasmine
+                                                .createSpy("triggerBroadcastsWithPartitions"),
                                         methodProvidedImpl : jasmine
                                                 .createSpy("methodProvidedImpl"),
                                         methodWithByteBuffer : jasmine

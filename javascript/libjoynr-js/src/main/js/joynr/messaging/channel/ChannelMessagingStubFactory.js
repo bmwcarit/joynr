@@ -29,6 +29,7 @@ define(
              *
              * @param {Object} settings
              * @param {ChannelMessagingSender|Object} settings.channelMessagingSender
+             * @param {MessageReplyToAddressCalculator} settings.messageReplyToAddressCalculator calculates the replyTo address
              */
             function ChannelMessagingStubFactory(settings) {
                 var globalAddress;
@@ -61,7 +62,8 @@ define(
                     return new ChannelMessagingStub({
                         destinationChannelAddress : address,
                         channelMessagingSender : settings.channelMessagingSender,
-                        myChannelAddress : globalAddress
+                        myChannelAddress : globalAddress,
+                        messageReplyToAddressCalculator : settings.messageReplyToAddressCalculator
                     });
                 };
             }

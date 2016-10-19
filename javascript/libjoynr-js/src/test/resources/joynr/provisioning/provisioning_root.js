@@ -21,6 +21,9 @@
     var setupProvisionedData = function(provisioning){
         provisioning.ttl = ${joynr.provisioning.testTtl};
 
+        provisioning.mqtt = {
+            qosLevel : 0
+        };
         provisioning.logging = {
                 configuration : {
                     name : "test config",

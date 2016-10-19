@@ -23,6 +23,7 @@ import static io.joynr.proxy.invocation.InvocationReflectionsUtils.extractOutPar
 
 import java.lang.reflect.Method;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;
@@ -33,14 +34,23 @@ public class MulticastSubscribeInvocation extends SubscriptionInvocation {
 
     private final BroadcastSubscriptionListener listener;
     private Class<?>[] outParameterTypes;
+    private String[] partitions;
 
     public MulticastSubscribeInvocation(Method method, Object[] args, Future<String> future) {
         super(future, getMulticastNameFromAnnotation(method), getQosParameter(args));
         listener = getSubscriptionListener(args);
         outParameterTypes = extractOutParameterTypes(listener);
+        partitions = extractPartitions(args);
         if (argsHasSubscriptionId(args)) {
             setSubscriptionId((String) args[0]);
         }
+    }
+
+    private static String[] extractPartitions(Object[] args) {
+        if (args[args.length - 1] instanceof String[]) {
+            return (String[]) args[args.length - 1];
+        }
+        return new String[0];
     }
 
     private static String getMulticastNameFromAnnotation(Method method) {
@@ -63,5 +73,10 @@ public class MulticastSubscribeInvocation extends SubscriptionInvocation {
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "MulticastSubscribeInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
     public Class<?>[] getOutParameterTypes() {
         return outParameterTypes;
+    }
+
+    @SuppressWarnings("EI_EXPOSE_REP")
+    public String[] getPartitions() {
+        return partitions;
     }
 }

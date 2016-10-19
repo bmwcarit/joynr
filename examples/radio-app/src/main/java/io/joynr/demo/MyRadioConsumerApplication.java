@@ -80,6 +80,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     @Named(APP_CONFIG_PROVIDER_DOMAIN)
     private String providerDomain;
     private Future<String> subscriptionFutureCurrentStation;
+    private Future<String> weakSignalFuture;
+    private Future<String> weakSignalWithPartitionFuture;
     private RadioProxy radioProxy;
     @Inject
     private ObjectMapper objectMapper;
@@ -198,10 +200,22 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     public void shutdown() {
         if (radioProxy != null) {
             if (subscriptionFutureCurrentStation != null) {
-                String subscriptionIdCurrentStation;
                 try {
-                    subscriptionIdCurrentStation = subscriptionFutureCurrentStation.get();
-                    radioProxy.unsubscribeFromCurrentStation(subscriptionIdCurrentStation);
+                    radioProxy.unsubscribeFromCurrentStation(subscriptionFutureCurrentStation.get());
+                } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
+                    LOG.error(e.getMessage());
+                }
+            }
+            if (weakSignalFuture != null) {
+                try {
+                    radioProxy.unsubscribeFromWeakSignalBroadcast(weakSignalFuture.get());
+                } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
+                    LOG.error(e.getMessage());
+                }
+            }
+            if (weakSignalWithPartitionFuture != null) {
+                try {
+                    radioProxy.unsubscribeFromWeakSignalBroadcast(weakSignalWithPartitionFuture.get());
                 } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
                     LOG.error(e.getMessage());
                 }
@@ -226,6 +240,15 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             return DiscoveryScope.LOCAL_ONLY;
         }
         return DiscoveryScope.LOCAL_AND_GLOBAL;
+    }
+
+    private Future<String> subscribeToWeakSignal(OnChangeSubscriptionQos qos, String... partitions) {
+        return radioProxy.subscribeToWeakSignalBroadcast(new WeakSignalBroadcastAdapter() {
+            @Override
+            public void onReceive(RadioStation weakSignalStation) {
+                LOG.info(PRINT_BORDER + "BROADCAST SUBSCRIPTION: weak signal: " + weakSignalStation + PRINT_BORDER);
+            }
+        }, qos, partitions);
     }
 
     @SuppressWarnings("checkstyle:methodlength")
@@ -328,16 +351,12 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             int wsbPublicationTtlMs = 5 * 1000;
             weakSignalBroadcastSubscriptionQos = new OnChangeSubscriptionQos();
             weakSignalBroadcastSubscriptionQos.setMinIntervalMs(wsbMinIntervalMs).setValidityMs(wsbValidityMs).setPublicationTtlMs(wsbPublicationTtlMs);
-            radioProxy.subscribeToWeakSignalBroadcast(new WeakSignalBroadcastAdapter() {
-                @Override
-                public void onReceive(RadioStation weakSignalStation) {
-                    LOG.info(PRINT_BORDER + "BROADCAST SUBSCRIPTION: weak signal: " + weakSignalStation + PRINT_BORDER);
-                }
-            },
-                                                      weakSignalBroadcastSubscriptionQos);
+            weakSignalFuture = subscribeToWeakSignal(weakSignalBroadcastSubscriptionQos);
+
+            //susbcribe to weak signal with partition "GERMANY"
+            weakSignalWithPartitionFuture = subscribeToWeakSignal(weakSignalBroadcastSubscriptionQos, "GERMANY");
 
             // selective broadcast subscription
-
             OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
             int nsdbMinIntervalMs = 2 * 1000;
             long nsdbValidityMs = 180 * 1000;

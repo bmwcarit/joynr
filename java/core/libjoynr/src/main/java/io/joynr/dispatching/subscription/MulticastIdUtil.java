@@ -19,7 +19,17 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
+import java.util.regex.Pattern;
+
+import io.joynr.exceptions.JoynrIllegalStateException;
+
 public final class MulticastIdUtil {
+
+    private static final Pattern VALID_PARTITION_REGEX = Pattern.compile("^[a-zA-Z0-9]+$");
+
+    private static final String SINGLE_POSITION_WILDCARD = "+";
+
+    private static final String MULTI_LEVEL_WILDCARD = "*";
 
     private MulticastIdUtil() {
     }
@@ -29,10 +39,21 @@ public final class MulticastIdUtil {
         builder.append("/").append(multicastName);
         if (partitions != null && partitions.length > 0) {
             for (int index = 0; index < partitions.length; index++) {
-                builder.append("/").append(partitions[index]);
+                builder.append("/").append(validatePartition(partitions, index));
             }
         }
         return builder.toString();
+    }
+
+    private static String validatePartition(String[] partitions, int index) {
+        String partition = partitions[index];
+        if (!VALID_PARTITION_REGEX.matcher(partition).matches() && !SINGLE_POSITION_WILDCARD.equals(partition)
+                && !(partitions.length == index + 1 && MULTI_LEVEL_WILDCARD.equals(partition))) {
+            throw new JoynrIllegalStateException(String.format("Partition %s contains invalid characters.%n"
+                    + "Must only contain a-z A-Z 0-9, or by a single position wildcard (+),%n"
+                    + "or the last partition may be a multi-level wildcard (*).", partition));
+        }
+        return partition;
     }
 
 }

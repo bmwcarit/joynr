@@ -109,6 +109,35 @@ define("joynr/system/DiagnosticTags", [], function() {
     /**
      * @param {Object} subscriptionRequestInfo
      */
+    DiagnosticTags.forMulticastSubscriptionRequest =
+            function forMulticastSubscriptionRequest(subscriptionRequestInfo) {
+                return {
+                    diagnosticTag : "MulticastSubscriptionRequest",
+                    eventName : subscriptionRequestInfo.subscriptionRequest.subscribedToName,
+                    subscriptionId : subscriptionRequestInfo.subscriptionRequest.subscriptionId,
+                    multicastId : subscriptionRequestInfo.subscriptionRequest.multicastId,
+                    to : subscriptionRequestInfo.to,
+                    from : subscriptionRequestInfo.from
+                };
+            };
+
+    /**
+     * @param {Object} subscriptionRequestInfo
+     */
+    DiagnosticTags.forBroadcastSubscriptionRequest =
+            function forBroadcastSubscriptionRequest(subscriptionRequestInfo) {
+                return {
+                    diagnosticTag : "BroadcastSubscriptionRequest",
+                    eventName : subscriptionRequestInfo.subscriptionRequest.subscribedToName,
+                    subscriptionId : subscriptionRequestInfo.subscriptionRequest.subscriptionId,
+                    to : subscriptionRequestInfo.to,
+                    from : subscriptionRequestInfo.from
+                };
+            };
+
+    /**
+     * @param {Object} subscriptionRequestInfo
+     */
     DiagnosticTags.forSubscriptionRequest =
             function forSubscriptionRequest(subscriptionRequestInfo) {
                 return {
@@ -138,8 +167,19 @@ define("joynr/system/DiagnosticTags", [], function() {
     DiagnosticTags.forPublication = function forPublication(publicationInfo) {
         return {
             diagnosticTag : "Publication",
-            subscriptionId : publicationInfo.subscriptionId,
+            subscriptionId : publicationInfo.publication.subscriptionId,
             to : publicationInfo.to,
+            from : publicationInfo.from
+        };
+    };
+
+    /**
+     * @param {Object} publicationInfo - multicast publication info
+     */
+    DiagnosticTags.forMulticastPublication = function forMulticastPublication(publicationInfo) {
+        return {
+            diagnosticTag : "MulticastPublication",
+            multicastId : publicationInfo.publication.multicastId,
             from : publicationInfo.from
         };
     };
