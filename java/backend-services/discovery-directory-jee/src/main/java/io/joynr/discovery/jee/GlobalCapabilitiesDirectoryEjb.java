@@ -20,6 +20,7 @@ package io.joynr.discovery.jee;
  */
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -78,7 +79,13 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         }
         GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
                                                                                  clusterControllerId);
-        entityManager.persist(entity);
+        GlobalDiscoveryEntryPersisted persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class,
+                                                                     entity.getParticipantId());
+        if (persisted == null) {
+            entityManager.persist(entity);
+        } else {
+            entityManager.merge(entity);
+        }
     }
 
     @Override
@@ -92,15 +99,16 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                                                        .setParameter("interfaceName", interfaceName)
                                                                        .getResultList();
         logger.debug("Found discovery entries: {}", queryResult);
-        return queryResult.toArray(new GlobalDiscoveryEntry[queryResult.size()]);
+        return queryResult.stream().map(entry -> { return new GlobalDiscoveryEntry(entry); }).collect(Collectors.toSet()).toArray(new GlobalDiscoveryEntry[queryResult.size()]);
     }
 
     @Override
     public GlobalDiscoveryEntry lookup(String participantId) {
         logger.debug("Looking up global discovery entry for participant ID {}", participantId);
-        GlobalDiscoveryEntryPersisted result = entityManager.find(GlobalDiscoveryEntryPersisted.class, participantId);
-        logger.debug("Found entry {}", result);
-        return result;
+        GlobalDiscoveryEntryPersisted queryResult = entityManager.find(GlobalDiscoveryEntryPersisted.class,
+                                                                       participantId);
+        logger.debug("Found entry {}", queryResult);
+        return queryResult == null ? null : new GlobalDiscoveryEntry(queryResult);
     }
 
     @Override

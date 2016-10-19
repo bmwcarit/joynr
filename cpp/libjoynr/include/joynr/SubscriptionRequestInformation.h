@@ -24,6 +24,7 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionInformation.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/CallContext.h"
 
 namespace joynr
 {
@@ -40,10 +41,14 @@ public:
 
     SubscriptionRequestInformation(const std::string& proxyParticipantId,
                                    const std::string& providerParticipantId,
+                                   const CallContext& callContext,
                                    const SubscriptionRequest& subscriptionRequest);
 
     SubscriptionRequestInformation& operator=(const SubscriptionRequestInformation&) = default;
     SubscriptionRequestInformation& operator=(SubscriptionRequestInformation&&) = default;
+
+    const CallContext& getCallContext() const;
+    void setCallContext(const CallContext& callContext);
 
     bool operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const;
 
@@ -53,8 +58,12 @@ public:
     void serialize(Archive& archive)
     {
         archive(muesli::BaseClass<SubscriptionRequest>(this),
-                muesli::BaseClass<SubscriptionInformation>(this));
+                muesli::BaseClass<SubscriptionInformation>(this),
+                MUESLI_NVP(callContext));
     }
+
+private:
+    CallContext callContext;
 };
 
 } // namespace joynr

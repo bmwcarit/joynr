@@ -69,6 +69,8 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 #include "joynr/Util.h"
 #include "joynr/Future.h"
 #include "joynr/SubscriptionUtil.h"
+#include "joynr/CallContext.h"
+#include "joynr/IPlatformSecurityManager.h"
 #include "joynr/exceptions/JoynrException.h"
 
 «getNamespaceStarter(francaIntf)»
@@ -80,6 +82,7 @@ INIT_LOGGER(«className»);
 			joynr::ISubscriptionManager* subscriptionManager,
 			joynr::PublicationManager* publicationManager,
 			joynr::InProcessPublicationSender* inProcessPublicationSender,
+			std::shared_ptr<joynr::IPlatformSecurityManager> securityManager,
 			const std::string& proxyParticipantId,
 			const std::string& providerParticipantId,
 			std::shared_ptr<joynr::InProcessAddress> address
@@ -89,7 +92,8 @@ INIT_LOGGER(«className»);
 	address(address),
 	subscriptionManager(subscriptionManager),
 	publicationManager(publicationManager),
-	inProcessPublicationSender(inProcessPublicationSender)
+	inProcessPublicationSender(inProcessPublicationSender),
+	securityManager(securityManager)
 {
 }
 
@@ -263,6 +267,9 @@ bool «className»::usesClusterController() const{
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
 				std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+
+				joynr::CallContext callContext;
+				callContext.setPrincipal(securityManager->getCurrentProcessUserId());
 
 				if(!requestCaller) {
 					assert(publicationManager != nullptr);

@@ -45,8 +45,6 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage {
 
-    public static final String JOYNR_PARTICIPANT_PREFIX = "joynr.participant.";
-
     private static final Logger logger = LoggerFactory.getLogger(PropertiesFileParticipantIdStorage.class);
     private final GlobalDiscoveryEntry capabilitiesDirectoryEntry;
     private final GlobalDiscoveryEntry domainAccessControllerEntry;
@@ -83,7 +81,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     @Override
     public String getProviderParticipantId(String domain, String interfaceName, String defaultValue) {
 
-        String token = getProviderParticipantIdKey(domain, interfaceName);
+        String token = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName);
 
         String participantId;
 
@@ -128,15 +126,10 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         return participantId;
     }
 
-    private static String getProviderParticipantIdKey(String domain, String interfaceName) {
-        String token = JOYNR_PARTICIPANT_PREFIX + domain + "." + interfaceName;
-        return token.replace('/', '.');
-    }
-
     @Override
     public String getProviderParticipantId(String domain, String interfaceName) {
         String defaultParticipantId = null;
-        String providerParticipantIdKey = getProviderParticipantIdKey(domain, interfaceName).toLowerCase();
+        String providerParticipantIdKey = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName);
         if (joynrProperties.containsKey(providerParticipantIdKey)) {
             defaultParticipantId = joynrProperties.getProperty(providerParticipantIdKey);
         }
