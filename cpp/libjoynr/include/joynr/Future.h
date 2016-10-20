@@ -23,6 +23,7 @@
 #include <functional>
 #include <utility>
 #include <cstdint>
+#include <memory>
 
 #include "joynr/Logger.h"
 #include "joynr/Util.h"
@@ -250,6 +251,37 @@ public:
         this->status = StatusCodeEnum::SUCCESS;
         this->resultReceived.notify();
     }
+};
+
+template <typename T>
+class Future<std::unique_ptr<T>> : public FutureBase<std::unique_ptr<T>>
+{
+public:
+    void get(std::unique_ptr<T>& value)
+    {
+        this->wait();
+        this->checkOk();
+
+        value = std::move(result);
+    }
+
+    void get(std::uint16_t timeOut, std::unique_ptr<T>& value)
+    {
+        this->wait(timeOut);
+        this->checkOk();
+
+        value = std::move(result);
+    }
+
+    void onSuccess(std::unique_ptr<T> value)
+    {
+        result = std::move(value);
+        this->status = StatusCodeEnum::SUCCESS;
+        this->resultReceived.notify();
+    }
+
+private:
+    std::unique_ptr<T> result;
 };
 
 } // namespace joynr
