@@ -22,13 +22,10 @@
 #include <cassert>
 #include <atomic>
 #include <tuple>
+#include <regex>
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
 namespace joynr
@@ -751,6 +748,12 @@ void LocalDomainAccessController::processConsumerRequests(
     }
 }
 
+std::string LocalDomainAccessController::sanitizeForPartition(const std::string& value)
+{
+    static const std::regex nonAlphaNumeric("[^a-zA-Z0-9]");
+    return std::regex_replace(value, nonAlphaNumeric, "");
+}
+
 std::shared_ptr<Future<std::string>> LocalDomainAccessController::subscribeForDreChange(
         const std::string& userId)
 {
@@ -758,15 +761,13 @@ std::shared_ptr<Future<std::string>> LocalDomainAccessController::subscribeForDr
     broadcastSubscriptionQos->setMinIntervalMs(broadcastMinInterval.count());
     broadcastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
     broadcastSubscriptionQos->setPublicationTtlMs(broadcastPublicationTtl.count());
-    GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters
-            domainRoleFilterParameters;
-    domainRoleFilterParameters.setUserIdOfInterest(userId);
+    std::vector<std::string> partitions = {sanitizeForPartition(userId)};
 
     return globalDomainAccessControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
-            domainRoleFilterParameters,
             std::static_pointer_cast<ISubscriptionListener<ChangeType::Enum, DomainRoleEntry>>(
                     domainRoleEntryChangedBroadcastListener),
-            broadcastSubscriptionQos);
+            broadcastSubscriptionQos,
+            partitions);
 }
 
 LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscribeForAceChange(
@@ -781,43 +782,34 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
 
     AceSubscription subscriptionIds;
 
-    GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters
-            masterAcefilterParameters;
-    masterAcefilterParameters.setDomainOfInterest(domain);
-    masterAcefilterParameters.setInterfaceOfInterest(interfaceName);
+    static const std::string wildcardForUserId = "+";
+    std::vector<std::string> partitions = {
+            wildcardForUserId, sanitizeForPartition(domain), sanitizeForPartition(interfaceName)};
     subscriptionIds.masterAceSubscriptionIdFuture =
             globalDomainAccessControllerProxy->subscribeToMasterAccessControlEntryChangedBroadcast(
-                    masterAcefilterParameters,
                     std::static_pointer_cast<
                             ISubscriptionListener<ChangeType::Enum, MasterAccessControlEntry>>(
                             masterAccessControlEntryChangedBroadcastListener),
-                    broadcastSubscriptionQos);
+                    broadcastSubscriptionQos,
+                    partitions);
 
-    GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters
-            mediatorAceFilterParameters;
-    mediatorAceFilterParameters.setDomainOfInterest(domain);
-    mediatorAceFilterParameters.setInterfaceOfInterest(interfaceName);
     subscriptionIds.mediatorAceSubscriptionIdFuture =
             globalDomainAccessControllerProxy
                     ->subscribeToMediatorAccessControlEntryChangedBroadcast(
-                            mediatorAceFilterParameters,
                             std::static_pointer_cast<
                                     ISubscriptionListener<ChangeType::Enum,
                                                           MasterAccessControlEntry>>(
                                     mediatorAccessControlEntryChangedBroadcastListener),
-                            broadcastSubscriptionQos);
+                            broadcastSubscriptionQos,
+                            partitions);
 
-    GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters
-            ownerAceFilterParameters;
-    ownerAceFilterParameters.setDomainOfInterest(domain);
-    ownerAceFilterParameters.setInterfaceOfInterest(interfaceName);
     subscriptionIds.ownerAceSubscriptionIdFuture =
             globalDomainAccessControllerProxy->subscribeToOwnerAccessControlEntryChangedBroadcast(
-                    ownerAceFilterParameters,
                     std::static_pointer_cast<
                             ISubscriptionListener<ChangeType::Enum, OwnerAccessControlEntry>>(
                             ownerAccessControlEntryChangedBroadcastListener),
-                    broadcastSubscriptionQos);
+                    broadcastSubscriptionQos,
+                    partitions);
 
     return subscriptionIds;
 }
