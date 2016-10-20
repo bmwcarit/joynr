@@ -6,6 +6,8 @@
   subscriptionrequest-persistence-file because the file format changed.
 * **[C++]** Introduced async proxy creation. ProxyBuilder now provides a buildAsync method which
   accepts a success and an error callback as parameters.
+* **[C++]** Introduced async joynr runtime creation. See JoynrRuntime::createRuntimeAsync for more
+  information.
 
 ## Other changes
 None.

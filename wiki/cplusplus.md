@@ -121,6 +121,26 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
     ProxyBuilder<<Package>::<Interface>Proxy>* proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
+
+Use the createRuntimeAsync static method of JoynrRuntime to create the runtime asynchronously:
+
+
+```cpp
+    auto onRuntimeCreated = [](std::unique_ptr<JoynrRuntime> createdRuntime) {
+        // Process the created runtime here
+    };
+
+    auto onErrorCallback = [](exceptions::JoynrRuntimeException& exception) {
+        // Process the error here
+    };
+
+    JoynrRuntime::createRuntimeAsync(
+        pathToLibJoynrSettings,
+        onRuntimeCreated,
+        onErrorCallback,
+        pathToMessagingSettings);
+```
+
 ## The discovery quality of service
 
 The class ```DiscoveryQos``` configures how the search for a provider will be handled. It has the following members:
