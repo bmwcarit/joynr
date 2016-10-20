@@ -19,8 +19,6 @@
 #ifndef INPROCESSLIBJOYNRMESSAGINGSKELETON_H
 #define INPROCESSLIBJOYNRMESSAGINGSKELETON_H
 
-#include <string>
-
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrExport.h"
@@ -41,9 +39,6 @@ public:
     void transmit(JoynrMessage& message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
-
-    void registerMulticastSubscription(const std::string& multicastId) override;
-    void unregisterMulticastSubscription(const std::string& multicastId) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessLibJoynrMessagingSkeleton);

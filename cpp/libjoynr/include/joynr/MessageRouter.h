@@ -218,7 +218,7 @@ private:
             const std::unordered_set<std::string>& participantIds);
 
     std::shared_ptr<IMessagingMulticastSubscriber> getMulticastSkeleton(
-            const std::string& providerParticipantId,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
 
     void addNextHopToParent(std::string participantId,

@@ -346,7 +346,6 @@ TEST_F(MessageRouterTest, addMulticastReceiver_ChildRouter_callsParentRouter) {
 }
 
 TEST_F(MessageRouterTest, addMulticastReceiverForInProcessProvider_ChildRouter_doesNotCallParentRouter) {
-    bool successCallbackCalled = false;
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
     auto mockRoutingProxyRef = mockRoutingProxy.get();
     auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
@@ -369,12 +368,13 @@ TEST_F(MessageRouterTest, addMulticastReceiverForInProcessProvider_ChildRouter_d
     EXPECT_CALL(*mockRoutingProxyRef,
         addMulticastReceiverAsync(_, _, _, _, _)).Times(0);
 
+    Semaphore successCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [&successCallbackCalled]() { successCallbackCalled.notify(); },
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
-    EXPECT_TRUE(successCallbackCalled);
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, addMulticastReceiverForMqttProvider_NonChildRouter_callsSkeleton) {
