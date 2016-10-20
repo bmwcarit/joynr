@@ -49,6 +49,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 #include "joynr/types/Version.h"
+#include "tests/PrettyPrint.h"
 
 using namespace ::testing;
 using namespace joynr;
