@@ -99,16 +99,25 @@ function push
 function remove
 {
     echo "removing from repository: $repository version:$version"
+    repositoryurl=$repository
+    if [[ "$repositoryurl" == *"v2"* ]]
+    then
+        echo "repository name already equipped with docker specific namespaces. Skipping repository name modification..."
+        repository=`echo $repository | cut -d'/' -f1`/`echo $repository | cut -d'/' -f3-`
+    else
+        repositoryurl=`echo $repository | cut -d'/' -f1`/v2/`echo $repository | cut -d'/' -f2-`
+        echo "repository name $repository is not equipped with docker specific namespaces. Modified repository name: $repositoryurl"
+    fi
     for image in "${listOfImages[@]}"
     do
         docker rmi ${repository}${image}:${version}
-        digest=`curl -s -u ${user} -I https://${repository}${image}/manifests/${version} | grep 'Docker-Content-Digest' | cut -d':' -f2- | cut -d\  -f2- | tr -d '\r'`
+        digest=`curl -s -u ${user} -I https://${repositoryurl}${image}/manifests/${version} | grep 'Docker-Content-Digest' | cut -d':' -f2- | cut -d\  -f2- | tr -d '\r'`
         if [ -z "$digest" ]
         then
             echo "Docker-Content-Digest for docker image ${repository}${image}:${version} not found. Skipping tag removal..."
         else
             echo "Docker-Content-Digest for docker image ${repository}${image}:${version} found: ${digest}. Deleting tag"
-            curl -u ${user} --request DELETE https://${repository}${image}/manifests/${digest}
+            curl -u ${user} --request DELETE https://${repositoryurl}${image}/manifests/${digest}
         fi
     done
 }
