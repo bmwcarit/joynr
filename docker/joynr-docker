@@ -111,7 +111,7 @@ function remove
     for image in "${listOfImages[@]}"
     do
         docker rmi ${repository}${image}:${version}
-        digest=`curl -s -u ${user} -I https://${repositoryurl}${image}/manifests/${version} | grep 'Docker-Content-Digest' | cut -d':' -f2- | cut -d\  -f2- | tr -d '\r'`
+        digest=`curl -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' -s -u ${user} -I https://${repositoryurl}${image}/manifests/${version} | grep 'Docker-Content-Digest' | cut -d':' -f2- | cut -d\  -f2- | tr -d '\r'`
         if [ -z "$digest" ]
         then
             echo "Docker-Content-Digest for docker image ${repository}${image}:${version} not found. Skipping tag removal..."
