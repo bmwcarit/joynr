@@ -2,13 +2,11 @@
 
 function usage
 {
-    echo "usage: joynr-docker build | push | pull [--repository|-r mydockerrepo.org --version|-v versionnumber --additionaltags|-a <comma-separated list of tags>]"
-    echo "usage: joynr-docker build | push | pull | remove [--repository mydockerrepo.org --version versionnumber --additionaltags|-a <comma-separated list of tags> --user user:password]"
+    echo "usage: joynr-docker build | push | pull | remove [--repository mydockerrepo.org --version versionnumber --additionaltags|-a <comma-separated list of tags>]"
 }
 
 repository=
 version=
-user=
 command=$1
 additionaltags=latest
 shift
@@ -32,9 +30,6 @@ echo "PARAM is: $1"
                                 ;;
         -a | --additionaltags )  shift
                                 additionaltags=$1
-                                ;;
-        -u | --user )           shift
-                                user="$1"
                                 ;;
         * )                     usage
                                 exit 1
@@ -111,13 +106,13 @@ function remove
     for image in "${listOfImages[@]}"
     do
         docker rmi ${repository}${image}:${version}
-        digest=`curl -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' -s -u ${user} -I https://${repositoryurl}${image}/manifests/${version} | grep 'Docker-Content-Digest' | cut -d':' -f2- | cut -d\  -f2- | tr -d '\r'`
+        digest=`curl -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' -s -I https://${repositoryurl}${image}/manifests/${version} | grep 'Docker-Content-Digest' | cut -d':' -f2- | cut -d\  -f2- | tr -d '\r'`
         if [ -z "$digest" ]
         then
             echo "Docker-Content-Digest for docker image ${repository}${image}:${version} not found. Skipping tag removal..."
         else
             echo "Docker-Content-Digest for docker image ${repository}${image}:${version} found: ${digest}. Deleting tag"
-            curl -u ${user} --request DELETE https://${repositoryurl}${image}/manifests/${digest}
+            curl --request DELETE https://${repositoryurl}${image}/manifests/${digest}
         fi
     done
 }
