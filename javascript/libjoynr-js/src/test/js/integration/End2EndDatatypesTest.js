@@ -42,11 +42,13 @@ define([
         waitsFor) {
     describe("libjoynr-js.integration.end2end.datatypes", function() {
 
-        var datatypesProxy, provisioningSuffix, workerId;
+        var datatypesProxy, workerId;
+        var testIdentifier = 0;
 
         beforeEach(function(done) {
             datatypesProxy = undefined;
-            var domain = "End2EndDatatypesTest" + "-" + uuid();
+            var provisioningSuffix = "End2EndDatatypesTest" + "-" + testIdentifier++;
+            var domain = provisioningSuffix;
             var testProvisioning = IntegrationUtils.getProvisioning(provisioning, domain);
             joynr.load(testProvisioning).then(function(newJoynr){
                 joynr = newJoynr;

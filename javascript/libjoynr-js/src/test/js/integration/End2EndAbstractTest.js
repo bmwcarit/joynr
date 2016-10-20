@@ -42,10 +42,12 @@ define( "integration/End2EndAbstractTest",
             function End2EndAbstractTest(provisioningSuffix) {
                 var radioProxy;
                 var workerId;
+                var testIdentifier = 0;
 
                 jasmine.getEnv().defaultTimeoutInterval = 15000; //15 secs default timeout for async tests;
                 this.beforeEach = function() {
-                    var domain = provisioningSuffix + "-" + uuid();
+                    var provisioningSuffixForTest = provisioningSuffix + "-" + testIdentifier++;
+                    var domain = provisioningSuffixForTest;
                     var testProvisioning = IntegrationUtils.getProvisioning(
                             provisioning,
                             domain);
@@ -55,7 +57,7 @@ define( "integration/End2EndAbstractTest",
                         return new Promise(function(resolve, reject) {
                             IntegrationUtils.initializeWebWorker(
                                     "TestEnd2EndCommProviderWorker",
-                                    provisioningSuffix,
+                                    provisioningSuffixForTest,
                                     domain).then(function(newWorkerId) {
                                 workerId = newWorkerId;
                                 // Prevent freezing of object through proxy build
