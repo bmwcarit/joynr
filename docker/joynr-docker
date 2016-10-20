@@ -23,7 +23,7 @@ echo "PARAM is: $1"
                                 repository=${1%/}/
                                 ;;
         -v | --version )        shift
-                                version=":$1"
+                                version="$1"
                                 ;;
         -h | --help )           usage
                                 exit
@@ -54,14 +54,14 @@ function build
 {
     for image in "${listOfImages[@]}"
     do
-        docker build -t ${repository}${image}${version} ${image}/
-        echo "building image: ${repository}${image}${version}"
+        docker build -t ${repository}${image}:${version} ${image}/
+        echo "building image: ${repository}${image}:${version}"
         IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
 
         for tag in "${tags[@]}"; do
-            echo "tagging image ${repository}${image}${version} with tag ${tag}"
-            docker tag ${repository}${image}${version} ${repository}${image}:${tag}
-            docker tag ${repository}${image}${version} ${image}:${tag}
+            echo "tagging image ${repository}${image}:${version} with tag ${tag}"
+            docker tag ${repository}${image}:${version} ${repository}${image}:${tag}
+            docker tag ${repository}${image}:${version} ${image}:${tag}
         done
     done
 }
@@ -71,7 +71,7 @@ function pull
     echo "pulling from repository: $repository for version:$version"
     for image in "${listOfImages[@]}"
     do
-        docker pull ${repository}${image}${version}
+        docker pull ${repository}${image}:${version}
     done
 }
 
@@ -80,7 +80,7 @@ function push
     echo "pushing to repository: $repository with version:$version"
     for image in "${listOfImages[@]}"
     do
-        docker push ${repository}${image}${version}
+        docker push ${repository}${image}:${version}
 
         IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
 
