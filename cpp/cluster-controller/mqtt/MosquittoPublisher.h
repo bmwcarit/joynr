@@ -19,7 +19,7 @@
 #ifndef CLUSTER_CONTROLLER_MQTT_MOSQUITTOPUBLISHER_H_
 #define CLUSTER_CONTROLLER_MQTT_MOSQUITTOPUBLISHER_H_
 
-#include <condition_variable>
+#include <atomic>
 
 #include "mosquittopp.h"
 
@@ -36,7 +36,7 @@ namespace joynr
 
 class MessagingSettings;
 
-class MosquittoPublisher : public Thread, MosquittoConnection
+class MosquittoPublisher : public Thread, private MosquittoConnection
 {
 public:
     explicit MosquittoPublisher(const MessagingSettings& settings);
@@ -47,11 +47,11 @@ public:
     void run() override;
     void interrupt();
     bool isInterrupted();
-    std::uint16_t getMqttQos() const override;
+    uint16_t getMqttQos() const;
+    std::string getMqttPrio() const;
 
     void publishMessage(
-            const std::string& channelId,
-            const std::string& participantId,
+            const std::string& topic,
             const int qosLevel,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
             uint32_t payloadlen,
