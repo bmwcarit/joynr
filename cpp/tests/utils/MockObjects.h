@@ -731,6 +731,12 @@ public:
                 false)
     { }
 
+    MOCK_METHOD3(resolveNextHopAsync,
+                 std::shared_ptr<joynr::Future<bool>>(
+                     const std::string& participantId,
+                     std::function<void(const bool& resolved)> onSuccess,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
+
     MOCK_METHOD5(addMulticastReceiverAsync,
         std::shared_ptr<joynr::Future<void>> (
             const std::string& multicastId,

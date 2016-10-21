@@ -681,6 +681,31 @@ std::shared_ptr<IMessagingMulticastSubscriber> MessageRouter::getMulticastSkelet
     return skeleton;
 }
 
+void MessageRouter::registerMulticastReceiver(
+        const std::string& multicastId,
+        const std::string& subscriberParticipantId,
+        const std::string& providerParticipantId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
+{
+    if (isChildMessageRouter()) {
+        parentRouter->addMulticastReceiverAsync(
+                multicastId, subscriberParticipantId, providerParticipantId, onSuccess, onError);
+    } else {
+        std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
+                getMulticastSkeleton(providerAddress, onError);
+        if (skeleton) {
+            try {
+                skeleton->registerMulticastSubscription(multicastId);
+                onSuccess();
+            } catch (const exceptions::JoynrRuntimeException& error) {
+                onError(error);
+            }
+        }
+    }
+};
+
 void MessageRouter::addMulticastReceiver(
         const std::string& multicastId,
         const std::string& subscriberParticipantId,
@@ -688,49 +713,82 @@ void MessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::function<void()> onSuccessWrapper =
-            [this, multicastId, subscriberParticipantId, onSuccess]() {
-        multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
-        onSuccess();
-    };
-    std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-            [onError](const exceptions::JoynrException& error) {
-        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
-    };
-
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
         ReadLocker lock(routingTableLock);
         providerAddress = routingTable.lookup(providerParticipantId);
     }
+
+    std::function<void()> onSuccessWrapper =
+            [this, multicastId, subscriberParticipantId, onSuccess]() {
+        multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
+        JOYNR_LOG_DEBUG(logger,
+                        "added multicast receiver={} for multicastId={}",
+                        subscriberParticipantId,
+                        multicastId);
+        onSuccess();
+    };
+    std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
+            [onError, subscriberParticipantId, multicastId](
+                    const exceptions::JoynrRuntimeException& error) {
+        JOYNR_LOG_ERROR(logger,
+                        "error adding multicast receiver={} for multicastId={}, error: {}",
+                        subscriberParticipantId,
+                        multicastId,
+                        error.getMessage());
+        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+    };
+
     if (!providerAddress) {
-        exceptions::ProviderRuntimeException exception(
-                "No routing entry for multicast provider (providerParticipantId=" +
-                providerParticipantId + ") found.");
-        onError(exception);
+        if (isChildMessageRouter()) {
+            // try to resolve destination address via parent message router
+            auto onResolved = [this,
+                               multicastId,
+                               subscriberParticipantId,
+                               providerParticipantId,
+                               onSuccessWrapper,
+                               onErrorWrapper](const bool& resolved) {
+                if (resolved) {
+                    addProvisionedNextHop(providerParticipantId, parentAddress);
+                    registerMulticastReceiver(multicastId,
+                                              subscriberParticipantId,
+                                              providerParticipantId,
+                                              parentAddress,
+                                              onSuccessWrapper,
+                                              onErrorWrapper);
+                } else {
+                    exceptions::ProviderRuntimeException exception(
+                            "No routing entry for multicast provider (providerParticipantId=" +
+                            providerParticipantId + ") found in parent router.");
+                    onErrorWrapper(exception);
+                }
+            };
+            auto onResolveError = [this, onErrorWrapper, providerParticipantId](
+                    const joynr::exceptions::JoynrRuntimeException& error) {
+                exceptions::ProviderRuntimeException exception(
+                        "error resolving next hop for multicast provider (providerParticipantId=" +
+                        providerParticipantId + "). Error from parent router: " +
+                        error.getMessage());
+                onErrorWrapper(exception);
+            };
+            parentRouter->resolveNextHopAsync(providerParticipantId, onResolved, onResolveError);
+        } else {
+            exceptions::ProviderRuntimeException exception(
+                    "No routing entry for multicast provider (providerParticipantId=" +
+                    providerParticipantId + ") found.");
+            onErrorWrapper(exception);
+        }
+        return;
+    } else if (std::dynamic_pointer_cast<const joynr::InProcessMessagingAddress>(providerAddress)) {
+        onSuccessWrapper();
         return;
     }
-
-    if (std::dynamic_pointer_cast<const joynr::InProcessMessagingAddress>(providerAddress)) {
-        onSuccessWrapper();
-    } else if (isChildMessageRouter()) {
-        parentRouter->addMulticastReceiverAsync(multicastId,
-                                                subscriberParticipantId,
-                                                providerParticipantId,
-                                                onSuccessWrapper,
-                                                onErrorWrapper);
-    } else {
-        std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
-                getMulticastSkeleton(providerAddress, onError);
-        if (skeleton) {
-            try {
-                skeleton->registerMulticastSubscription(multicastId);
-                onSuccessWrapper();
-            } catch (const exceptions::JoynrRuntimeException& error) {
-                onErrorWrapper(error);
-            }
-        }
-    }
+    registerMulticastReceiver(multicastId,
+                              subscriberParticipantId,
+                              providerParticipantId,
+                              providerAddress,
+                              onSuccessWrapper,
+                              onErrorWrapper);
 }
 
 void MessageRouter::removeMulticastReceiver(
@@ -751,15 +809,20 @@ void MessageRouter::removeMulticastReceiver(
         exceptions::ProviderRuntimeException exception(
                 "No routing entry for multicast provider (providerParticipantId=" +
                 providerParticipantId + ") found.");
+        JOYNR_LOG_ERROR(logger, exception.getMessage());
         onError(exception);
         return;
-    }
-
-    if (std::dynamic_pointer_cast<const joynr::InProcessMessagingAddress>(providerAddress)) {
+    } else if (std::dynamic_pointer_cast<const joynr::InProcessMessagingAddress>(providerAddress)) {
         onSuccess();
     } else if (isChildMessageRouter()) {
         std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-                [onError](const exceptions::JoynrException& error) {
+                [onError, subscriberParticipantId, multicastId](
+                        const exceptions::JoynrException& error) {
+            JOYNR_LOG_ERROR(logger,
+                            "error removing multicast receiver={} for multicastId={}, error: {}",
+                            subscriberParticipantId,
+                            multicastId,
+                            error.getMessage());
             onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
         };
         parentRouter->removeMulticastReceiverAsync(multicastId,
