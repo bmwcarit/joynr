@@ -768,13 +768,13 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodToFireBroadcastWithSinglePrimitiveParameter
      */
     @Override
-    public Promise<DeferredVoid> methodToFireBroadcastWithSinglePrimitiveParameter() {
+    public Promise<DeferredVoid> methodToFireBroadcastWithSinglePrimitiveParameter(String[] partitions) {
         logger.warn("**********************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithSinglePrimitiveParameter called");
         logger.warn("**********************************************************************");
         DeferredVoid deferred = new DeferredVoid();
         String stringOut = "boom";
-        fireBroadcastWithSinglePrimitiveParameter(stringOut);
+        fireBroadcastWithSinglePrimitiveParameter(stringOut, partitions);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -783,14 +783,14 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodToFireBroadcastWithMultiplePrimitiveParameters
      */
     @Override
-    public Promise<DeferredVoid> methodToFireBroadcastWithMultiplePrimitiveParameters() {
+    public Promise<DeferredVoid> methodToFireBroadcastWithMultiplePrimitiveParameters(String[] partitions) {
         logger.warn("*************************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithMultiplePrimitiveParameters called");
         logger.warn("*************************************************************************");
         DeferredVoid deferred = new DeferredVoid();
         Double doubleOut = 1.1d;
         String stringOut = "boom";
-        fireBroadcastWithMultiplePrimitiveParameters(doubleOut, stringOut);
+        fireBroadcastWithMultiplePrimitiveParameters(doubleOut, stringOut, partitions);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -799,13 +799,13 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodToFireBroadcastWithSingleArrayParameter
      */
     @Override
-    public Promise<DeferredVoid> methodToFireBroadcastWithSingleArrayParameter() {
+    public Promise<DeferredVoid> methodToFireBroadcastWithSingleArrayParameter(String[] partitions) {
         logger.warn("******************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithSingleArrayParameter called");
         logger.warn("******************************************************************");
         DeferredVoid deferred = new DeferredVoid();
         String[] stringArrayOut = IltUtil.createStringArray();
-        fireBroadcastWithSingleArrayParameter(stringArrayOut);
+        fireBroadcastWithSingleArrayParameter(stringArrayOut, partitions);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -814,14 +814,14 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodToFireBroadcastWithMultipleArrayParameters
      */
     @Override
-    public Promise<DeferredVoid> methodToFireBroadcastWithMultipleArrayParameters() {
+    public Promise<DeferredVoid> methodToFireBroadcastWithMultipleArrayParameters(String[] partitions) {
         logger.warn("*********************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithMultipleArrayParameters called");
         logger.warn("*********************************************************************");
         DeferredVoid deferred = new DeferredVoid();
         Long[] uInt64ArrayOut = IltUtil.createUInt64Array();
         StructWithStringArray[] structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();
-        fireBroadcastWithMultipleArrayParameters(uInt64ArrayOut, structWithStringArrayArrayOut);
+        fireBroadcastWithMultipleArrayParameters(uInt64ArrayOut, structWithStringArrayArrayOut, partitions);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -830,13 +830,13 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodToFireBroadcastWithSingleEnumerationParameter
      */
     @Override
-    public Promise<DeferredVoid> methodToFireBroadcastWithSingleEnumerationParameter() {
+    public Promise<DeferredVoid> methodToFireBroadcastWithSingleEnumerationParameter(String[] partitions) {
         logger.warn("************************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithSingleEnumerationParameter called");
         logger.warn("************************************************************************");
         DeferredVoid deferred = new DeferredVoid();
         ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut = ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
-        fireBroadcastWithSingleEnumerationParameter(enumerationOut);
+        fireBroadcastWithSingleEnumerationParameter(enumerationOut, partitions);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -845,7 +845,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodToFireBroadcastWithMultipleEnumerationParameters
      */
     @Override
-    public Promise<DeferredVoid> methodToFireBroadcastWithMultipleEnumerationParameters() {
+    public Promise<DeferredVoid> methodToFireBroadcastWithMultipleEnumerationParameters(String[] partitions) {
         logger.warn("***************************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithMultipleEnumerationParameters called");
         logger.warn("***************************************************************************");
@@ -853,7 +853,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         deferred.resolve();
         ExtendedEnumerationWithPartlyDefinedValues extendedEnumerationOut = ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
         Enumeration enumerationOut = Enumeration.ENUM_0_VALUE_1;
-        fireBroadcastWithMultipleEnumerationParameters(extendedEnumerationOut, enumerationOut);
+        fireBroadcastWithMultipleEnumerationParameters(extendedEnumerationOut, enumerationOut, partitions);
         return new Promise<DeferredVoid>(deferred);
     }
 
@@ -861,13 +861,13 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodToFireBroadcastWithSingleStructParameter
      */
     @Override
-    public Promise<DeferredVoid> methodToFireBroadcastWithSingleStructParameter() {
+    public Promise<DeferredVoid> methodToFireBroadcastWithSingleStructParameter(String[] partitions) {
         logger.warn("*******************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithSingleStructParameter called");
         logger.warn("*******************************************************************");
         DeferredVoid deferred = new DeferredVoid();
         ExtendedStructOfPrimitives extendedStructOfPrimitivesOut = IltUtil.createExtendedStructOfPrimitives();
-        fireBroadcastWithSingleStructParameter(extendedStructOfPrimitivesOut);
+        fireBroadcastWithSingleStructParameter(extendedStructOfPrimitivesOut, partitions);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -876,14 +876,16 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodToFireBroadcastWithMultipleStructParameters
      */
     @Override
-    public Promise<DeferredVoid> methodToFireBroadcastWithMultipleStructParameters() {
+    public Promise<DeferredVoid> methodToFireBroadcastWithMultipleStructParameters(String[] partitions) {
         logger.warn("**********************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithMultipleStructParameters called");
         logger.warn("**********************************************************************");
         DeferredVoid deferred = new DeferredVoid();
         BaseStructWithoutElements baseStructWithoutElementsOut = IltUtil.createBaseStructWithoutElements();
         ExtendedExtendedBaseStruct extendedExtendedBaseStructOut = IltUtil.createExtendedExtendedBaseStruct();
-        fireBroadcastWithMultipleStructParameters(baseStructWithoutElementsOut, extendedExtendedBaseStructOut);
+        fireBroadcastWithMultipleStructParameters(baseStructWithoutElementsOut,
+                                                  extendedExtendedBaseStructOut,
+                                                  partitions);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
