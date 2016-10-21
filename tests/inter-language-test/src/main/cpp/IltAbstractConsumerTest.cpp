@@ -21,15 +21,6 @@
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
-INIT_LOGGER(IltAbstractConsumerTest);
-
-joynr::interlanguagetest::TestInterfaceProxy* IltAbstractConsumerTest::testInterfaceProxy = nullptr;
-ProxyBuilder<interlanguagetest::TestInterfaceProxy>* IltAbstractConsumerTest::proxyBuilder =
-        nullptr;
-JoynrRuntime* IltAbstractConsumerTest::runtime = nullptr;
-std::string IltAbstractConsumerTest::providerDomain = "joynr-inter-language-test-domain";
-std::string IltAbstractConsumerTest::programName;
-
 int main(int argc, char** argv)
 {
 #ifdef JOYNR_ENABLE_DLT_LOGGING
@@ -38,7 +29,7 @@ int main(int argc, char** argv)
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
     ::testing::InitGoogleTest(&argc, argv);
-    IltAbstractConsumerTest::setProgramName(std::string(argv[0]));
+    IltAbstractConsumerTest<::testing::Test>::setProgramName(std::string(argv[0]));
 
     return RUN_ALL_TESTS();
 }

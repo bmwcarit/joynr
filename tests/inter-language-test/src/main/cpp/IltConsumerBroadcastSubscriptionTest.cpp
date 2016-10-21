@@ -24,7 +24,7 @@
 
 using namespace ::testing;
 
-class IltConsumerBroadcastSubscriptionTest : public IltAbstractConsumerTest
+class IltConsumerBroadcastSubscriptionTest : public IltAbstractConsumerTest<::testing::Test>
 {
 public:
     IltConsumerBroadcastSubscriptionTest()

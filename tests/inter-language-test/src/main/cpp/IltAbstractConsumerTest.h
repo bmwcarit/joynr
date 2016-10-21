@@ -32,7 +32,8 @@
 #include "IltHelper.h"
 #include "IltUtil.h"
 
-class IltAbstractConsumerTest : public ::testing::Test
+template <typename BaseClass>
+class IltAbstractConsumerTest : public BaseClass
 {
 protected:
     static void SetUpTestCase()
@@ -118,6 +119,26 @@ public:
         IltAbstractConsumerTest::programName = programName;
     }
 };
+
+template <typename T>
+INIT_LOGGER(IltAbstractConsumerTest<T>);
+
+template <typename T>
+joynr::interlanguagetest::TestInterfaceProxy* IltAbstractConsumerTest<T>::testInterfaceProxy =
+        nullptr;
+
+template <typename T>
+ProxyBuilder<interlanguagetest::TestInterfaceProxy>* IltAbstractConsumerTest<T>::proxyBuilder =
+        nullptr;
+
+template <typename T>
+JoynrRuntime* IltAbstractConsumerTest<T>::runtime = nullptr;
+
+template <typename T>
+std::string IltAbstractConsumerTest<T>::providerDomain = "joynr-inter-language-test-domain";
+
+template <typename T>
+std::string IltAbstractConsumerTest<T>::programName;
 
 ACTION_P(ReleaseSemaphore, semaphore)
 {
