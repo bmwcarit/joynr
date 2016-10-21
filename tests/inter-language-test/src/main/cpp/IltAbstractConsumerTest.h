@@ -35,7 +35,7 @@
 template <typename BaseClass>
 class IltAbstractConsumerTest : public BaseClass
 {
-protected:
+public:
     static void SetUpTestCase()
     {
         // Get the provider domain
@@ -92,6 +92,7 @@ protected:
         }
     }
 
+protected:
     static void waitForChange(volatile bool& value, int timeout)
     {
         useconds_t remaining = timeout * 1000;

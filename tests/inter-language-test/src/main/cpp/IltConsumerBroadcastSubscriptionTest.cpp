@@ -24,7 +24,8 @@
 
 using namespace ::testing;
 
-class IltConsumerBroadcastSubscriptionTest : public IltAbstractConsumerTest<::testing::Test>
+class IltConsumerBroadcastSubscriptionTest
+        : public IltAbstractConsumerTest<::testing::TestWithParam<std::vector<std::string>>>
 {
 public:
     IltConsumerBroadcastSubscriptionTest()
@@ -51,13 +52,14 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
 
-TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePrimitiveParameter)
+TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePrimitiveParameter)
 {
     Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
+    const std::vector<std::string> partitions = GetParam();
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
@@ -78,7 +80,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePri
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithSinglePrimitiveParameter - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithSinglePrimitiveParameterBroadcast(
-                                    listener, subscriptionQos)
+                                    listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
         ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
@@ -88,7 +90,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePri
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSinglePrimitiveParameter - fire broadcast");
-        testInterfaceProxy->methodToFireBroadcastWithSinglePrimitiveParameter({});
+        testInterfaceProxy->methodToFireBroadcastWithSinglePrimitiveParameter(partitions);
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithSinglePrimitiveParameterBroadcast(
@@ -105,7 +107,7 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
 
-TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultiplePrimitiveParameters)
+TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultiplePrimitiveParameters)
 {
     Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
@@ -113,6 +115,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
+    const std::vector<std::string> partitions = GetParam();
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
@@ -134,7 +137,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithMultiplePrimitiveParameters - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithMultiplePrimitiveParametersBroadcast(
-                                    listener, subscriptionQos)
+                                    listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
         ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
@@ -144,7 +147,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultiplePrimitiveParameters - fire broadast");
-        testInterfaceProxy->methodToFireBroadcastWithMultiplePrimitiveParameters({});
+        testInterfaceProxy->methodToFireBroadcastWithMultiplePrimitiveParameters(partitions);
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         EXPECT_TRUE(IltUtil::cmpDouble(doubleOut, 1.1));
@@ -163,7 +166,7 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
 
-TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArrayParameter)
+TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArrayParameter)
 {
     Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
@@ -171,6 +174,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArr
     std::vector<std::string> stringArrayOut;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
+    const std::vector<std::string> partitions = GetParam();
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
@@ -191,7 +195,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArr
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleArrayParameter - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithSingleArrayParameterBroadcast(
-                                    listener, subscriptionQos)
+                                    listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
         ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
@@ -199,7 +203,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArr
                        "callSubscribeBroadcastWithSingleArrayParameter - subscription registered");
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleArrayParameter - fire broadcast");
-        testInterfaceProxy->methodToFireBroadcastWithSingleArrayParameter({});
+        testInterfaceProxy->methodToFireBroadcastWithSingleArrayParameter(partitions);
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         EXPECT_TRUE(IltUtil::checkStringArray(stringArrayOut));
@@ -226,7 +230,7 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
 
-TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleArrayParameters)
+TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleArrayParameters)
 {
     Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
@@ -236,6 +240,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
             structWithStringArrayArrayOut;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
+    const std::vector<std::string> partitions = GetParam();
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
@@ -261,7 +266,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
                        "callSubscribeBroadcastWithMultipleArrayParameters - register subscription");
 
         testInterfaceProxy->subscribeToBroadcastWithMultipleArrayParametersBroadcast(
-                                    listener, subscriptionQos)
+                                    listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
         ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
@@ -271,7 +276,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultipleArrayParameters - fire broadcast");
-        testInterfaceProxy->methodToFireBroadcastWithMultipleArrayParameters({});
+        testInterfaceProxy->methodToFireBroadcastWithMultipleArrayParameters(partitions);
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         EXPECT_TRUE(IltUtil::checkUInt64Array(uInt64ArrayOut));
@@ -296,13 +301,14 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
 
-TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnumerationParameter)
+TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnumerationParameter)
 {
     Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
+    const std::vector<std::string> partitions = GetParam();
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
@@ -328,7 +334,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnu
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithSingleEnumerationParameter - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithSingleEnumerationParameterBroadcast(
-                                    listener, subscriptionQos)
+                                    listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
         ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
@@ -338,7 +344,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnu
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleEnumerationParameter - fire broadast");
-        testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter({});
+        testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter(partitions);
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(
@@ -362,7 +368,7 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
 
-TEST_F(IltConsumerBroadcastSubscriptionTest,
+TEST_P(IltConsumerBroadcastSubscriptionTest,
        callSubscribeBroadcastWithMultipleEnumerationParameters)
 {
     Semaphore subscriptionRegisteredSemaphore;
@@ -370,6 +376,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest,
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
+    const std::vector<std::string> partitions = GetParam();
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
@@ -398,7 +405,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest,
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithMultipleEnumerationParameters - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithMultipleEnumerationParametersBroadcast(
-                                    listener, subscriptionQos)
+                                    listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
         ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
@@ -409,7 +416,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest,
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultipleEnumerationParameters - fire broadast");
-        testInterfaceProxy->methodToFireBroadcastWithMultipleEnumerationParameters({});
+        testInterfaceProxy->methodToFireBroadcastWithMultipleEnumerationParameters(partitions);
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithMultipleEnumerationParametersBroadcast(
@@ -430,7 +437,7 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
 
-TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStructParameter)
+TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStructParameter)
 {
     Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
@@ -439,6 +446,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
+    const std::vector<std::string> partitions = GetParam();
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
@@ -461,7 +469,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleStructParameter - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithSingleStructParameterBroadcast(
-                                    listener, subscriptionQos)
+                                    listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
         ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
@@ -470,7 +478,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleStructParameter - fire broadast");
-        testInterfaceProxy->methodToFireBroadcastWithSingleStructParameter({});
+        testInterfaceProxy->methodToFireBroadcastWithSingleStructParameter(partitions);
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         EXPECT_TRUE(IltUtil::checkExtendedStructOfPrimitives(extendedStructOfPrimitivesOut));
@@ -496,7 +504,7 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
 };
 
-TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleStructParameters)
+TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleStructParameters)
 {
     Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
@@ -507,6 +515,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
+    const std::vector<std::string> partitions = GetParam();
     auto subscriptionQos =
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
@@ -532,7 +541,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithMultipleStructParameters - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithMultipleStructParametersBroadcast(
-                                    listener, subscriptionQos)
+                                    listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
         ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
@@ -542,7 +551,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultipleStructParameters - fire broadast");
-        testInterfaceProxy->methodToFireBroadcastWithMultipleStructParameters({});
+        testInterfaceProxy->methodToFireBroadcastWithMultipleStructParameters(partitions);
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         EXPECT_TRUE(IltUtil::checkBaseStructWithoutElements(baseStructWithoutElementsOut));
@@ -552,3 +561,11 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
                 subscriptionId);
     });
 }
+
+INSTANTIATE_TEST_CASE_P(NoPartitions,
+                        IltConsumerBroadcastSubscriptionTest,
+                        ::testing::Values(std::vector<std::string>()));
+
+INSTANTIATE_TEST_CASE_P(WithPartitions,
+                        IltConsumerBroadcastSubscriptionTest,
+                        ::testing::Values(std::vector<std::string>({"partition0", "partition1"})));
