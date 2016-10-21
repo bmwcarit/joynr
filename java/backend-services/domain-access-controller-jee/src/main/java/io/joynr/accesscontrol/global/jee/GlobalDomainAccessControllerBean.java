@@ -19,6 +19,9 @@ package io.joynr.accesscontrol.global.jee;
  * #L%
  */
 
+import static io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryType.MASTER;
+import static io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryType.MEDIATOR;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -41,13 +44,17 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     private final GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisher;
 
-    private DomainRoleEntryManager domainRoleEntryManager;
+    private final DomainRoleEntryManager domainRoleEntryManager;
+
+    private final MasterAccessControlEntryManager masterAccessControlEntryManager;
 
     @Inject
     public GlobalDomainAccessControllerBean(@SubscriptionPublisher GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisher,
-                                            DomainRoleEntryManager domainRoleEntryManager) {
+                                            DomainRoleEntryManager domainRoleEntryManager,
+                                            MasterAccessControlEntryManager masterAccessControlEntryManager) {
         this.globalDomainAccessControllerSubscriptionPublisher = globalDomainAccessControllerSubscriptionPublisher;
         this.domainRoleEntryManager = domainRoleEntryManager;
+        this.masterAccessControlEntryManager = masterAccessControlEntryManager;
     }
 
     @Override
@@ -68,52 +75,60 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public MasterAccessControlEntry[] getMasterAccessControlEntries(String uid) {
-        return new MasterAccessControlEntry[0];
+        return masterAccessControlEntryManager.findByUserId(uid, MASTER);
     }
 
     @Override
     public MasterAccessControlEntry[] getEditableMasterAccessControlEntries(String uid) {
-        return new MasterAccessControlEntry[0];
+        return masterAccessControlEntryManager.findByUserIdThatAreEditable(uid, MASTER);
     }
 
     @Override
     public MasterAccessControlEntry[] getMasterAccessControlEntries(String domain, String interfaceName) {
-        return new MasterAccessControlEntry[0];
+        return masterAccessControlEntryManager.findByDomainAndInterfaceName(domain, interfaceName, MASTER);
     }
 
     @Override
     public Boolean updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAce) {
-        return false;
+        return masterAccessControlEntryManager.createOrUpdate(updatedMasterAce, MASTER);
     }
 
     @Override
     public Boolean removeMasterAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
-        return false;
+        return masterAccessControlEntryManager.removeByUserIdDomainInterfaceNameAndOperation(uid,
+                                                                                             domain,
+                                                                                             interfaceName,
+                                                                                             operation,
+                                                                                             MASTER);
     }
 
     @Override
     public MasterAccessControlEntry[] getMediatorAccessControlEntries(String uid) {
-        return new MasterAccessControlEntry[0];
+        return masterAccessControlEntryManager.findByUserId(uid, MEDIATOR);
     }
 
     @Override
     public MasterAccessControlEntry[] getEditableMediatorAccessControlEntries(String uid) {
-        return new MasterAccessControlEntry[0];
+        return masterAccessControlEntryManager.findByUserIdThatAreEditable(uid, MEDIATOR);
     }
 
     @Override
     public MasterAccessControlEntry[] getMediatorAccessControlEntries(String domain, String interfaceName) {
-        return new MasterAccessControlEntry[0];
+        return masterAccessControlEntryManager.findByDomainAndInterfaceName(domain, interfaceName, MEDIATOR);
     }
 
     @Override
     public Boolean updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAce) {
-        return false;
+        return masterAccessControlEntryManager.createOrUpdate(updatedMediatorAce, MEDIATOR);
     }
 
     @Override
     public Boolean removeMediatorAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
-        return false;
+        return masterAccessControlEntryManager.removeByUserIdDomainInterfaceNameAndOperation(uid,
+                                                                                             domain,
+                                                                                             interfaceName,
+                                                                                             operation,
+                                                                                             MEDIATOR);
     }
 
     @Override
