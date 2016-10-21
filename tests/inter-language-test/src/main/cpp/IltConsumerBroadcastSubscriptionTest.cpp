@@ -88,7 +88,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePri
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSinglePrimitiveParameter - fire broadcast");
-        testInterfaceProxy->methodToFireBroadcastWithSinglePrimitiveParameter();
+        testInterfaceProxy->methodToFireBroadcastWithSinglePrimitiveParameter({});
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithSinglePrimitiveParameterBroadcast(
@@ -144,7 +144,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultiplePrimitiveParameters - fire broadast");
-        testInterfaceProxy->methodToFireBroadcastWithMultiplePrimitiveParameters();
+        testInterfaceProxy->methodToFireBroadcastWithMultiplePrimitiveParameters({});
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         EXPECT_TRUE(IltUtil::cmpDouble(doubleOut, 1.1));
@@ -199,7 +199,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArr
                        "callSubscribeBroadcastWithSingleArrayParameter - subscription registered");
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleArrayParameter - fire broadcast");
-        testInterfaceProxy->methodToFireBroadcastWithSingleArrayParameter();
+        testInterfaceProxy->methodToFireBroadcastWithSingleArrayParameter({});
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         EXPECT_TRUE(IltUtil::checkStringArray(stringArrayOut));
@@ -271,7 +271,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultipleArrayParameters - fire broadcast");
-        testInterfaceProxy->methodToFireBroadcastWithMultipleArrayParameters();
+        testInterfaceProxy->methodToFireBroadcastWithMultipleArrayParameters({});
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         EXPECT_TRUE(IltUtil::checkUInt64Array(uInt64ArrayOut));
@@ -338,7 +338,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnu
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleEnumerationParameter - fire broadast");
-        testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter();
+        testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter({});
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(
@@ -409,7 +409,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest,
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultipleEnumerationParameters - fire broadast");
-        testInterfaceProxy->methodToFireBroadcastWithMultipleEnumerationParameters();
+        testInterfaceProxy->methodToFireBroadcastWithMultipleEnumerationParameters({});
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithMultipleEnumerationParametersBroadcast(
@@ -470,7 +470,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleStructParameter - fire broadast");
-        testInterfaceProxy->methodToFireBroadcastWithSingleStructParameter();
+        testInterfaceProxy->methodToFireBroadcastWithSingleStructParameter({});
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         EXPECT_TRUE(IltUtil::checkExtendedStructOfPrimitives(extendedStructOfPrimitivesOut));
@@ -542,7 +542,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultipleStructParameters - fire broadast");
-        testInterfaceProxy->methodToFireBroadcastWithMultipleStructParameters();
+        testInterfaceProxy->methodToFireBroadcastWithMultipleStructParameters({});
         ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
 
         EXPECT_TRUE(IltUtil::checkBaseStructWithoutElements(baseStructWithoutElementsOut));

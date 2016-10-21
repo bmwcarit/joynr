@@ -222,41 +222,49 @@ public:
                     onError) override;
 
     void methodToFireBroadcastWithSinglePrimitiveParameter(
+            const std::vector<std::string>& partitions,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
     void methodToFireBroadcastWithMultiplePrimitiveParameters(
+            const std::vector<std::string>& partitions,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
     void methodToFireBroadcastWithSingleArrayParameter(
+            const std::vector<std::string>& partitions,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
     void methodToFireBroadcastWithMultipleArrayParameters(
+            const std::vector<std::string>& partitions,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
     void methodToFireBroadcastWithSingleEnumerationParameter(
+            const std::vector<std::string>& partitions,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
     void methodToFireBroadcastWithMultipleEnumerationParameters(
+            const std::vector<std::string>& partitions,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
     void methodToFireBroadcastWithSingleStructParameter(
+            const std::vector<std::string>& partitions,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
     void methodToFireBroadcastWithMultipleStructParameters(
+            const std::vector<std::string>& partitions,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
