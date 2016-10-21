@@ -1,0 +1,154 @@
+package io.joynr.accesscontrol.global.jee;
+
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+
+import com.google.common.collect.Sets;
+import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
+import joynr.infrastructure.DacTypes.DomainRoleEntry;
+import joynr.infrastructure.DacTypes.Role;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
+import org.jboss.arquillian.transaction.api.annotation.Transactional;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(Arquillian.class)
+@Transactional(TransactionMode.ROLLBACK)
+public class DomainRoleEntryManagerTest {
+
+    @Deployment
+    public static WebArchive createArchive() {
+        File[] files = Maven.resolver()
+                            .loadPomFromFile("pom.xml")
+                            .importRuntimeDependencies()
+                            .resolve()
+                            .withTransitivity()
+                            .asFile();
+        return ShrinkWrap.create(WebArchive.class)
+                         .addClasses(EntityManagerProducer.class,
+                                     DomainRoleEntryEntity.class,
+                                     DomainRoleEntryManager.class,
+                                     JoynrConfigurationProvider.class)
+                         .addAsLibraries(files)
+                         .addAsResource("META-INF/persistence.xml")
+                         .addAsWebInfResource(new File("src/main/webapp/WEB-INF/beans.xml"));
+    }
+
+    @Inject
+    private DomainRoleEntryManager subject;
+
+    @Inject
+    private EntityManager entityManager;
+
+    @Test
+    public void testFindByUserId() {
+        String userId = "user";
+        Set<String> domains1 = Sets.newHashSet("domain.1", "domain.2");
+        Set<String> domains2 = Sets.newHashSet("domain.3", "domain.4", "domain.5");
+
+        create(userId, domains1, Role.MASTER);
+        create(userId, domains2, Role.OWNER);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        DomainRoleEntry[] result = subject.findByUserId(userId);
+
+        assertNotNull(result);
+        assertEquals(2, result.length);
+        for (DomainRoleEntry entry : result) {
+            assertEquals(userId, entry.getUid());
+            if (Role.MASTER.equals(entry.getRole())) {
+                assertEquals(domains1, Sets.newHashSet(entry.getDomains()));
+            } else if (Role.OWNER.equals(entry.getRole())) {
+                assertEquals(domains2, Sets.newHashSet(entry.getDomains()));
+            } else {
+                fail("Should only have master and owner roles. Got: " + entry.getRole());
+            }
+        }
+    }
+
+    @Test
+    public void testUpdateExistingEntry() {
+        String userId = "user";
+        DomainRoleEntryEntity entity = create(userId, Sets.newHashSet("domain1", "domain2"), Role.OWNER);
+
+        flushAndClear();
+
+        DomainRoleEntry updatedEntry = new DomainRoleEntry(userId, new String[]{ "domain3" }, Role.OWNER);
+        DomainRoleEntryEntity result = subject.createOrUpdate(updatedEntry);
+
+        flushAndClear();
+
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+        assertEquals(Role.OWNER, result.getRole());
+        assertNotNull(result.getRole());
+        assertEquals(1, result.getDomains().size());
+        assertEquals("domain3", result.getDomains().iterator().next());
+    }
+
+    @Test
+    public void testRemoveExistingEntry() {
+        String userId = "user";
+        create(userId, Sets.newHashSet(), Role.OWNER);
+
+        flushAndClear();
+
+        boolean result = subject.removeByUserIdAndRole(userId, Role.OWNER);
+
+        flushAndClear();
+
+        assertTrue(result);
+        DomainRoleEntry[] byUserId = subject.findByUserId(userId);
+        assertNotNull(byUserId);
+        assertEquals(0, byUserId.length);
+    }
+
+    private DomainRoleEntryEntity create(String userId, Set<String> domains, Role role) {
+        DomainRoleEntryEntity entity = new DomainRoleEntryEntity();
+        entity.setUserId(userId);
+        entity.setDomains(domains);
+        entity.setRole(role);
+        entityManager.persist(entity);
+        return entity;
+    }
+
+    private void flushAndClear() {
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+}

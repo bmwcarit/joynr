@@ -20,16 +20,10 @@
 <persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence"
 						 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 						 xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
-	<persistence-unit name="joynr-discovery-directory" transaction-type="JTA">
-		<jta-data-source>joynr/DiscoveryDirectoryDS</jta-data-source>
+	<persistence-unit name="joynr-domain-access-controller" transaction-type="JTA">
+		<jta-data-source>joynr/DomainAccessControllerDS</jta-data-source>
 
-		<class>io.joynr.capabilities.GlobalDiscoveryEntryPersisted</class>
-		<class>joynr.types.ProviderQos</class>
-		<class>io.joynr.capabilities.CapabilityEntryPersisted</class>
-		<class>io.joynr.capabilities.CustomParameterPersisted</class>
-		<class>io.joynr.capabilities.ProviderQosPersisted</class>
-		<class>io.joynr.endpoints.EndpointAddressBasePersisted</class>
-		<class>io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted</class>
+		<class>io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity</class>
 
 		<properties>
 			<property name="javax.persistence.schema-generation.database.action" value="drop-and-create" />
