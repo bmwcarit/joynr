@@ -127,7 +127,7 @@ std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className�
 
 	def produceUnsubscribeFromAttributeSignature(FAttribute attribute, String className)
 '''
-void «IF className != null»«className»::«ENDIF»unsubscribeFrom«attribute.joynrName.toFirstUpper»(std::string& subscriptionId)
+void «IF className != null»«className»::«ENDIF»unsubscribeFrom«attribute.joynrName.toFirstUpper»(const std::string& subscriptionId)
 '''
 
 	def produceUnsubscribeFromAttributeSignature(FAttribute attribute) {
@@ -180,7 +180,7 @@ std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className�
 
 	def produceUnsubscribeFromBroadcastSignature(FBroadcast broadcast, String className)
 '''
-void «IF className != null»«className»::«ENDIF»unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(std::string& subscriptionId)
+void «IF className != null»«className»::«ENDIF»unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(const std::string& subscriptionId)
 '''
 
 	def produceUnsubscribeFromBroadcastSignature(FBroadcast broadcast) {

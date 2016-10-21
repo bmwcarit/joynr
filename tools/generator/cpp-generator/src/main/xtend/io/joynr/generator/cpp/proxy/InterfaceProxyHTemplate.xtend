@@ -99,7 +99,7 @@ public:
 		 * @brief unsubscribes from attribute «attributeName.toFirstUpper»
 		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 		 */
-		void unsubscribeFrom«attributeName.toFirstUpper»(std::string &subscriptionId) override {
+		void unsubscribeFrom«attributeName.toFirstUpper»(const std::string &subscriptionId) override {
 			«className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 		}
 
@@ -126,7 +126,7 @@ public:
 		 * @brief unsubscribes from broadcast «broadcastName.toFirstUpper»
 		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 		 */
-		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string &subscriptionId) override {
+		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(const std::string &subscriptionId) override {
 			«className»Base::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
 		}
 
