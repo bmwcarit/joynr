@@ -46,6 +46,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 «warning()»
 #include <cassert>
 #include <functional>
+#include <memory>
 #include <tuple>
 
 #include "joynr/serializer/Serializer.h"
@@ -72,6 +73,15 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 #include "joynr/CallContext.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/exceptions/JoynrException.h"
+«IF !francaIntf.attributes.empty»
+	#include "joynr/SubscriptionRequest.h"
+«ENDIF»
+«IF !francaIntf.broadcasts.filter[selective].empty»
+	#include "joynr/BroadcastSubscriptionRequest.h"
+«ENDIF»
+«IF !francaIntf.broadcasts.filter[!selective].empty»
+	#include "joynr/MulticastSubscriptionRequest.h"
+«ENDIF»
 
 «getNamespaceStarter(francaIntf)»
 
@@ -379,36 +389,52 @@ bool «className»::usesClusterController() const{
 	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
 		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != nullptr);
-		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF broadcast.selective»
+			joynr::BroadcastSubscriptionRequest subscriptionRequest;
 			subscriptionRequest.setFilterParameters(filterParameters);
 		«ELSE»
-			std::ignore = partitions;
+			auto subscriptionRequest = std::make_shared<joynr::MulticastSubscriptionRequest>();
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					subscriptionListener,
 					subscriptionQos,
-					subscriptionRequest);
+					subscriptionRequest«
+					»«IF !broadcast.selective»«
+					»,
+					partitions«
+					»«ENDIF»«
+					»);
 	}
 
 	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className)» {
-		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF broadcast.selective»
+			joynr::BroadcastSubscriptionRequest subscriptionRequest;
 			subscriptionRequest.setFilterParameters(filterParameters);
+			subscriptionRequest.setSubscriptionId(subscriptionId);
 		«ELSE»
-			std::ignore = partitions;
+			auto subscriptionRequest = std::make_shared<joynr::MulticastSubscriptionRequest>();
+			subscriptionRequest->setSubscriptionId(subscriptionId);
 		«ENDIF»
-		subscriptionRequest.setSubscriptionId(subscriptionId);
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					subscriptionListener,
 					subscriptionQos,
-					subscriptionRequest);
+					subscriptionRequest«
+					»«IF !broadcast.selective»«
+					»,
+					partitions«
+					»«ENDIF»«
+					»);
 	}
 
 	std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
-			joynr::BroadcastSubscriptionRequest& subscriptionRequest
+			«IF broadcast.selective»
+				joynr::BroadcastSubscriptionRequest& subscriptionRequest
+			«ELSE»
+				std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest,
+				const std::vector<std::string>& partitions«
+			»«ENDIF»
 	) {
 		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != nullptr);
@@ -418,33 +444,81 @@ bool «className»::usesClusterController() const{
 		auto subscriptionCallback = std::make_shared<
 				joynr::SubscriptionCallback<«returnTypes»>
 		>(subscriptionListener, future, subscriptionManager);
-		subscriptionManager->registerSubscription(
-					broadcastName,
-					subscriptionCallback,
-					subscriptionQos,
-					subscriptionRequest);
-		JOYNR_LOG_DEBUG(logger, "Registered broadcast subscription: {}", subscriptionRequest.toString());
 		assert(address);
-		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
-		assert(caller);
-		std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-
-		if(!requestCaller) {
+		«IF broadcast.selective»
+			subscriptionManager->registerSubscription(
+						broadcastName,
+						subscriptionCallback,
+						subscriptionQos,
+						subscriptionRequest);
+			JOYNR_LOG_DEBUG(
+					logger,
+					"Registered broadcast subscription: {}",
+					subscriptionRequest.toString());
+			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+			assert(caller);
 			assert(publicationManager != nullptr);
-			/**
-			* Provider not registered yet
-			* Dispatcher will call publicationManger->restore when a new provider is added to activate
-			* subscriptions for that provider
-			*/
-			publicationManager->add(proxyParticipantId, providerParticipantId, subscriptionRequest);
-		} else {
-			publicationManager->add(
+			std::shared_ptr<«interfaceName»RequestCaller> requestCaller =
+					std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+
+			if(!requestCaller) {
+				/**
+				* Provider not registered yet
+				* Dispatcher will call publicationManger->restore when a new provider
+				* is added to activate subscriptions for that provider
+				*/
+				publicationManager->add(
 						proxyParticipantId,
 						providerParticipantId,
-						caller,
-						subscriptionRequest,
-						inProcessPublicationSender);
-		}
+						subscriptionRequest);
+			} else {
+				publicationManager->add(
+							proxyParticipantId,
+							providerParticipantId,
+							caller,
+							subscriptionRequest,
+							inProcessPublicationSender);
+			}
+		«ELSE»
+			std::function<void()> onSuccess =
+					[this, subscriptionRequest] () {
+						JOYNR_LOG_DEBUG(
+								logger,
+								"Registered broadcast subscription: {}",
+								subscriptionRequest->toString());
+						publicationManager->add(
+									proxyParticipantId,
+									providerParticipantId,
+									*subscriptionRequest,
+									inProcessPublicationSender);
+					};
+
+			std::string subscriptionId = subscriptionRequest->getSubscriptionId();
+			std::function<void(const exceptions::ProviderRuntimeException& error)> onError =
+				[this, subscriptionCallback, subscriptionId]
+				(const exceptions::ProviderRuntimeException& error) {
+					std::string message = "Could not register subscription to" \
+							" «broadcastName»." \
+							" Error from subscription manager: "
+							+ error.getMessage();
+					JOYNR_LOG_ERROR(logger, message);
+					exceptions::SubscriptionException subscriptionException(
+							message,
+							subscriptionId);
+					subscriptionCallback->onError(subscriptionException);
+					subscriptionManager->unregisterSubscription(subscriptionId);
+				};
+			subscriptionManager->registerSubscription(
+							broadcastName,
+							proxyParticipantId,
+							providerParticipantId,
+							partitions,
+							subscriptionCallback,
+							subscriptionQos,
+							*subscriptionRequest,
+							onSuccess,
+							onError);
+		«ENDIF»
 		return future;
 	}
 
