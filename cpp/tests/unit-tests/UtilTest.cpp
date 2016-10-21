@@ -103,3 +103,14 @@ TEST(UtilTest, createMulticastIdWithoutPartitions)
     EXPECT_EQ("providerParticipantId/multicastName",
               util::createMulticastId("providerParticipantId", "multicastName", partitions));
 }
+
+TEST(UtilTest, validatePartitions)
+{
+    EXPECT_NO_THROW(util::validatePartitions(
+            { "valid", "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" }
+    ));
+    EXPECT_NO_THROW(util::validatePartitions({}));
+    EXPECT_THROW(util::validatePartitions({ "not_valid" }), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({ "ä" }), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({ "one", "_ ./$" }), std::invalid_argument);
+}

@@ -132,6 +132,20 @@ std::string createMulticastId(const std::string& providerParticipantId,
     return multicastId.str();
 }
 
+void validatePartitions(const std::vector<std::string>& partitions)
+{
+    std::regex patternRegex("^[a-zA-Z0-9]+$");
+    for (const std::string& partition : partitions) {
+        if (!std::regex_search(partition, patternRegex)) {
+            throw std::invalid_argument(
+                    "Partition " + partition +
+                    " contains invalid characters.\n"
+                    "Must only contain a-z A-Z 0-9, or be a single level wildcard (+),\n"
+                    "or the last partition may be a multi level wildcard (*).");
+        }
+    }
+}
+
 void logSerializedMessage(Logger& logger,
                           const std::string& explanation,
                           const std::string& message)

@@ -49,6 +49,8 @@ std::string createMulticastId(const std::string& providerParticipantId,
                               const std::string& multicastName,
                               const std::vector<std::string>& partitions);
 
+void validatePartitions(const std::vector<std::string>& partitions);
+
 /**
   * Splits a byte array representation of multiple JSON objects into
   * a list of byte arrays, each containing a single JSON object.
