@@ -19,7 +19,7 @@ package io.joynr.accesscontrol.global.jee.persistence;
  * #L%
  */
 
-public enum MasterAccessControlEntryType {
+public enum ControlEntryType {
 
     MASTER, MEDIATOR;
 

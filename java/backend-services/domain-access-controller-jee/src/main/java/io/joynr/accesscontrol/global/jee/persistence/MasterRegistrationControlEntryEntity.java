@@ -30,7 +30,7 @@ import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 
 @Entity
-public class MasterAccessControlEntryEntity {
+public class MasterRegistrationControlEntryEntity {
 
     private long id;
 
@@ -50,11 +50,9 @@ public class MasterAccessControlEntryEntity {
 
     private Set<TrustLevel> possibleRequiredControlEntryChangeTrustLevels;
 
-    private String operation;
+    private Permission defaultProviderPermission;
 
-    private Permission defaultConsumerPermission;
-
-    private Set<Permission> possibleConsumerPermissions;
+    private Set<Permission> possibleProviderPermissions;
 
     @Id
     @GeneratedValue
@@ -132,28 +130,20 @@ public class MasterAccessControlEntryEntity {
         this.possibleRequiredControlEntryChangeTrustLevels = possibleRequiredControlEntryChangeTrustLevels;
     }
 
-    public String getOperation() {
-        return operation;
+    public Permission getDefaultProviderPermission() {
+        return defaultProviderPermission;
     }
 
-    public void setOperation(String operation) {
-        this.operation = operation;
-    }
-
-    public Permission getDefaultConsumerPermission() {
-        return defaultConsumerPermission;
-    }
-
-    public void setDefaultConsumerPermission(Permission defaultConsumerPermission) {
-        this.defaultConsumerPermission = defaultConsumerPermission;
+    public void setDefaultProviderPermission(Permission defaultProviderPermission) {
+        this.defaultProviderPermission = defaultProviderPermission;
     }
 
     @ElementCollection
-    public Set<Permission> getPossibleConsumerPermissions() {
-        return possibleConsumerPermissions;
+    public Set<Permission> getPossibleProviderPermissions() {
+        return possibleProviderPermissions;
     }
 
-    public void setPossibleConsumerPermissions(Set<Permission> possibleConsumerPermissions) {
-        this.possibleConsumerPermissions = possibleConsumerPermissions;
+    public void setPossibleProviderPermissions(Set<Permission> possibleProviderPermissions) {
+        this.possibleProviderPermissions = possibleProviderPermissions;
     }
 }

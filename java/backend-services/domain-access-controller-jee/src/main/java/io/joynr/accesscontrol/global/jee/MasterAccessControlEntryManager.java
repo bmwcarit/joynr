@@ -32,7 +32,7 @@ import javax.persistence.Query;
 
 import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryEntity;
-import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryType;
+import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
@@ -74,7 +74,7 @@ public class MasterAccessControlEntryManager {
         return result;
     }
 
-    public MasterAccessControlEntry[] findByUserId(String userId, MasterAccessControlEntryType type) {
+    public MasterAccessControlEntry[] findByUserId(String userId, ControlEntryType type) {
         Query query = entityManager.createQuery("select mace from MasterAccessControlEntryEntity mace where mace.userId = :userId and mace.type = :type",
             MasterAccessControlEntryEntity.class);
         query.setParameter("userId", userId);
@@ -85,7 +85,7 @@ public class MasterAccessControlEntryManager {
         return resultSet.toArray(new MasterAccessControlEntry[resultSet.size()]);
     }
 
-    public MasterAccessControlEntry[] findByUserIdThatAreEditable(String userId, MasterAccessControlEntryType type) {
+    public MasterAccessControlEntry[] findByUserIdThatAreEditable(String userId, ControlEntryType type) {
         Query query = entityManager.createQuery("select mace from MasterAccessControlEntryEntity mace, "
             + "DomainRoleEntryEntity dre, in(dre.domains) dds where mace.userId = :userId and mace.type = :type "
             + "and mace.domain = dds and dre.userId = :userId and dre.role = :role");
@@ -97,7 +97,7 @@ public class MasterAccessControlEntryManager {
         return resultSet.toArray(new MasterAccessControlEntry[resultSet.size()]);
     }
 
-    public MasterAccessControlEntry[] findByDomainAndInterfaceName(String domain, String interfaceName, MasterAccessControlEntryType type) {
+    public MasterAccessControlEntry[] findByDomainAndInterfaceName(String domain, String interfaceName, ControlEntryType type) {
         Query query = entityManager.createQuery("select mace from MasterAccessControlEntryEntity mace "
             + "where mace.domain = :domain and mace.interfaceName = :interfaceName and mace.type = :type", MasterAccessControlEntryEntity.class);
         query.setParameter("domain", domain);
@@ -112,7 +112,7 @@ public class MasterAccessControlEntryManager {
                                                                                            String domain,
                                                                                            String interfaceName,
                                                                                            String operation,
-                                                                                           MasterAccessControlEntryType type) {
+                                                                                           ControlEntryType type) {
         Query query = entityManager.createQuery("select mace from MasterAccessControlEntryEntity mace "
                                                         + "where mace.userId = :userId and mace.domain = :domain and mace.interfaceName = :interfaceName and mace.operation = :operation and mace.type = :type",
                                                 MasterAccessControlEntryEntity.class);
@@ -135,7 +135,7 @@ public class MasterAccessControlEntryManager {
         return entity;
     }
 
-    public Boolean createOrUpdate(MasterAccessControlEntry updatedMasterAce, MasterAccessControlEntryType type) {
+    public Boolean createOrUpdate(MasterAccessControlEntry updatedMasterAce, ControlEntryType type) {
         MasterAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameOperationAndType(updatedMasterAce.getUid(),
                                                                                                 updatedMasterAce.getDomain(),
                                                                                                 updatedMasterAce.getInterfaceName(),
@@ -163,7 +163,7 @@ public class MasterAccessControlEntryManager {
                                                                  String domain,
                                                                  String interfaceName,
                                                                  String operation,
-                                                                 MasterAccessControlEntryType type) {
+                                                                 ControlEntryType type) {
         MasterAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameOperationAndType(uid,
                                                                                                 domain,
                                                                                                 interfaceName,

@@ -19,13 +19,14 @@ package io.joynr.accesscontrol.global.jee;
  * #L%
  */
 
-import static io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryType.MASTER;
-import static io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryType.MEDIATOR;
+import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MASTER;
+import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MEDIATOR;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
@@ -50,15 +51,19 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     private final OwnerAccessControlEntryManager ownerAccessControlEntryManager;
 
+    private final MasterRegistrationControlEntryManager masterRegistrationControlEntryManager;
+
     @Inject
     public GlobalDomainAccessControllerBean(@SubscriptionPublisher GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisher,
                                             DomainRoleEntryManager domainRoleEntryManager,
                                             MasterAccessControlEntryManager masterAccessControlEntryManager,
-                                            OwnerAccessControlEntryManager ownerAccessControlEntryManager) {
+                                            OwnerAccessControlEntryManager ownerAccessControlEntryManager,
+                                            MasterRegistrationControlEntryManager masterRegistrationControlEntryManager) {
         this.globalDomainAccessControllerSubscriptionPublisher = globalDomainAccessControllerSubscriptionPublisher;
         this.domainRoleEntryManager = domainRoleEntryManager;
         this.masterAccessControlEntryManager = masterAccessControlEntryManager;
         this.ownerAccessControlEntryManager = ownerAccessControlEntryManager;
+        this.masterRegistrationControlEntryManager = masterRegistrationControlEntryManager;
     }
 
     @Override
@@ -165,42 +170,48 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public MasterRegistrationControlEntry[] getMasterRegistrationControlEntries(String uid) {
-        return new MasterRegistrationControlEntry[0];
+        return masterRegistrationControlEntryManager.findByUserIdAndType(uid, ControlEntryType.MASTER);
     }
 
     @Override
     public MasterRegistrationControlEntry[] getEditableMasterRegistrationControlEntries(String uid) {
-        return new MasterRegistrationControlEntry[0];
+        return masterRegistrationControlEntryManager.findByUserIdAndThatAreEditable(uid, ControlEntryType.MASTER);
     }
 
     @Override
     public Boolean updateMasterRegistrationControlEntry(MasterRegistrationControlEntry updatedMasterRce) {
-        return false;
+        return masterRegistrationControlEntryManager.createOrUpdate(updatedMasterRce, ControlEntryType.MASTER);
     }
 
     @Override
     public Boolean removeMasterRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        return false;
+        return masterRegistrationControlEntryManager.removeByUserIdDomainInterfaceNameAndType(uid,
+                                                                                              domain,
+                                                                                              interfaceName,
+                                                                                              ControlEntryType.MASTER);
     }
 
     @Override
     public MasterRegistrationControlEntry[] getMediatorRegistrationControlEntries(String uid) {
-        return new MasterRegistrationControlEntry[0];
+        return masterRegistrationControlEntryManager.findByUserIdAndType(uid, ControlEntryType.MEDIATOR);
     }
 
     @Override
     public MasterRegistrationControlEntry[] getEditableMediatorRegistrationControlEntries(String uid) {
-        return new MasterRegistrationControlEntry[0];
+        return masterRegistrationControlEntryManager.findByUserIdAndThatAreEditable(uid, ControlEntryType.MEDIATOR);
     }
 
     @Override
     public Boolean updateMediatorRegistrationControlEntry(MasterRegistrationControlEntry updatedMediatorRce) {
-        return false;
+        return masterRegistrationControlEntryManager.createOrUpdate(updatedMediatorRce, ControlEntryType.MEDIATOR);
     }
 
     @Override
     public Boolean removeMediatorRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        return false;
+        return masterRegistrationControlEntryManager.removeByUserIdDomainInterfaceNameAndType(uid,
+                                                                                              domain,
+                                                                                              interfaceName,
+                                                                                              ControlEntryType.MEDIATOR);
     }
 
     @Override

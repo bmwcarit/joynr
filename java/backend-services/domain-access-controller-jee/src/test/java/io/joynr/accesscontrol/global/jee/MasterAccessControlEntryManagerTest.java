@@ -19,8 +19,8 @@ package io.joynr.accesscontrol.global.jee;
  * #L%
  */
 
-import static io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryType.MASTER;
-import static io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryType.MEDIATOR;
+import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MASTER;
+import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MEDIATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -34,7 +34,7 @@ import javax.persistence.EntityManager;
 import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryEntity;
-import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryType;
+import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
@@ -320,7 +320,7 @@ public class MasterAccessControlEntryManagerTest {
 
         flushAndClear();
 
-        for (MasterAccessControlEntryType type : new MasterAccessControlEntryType[]{ MASTER, MEDIATOR }) {
+        for (ControlEntryType type : new ControlEntryType[]{ MASTER, MEDIATOR }) {
             MasterAccessControlEntry[] persisted = subject.findByUserId("user", type);
             assertNotNull("Not found for user and " + type, persisted);
             assertEquals("Not found for user and " + type, 1, persisted.length);
@@ -360,7 +360,7 @@ public class MasterAccessControlEntryManagerTest {
                                                   String operation,
                                                   Permission permission,
                                                   Permission[] possiblePermissions,
-                                                  MasterAccessControlEntryType type) {
+                                                  ControlEntryType type) {
         MasterAccessControlEntryEntity entity = new MasterAccessControlEntryEntity();
         entity.setUserId(userId);
         entity.setDomain(domain);
