@@ -48,13 +48,17 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     private final MasterAccessControlEntryManager masterAccessControlEntryManager;
 
+    private final OwnerAccessControlEntryManager ownerAccessControlEntryManager;
+
     @Inject
     public GlobalDomainAccessControllerBean(@SubscriptionPublisher GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisher,
                                             DomainRoleEntryManager domainRoleEntryManager,
-                                            MasterAccessControlEntryManager masterAccessControlEntryManager) {
+                                            MasterAccessControlEntryManager masterAccessControlEntryManager,
+                                            OwnerAccessControlEntryManager ownerAccessControlEntryManager) {
         this.globalDomainAccessControllerSubscriptionPublisher = globalDomainAccessControllerSubscriptionPublisher;
         this.domainRoleEntryManager = domainRoleEntryManager;
         this.masterAccessControlEntryManager = masterAccessControlEntryManager;
+        this.ownerAccessControlEntryManager = ownerAccessControlEntryManager;
     }
 
     @Override
@@ -133,27 +137,30 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public OwnerAccessControlEntry[] getOwnerAccessControlEntries(String uid) {
-        return new OwnerAccessControlEntry[0];
+        return ownerAccessControlEntryManager.findByUserId(uid);
     }
 
     @Override
     public OwnerAccessControlEntry[] getOwnerAccessControlEntries(String domain, String interfaceName) {
-        return new OwnerAccessControlEntry[0];
+        return ownerAccessControlEntryManager.findByDomainAndInterfaceName(domain, interfaceName);
     }
 
     @Override
     public OwnerAccessControlEntry[] getEditableOwnerAccessControlEntries(String uid) {
-        return new OwnerAccessControlEntry[0];
+        return ownerAccessControlEntryManager.findByUserIdThatAreEditable(uid);
     }
 
     @Override
     public Boolean updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAce) {
-        return false;
+        return ownerAccessControlEntryManager.createOrUpdate(updatedOwnerAce);
     }
 
     @Override
     public Boolean removeOwnerAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
-        return false;
+        return ownerAccessControlEntryManager.removeByUserIdDomainInterfaceNameAndOperation(uid,
+                                                                                            domain,
+                                                                                            interfaceName,
+                                                                                            operation);
     }
 
     @Override
