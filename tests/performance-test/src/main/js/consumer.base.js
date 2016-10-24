@@ -176,6 +176,11 @@ var consumerBase = {
             numRuns = numRuns / (Math.sqrt(byteArraySizeFactor));
         }
         return consumerBase.executeBenchmark("echoByteArray " + byteArraySize, testProcedure, numRuns);
+    },
+    echoByteArrayWithSizeTimesK : function() {
+        if (options.skipByteArraySizeTimesK === undefined || options.skipByteArraySizeTimesK === true) {
+            consumerBase.echoByteArray(1000);
+        }
     }
 };
 module.exports = consumerBase;

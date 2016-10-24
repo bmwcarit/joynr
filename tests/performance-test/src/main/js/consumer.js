@@ -29,6 +29,7 @@ consumerBase.initialize().then(function() {
     return consumerBase.echoComplexStruct()
         .then(consumerBase.echoString)
         .then(consumerBase.echoByteArray)
+        .then(consumerBase.echoByteArrayWithSizeTimesK)
         .then(consumerBase.shutdown)
         .then(function() {
             console.log("SUCCEEDED");
