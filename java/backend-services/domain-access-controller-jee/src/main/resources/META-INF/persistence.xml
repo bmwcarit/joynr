@@ -24,6 +24,10 @@
 		<jta-data-source>joynr/DomainAccessControllerDS</jta-data-source>
 
 		<class>io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity</class>
+		<class>io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryEntity</class>
+		<class>io.joynr.accesscontrol.global.jee.persistence.OwnerAccessControlEntryEntity</class>
+		<class>io.joynr.accesscontrol.global.jee.persistence.MasterRegistrationControlEntryEntity</class>
+		<class>io.joynr.accesscontrol.global.jee.persistence.OwnerRegistrationControlEntryEntity</class>
 
 		<properties>
 			<property name="javax.persistence.schema-generation.database.action" value="drop-and-create" />
