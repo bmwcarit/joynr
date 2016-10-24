@@ -29,6 +29,7 @@ import javax.transaction.Transactional;
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
@@ -43,17 +44,21 @@ import joynr.infrastructure.GlobalDomainAccessControllerSync;
 @Transactional
 public class GlobalDomainAccessControllerBean implements GlobalDomainAccessControllerSync {
 
-    private final GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisher;
+    private GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisher;
 
-    private final DomainRoleEntryManager domainRoleEntryManager;
+    private DomainRoleEntryManager domainRoleEntryManager;
 
-    private final MasterAccessControlEntryManager masterAccessControlEntryManager;
+    private MasterAccessControlEntryManager masterAccessControlEntryManager;
 
-    private final OwnerAccessControlEntryManager ownerAccessControlEntryManager;
+    private OwnerAccessControlEntryManager ownerAccessControlEntryManager;
 
-    private final MasterRegistrationControlEntryManager masterRegistrationControlEntryManager;
+    private MasterRegistrationControlEntryManager masterRegistrationControlEntryManager;
 
-    private final OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManager;
+    private OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManager;
+
+    // Only required for testing
+    protected GlobalDomainAccessControllerBean() {
+    }
 
     @Inject
     public GlobalDomainAccessControllerBean(@SubscriptionPublisher GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisher,
@@ -70,6 +75,10 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
         this.ownerRegistrationControlEntryManager = ownerRegistrationControlEntryManager;
     }
 
+    private String sanitizeForPartition(String value) {
+        return value.replaceAll("[^a-zA-Z0-9]", "");
+    }
+
     @Override
     public DomainRoleEntry[] getDomainRoles(String uid) {
         return domainRoleEntryManager.findByUserId(uid);
@@ -77,13 +86,24 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public Boolean updateDomainRole(DomainRoleEntry updatedEntry) {
-        domainRoleEntryManager.createOrUpdate(updatedEntry);
+        CreateOrUpdateResult<DomainRoleEntry> result = domainRoleEntryManager.createOrUpdate(updatedEntry);
+        globalDomainAccessControllerSubscriptionPublisher.fireDomainRoleEntryChanged(result.getChangeType(),
+                                                                                     result.getEntry(),
+                                                                                     sanitizeForPartition(result.getEntry()
+                                                                                                                .getUid()));
         return true;
     }
 
     @Override
     public Boolean removeDomainRole(String uid, Role role) {
-        return domainRoleEntryManager.removeByUserIdAndRole(uid, role);
+        DomainRoleEntry removedEntry = domainRoleEntryManager.removeByUserIdAndRole(uid, role);
+        if (removedEntry != null) {
+            globalDomainAccessControllerSubscriptionPublisher.fireDomainRoleEntryChanged(ChangeType.REMOVE,
+                                                                                         removedEntry,
+                                                                                         sanitizeForPartition(uid));
+            return true;
+        }
+        return false;
     }
 
     @Override

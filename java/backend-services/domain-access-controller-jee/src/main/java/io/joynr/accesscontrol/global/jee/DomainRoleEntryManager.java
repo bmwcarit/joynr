@@ -31,6 +31,7 @@ import javax.persistence.Query;
 
 import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.Role;
 
@@ -85,24 +86,25 @@ public class DomainRoleEntryManager {
         return null;
     }
 
-    public DomainRoleEntryEntity createOrUpdate(DomainRoleEntry joynrType) {
+    public CreateOrUpdateResult<DomainRoleEntry> createOrUpdate(DomainRoleEntry joynrType) {
         DomainRoleEntryEntity entity = findByUserIdAndRole(joynrType.getUid(), joynrType.getRole());
-        if (entity != null) {
+        boolean created = entity == null;
+        if (!created) {
             entity.getDomains().clear();
             entity.getDomains().addAll(Sets.newHashSet(joynrType.getDomains()));
         } else {
             entity = mapJoynrTypeToEntity(joynrType);
             entityManager.persist(entity);
         }
-        return entity;
+        return new CreateOrUpdateResult<>(mapEntityToJoynrType(entity), created ? ChangeType.ADD : ChangeType.UPDATE);
     }
 
-    public boolean removeByUserIdAndRole(String userId, Role role) {
+    public DomainRoleEntry removeByUserIdAndRole(String userId, Role role) {
         DomainRoleEntryEntity entity = findByUserIdAndRole(userId, role);
         if (entity != null) {
             entityManager.remove(entity);
-            return true;
+            return mapEntityToJoynrType(entity);
         }
-        return false;
+        return null;
     }
 }

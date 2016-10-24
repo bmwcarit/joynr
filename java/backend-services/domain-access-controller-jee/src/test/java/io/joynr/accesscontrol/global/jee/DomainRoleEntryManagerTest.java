@@ -21,7 +21,6 @@ package io.joynr.accesscontrol.global.jee;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -32,6 +31,7 @@ import javax.persistence.EntityManager;
 
 import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.Role;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -101,6 +101,27 @@ public class DomainRoleEntryManagerTest {
     }
 
     @Test
+    public void testCreate() {
+        String userId = "user";
+
+        DomainRoleEntry newEntry = new DomainRoleEntry(userId, new String[]{ "domain" }, Role.OWNER);
+        CreateOrUpdateResult<DomainRoleEntry> result = subject.createOrUpdate(newEntry);
+
+        flushAndClear();
+
+        assertNotNull(result);
+        assertEquals(ChangeType.ADD, result.getChangeType());
+        assertEquals(userId, result.getEntry().getUid());
+        assertEquals(Role.OWNER, result.getEntry().getRole());
+        assertEquals(1, result.getEntry().getDomains().length);
+        assertEquals("domain", result.getEntry().getDomains()[0]);
+
+        DomainRoleEntry[] persisted = subject.findByUserId(userId);
+        assertNotNull(persisted);
+        assertEquals(1, persisted.length);
+    }
+
+    @Test
     public void testUpdateExistingEntry() {
         String userId = "user";
         DomainRoleEntryEntity entity = create(userId, Sets.newHashSet("domain1", "domain2"), Role.OWNER);
@@ -108,16 +129,17 @@ public class DomainRoleEntryManagerTest {
         flushAndClear();
 
         DomainRoleEntry updatedEntry = new DomainRoleEntry(userId, new String[]{ "domain3" }, Role.OWNER);
-        DomainRoleEntryEntity result = subject.createOrUpdate(updatedEntry);
+        CreateOrUpdateResult<DomainRoleEntry> result = subject.createOrUpdate(updatedEntry);
 
         flushAndClear();
 
         assertNotNull(result);
-        assertEquals(userId, result.getUserId());
-        assertEquals(Role.OWNER, result.getRole());
-        assertNotNull(result.getRole());
-        assertEquals(1, result.getDomains().size());
-        assertEquals("domain3", result.getDomains().iterator().next());
+        assertEquals(ChangeType.UPDATE, result.getChangeType());
+        assertEquals(userId, result.getEntry().getUid());
+        assertEquals(Role.OWNER, result.getEntry().getRole());
+        assertNotNull(result.getEntry().getRole());
+        assertEquals(1, result.getEntry().getDomains().length);
+        assertEquals("domain3", result.getEntry().getDomains()[0]);
     }
 
     @Test
@@ -127,11 +149,11 @@ public class DomainRoleEntryManagerTest {
 
         flushAndClear();
 
-        boolean result = subject.removeByUserIdAndRole(userId, Role.OWNER);
+        DomainRoleEntry result = subject.removeByUserIdAndRole(userId, Role.OWNER);
 
         flushAndClear();
 
-        assertTrue(result);
+        assertNotNull(result);
         DomainRoleEntry[] byUserId = subject.findByUserId(userId);
         assertNotNull(byUserId);
         assertEquals(0, byUserId.length);
