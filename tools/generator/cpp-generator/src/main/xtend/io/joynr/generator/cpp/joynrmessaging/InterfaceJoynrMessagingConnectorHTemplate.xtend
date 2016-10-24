@@ -127,7 +127,8 @@ private:
 				«IF broadcast.selective»
 					BroadcastSubscriptionRequest& subscriptionRequest);
 				«ELSE»
-					std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest);
+					std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest,
+					const std::vector<std::string>& partitions);
 				«ENDIF»
 	«ENDFOR»
 public:

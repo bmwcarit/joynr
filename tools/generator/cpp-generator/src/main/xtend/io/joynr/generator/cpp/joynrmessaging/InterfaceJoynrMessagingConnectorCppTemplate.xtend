@@ -364,15 +364,16 @@ bool «className»::usesClusterController() const{
 			subscriptionRequest.setFilterParameters(filterParameters);
 		«ELSE»
 			auto subscriptionRequest = std::make_shared<joynr::MulticastSubscriptionRequest>();
-			subscriptionRequest->setMulticastId(
-					joynr::util::createMulticastId(
-							providerParticipantId,
-							"«broadcastName»",
-							partitions
-					)
-			);
 		«ENDIF»
-		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
+		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
+					subscriptionListener,
+					subscriptionQos,
+					subscriptionRequest«
+					»«IF !broadcast.selective»«
+					»,
+					partitions«
+					»«ENDIF»«
+					»);
 	}
 
 	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className)» {
@@ -382,16 +383,17 @@ bool «className»::usesClusterController() const{
 			subscriptionRequest.setSubscriptionId(subscriptionId);
 		«ELSE»
 			auto subscriptionRequest = std::make_shared<joynr::MulticastSubscriptionRequest>();
-			subscriptionRequest->setMulticastId(
-					joynr::util::createMulticastId(
-							providerParticipantId,
-							"«broadcastName»",
-							partitions
-					)
-			);
 			subscriptionRequest->setSubscriptionId(subscriptionId);
 		«ENDIF»
-		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
+		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
+					subscriptionListener,
+					subscriptionQos,
+					subscriptionRequest«
+					»«IF !broadcast.selective»«
+					»,
+					partitions«
+					»«ENDIF»«
+					»);
 	}
 
 	std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
@@ -400,7 +402,8 @@ bool «className»::usesClusterController() const{
 				«IF broadcast.selective»
 					BroadcastSubscriptionRequest& subscriptionRequest
 				«ELSE»
-					std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest
+					std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest,
+					const std::vector<std::string>& partitions
 				«ENDIF»
 	) {
 		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
@@ -441,6 +444,7 @@ bool «className»::usesClusterController() const{
 					[this, subscriptionCallback, subscriptionId] (const exceptions::ProviderRuntimeException& error) {
 						std::string message = "Could not register subscription to «broadcastName». Error from subscription manager: "
 									+ error.getMessage();
+						JOYNR_LOG_ERROR(logger, message);
 						exceptions::SubscriptionException subscriptionException(message, subscriptionId);
 						subscriptionCallback->onError(subscriptionException);
 						subscriptionManager->unregisterSubscription(subscriptionId);
@@ -449,7 +453,7 @@ bool «className»::usesClusterController() const{
 							broadcastName,
 							proxyParticipantId,
 							providerParticipantId,
-							std::vector<std::string>(),
+							partitions,
 							subscriptionCallback,
 							subscriptionQos,
 							*subscriptionRequest,
