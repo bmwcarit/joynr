@@ -29,9 +29,8 @@
 		<class>io.joynr.accesscontrol.global.jee.persistence.MasterRegistrationControlEntryEntity</class>
 		<class>io.joynr.accesscontrol.global.jee.persistence.OwnerRegistrationControlEntryEntity</class>
 
-		<!-- Comment out the properties below if you don't want JPA to attempt to auto-create the DB schema -->
 		<properties>
-			<property name="javax.persistence.schema-generation.database.action" value="create" />
+			<property name="javax.persistence.schema-generation.database.action" value="drop-and-create" />
 		</properties>
 	</persistence-unit>
 </persistence>

@@ -66,7 +66,7 @@ public class MasterRegistrationControlEntryManagerTest {
                                      MasterRegistrationControlEntryManager.class,
                                      JoynrConfigurationProvider.class)
                          .addAsLibraries(files)
-                         .addAsResource("META-INF/persistence.xml")
+                         .addAsResource("test-persistence.xml", "META-INF/persistence.xml")
                          .addAsWebInfResource(new File("src/main/webapp/WEB-INF/beans.xml"));
     }
 
