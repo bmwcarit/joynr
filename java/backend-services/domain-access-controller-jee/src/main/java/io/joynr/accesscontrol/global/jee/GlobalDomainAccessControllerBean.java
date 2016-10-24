@@ -219,15 +219,32 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public Boolean updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAce) {
-        return ownerAccessControlEntryManager.createOrUpdate(updatedOwnerAce);
+        CreateOrUpdateResult<OwnerAccessControlEntry> result = ownerAccessControlEntryManager.createOrUpdate(updatedOwnerAce);
+        OwnerAccessControlEntry entry = result.getEntry();
+        globalDomainAccessControllerSubscriptionPublisher.fireOwnerAccessControlEntryChanged(result.getChangeType(),
+                                                                                             entry,
+                                                                                             sanitizeForPartition(entry.getUid()),
+                                                                                             sanitizeForPartition(entry.getDomain()),
+                                                                                             sanitizeForPartition(entry.getInterfaceName()),
+                                                                                             sanitizeForPartition(entry.getOperation()));
+        return true;
     }
 
     @Override
     public Boolean removeOwnerAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
-        return ownerAccessControlEntryManager.removeByUserIdDomainInterfaceNameAndOperation(uid,
-                                                                                            domain,
-                                                                                            interfaceName,
-                                                                                            operation);
+        OwnerAccessControlEntry removedEntry = ownerAccessControlEntryManager.removeByUserIdDomainInterfaceNameAndOperation(uid,
+                                                                                                                            domain,
+                                                                                                                            interfaceName,
+                                                                                                                            operation);
+        if (removedEntry != null) {
+            globalDomainAccessControllerSubscriptionPublisher.fireOwnerAccessControlEntryChanged(ChangeType.REMOVE,
+                                                                                                 removedEntry,
+                                                                                                 sanitizeForPartition(removedEntry.getUid()),
+                                                                                                 sanitizeForPartition(removedEntry.getDomain()),
+                                                                                                 sanitizeForPartition(removedEntry.getInterfaceName()));
+            return true;
+        }
+        return false;
     }
 
     @Override

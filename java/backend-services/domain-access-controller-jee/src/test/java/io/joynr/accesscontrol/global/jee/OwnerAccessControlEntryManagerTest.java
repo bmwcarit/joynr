@@ -22,7 +22,6 @@ package io.joynr.accesscontrol.global.jee;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
@@ -32,6 +31,7 @@ import javax.persistence.EntityManager;
 import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.OwnerAccessControlEntryEntity;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
@@ -142,8 +142,11 @@ public class OwnerAccessControlEntryManagerTest {
                                                                    operation,
                                                                    Permission.ASK);
 
-        Boolean result = subject.createOrUpdate(data);
-        assertEquals(true, result);
+        CreateOrUpdateResult<OwnerAccessControlEntry> result = subject.createOrUpdate(data);
+        assertNotNull(result);
+        assertEquals(ChangeType.ADD, result.getChangeType());
+        assertNotNull(result.getEntry());
+        assertEquals(userId, result.getEntry().getUid());
 
         flushAndClear();
 
@@ -177,8 +180,11 @@ public class OwnerAccessControlEntryManagerTest {
                                                                          TrustLevel.HIGH,
                                                                          "operation",
                                                                          Permission.YES);
-        Boolean result = subject.createOrUpdate(updateData);
-        assertEquals(true, result);
+        CreateOrUpdateResult<OwnerAccessControlEntry> result = subject.createOrUpdate(updateData);
+        assertNotNull(result);
+        assertEquals(ChangeType.UPDATE, result.getChangeType());
+        assertNotNull(result.getEntry());
+        assertEquals("user", result.getEntry().getUid());
 
         flushAndClear();
 
@@ -205,7 +211,7 @@ public class OwnerAccessControlEntryManagerTest {
 
         flushAndClear();
 
-        assertTrue(subject.removeByUserIdDomainInterfaceNameAndOperation(userId, domain, interfaceName, operation));
+        assertNotNull(subject.removeByUserIdDomainInterfaceNameAndOperation(userId, domain, interfaceName, operation));
 
         flushAndClear();
 

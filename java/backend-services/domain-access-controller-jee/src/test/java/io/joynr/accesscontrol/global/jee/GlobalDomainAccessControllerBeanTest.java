@@ -31,6 +31,7 @@ import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
@@ -311,5 +312,54 @@ public class GlobalDomainAccessControllerBeanTest {
                                                                                                             eq(DOMAIN),
                                                                                                             eq(INTERFACE_NAME),
                                                                                                             eq(OPERATION));
+    }
+
+    @Test
+    public void testFindOwnerAccessControlEntryByUserId() {
+        when(ownerAccessControlEntryManagerMock.findByUserId(USER_ID)).thenReturn(new OwnerAccessControlEntry[0]);
+        OwnerAccessControlEntry[] result = subject.getOwnerAccessControlEntries(USER_ID);
+        assertNotNull(result);
+        assertEquals(0, result.length);
+        verify(ownerAccessControlEntryManagerMock).findByUserId(eq(USER_ID));
+    }
+
+    @Test
+    public void testFindEditableOwnerAccessControlEntry() {
+        when(ownerAccessControlEntryManagerMock.findByUserIdThatAreEditable(USER_ID)).thenReturn(new OwnerAccessControlEntry[0]);
+        OwnerAccessControlEntry[] result = subject.getEditableOwnerAccessControlEntries(USER_ID);
+        assertNotNull(result);
+        assertEquals(0, result.length);
+        verify(ownerAccessControlEntryManagerMock).findByUserIdThatAreEditable(eq(USER_ID));
+    }
+
+    @Test
+    public void testFindOwnerAccessControlEntryByDomainAndInterfaceName() {
+        when(ownerAccessControlEntryManagerMock.findByDomainAndInterfaceName(DOMAIN, INTERFACE_NAME)).thenReturn(new OwnerAccessControlEntry[0]);
+        OwnerAccessControlEntry[] result = subject.getOwnerAccessControlEntries(DOMAIN, INTERFACE_NAME);
+        assertNotNull(result);
+        assertEquals(0, result.length);
+        verify(ownerAccessControlEntryManagerMock).findByDomainAndInterfaceName(eq(DOMAIN), eq(INTERFACE_NAME));
+    }
+
+    @Test
+    public void testCreateOwnerAccessControlEntry() {
+        OwnerAccessControlEntry oace = new OwnerAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.HIGH, TrustLevel.LOW, OPERATION, Permission.YES);
+        CreateOrUpdateResult<OwnerAccessControlEntry> createResult = new CreateOrUpdateResult<>(oace, ChangeType.ADD);
+        when(ownerAccessControlEntryManagerMock.createOrUpdate(oace)).thenReturn(createResult);
+        Boolean result = subject.updateOwnerAccessControlEntry(oace);
+        assertEquals(Boolean.TRUE, result);
+        verify(ownerAccessControlEntryManagerMock).createOrUpdate(eq(oace));
+        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerAccessControlEntryChanged(eq(ChangeType.ADD), eq(oace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
+    }
+
+    @Test
+    public void testUpdateOwnerAccessControlEntry() {
+        OwnerAccessControlEntry oace = new OwnerAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.HIGH, TrustLevel.LOW, OPERATION, Permission.YES);
+        CreateOrUpdateResult<OwnerAccessControlEntry> createResult = new CreateOrUpdateResult<>(oace, ChangeType.UPDATE);
+        when(ownerAccessControlEntryManagerMock.createOrUpdate(oace)).thenReturn(createResult);
+        Boolean result = subject.updateOwnerAccessControlEntry(oace);
+        assertEquals(Boolean.TRUE, result);
+        verify(ownerAccessControlEntryManagerMock).createOrUpdate(eq(oace));
+        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerAccessControlEntryChanged(eq(ChangeType.UPDATE), eq(oace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
     }
 }

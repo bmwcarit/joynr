@@ -32,6 +32,7 @@ import javax.persistence.Query;
 
 import io.joynr.accesscontrol.global.jee.persistence.OwnerAccessControlEntryEntity;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Role;
 
@@ -90,12 +91,13 @@ public class OwnerAccessControlEntryManager {
         return executeAndConvert(query);
     }
 
-    public Boolean createOrUpdate(OwnerAccessControlEntry updatedOwnerAce) {
+    public CreateOrUpdateResult<OwnerAccessControlEntry> createOrUpdate(OwnerAccessControlEntry updatedOwnerAce) {
         OwnerAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameAndOperation(updatedOwnerAce.getUid(),
                                                                                            updatedOwnerAce.getDomain(),
                                                                                            updatedOwnerAce.getInterfaceName(),
                                                                                            updatedOwnerAce.getOperation());
-        if (entity == null) {
+        boolean created = entity == null;
+        if (created) {
             entity = new OwnerAccessControlEntryEntity();
             entity.setUserId(updatedOwnerAce.getUid());
             entity.setDomain(updatedOwnerAce.getDomain());
@@ -106,7 +108,7 @@ public class OwnerAccessControlEntryManager {
         entity.setRequiredTrustLevel(updatedOwnerAce.getRequiredTrustLevel());
         entity.setRequiredAceChangeTrustLevel(updatedOwnerAce.getRequiredAceChangeTrustLevel());
         entity.setConsumerPermission(updatedOwnerAce.getConsumerPermission());
-        return true;
+        return new CreateOrUpdateResult<>(mapEntityToJoynrType(entity), created ? ChangeType.ADD : ChangeType.UPDATE);
     }
 
     private OwnerAccessControlEntryEntity findByUserIdDomainInterfaceNameAndOperation(String userId,
@@ -135,18 +137,19 @@ public class OwnerAccessControlEntryManager {
         return entity;
     }
 
-    public Boolean removeByUserIdDomainInterfaceNameAndOperation(String userId,
-                                                                 String domain,
-                                                                 String interfaceName,
-                                                                 String operation) {
+    public OwnerAccessControlEntry removeByUserIdDomainInterfaceNameAndOperation(String userId,
+                                                                                 String domain,
+                                                                                 String interfaceName,
+                                                                                 String operation) {
         OwnerAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameAndOperation(userId,
                                                                                            domain,
                                                                                            interfaceName,
                                                                                            operation);
+        OwnerAccessControlEntry removedEntry = null;
         if (entity != null) {
             entityManager.remove(entity);
-            return true;
+            removedEntry = mapEntityToJoynrType(entity);
         }
-        return false;
+        return removedEntry;
     }
 }
