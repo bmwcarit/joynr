@@ -34,6 +34,7 @@ import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
@@ -135,13 +136,14 @@ public class MasterAccessControlEntryManager {
         return entity;
     }
 
-    public Boolean createOrUpdate(MasterAccessControlEntry updatedMasterAce, ControlEntryType type) {
+    public CreateOrUpdateResult<MasterAccessControlEntry> createOrUpdate(MasterAccessControlEntry updatedMasterAce, ControlEntryType type) {
         MasterAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameOperationAndType(updatedMasterAce.getUid(),
                                                                                                 updatedMasterAce.getDomain(),
                                                                                                 updatedMasterAce.getInterfaceName(),
                                                                                                 updatedMasterAce.getOperation(),
                                                                                                 type);
-        if (entity == null) {
+        boolean created = entity == null;
+        if (created) {
             entity = new MasterAccessControlEntryEntity();
             entity.setUserId(updatedMasterAce.getUid());
             entity.setDomain(updatedMasterAce.getDomain());
@@ -156,14 +158,14 @@ public class MasterAccessControlEntryManager {
         entity.setPossibleRequiredControlEntryChangeTrustLevels(Sets.newHashSet(updatedMasterAce.getPossibleRequiredControlEntryChangeTrustLevels()));
         entity.setDefaultConsumerPermission(updatedMasterAce.getDefaultConsumerPermission());
         entity.setPossibleConsumerPermissions(Sets.newHashSet(updatedMasterAce.getPossibleConsumerPermissions()));
-        return true;
+        return new CreateOrUpdateResult<>(mapEntityToJoynrType(entity), created ? ChangeType.ADD : ChangeType.UPDATE);
     }
 
-    public Boolean removeByUserIdDomainInterfaceNameAndOperation(String uid,
-                                                                 String domain,
-                                                                 String interfaceName,
-                                                                 String operation,
-                                                                 ControlEntryType type) {
+    public MasterAccessControlEntry removeByUserIdDomainInterfaceNameAndOperation(String uid,
+                                                                                  String domain,
+                                                                                  String interfaceName,
+                                                                                  String operation,
+                                                                                  ControlEntryType type) {
         MasterAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameOperationAndType(uid,
                                                                                                 domain,
                                                                                                 interfaceName,
@@ -171,8 +173,8 @@ public class MasterAccessControlEntryManager {
                                                                                                 type);
         if (entity != null) {
             entityManager.remove(entity);
-            return true;
+            return mapEntityToJoynrType(entity);
         }
-        return false;
+        return null;
     }
 }

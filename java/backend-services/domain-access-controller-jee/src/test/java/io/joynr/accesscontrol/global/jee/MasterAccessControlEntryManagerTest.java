@@ -24,7 +24,6 @@ import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MED
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
@@ -32,9 +31,10 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
 import com.google.common.collect.Sets;
+import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryEntity;
-import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
@@ -208,9 +208,12 @@ public class MasterAccessControlEntryManagerTest {
                                                                          Permission.ASK,
                                                                          new Permission[0]);
 
-        boolean result = subject.createOrUpdate(newEntry, MASTER);
+        CreateOrUpdateResult<MasterAccessControlEntry> result = subject.createOrUpdate(newEntry, MASTER);
 
-        assertTrue(result);
+        assertNotNull(result);
+        assertEquals(ChangeType.ADD, result.getChangeType());
+        assertNotNull(result.getEntry());
+        assertEquals("user", result.getEntry().getUid());
 
         flushAndClear();
 
@@ -253,7 +256,12 @@ public class MasterAccessControlEntryManagerTest {
         entry.setPossibleRequiredTrustLevels(new TrustLevel[]{ TrustLevel.HIGH, TrustLevel.MID });
         entry.setDefaultConsumerPermission(Permission.ASK);
 
-        assertTrue(subject.createOrUpdate(entry, MASTER));
+        CreateOrUpdateResult<MasterAccessControlEntry> result = subject.createOrUpdate(entry, MASTER);
+
+        assertNotNull(result);
+        assertEquals(ChangeType.UPDATE, result.getChangeType());
+        assertNotNull(result.getEntry());
+        assertEquals("user", result.getEntry().getUid());
 
         flushAndClear();
 
@@ -279,11 +287,14 @@ public class MasterAccessControlEntryManagerTest {
 
         flushAndClear();
 
-        assertTrue(subject.removeByUserIdDomainInterfaceNameAndOperation(entity.getUserId(),
-                                                                         entity.getDomain(),
-                                                                         entity.getInterfaceName(),
-                                                                         entity.getOperation(),
-                                                                         MASTER));
+        MasterAccessControlEntry result = subject.removeByUserIdDomainInterfaceNameAndOperation(entity.getUserId(),
+                                                                                                entity.getDomain(),
+                                                                                                entity.getInterfaceName(),
+                                                                                                entity.getOperation(),
+                                                                                                MASTER);
+
+        assertNotNull(result);
+        assertEquals("user", result.getUid());
 
         flushAndClear();
 

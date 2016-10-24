@@ -123,16 +123,35 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public Boolean updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAce) {
-        return masterAccessControlEntryManager.createOrUpdate(updatedMasterAce, MASTER);
+        CreateOrUpdateResult<MasterAccessControlEntry> result = masterAccessControlEntryManager.createOrUpdate(updatedMasterAce,
+                                                                                                               MASTER);
+        MasterAccessControlEntry persistedAce = result.getEntry();
+        globalDomainAccessControllerSubscriptionPublisher.fireMasterAccessControlEntryChanged(result.getChangeType(),
+                                                                                              persistedAce,
+                                                                                              sanitizeForPartition(persistedAce.getUid()),
+                                                                                              sanitizeForPartition(persistedAce.getDomain()),
+                                                                                              sanitizeForPartition(persistedAce.getInterfaceName()),
+                                                                                              sanitizeForPartition(persistedAce.getOperation()));
+        return true;
     }
 
     @Override
     public Boolean removeMasterAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
-        return masterAccessControlEntryManager.removeByUserIdDomainInterfaceNameAndOperation(uid,
-                                                                                             domain,
-                                                                                             interfaceName,
-                                                                                             operation,
-                                                                                             MASTER);
+        MasterAccessControlEntry removedEntry = masterAccessControlEntryManager.removeByUserIdDomainInterfaceNameAndOperation(uid,
+                                                                                                                              domain,
+                                                                                                                              interfaceName,
+                                                                                                                              operation,
+                                                                                                                              MASTER);
+        if (removedEntry != null) {
+            globalDomainAccessControllerSubscriptionPublisher.fireMasterAccessControlEntryChanged(ChangeType.REMOVE,
+                                                                                                  removedEntry,
+                                                                                                  sanitizeForPartition(uid),
+                                                                                                  sanitizeForPartition(domain),
+                                                                                                  sanitizeForPartition(interfaceName),
+                                                                                                  sanitizeForPartition(operation));
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -152,16 +171,35 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public Boolean updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAce) {
-        return masterAccessControlEntryManager.createOrUpdate(updatedMediatorAce, MEDIATOR);
+        CreateOrUpdateResult<MasterAccessControlEntry> result = masterAccessControlEntryManager.createOrUpdate(updatedMediatorAce,
+                                                                                                               MEDIATOR);
+        MasterAccessControlEntry persistedEntry = result.getEntry();
+        globalDomainAccessControllerSubscriptionPublisher.fireMediatorAccessControlEntryChanged(result.getChangeType(),
+                                                                                                persistedEntry,
+                                                                                                sanitizeForPartition(persistedEntry.getUid()),
+                                                                                                sanitizeForPartition(persistedEntry.getDomain()),
+                                                                                                sanitizeForPartition(persistedEntry.getInterfaceName()),
+                                                                                                sanitizeForPartition(persistedEntry.getOperation()));
+        return true;
     }
 
     @Override
     public Boolean removeMediatorAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
-        return masterAccessControlEntryManager.removeByUserIdDomainInterfaceNameAndOperation(uid,
-                                                                                             domain,
-                                                                                             interfaceName,
-                                                                                             operation,
-                                                                                             MEDIATOR);
+        MasterAccessControlEntry removedEntry = masterAccessControlEntryManager.removeByUserIdDomainInterfaceNameAndOperation(uid,
+                                                                                                                              domain,
+                                                                                                                              interfaceName,
+                                                                                                                              operation,
+                                                                                                                              MEDIATOR);
+        if (removedEntry != null) {
+            globalDomainAccessControllerSubscriptionPublisher.fireMediatorAccessControlEntryChanged(ChangeType.REMOVE,
+                                                                                                    removedEntry,
+                                                                                                    sanitizeForPartition(uid),
+                                                                                                    sanitizeForPartition(domain),
+                                                                                                    sanitizeForPartition(interfaceName),
+                                                                                                    sanitizeForPartition(operation));
+            return true;
+        }
+        return false;
     }
 
     @Override
