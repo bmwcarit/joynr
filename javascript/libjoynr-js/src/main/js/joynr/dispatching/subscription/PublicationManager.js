@@ -880,7 +880,7 @@ define(
 
                             // make sure the provider is registered
                             if (provider === undefined) {
-                                log.error("Provider with participantId "
+                                log.info("Provider with participantId "
                                     + providerParticipantId
                                     + "not found. Queueing subscription request...");
                                 queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
@@ -1114,7 +1114,7 @@ define(
 
                             // make sure the provider is registered
                             if (provider === undefined) {
-                                log.error("Provider with participantId "
+                                log.info("Provider with participantId "
                                     + providerParticipantId
                                     + "not found. Queueing subscription request...");
                                 queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
