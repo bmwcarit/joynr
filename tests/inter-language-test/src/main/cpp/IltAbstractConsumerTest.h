@@ -19,6 +19,7 @@
 #ifndef ILTABSTRACTCONSUMERTEST_H
 #define ILTABSTRACTCONSUMERTEST_H
 #include <cstdlib>
+#include <memory>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -78,10 +79,7 @@ public:
 
     static void TearDownTestCase()
     {
-        if (testInterfaceProxy) {
-            delete testInterfaceProxy;
-            testInterfaceProxy = nullptr;
-        }
+        testInterfaceProxy.reset();
         if (proxyBuilder) {
             delete proxyBuilder;
             proxyBuilder = nullptr;
@@ -104,7 +102,7 @@ protected:
         }
     }
 
-    static joynr::interlanguagetest::TestInterfaceProxy* testInterfaceProxy;
+    static std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy> testInterfaceProxy;
     static joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>* proxyBuilder;
     static joynr::JoynrRuntime* runtime;
     static std::string providerDomain;
@@ -125,8 +123,8 @@ template <typename T>
 INIT_LOGGER(IltAbstractConsumerTest<T>);
 
 template <typename T>
-joynr::interlanguagetest::TestInterfaceProxy* IltAbstractConsumerTest<T>::testInterfaceProxy =
-        nullptr;
+std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy>
+        IltAbstractConsumerTest<T>::testInterfaceProxy;
 
 template <typename T>
 ProxyBuilder<interlanguagetest::TestInterfaceProxy>* IltAbstractConsumerTest<T>::proxyBuilder =

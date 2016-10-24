@@ -119,11 +119,11 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::int64_t qosRoundTripTTL = 50000;
 
     // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                               ->setCached(false)
-                                               ->setDiscoveryQos(discoveryQos)
-                                               ->build());
+    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
+                     ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                     ->setCached(false)
+                     ->setDiscoveryQos(discoveryQos)
+                     ->build();
     std::uint64_t startTime = DispatcherUtils::nowInMilliseconds();
     std::vector<std::shared_ptr<Future<int> > >testFutureList;
     int numberOfRequests = 150;

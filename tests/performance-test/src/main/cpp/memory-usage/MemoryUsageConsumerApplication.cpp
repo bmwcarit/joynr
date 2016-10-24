@@ -20,6 +20,7 @@
 #include <csignal>
 #include <cstdint>
 #include <string>
+#include <memory>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -138,10 +139,10 @@ int main(int argc, char* argv[])
     std::unique_ptr<tests::performance::EchoProxy> proxy;
     try {
         JOYNR_LOG_DEBUG(logger, "About to call proxyBuilder");
-        proxy.reset(proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
-                            ->setCached(false)
-                            ->setDiscoveryQos(discoveryQos)
-                            ->build());
+        proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
+                        ->setCached(false)
+                        ->setDiscoveryQos(discoveryQos)
+                        ->build();
         JOYNR_LOG_DEBUG(logger, "Call to Proxybuilder successfully completed");
         if (proxy == nullptr) {
             throw new joynr::exceptions::JoynrRuntimeException("received proxy == nullptr");

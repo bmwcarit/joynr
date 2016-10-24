@@ -463,11 +463,11 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
-        std::unique_ptr<tests::testProxy> testProxy(
+        std::unique_ptr<tests::testProxy> testProxy =
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setCached(false)
                         ->setDiscoveryQos(discoveryQos)
-                        ->build());
+                        ->build();
 
         TEverythingMap setValue;
         setValue.insert({TEnum::TLITERALA, TEverythingExtendedStruct()});

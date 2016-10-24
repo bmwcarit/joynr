@@ -145,7 +145,7 @@ void CapabilitiesClient::setProxyBuilder(std::unique_ptr<
 {
     assert(inCapabilitiesProxyBuilder);
     capabilitiesProxyBuilder = std::move(inCapabilitiesProxyBuilder);
-    defaultCapabilitiesProxy.reset(capabilitiesProxyBuilder->build());
+    defaultCapabilitiesProxy = capabilitiesProxyBuilder->build();
 }
 
 } // namespace joynr

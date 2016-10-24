@@ -49,7 +49,7 @@ public:
      * is responsible for deletion.
      * @return The proxy object
      */
-    virtual T* build() = 0;
+    virtual std::unique_ptr<T> build() = 0;
 
     /**
      * @brief Build the proxy object asynchronously

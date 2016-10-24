@@ -98,11 +98,11 @@ TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
     discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
+    std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     // Call the provider and wait for a result
     std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());

@@ -19,6 +19,7 @@
 #ifndef ABSTRACTROBUSTNESSTEST_H
 #define ABSTRACTROBUSTNESSTEST_H
 #include <cstdlib>
+#include <memory>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -79,10 +80,7 @@ protected:
 
     static void TearDownTestCase()
     {
-        if (proxy) {
-            delete proxy;
-            proxy = nullptr;
-        }
+        proxy.reset();
         if (proxyBuilder) {
             delete proxyBuilder;
             proxyBuilder = nullptr;
@@ -183,7 +181,7 @@ protected:
         }
     }
 
-    static TestInterfaceProxy* proxy;
+    static std::unique_ptr<TestInterfaceProxy> proxy;
     static ProxyBuilder<TestInterfaceProxy>* proxyBuilder;
     static JoynrRuntime* runtime;
     static std::string providerDomain;

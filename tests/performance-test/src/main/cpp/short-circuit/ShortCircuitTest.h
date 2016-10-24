@@ -50,7 +50,7 @@ struct ShortCircuitTest : public PerformanceTest
                 domainName, echoProvider, echoProviderQos);
         std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder(
                 runtime.createProxyBuilder<tests::performance::EchoProxy>(domainName));
-        echoProxy.reset(proxyBuilder->setDiscoveryQos(joynr::DiscoveryQos())->build());
+        echoProxy = proxyBuilder->setDiscoveryQos(joynr::DiscoveryQos())->build();
     }
 
     ~ShortCircuitTest()

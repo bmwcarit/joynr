@@ -280,8 +280,8 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 
     try {
-        <Package>::<Interface>Proxy* proxy = proxyBuilder
-            ->setMessagingQos(messagingQos) // optional
+        std::unique_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder->setMessagingQos(messagingQos)
+            ->setCached(false) // optional
             ->setDiscoveryQos(discoveryQos) // optional
             ->build();
 

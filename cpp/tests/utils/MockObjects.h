@@ -156,7 +156,7 @@ public:
     MOCK_METHOD1_T(setCached, joynr::IProxyBuilder<T>*(const bool cached));
     MOCK_METHOD1_T(setMessagingQos, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
     MOCK_METHOD1_T(setDiscoveryQos, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
-    MOCK_METHOD0_T(build, T*());
+    MOCK_METHOD0_T(build, std::unique_ptr<T>());
     MOCK_METHOD2_T(buildAsync, void(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
                                     std::function<void(const joynr::exceptions::DiscoveryException&)>));
 };

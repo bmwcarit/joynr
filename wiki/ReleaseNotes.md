@@ -1,3 +1,12 @@
+#joynr 0.23.0
+
+## API relevant changes
+
+* **[C++]** Proxy builder returns a std::unique_ptr to the created proxy instead of a raw pointer.
+
+## Other changes
+None.
+
 #joynr 0.22.4
 
 ## API relevant changes

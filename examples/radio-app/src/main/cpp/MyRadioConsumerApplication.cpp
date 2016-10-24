@@ -197,10 +197,11 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy
-    vehicle::RadioProxy* proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
-                                         ->setCached(false)
-                                         ->setDiscoveryQos(discoveryQos)
-                                         ->build();
+    std::unique_ptr<vehicle::RadioProxy> proxy = proxyBuilder
+                                                 ->setMessagingQos(MessagingQos(qosMsgTtl))
+                                                 ->setCached(false)
+                                                 ->setDiscoveryQos(discoveryQos)
+                                                 ->build();
 
     vehicle::RadioStation currentStation;
     try {
@@ -392,7 +393,6 @@ int main(int argc, char* argv[])
                         e.getMessage());
     }
 
-    delete proxy;
     delete proxyBuilder;
     delete runtime;
     return 0;

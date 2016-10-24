@@ -95,11 +95,11 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
+    std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
     std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
     gpsFuture->wait();
     int expectedValue = 42; //as defined in MockGpsProvider
@@ -125,7 +125,7 @@ TEST_P(End2EndRPCTest, call_void_operation)
     discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
-    tests::testProxy* testProxy = testProxyBuilder
+    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
@@ -133,7 +133,6 @@ TEST_P(End2EndRPCTest, call_void_operation)
     testProxy->voidOperation();
 //    EXPECT_EQ(expectedValue, gpsFuture->getValue());
     //TODO CA: shared pointer for proxy builder?
-    delete testProxy;
     delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
@@ -154,11 +153,11 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
+    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(

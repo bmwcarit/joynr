@@ -134,21 +134,21 @@ private:
 TEST_F(SystemServicesDiscoveryTest, discoveryProviderIsAvailable)
 {
     JOYNR_EXPECT_NO_THROW(
-        discoveryProxy.reset(discoveryProxyBuilder
+        discoveryProxy = discoveryProxyBuilder
                 ->setMessagingQos(MessagingQos(5000))
                 ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
-                ->build());
+                ->build();
     );
 }
 
 TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
 {
-    discoveryProxy.reset(discoveryProxyBuilder
+    discoveryProxy = discoveryProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     std::vector<joynr::types::DiscoveryEntry> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
@@ -170,11 +170,11 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
 
 TEST_F(SystemServicesDiscoveryTest, add)
 {
-    discoveryProxy.reset(discoveryProxyBuilder
+    discoveryProxy = discoveryProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     std::vector<joynr::types::DiscoveryEntry> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
@@ -229,11 +229,11 @@ TEST_F(SystemServicesDiscoveryTest, add)
 
 TEST_F(SystemServicesDiscoveryTest, remove)
 {
-    discoveryProxy.reset(discoveryProxyBuilder
+    discoveryProxy = discoveryProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
