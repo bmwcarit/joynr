@@ -259,15 +259,32 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public Boolean updateMasterRegistrationControlEntry(MasterRegistrationControlEntry updatedMasterRce) {
-        return masterRegistrationControlEntryManager.createOrUpdate(updatedMasterRce, ControlEntryType.MASTER);
+        CreateOrUpdateResult<MasterRegistrationControlEntry> result = masterRegistrationControlEntryManager.createOrUpdate(updatedMasterRce,
+                                                                                                                           ControlEntryType.MASTER);
+        MasterRegistrationControlEntry entry = result.getEntry();
+        globalDomainAccessControllerSubscriptionPublisher.fireMasterRegistrationControlEntryChanged(result.getChangeType(),
+                                                                                                    entry,
+                                                                                                    sanitizeForPartition(entry.getUid()),
+                                                                                                    sanitizeForPartition(entry.getDomain()),
+                                                                                                    sanitizeForPartition(entry.getInterfaceName()));
+        return true;
     }
 
     @Override
     public Boolean removeMasterRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        return masterRegistrationControlEntryManager.removeByUserIdDomainInterfaceNameAndType(uid,
-                                                                                              domain,
-                                                                                              interfaceName,
-                                                                                              ControlEntryType.MASTER);
+        MasterRegistrationControlEntry removedEntry = masterRegistrationControlEntryManager.removeByUserIdDomainInterfaceNameAndType(uid,
+                                                                                                                                     domain,
+                                                                                                                                     interfaceName,
+                                                                                                                                     ControlEntryType.MASTER);
+        if (removedEntry != null) {
+            globalDomainAccessControllerSubscriptionPublisher.fireMasterRegistrationControlEntryChanged(ChangeType.REMOVE,
+                                                                                                        removedEntry,
+                                                                                                        sanitizeForPartition(removedEntry.getUid()),
+                                                                                                        sanitizeForPartition(removedEntry.getDomain()),
+                                                                                                        sanitizeForPartition(removedEntry.getInterfaceName()));
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -282,15 +299,32 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public Boolean updateMediatorRegistrationControlEntry(MasterRegistrationControlEntry updatedMediatorRce) {
-        return masterRegistrationControlEntryManager.createOrUpdate(updatedMediatorRce, ControlEntryType.MEDIATOR);
+        CreateOrUpdateResult<MasterRegistrationControlEntry> result = masterRegistrationControlEntryManager.createOrUpdate(updatedMediatorRce,
+                                                                                                                           ControlEntryType.MEDIATOR);
+        MasterRegistrationControlEntry entry = result.getEntry();
+        globalDomainAccessControllerSubscriptionPublisher.fireMediatorRegistrationControlEntryChanged(result.getChangeType(),
+                                                                                                      entry,
+                                                                                                      sanitizeForPartition(entry.getUid()),
+                                                                                                      sanitizeForPartition(entry.getDomain()),
+                                                                                                      sanitizeForPartition(entry.getInterfaceName()));
+        return true;
     }
 
     @Override
     public Boolean removeMediatorRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        return masterRegistrationControlEntryManager.removeByUserIdDomainInterfaceNameAndType(uid,
-                                                                                              domain,
-                                                                                              interfaceName,
-                                                                                              ControlEntryType.MEDIATOR);
+        MasterRegistrationControlEntry removedEntry = masterRegistrationControlEntryManager.removeByUserIdDomainInterfaceNameAndType(uid,
+                                                                                                                                     domain,
+                                                                                                                                     interfaceName,
+                                                                                                                                     ControlEntryType.MEDIATOR);
+        if (removedEntry != null) {
+            globalDomainAccessControllerSubscriptionPublisher.fireMediatorRegistrationControlEntryChanged(ChangeType.REMOVE,
+                                                                                                          removedEntry,
+                                                                                                          sanitizeForPartition(removedEntry.getUid()),
+                                                                                                          sanitizeForPartition(removedEntry.getDomain()),
+                                                                                                          sanitizeForPartition(removedEntry.getInterfaceName()));
+            return true;
+        }
+        return false;
     }
 
     @Override

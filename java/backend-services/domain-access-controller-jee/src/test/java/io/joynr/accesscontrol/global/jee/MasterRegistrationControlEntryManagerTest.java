@@ -22,7 +22,6 @@ package io.joynr.accesscontrol.global.jee;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
@@ -33,6 +32,7 @@ import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.MasterRegistrationControlEntryEntity;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
@@ -175,7 +175,13 @@ public class MasterRegistrationControlEntryManagerTest {
                                                                                  Permission.ASK,
                                                                                  new Permission[0]);
 
-        assertTrue(subject.createOrUpdate(data, ControlEntryType.MASTER));
+        CreateOrUpdateResult<MasterRegistrationControlEntry> result = subject.createOrUpdate(data,
+                                                                                             ControlEntryType.MASTER);
+
+        assertNotNull(result);
+        assertEquals(ChangeType.ADD, result.getChangeType());
+        assertNotNull(result.getEntry());
+        assertEquals(userId, result.getEntry().getUid());
 
         flushAndClear();
 
@@ -217,7 +223,13 @@ public class MasterRegistrationControlEntryManagerTest {
                                                                                         Permission.ASK,
                                                                                         new Permission[]{ Permission.NO });
 
-        assertTrue(subject.createOrUpdate(updatedData, ControlEntryType.MASTER));
+        CreateOrUpdateResult<MasterRegistrationControlEntry> result = subject.createOrUpdate(updatedData,
+                                                                                             ControlEntryType.MASTER);
+
+        assertNotNull(result);
+        assertEquals(ChangeType.UPDATE, result.getChangeType());
+        assertNotNull(result.getEntry());
+        assertEquals(userId, result.getEntry().getUid());
 
         flushAndClear();
 
@@ -248,10 +260,10 @@ public class MasterRegistrationControlEntryManagerTest {
 
         flushAndClear();
 
-        assertTrue(subject.removeByUserIdDomainInterfaceNameAndType(userId,
-                                                                    domain,
-                                                                    interfaceName,
-                                                                    ControlEntryType.MASTER));
+        assertNotNull(subject.removeByUserIdDomainInterfaceNameAndType(userId,
+                                                                       domain,
+                                                                       interfaceName,
+                                                                       ControlEntryType.MASTER));
 
         flushAndClear();
 

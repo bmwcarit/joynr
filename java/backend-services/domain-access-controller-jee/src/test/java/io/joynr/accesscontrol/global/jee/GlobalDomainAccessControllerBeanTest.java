@@ -24,13 +24,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
@@ -361,5 +369,94 @@ public class GlobalDomainAccessControllerBeanTest {
         assertEquals(Boolean.TRUE, result);
         verify(ownerAccessControlEntryManagerMock).createOrUpdate(eq(oace));
         verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerAccessControlEntryChanged(eq(ChangeType.UPDATE), eq(oace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
+    }
+
+    @Test
+    public void testFindMasterAndMediatorRegistrationControlEntryByUserId() {
+        Map<ControlEntryType, Function<String, MasterRegistrationControlEntry[]>> getters = new HashMap<>();
+        getters.put(ControlEntryType.MASTER, (String userId) -> { return subject.getMasterRegistrationControlEntries(userId);});
+        getters.put(ControlEntryType.MEDIATOR, (String userId) -> { return subject.getMediatorRegistrationControlEntries(userId);});
+        for (ControlEntryType type : new ControlEntryType[] { ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
+            when(masterRegistrationControlEntryManagerMock.findByUserIdAndType(USER_ID,
+                type)).thenReturn(new MasterRegistrationControlEntry[0]);
+            MasterRegistrationControlEntry[] result = getters.get(type).apply(USER_ID);
+            assertNotNull(result);
+            assertEquals(0, result.length);
+            verify(masterRegistrationControlEntryManagerMock).findByUserIdAndType(eq(USER_ID),
+                eq(type));
+        }
+    }
+
+    @Test
+    public void testFindEditableMasterAndMediatorRegistrationControlEntryByUserId() {
+        Map<ControlEntryType, Function<String, MasterRegistrationControlEntry[]>> getters = new HashMap<>();
+        getters.put(ControlEntryType.MASTER, (String userId) -> { return subject.getEditableMasterRegistrationControlEntries(userId);});
+        getters.put(ControlEntryType.MEDIATOR, (String userId) -> { return subject.getEditableMediatorRegistrationControlEntries(userId);});
+        for (ControlEntryType type : new ControlEntryType[] { ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
+            when(masterRegistrationControlEntryManagerMock.findByUserIdAndThatAreEditable(USER_ID,
+                type)).thenReturn(new MasterRegistrationControlEntry[0]);
+            MasterRegistrationControlEntry[] result = getters.get(type).apply(USER_ID);
+            assertNotNull(result);
+            assertEquals(0, result.length);
+            verify(masterRegistrationControlEntryManagerMock).findByUserIdAndThatAreEditable(eq(USER_ID),
+                eq(type));
+        }
+    }
+
+    @Test
+    public void testCreateAndUpdateMasterAndMediatorRegistrationControlEntry() {
+        for (ChangeType changeType : new ChangeType[] { ChangeType.ADD, ChangeType.UPDATE}) {
+            Map<ControlEntryType, Function<MasterRegistrationControlEntry, Boolean>> subjectCalls = new HashMap<>();
+            subjectCalls.put(ControlEntryType.MASTER, (updatedEntry) -> {
+                return subject.updateMasterRegistrationControlEntry(updatedEntry);
+            });
+            subjectCalls.put(ControlEntryType.MEDIATOR, (updatedEntry) -> {
+                return subject.updateMediatorRegistrationControlEntry(updatedEntry);
+            });
+
+            Map<ControlEntryType, Consumer<MasterRegistrationControlEntry>> multicastVerifiers = new HashMap<>();
+            multicastVerifiers.put(ControlEntryType.MASTER, (mrce) -> {
+                verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterRegistrationControlEntryChanged(
+                    eq(changeType), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME));
+            });
+            multicastVerifiers.put(ControlEntryType.MEDIATOR, (mrce) -> {
+                verify(
+                    globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorRegistrationControlEntryChanged(
+                    eq(changeType), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME));
+            });
+
+            for (ControlEntryType type : new ControlEntryType[]{ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
+                reset(masterRegistrationControlEntryManagerMock);
+                reset(globalDomainAccessControllerSubscriptionPublisherMock);
+                MasterRegistrationControlEntry mrce = new MasterRegistrationControlEntry(USER_ID, DOMAIN,
+                    INTERFACE_NAME,
+                    TrustLevel.LOW, new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], Permission.ASK,
+                    new Permission[0]);
+                when(masterRegistrationControlEntryManagerMock.createOrUpdate(mrce, type)).thenReturn(
+                    new CreateOrUpdateResult<MasterRegistrationControlEntry>(mrce, changeType));
+                assertTrue(subjectCalls.get(type).apply(mrce));
+                verify(masterRegistrationControlEntryManagerMock).createOrUpdate(mrce, type);
+                multicastVerifiers.get(type).accept(mrce);
+            }
+        }
+    }
+
+    @Test
+    public void testRemoveMasterAndMediatorRegistrationControlEntry() {
+        Map<ControlEntryType, Supplier<Boolean>> subjectCalls = new HashMap<>();
+        subjectCalls.put(ControlEntryType.MASTER, () -> { return subject.removeMasterRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME);});
+        subjectCalls.put(ControlEntryType.MEDIATOR, () -> { return subject.removeMediatorRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME);});
+
+        Map<ControlEntryType, Consumer<MasterRegistrationControlEntry>> multicastVerifiers = new HashMap<>();
+        multicastVerifiers.put(ControlEntryType.MASTER, (mrce) -> { verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterRegistrationControlEntryChanged(eq(ChangeType.REMOVE), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME)); });
+        multicastVerifiers.put(ControlEntryType.MEDIATOR, (mrce) -> { verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorRegistrationControlEntryChanged(eq(ChangeType.REMOVE), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME)); });
+
+        for (ControlEntryType type : new ControlEntryType[] { ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
+            MasterRegistrationControlEntry mrce = new MasterRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW, new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], Permission.ASK, new Permission[0]);
+            when(masterRegistrationControlEntryManagerMock.removeByUserIdDomainInterfaceNameAndType(USER_ID, DOMAIN, INTERFACE_NAME, type)).thenReturn(mrce);
+            assertTrue(subjectCalls.get(type).get());
+            verify(masterRegistrationControlEntryManagerMock).removeByUserIdDomainInterfaceNameAndType(eq(USER_ID), eq(DOMAIN), eq(INTERFACE_NAME), eq(type));
+            multicastVerifiers.get(type).accept(mrce);
+        }
     }
 }

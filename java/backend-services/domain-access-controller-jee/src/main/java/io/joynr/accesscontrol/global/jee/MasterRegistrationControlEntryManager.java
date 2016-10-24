@@ -32,6 +32,7 @@ import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.accesscontrol.global.jee.persistence.MasterRegistrationControlEntryEntity;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
@@ -118,12 +119,13 @@ public class MasterRegistrationControlEntryManager {
         return entity;
     }
 
-    public Boolean createOrUpdate(MasterRegistrationControlEntry updatedMasterRce, ControlEntryType type) {
+    public CreateOrUpdateResult<MasterRegistrationControlEntry> createOrUpdate(MasterRegistrationControlEntry updatedMasterRce, ControlEntryType type) {
         MasterRegistrationControlEntryEntity entity = findByUserIdDomainInterfaceNameOperationAndType(updatedMasterRce.getUid(),
                                                                                                       updatedMasterRce.getDomain(),
                                                                                                       updatedMasterRce.getInterfaceName(),
                                                                                                       type);
-        if (entity == null) {
+        boolean created = entity == null;
+        if (created) {
             entity = new MasterRegistrationControlEntryEntity();
             entity.setUserId(updatedMasterRce.getUid());
             entity.setDomain(updatedMasterRce.getDomain());
@@ -137,21 +139,21 @@ public class MasterRegistrationControlEntryManager {
         entity.setPossibleRequiredControlEntryChangeTrustLevels(Sets.newHashSet(updatedMasterRce.getPossibleRequiredControlEntryChangeTrustLevels()));
         entity.setDefaultProviderPermission(updatedMasterRce.getDefaultProviderPermission());
         entity.setPossibleProviderPermissions(Sets.newHashSet(updatedMasterRce.getPossibleProviderPermissions()));
-        return true;
+        return new CreateOrUpdateResult<>(mapEntityToJoynrType(entity), created ? ChangeType.ADD : ChangeType.UPDATE);
     }
 
-    public boolean removeByUserIdDomainInterfaceNameAndType(String userId,
-                                                            String domain,
-                                                            String interfaceName,
-                                                            ControlEntryType type) {
+    public MasterRegistrationControlEntry removeByUserIdDomainInterfaceNameAndType(String userId,
+                                                                                   String domain,
+                                                                                   String interfaceName,
+                                                                                   ControlEntryType type) {
         MasterRegistrationControlEntryEntity entity = findByUserIdDomainInterfaceNameOperationAndType(userId,
                                                                                                       domain,
                                                                                                       interfaceName,
                                                                                                       type);
         if (entity != null) {
             entityManager.remove(entity);
-            return true;
+            return mapEntityToJoynrType(entity);
         }
-        return false;
+        return null;
     }
 }
