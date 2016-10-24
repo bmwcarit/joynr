@@ -276,6 +276,11 @@ log("domain: " + domain);
 
 var provisioning = require("./provisioning_common.js");
 
+provisioning.persistency = {
+    //clearPersistency : true,
+    location : "./radioLocalStorageConsumer"
+};
+
 if (process.env.runtime !== undefined) {
     if (process.env.runtime === "inprocess") {
         provisioning.brokerUri = process.env.brokerUri;
