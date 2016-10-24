@@ -53,17 +53,21 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     private final MasterRegistrationControlEntryManager masterRegistrationControlEntryManager;
 
+    private final OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManager;
+
     @Inject
     public GlobalDomainAccessControllerBean(@SubscriptionPublisher GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisher,
                                             DomainRoleEntryManager domainRoleEntryManager,
                                             MasterAccessControlEntryManager masterAccessControlEntryManager,
                                             OwnerAccessControlEntryManager ownerAccessControlEntryManager,
-                                            MasterRegistrationControlEntryManager masterRegistrationControlEntryManager) {
+                                            MasterRegistrationControlEntryManager masterRegistrationControlEntryManager,
+                                            OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManager) {
         this.globalDomainAccessControllerSubscriptionPublisher = globalDomainAccessControllerSubscriptionPublisher;
         this.domainRoleEntryManager = domainRoleEntryManager;
         this.masterAccessControlEntryManager = masterAccessControlEntryManager;
         this.ownerAccessControlEntryManager = ownerAccessControlEntryManager;
         this.masterRegistrationControlEntryManager = masterRegistrationControlEntryManager;
+        this.ownerRegistrationControlEntryManager = ownerRegistrationControlEntryManager;
     }
 
     @Override
@@ -216,21 +220,21 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public OwnerRegistrationControlEntry[] getOwnerRegistrationControlEntries(String uid) {
-        return new OwnerRegistrationControlEntry[0];
+        return ownerRegistrationControlEntryManager.findByUserId(uid);
     }
 
     @Override
     public OwnerRegistrationControlEntry[] getEditableOwnerRegistrationControlEntries(String uid) {
-        return new OwnerRegistrationControlEntry[0];
+        return ownerRegistrationControlEntryManager.findByUserIdAndThatIsEditable(uid);
     }
 
     @Override
     public Boolean updateOwnerRegistrationControlEntry(OwnerRegistrationControlEntry updatedOwnerRce) {
-        return false;
+        return ownerRegistrationControlEntryManager.createOrUpdate(updatedOwnerRce);
     }
 
     @Override
     public Boolean removeOwnerRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        return false;
+        return ownerRegistrationControlEntryManager.removeByUserIdDomainAndInterfaceName(uid, domain, interfaceName);
     }
 }
