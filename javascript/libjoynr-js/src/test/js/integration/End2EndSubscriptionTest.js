@@ -419,14 +419,17 @@ define([
                                         "wait for interaction with spy",
                                         timeout || provisioning.ttl)
                                         .then(function() { throw new Error("unexpected publication"); })
-                                        .catch(function() { return null; });
+                                        .catch(function() { return spy; });
                             }
 
-                            function testMulticastWithPartitions(partitions, done) {
-                                return setupMulticastSubscriptionWithPartitionAndReturnSpy(partitions).then(function(spy) {
-                                    return triggerBroadcastWithPartitions(partitions, true).then(function() { return spy; });
+                            function testMulticastWithPartitionsExtended(subscribePartitions, publicationPartitions, times, timeout) {
+                                return setupMulticastSubscriptionWithPartitionAndReturnSpy(subscribePartitions).then(function(spy) {
+                                    return Promise.all(publicationPartitions.map(function(partitions) {
+                                        return triggerBroadcastWithPartitions(partitions, true);
+                                    })).then(function() { return spy; });
                                 }).then(function(spy) {
-                                    return expectPublication(spy).then(function() {
+                                    var noop = function() {};
+                                    return expectMultiplePublications(spy, times, timeout, noop).then(function() {
                                         spy.onReceive.calls.reset();
                                         return spy;
                                     });
@@ -435,21 +438,24 @@ define([
                                      * However, expect only one publication here
                                      */
                                     return expectNoMorePublication(spy, 500);
-                                }).then(function() {
+                                });
+                            }
+                            function testMulticastWithPartitions(partitions, done) {
+                                return testMulticastWithPartitionsExtended(partitions, [partitions], 1, 5000).then(function() {
                                     done();
                                     return null;
                                 }).catch(fail);
                             }
 
-                            it("subscribe to non-selective broadcast with empty multicast partitions", function(done) {
+                            it("with empty partitions", function(done) {
                                 testMulticastWithPartitions([], done);
                             });
 
-                            it("subscribe to non-selective broadcast with first-level partition", function(done) {
+                            it("with first-level partition", function(done) {
                                 testMulticastWithPartitions([ "a" ], done);
                             });
 
-                            it("subscribe to non-selective broadcast with multi-level partition", function(done) {
+                            it("with multi-level partition", function(done) {
                                 testMulticastWithPartitions([ "a" , "b", "c", "d", "e", "f", "g"], done);
                             });
 
