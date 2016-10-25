@@ -339,11 +339,29 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     @Override
     public Boolean updateOwnerRegistrationControlEntry(OwnerRegistrationControlEntry updatedOwnerRce) {
-        return ownerRegistrationControlEntryManager.createOrUpdate(updatedOwnerRce);
+        CreateOrUpdateResult<OwnerRegistrationControlEntry> result = ownerRegistrationControlEntryManager.createOrUpdate(updatedOwnerRce);
+        OwnerRegistrationControlEntry entry = result.getEntry();
+        globalDomainAccessControllerSubscriptionPublisher.fireOwnerRegistrationControlEntryChanged(result.getChangeType(),
+                                                                                                   entry,
+                                                                                                   sanitizeForPartition(entry.getUid()),
+                                                                                                   sanitizeForPartition(entry.getDomain()),
+                                                                                                   sanitizeForPartition(entry.getInterfaceName()));
+        return true;
     }
 
     @Override
     public Boolean removeOwnerRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        return ownerRegistrationControlEntryManager.removeByUserIdDomainAndInterfaceName(uid, domain, interfaceName);
+        OwnerRegistrationControlEntry removedEntry = ownerRegistrationControlEntryManager.removeByUserIdDomainAndInterfaceName(uid,
+                                                                                                                               domain,
+                                                                                                                               interfaceName);
+        if (removedEntry != null) {
+            globalDomainAccessControllerSubscriptionPublisher.fireOwnerRegistrationControlEntryChanged(ChangeType.REMOVE,
+                                                                                                       removedEntry,
+                                                                                                       sanitizeForPartition(removedEntry.getUid()),
+                                                                                                       sanitizeForPartition(removedEntry.getDomain()),
+                                                                                                       sanitizeForPartition(removedEntry.getInterfaceName()));
+            return true;
+        }
+        return false;
     }
 }

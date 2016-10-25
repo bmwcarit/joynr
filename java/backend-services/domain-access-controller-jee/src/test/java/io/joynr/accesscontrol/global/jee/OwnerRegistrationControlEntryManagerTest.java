@@ -22,7 +22,6 @@ package io.joynr.accesscontrol.global.jee;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
@@ -32,6 +31,7 @@ import javax.persistence.EntityManager;
 import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.OwnerRegistrationControlEntryEntity;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
@@ -121,13 +121,18 @@ public class OwnerRegistrationControlEntryManagerTest {
                                                                                TrustLevel.HIGH,
                                                                                Permission.ASK);
 
-        assertTrue(subject.createOrUpdate(data));
+        CreateOrUpdateResult<OwnerRegistrationControlEntry> result = subject.createOrUpdate(data);
+
+        assertNotNull(result);
+        assertEquals(ChangeType.ADD, result.getChangeType());
+        assertNotNull(result.getEntry());
+        assertEquals(userId, result.getEntry().getUid());
 
         flushAndClear();
 
-        OwnerRegistrationControlEntry[] result = subject.findByUserId(userId);
-        assertNotNull(result);
-        assertEquals(1, result.length);
+        OwnerRegistrationControlEntry[] persisted = subject.findByUserId(userId);
+        assertNotNull(persisted);
+        assertEquals(1, persisted.length);
     }
 
     @Test
@@ -151,7 +156,12 @@ public class OwnerRegistrationControlEntryManagerTest {
                                                                                       TrustLevel.LOW,
                                                                                       Permission.NO);
 
-        assertTrue(subject.createOrUpdate(updatedData));
+        CreateOrUpdateResult<OwnerRegistrationControlEntry> result = subject.createOrUpdate(updatedData);
+
+        assertNotNull(result);
+        assertEquals(ChangeType.UPDATE, result.getChangeType());
+        assertNotNull(result.getEntry());
+        assertEquals(userId, result.getEntry().getUid());
 
         flushAndClear();
 
@@ -177,7 +187,12 @@ public class OwnerRegistrationControlEntryManagerTest {
 
         flushAndClear();
 
-        assertTrue(subject.removeByUserIdDomainAndInterfaceName(userId, domain, interfaceName));
+        OwnerRegistrationControlEntry removedEntry = subject.removeByUserIdDomainAndInterfaceName(userId,
+                                                                                                  domain,
+                                                                                                  interfaceName);
+
+        assertNotNull(removedEntry);
+        assertEquals(userId, removedEntry.getUid());
 
         flushAndClear();
 

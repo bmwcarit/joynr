@@ -40,6 +40,7 @@ import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
@@ -458,5 +459,67 @@ public class GlobalDomainAccessControllerBeanTest {
             verify(masterRegistrationControlEntryManagerMock).removeByUserIdDomainInterfaceNameAndType(eq(USER_ID), eq(DOMAIN), eq(INTERFACE_NAME), eq(type));
             multicastVerifiers.get(type).accept(mrce);
         }
+    }
+
+    @Test
+    public void testFindOwnerRegistrationControlEntriesByUserId() {
+        when(ownerRegistrationControlEntryManagerMock.findByUserId(USER_ID)).thenReturn(new OwnerRegistrationControlEntry[0]);
+        OwnerRegistrationControlEntry[] result = subject.getOwnerRegistrationControlEntries(USER_ID);
+        assertNotNull(result);
+        assertEquals(0, result.length);
+        verify(ownerRegistrationControlEntryManagerMock).findByUserId(eq(USER_ID));
+    }
+
+    @Test
+    public void testFindEditableOwnerRegistrationControlEntriesByUserId() {
+        when(ownerRegistrationControlEntryManagerMock.findByUserIdAndThatIsEditable(USER_ID)).thenReturn(new OwnerRegistrationControlEntry[0]);
+        OwnerRegistrationControlEntry[] result = subject.getEditableOwnerRegistrationControlEntries(USER_ID);
+        assertNotNull(result);
+        assertEquals(0, result.length);
+        verify(ownerRegistrationControlEntryManagerMock).findByUserIdAndThatIsEditable(eq(USER_ID));
+    }
+
+    @Test
+    public void testCreateAndUpdateOwnerRegistrationControlEntry() {
+        for (ChangeType changeType : new ChangeType[]{ ChangeType.ADD, ChangeType.UPDATE }) {
+            reset(ownerRegistrationControlEntryManagerMock);
+            OwnerRegistrationControlEntry orce = new OwnerRegistrationControlEntry(USER_ID,
+                                                                                   DOMAIN,
+                                                                                   INTERFACE_NAME,
+                                                                                   TrustLevel.HIGH,
+                                                                                   TrustLevel.LOW,
+                                                                                   Permission.ASK);
+            when(ownerRegistrationControlEntryManagerMock.createOrUpdate(orce)).thenReturn(new CreateOrUpdateResult<OwnerRegistrationControlEntry>(orce,
+                                                                                                                                                   changeType));
+            assertTrue(subject.updateOwnerRegistrationControlEntry(orce));
+            verify(ownerRegistrationControlEntryManagerMock).createOrUpdate(eq(orce));
+            verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerRegistrationControlEntryChanged(eq(changeType),
+                                                                                                                   eq(orce),
+                                                                                                                   eq(USER_PARTITION),
+                                                                                                                   eq(DOMAIN),
+                                                                                                                   eq(INTERFACE_NAME));
+        }
+    }
+
+    @Test
+    public void testRemoveOwnerRegistrationControlEntry() {
+        OwnerRegistrationControlEntry orce = new OwnerRegistrationControlEntry(USER_ID,
+                                                                               DOMAIN,
+                                                                               INTERFACE_NAME,
+                                                                               TrustLevel.HIGH,
+                                                                               TrustLevel.LOW,
+                                                                               Permission.ASK);
+        when(ownerRegistrationControlEntryManagerMock.removeByUserIdDomainAndInterfaceName(USER_ID,
+                                                                                           DOMAIN,
+                                                                                           INTERFACE_NAME)).thenReturn(orce);
+        assertTrue(subject.removeOwnerRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME));
+        verify(ownerRegistrationControlEntryManagerMock).removeByUserIdDomainAndInterfaceName(eq(USER_ID),
+                                                                                              eq(DOMAIN),
+                                                                                              eq(INTERFACE_NAME));
+        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerRegistrationControlEntryChanged(eq(ChangeType.REMOVE),
+                                                                                                               eq(orce),
+                                                                                                               eq(USER_PARTITION),
+                                                                                                               eq(DOMAIN),
+                                                                                                               eq(INTERFACE_NAME));
     }
 }

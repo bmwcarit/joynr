@@ -32,6 +32,7 @@ import javax.persistence.Query;
 
 import io.joynr.accesscontrol.global.jee.persistence.OwnerRegistrationControlEntryEntity;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Role;
 
@@ -105,11 +106,12 @@ public class OwnerRegistrationControlEntryManager {
         return entity;
     }
 
-    public boolean createOrUpdate(OwnerRegistrationControlEntry updatedOwnerRce) {
+    public CreateOrUpdateResult<OwnerRegistrationControlEntry> createOrUpdate(OwnerRegistrationControlEntry updatedOwnerRce) {
         OwnerRegistrationControlEntryEntity entity = findByUserIdDomainAndInterfaceName(updatedOwnerRce.getUid(),
                                                                                         updatedOwnerRce.getDomain(),
                                                                                         updatedOwnerRce.getInterfaceName());
-        if (entity == null) {
+        boolean created = entity == null;
+        if (created) {
             entity = new OwnerRegistrationControlEntryEntity();
             entity.setUserId(updatedOwnerRce.getUid());
             entity.setDomain(updatedOwnerRce.getDomain());
@@ -119,15 +121,17 @@ public class OwnerRegistrationControlEntryManager {
         entity.setRequiredTrustLevel(updatedOwnerRce.getRequiredTrustLevel());
         entity.setRequiredAceChangeTrustLevel(updatedOwnerRce.getRequiredAceChangeTrustLevel());
         entity.setProviderPermission(updatedOwnerRce.getProviderPermission());
-        return true;
+        return new CreateOrUpdateResult<>(mapEntityToJoynrType(entity), created ? ChangeType.ADD : ChangeType.UPDATE);
     }
 
-    public boolean removeByUserIdDomainAndInterfaceName(String userId, String domain, String interfaceName) {
+    public OwnerRegistrationControlEntry removeByUserIdDomainAndInterfaceName(String userId,
+                                                                              String domain,
+                                                                              String interfaceName) {
         OwnerRegistrationControlEntryEntity entity = findByUserIdDomainAndInterfaceName(userId, domain, interfaceName);
         if (entity != null) {
             entityManager.remove(entity);
-            return true;
+            return mapEntityToJoynrType(entity);
         }
-        return false;
+        return null;
     }
 }
