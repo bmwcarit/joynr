@@ -45,6 +45,11 @@ class Logger;
 namespace util
 {
 
+static const std::string SINGLE_LEVEL_WILDCARD("+");
+static const std::string MULTI_LEVEL_WILDCARD("*");
+static const std::string MQTT_MULTI_LEVEL_WILDCARD("#");
+static const std::string MULTICAST_PARTITION_SEPARATOR("/");
+
 std::string createMulticastId(const std::string& providerParticipantId,
                               const std::string& multicastName,
                               const std::vector<std::string>& partitions);

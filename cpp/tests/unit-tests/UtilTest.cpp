@@ -104,13 +104,38 @@ TEST(UtilTest, createMulticastIdWithoutPartitions)
               util::createMulticastId("providerParticipantId", "multicastName", partitions));
 }
 
-TEST(UtilTest, validatePartitions)
+TEST(UtilTest, validatePartitionsWithValidPartitionsDoesNotThrow)
 {
     EXPECT_NO_THROW(util::validatePartitions(
             { "valid", "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" }
     ));
     EXPECT_NO_THROW(util::validatePartitions({}));
-    EXPECT_THROW(util::validatePartitions({ "not_valid" }), std::invalid_argument);
-    EXPECT_THROW(util::validatePartitions({ "ä" }), std::invalid_argument);
-    EXPECT_THROW(util::validatePartitions({ "one", "_ ./$" }), std::invalid_argument);
+    EXPECT_NO_THROW(util::validatePartitions({"*"}));
+    EXPECT_NO_THROW(util::validatePartitions({"+"}));
+    EXPECT_NO_THROW(util::validatePartitions({"abc", "*"}));
+    EXPECT_NO_THROW(util::validatePartitions({"abc", "+", "123"}));
+    EXPECT_NO_THROW(util::validatePartitions({"abc", "+", "*"}));
+    EXPECT_NO_THROW(util::validatePartitions({"+", "+", "+"}));
+    EXPECT_NO_THROW(util::validatePartitions({"+", "+", "123"}));
+    EXPECT_NO_THROW(util::validatePartitions({"+", "123", "*"}));
+}
+
+TEST(UtilTest, validatePartitionsWithInvalidPartitionsThrows)
+{
+    EXPECT_THROW(util::validatePartitions({""}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({" "}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"_"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"not_valid"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"ä"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "_ ./$"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "_ ./$"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"+a", "bc"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "*123"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"*", "bc"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"*", "*"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"*", "+"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"*", "+"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "*", "+"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "*", "123"}), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "*", ""}), std::invalid_argument);
 }

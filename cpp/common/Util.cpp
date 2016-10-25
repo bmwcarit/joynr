@@ -24,6 +24,7 @@
 #include <iterator>
 #include <stdexcept>
 #include <sstream>
+#include <string>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -125,24 +126,35 @@ std::string createMulticastId(const std::string& providerParticipantId,
                               const std::vector<std::string>& partitions)
 {
     std::stringstream multicastId;
-    multicastId << providerParticipantId << "/" + multicastName;
+    multicastId << providerParticipantId << MULTICAST_PARTITION_SEPARATOR << multicastName;
     for (const auto& partition : partitions) {
-        multicastId << "/" << partition;
+        multicastId << MULTICAST_PARTITION_SEPARATOR << partition;
     }
     return multicastId.str();
 }
 
 void validatePartitions(const std::vector<std::string>& partitions)
 {
-    std::regex patternRegex("^[a-zA-Z0-9]+$");
-    for (const std::string& partition : partitions) {
-        if (!std::regex_search(partition, patternRegex)) {
-            throw std::invalid_argument(
-                    "Partition " + partition +
-                    " contains invalid characters.\n"
-                    "Must only contain a-z A-Z 0-9, or be a single level wildcard (+),\n"
-                    "or the last partition may be a multi level wildcard (*).");
+    static const std::regex patternRegex("^[a-zA-Z0-9]+$");
+    const std::vector<std::string>::const_iterator lastPartition = --partitions.cend();
+    for (auto partition = partitions.cbegin(); partition != partitions.cend(); ++partition) {
+        if (!partition->empty()) {
+            if (*partition == SINGLE_LEVEL_WILDCARD) {
+                continue;
+            } else if (*partition == MULTI_LEVEL_WILDCARD) {
+                if (partition == lastPartition) {
+                    return;
+                }
+            } else if (std::regex_search(*partition, patternRegex)) {
+                continue;
+            }
         }
+        throw std::invalid_argument("Partition " + *partition +
+                                    " contains invalid characters.\nMust only contain a-z A-Z 0-9, "
+                                    "or be a single level wildcard (" +
+                                    SINGLE_LEVEL_WILDCARD +
+                                    "),\nor the last partition may be a multi level wildcard (" +
+                                    MULTI_LEVEL_WILDCARD + ").");
     }
 }
 
