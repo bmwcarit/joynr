@@ -111,7 +111,8 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);

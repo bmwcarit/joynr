@@ -92,7 +92,8 @@ TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     // Build a proxy
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
+    std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+            runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -112,5 +113,4 @@ TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
     int actualValue;
     gpsFuture->get(actualValue);
     EXPECT_EQ(expectedValue, actualValue);
-    delete gpsProxyBuilder;
 }

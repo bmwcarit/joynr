@@ -89,7 +89,8 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
+    std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+            runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -106,8 +107,6 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     int actualValue;
     gpsFuture->get(actualValue);
     EXPECT_EQ(expectedValue, actualValue);
-    //TODO CA: shared pointer for proxy builder?
-    delete gpsProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
@@ -119,7 +118,8 @@ TEST_P(End2EndRPCTest, call_void_operation)
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>(domain);
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -132,8 +132,6 @@ TEST_P(End2EndRPCTest, call_void_operation)
             ->build();
     testProxy->voidOperation();
 //    EXPECT_EQ(expectedValue, gpsFuture->getValue());
-    //TODO CA: shared pointer for proxy builder?
-    delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
@@ -146,7 +144,7 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder =
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -174,8 +172,6 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     );
     testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-    //TODO CA: shared pointer for proxy builder?
-    delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }

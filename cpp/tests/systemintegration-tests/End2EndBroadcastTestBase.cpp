@@ -282,7 +282,7 @@ protected:
     }
 
     std::shared_ptr<tests::testProxy> buildProxy(JoynrClusterControllerRuntime& runtime) {
-        ProxyBuilder<tests::testProxy>* testProxyBuilder
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
                 = runtime.createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -297,7 +297,6 @@ protected:
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
 
-        delete testProxyBuilder;
         return testProxy;
     }
 

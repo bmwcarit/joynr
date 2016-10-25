@@ -122,8 +122,8 @@ int main(int argc, char* argv[])
     JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
-    std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder;
-    proxyBuilder.reset(runtime->createProxyBuilder<tests::performance::EchoProxy>(providerDomain));
+    std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =
+            runtime->createProxyBuilder<tests::performance::EchoProxy>(providerDomain);
 
     // Messaging Quality of service
     std::int64_t qosMsgTtl = 30000;                // Time to live is 30 secs in one direction

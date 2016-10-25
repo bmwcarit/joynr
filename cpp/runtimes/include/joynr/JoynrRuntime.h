@@ -134,26 +134,23 @@ public:
      * parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProxy".
      * @param domain The domain to connect this proxy to.
      * @return Pointer to the proxybuilder<T> instance
-     * @return A proxy builder object that can be used to create proxies. The caller takes
-     * ownership of the returned object and must take care to clean up resources properly.
+     * @return A proxy builder object that can be used to create proxies.
      */
     template <class TIntfProxy>
-    ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
+    std::unique_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
         if (!proxyFactory) {
             throw exceptions::JoynrRuntimeException(
                     "Exception in JoynrRuntime: Creating a proxy before "
                     "startMessaging was called is not yet supported.");
         }
-        ProxyBuilder<TIntfProxy>* builder =
-                new ProxyBuilder<TIntfProxy>(*proxyFactory,
-                                             requestCallerDirectory,
-                                             *discoveryProxy,
-                                             domain,
-                                             dispatcherAddress,
-                                             messageRouter,
-                                             messagingSettings.getMaximumTtlMs());
-        return builder;
+        return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
+                                                          requestCallerDirectory,
+                                                          *discoveryProxy,
+                                                          domain,
+                                                          dispatcherAddress,
+                                                          messageRouter,
+                                                          messagingSettings.getMaximumTtlMs());
     }
 
     /**

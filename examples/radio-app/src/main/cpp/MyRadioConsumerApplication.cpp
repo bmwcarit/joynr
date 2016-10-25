@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
     JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
-    ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =
+    std::unique_ptr<ProxyBuilder<vehicle::RadioProxy>> proxyBuilder =
             runtime->createProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
@@ -393,7 +393,6 @@ int main(int argc, char* argv[])
                         e.getMessage());
     }
 
-    delete proxyBuilder;
     delete runtime;
     return 0;
 }

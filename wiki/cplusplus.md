@@ -118,7 +118,7 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
     // setup providerDomain, pathToMessagingSettings, and optionally pathToMessagingSettings
     JoynrRuntime* runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
-    ProxyBuilder<<Package>::<Interface>Proxy>* proxyBuilder =
+    std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
 
@@ -276,7 +276,7 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
 
     // setup discoveryQos, messagingQos attributes
 
-    ProxyBuilder<<Package>::<Interface>Proxy>* proxyBuilder =
+    std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 
     try {

@@ -226,8 +226,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
                 mockTestProvider
     );
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime->createProxyBuilder<tests::testProxy>(domain));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -269,8 +269,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
                 mockTestProvider
     );
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime->createProxyBuilder<tests::testProxy>(domain));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -317,8 +317,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                 mockTestProvider
     );
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime->createProxyBuilder<tests::testProxy>(domain));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -374,8 +374,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
                 mockTestProvider
     );
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime->createProxyBuilder<tests::testProxy>(domain));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);

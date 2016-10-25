@@ -114,8 +114,7 @@ public:
     }
 
     void SetUp(){
-        discoveryProxyBuilder.reset(runtime
-                ->createProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain));
+        discoveryProxyBuilder = runtime->createProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain);
     }
 
     void TearDown(){

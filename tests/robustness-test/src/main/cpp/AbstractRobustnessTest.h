@@ -81,10 +81,7 @@ protected:
     static void TearDownTestCase()
     {
         proxy.reset();
-        if (proxyBuilder) {
-            delete proxyBuilder;
-            proxyBuilder = nullptr;
-        }
+        proxyBuilder.reset();
         if (runtime) {
             delete runtime;
             runtime = nullptr;
@@ -182,7 +179,7 @@ protected:
     }
 
     static std::unique_ptr<TestInterfaceProxy> proxy;
-    static ProxyBuilder<TestInterfaceProxy>* proxyBuilder;
+    static std::unique_ptr<ProxyBuilder<TestInterfaceProxy>> proxyBuilder;
     static JoynrRuntime* runtime;
     static std::string providerDomain;
 

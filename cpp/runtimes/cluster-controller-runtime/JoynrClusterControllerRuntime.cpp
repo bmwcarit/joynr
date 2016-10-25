@@ -21,6 +21,7 @@
 #include <cassert>
 #include <cstdint>
 #include <chrono>
+#include <memory>
 #include <functional>
 
 #include <boost/algorithm/string/predicate.hpp>
@@ -487,9 +488,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             "fixedParticipantId", messagingSettings.getCapabilitiesDirectoryParticipantId());
 
     std::unique_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
-            capabilitiesProxyBuilder(
+            capabilitiesProxyBuilder =
                     createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                            messagingSettings.getDiscoveryDirectoriesDomain()));
+                            messagingSettings.getDiscoveryDirectoriesDomain());
     capabilitiesProxyBuilder->setDiscoveryQos(discoveryQos);
 
     capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));

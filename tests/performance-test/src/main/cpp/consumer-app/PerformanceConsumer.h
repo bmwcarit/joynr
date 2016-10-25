@@ -71,8 +71,8 @@ public:
         if (messageCount == 0) {
             throw std::invalid_argument("messageCount must be >= 1");
         }
-        std::unique_ptr<ProxyBuilder<EchoProxy>> proxyBuilder(
-                runtime->createProxyBuilder<EchoProxy>(domain));
+        std::unique_ptr<ProxyBuilder<EchoProxy>> proxyBuilder =
+                runtime->createProxyBuilder<EchoProxy>(domain);
 
         if (!proxyBuilder) {
             std::cerr << "Failed to create Echo proxy builder" << std::endl;

@@ -93,8 +93,7 @@ public:
 
     void SetUp(){
         participantId = util::createUuid();
-        routingProxyBuilder.reset(
-                    runtime->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain));
+        routingProxyBuilder = runtime->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
     }
 
     void TearDown(){

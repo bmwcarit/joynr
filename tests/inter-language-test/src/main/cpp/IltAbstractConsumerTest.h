@@ -80,10 +80,7 @@ public:
     static void TearDownTestCase()
     {
         testInterfaceProxy.reset();
-        if (proxyBuilder) {
-            delete proxyBuilder;
-            proxyBuilder = nullptr;
-        }
+        proxyBuilder.reset();
         if (runtime) {
             delete runtime;
             runtime = nullptr;
@@ -103,7 +100,8 @@ protected:
     }
 
     static std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy> testInterfaceProxy;
-    static joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>* proxyBuilder;
+    static std::unique_ptr<joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>>
+            proxyBuilder;
     static joynr::JoynrRuntime* runtime;
     static std::string providerDomain;
     static std::string programName;
@@ -127,8 +125,8 @@ std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy>
         IltAbstractConsumerTest<T>::testInterfaceProxy;
 
 template <typename T>
-ProxyBuilder<interlanguagetest::TestInterfaceProxy>* IltAbstractConsumerTest<T>::proxyBuilder =
-        nullptr;
+std::unique_ptr<ProxyBuilder<interlanguagetest::TestInterfaceProxy>>
+        IltAbstractConsumerTest<T>::proxyBuilder;
 
 template <typename T>
 JoynrRuntime* IltAbstractConsumerTest<T>::runtime = nullptr;
