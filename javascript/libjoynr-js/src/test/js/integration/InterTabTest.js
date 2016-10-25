@@ -74,13 +74,15 @@ define([
                         var discoveryTimeoutMs;
                         var messagingQos;
 
+                        jasmine.getEnv().defaultTimeoutInterval = 15000; //15 secs default timeout for async tests;
+
                         beforeEach(function(done) {
                             var testProvisioning;
                             var worker;
                             var webWorkerAndLibJoynrStarted = false;
                             provisioningSuffix = "InterTabTest";
                             domain = provisioningSuffix + "-" + Date.now();
-                            discoveryTimeoutMs = 4000;
+                            discoveryTimeoutMs = 2000;
 
                             /*
                              * The parent window is used by libjoynr to postMessages in case of
