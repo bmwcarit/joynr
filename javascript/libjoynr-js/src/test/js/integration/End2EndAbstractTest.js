@@ -260,6 +260,12 @@ define( "integration/End2EndAbstractTest",
                     });
                 };
 
+                this.unsubscribeSubscription = function(subscribingEntity, subscriptionId) {
+                    return radioProxy[subscribingEntity].unsubscribe({
+                        subscriptionId : subscriptionId
+                    });
+                };
+
                 this.setupSubscriptionAndReturnSpy = function(subscribingEntity, subscriptionQos, partitions){
                     var promise, spy = jasmine.createSpyObj("spy", [
                                                                     "onFulfilled",

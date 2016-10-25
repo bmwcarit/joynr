@@ -65,6 +65,7 @@ define([
                         var abstractTest = new End2EndAbstractTest("End2EndSubscriptionTest");
                         var setAttribute = abstractTest.setAttribute;
                         var setupSubscriptionAndReturnSpy = abstractTest.setupSubscriptionAndReturnSpy;
+                        var unsubscribeSubscription = abstractTest.unsubscribeSubscription;
                         var callOperation = abstractTest.callOperation;
                         var expectPublication = abstractTest.expectPublication;
 
@@ -398,6 +399,9 @@ define([
                         });
 
                         describe("multicasts with partitions", function() {
+                            function unsubscribeMulticastSubscription(spy) {
+                                unsubscribeSubscription("emptyBroadcast", spy.onFulfilled.calls.mostRecent().args[0]);
+                            }
                             function setupMulticastSubscriptionWithPartitionAndReturnSpy(partitions) {
                                 return setupSubscriptionAndReturnSpy("emptyBroadcast", subscriptionQosOnChange, partitions);
                             }
@@ -437,7 +441,7 @@ define([
                                     /* the provider sends broadcasts for the complete partition hierarchy.
                                      * However, expect only one publication here
                                      */
-                                    return expectNoMorePublication(spy, 500);
+                                    return expectNoMorePublication(spy, 500).then(unsubscribeMulticastSubscription);
                                 });
                             }
                             function testMulticastWithPartitions(partitions, done) {
@@ -457,6 +461,26 @@ define([
 
                             it("with multi-level partition", function(done) {
                                 testMulticastWithPartitions([ "a" , "b", "c", "d", "e", "f", "g"], done);
+                            });
+
+                            it("with multi-level partition including asterisk", function(done) {
+                                var timeout = 5000;
+                                testMulticastWithPartitionsExtended([ "a" , "b", "c", "d", "e", "f", "*"], [[ "a" , "b", "c", "d", "e", "f"]], 1, timeout).then(function() {
+                                    return testMulticastWithPartitionsExtended([ "a" , "b", "c", "d", "e", "f", "*"], [[ "a" , "b", "c", "d", "e", "f", "g", "h"]], 3, timeout);
+                                }).then(function() {
+                                    done();
+                                    return null;
+                                }).catch(fail);
+                            });
+
+                            it("with multi-level partition including plus sign", function(done) {
+                                var timeout = 5000;
+                                testMulticastWithPartitionsExtended([ "a" , "+", "c"], [[ "a" , "b", "c"]], 1, timeout).then(function() {
+                                    return testMulticastWithPartitionsExtended([ "a" , "+", "c"], [[ "a" , "b", "c"], [ "a" , "b", "d"], [ "a" , "xyz", "c" , "d", "e", "f"]], 2, timeout);
+                                }).then(function() {
+                                    done();
+                                    return null;
+                                }).catch(fail);
                             });
 
                             it("subscribe to the same non-selective broadcast with different partitions", function(done) {
