@@ -50,7 +50,8 @@ define([ "joynr/messaging/util/MulticastWildcardRegexFactory"
                         expect(match("a/b/c/d/e", pattern)).toEqual(true);
                         expect(match("a/b/c/d", pattern)).toEqual(true);
                         expect(match("a/b/c", pattern)).toEqual(true);
-                        expect(match("a/b", pattern)).toEqual(false);
+                        expect(match("a/b", pattern)).toEqual(true);
+                        expect(match("a/bc", pattern)).toEqual(false);
                         expect(match("a/c", pattern)).toEqual(false);
                         expect(match("a", pattern)).toEqual(false);
                     });
@@ -65,7 +66,6 @@ define([ "joynr/messaging/util/MulticastWildcardRegexFactory"
                         expect(match("a/b/012345/d/e", pattern)).toEqual(true);
                         expect(match("a/b/c/d", pattern)).toEqual(false);
                         expect(match("a/b/c", pattern)).toEqual(false);
-                        expect(match("a/b", pattern)).toEqual(false);
                         expect(match("a/b", pattern)).toEqual(false);
                     });
                     it("in the middle", function() {

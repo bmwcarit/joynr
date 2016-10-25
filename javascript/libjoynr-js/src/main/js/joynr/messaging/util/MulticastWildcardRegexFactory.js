@@ -29,7 +29,7 @@ define("joynr/messaging/util/MulticastWildcardRegexFactory", [], function() {
             var patternString = multicastId.replace(/^\+\//g, "[^/]+/");
             patternString = patternString.replace(/\/\+\//g, "/[^/]+/");
             patternString = patternString.replace(/([\w\W]*)\/[\\+]$/, "$1/[^/]+$");
-            patternString = patternString.replace(/([\w\W]*)\/[\\*]$/, "$1/.*$");
+            patternString = patternString.replace(/([\w\W]*)\/[\\*]$/, "$1(/.*)?$");
             return patternString;
         };
     }
