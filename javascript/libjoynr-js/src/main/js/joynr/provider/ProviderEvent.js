@@ -81,8 +81,10 @@ define("joynr/provider/ProviderEvent", [
          *     broadcastOutputParameters the broadcast output parameters
          * @param {String[]}
          *     [partitions] - the partitions to be used for multicasts
+         * @throws {Error} if partitions contains invalid characters
          */
         this.fire = function fire(broadcastOutputParameters, partitions) {
+            SubscriptionUtil.validatePartitions(partitions);
             // the Util.fire method accepts exactly one argument for the callback
             var data = {
                 broadcastOutputParameters : broadcastOutputParameters,
