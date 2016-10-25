@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 
     // Initialise the joynr runtime
     std::string pathToMessagingSettings(dir + "/resources/memory-usage-consumer.settings");
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
     std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =
@@ -161,6 +161,4 @@ int main(int argc, char* argv[])
         JOYNR_LOG_FATAL(logger, "Invalid choice for test case: {}", testCase);
         exit(1);
     }
-
-    delete runtime;
 }

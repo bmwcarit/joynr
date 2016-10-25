@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
             boost::filesystem::system_complete(appFilename).parent_path().string();
     std::string pathToSettings(appDirectory + "/resources/systemintegrationtest-provider.settings");
 
-    std::unique_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToSettings));
+    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToSettings);
 
     joynr::Semaphore semaphore;
 

@@ -95,13 +95,13 @@ void CombinedEnd2EndTest::SetUp()
     JOYNR_LOG_DEBUG(logger, "Default websocket settings file: {}", websocketSettingsFile.c_str());
 
     if (systemSettingsFile.empty() && websocketSettingsFile.empty()) {
-        runtime1.reset(JoynrRuntime::createRuntime(
-                "test-resources/libjoynrSystemIntegration1.settings", messagingSettingsFile1));
-        runtime2.reset(JoynrRuntime::createRuntime(
-                "test-resources/libjoynrSystemIntegration2.settings", messagingSettingsFile2));
+        runtime1 = JoynrRuntime::createRuntime(
+                "test-resources/libjoynrSystemIntegration1.settings", messagingSettingsFile1);
+        runtime2 = JoynrRuntime::createRuntime(
+                "test-resources/libjoynrSystemIntegration2.settings", messagingSettingsFile2);
     } else {
-        runtime1.reset(JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile));
-        runtime2.reset(JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile));
+        runtime1 = JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile);
+        runtime2 = JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile);
     }
 }
 

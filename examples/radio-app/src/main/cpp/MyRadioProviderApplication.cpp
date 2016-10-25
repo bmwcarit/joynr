@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     // Initialise the JOYn runtime
     std::string pathToMessagingSettings(dir + "/resources/radio-app-provider.settings");
     std::string pathToLibJoynrSettings(dir + "/resources/radio-app-provider.libjoynr.settings");
-    JoynrRuntime* runtime =
+    std::unique_ptr<JoynrRuntime> runtime =
             JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
 
     // create provider instance
@@ -117,6 +117,5 @@ int main(int argc, char* argv[])
     // Unregister the provider
     runtime->unregisterProvider<vehicle::RadioProvider>(providerDomain, provider);
 
-    delete runtime;
     return 0;
 }

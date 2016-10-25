@@ -116,7 +116,7 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
 
 ```cpp
     // setup providerDomain, pathToMessagingSettings, and optionally pathToMessagingSettings
-    JoynrRuntime* runtime =
+    std::unique_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
     std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
@@ -775,7 +775,7 @@ main(int argc, char** argv)
 
 ```cpp
     // setup pathToLibJoynrSettings, and optionally pathToMessagingSettings
-    JoynrRuntime* runtime =
+    std::unique_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
 ```
 

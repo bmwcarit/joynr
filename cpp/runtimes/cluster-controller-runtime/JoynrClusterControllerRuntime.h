@@ -80,8 +80,9 @@ public:
                                   std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
                                   std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
 
-    static JoynrClusterControllerRuntime* create(std::unique_ptr<Settings> settings,
-                                                 const std::string& discoveryEntriesFile = "");
+    static std::unique_ptr<JoynrClusterControllerRuntime> create(
+            std::unique_ptr<Settings> settings,
+            const std::string& discoveryEntriesFile = "");
 
     ~JoynrClusterControllerRuntime() override;
 

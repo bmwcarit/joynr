@@ -4,6 +4,7 @@
 
 * **[C++]** Proxy builder returns a std::unique_ptr to the created proxy instead of a raw pointer.
 * **[C++]** Joynr runtime returns a std::unique_ptr to a created proxy builder instead of a raw pointer.
+* **[C++]** Created joynr runtime is returned as a std::unique_ptr.
 
 ## Other changes
 None.

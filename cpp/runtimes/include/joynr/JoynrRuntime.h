@@ -159,15 +159,16 @@ public:
      * @param pathToMessagingSettings
      * @return pointer to a JoynrRuntime instance
      */
-    static JoynrRuntime* createRuntime(const std::string& pathToLibjoynrSettings,
-                                       const std::string& pathToMessagingSettings = "");
+    static std::unique_ptr<JoynrRuntime> createRuntime(
+            const std::string& pathToLibjoynrSettings,
+            const std::string& pathToMessagingSettings = "");
 
     /**
      * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param settings settings object
      * @return pointer to a JoynrRuntime instance
      */
-    static JoynrRuntime* createRuntime(std::unique_ptr<Settings> settings);
+    static std::unique_ptr<JoynrRuntime> createRuntime(std::unique_ptr<Settings> settings);
 
     /**
      * @brief Create a JoynrRuntime object. The call does not block. A callback

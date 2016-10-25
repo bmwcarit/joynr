@@ -82,10 +82,7 @@ protected:
     {
         proxy.reset();
         proxyBuilder.reset();
-        if (runtime) {
-            delete runtime;
-            runtime = nullptr;
-        }
+        runtime.reset();
     }
 
     void callMethodWithStringParameters()
@@ -180,7 +177,7 @@ protected:
 
     static std::unique_ptr<TestInterfaceProxy> proxy;
     static std::unique_ptr<ProxyBuilder<TestInterfaceProxy>> proxyBuilder;
-    static JoynrRuntime* runtime;
+    static std::unique_ptr<JoynrRuntime> runtime;
     static std::string providerDomain;
 
 private:

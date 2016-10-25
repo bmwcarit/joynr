@@ -167,7 +167,7 @@ int main(int argc, char* argv[])
     // Initialise the JOYn runtime
     std::string pathToMessagingSettings(dir + "/resources/radio-app-consumer.settings");
 
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
     std::unique_ptr<ProxyBuilder<vehicle::RadioProxy>> proxyBuilder =
@@ -393,6 +393,5 @@ int main(int argc, char* argv[])
                         e.getMessage());
     }
 
-    delete runtime;
     return 0;
 }

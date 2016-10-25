@@ -609,11 +609,11 @@ void JoynrClusterControllerRuntime::runForever()
     singleThreadIOService->join();
 }
 
-JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(
+std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
         std::unique_ptr<Settings> settings,
         const std::string& discoveryEntriesFile)
 {
-    JoynrClusterControllerRuntime* runtime = new JoynrClusterControllerRuntime(std::move(settings));
+    auto runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(settings));
 
     assert(runtime->localCapabilitiesDirectory);
     runtime->localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);
