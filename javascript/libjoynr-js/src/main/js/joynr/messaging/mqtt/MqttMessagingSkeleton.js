@@ -62,12 +62,19 @@ define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
 
                 settings.client.subscribe(settings.address.topic + "/#");
 
+                function translateWildcard(multicastId) {
+                    if (multicastId.match(/[\w\W]*\/[*]$/)) {
+                        return multicastId.replace(/\/\*/g, '/#');
+                    }
+                    return multicastId;
+                }
+
                 this.registerMulticastSubscription =
                         function(multicastId) {
                             if (multicastSubscriptionCount[multicastId] === undefined) {
                                 multicastSubscriptionCount[multicastId] = 0;
                             }
-                            settings.client.subscribe(multicastId);
+                            settings.client.subscribe(translateWildcard(multicastId));
                             multicastSubscriptionCount[multicastId] =
                                     multicastSubscriptionCount[multicastId] + 1;
                         };
@@ -77,7 +84,7 @@ define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
                     if (subscribersCount !== undefined) {
                         subscribersCount--;
                         if (subscribersCount === 0) {
-                            settings.client.unsubscribe(multicastId);
+                            settings.client.unsubscribe(translateWildcard(multicastId));
                             delete multicastSubscriptionCount[multicastId];
                         } else {
                             multicastSubscriptionCount[multicastId] = subscribersCount;
