@@ -46,9 +46,9 @@ ACTION_P(ReleaseSemaphore,semaphore)
 }
 
 static const std::string messagingPropertiesPersistenceFileName1(
-        "End2EndBroadcastTest-runtime1-joynr.settings");
+        "End2EndBroadcastTest-runtime1-joynr.persist");
 static const std::string messagingPropertiesPersistenceFileName2(
-        "End2EndBroadcastTest-runtime2-joynr.settings");
+        "End2EndBroadcastTest-runtime2-joynr.persist");
 
 namespace joynr {
 
@@ -195,7 +195,9 @@ public:
                          444,
                          444,
                          4)),
-        providerParticipantId()
+        providerParticipantId(),
+        integration1Settings("test-resources/libjoynrSystemIntegration1.settings"),
+        integration2Settings("test-resources/libjoynrSystemIntegration2.settings")
 
     {
         messagingSettings1.setMessagingPropertiesPersistenceFilename(
@@ -203,12 +205,10 @@ public:
         messagingSettings2.setMessagingPropertiesPersistenceFilename(
                     messagingPropertiesPersistenceFileName2);
 
-        Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
 
         runtime1 = new JoynrClusterControllerRuntime(std::move(settings1));
 
-        Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
 
         runtime2 = new JoynrClusterControllerRuntime(std::move(settings2));
@@ -231,19 +231,27 @@ public:
         runtime2->stop(deleteChannel);
 
         // Delete persisted files
+        std::remove(messagingPropertiesPersistenceFileName1.c_str());
+        std::remove(messagingPropertiesPersistenceFileName2.c_str());
         std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+        std::remove(integration1Settings.get<std::string>(LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()).c_str());
+        std::remove(integration2Settings.get<std::string>(LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()).c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
     ~End2EndBroadcastTestBase(){
         delete runtime1;
         delete runtime2;
+        // because the destructor of PublicationManager persists the active subscriptions
+        // the persistence files have to be removed after calling delete runtime
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
     }
 
 private:
     std::string providerParticipantId;
+    Settings integration1Settings;
+    Settings integration2Settings;
     DISALLOW_COPY_AND_ASSIGN(End2EndBroadcastTestBase);
 
 protected:
