@@ -270,13 +270,16 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
     public Boolean updateMasterRegistrationControlEntry(MasterRegistrationControlEntry updatedMasterRce) {
         CreateOrUpdateResult<MasterRegistrationControlEntry> result = masterRegistrationControlEntryManager.createOrUpdate(updatedMasterRce,
                                                                                                                            ControlEntryType.MASTER);
-        MasterRegistrationControlEntry entry = result.getEntry();
-        globalDomainAccessControllerSubscriptionPublisher.fireMasterRegistrationControlEntryChanged(result.getChangeType(),
-                                                                                                    entry,
-                                                                                                    sanitizeForPartition(entry.getUid()),
-                                                                                                    sanitizeForPartition(entry.getDomain()),
-                                                                                                    sanitizeForPartition(entry.getInterfaceName()));
-        return true;
+        if (result != null) {
+            MasterRegistrationControlEntry entry = result.getEntry();
+            globalDomainAccessControllerSubscriptionPublisher.fireMasterRegistrationControlEntryChanged(result.getChangeType(),
+                                                                                                        entry,
+                                                                                                        sanitizeForPartition(entry.getUid()),
+                                                                                                        sanitizeForPartition(entry.getDomain()),
+                                                                                                        sanitizeForPartition(entry.getInterfaceName()));
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -310,13 +313,16 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
     public Boolean updateMediatorRegistrationControlEntry(MasterRegistrationControlEntry updatedMediatorRce) {
         CreateOrUpdateResult<MasterRegistrationControlEntry> result = masterRegistrationControlEntryManager.createOrUpdate(updatedMediatorRce,
                                                                                                                            ControlEntryType.MEDIATOR);
-        MasterRegistrationControlEntry entry = result.getEntry();
-        globalDomainAccessControllerSubscriptionPublisher.fireMediatorRegistrationControlEntryChanged(result.getChangeType(),
-                                                                                                      entry,
-                                                                                                      sanitizeForPartition(entry.getUid()),
-                                                                                                      sanitizeForPartition(entry.getDomain()),
-                                                                                                      sanitizeForPartition(entry.getInterfaceName()));
-        return true;
+        if (result != null) {
+            MasterRegistrationControlEntry entry = result.getEntry();
+            globalDomainAccessControllerSubscriptionPublisher.fireMediatorRegistrationControlEntryChanged(result.getChangeType(),
+                                                                                                          entry,
+                                                                                                          sanitizeForPartition(entry.getUid()),
+                                                                                                          sanitizeForPartition(entry.getDomain()),
+                                                                                                          sanitizeForPartition(entry.getInterfaceName()));
+            return true;
+        }
+        return false;
     }
 
     @Override

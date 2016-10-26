@@ -32,6 +32,8 @@ import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.MasterRegistrationControlEntryEntity;
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
@@ -62,6 +64,7 @@ public class MasterRegistrationControlEntryManagerTest {
         return ShrinkWrap.create(WebArchive.class)
                          .addClasses(EntityManagerProducer.class,
                                      DomainRoleEntryEntity.class,
+                                     DomainRoleEntryManager.class,
                                      MasterRegistrationControlEntryEntity.class,
                                      MasterRegistrationControlEntryManager.class,
                                      JoynrConfigurationProvider.class)
@@ -75,6 +78,9 @@ public class MasterRegistrationControlEntryManagerTest {
 
     @Inject
     private MasterRegistrationControlEntryManager subject;
+
+    @Inject
+    private JoynrCallingPrincipal joynrCallingPrincipal;
 
     @Test
     public void testFindByUserId() {
@@ -194,6 +200,47 @@ public class MasterRegistrationControlEntryManagerTest {
     }
 
     @Test
+    public void testCreateNotAllowedWithoutMasterRole() {
+        String userId = "userId";
+        String domain = "domain";
+        String interfaceName = "interfaceName";
+        MasterRegistrationControlEntry data = new MasterRegistrationControlEntry(userId,
+                                                                                 domain,
+                                                                                 interfaceName,
+                                                                                 TrustLevel.LOW,
+                                                                                 new TrustLevel[0],
+                                                                                 TrustLevel.LOW,
+                                                                                 new TrustLevel[0],
+                                                                                 Permission.ASK,
+                                                                                 new Permission[0]);
+
+        DomainRoleEntryEntity domainRoleEntryEntity = new DomainRoleEntryEntity();
+        domainRoleEntryEntity.setUserId(userId);
+        domainRoleEntryEntity.setRole(Role.OWNER);
+        domainRoleEntryEntity.setDomains(Sets.newHashSet(domain));
+        entityManager.persist(domainRoleEntryEntity);
+
+        flushAndClear();
+
+        JoynrJeeMessageContext.getInstance().activate();
+        CreateOrUpdateResult<MasterRegistrationControlEntry> result = null;
+        try {
+            joynrCallingPrincipal.setUsername(userId);
+            result = subject.createOrUpdate(data, ControlEntryType.MASTER);
+        } finally {
+            JoynrJeeMessageContext.getInstance().deactivate();
+        }
+
+        assertNull(result);
+
+        flushAndClear();
+
+        MasterRegistrationControlEntry[] persisted = subject.findByUserIdAndType(userId, ControlEntryType.MASTER);
+        assertNotNull(persisted);
+        assertEquals(0, persisted.length);
+    }
+
+    @Test
     public void testUpdate() {
         String userId = "user";
         String domain = "domain1";
@@ -270,6 +317,42 @@ public class MasterRegistrationControlEntryManagerTest {
         MasterRegistrationControlEntryEntity persisted = entityManager.find(MasterRegistrationControlEntryEntity.class,
                                                                             entity.getId());
         assertNull(persisted);
+    }
+
+    @Test
+    public void testRemoveNotAllowedWithoutMasterRole() {
+        String userId = "userId";
+        String domain = "domain";
+        String interfaceName = "interfaceName";
+        MasterRegistrationControlEntryEntity entity = create(userId,
+                                                             domain,
+                                                             interfaceName,
+                                                             TrustLevel.HIGH,
+                                                             new TrustLevel[0],
+                                                             TrustLevel.LOW,
+                                                             new TrustLevel[0],
+                                                             Permission.ASK,
+                                                             new Permission[0],
+                                                             ControlEntryType.MASTER);
+
+        flushAndClear();
+
+        JoynrJeeMessageContext.getInstance().activate();
+        try {
+            joynrCallingPrincipal.setUsername(userId);
+            assertNull(subject.removeByUserIdDomainInterfaceNameAndType(userId,
+                                                                        domain,
+                                                                        interfaceName,
+                                                                        ControlEntryType.MASTER));
+        } finally {
+            JoynrJeeMessageContext.getInstance().deactivate();
+        }
+
+        flushAndClear();
+
+        MasterRegistrationControlEntryEntity persisted = entityManager.find(MasterRegistrationControlEntryEntity.class,
+                                                                            entity.getId());
+        assertNotNull(persisted);
     }
 
     private MasterRegistrationControlEntryEntity create(String userId,

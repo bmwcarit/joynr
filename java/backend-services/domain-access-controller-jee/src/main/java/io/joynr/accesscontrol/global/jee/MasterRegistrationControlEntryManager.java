@@ -43,13 +43,17 @@ public class MasterRegistrationControlEntryManager {
 
     private EntityManager entityManager;
 
+    private DomainRoleEntryManager domainRoleEntryManager;
+
     // Only required for testing with Arquillian
     protected MasterRegistrationControlEntryManager() {
     }
 
     @Inject
-    public MasterRegistrationControlEntryManager(EntityManager entityManager) {
+    public MasterRegistrationControlEntryManager(EntityManager entityManager,
+                                                 DomainRoleEntryManager domainRoleEntryManager) {
         this.entityManager = entityManager;
+        this.domainRoleEntryManager = domainRoleEntryManager;
     }
 
     private MasterRegistrationControlEntry[] executeAndConvert(Query query) {
@@ -120,6 +124,9 @@ public class MasterRegistrationControlEntryManager {
     }
 
     public CreateOrUpdateResult<MasterRegistrationControlEntry> createOrUpdate(MasterRegistrationControlEntry updatedMasterRce, ControlEntryType type) {
+        if (!domainRoleEntryManager.hasCurrentUserGotRoleForDomain(Role.MASTER, updatedMasterRce.getDomain())) {
+            return null;
+        }
         MasterRegistrationControlEntryEntity entity = findByUserIdDomainInterfaceNameOperationAndType(updatedMasterRce.getUid(),
                                                                                                       updatedMasterRce.getDomain(),
                                                                                                       updatedMasterRce.getInterfaceName(),
@@ -146,6 +153,9 @@ public class MasterRegistrationControlEntryManager {
                                                                                    String domain,
                                                                                    String interfaceName,
                                                                                    ControlEntryType type) {
+        if (!domainRoleEntryManager.hasCurrentUserGotRoleForDomain(Role.MASTER, domain)) {
+            return null;
+        }
         MasterRegistrationControlEntryEntity entity = findByUserIdDomainInterfaceNameOperationAndType(userId,
                                                                                                       domain,
                                                                                                       interfaceName,
