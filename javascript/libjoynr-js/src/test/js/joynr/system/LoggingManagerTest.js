@@ -27,6 +27,9 @@ define([
 ], function(LoggingManager, WebWorkerMessagingAppender, LoggerFactory) {
     var log = LoggerFactory.getLogger("joynr.util.LoggingManager");
     var configWithArrays = {
+        appenderClasses : {
+            "WebWorker" : WebWorkerMessagingAppender
+        },
         configuration : {
             appenders : {
                 appender : [
@@ -76,6 +79,9 @@ define([
     };
 
     var configureWithKeys = {
+        appenderClasses : {
+            "WebWorker" : WebWorkerMessagingAppender
+        },
         configuration : {
             name : "Test2",
             appenders : {
@@ -179,7 +185,6 @@ define([
         it("loads loggers and appenders as defined in a config with arrays", function(done) {
             var loggingManager = new LoggingManager();
 
-            loggingManager.registerAppenderClass("WebWorker", WebWorkerMessagingAppender);
             loggingManager.configure(configWithArrays);
             //expect(
             //        loggingManager.getAppender("STDOUT") instanceof LoggerFactory.BrowserConsoleAppender)
@@ -196,7 +201,6 @@ define([
         it("loads loggers and appenders as defined in a config with object keys", function(done) {
             var loggingManager = new LoggingManager();
 
-            loggingManager.registerAppenderClass("WebWorker", WebWorkerMessagingAppender);
             loggingManager.configure(configureWithKeys);
             //expect(
             //        loggingManager.getAppender("STDOUT") instanceof LoggerFactory.BrowserConsoleAppender)

@@ -307,10 +307,21 @@ define(
                  * @param {Config} settings - log4j2-style JSON config, but as JavaScript object
                  *            (i.e. already parsed)
                  */
-                this.configure = function configure(settings) {
-                    appenders = createConfiguredAppenders(settings.configuration.appenders);
-                    createConfiguredLoggers(settings.configuration.loggers);
-                };
+                this.configure =
+                        function configure(settings) {
+                            if (settings.appenderClasses !== undefined) {
+                                var appenderClassKey;
+                                for (appenderClassKey in settings.appenderClasses) {
+                                    if (settings.appenderClasses.hasOwnProperty(appenderClassKey)) {
+                                        this.registerAppenderClass(
+                                                appenderClassKey,
+                                                settings.appenderClasses[appenderClassKey]);
+                                    }
+                                }
+                            }
+                            appenders = createConfiguredAppenders(settings.configuration.appenders);
+                            createConfiguredLoggers(settings.configuration.loggers);
+                        };
 
                 this.reset();
             }
