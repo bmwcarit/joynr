@@ -10,7 +10,8 @@
   },
   "dependencies": {
       "bluebird" : "3.3.5",
-      "joynr" : ">=0.21.0-SNAPSHOT"
+      "joynr" : ">=0.21.0-SNAPSHOT",
+      "mqtt" : "2.0.1"
   },
   "config": {
     "domain": "performance_test_domain",
