@@ -117,9 +117,11 @@ define("joynr/proxy/ProxyEvent", [
          *            been delivered successfully
          * @returns {Object} returns a promise that is resolved with the subscriptionId, which is to
          *          be used to unsubscribe from this subscription later.
+         * @throws {Error} if subscribeParameters.partitions contains invalid characters
          */
         this.subscribe =
                 function subscribe(subscribeParameters) {
+                    SubscriptionUtil.validatePartitions(subscribeParameters.partitions);
                     if (subscribeParameters.filterParameters !== undefined
                         && subscribeParameters.filterParameters !== null) {
                         var checkResult =

@@ -314,6 +314,21 @@ define([
                 return null;
             }).catch(fail);
         });
+        it("throws error if subscribe is invoked with invalid partitions", function() {
+            expect(function() {
+                weakSignal.subscribe({
+                    subscriptionQos : subscriptionQos,
+                    partitions : [ "_" ]
+                });
+            }).toThrow();
+            expect(
+                    function() {
+                        weakSignal.subscribe({
+                            subscriptionQos : subscriptionQos,
+                            partitions : [  "./$" ]
+                        });
+                    }).toThrow();
+        });
     });
 
 }); // require
