@@ -31,8 +31,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import com.google.common.collect.Sets;
-import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
+import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryEntity;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -45,13 +45,16 @@ public class MasterAccessControlEntryManager {
 
     private EntityManager entityManager;
 
+    private DomainRoleEntryManager domainRoleEntryManager;
+
     // Only required for testing with Arquillian
     protected MasterAccessControlEntryManager() {
     }
 
     @Inject
-    public MasterAccessControlEntryManager(EntityManager entityManager) {
+    public MasterAccessControlEntryManager(EntityManager entityManager, DomainRoleEntryManager domainRoleEntryManager) {
         this.entityManager = entityManager;
+        this.domainRoleEntryManager = domainRoleEntryManager;
     }
 
     private MasterAccessControlEntry mapEntityToJoynrType(MasterAccessControlEntryEntity entity) {
@@ -115,8 +118,8 @@ public class MasterAccessControlEntryManager {
                                                                                            String operation,
                                                                                            ControlEntryType type) {
         Query query = entityManager.createQuery("select mace from MasterAccessControlEntryEntity mace "
-                                                        + "where mace.userId = :userId and mace.domain = :domain and mace.interfaceName = :interfaceName and mace.operation = :operation and mace.type = :type",
-                                                MasterAccessControlEntryEntity.class);
+                + "where mace.userId = :userId and mace.domain = :domain and mace.interfaceName = :interfaceName "
+                + "and mace.operation = :operation and mace.type = :type", MasterAccessControlEntryEntity.class);
         query.setParameter("userId", userId);
         query.setParameter("domain", domain);
         query.setParameter("interfaceName", interfaceName);
@@ -142,6 +145,9 @@ public class MasterAccessControlEntryManager {
                                                                                                 updatedMasterAce.getInterfaceName(),
                                                                                                 updatedMasterAce.getOperation(),
                                                                                                 type);
+        if (!domainRoleEntryManager.hasCurrentUserGotRoleForDomain(Role.MASTER, updatedMasterAce.getDomain())) {
+            return null;
+        }
         boolean created = entity == null;
         if (created) {
             entity = new MasterAccessControlEntryEntity();
@@ -166,6 +172,9 @@ public class MasterAccessControlEntryManager {
                                                                                   String interfaceName,
                                                                                   String operation,
                                                                                   ControlEntryType type) {
+        if (!domainRoleEntryManager.hasCurrentUserGotRoleForDomain(Role.MASTER, domain)) {
+            return null;
+        }
         MasterAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameOperationAndType(uid,
                                                                                                 domain,
                                                                                                 interfaceName,

@@ -34,6 +34,8 @@ import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryEntity;
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
@@ -64,6 +66,7 @@ public class MasterAccessControlEntryManagerTest {
         return ShrinkWrap.create(WebArchive.class)
                          .addClasses(EntityManagerProducer.class,
                                      DomainRoleEntryEntity.class,
+                                     DomainRoleEntryManager.class,
                                      MasterAccessControlEntryEntity.class,
                                      MasterAccessControlEntryManager.class,
                                      JoynrConfigurationProvider.class)
@@ -77,6 +80,9 @@ public class MasterAccessControlEntryManagerTest {
 
     @Inject
     private EntityManager entityManager;
+
+    @Inject
+    private JoynrCallingPrincipal joynrCallingPrincipal;
 
     @Test
     public void testFindByUserId() {
@@ -273,6 +279,52 @@ public class MasterAccessControlEntryManagerTest {
     }
 
     @Test
+    public void testUserNotAllowedToCreateOrUpdate() {
+        String userId = "user";
+        String domain = "domain";
+        DomainRoleEntryEntity domainRoleEntryEntity = new DomainRoleEntryEntity();
+        domainRoleEntryEntity.setUserId(userId);
+        domainRoleEntryEntity.setRole(Role.OWNER);
+        domainRoleEntryEntity.setDomains(Sets.newHashSet(domain));
+        entityManager.persist(domainRoleEntryEntity);
+
+        create(userId,
+               domain,
+               "interfaceName",
+               TrustLevel.HIGH,
+               new TrustLevel[0],
+               TrustLevel.LOW,
+               new TrustLevel[0],
+               "operation",
+               Permission.YES,
+               new Permission[0]);
+
+        flushAndClear();
+
+        MasterAccessControlEntry updatedData = new MasterAccessControlEntry(userId,
+                                                                            domain,
+                                                                            "interfaceName",
+                                                                            TrustLevel.LOW,
+                                                                            new TrustLevel[]{ TrustLevel.HIGH },
+                                                                            TrustLevel.HIGH,
+                                                                            new TrustLevel[0],
+                                                                            "operation",
+                                                                            Permission.ASK,
+                                                                            new Permission[]{ Permission.NO });
+
+        CreateOrUpdateResult<MasterAccessControlEntry> result = null;
+        JoynrJeeMessageContext.getInstance().activate();
+        try {
+            joynrCallingPrincipal.setUsername(userId);
+            result = subject.createOrUpdate(updatedData, ControlEntryType.MASTER);
+        } finally {
+            JoynrJeeMessageContext.getInstance().deactivate();
+        }
+
+        assertNull(result);
+    }
+
+    @Test
     public void testRemove() {
         MasterAccessControlEntryEntity entity = create("user",
                                                        "domain",
@@ -302,6 +354,45 @@ public class MasterAccessControlEntryManagerTest {
                                                                       entity.getId());
 
         assertNull(persisted);
+    }
+
+    @Test
+    public void testRemoveNotAllowed() {
+        String userId = "user";
+        MasterAccessControlEntryEntity entity = create(userId,
+                                                       "domain",
+                                                       "interfaceName",
+                                                       TrustLevel.HIGH,
+                                                       new TrustLevel[0],
+                                                       TrustLevel.LOW,
+                                                       new TrustLevel[0],
+                                                       "operation",
+                                                       Permission.YES,
+                                                       new Permission[0]);
+
+        flushAndClear();
+
+        MasterAccessControlEntry result = null;
+        JoynrJeeMessageContext.getInstance().activate();
+        try {
+            joynrCallingPrincipal.setUsername(userId);
+            subject.removeByUserIdDomainInterfaceNameAndOperation(entity.getUserId(),
+                                                                  entity.getDomain(),
+                                                                  entity.getInterfaceName(),
+                                                                  entity.getOperation(),
+                                                                  MASTER);
+        } finally {
+            JoynrJeeMessageContext.getInstance().deactivate();
+        }
+
+        assertNull(result);
+
+        flushAndClear();
+
+        MasterAccessControlEntryEntity persisted = entityManager.find(MasterAccessControlEntryEntity.class,
+                                                                      entity.getId());
+
+        assertNotNull(persisted);
     }
 
     @Test
