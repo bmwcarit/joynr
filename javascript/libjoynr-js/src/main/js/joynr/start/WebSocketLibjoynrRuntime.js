@@ -398,10 +398,12 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                     libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
-                    messagingSkeletonFactory.setSkeletons({
-                        InProcessAddress : libjoynrMessagingSkeleton,
-                        WebSocketAddress : webSocketMessagingSkeleton
-                    });
+                    var messagingSkeletons = {};
+                    /*jslint nomen: true */
+                    messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
+                    messagingSkeletons[WebSocketAddress._typeName] = webSocketMessagingSkeleton;
+                    /*jslint nomen: false */
+                    messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
                     requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                     subscriptionManager = new SubscriptionManager(dispatcher);

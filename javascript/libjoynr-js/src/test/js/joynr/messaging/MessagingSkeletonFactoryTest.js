@@ -35,10 +35,12 @@ define([
                     jasmine.createSpyObj("inProcessMessagingSkeleton", [ "shutdown"
                     ]);
             messagingSkeletonFactory = new MessagingSkeletonFactory();
-            messagingSkeletonFactory.setSkeletons({
-                MqttAddress : mqttMessagingSkeleton,
-                InProcessAddress : inProcessMessagingSkeleton
-            });
+            var messagingSkeletons = {};
+            /*jslint nomen: true */
+            messagingSkeletons[InProcessAddress._typeName] = inProcessMessagingSkeleton;
+            messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
+            /*jslint nomen: false */
+            messagingSkeletonFactory.setSkeletons(messagingSkeletons);
         });
 
         it("provides expected API", function() {

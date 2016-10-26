@@ -406,10 +406,12 @@ define(
                             libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                             libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
-                            messagingSkeletonFactory.setSkeletons({
-                                InProcessAddress : libjoynrMessagingSkeleton,
-                                BrowserAddress : browserMessagingSkeleton
-                            });
+                            var messagingSkeletons = {};
+                            /*jslint nomen: true */
+                            messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
+                            messagingSkeletons[BrowserAddress._typeName] = browserMessagingSkeleton;
+                            /*jslint nomen: false */
+                            messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
                             requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                             subscriptionManager = new SubscriptionManager(dispatcher);

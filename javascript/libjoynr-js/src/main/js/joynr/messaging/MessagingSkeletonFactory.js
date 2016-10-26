@@ -44,7 +44,9 @@ define("joynr/messaging/MessagingSkeletonFactory", [
          */
         this.getSkeleton =
                 function getSkeleton(address) {
-                    var className = Typing.getObjectType(address);
+                    /*jslint nomen: true */
+                    var className = address._typeName;
+                    /*jslint nomen: false */
                     var skeleton = messagingSkeletons[className];
 
                     if (Util.checkNullUndefined(skeleton)) {

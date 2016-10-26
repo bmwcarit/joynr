@@ -493,11 +493,14 @@ define(
                             libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                             libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
-                            messagingSkeletonFactory.setSkeletons({
-                                InProcessAddress : libjoynrMessagingSkeleton,
-                                ChannelAddress : clusterControllerChannelMessagingSkeleton,
-                                MqttAddress : mqttMessagingSkeleton
-                            });
+                            var messagingSkeletons = {};
+                            /*jslint nomen: true */
+                            messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
+                            messagingSkeletons[ChannelAddress._typeName] = clusterControllerChannelMessagingSkeleton;
+                            messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
+                            /*jslint nomen: false */
+                            messagingSkeletonFactory.setSkeletons(messagingSkeletons);
+
                             requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                             subscriptionManager = new SubscriptionManager(dispatcher);
                             publicationManager =
