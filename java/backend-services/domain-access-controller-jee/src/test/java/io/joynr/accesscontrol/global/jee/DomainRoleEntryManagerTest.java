@@ -20,7 +20,9 @@ package io.joynr.accesscontrol.global.jee;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -31,6 +33,8 @@ import javax.persistence.EntityManager;
 
 import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.Role;
@@ -71,6 +75,9 @@ public class DomainRoleEntryManagerTest {
 
     @Inject
     private EntityManager entityManager;
+
+    @Inject
+    private JoynrCallingPrincipal joynrCallingPrincipal;
 
     @Test
     public void testFindByUserId() {
@@ -157,6 +164,45 @@ public class DomainRoleEntryManagerTest {
         DomainRoleEntry[] byUserId = subject.findByUserId(userId);
         assertNotNull(byUserId);
         assertEquals(0, byUserId.length);
+    }
+
+    @Test
+    public void testCurrentUserHasRoleInDomainDefaultsToTrueWithoutCurrentUser() {
+        assertTrue(subject.hasCurrentUserGotRoleForDomain(Role.MASTER, "doesn't even exist"));
+    }
+
+    @Test
+    public void testCurrentUserHasRoleInDomainFalse() {
+        assertFalse(testCurrentUserHasRoleInDomain(Role.OWNER));
+    }
+
+    @Test
+    public void testCurrentUserHasRoleInDomainTrue() {
+        assertTrue(testCurrentUserHasRoleInDomain(Role.MASTER));
+    }
+
+    @Test
+    public void testCurrentUserHasRoleInDomainOtherDomain() {
+        assertFalse(testCurrentUserHasRoleInDomain(Role.MASTER, Sets.newHashSet("other.domain", "yet another domain")));
+    }
+
+    private boolean testCurrentUserHasRoleInDomain(Role persistedRole) {
+        return testCurrentUserHasRoleInDomain(persistedRole, Sets.newHashSet("domain", "domain1", "domain2"));
+    }
+
+    private boolean testCurrentUserHasRoleInDomain(Role persistedRole, Set<String> domains) {
+        String username = "current-user";
+        DomainRoleEntryEntity entry = new DomainRoleEntryEntity();
+        entry.setUserId(username);
+        entry.setRole(persistedRole);
+        entry.setDomains(domains);
+        entityManager.persist(entry);
+
+        JoynrJeeMessageContext.getInstance().activate();
+        joynrCallingPrincipal.setUsername(username);
+        boolean result = subject.hasCurrentUserGotRoleForDomain(Role.MASTER, "domain");
+        JoynrJeeMessageContext.getInstance().deactivate();
+        return result;
     }
 
     private DomainRoleEntryEntity create(String userId, Set<String> domains, Role role) {

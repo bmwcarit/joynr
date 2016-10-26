@@ -25,28 +25,37 @@ import java.util.List;
 import java.util.Set;
 
 import javax.ejb.Stateless;
+import javax.enterprise.context.ContextNotActiveException;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.Role;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Stateless
 public class DomainRoleEntryManager {
 
+    private static final Logger logger = LoggerFactory.getLogger(DomainRoleEntryManager.class);
+
     private EntityManager entityManager;
+
+    private JoynrCallingPrincipal joynrCallingPrincipal;
 
     // Required for integration tests with Arquillian
     protected DomainRoleEntryManager() {
     }
 
     @Inject
-    public DomainRoleEntryManager(EntityManager entityManager) {
+    public DomainRoleEntryManager(EntityManager entityManager, JoynrCallingPrincipal joynrCallingPrincipal) {
         this.entityManager = entityManager;
+        this.joynrCallingPrincipal = joynrCallingPrincipal;
     }
 
     private DomainRoleEntry mapEntityToJoynrType(DomainRoleEntryEntity entity) {
@@ -106,5 +115,29 @@ public class DomainRoleEntryManager {
             return mapEntityToJoynrType(entity);
         }
         return null;
+    }
+
+    /**
+     * Determine whether the joynr calling principal, if available, has the given role for the given domain.
+     * The result will default to <code>true</code> if there is no current user - that is, the call is being
+     * made from without of a {@link io.joynr.jeeintegration.api.JoynrJeeMessageScoped joynr calling scope}.
+     * This way, the bean functionality can be used to create an admin API which doesn't require a user to
+     * be already available in the database, e.g. for initial creation of security settings or providing a
+     * RESTful API which is secured by other means.
+     *
+     * @param role the role the user should have.
+     * @param domain the domain for which the current user must have the role.
+     * @return <code>true</code> if there is a current user, and that user has the specified role in the given
+     * domain, <code>false</code> if there is a current user and they don't. <code>true</code> if there is no
+     * current user.
+     */
+    public boolean hasCurrentUserGotRoleForDomain(Role role, String domain) {
+        try {
+            DomainRoleEntryEntity domainRoleEntry = findByUserIdAndRole(joynrCallingPrincipal.getUsername(), role);
+            return domainRoleEntry != null && domainRoleEntry.getDomains().contains(domain);
+        } catch (ContextNotActiveException e) {
+            logger.debug("No joynr message scope context active. Defaulting to 'true'.");
+        }
+        return true;
     }
 }
