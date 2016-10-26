@@ -19,6 +19,8 @@
  * #L%
  */
 
+var CustomLoggingAppender = require("./CustomLoggingAppender.js");
+
 var provisioning = {};
 provisioning.ccAddress = {
     protocol : "ws",
@@ -26,10 +28,34 @@ provisioning.ccAddress = {
 };
 
 provisioning.logging = {
+    appenderClasses : {
+        "Custom" : CustomLoggingAppender
+    },
     configuration : {
+        appenders : {
+            appender : [
+                {
+                    type : "Custom",
+                    name : "CUSTOM",
+                    PatternLayout : {
+                        pattern : "%m"
+                    }
+                },
+                {
+                    type : "Console",
+                    name : "STDOUT",
+                    PatternLayout : {
+                        pattern : "%m"
+                    }
+                }
+            ]
+        },
         loggers : {
             root : {
-                level : "debug"
+                level : "debug",
+                AppenderRef : [{
+                    ref : "CUSTOM"
+                }]
             }
         }
     }
