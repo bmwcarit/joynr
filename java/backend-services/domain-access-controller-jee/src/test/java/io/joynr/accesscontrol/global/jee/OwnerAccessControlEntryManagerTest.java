@@ -31,6 +31,8 @@ import javax.persistence.EntityManager;
 import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.OwnerAccessControlEntryEntity;
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
@@ -61,6 +63,7 @@ public class OwnerAccessControlEntryManagerTest {
         return ShrinkWrap.create(WebArchive.class)
                          .addClasses(EntityManagerProducer.class,
                                      DomainRoleEntryEntity.class,
+                                     DomainRoleEntryManager.class,
                                      OwnerAccessControlEntryEntity.class,
                                      OwnerAccessControlEntryManager.class,
                                      JoynrConfigurationProvider.class)
@@ -74,6 +77,9 @@ public class OwnerAccessControlEntryManagerTest {
 
     @Inject
     private OwnerAccessControlEntryManager subject;
+
+    @Inject
+    private JoynrCallingPrincipal joynrCallingPrincipal;
 
     @Test
     public void testFindByUserId() {
@@ -161,6 +167,44 @@ public class OwnerAccessControlEntryManagerTest {
     }
 
     @Test
+    public void testCreateNotAllowedWithoutOwnerRole() {
+        String userId = "user";
+        String domain = "domain";
+        String interfaceName = "interfaceName";
+        String operation = "operation";
+
+        DomainRoleEntryEntity domainRoleEntryEntity = new DomainRoleEntryEntity();
+        domainRoleEntryEntity.setUserId(userId);
+        domainRoleEntryEntity.setRole(Role.MASTER);
+        domainRoleEntryEntity.setDomains(Sets.newHashSet(domain));
+        entityManager.persist(domainRoleEntryEntity);
+
+        flushAndClear();
+
+        OwnerAccessControlEntry data = new OwnerAccessControlEntry(userId,
+                                                                   domain,
+                                                                   interfaceName,
+                                                                   TrustLevel.HIGH,
+                                                                   TrustLevel.LOW,
+                                                                   operation,
+                                                                   Permission.ASK);
+
+        CreateOrUpdateResult<OwnerAccessControlEntry> result = null;
+        JoynrJeeMessageContext.getInstance().activate();
+        try {
+            joynrCallingPrincipal.setUsername(userId);
+            result = subject.createOrUpdate(data);
+        } finally {
+            JoynrJeeMessageContext.getInstance().deactivate();
+        }
+        assertNull(result);
+
+        flushAndClear();
+
+        assertEquals(0, subject.findByUserId(userId).length);
+    }
+
+    @Test
     public void testUpdate() {
         OwnerAccessControlEntryEntity entity = create("user",
                                                       "domain",
@@ -218,6 +262,40 @@ public class OwnerAccessControlEntryManagerTest {
         OwnerAccessControlEntryEntity persisted = entityManager.find(OwnerAccessControlEntryEntity.class,
                                                                      entity.getId());
         assertNull(persisted);
+    }
+
+    @Test
+    public void testRemoveNotAllowed() {
+        String userId = "userId";
+        String domain = "domain";
+        String interfaceName = "interfaceName";
+        String operation = "operation";
+        OwnerAccessControlEntryEntity entity = create(userId,
+                                                      domain,
+                                                      interfaceName,
+                                                      TrustLevel.MID,
+                                                      TrustLevel.HIGH,
+                                                      operation,
+                                                      Permission.YES);
+
+        flushAndClear();
+
+        OwnerAccessControlEntry result = null;
+        JoynrJeeMessageContext.getInstance().activate();
+        try {
+            joynrCallingPrincipal.setUsername(userId);
+            result = subject.removeByUserIdDomainInterfaceNameAndOperation(userId, domain, interfaceName, operation);
+        } finally {
+            JoynrJeeMessageContext.getInstance().deactivate();
+        }
+
+        assertNull(result);
+
+        flushAndClear();
+
+        OwnerAccessControlEntryEntity persisted = entityManager.find(OwnerAccessControlEntryEntity.class,
+                                                                     entity.getId());
+        assertNotNull(persisted);
     }
 
     private OwnerAccessControlEntryEntity create(String userId,

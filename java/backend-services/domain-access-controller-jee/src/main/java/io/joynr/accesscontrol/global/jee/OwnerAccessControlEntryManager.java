@@ -41,13 +41,16 @@ public class OwnerAccessControlEntryManager {
 
     private EntityManager entityManager;
 
+    private DomainRoleEntryManager domainRoleEntryManager;
+
     // Only required for testing with Arquillian
     protected OwnerAccessControlEntryManager() {
     }
 
     @Inject
-    public OwnerAccessControlEntryManager(EntityManager entityManager) {
+    public OwnerAccessControlEntryManager(EntityManager entityManager, DomainRoleEntryManager domainRoleEntryManager) {
         this.entityManager = entityManager;
+        this.domainRoleEntryManager = domainRoleEntryManager;
     }
 
     private OwnerAccessControlEntry mapEntityToJoynrType(OwnerAccessControlEntryEntity entity) {
@@ -92,6 +95,9 @@ public class OwnerAccessControlEntryManager {
     }
 
     public CreateOrUpdateResult<OwnerAccessControlEntry> createOrUpdate(OwnerAccessControlEntry updatedOwnerAce) {
+        if (!domainRoleEntryManager.hasCurrentUserGotRoleForDomain(Role.OWNER, updatedOwnerAce.getDomain())) {
+            return null;
+        }
         OwnerAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameAndOperation(updatedOwnerAce.getUid(),
                                                                                            updatedOwnerAce.getDomain(),
                                                                                            updatedOwnerAce.getInterfaceName(),
@@ -141,6 +147,9 @@ public class OwnerAccessControlEntryManager {
                                                                                  String domain,
                                                                                  String interfaceName,
                                                                                  String operation) {
+        if (!domainRoleEntryManager.hasCurrentUserGotRoleForDomain(Role.MASTER, domain)) {
+            return null;
+        }
         OwnerAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameAndOperation(userId,
                                                                                            domain,
                                                                                            interfaceName,

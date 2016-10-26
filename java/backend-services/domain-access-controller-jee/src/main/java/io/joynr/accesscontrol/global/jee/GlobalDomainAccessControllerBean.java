@@ -226,14 +226,17 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
     @Override
     public Boolean updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAce) {
         CreateOrUpdateResult<OwnerAccessControlEntry> result = ownerAccessControlEntryManager.createOrUpdate(updatedOwnerAce);
-        OwnerAccessControlEntry entry = result.getEntry();
-        globalDomainAccessControllerSubscriptionPublisher.fireOwnerAccessControlEntryChanged(result.getChangeType(),
-                                                                                             entry,
-                                                                                             sanitizeForPartition(entry.getUid()),
-                                                                                             sanitizeForPartition(entry.getDomain()),
-                                                                                             sanitizeForPartition(entry.getInterfaceName()),
-                                                                                             sanitizeForPartition(entry.getOperation()));
-        return true;
+        if (result != null) {
+            OwnerAccessControlEntry entry = result.getEntry();
+            globalDomainAccessControllerSubscriptionPublisher.fireOwnerAccessControlEntryChanged(result.getChangeType(),
+                                                                                                 entry,
+                                                                                                 sanitizeForPartition(entry.getUid()),
+                                                                                                 sanitizeForPartition(entry.getDomain()),
+                                                                                                 sanitizeForPartition(entry.getInterfaceName()),
+                                                                                                 sanitizeForPartition(entry.getOperation()));
+            return true;
+        }
+        return false;
     }
 
     @Override
