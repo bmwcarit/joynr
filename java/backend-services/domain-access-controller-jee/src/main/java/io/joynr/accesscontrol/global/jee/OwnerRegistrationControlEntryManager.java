@@ -41,13 +41,17 @@ public class OwnerRegistrationControlEntryManager {
 
     private EntityManager entityManager;
 
+    private DomainRoleEntryManager domainRoleEntryManager;
+
     // Only required for testing with Arquillian
     protected OwnerRegistrationControlEntryManager() {
     }
 
     @Inject
-    public OwnerRegistrationControlEntryManager(EntityManager entityManager) {
+    public OwnerRegistrationControlEntryManager(EntityManager entityManager,
+                                                DomainRoleEntryManager domainRoleEntryManager) {
         this.entityManager = entityManager;
+        this.domainRoleEntryManager = domainRoleEntryManager;
     }
 
     private OwnerRegistrationControlEntry[] executeAndCovert(Query query) {
@@ -107,6 +111,9 @@ public class OwnerRegistrationControlEntryManager {
     }
 
     public CreateOrUpdateResult<OwnerRegistrationControlEntry> createOrUpdate(OwnerRegistrationControlEntry updatedOwnerRce) {
+        if (!domainRoleEntryManager.hasCurrentUserGotRoleForDomain(Role.OWNER, updatedOwnerRce.getDomain())) {
+            return null;
+        }
         OwnerRegistrationControlEntryEntity entity = findByUserIdDomainAndInterfaceName(updatedOwnerRce.getUid(),
                                                                                         updatedOwnerRce.getDomain(),
                                                                                         updatedOwnerRce.getInterfaceName());
@@ -127,6 +134,9 @@ public class OwnerRegistrationControlEntryManager {
     public OwnerRegistrationControlEntry removeByUserIdDomainAndInterfaceName(String userId,
                                                                               String domain,
                                                                               String interfaceName) {
+        if (!domainRoleEntryManager.hasCurrentUserGotRoleForDomain(Role.OWNER, domain)) {
+            return null;
+        }
         OwnerRegistrationControlEntryEntity entity = findByUserIdDomainAndInterfaceName(userId, domain, interfaceName);
         if (entity != null) {
             entityManager.remove(entity);

@@ -355,13 +355,16 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
     @Override
     public Boolean updateOwnerRegistrationControlEntry(OwnerRegistrationControlEntry updatedOwnerRce) {
         CreateOrUpdateResult<OwnerRegistrationControlEntry> result = ownerRegistrationControlEntryManager.createOrUpdate(updatedOwnerRce);
-        OwnerRegistrationControlEntry entry = result.getEntry();
-        globalDomainAccessControllerSubscriptionPublisher.fireOwnerRegistrationControlEntryChanged(result.getChangeType(),
-                                                                                                   entry,
-                                                                                                   sanitizeForPartition(entry.getUid()),
-                                                                                                   sanitizeForPartition(entry.getDomain()),
-                                                                                                   sanitizeForPartition(entry.getInterfaceName()));
-        return true;
+        if (result != null) {
+            OwnerRegistrationControlEntry entry = result.getEntry();
+            globalDomainAccessControllerSubscriptionPublisher.fireOwnerRegistrationControlEntryChanged(result.getChangeType(),
+                                                                                                       entry,
+                                                                                                       sanitizeForPartition(entry.getUid()),
+                                                                                                       sanitizeForPartition(entry.getDomain()),
+                                                                                                       sanitizeForPartition(entry.getInterfaceName()));
+            return true;
+        }
+        return false;
     }
 
     @Override
