@@ -378,7 +378,6 @@ TEST_F(MessageRouterTest, addMulticastReceiverForInProcessProvider_ChildRouter_d
 }
 
 TEST_F(MessageRouterTest, addMulticastReceiverForMqttProvider_NonChildRouter_callsSkeleton) {
-    bool successCallbackCalled = false;
     const std::string subscriberParticipantId("subscriberPartId1");
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastId("participantId1/methodName/partition0");
@@ -394,16 +393,16 @@ TEST_F(MessageRouterTest, addMulticastReceiverForMqttProvider_NonChildRouter_cal
 
     EXPECT_CALL(*mockMqttMessagingMulticastSubscriber, registerMulticastSubscription(multicastId));
 
+    Semaphore successCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [&successCallbackCalled]() { successCallbackCalled.notify(); },
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
-    EXPECT_TRUE(successCallbackCalled);
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, addMulticastReceiverForHttpProvider_NonChildRouter_callsSkeleton) {
-    bool successCallbackCalled = false;
     const std::string subscriberParticipantId("subscriberPartId1");
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastId("participantId1/methodName/partition0");
@@ -418,16 +417,16 @@ TEST_F(MessageRouterTest, addMulticastReceiverForHttpProvider_NonChildRouter_cal
 
     EXPECT_CALL(*skeleton, registerMulticastSubscription(multicastId));
 
+    Semaphore successCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [&successCallbackCalled]() { successCallbackCalled.notify(); },
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
-    EXPECT_TRUE(successCallbackCalled);
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, addMulticastReceiverForWebSocketProvider_NonChildRouter_callsSkeleton) {
-    bool successCallbackCalled = false;
     const std::string subscriberParticipantId("subscriberPartId1");
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastId("participantId1/methodName/partition0");
@@ -442,16 +441,16 @@ TEST_F(MessageRouterTest, addMulticastReceiverForWebSocketProvider_NonChildRoute
 
     EXPECT_CALL(*skeleton, registerMulticastSubscription(multicastId));
 
+    Semaphore successCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [&successCallbackCalled]() { successCallbackCalled.notify(); },
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
-    EXPECT_TRUE(successCallbackCalled);
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, addMulticastReceiverForInProcessProvider_NonChildRouter_succeeds) {
-    bool successCallbackCalled = false;
     const std::string subscriberParticipantId("subscriberPartId1");
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastId("participantId1/methodName/partition0");
@@ -461,13 +460,13 @@ TEST_F(MessageRouterTest, addMulticastReceiverForInProcessProvider_NonChildRoute
     auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
     messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
 
+    Semaphore successCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [&successCallbackCalled]() { successCallbackCalled.notify(); },
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
-
-    EXPECT_TRUE(successCallbackCalled);
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, addMulticastReceiver_NonChildRouter_failsIfProviderAddressNotAvailable) {
@@ -475,22 +474,19 @@ TEST_F(MessageRouterTest, addMulticastReceiver_NonChildRouter_failsIfProviderAdd
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
 
-    bool errorCallbackCalled = false;
-
+    Semaphore errorCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
         []() { FAIL() << "onSuccess called"; },
         [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&)
         {
-            errorCallbackCalled = true;
+            errorCallbackCalled.notify();
         });
-
-    EXPECT_EQ(errorCallbackCalled, true);
+    EXPECT_TRUE(errorCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, addMulticastReceiver_ChildRouter_callsParentRouterIfProviderAddressNotAvailable) {
-    Semaphore semaphore;
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
     auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
 
@@ -530,25 +526,26 @@ TEST_F(MessageRouterTest, addMulticastReceiver_ChildRouter_callsParentRouterIfPr
                 parentAddress,
                 std::string("parentParticipantId"));
 
+    Semaphore errorCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
         []() { FAIL() << "onSuccess called"; },
-        [&semaphore](const joynr::exceptions::ProviderRuntimeException&)
+        [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&)
         {
-            semaphore.notify();
+            errorCallbackCalled.notify();
         });
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(errorCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
         []() { FAIL() << "onSuccess called"; },
-        [&semaphore](const joynr::exceptions::ProviderRuntimeException&)
+        [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&)
         {
-            semaphore.notify();
+            errorCallbackCalled.notify();
         });
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(errorCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 
     bool hasNextHop = false;
     messageRouter->resolveNextHop(
@@ -557,24 +554,25 @@ TEST_F(MessageRouterTest, addMulticastReceiver_ChildRouter_callsParentRouterIfPr
                 nullptr);
     EXPECT_FALSE(hasNextHop);
 
+    Semaphore successCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        [&semaphore]() { semaphore.notify(); },
+        [&successCallbackCalled]() { successCallbackCalled.notify(); },
         [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 
     messageRouter->resolveNextHop(
                 providerParticipantId,
-                [&semaphore](const bool& resolved) {
+                [&successCallbackCalled](const bool& resolved) {
                     if (resolved) {
-                        semaphore.notify();
+                        successCallbackCalled.notify();
                     } else {
                         FAIL() << "resolveNextHop failed";
                     }
                 },
                 nullptr); // not called in resolveNextHop
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, addMulticastReceiver_NonChildRouter_failsIfSkeletonNotAvailable) {
@@ -582,21 +580,19 @@ TEST_F(MessageRouterTest, addMulticastReceiver_NonChildRouter_failsIfSkeletonNot
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
 
-    bool errorCallbackCalled = false;
-
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
     messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
 
+    Semaphore errorCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
         []() { FAIL() << "onSuccess called"; },
         [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&)
         {
-            errorCallbackCalled = true;
+            errorCallbackCalled.notify();
         });
-
-    EXPECT_EQ(errorCallbackCalled, true);
+    EXPECT_TRUE(errorCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, removeMulticastReceiver_ChildRouter_CallsParentRouter) {
@@ -636,7 +632,6 @@ TEST_F(MessageRouterTest, removeMulticastReceiver_ChildRouter_CallsParentRouter)
 }
 
 TEST_F(MessageRouterTest, removeMulticastReceiverOfInProcessProvider_ChildRouter_doesNotCallParentRouter) {
-    bool successCallbackCalled = false;
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
     auto mockRoutingProxyRef = mockRoutingProxy.get();
     auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
@@ -666,16 +661,16 @@ TEST_F(MessageRouterTest, removeMulticastReceiverOfInProcessProvider_ChildRouter
     EXPECT_CALL(*mockRoutingProxyRef,
         removeMulticastReceiverAsync(_, _, _, _, _)).Times(0);
 
+    Semaphore successCallbackCalled;
     messageRouter->removeMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [&successCallbackCalled]() { successCallbackCalled.notify(); },
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
-    EXPECT_TRUE(successCallbackCalled);
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, removeMulticastReceiver_failsIfProviderAddressNotAvailable) {
-    bool errorCallbackCalled = false;
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
@@ -695,16 +690,16 @@ TEST_F(MessageRouterTest, removeMulticastReceiver_failsIfProviderAddressNotAvail
 
     messageRouter->removeNextHop(providerParticipantId);
 
+    Semaphore errorCallbackCalled;
     messageRouter->removeMulticastReceiver(multicastId,
         subscriberParticipantId,
         providerParticipantId,
         []() { FAIL() << "onSuccess called"; },
-        [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){ errorCallbackCalled = true; });
-    EXPECT_TRUE(errorCallbackCalled);
+        [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){ errorCallbackCalled.notify(); });
+    EXPECT_TRUE(errorCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, removeMulticastReceiver_NonChildRouter_failsIfSkeletonNotAvailable) {
-    bool errorCallbackCalled = false;
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
@@ -726,18 +721,18 @@ TEST_F(MessageRouterTest, removeMulticastReceiver_NonChildRouter_failsIfSkeleton
 
     multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::WebSocketClientAddress>();
 
+    Semaphore errorCallbackCalled;
     messageRouter->removeMulticastReceiver(
         multicastId,
         subscriberParticipantId,
         providerParticipantId,
         []() { FAIL() << "onSuccess called"; },
-        [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){ errorCallbackCalled = true; }
+        [&errorCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){ errorCallbackCalled.notify(); }
     );
-    EXPECT_TRUE(errorCallbackCalled);
+    EXPECT_TRUE(errorCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, removeMulticastReceiverOfStandaloneProvider_NonChildRouter_callsSkeleton) {
-    bool successCallbackCalled = false;
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
@@ -762,18 +757,18 @@ TEST_F(MessageRouterTest, removeMulticastReceiverOfStandaloneProvider_NonChildRo
     // The message router shall unregister the subscription at the multicast skeleton
     EXPECT_CALL(*skeleton, unregisterMulticastSubscription(multicastId)).Times(1);
 
+    Semaphore successCallbackCalled;
     messageRouter->removeMulticastReceiver(
         multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [&successCallbackCalled]() { successCallbackCalled.notify(); },
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
     );
-    EXPECT_TRUE(successCallbackCalled);
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, removeMulticastReceiverOfWebSocketProvider_NonChildRouter_callsSkeleton) {
-    bool successCallbackCalled = false;
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
@@ -798,18 +793,18 @@ TEST_F(MessageRouterTest, removeMulticastReceiverOfWebSocketProvider_NonChildRou
     // The message router shall unregister the subscription at the multicast skeleton
     EXPECT_CALL(*skeleton, unregisterMulticastSubscription(multicastId)).Times(1);
 
+    Semaphore successCallbackCalled;
     messageRouter->removeMulticastReceiver(
         multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [&successCallbackCalled]() { successCallbackCalled.notify(); },
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
     );
-    EXPECT_TRUE(successCallbackCalled);
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, removeMulticastReceiverOfInProcessProvider_NonChildRouter_succeeds) {
-    bool successCallbackCalled = false;
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
@@ -825,14 +820,15 @@ TEST_F(MessageRouterTest, removeMulticastReceiverOfInProcessProvider_NonChildRou
         []() { },
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
 
+    Semaphore successCallbackCalled;
     messageRouter->removeMulticastReceiver(
         multicastId,
         subscriberParticipantId,
         providerParticipantId,
-        [&successCallbackCalled]() { successCallbackCalled = true; },
+        [&successCallbackCalled]() { successCallbackCalled.notify(); },
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
     );
-    EXPECT_TRUE(successCallbackCalled);
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(MessageRouterTest, routeMulticastMessageFromWebSocketProvider_multicastMsgIsSentToAllMulticastRecivers) {
