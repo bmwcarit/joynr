@@ -538,6 +538,79 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 }
 
+TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
+
+    std::vector<std::string> partitions1{"partition1", "partition2"};
+    std::vector<std::string> partitions2{"partition1", "partition2", "partition3"};
+
+    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener1 =
+            std::make_shared<MockGpsSubscriptionListener>();
+    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener2 =
+            std::make_shared<MockGpsSubscriptionListener>();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    // we expect to notifications before updating the subscription
+    // on the second call we release the sync semaphore
+    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&altSemaphore));
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+
+    auto subscriptionIdFuture1 = testProxy->subscribeToLocationUpdateBroadcast(
+                mockSubscriptionListener1,
+                subscriptionQos,
+                partitions1
+    );
+    auto subscriptionIdFuture2 = testProxy->subscribeToLocationUpdateBroadcast(
+                mockSubscriptionListener2,
+                subscriptionQos,
+                partitions2
+    );
+
+    std::string subscriptionId1;
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->get(5000, subscriptionId1));
+    std::string subscriptionId2;
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->get(5000, subscriptionId2));
+
+    // fire broadcast without partitions (should not be received by any subscriber)
+    testProvider->fireLocationUpdate(gpsLocation2);
+    EXPECT_FALSE(semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_FALSE(altSemaphore.waitFor(std::chrono::seconds(3)));
+
+    // Waiting between occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+
+    // fire broadcast for subscriber 1 (should not be received by subscriber 2)
+    testProvider->fireLocationUpdate(gpsLocation2, partitions1);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_FALSE(altSemaphore.waitFor(std::chrono::seconds(2)));
+
+    // Waiting between occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+
+    // fire broadcast for subscriber 2 (should not be received by subscriber 1)
+    testProvider->fireLocationUpdate(gpsLocation2, partitions2);
+    EXPECT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_FALSE(semaphore.waitFor(std::chrono::seconds(2)));
+}
+
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         End2EndBroadcastTest,
         testing::Values(

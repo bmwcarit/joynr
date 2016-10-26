@@ -62,27 +62,27 @@ public:
             const joynr::types::Localisation::GpsLocation& location,
             const std::vector<std::string>& partitions = std::vector<std::string>()
     ) override {
-        tests::testAbstractProvider::fireLocation(location);
+        tests::testAbstractProvider::fireLocation(location, partitions);
     }
 
     void fireBroadcastWithEnumOutput(
             const joynr::tests::testTypes::TestEnum::Enum& testEnum,
             const std::vector<std::string>& partitions = std::vector<std::string>()
     ) override {
-        tests::testAbstractProvider::fireBroadcastWithEnumOutput(testEnum);
+        tests::testAbstractProvider::fireBroadcastWithEnumOutput(testEnum, partitions);
     }
 
     void fireLocationUpdate(
             const joynr::types::Localisation::GpsLocation& location,
             const std::vector<std::string>& partitions = std::vector<std::string>()
     ) override {
-        tests::testAbstractProvider::fireLocationUpdate(location);
+        tests::testAbstractProvider::fireLocationUpdate(location, partitions);
     }
 
     void fireEmptyBroadcast(
             const std::vector<std::string>& partitions = std::vector<std::string>()
     ) override {
-        tests::testAbstractProvider::fireEmptyBroadcast();
+        tests::testAbstractProvider::fireEmptyBroadcast(partitions);
     }
 
     void fireLocationUpdateWithSpeed(
@@ -90,7 +90,7 @@ public:
             const float& currentSpeed,
             const std::vector<std::string>& partitions = std::vector<std::string>()
     ) override {
-        tests::testAbstractProvider::fireLocationUpdateWithSpeed(location, currentSpeed);
+        tests::testAbstractProvider::fireLocationUpdateWithSpeed(location, currentSpeed, partitions);
     }
 
     void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) override {
@@ -101,7 +101,7 @@ public:
             const joynr::ByteBuffer& byteBufferParameter,
             const std::vector<std::string>& partitions = std::vector<std::string>()
     ) override {
-        tests::testAbstractProvider::fireBroadcastWithByteBufferParameter(byteBufferParameter);
+        tests::testAbstractProvider::fireBroadcastWithByteBufferParameter(byteBufferParameter, partitions);
     }
 
     void fireBroadcastWithFiltering(
