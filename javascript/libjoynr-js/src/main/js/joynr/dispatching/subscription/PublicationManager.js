@@ -637,15 +637,19 @@ define(
                  *
                  * @param {String}
                  *            subscriptionId
+                 * @param {Boolean}
+                 *            silent suppress log outputs if subscription cannot be found
                  */
-                function removeSubscription(subscriptionId) {
+                function removeSubscription(subscriptionId, silent) {
                     // make sure subscription info exists
                     var subscriptionInfo = subscriptionInfos[subscriptionId];
                     var pendingSubscriptions;
                     var pendingSubscription;
                     var subscriptionObject;
                     if (subscriptionInfo === undefined) {
-                        log.warn("no subscription info found for subscriptionId " + subscriptionId);
+                        if (silent !== true) {
+                            log.warn("no subscription info found for subscriptionId " + subscriptionId);
+                        }
                         // TODO: proper handling for a non-existent subscription
 
                         //check if a subscriptionRequest is queued
@@ -934,9 +938,9 @@ define(
 
                             var subscriptionId = subscriptionInfo.subscriptionId;
 
-                            // in case the subscriptionId is already used in a prevsious
+                            // in case the subscriptionId is already used in a previous
                             // subscription, remove this one
-                            removeSubscription(subscriptionId);
+                            removeSubscription(subscriptionId, true);
 
                             // make sure the provider is registered
                             if (provider === undefined) {
@@ -1158,7 +1162,7 @@ define(
 
                     // in case the subscriptionId is already used in a previous
                     // subscription, remove this one
-                    removeSubscription(subscriptionId);
+                    removeSubscription(subscriptionId, true);
 
                     // make sure the provider is registered
                     if (provider === undefined) {
