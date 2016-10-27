@@ -28,15 +28,12 @@ class IltConsumerAttributeSubscriptionTest : public IltAbstractConsumerTest<::te
 {
 public:
     IltConsumerAttributeSubscriptionTest()
-            : subscriptionIdFutureTimeout(10000),
-              subscriptionRegisteredTimeout(10000),
-              publicationTimeout(10000)
+            : subscriptionIdFutureTimeout(10000), publicationTimeout(10000)
     {
     }
 
 protected:
     std::uint16_t subscriptionIdFutureTimeout;
-    std::chrono::milliseconds subscriptionRegisteredTimeout;
     std::chrono::milliseconds publicationTimeout;
 };
 
@@ -56,7 +53,6 @@ public:
 
 TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     joynr::interlanguagetest::Enumeration::Enum enumerationArg =
             joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_2;
@@ -68,8 +64,6 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
 
     auto mockEnumerationSubscriptionListener =
             std::make_shared<MockEnumerationSubscriptionListener>();
-    ON_CALL(*mockEnumerationSubscriptionListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(*mockEnumerationSubscriptionListener, onError(_)).Times(0).WillRepeatedly(
             ReleaseSemaphore(&publicationSemaphore));
     EXPECT_CALL(*mockEnumerationSubscriptionListener, onReceive(Eq(enumerationArg)))
@@ -87,7 +81,6 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
         testInterfaceProxy->subscribeToAttributeEnumeration(listener, subscriptionQos)->get(
                 subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeEnumeration - subscription registered");
 
@@ -115,7 +108,6 @@ MATCHER_P(providerRuntimeException, msg, "")
 
 TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithExceptionFromGetter)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     exceptions::JoynrRuntimeException error;
     std::string subscriptionId;
@@ -125,8 +117,6 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithException
             std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
     auto mockEnumerationSubscriptionListener = std::make_shared<MockBoolSubscriptionListener>();
-    ON_CALL(*mockEnumerationSubscriptionListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(
             *mockEnumerationSubscriptionListener,
             onError(providerRuntimeException("Exception from getAttributeWithExceptionFromGetter")))
@@ -140,7 +130,6 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithException
                        "callSubscribeAttributeWithExceptionFromGetter - register subscription");
         testInterfaceProxy->subscribeToAttributeWithExceptionFromGetter(listener, subscriptionQos)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeWithExceptionFromGetter - subscription registered");
 
