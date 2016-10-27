@@ -45,7 +45,7 @@ PerformanceUtilities.createRandomNumber = function createRandomNumber(max) {
  * available, a default value will be used.
  */
 PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
-    var domain, stringLength, byteArrayLength, numRuns, timeout, viacc, cchost, ccport, host, skipByteArraySizeTimesK;
+    var bounceProxyBaseUrl, domain, stringLength, byteArrayLength, numRuns, timeout, brokerUri, viacc, cchost, ccport, host, skipByteArraySizeTimesK;
 
     if(environment.domain != undefined) {
         domain = environment.domain;
@@ -83,6 +83,12 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         viacc = 'true';
     }
 
+    if(environment.brokerUri != undefined) {
+        brokerUri = environment.brokerUri;
+    } else {
+        brokerUri = 'tcp://localhost:1883';
+    }
+
     if(environment.bounceProxyBaseUrl != undefined) {
         bounceProxyBaseUrl = environment.bounceProxyBaseUrl;
     } else {
@@ -113,6 +119,7 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         'numRuns' : numRuns,
         'timeout' : timeout,
         'domain' : domain,
+        'brokerUri' : brokerUri,
         'viacc' : viacc,
         'cchost': cchost,
         'ccport': ccport,

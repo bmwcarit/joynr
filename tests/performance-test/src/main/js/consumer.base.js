@@ -45,6 +45,7 @@ var consumerBase = {
                 joynr.selectRuntime("websocket.libjoynr");
             } else {
                 provisioning.bounceProxyBaseUrl = options.bounceProxyBaseUrl;
+                provisioning.brokerUri = options.brokerUri;
                 provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
                 joynr.selectRuntime("inprocess");
             }

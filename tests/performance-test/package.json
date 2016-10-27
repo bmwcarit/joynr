@@ -25,12 +25,13 @@
       "port": "4242"
     },
     "bounceProxyBaseUrl": "http://localhost:8080",
+    "brokerUri": "tcp://localhost:1883",
     "skipByteArraySizeTimesK": "false"
   },
   "scripts": {
     "preinstall": "npm install ../../javascript/libjoynr-js/target/node-classes ../test-base/target/classes",
-    "startconsumer" : "export domain=$npm_package_config_domain && export runs=$npm_package_config_runs && export viacc=$npm_package_config_viacc && export skipByteArraySizeTimesK=$npm_package_config_skipByteArraySizeTimesK && node src/main/js/consumer.js",
-    "startconsumer-profiling" : "export domain=$npm_package_config_domain && export runs=$npm_package_config_runs && export viacc=$npm_package_config_viacc && export skipByteArraySizeTimesK=$npm_package_config_skipByteArraySizeTimesK && NODE_ENV=production && node --prof src/main/js/consumer.js",
+    "startconsumer" : "export domain=$npm_package_config_domain && export runs=$npm_package_config_runs && export viacc=$npm_package_config_viacc && export skipByteArraySizeTimesK=$npm_package_config_skipByteArraySizeTimesK && export brokerUri=$npm_package_config_brokerUri && node src/main/js/consumer.js",
+    "startconsumer-profiling" : "export domain=$npm_package_config_domain && export runs=$npm_package_config_runs && export viacc=$npm_package_config_viacc && export skipByteArraySizeTimesK=$npm_package_config_skipByteArraySizeTimesK && export brokerUri=$npm_package_config_brokerUri && NODE_ENV=production && node --prof src/main/js/consumer.js",
     "startprovider" : "node src/main/js/provider.js $npm_package_config_domain",
     "jsconsumertest" : "jasmine-node --verbose --forceexit --junitreport --config domain $npm_package_config_domain --config runs $npm_package_config_runs --config stringlength $npm_package_config_stringlength --config bytearraylength $npm_package_config_bytearraylength --config timeout $npm_package_config_timeout --config viacc $npm_package_config_viacc --config cchost $npm_package_config_cc_host --config ccport $npm_package_config_cc_port --config bounceProxyBaseUrl $npm_package_config_bounceProxyBaseUrl src/main/js/consumer.spec.js",
     "base64performancetest" : "jasmine-node --verbose --forceexit --junitreport src/main/js/serializerperformancetest.spec.js"
