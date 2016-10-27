@@ -47,7 +47,7 @@ public:
     void run() override;
     void interrupt();
     bool isInterrupted();
-    uint16_t getMqttQos() const;
+    uint16_t getMqttQos() const override;
     std::string getMqttPrio() const;
 
     void publishMessage(
