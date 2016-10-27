@@ -131,6 +131,7 @@ public abstract class IltConsumerTest {
 
         if (transport.contains("mqtt")) {
             LOG.info("getRuntimeModule: using MqttPahoModule");
+            joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
             backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
         }
 
