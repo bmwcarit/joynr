@@ -410,7 +410,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             inProcessConnectorFactory, joynrMessagingConnectorFactory);
-    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, std::move(connectorFactory), &cache);
+    proxyFactory = std::make_unique<ProxyFactory>(
+            libjoynrMessagingAddress, std::move(connectorFactory), &cache);
 
     dispatcherList.push_back(joynrDispatcher);
     dispatcherList.push_back(inProcessDispatcher);
@@ -551,7 +552,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     delete inProcessPublicationSender;
     inProcessPublicationSender = nullptr;
     delete joynrMessageSender;
-    delete proxyFactory;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     delete ccDbusMessageRouterAdapter;

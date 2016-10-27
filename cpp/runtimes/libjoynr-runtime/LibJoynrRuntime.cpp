@@ -64,7 +64,6 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
 
 LibJoynrRuntime::~LibJoynrRuntime()
 {
-    delete proxyFactory;
     delete inProcessDispatcher;
     delete joynrMessageSender;
     delete joynrDispatcher;
@@ -126,7 +125,8 @@ void LibJoynrRuntime::init(
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             inProcessConnectorFactory, joynrMessagingConnectorFactory);
-    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, std::move(connectorFactory), nullptr);
+    proxyFactory = std::make_unique<ProxyFactory>(
+            libjoynrMessagingAddress, std::move(connectorFactory), nullptr);
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
