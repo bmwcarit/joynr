@@ -2564,7 +2564,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
 
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-            }, "callSubscribeBroadcastWithMultipleStructParameters methodToFireBroadcastWithSinglePrimitiveParameter", 5000);
+            }, "callSubscribeBroadcastWithMultipleStructParameters methodToFireBroadcastWithMultipleStructParameters", 5000);
 
             runs(function() {
                 if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
@@ -2618,6 +2618,112 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
 
         it("callSubscribeBroadcastWithMultipleStructParameter_SimplePartitions", function() {
             callSubscribeBroadcastWithMultipleStructParameter(["partition0", "partition1"]);
+        });
+
+        it("doNotReceivePublicationsForOtherPartitions", function() {
+            var spy = jasmine.createSpyObj("spy",
+                [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
+            var subscriptionId;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
+
+            var subscribeToPartitions = ["partition0", "partition1"];
+            var broadcastPartition = ["otherPartition"];
+
+            runs(function() {
+                log("doNotReceivePublicationsForOtherPartitions");
+                testInterfaceProxy.broadcastWithSingleEnumerationParameter.subscribe({
+                    "subscriptionQos": subscriptionQosOnChange,
+                    "partitions" : subscribeToPartitions,
+                    "onReceive": spy.onPublication,
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "doNotReceivePublicationsForOtherPartitions waitForSubscribe", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+                subscriptionId = spy.onFulfilled.calls[0].args[0];
+                log("subscriptionId = " + subscriptionId);
+            });
+
+            waitsFor(function() {
+                return spy.onSubscribed.callCount > 0;
+            }, "doNotReceivePublicationsForOtherPartitions onSubscribed", 5000);
+
+            runs(function() {
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                spy.onPublication.reset();
+                spy.onPublicationError.reset();
+                testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter({
+                    partitions: broadcastPartition
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0 ||
+                       spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
+            }, "doNotReceivePublicationsForOtherPartitions receiveNoPublication", 2000);
+
+            runs(function() {
+                // The partitions do not match. Expect no broadcast
+                expect(spy.onPublication.callCount).toEqual(0);
+                expect(spy.onPublicationError.callCount).toEqual(0);
+            });
+
+            runs(function() {
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                spy.onPublication.reset();
+                spy.onPublicationError.reset();
+                // Make sure there is no other reason that we did not receive any broadcast
+                testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter({
+                    partitions: subscribeToPartitions
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount;
+            }, "doNotReceivePublicationsForOtherPartitions receivePublication", 2000);
+
+            waitsFor(function() {
+                // Wait until testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter finished
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "doNotReceivePublicationsForOtherPartitions fireBroadcastFinished", 5000);
+
+            runs(function() {
+                expect(spy.onPublication.callCount).toEqual(1);
+                expect(spy.onPublicationError.callCount).toEqual(0);
+            });
+
+            runs(function() {
+                // unsubscribe
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                testInterfaceProxy.broadcastWithMultipleStructParameters.unsubscribe({
+                    "subscriptionId": subscriptionId
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "doNotReceivePublicationsForOtherPartitions unsubscribe", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+            });
         });
 
         it("callSubscribeBroadcastWithFiltering", function() {
