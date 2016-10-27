@@ -18,12 +18,13 @@
  */
 #ifndef PROXYBASE_H
 #define PROXYBASE_H
-#include "joynr/PrivateCopyAssign.h"
+
+#include <string>
 
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
-#include <string>
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -40,14 +41,14 @@ public:
               const std::string& domain,
               const MessagingQos& qosSettings,
               bool cached);
-    virtual ~ProxyBase();
+    virtual ~ProxyBase() = default;
 
     /**
      * Returns the participantId of the proxy object.
-     * Not shure if this should be part of the public api, but is needed in proxy builder to
-     * register the next hop on message router.
+     * TODO: should this be part of the public API?
+     * it is needed in proxy builder to register the next hop on message router.
      */
-    std::string getProxyParticipantId();
+    const std::string& getProxyParticipantId() const;
 
 protected:
     DISALLOW_COPY_AND_ASSIGN(ProxyBase);
