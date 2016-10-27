@@ -527,6 +527,49 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
     });
 }
 
+TEST_F(IltConsumerBroadcastSubscriptionTest, doNotReceivePublicationsForOtherPartitions)
+{
+    Semaphore publicationSemaphore;
+    int64_t minInterval_ms = 0;
+    int64_t validity = 60000;
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
+    auto mockBroadcastWithSingleEnumerationParameter =
+            std::make_shared<MockBroadcastWithSingleEnumerationParameterBroadcastListener>();
+
+    EXPECT_CALL(*mockBroadcastWithSingleEnumerationParameter, onReceive(_)).Times(1).WillRepeatedly(
+            ReleaseSemaphore(&publicationSemaphore));
+
+    const std::vector<std::string> subscribeToPartitions{"partition0", "partition1"};
+    const std::vector<std::string> broadcastPartitions{"otherPartition"};
+
+    JOYNR_ASSERT_NO_THROW({
+        std::string subscriptionId;
+        auto subscriptionIdFuture =
+                testInterfaceProxy->subscribeToBroadcastWithSingleEnumerationParameterBroadcast(
+                        mockBroadcastWithSingleEnumerationParameter,
+                        subscriptionQos,
+                        subscribeToPartitions);
+
+        subscriptionIdFuture->get(subscriptionIdFutureTimeout, subscriptionId);
+
+        testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter(
+                broadcastPartitions);
+
+        // No broadcast shall be received because the partitions do not match.
+        ASSERT_FALSE(publicationSemaphore.waitFor(std::chrono::milliseconds(2000)));
+
+        // Ensure that we did not receive a publication for another reasons
+        testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter(
+                subscribeToPartitions);
+
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+
+        testInterfaceProxy->unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(
+                subscriptionId);
+    });
+}
+
 INSTANTIATE_TEST_CASE_P(NoPartitions,
                         IltConsumerBroadcastSubscriptionTest,
                         ::testing::Values(std::vector<std::string>()));
