@@ -31,19 +31,20 @@ public class MulticastWildcardRegexFactory {
 
     public Pattern createIdPattern(String multicastId) {
         verifyMulticastIdValid(multicastId);
-        String patternString = multicastId.replaceAll("^\\+/", "[^\\/]+/");
+        String patternString = multicastId.replaceAll("^\\+(/)?", "[^\\/]+$1");
         patternString = patternString.replaceAll("/\\+/", "/[^\\/]+/");
         patternString = patternString.replaceAll("(.*)/[\\+]$", "$1/[^\\/]+\\$");
         patternString = patternString.replaceAll("(.*)/[\\*]$", "$1(/.*)?\\$");
+        patternString = patternString.replaceAll("^\\*$", ".+");
         logger.debug("Creating multicast ID regex pattern: {}", patternString);
         return Pattern.compile(patternString);
     }
 
     private void verifyMulticastIdValid(String multicastId) {
         boolean invalid = multicastId.matches(".*.[^/]\\+.*") || multicastId.matches(".*\\+[^/]+.*")
-                || (multicastId.contains("*") && !multicastId.matches(".*/\\*$"));
+                || (!"*".equals(multicastId) && multicastId.contains("*") && !multicastId.matches(".*/\\*$"));
         if (invalid) {
-            throw new JoynrIllegalStateException("Multicast IDs may only contain '+' as a placeholder for a partition, and '*' only right at the end after a '/'. You passed in: "
+            throw new JoynrIllegalStateException("Multicast IDs may only contain '+' as a placeholder for a partition, and '*' as only character or right at the end after a '/'. You passed in: "
                     + multicastId);
         }
     }
