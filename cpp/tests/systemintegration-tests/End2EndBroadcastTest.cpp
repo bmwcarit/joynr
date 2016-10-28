@@ -47,6 +47,110 @@ public:
     {
     }
 
+protected:
+
+    void testMulticastWithWildcards(std::shared_ptr<MyTestProvider> testProvider, std::shared_ptr<tests::testProxy> testProxy)
+    {
+        std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener =
+                std::make_shared<MockGpsSubscriptionListener>();
+
+        std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>> partitionsToTest
+        {
+            { {"partition0", "+", "partition2"}, {"partition0", "partition1", "partition2"} },
+            { {"+", "partition1" }, {"partition0", "partition1" } },
+            { {"+", "partition1", "+", "partition3" }, {"partition0", "partition1", "partition2", "partition3" } },
+            { {"+", "*"}, {"partition0", "partition1", "partition2", "partition3" } },
+            { {"+", "partition1" }, {"partition0", "partition1" } },
+            { {"+", "+", "+", "*" }, {"partition0", "partition1", "partition2", "partition3" } },
+        };
+
+        EXPECT_CALL(*mockSubscriptionListener, onReceive(_))
+                .Times(partitionsToTest.size())
+                .WillRepeatedly(ReleaseSemaphore(&semaphore));
+
+        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                    500000, // validity_ms
+                    50);    // minInterval_ms
+
+        for(const auto& partitions : partitionsToTest) {
+            auto subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(
+                    mockSubscriptionListener,
+                    subscriptionQos,
+                    partitions.first
+            );
+
+            std::string subscriptionId;
+            JOYNR_ASSERT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionId));
+
+            testProvider->fireLocationUpdate(gpsLocation2, partitions.second);
+            std::stringstream subscriptionPartitions;
+            std::copy(
+                partitions.first.begin(),
+                partitions.first.end(),
+                std::ostream_iterator<std::string>(subscriptionPartitions, " ")
+            );
+            std::stringstream firePartitions;
+            std::copy(
+                partitions.second.begin(),
+                partitions.second.end(),
+                std::ostream_iterator<std::string>(firePartitions, " ")
+            );
+            EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(5)))
+                << "Partitions used for subscription: " + subscriptionPartitions.str() << std::endl
+                << "Partitions used for fire broadcast" + firePartitions.str();
+
+            testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
+        }
+    }
+
+    void testMulticastWithWildcardsAndTwoProxies(std::shared_ptr<MyTestProvider> testProvider,
+                                                 std::shared_ptr<tests::testProxy> testProxy1,
+                                                 std::shared_ptr<tests::testProxy> testProxy2)
+    {
+        std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener1 =
+                std::make_shared<MockGpsSubscriptionListener>();
+
+        std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener2 =
+                std::make_shared<MockGpsSubscriptionListener>();
+
+        // Will not receive any publication
+        EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
+                .Times(0);
+
+        // Shall receive a publication
+        EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
+                .Times(1)
+                .WillOnce(ReleaseSemaphore(&semaphore));
+
+        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                    500000, // validity_ms
+                    50);    // minInterval_ms
+
+        auto subscriptionIdFuture1 = testProxy1->subscribeToLocationUpdateBroadcast(
+                        mockSubscriptionListener1,
+                        subscriptionQos,
+                        {"partition0", "+", "partition2"}
+                );
+
+        auto subscriptionIdFuture2 = testProxy2->subscribeToLocationUpdateBroadcast(
+                        mockSubscriptionListener2,
+                        subscriptionQos,
+                        {"partition0", "*"}
+                );
+
+        std::string subscriptionId1;
+        std::string subscriptionId2;
+
+        subscriptionIdFuture1->get(5000, subscriptionId1);
+        subscriptionIdFuture2->get(5000, subscriptionId2);
+
+        testProvider->fireLocationUpdate(gpsLocation2, {"partition0", "partition1", "partitionX"});
+
+        EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(5)));
+
+        testProxy1->unsubscribeFromLocationUpdateBroadcast(subscriptionId1);
+        testProxy2->unsubscribeFromLocationUpdateBroadcast(subscriptionId2);
+    }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndBroadcastTest);
@@ -642,59 +746,21 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
 
-    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener =
-            std::make_shared<MockGpsSubscriptionListener>();
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider(*runtime1);
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy(*runtime2);
 
-    std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>> partitionsToTest =
-    {
-        { {"partition0", "+", "partition2"}, {"partition0", "partition1", "partition2"} },
-        { {"+", "partition1" }, {"partition0", "partition1" } },
-        { {"+", "partition1", "+", "partition3" }, {"partition0", "partition1", "partition2", "partition3" } },
-        { {"+", "*"}, {"partition0", "partition1", "partition2", "partition3" } },
-        { {"+", "partition1" }, {"partition0", "partition1" } },
-        { {"+", "+", "+", "*" }, {"partition0", "partition1", "partition2", "partition3" } },
-    };
+    testMulticastWithWildcards(testProvider, testProxy);
+}
 
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(_))
-            .Times(partitionsToTest.size())
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
-
-    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
-    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
-
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000, // validity_ms
-                50);    // minInterval_ms
-
-    for (const auto& partitions : partitionsToTest) {
-        auto subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(
-                mockSubscriptionListener,
-                subscriptionQos,
-                partitions.first
-        );
-
-        std::string subscriptionId;
-        JOYNR_ASSERT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionId));
-
-        testProvider->fireLocationUpdate(gpsLocation2, partitions.second);
-        std::stringstream subscriptionPartitions;
-        std::copy(
-                    partitions.first.begin(),
-                    partitions.first.end(),
-                    std::ostream_iterator<std::string>(subscriptionPartitions, " ")
-        );
-        std::stringstream firePartitions;
-        std::copy(
-                    partitions.second.begin(),
-                    partitions.second.end(),
-                    std::ostream_iterator<std::string>(firePartitions, " ")
-        );
-        EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(5)))
-                << "Partitions used for subscription: " + subscriptionPartitions.str() << std::endl
-                << "Partitions used for fire broadcast" + firePartitions.str();
-
-        testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_InProcess) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
     }
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider(*runtime1);
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy(*runtime1);
+
+    testMulticastWithWildcards(testProvider, testProxy);
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxies) {
@@ -702,53 +768,23 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxies) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
 
-    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener1 =
-            std::make_shared<MockGpsSubscriptionListener>();
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider(*runtime1);
+    std::shared_ptr<tests::testProxy> testProxy1 = buildProxy(*runtime2);
+    std::shared_ptr<tests::testProxy> testProxy2 = buildProxy(*runtime2);
 
-    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener2 =
-            std::make_shared<MockGpsSubscriptionListener>();
+    testMulticastWithWildcardsAndTwoProxies(testProvider, testProxy1, testProxy2);
+}
 
-    // Will not receive any publication
-    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
-            .Times(0);
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxiesInProcess) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
 
-    // Shall receive a publication
-    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider(*runtime1);
+    std::shared_ptr<tests::testProxy> testProxy1 = buildProxy(*runtime1);
+    std::shared_ptr<tests::testProxy> testProxy2 = buildProxy(*runtime1);
 
-    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
-    std::shared_ptr<tests::testProxy> testProxy1 = buildProxy();
-    std::shared_ptr<tests::testProxy> testProxy2 = buildProxy();
-
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000, // validity_ms
-                50);    // minInterval_ms
-
-    auto subscriptionIdFuture1 = testProxy1->subscribeToLocationUpdateBroadcast(
-                    mockSubscriptionListener1,
-                    subscriptionQos,
-                    {"partition0", "+", "partition2"}
-            );
-
-    auto subscriptionIdFuture2 = testProxy2->subscribeToLocationUpdateBroadcast(
-                    mockSubscriptionListener2,
-                    subscriptionQos,
-                    {"partition0", "*"}
-            );
-
-    std::string subscriptionId1;
-    std::string subscriptionId2;
-
-    subscriptionIdFuture1->get(5000, subscriptionId1);
-    subscriptionIdFuture2->get(5000, subscriptionId2);
-
-    testProvider->fireLocationUpdate(gpsLocation2, {"partition0", "partition1", "partitionX"});
-
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(5)));
-
-    testProxy1->unsubscribeFromLocationUpdateBroadcast(subscriptionId1);
-    testProxy2->unsubscribeFromLocationUpdateBroadcast(subscriptionId2);
+    testMulticastWithWildcardsAndTwoProxies(testProvider, testProxy1, testProxy2);
 }
 
 TEST_P(End2EndBroadcastTest, publishBroadcastWithInvalidPartitions) {
@@ -759,8 +795,8 @@ TEST_P(End2EndBroadcastTest, publishBroadcastWithInvalidPartitions) {
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
     EXPECT_THROW(
-            testProvider->fireLocationUpdate(gpsLocation2, {"partition0", "partition1", "*"}),
-            std::invalid_argument
+        testProvider->fireLocationUpdate(gpsLocation2, {"partition0", "partition1", "*"}),
+        std::invalid_argument
     );
 }
 
