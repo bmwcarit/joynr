@@ -161,7 +161,7 @@ protected:
                        const std::vector<std::string>& partitions,
                        const Ts&... values)
     {
-        util::validatePartitions(partitions);
+        util::validatePartitions(partitions, false /*do not allow wildcard*/);
 
         ReadLocker locker(lockBroadcastListeners);
         // Inform all the broadcast listeners for this broadcast

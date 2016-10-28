@@ -133,19 +133,22 @@ std::string createMulticastId(const std::string& providerParticipantId,
     return multicastId.str();
 }
 
-void validatePartitions(const std::vector<std::string>& partitions)
+void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards)
 {
     static const std::regex patternRegex("^[a-zA-Z0-9]+$");
     const std::vector<std::string>::const_iterator lastPartition = --partitions.cend();
     for (auto partition = partitions.cbegin(); partition != partitions.cend(); ++partition) {
         if (!partition->empty()) {
-            if (*partition == SINGLE_LEVEL_WILDCARD) {
-                continue;
-            } else if (*partition == MULTI_LEVEL_WILDCARD) {
-                if (partition == lastPartition) {
-                    return;
+            if (allowWildcards) {
+                if (*partition == SINGLE_LEVEL_WILDCARD) {
+                    continue;
+                } else if (*partition == MULTI_LEVEL_WILDCARD) {
+                    if (partition == lastPartition) {
+                        return;
+                    }
                 }
-            } else if (std::regex_search(*partition, patternRegex)) {
+            }
+            if (std::regex_search(*partition, patternRegex)) {
                 continue;
             }
         }

@@ -147,7 +147,7 @@ void «className»::handleArbitrationFinished(
 
 		«IF !broadcast.selective»
 			try {
-				util::validatePartitions(partitions);
+				util::validatePartitions(partitions, true);
 			} catch (std::invalid_argument exception) {
 				errorMsg = "invalid argument:\n" + std::string(exception.what());
 			}
@@ -184,7 +184,7 @@ void «className»::handleArbitrationFinished(
 
 		«IF !broadcast.selective»
 			try {
-				util::validatePartitions(partitions);
+				util::validatePartitions(partitions, true);
 			} catch (std::invalid_argument exception) {
 				errorMsg = "invalid argument:\n" + std::string(exception.what());
 			}
