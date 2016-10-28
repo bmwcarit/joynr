@@ -64,6 +64,12 @@ std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
 
 std::string attributeGetterFromName(const std::string& attributeName);
 
+/*
+ * Convert Hash symbol to Kleen Star.
+ * This method assumes the multicastId is valid i.e. the Kleen star appears only at the end.
+ */
+void translateMulticastWildcard(std::string& multicastId);
+
 std::string loadStringFromFile(const std::string& fileName);
 void saveStringToFile(const std::string& fileName, const std::string& strToSave);
 

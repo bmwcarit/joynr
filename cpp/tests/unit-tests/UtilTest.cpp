@@ -170,3 +170,18 @@ TEST(UtilTest, validateValidPartitionsWithWildCardsThrows)
     validatePartitionsAlwaysThrow(!doNotAllowWildCard);
 }
 
+TEST(UtilTest, translateWildcard)
+{
+    std::map<std::string, std::string> input2expected = {
+      {"partion0/partion1", "partion0/partion1"},
+      {"partion0/partion1/*", "partion0/partion1/*"},
+      {"partion0/partion1/+", "partion0/partion1/+"}
+    };
+
+    for(auto& testCase : input2expected) {
+        std::string inputPartition = testCase.first;
+        std::string expectedPartition = testCase.second;
+        util::translateMulticastWildcard(inputPartition);
+        EXPECT_EQ(expectedPartition, inputPartition);
+    }
+}
