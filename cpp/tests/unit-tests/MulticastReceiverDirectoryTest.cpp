@@ -125,3 +125,78 @@ TEST_F(MulticastReceiverDirectoryTest, getReceivers)
     std::unordered_set<std::string> receivers = multicastReceiverDirectory.getReceivers(multicastId);
     EXPECT_EQ(expectedReceivers, receivers);
 }
+
+TEST_F(MulticastReceiverDirectoryTest, getReceiversWithWildCards)
+{
+    std::vector<std::string> listOfSubscribersId = {"a", "b", "c", "d", "e", "f", "g", "h"};
+
+    multicastReceiverDirectory.registerMulticastReceiver("provider/brod/+",     listOfSubscribersId[0]);
+    multicastReceiverDirectory.registerMulticastReceiver("provider/brod/a",     listOfSubscribersId[1]);
+    multicastReceiverDirectory.registerMulticastReceiver("provider/brod/a/+",   listOfSubscribersId[2]);
+    multicastReceiverDirectory.registerMulticastReceiver("provider/brod/a/+/b", listOfSubscribersId[3]);
+    multicastReceiverDirectory.registerMulticastReceiver("provider/brod/a/*",   listOfSubscribersId[4]);
+    multicastReceiverDirectory.registerMulticastReceiver("provider/brod/*",     listOfSubscribersId[5]);
+    multicastReceiverDirectory.registerMulticastReceiver("provider/brod/+/+/a", listOfSubscribersId[6]);
+    multicastReceiverDirectory.registerMulticastReceiver("provider/brod/+/+/*", listOfSubscribersId[7]);
+
+    std::string subscribeToMulticastID = "provider/brod";
+    std::unordered_set<std::string> receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
+    std::unordered_set<std::string> expectedReceivers = {
+        listOfSubscribersId[5]
+    };
+    EXPECT_EQ(expectedReceivers, receivers);
+
+    subscribeToMulticastID = "provider/brod/a";
+    receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
+    expectedReceivers = {
+        listOfSubscribersId[0],
+        listOfSubscribersId[1],
+        listOfSubscribersId[4],
+        listOfSubscribersId[5]
+    };
+    EXPECT_EQ(expectedReceivers, receivers);
+
+    subscribeToMulticastID = "provider/brod/a/z";
+    receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
+    expectedReceivers = {
+        listOfSubscribersId[2],
+        listOfSubscribersId[4],
+        listOfSubscribersId[5],
+        listOfSubscribersId[7]
+    };
+    EXPECT_EQ(expectedReceivers, receivers);
+
+    subscribeToMulticastID = "provider/brod/a/b/a";
+    receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
+    expectedReceivers = {
+        listOfSubscribersId[4],
+        listOfSubscribersId[5],
+        listOfSubscribersId[6],
+        listOfSubscribersId[7]
+    };
+    EXPECT_EQ(expectedReceivers, receivers);
+
+    subscribeToMulticastID = "provider/brod/a/z/b";
+    receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
+    expectedReceivers = {
+        listOfSubscribersId[3],
+        listOfSubscribersId[4],
+        listOfSubscribersId[5],
+        listOfSubscribersId[7]
+    };
+    EXPECT_EQ(expectedReceivers, receivers);
+
+    subscribeToMulticastID = "provider/brod/z";
+    receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
+    expectedReceivers = {
+        listOfSubscribersId[0],
+        listOfSubscribersId[5]
+    };
+    EXPECT_EQ(expectedReceivers, receivers);
+
+    subscribeToMulticastID = "provider/anotherBrod";
+    receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
+    expectedReceivers = {};
+    EXPECT_EQ(expectedReceivers, receivers);
+}
+
