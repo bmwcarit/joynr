@@ -46,18 +46,18 @@ void MqttSender::sendMessage(
 {
     JOYNR_LOG_DEBUG(logger, "sendMessage: ...");
 
-    if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destinationAddress) == nullptr) {
+    auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destinationAddress);
+    if (mqttAddress == nullptr) {
         JOYNR_LOG_DEBUG(logger, "Invalid destination address type provided");
         onFailure(exceptions::JoynrRuntimeException("Invalid destination address type provided"));
         return;
     }
 
-    auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress&>(destinationAddress);
     std::string topic;
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
         topic = message.getHeaderTo();
     } else {
-        topic = mqttAddress.getTopic() + "/" + mosquittoPublisher.getMqttPrio() + "/" +
+        topic = mqttAddress->getTopic() + "/" + mosquittoPublisher.getMqttPrio() + "/" +
                 message.getHeaderTo();
     }
 
