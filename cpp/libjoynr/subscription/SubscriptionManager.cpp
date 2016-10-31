@@ -389,6 +389,25 @@ std::forward_list<std::shared_ptr<ISubscriptionCallback>> SubscriptionManager::
     return callbacks;
 }
 
+std::shared_ptr<ISubscriptionListenerBase> SubscriptionManager::getSubscriptionListener(
+        const std::string& subscriptionId)
+{
+    JOYNR_LOG_DEBUG(logger, "Getting subscription listener for subscription id={}", subscriptionId);
+    if (!subscriptions.contains(subscriptionId)) {
+        JOYNR_LOG_WARN(logger,
+                       "Trying to acces a non existing subscription listener for id={}",
+                       subscriptionId);
+        return std::shared_ptr<ISubscriptionListenerBase>();
+    }
+
+    std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
+
+    {
+        std::lock_guard<std::recursive_mutex> subscriptionLockers(subscription->mutex);
+        return subscription->subscriptionListener;
+    }
+}
+
 //------ SubscriptionManager::Subscription ---------------------------------------
 SubscriptionManager::Subscription::Subscription(
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller,

@@ -330,6 +330,33 @@ TEST_F(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsOnNonExist
     subscriptionManager.unregisterSubscription("superId");
 }
 
+TEST_F(SubscriptionManagerTest, getSubscriptionListener) {
+    auto mockGpsSubscriptionListener =
+            std::make_shared<MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>();
+    SubscriptionRequest subscriptionRequest;
+    SubscriptionManager subscriptionManager(singleThreadedIOService.getIOService(), nullptr);
+    auto future = std::make_shared<Future<std::string>>();
+    auto gpslocationCallback =
+            std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(
+                mockGpsSubscriptionListener, future, &subscriptionManager);
+    auto qos = std::make_shared<PeriodicSubscriptionQos>(
+                2000, // validity
+                100,  // period
+                400   // alert after interval
+    );
+    subscriptionManager.registerSubscription(
+                "broadcastName",
+                gpslocationCallback,
+                mockGpsSubscriptionListener,
+                qos,
+                subscriptionRequest
+    );
+    EXPECT_EQ(
+                mockGpsSubscriptionListener,
+                subscriptionManager.getSubscriptionListener(subscriptionRequest.getSubscriptionId())
+    );
+}
+
 TEST_F(SubscriptionManagerMulticastTest, registerMulticastSubscription_registrationSucceeds) {
     MulticastSubscriptionRequest subscriptionRequest;
 

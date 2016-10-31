@@ -137,6 +137,16 @@ public:
     getMulticastSubscriptionCallbacks(const std::string& multicastId) = 0;
 
     /**
+     * @brief Get a shared pointer to the subscription listener. The shared pointer points to null
+     * if the subscription ID does not exist.
+     *
+     * @param subscriptionId
+     * @return std::shared_ptr<ISubscriptionListenerBase>
+     */
+    virtual std::shared_ptr<ISubscriptionListenerBase> getSubscriptionListener(
+            const std::string& subscriptionId) = 0;
+
+    /**
      * @brief Converts the expiry date of a subscription into a TTL.
      * @param subscriptionQos the subscription QoS defining the subscription.
      * @return the TTL in millis.
