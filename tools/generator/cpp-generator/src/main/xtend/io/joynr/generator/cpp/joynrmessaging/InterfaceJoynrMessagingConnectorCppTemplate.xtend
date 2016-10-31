@@ -73,7 +73,7 @@ internalRequestObject.setParams(
 #include "joynr/ReplyCaller.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/ISubscriptionManager.h"
-#include "joynr/SubscriptionCallback.h"
+#include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/Util.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Future.h"
@@ -262,7 +262,7 @@ bool «className»::usesClusterController() const{
 			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
 
 			auto future = std::make_shared<Future<std::string>>();
-			auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnType»>
+			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnType»>
 			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 			subscriptionManager->registerSubscription(
 						attributeName,
@@ -413,7 +413,7 @@ bool «className»::usesClusterController() const{
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
 
 		auto future = std::make_shared<Future<std::string>>();
-		auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnTypes»>
+		auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnTypes»>
 			>(subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId(), future, subscriptionManager);
 		«IF broadcast.selective»
 			subscriptionManager->registerSubscription(

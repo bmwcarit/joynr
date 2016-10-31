@@ -37,7 +37,7 @@ namespace joynr
   * @class SubscriptionCallback
   * @brief
   */
-template <typename T, typename... Ts>
+template <typename Derived, typename T, typename... Ts>
 class SubscriptionCallback : public ISubscriptionCallback
 {
 public:
@@ -52,27 +52,20 @@ public:
 
     void onError(const exceptions::JoynrRuntimeException& error) override
     {
-        std::shared_ptr<ISubscriptionListenerBase> listener =
-                subscriptionManager->getSubscriptionListener(subscriptionId);
-        listener->onError(error);
+        static_cast<Derived*>(this)->onError(error);
     }
 
     template <typename Holder = T>
     std::enable_if_t<std::is_void<Holder>::value, void> onSuccess()
     {
-
-        auto listener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(
-                subscriptionManager->getSubscriptionListener(subscriptionId));
-        listener->onReceive();
+        static_cast<Derived*>(this)->onSuccess();
     }
 
     template <typename Holder = T>
     std::enable_if_t<!std::is_void<Holder>::value, void> onSuccess(const Holder& value,
                                                                    const Ts&... values)
     {
-        auto listener = std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(
-                subscriptionManager->getSubscriptionListener(subscriptionId));
-        listener->onReceive(value, values...);
+        static_cast<Derived*>(this)->onSuccess(value, values...);
     }
 
     void execute(BasePublication&& publication) override

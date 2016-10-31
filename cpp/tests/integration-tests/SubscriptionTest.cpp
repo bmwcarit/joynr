@@ -26,7 +26,7 @@
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/Dispatcher.h"
-#include "joynr/SubscriptionCallback.h"
+#include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/InterfaceRegistrar.h"
@@ -196,7 +196,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     subscriptionPublication.setResponse(gpsLocation1);
 
     auto future = std::make_shared<Future<std::string>>();
-    auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
+    auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
             >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
@@ -251,7 +251,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     subscriptionPublication.setResponse(tests::testTypes::TestEnum::ZERO);
     auto future = std::make_shared<Future<std::string>>();
-    auto subscriptionCallback = std::make_shared<SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>
+    auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>
             >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param

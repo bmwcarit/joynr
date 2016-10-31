@@ -21,7 +21,7 @@
 #include "joynr/IReplyCaller.h"
 #include <string>
 #include "utils/MockObjects.h"
-#include "joynr/SubscriptionCallback.h"
+#include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/SingleThreadedIOService.h"
 
@@ -129,8 +129,8 @@ public:
         std::ignore = onSuccess;
         std::ignore = onError;
         subscriptionRequest.setQos(qos);
-        std::shared_ptr<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>> typedCallback =
-                std::dynamic_pointer_cast<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>>(subscriptionCaller);
+        std::shared_ptr<UnicastSubscriptionCallback<joynr::types::Localisation::GpsLocation, float>> typedCallback =
+                std::dynamic_pointer_cast<UnicastSubscriptionCallback<joynr::types::Localisation::GpsLocation, float>>(subscriptionCaller);
 
         typedCallback->onSuccess(gpsLocation, floatValue);
     }

@@ -66,7 +66,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 #include "joynr/InProcessAddress.h"
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/PublicationManager.h"
-#include "joynr/SubscriptionCallback.h"
+#include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/Util.h"
 #include "joynr/Future.h"
 #include "joynr/SubscriptionUtil.h"
@@ -265,7 +265,7 @@ bool «className»::usesClusterController() const{
 				std::string attributeName("«attributeName»");
 				auto future = std::make_shared<Future<std::string>>();
 				auto subscriptionCallback = std::make_shared<
-						joynr::SubscriptionCallback<«returnType»>
+						joynr::UnicastSubscriptionCallback<«returnType»>
 				>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 				subscriptionManager->registerSubscription(
 						attributeName,
@@ -443,7 +443,7 @@ bool «className»::usesClusterController() const{
 
 		auto future = std::make_shared<Future<std::string>>();
 		auto subscriptionCallback = std::make_shared<
-				joynr::SubscriptionCallback<«returnTypes»>
+				joynr::UnicastSubscriptionCallback<«returnTypes»>
 		>(subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId(), future, subscriptionManager);
 		assert(address);
 		«IF broadcast.selective»

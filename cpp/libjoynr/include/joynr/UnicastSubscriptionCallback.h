@@ -1,0 +1,83 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+#ifndef UNICASTSUBSCRIPTIONCALLBACK_H
+#define UNICASTSUBSCRIPTIONCALLBACK_H
+
+#include <memory>
+
+#include "joynr/SubscriptionCallback.h"
+#include "joynr/ISubscriptionListener.h"
+#include "ISubscriptionManager.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/BasePublication.h"
+#include "joynr/Future.h"
+
+namespace joynr
+{
+
+/**
+  * @class UnicastSubscriptionCallback
+  * @brief
+  */
+template <typename T, typename... Ts>
+class UnicastSubscriptionCallback
+        : public SubscriptionCallback<UnicastSubscriptionCallback<T, Ts...>, T, Ts...>
+{
+private:
+    using Base = SubscriptionCallback<UnicastSubscriptionCallback<T, Ts...>, T, Ts...>;
+
+public:
+    explicit UnicastSubscriptionCallback(const std::string& subscriptionId,
+                                         std::shared_ptr<Future<std::string>> future,
+                                         ISubscriptionManager* subscriptionManager)
+            : Base(subscriptionId, std::move(future), subscriptionManager)
+    {
+    }
+
+    void onError(const exceptions::JoynrRuntimeException& error)
+    {
+        std::shared_ptr<ISubscriptionListenerBase> listener =
+                Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId);
+        listener->onError(error);
+    }
+
+    template <typename Holder = T>
+    std::enable_if_t<std::is_void<Holder>::value, void> onSuccess()
+    {
+
+        auto listener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(
+                Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId));
+        listener->onReceive();
+    }
+
+    template <typename Holder = T>
+    std::enable_if_t<!std::is_void<Holder>::value, void> onSuccess(const Holder& value,
+                                                                   const Ts&... values)
+    {
+        auto listener = std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(
+                Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId));
+        listener->onReceive(value, values...);
+    }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(UnicastSubscriptionCallback);
+};
+
+} // namespace joynr
+#endif // UNICASTSUBSCRIPTIONCALLBACK_H
