@@ -147,6 +147,16 @@ public:
             const std::string& subscriptionId) = 0;
 
     /**
+     * @brief Get a list of shared pointers to the subscription listeners. The list is empty
+     * if the multicast ID does not exist.
+     *
+     * @param multicastId
+     * @return std::forward_list<std::shared_ptr<ISubscriptionListenerBase>>
+     */
+    virtual std::forward_list<std::shared_ptr<ISubscriptionListenerBase>>
+    getMulticastSubscriptionListeners(const std::string& multicastId) = 0;
+
+    /**
      * @brief Converts the expiry date of a subscription into a TTL.
      * @param subscriptionQos the subscription QoS defining the subscription.
      * @return the TTL in millis.

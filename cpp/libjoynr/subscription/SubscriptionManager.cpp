@@ -408,6 +408,24 @@ std::shared_ptr<ISubscriptionListenerBase> SubscriptionManager::getSubscriptionL
     }
 }
 
+std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> SubscriptionManager::
+        getMulticastSubscriptionListeners(const std::string& multicastId)
+{
+    std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners;
+    {
+        std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
+        auto subscriptionIds = multicastSubscribers.getReceivers(multicastId);
+        for (const auto& subscriptionId : subscriptionIds) {
+            std::shared_ptr<ISubscriptionListenerBase> listener =
+                    getSubscriptionListener(subscriptionId);
+            if (listener) {
+                listeners.push_front(listener);
+            }
+        }
+    }
+    return listeners;
+}
+
 //------ SubscriptionManager::Subscription ---------------------------------------
 SubscriptionManager::Subscription::Subscription(
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller,

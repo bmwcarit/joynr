@@ -170,6 +170,16 @@ public:
     std::shared_ptr<ISubscriptionListenerBase> getSubscriptionListener(
             const std::string& subscriptionId) override;
 
+    /**
+     * @brief Get a list of shared pointers to the subscription listeners. The list is empty
+     * if the multicast ID does not exist.
+     *
+     * @param multicastId
+     * @return std::forward_list<std::shared_ptr<ISubscriptionListenerBase>>
+     */
+    std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> getMulticastSubscriptionListeners(
+            const std::string& multicastId) override;
+
 private:
     //    void checkMissedPublication(const Timer::TimerId id);
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
