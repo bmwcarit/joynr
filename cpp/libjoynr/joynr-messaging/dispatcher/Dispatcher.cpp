@@ -430,9 +430,9 @@ void Dispatcher::handleMulticastReceived(const JoynrMessage& message)
 
         assert(subscriptionManager != nullptr);
 
-        std::forward_list<std::shared_ptr<ISubscriptionCallback>> callbacks =
-                subscriptionManager->getMulticastSubscriptionCallbacks(multicastId);
-        if (callbacks.empty()) {
+        std::shared_ptr<ISubscriptionCallback> callback =
+                subscriptionManager->getMulticastSubscriptionCallback(multicastId);
+        if (callback == nullptr) {
             JOYNR_LOG_ERROR(logger,
                             "Dropping multicast publication for non/no more existing subscription "
                             "with multicastId = {}",
@@ -444,9 +444,7 @@ void Dispatcher::handleMulticastReceived(const JoynrMessage& message)
         // when MulticastPublication is extended by subscriptionId
         // subscriptionManager->touchSubscriptionState(subscriptionId);
 
-        for (const auto& callback : callbacks) {
-            callback->execute(std::move(multicastPublication));
-        }
+        callback->execute(std::move(multicastPublication));
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize multicast publication object from: {} - error: {}",

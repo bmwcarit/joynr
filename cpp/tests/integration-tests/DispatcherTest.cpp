@@ -250,7 +250,8 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
 }
 
 TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
-    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
+    MockSubscriptionManager mockSubscriptionManager(
+                singleThreadIOService.getIOService(), mockMessageRouter);
     dispatcher.registerSubscriptionManager(&mockSubscriptionManager);
 
     const std::string senderParticipantId("senderParticipantId");
@@ -263,14 +264,16 @@ TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
     joynr::MulticastPublication payload;
     payload.setMulticastId(multicastId);
 
-    JoynrMessage message = messageFactory.createMulticastPublication(senderParticipantId, qos, payload);
+    JoynrMessage message = messageFactory.createMulticastPublication(
+                senderParticipantId, qos, payload);
 
     auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
 
-    EXPECT_CALL(mockSubscriptionManager, getMulticastSubscriptionCallbacks(multicastId)).
-        Times(1).
-        WillOnce(Return(std::forward_list<std::shared_ptr<ISubscriptionCallback>>({mockSubscriptionCallback})));
-    EXPECT_CALL(*mockSubscriptionCallback, executePublication(_)).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
+    EXPECT_CALL(mockSubscriptionManager, getMulticastSubscriptionCallback(multicastId))
+        .Times(1)
+        .WillOnce(Return(mockSubscriptionCallback));
+    EXPECT_CALL(*mockSubscriptionCallback, executePublication(_))
+        .WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
 
     dispatcher.receive(message);
 

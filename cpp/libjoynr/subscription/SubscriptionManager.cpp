@@ -373,21 +373,18 @@ std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallb
     }
 }
 
-std::forward_list<std::shared_ptr<ISubscriptionCallback>> SubscriptionManager::
-        getMulticastSubscriptionCallbacks(const std::string& multicastId)
+std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getMulticastSubscriptionCallback(
+        const std::string& multicastId)
 {
-    std::forward_list<std::shared_ptr<ISubscriptionCallback>> callbacks;
-    {
-        std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
-        auto subscriptionIds = multicastSubscribers.getReceivers(multicastId);
-        for (const auto& subscriptionId : subscriptionIds) {
-            auto callback = getSubscriptionCallback(subscriptionId);
-            if (callback) {
-                callbacks.push_front(callback);
-            }
-        }
+    std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
+    auto subscriptionIds = multicastSubscribers.getReceivers(multicastId);
+    if (subscriptionIds.empty()) {
+        JOYNR_LOG_WARN(logger,
+                       "Trying to acces a non existing subscription callback for mutlicast id={}",
+                       multicastId);
+        return std::shared_ptr<ISubscriptionCallback>();
     }
-    return callbacks;
+    return getSubscriptionCallback(*(subscriptionIds.begin()));
 }
 
 std::shared_ptr<ISubscriptionListenerBase> SubscriptionManager::getSubscriptionListener(

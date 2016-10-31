@@ -151,13 +151,13 @@ public:
             const std::string& subscriptionId) override;
 
     /**
-     * @brief Get a list of shared pointers to the subscription callbacks. The list is empty
+     * @brief Get a shared pointer to the subscription callback. The shared pointer point to null
      * if the multicast ID does not exist.
      *
      * @param multicastId
-     * @return std::forward_list<std::shared_ptr<ISubscriptionCallback>>
+     * @return <std::shared_ptr<ISubscriptionCallback>
      */
-    std::forward_list<std::shared_ptr<ISubscriptionCallback>> getMulticastSubscriptionCallbacks(
+    std::shared_ptr<ISubscriptionCallback> getMulticastSubscriptionCallback(
             const std::string& multicastId) override;
 
     /**

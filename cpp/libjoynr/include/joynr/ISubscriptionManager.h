@@ -127,14 +127,14 @@ public:
             const std::string& subscriptionId) = 0;
 
     /**
-     * @brief Get a list of shared pointers to the subscription callbacks. The list is empty
+     * @brief Get a shared pointer to the subscription callback. The shared pointer point to null
      * if the multicast ID does not exist.
      *
      * @param multicastId
-     * @return std::forward_list<std::shared_ptr<ISubscriptionCallback>>
+     * @return <std::shared_ptr<ISubscriptionCallback>
      */
-    virtual std::forward_list<std::shared_ptr<ISubscriptionCallback>>
-    getMulticastSubscriptionCallbacks(const std::string& multicastId) = 0;
+    virtual std::shared_ptr<ISubscriptionCallback> getMulticastSubscriptionCallback(
+            const std::string& multicastId) = 0;
 
     /**
      * @brief Get a shared pointer to the subscription listener. The shared pointer points to null

@@ -375,10 +375,9 @@ TEST_F(SubscriptionManagerMulticastTest, registerMulticastSubscription_registrat
         [](){},
         [](const joynr::exceptions::ProviderRuntimeException&){});
 
-    auto registeredSubscriptionCallbacks = subscriptionManager.getMulticastSubscriptionCallbacks(multicastId1);
+    auto registeredSubscriptionCallback = subscriptionManager.getMulticastSubscriptionCallback(multicastId1);
 
-    ASSERT_EQ(std::distance(registeredSubscriptionCallbacks.begin(), registeredSubscriptionCallbacks.end()), 1);
-    ASSERT_EQ(*registeredSubscriptionCallbacks.begin(), subscriptionCallback);
+    ASSERT_EQ(subscriptionCallback, registeredSubscriptionCallback);
 }
 
 TEST_F(SubscriptionManagerMulticastTest, unregisterMulticastSubscription_unregisterSucceeds) {
@@ -401,9 +400,9 @@ TEST_F(SubscriptionManagerMulticastTest, unregisterMulticastSubscription_unregis
 
     subscriptionManager.unregisterSubscription(subscriptionRequest.getSubscriptionId());
 
-    auto registeredSubscriptionCallbacks = subscriptionManager.getMulticastSubscriptionCallbacks(multicastId1);
+    auto registeredSubscriptionCallback = subscriptionManager.getMulticastSubscriptionCallback(multicastId1);
 
-    ASSERT_EQ(std::distance(registeredSubscriptionCallbacks.begin(), registeredSubscriptionCallbacks.end()), 0);
+    ASSERT_EQ(nullptr, registeredSubscriptionCallback);
 }
 
 TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_correctCallbacksAreReturned) {
@@ -478,28 +477,20 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
         [](){},
         [](const joynr::exceptions::ProviderRuntimeException&){});
 
-    auto registeredSubscriptionCallbacks_multicast1 =
-        subscriptionManager.getMulticastSubscriptionCallbacks(multicastId1);
-    auto registeredSubscriptionCallbacks_multicast2 =
-        subscriptionManager.getMulticastSubscriptionCallbacks(multicastId2);
-    auto registeredSubscriptionCallbacks_multicast3 =
-        subscriptionManager.getMulticastSubscriptionCallbacks(multicastId3);
+    auto registeredSubscriptionCallback_multicast1 =
+        subscriptionManager.getMulticastSubscriptionCallback(multicastId1);
+    auto registeredSubscriptionCallback_multicast2 =
+        subscriptionManager.getMulticastSubscriptionCallback(multicastId2);
+    auto registeredSubscriptionCallback_multicast3 =
+        subscriptionManager.getMulticastSubscriptionCallback(multicastId3);
 
-    ASSERT_EQ(std::distance(registeredSubscriptionCallbacks_multicast1.begin(),
-                            registeredSubscriptionCallbacks_multicast1.end()), 2);
-    ASSERT_TRUE(std::find(registeredSubscriptionCallbacks_multicast1.begin(),
-                          registeredSubscriptionCallbacks_multicast1.end(),
-                          subscriptionCallback1_1) != registeredSubscriptionCallbacks_multicast1.cend());
-    ASSERT_TRUE(std::find(registeredSubscriptionCallbacks_multicast1.begin(),
-                          registeredSubscriptionCallbacks_multicast1.end(),
-                          subscriptionCallback1_2) != registeredSubscriptionCallbacks_multicast1.cend());
-    ASSERT_EQ(std::distance(registeredSubscriptionCallbacks_multicast2.begin(),
-                            registeredSubscriptionCallbacks_multicast2.end()), 1);
-    ASSERT_EQ(*registeredSubscriptionCallbacks_multicast2.begin(), subscriptionCallback2);
+    ASSERT_TRUE(
+                registeredSubscriptionCallback_multicast1 == subscriptionCallback1_1
+                || registeredSubscriptionCallback_multicast1 == subscriptionCallback1_2
+    );
+    ASSERT_EQ(subscriptionCallback2, registeredSubscriptionCallback_multicast2);
 
-    ASSERT_EQ(std::distance(registeredSubscriptionCallbacks_multicast3.begin(),
-                            registeredSubscriptionCallbacks_multicast3.end()), 1);
-    ASSERT_EQ(*registeredSubscriptionCallbacks_multicast3.begin(), subscriptionCallback3);
+    ASSERT_EQ(subscriptionCallback3, registeredSubscriptionCallback_multicast3);
 }
 
 TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_changedPartitions_callsMessageRouter)
