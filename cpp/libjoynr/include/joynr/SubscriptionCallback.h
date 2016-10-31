@@ -42,9 +42,11 @@ class SubscriptionCallback : public ISubscriptionCallback
 {
 public:
     explicit SubscriptionCallback(std::shared_ptr<ISubscriptionListener<T, Ts...>> listener,
+                                  const std::string& subscriptionId,
                                   std::shared_ptr<Future<std::string>> future,
                                   ISubscriptionManager* subscriptionManager)
             : listener(std::move(listener)),
+              subscriptionId(subscriptionId),
               future(std::move(future)),
               subscriptionManager(subscriptionManager)
     {
@@ -88,6 +90,7 @@ public:
 
 protected:
     std::shared_ptr<ISubscriptionListener<T, Ts...>> listener;
+    std::string subscriptionId;
     std::shared_ptr<Future<std::string>> future;
     ISubscriptionManager* subscriptionManager;
 

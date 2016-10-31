@@ -197,7 +197,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockGpsLocationListener, future, subscriptionManager);
+            >(mockGpsLocationListener, subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -252,7 +252,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     subscriptionPublication.setResponse(tests::testTypes::TestEnum::ZERO);
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>
-            >(mockTestEnumSubscriptionListener, future, subscriptionManager);
+            >(mockTestEnumSubscriptionListener, subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

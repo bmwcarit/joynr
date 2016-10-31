@@ -263,7 +263,7 @@ bool «className»::usesClusterController() const{
 
 			auto future = std::make_shared<Future<std::string>>();
 			auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnType»>
-			>(subscriptionListener, future, subscriptionManager);
+			>(subscriptionListener, subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -414,7 +414,7 @@ bool «className»::usesClusterController() const{
 
 		auto future = std::make_shared<Future<std::string>>();
 		auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnTypes»>
-			>(subscriptionListener, future, subscriptionManager);
+			>(subscriptionListener, subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId(), future, subscriptionManager);
 		«IF broadcast.selective»
 			subscriptionManager->registerSubscription(
 							broadcastName,
@@ -441,7 +441,7 @@ bool «className»::usesClusterController() const{
 						);
 					};
 
-			std::string subscriptionId = subscriptionRequest->getSubscriptionId();
+			std::string subscriptionId = subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId();
 			std::function<void(const exceptions::ProviderRuntimeException& error)> onError =
 					[this, subscriptionCallback, subscriptionId] (const exceptions::ProviderRuntimeException& error) {
 						std::string message = "Could not register subscription to «broadcastName». Error from subscription manager: "
