@@ -92,6 +92,7 @@ public:
      */
     void registerSubscription(const std::string& subscribeToName,
                               std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+                              std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
                               std::shared_ptr<SubscriptionQos> qos,
                               SubscriptionRequest& subscriptionRequest) override;
 
@@ -116,6 +117,7 @@ public:
             const std::string& providerParticipantId,
             const std::vector<std::string>& partitions,
             std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
             std::shared_ptr<SubscriptionQos> qos,
             MulticastSubscriptionRequest& subscriptionRequest,
             std::function<void()> onSuccess,

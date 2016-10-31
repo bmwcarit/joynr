@@ -31,6 +31,7 @@
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
+#include "joynr/SubscriptionListener.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionUtil.h"
@@ -42,11 +43,13 @@ namespace joynr
 class SubscriptionManager::Subscription
 {
 public:
-    explicit Subscription(std::shared_ptr<ISubscriptionCallback> subscriptionCaller);
+    explicit Subscription(std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+                          std::shared_ptr<ISubscriptionListenerBase> subscriptionListener);
     ~Subscription() = default;
 
     std::int64_t timeOfLastPublication;
     std::shared_ptr<ISubscriptionCallback> subscriptionCaller;
+    std::shared_ptr<ISubscriptionListenerBase> subscriptionListener;
     std::recursive_mutex mutex;
     bool isStopped;
     std::uint32_t subscriptionEndRunnableHandle;
@@ -96,6 +99,7 @@ SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler,
 void SubscriptionManager::registerSubscription(
         const std::string& subscribeToName,
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+        std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
         std::shared_ptr<SubscriptionQos> qos,
         SubscriptionRequest& subscriptionRequest)
 {
@@ -124,7 +128,7 @@ void SubscriptionManager::registerSubscription(
                                     " in the past. Now: " + std::to_string(now));
     }
 
-    auto subscription = std::make_shared<Subscription>(subscriptionCaller);
+    auto subscription = std::make_shared<Subscription>(subscriptionCaller, subscriptionListener);
 
     subscriptions.insert(subscriptionId, subscription);
     JOYNR_LOG_DEBUG(logger, "Subscription registered. ID={}", subscriptionId);
@@ -165,6 +169,7 @@ void SubscriptionManager::registerSubscription(
         const std::string& providerParticipantId,
         const std::vector<std::string>& partitions,
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+        std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
         std::shared_ptr<SubscriptionQos> qos,
         MulticastSubscriptionRequest& subscriptionRequest,
         std::function<void()> onSuccess,
@@ -192,7 +197,11 @@ void SubscriptionManager::registerSubscription(
         }
 
         // register multicast subscription
-        registerSubscription(subscribeToName, subscriptionCaller, qos, subscriptionRequest);
+        registerSubscription(subscribeToName,
+                             subscriptionCaller,
+                             subscriptionListener,
+                             qos,
+                             subscriptionRequest);
         std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
         {
             std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
@@ -382,9 +391,11 @@ std::forward_list<std::shared_ptr<ISubscriptionCallback>> SubscriptionManager::
 
 //------ SubscriptionManager::Subscription ---------------------------------------
 SubscriptionManager::Subscription::Subscription(
-        std::shared_ptr<ISubscriptionCallback> subscriptionCaller)
+        std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+        std::shared_ptr<ISubscriptionListenerBase> subscriptionListener)
         : timeOfLastPublication(0),
           subscriptionCaller(subscriptionCaller),
+          subscriptionListener(subscriptionListener),
           mutex(),
           isStopped(false),
           subscriptionEndRunnableHandle(),

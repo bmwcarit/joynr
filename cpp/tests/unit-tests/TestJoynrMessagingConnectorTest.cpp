@@ -116,6 +116,7 @@ public:
                                              const std::string& providerParticipantId,
                                              const std::vector<std::string>& partitions,
                                              std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
+                                             std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
                                              std::shared_ptr<joynr::SubscriptionQos> qos,
                                              joynr::MulticastSubscriptionRequest& subscriptionRequest,
                                              std::function<void()> onSuccess,
@@ -124,6 +125,7 @@ public:
         std::ignore = subscriberParticipantId;
         std::ignore = providerParticipantId;
         std::ignore = partitions;
+        std::ignore = subscriptionListener;
         std::ignore = onSuccess;
         std::ignore = onError;
         subscriptionRequest.setQos(qos);
@@ -258,6 +260,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
                             _, // providerParticipantId
                             _, // partitions
                             _, // subscriptionCaller
+                            _, // subscriptionListener
                             _, // messaging QoS
                             _, // subscriptionRequest
                             _, // onSuccess

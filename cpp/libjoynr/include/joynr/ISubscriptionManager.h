@@ -34,6 +34,7 @@ namespace joynr
 class MulticastSubscriptionRequest;
 class SubscriptionRequest;
 class ISubscriptionCallback;
+class ISubscriptionListenerBase;
 class SubscriptionQos;
 
 namespace exceptions
@@ -66,10 +67,12 @@ public:
      * @param qos
      * @param subscriptionRequest
      */
-    virtual void registerSubscription(const std::string& subscribeToName,
-                                      std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-                                      std::shared_ptr<SubscriptionQos> qos,
-                                      SubscriptionRequest& subscriptionRequest) = 0;
+    virtual void registerSubscription(
+            const std::string& subscribeToName,
+            std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
+            std::shared_ptr<SubscriptionQos> qos,
+            SubscriptionRequest& subscriptionRequest) = 0;
 
     /**
      * @brief Subscribe to a multicast. Modifies the subscription request to include
@@ -91,6 +94,7 @@ public:
             const std::string& providerParticipantId,
             const std::vector<std::string>& partitions,
             std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
             std::shared_ptr<SubscriptionQos> qos,
             MulticastSubscriptionRequest& subscriptionRequest,
             std::function<void()> onSuccess,

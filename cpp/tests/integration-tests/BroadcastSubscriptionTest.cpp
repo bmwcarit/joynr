@@ -136,6 +136,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     subscriptionManager->registerSubscription(
                 subscribeToName,
                 subscriptionCallback,
+                mockSubscriptionListenerOne,
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
@@ -185,6 +186,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     subscriptionManager->registerSubscription(
                 subscribeToName,
                 subscriptionCallback,
+                mockSubscriptionListenerTwo,
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider

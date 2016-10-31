@@ -917,15 +917,17 @@ public:
     using SubscriptionManager::SubscriptionManager;
 
     MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& subscriptionId));
-    MOCK_METHOD4(registerSubscription,void(const std::string& subscribeToName,
-                                                    std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
-                                                    std::shared_ptr<joynr::SubscriptionQos> qos,
-                                                    joynr::SubscriptionRequest& subscriptionRequest));
-    MOCK_METHOD9(registerSubscription,void(const std::string& subscribeToName,
+    MOCK_METHOD5(registerSubscription,void(const std::string& subscribeToName,
+                                           std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
+                                           std::shared_ptr<joynr::ISubscriptionListenerBase> subscriptionListener,
+                                           std::shared_ptr<joynr::SubscriptionQos> qos,
+                                           joynr::SubscriptionRequest& subscriptionRequest));
+    MOCK_METHOD10(registerSubscription,void(const std::string& subscribeToName,
                                            const std::string& subscriberParticipantId,
                                            const std::string& providerParticipantId,
                                            const std::vector<std::string>& partitions,
                                            std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
+                                           std::shared_ptr<joynr::ISubscriptionListenerBase> subscriptionListener,
                                            std::shared_ptr<joynr::SubscriptionQos> qos,
                                            joynr::MulticastSubscriptionRequest& subscriptionRequest,
                                            std::function<void()> onSuccess,

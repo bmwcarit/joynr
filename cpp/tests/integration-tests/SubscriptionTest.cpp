@@ -203,6 +203,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     subscriptionManager->registerSubscription(
                 attributeName,
                 subscriptionCallback,
+                mockGpsLocationListener,
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
@@ -257,6 +258,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     subscriptionManager->registerSubscription(
                 attributeName,
                 subscriptionCallback,
+                mockTestEnumSubscriptionListener,
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider

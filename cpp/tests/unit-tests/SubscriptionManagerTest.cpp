@@ -118,6 +118,7 @@ TEST_F(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrec
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
+                mockGpsSubscriptionListener,
                 qos,
                 subscriptionRequest);
 
@@ -139,6 +140,7 @@ TEST_F(SubscriptionManagerTest, registerSubscription_missedPublicationRunnableWo
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
+                mockGpsSubscriptionListener,
                 qos,
                 subscriptionRequest
     );
@@ -159,6 +161,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_misse
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
+                mockGpsSubscriptionListener,
                 qos,
                 subscriptionRequest
     );
@@ -174,6 +177,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_misse
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback2,
+                mockGpsSubscriptionListener2,
                 qos2,
                 subscriptionRequest
     );
@@ -196,6 +200,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_corre
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
+                mockGpsSubscriptionListener,
                 qos,
                 subscriptionRequest
     );
@@ -204,6 +209,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_corre
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
+                mockGpsSubscriptionListener,
                 qos,
                 subscriptionRequest
     );
@@ -226,6 +232,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_corre
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
+                mockGpsSubscriptionListener,
                 qos,
                 subscriptionRequest
     );
@@ -234,6 +241,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_corre
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
+                mockGpsSubscriptionListener,
                 qos,
                 subscriptionRequest
     );
@@ -257,6 +265,7 @@ TEST_F(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
+                mockGpsSubscriptionListener,
                 qos,
                 subscriptionRequest
     );
@@ -284,6 +293,7 @@ TEST_F(SubscriptionManagerTest, registerSubscription_withExpiryDate) {
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
+                mockGpsSubscriptionListener,
                 qos,
                 subscriptionRequest
     );
@@ -307,6 +317,7 @@ TEST_F(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStopping
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
+                mockGpsSubscriptionListener,
                 qos,
                 subscriptionRequest);
      std::this_thread::sleep_for(std::chrono::milliseconds(900));
@@ -331,6 +342,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMulticastSubscription_registrat
         providerParticipantId1,
         partitions,
         subscriptionCallback,
+        mockGpsSubscriptionListener,
         qos,
         subscriptionRequest,
         [](){},
@@ -354,6 +366,7 @@ TEST_F(SubscriptionManagerMulticastTest, unregisterMulticastSubscription_unregis
         providerParticipantId1,
         partitions,
         subscriptionCallback,
+        mockGpsSubscriptionListener,
         qos,
         subscriptionRequest,
         [](){},
@@ -396,6 +409,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
         providerParticipantId1,
         partitions,
         subscriptionCallback1_1,
+        mockGpsSubscriptionListener,
         qos,
         subscriptionRequest_Provider1_1,
         [](){},
@@ -407,6 +421,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
         providerParticipantId1,
         partitions,
         subscriptionCallback1_2,
+        mockGpsSubscriptionListener,
         qos,
         subscriptionRequest_Provider1_2,
         [](){},
@@ -418,6 +433,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
         providerParticipantId2,
         partitions,
         subscriptionCallback2,
+        mockGpsSubscriptionListener,
         qos,
         subscriptionRequest_Provider2,
         [](){},
@@ -429,6 +445,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
         providerParticipantId3,
         partitions,
         subscriptionCallback3,
+        mockGpsSubscriptionListener,
         qos,
         subscriptionRequest_Provider3,
         [](){},
@@ -475,6 +492,7 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_changedPart
         providerParticipantId1,
         partitions1,
         subscriptionCallback,
+        mockGpsSubscriptionListener,
         qos,
         subscriptionRequest1,
         [](){},
@@ -498,6 +516,7 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_changedPart
         providerParticipantId1,
         partitions2,
         subscriptionCallback,
+        mockGpsSubscriptionListener,
         qos,
         subscriptionRequest2,
         [](){},
@@ -517,6 +536,7 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_samePartiti
         providerParticipantId1,
         partitions,
         subscriptionCallback,
+        mockGpsSubscriptionListener,
         qos,
         subscriptionRequest1,
         [](){},
@@ -536,6 +556,7 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_samePartiti
         providerParticipantId1,
         partitions,
         subscriptionCallback,
+        mockGpsSubscriptionListener,
         qos,
         subscriptionRequest2,
         [](){},

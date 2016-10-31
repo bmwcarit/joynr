@@ -270,6 +270,7 @@ bool «className»::usesClusterController() const{
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
+						subscriptionListener,
 						subscriptionQos,
 						subscriptionRequest);
 				JOYNR_LOG_DEBUG(logger, "Registered subscription: {}", subscriptionRequest.toString());
@@ -449,6 +450,7 @@ bool «className»::usesClusterController() const{
 			subscriptionManager->registerSubscription(
 						broadcastName,
 						subscriptionCallback,
+						subscriptionListener,
 						subscriptionQos,
 						subscriptionRequest);
 			JOYNR_LOG_DEBUG(
@@ -514,6 +516,7 @@ bool «className»::usesClusterController() const{
 							providerParticipantId,
 							partitions,
 							subscriptionCallback,
+							subscriptionListener,
 							subscriptionQos,
 							*subscriptionRequest,
 							onSuccess,
