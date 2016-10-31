@@ -263,7 +263,7 @@ bool «className»::usesClusterController() const{
 
 			auto future = std::make_shared<Future<std::string>>();
 			auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnType»>
-			>(subscriptionListener, subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -414,7 +414,7 @@ bool «className»::usesClusterController() const{
 
 		auto future = std::make_shared<Future<std::string>>();
 		auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnTypes»>
-			>(subscriptionListener, subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId(), future, subscriptionManager);
 		«IF broadcast.selective»
 			subscriptionManager->registerSubscription(
 							broadcastName,

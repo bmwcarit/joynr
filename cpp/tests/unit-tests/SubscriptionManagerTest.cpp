@@ -83,7 +83,7 @@ public:
         future(std::make_shared<Future<std::string>>()),
         subscriptionManager(singleThreadedIOService.getIOService(), mockMessageRouter),
         subscriptionCallback(std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(
-            mockGpsSubscriptionListener, "testSubscriptionId", future, &subscriptionManager))
+            "testSubscriptionId", future, &subscriptionManager))
     {
     }
 
@@ -111,7 +111,7 @@ TEST_F(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrec
     SubscriptionRequest subscriptionRequest;
     auto future = std::make_shared<Future<std::string>>();
     auto gpslocationCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockGpsSubscriptionListener, subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
     auto qos = std::make_shared<joynr::OnChangeSubscriptionQos>();
     std::int64_t now = TimeUtils::getCurrentMillisSinceEpoch();
     qos->setExpiryDateMs(now + 10000);
@@ -135,7 +135,7 @@ TEST_F(SubscriptionManagerTest, registerSubscription_missedPublicationRunnableWo
     auto future = std::make_shared<Future<std::string>>();
     SubscriptionManager subscriptionManager(singleThreadedIOService.getIOService(), nullptr);
     auto gpslocationCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockGpsSubscriptionListener, subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
     auto qos = std::make_shared<joynr::PeriodicSubscriptionQos>(1100, 100, 200);
     subscriptionManager.registerSubscription(
                 "methodName",
@@ -156,7 +156,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_misse
     auto future = std::make_shared<Future<std::string>>();
     SubscriptionManager subscriptionManager(singleThreadedIOService.getIOService(), nullptr);
     auto gpslocationCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockGpsSubscriptionListener, subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
     auto qos = std::make_shared<PeriodicSubscriptionQos>(1100, 100, 100);
     subscriptionManager.registerSubscription(
                 "methodName",
@@ -172,7 +172,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_misse
             .Times(0);
     future = std::make_shared<Future<std::string>>();
     auto gpslocationCallback2 = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockGpsSubscriptionListener2, subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
     auto qos2 = std::make_shared<OnChangeSubscriptionQos>(700, 100);
     subscriptionManager.registerSubscription(
                 "methodName",
@@ -195,7 +195,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_corre
     auto future = std::make_shared<Future<std::string>>();
     SubscriptionManager subscriptionManager(singleThreadedIOService.getIOService(), nullptr);
     auto gpslocationCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockGpsSubscriptionListener, subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
     auto qos = std::make_shared<PeriodicSubscriptionQos>(300, 100, 100);
     subscriptionManager.registerSubscription(
                 "methodName",
@@ -227,7 +227,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_corre
     auto future = std::make_shared<Future<std::string>>();
     SubscriptionManager subscriptionManager(singleThreadedIOService.getIOService(), nullptr);
     auto gpslocationCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockGpsSubscriptionListener, subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
     auto qos = std::make_shared<PeriodicSubscriptionQos>(1000, 100, 100);
     subscriptionManager.registerSubscription(
                 "methodName",
@@ -260,7 +260,7 @@ TEST_F(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
     SubscriptionManager subscriptionManager(mockDelayedScheduler, nullptr);
     SubscriptionRequest subscriptionRequest;
     auto gpslocationCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockGpsSubscriptionListener, subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
     auto qos = std::make_shared<OnChangeSubscriptionQos>(-1, 100);
     subscriptionManager.registerSubscription(
                 "methodName",
@@ -288,7 +288,7 @@ TEST_F(SubscriptionManagerTest, registerSubscription_withExpiryDate) {
     SubscriptionManager subscriptionManager(mockDelayedScheduler, nullptr);
     SubscriptionRequest subscriptionRequest;
     auto gpslocationCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockGpsSubscriptionListener, subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
     auto qos = std::make_shared<OnChangeSubscriptionQos>(1000, 100);
     subscriptionManager.registerSubscription(
                 "methodName",
@@ -308,7 +308,7 @@ TEST_F(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStopping
     SubscriptionManager subscriptionManager(singleThreadedIOService.getIOService(), nullptr);
     auto future = std::make_shared<Future<std::string>>();
     auto gpslocationCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockGpsSubscriptionListener, subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
     auto qos = std::make_shared<PeriodicSubscriptionQos>(
                 2000, // validity
                 100,  // period
@@ -338,7 +338,7 @@ TEST_F(SubscriptionManagerTest, getSubscriptionListener) {
     auto future = std::make_shared<Future<std::string>>();
     auto gpslocationCallback =
             std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(
-                mockGpsSubscriptionListener, future, &subscriptionManager);
+                subscriptionRequest.getSubscriptionId(), future, &subscriptionManager);
     auto qos = std::make_shared<PeriodicSubscriptionQos>(
                 2000, // validity
                 100,  // period
@@ -419,16 +419,16 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
     MulticastSubscriptionRequest subscriptionRequest_Provider3;
 
     auto subscriptionCallback1_1 = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(
-        mockGpsSubscriptionListener, subscriptionRequest_Provider1_1.getSubscriptionId(), future, &subscriptionManager);
+        subscriptionRequest_Provider1_1.getSubscriptionId(), future, &subscriptionManager);
 
     auto subscriptionCallback1_2 = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(
-        mockGpsSubscriptionListener, subscriptionRequest_Provider1_2.getSubscriptionId(), future, &subscriptionManager);
+        subscriptionRequest_Provider1_2.getSubscriptionId(), future, &subscriptionManager);
 
     auto subscriptionCallback2 = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(
-        mockGpsSubscriptionListener, subscriptionRequest_Provider2.getSubscriptionId(),  future, &subscriptionManager);
+        subscriptionRequest_Provider2.getSubscriptionId(),  future, &subscriptionManager);
 
     auto subscriptionCallback3 = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(
-        mockGpsSubscriptionListener, subscriptionRequest_Provider3.getSubscriptionId(), future, &subscriptionManager);
+        subscriptionRequest_Provider3.getSubscriptionId(), future, &subscriptionManager);
 
     subscriptionManager.registerSubscription(
         subscribeToName,
