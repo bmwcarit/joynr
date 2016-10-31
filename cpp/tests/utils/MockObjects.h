@@ -941,6 +941,12 @@ public:
                 const std::string& subscriptionId
         )
     );
+    MOCK_METHOD1(
+        getMulticastSubscriptionListeners,
+        std::forward_list<std::shared_ptr<joynr::ISubscriptionListenerBase>>(
+                const std::string& multicastId
+        )
+    );
 };
 
 class MockSubscriptionCallback : public joynr::ISubscriptionCallback {

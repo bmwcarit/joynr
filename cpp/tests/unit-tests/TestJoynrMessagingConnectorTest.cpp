@@ -21,7 +21,7 @@
 #include "joynr/IReplyCaller.h"
 #include <string>
 #include "utils/MockObjects.h"
-#include "joynr/UnicastSubscriptionCallback.h"
+#include "joynr/ISubscriptionCallback.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/SingleThreadedIOService.h"
 

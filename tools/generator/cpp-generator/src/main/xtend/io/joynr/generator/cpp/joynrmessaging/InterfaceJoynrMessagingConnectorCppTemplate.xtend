@@ -74,6 +74,7 @@ internalRequestObject.setParams(
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/UnicastSubscriptionCallback.h"
+#include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/Util.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Future.h"
@@ -413,9 +414,9 @@ bool «className»::usesClusterController() const{
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
 
 		auto future = std::make_shared<Future<std::string>>();
-		auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId(), future, subscriptionManager);
 		«IF broadcast.selective»
+			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnTypes»>
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 			subscriptionManager->registerSubscription(
 							broadcastName,
 							subscriptionCallback,
@@ -430,6 +431,8 @@ bool «className»::usesClusterController() const{
 						subscriptionRequest
 			);
 		«ELSE»
+			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
+			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager);
 			std::function<void()> onSuccess =
 					[this, clonedMessagingQos, subscriptionRequest] () {
 						JOYNR_LOG_DEBUG(logger, subscriptionRequest->toString());
