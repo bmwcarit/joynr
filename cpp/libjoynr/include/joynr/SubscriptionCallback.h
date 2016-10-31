@@ -20,11 +20,11 @@
 #define SUBSCRIPTIONCALLBACK_H
 
 #include <memory>
+#include <tuple>
 
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionListener.h"
 #include "ISubscriptionManager.h"
-#include "joynr/PublicationInterpreter.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/BasePublication.h"
 #include "joynr/Future.h"
@@ -70,7 +70,7 @@ public:
 
     void execute(BasePublication&& publication) override
     {
-        PublicationInterpreter<T, Ts...>::execute(*this, std::move(publication));
+        interpret(std::move(publication));
     }
 
     void execute(const SubscriptionReply& subscriptionReply) override
@@ -93,6 +93,57 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);
+    template <typename Holder = T>
+    std::enable_if_t<std::is_void<Holder>::value, void> interpret(BasePublication&& publication)
+    {
+        std::shared_ptr<exceptions::JoynrRuntimeException> error = publication.getError();
+        if (error) {
+            onError(*error);
+            return;
+        }
+        onSuccess();
+    }
+
+    template <typename Holder = T>
+    std::enable_if_t<!std::is_void<Holder>::value, void> interpret(BasePublication&& publication)
+    {
+        std::shared_ptr<exceptions::JoynrRuntimeException> error = publication.getError();
+        if (error) {
+            onError(*error);
+            return;
+        }
+
+        if (!publication.hasResponse()) {
+            onError(exceptions::JoynrRuntimeException(
+                    "Publication object had no response, discarded message"));
+            return;
+        }
+
+        std::tuple<T, Ts...> responseTuple;
+        try {
+            callGetResponse(
+                    responseTuple, std::move(publication), std::index_sequence_for<T, Ts...>{});
+        } catch (const std::exception& exception) {
+            onError(exceptions::JoynrRuntimeException(exception.what()));
+            return;
+        }
+
+        callOnSucces(std::move(responseTuple), std::index_sequence_for<T, Ts...>{});
+    }
+
+    template <std::size_t... Indices>
+    void callOnSucces(std::tuple<T, Ts...>&& response, std::index_sequence<Indices...>)
+    {
+        onSuccess(std::move(std::get<Indices>(response))...);
+    }
+
+    template <std::size_t... Indices>
+    static void callGetResponse(std::tuple<T, Ts...>& response,
+                                BasePublication&& publication,
+                                std::index_sequence<Indices...>)
+    {
+        publication.getResponse(std::get<Indices>(response)...);
+    }
 };
 
 } // namespace joynr

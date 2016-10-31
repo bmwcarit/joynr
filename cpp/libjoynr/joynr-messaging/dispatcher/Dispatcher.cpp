@@ -36,7 +36,6 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/IRequestInterpreter.h"
 #include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
-#include "joynr/PublicationInterpreter.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/InterfaceRegistrar.h"
