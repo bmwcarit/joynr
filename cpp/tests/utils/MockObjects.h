@@ -935,6 +935,12 @@ public:
     MOCK_METHOD1(unregisterSubscription, void(const std::string& subscriptionId));
     MOCK_METHOD1(touchSubscriptionState,void(const std::string& subscriptionId));
     MOCK_METHOD1(getMulticastSubscriptionCallbacks, std::forward_list<std::shared_ptr<joynr::ISubscriptionCallback>>(const std::string& multicastId));
+    MOCK_METHOD1(
+        getSubscriptionListener,
+        std::shared_ptr<joynr::ISubscriptionListenerBase>(
+                const std::string& subscriptionId
+        )
+    );
 };
 
 class MockSubscriptionCallback : public joynr::ISubscriptionCallback {

@@ -267,6 +267,13 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
                             _ // onError
                         )).WillOnce(testing::Invoke(this, &TestJoynrMessagingConnectorTest::invokeMulticastSubscriptionCallback));
 
+    EXPECT_CALL(
+         mockSubscriptionManager,
+         getSubscriptionListener(
+             _ // subscriptionId
+         )
+     ).WillOnce(testing::Return(mockListener));
+
     // Use a semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));

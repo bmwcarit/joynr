@@ -54,12 +54,17 @@ public:
 
     void onError(const exceptions::JoynrRuntimeException& error) override
     {
+        std::shared_ptr<ISubscriptionListenerBase> listener =
+                subscriptionManager->getSubscriptionListener(subscriptionId);
         listener->onError(error);
     }
 
     template <typename Holder = T>
     std::enable_if_t<std::is_void<Holder>::value, void> onSuccess()
     {
+
+        auto listener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(
+                subscriptionManager->getSubscriptionListener(subscriptionId));
         listener->onReceive();
     }
 
@@ -67,6 +72,8 @@ public:
     std::enable_if_t<!std::is_void<Holder>::value, void> onSuccess(const Holder& value,
                                                                    const Ts&... values)
     {
+        auto listener = std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(
+                subscriptionManager->getSubscriptionListener(subscriptionId));
         listener->onReceive(value, values...);
     }
 
@@ -78,6 +85,8 @@ public:
     void execute(const SubscriptionReply& subscriptionReply) override
     {
         std::shared_ptr<exceptions::JoynrRuntimeException> error = subscriptionReply.getError();
+        std::shared_ptr<ISubscriptionListenerBase> listener =
+                subscriptionManager->getSubscriptionListener(subscriptionId);
         if (error) {
             subscriptionManager->unregisterSubscription(subscriptionReply.getSubscriptionId());
             future->onError(error);
