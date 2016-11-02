@@ -106,7 +106,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
     );
 }
 
-TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
+TEST_P(End2EndBroadcastTest, updateBroadcastSubscription) {
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -116,20 +116,13 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener2 =
             std::make_shared<MockGpsSubscriptionListener>();
 
-    // Use a semaphore to count and wait on calls to the mock listener
-    // we expect to notifications before updating the subscription
-    // on the second call we release the sync semaphore
-    testing::Sequence semaphoreReleaseSequence;
     EXPECT_CALL(*mockSubscriptionListener, onReceive(_))
             .Times(1)
-            .InSequence(semaphoreReleaseSequence);
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(_))
-            .Times(1)
-            .InSequence(semaphoreReleaseSequence)
             .WillOnce(ReleaseSemaphore(&semaphore));
 
     EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
-            .Times(2);
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&altSemaphore));
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -140,7 +133,7 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
-    auto future = testProxy->subscribeToLocationUpdateBroadcast(
+    std::shared_ptr<Future<std::string>> future = testProxy->subscribeToLocationUpdateBroadcast(
         mockSubscriptionListener,
         subscriptionQos
     );
@@ -150,18 +143,11 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
-    // Waiting between   occurences for at least the minInterval is neccessary because
-    // otherwise the publications could be omitted.
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
-
-    testProvider->fireLocationUpdate(gpsLocation2);
-
-    
-    // make sure the last fireLocationUpdate is received by the first listener
+    // make sure the fireLocationUpdate is received by the first listener
     // before updating the subscription
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
-    // update subscription, much longer minInterval_ms
-    subscriptionQos->setMinIntervalMs(5000);
+
+    // update subscription, new listener
     future = testProxy->subscribeToLocationUpdateBroadcast(
         subscriptionId,
         mockSubscriptionListener2,
@@ -171,15 +157,8 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
-    // Waiting between broadcast occurences for at least the minInterval is neccessary because
-    // otherwise the publications could be omitted.
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
-
-    //now, the next broadcast shall not be received, as the minInterval has been updated
-    testProvider->fireLocationUpdate(gpsLocation2);
-
-    //ensure to wait for the minInterval_ms before ending
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // make sure the fireLocationUpdate is received by the second listener
+    ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
