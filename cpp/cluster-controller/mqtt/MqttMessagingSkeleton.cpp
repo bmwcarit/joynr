@@ -41,25 +41,27 @@ MqttMessagingSkeleton::MqttMessagingSkeleton(MessageRouter& messageRouter,
 
 void MqttMessagingSkeleton::registerMulticastSubscription(const std::string& multicastId)
 {
+    std::string mqttTopic = joynr::util::translateMulticastWildcard(multicastId);
     std::lock_guard<std::mutex> lock(multicastSubscriptionCountMutex);
-    if (multicastSubscriptionCount.find(multicastId) == multicastSubscriptionCount.cend()) {
-        mqttReceiver->subscribeToTopic(multicastId);
-        multicastSubscriptionCount[multicastId] = 1;
+    if (multicastSubscriptionCount.find(mqttTopic) == multicastSubscriptionCount.cend()) {
+        mqttReceiver->subscribeToTopic(mqttTopic);
+        multicastSubscriptionCount[mqttTopic] = 1;
     } else {
-        multicastSubscriptionCount[multicastId]++;
+        multicastSubscriptionCount[mqttTopic]++;
     }
 }
 
 void MqttMessagingSkeleton::unregisterMulticastSubscription(const std::string& multicastId)
 {
+    std::string mqttTopic = joynr::util::translateMulticastWildcard(multicastId);
     std::lock_guard<std::mutex> lock(multicastSubscriptionCountMutex);
-    auto countIterator = multicastSubscriptionCount.find(multicastId);
+    auto countIterator = multicastSubscriptionCount.find(mqttTopic);
     if (countIterator == multicastSubscriptionCount.cend()) {
         JOYNR_LOG_ERROR(
                 logger, "unregister multicast subscription called for non existing subscription");
     } else if (countIterator->second == 1) {
-        multicastSubscriptionCount.erase(multicastId);
-        mqttReceiver->unsubscribeFromTopic(multicastId);
+        multicastSubscriptionCount.erase(mqttTopic);
+        mqttReceiver->unsubscribeFromTopic(mqttTopic);
     } else {
         countIterator->second--;
     }

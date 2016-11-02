@@ -51,7 +51,7 @@ TEST(MulticastMatcherTest, checkMultipleSingleLevelWildcard)
 
 TEST(MulticastMatcherTest, checkMultiLevelWildcard)
 {
-    std::string multicastId = "provider/broad/#";
+    std::string multicastId = "provider/broad/*";
     joynr::MulticastMatcher m(multicastId);
 
     EXPECT_TRUE(m.doesMatch("provider/broad/AnyPart"));

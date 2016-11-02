@@ -41,10 +41,10 @@ MulticastMatcher::MulticastMatcher(const std::string& multicastId)
         pos += regExpPlusSign.length();
     }
 
-    // transform '#' into a regex matching a sequence of alphanumeric characters longer
+    // transform '*' into a regex matching a sequence of alphanumeric characters longer
     // then 1 separated by a forward slash '/'
     // also, use knowledge that * can only appear at the end of the multicastId
-    if (multicastId.back() == joynr::util::MQTT_MULTI_LEVEL_WILDCARD[0]) {
+    if (multicastId.back() == joynr::util::MULTI_LEVEL_WILDCARD[0]) {
         multicasIdPattern.replace(multicasIdPattern.length() - 2, 2, regExpKleenStarSign);
     }
 
