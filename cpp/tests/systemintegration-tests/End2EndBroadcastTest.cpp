@@ -161,6 +161,53 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription) {
     ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
 }
 
+TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
+
+    auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
+    auto mockSubscriptionListener2 = std::make_shared<MockGpsSubscriptionListener>();
+
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&altSemaphore));
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+
+    std::shared_ptr<Future<std::string>> future = testProxy->subscribeToLocationUpdateBroadcast(
+        mockSubscriptionListener,
+        subscriptionQos
+    );
+
+    // update subscription, new listener
+    std::shared_ptr<Future<std::string>> future2 = testProxy->subscribeToLocationUpdateBroadcast(
+        mockSubscriptionListener2,
+        subscriptionQos
+    );
+
+    JOYNR_ASSERT_NO_THROW(future->wait(5000));
+    JOYNR_ASSERT_NO_THROW(future2->wait(5000));
+
+    testProvider->fireLocationUpdate(gpsLocation2);
+
+    // make sure the fireLocationUpdate is received by the first listener
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    // make sure the fireLocationUpdate is received by the second listener
+    ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
+}
+
 TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
