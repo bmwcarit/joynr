@@ -92,12 +92,6 @@ define([
                 browserMessagingStubFactory.build();
             }).toThrow(); // address is undefined
             expect(function() {
-                browserMessagingStubFactory.build("");
-            }).toThrow(); // address is of wrong type
-            expect(function() {
-                browserMessagingStubFactory.build({});
-            }).toThrow(); // address is of wrong type
-            expect(function() {
                 browserMessagingStubFactory.build(browserAddress);
             }).not.toThrow(); // correct call
             done();

@@ -49,8 +49,6 @@ define("joynr/messaging/mqtt/MqttMessagingStubFactory", [
                  * @function
                  */
                 this.build = function build(address) {
-                    Typing.checkProperty(address, "MqttAddress", "address");
-
                     return new MqttMessagingStub({
                         address : address,
                         client : settings.client,

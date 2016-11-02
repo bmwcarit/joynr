@@ -43,8 +43,6 @@ define("joynr/messaging/browser/BrowserMessagingStubFactory", [
          * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
          */
         this.build = function build(address) {
-            Typing.checkProperty(address, "BrowserAddress", "address");
-
             return new BrowserMessagingStub({
                 windowId : address.windowId,
                 webMessagingStub : settings.webMessagingStub
