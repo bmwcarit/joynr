@@ -44,7 +44,7 @@
 		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
 		<joynr.provisioning.brokerUri>tcp://127.0.0.1:9001</joynr.provisioning.brokerUri>
 		<joynr.provisioning.bounceProxyBaseUrl>http://127.0.0.1:8080</joynr.provisioning.bounceProxyBaseUrl>
-		<joynr.provisioning.testTtl>5000</joynr.provisioning.testTtl>
+		<joynr.provisioning.testTtl>10000</joynr.provisioning.testTtl>
 	</properties>
 
 	<dependencies>
