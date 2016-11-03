@@ -24,38 +24,57 @@
 
 #include "joynr/MulticastMatcher.h"
 
-TEST(MulticastMatcherTest, checkSingleLevelWildcard)
+TEST(MulticastMatcherTest, replaceLeadingSingleLevelWildcard)
 {
-    std::string multicastId = "provider/broad/+";
-    joynr::MulticastMatcher m(multicastId);
+    std::string multicastId = "+/one/two/three";
+    joynr::MulticastMatcher matcher(multicastId);
 
-    
-    EXPECT_TRUE(m.doesMatch("provider/broad/AnyPart"));
-    EXPECT_FALSE(m.doesMatch("provider/broad"));
-    EXPECT_FALSE(m.doesMatch("provider/broad/AnyPart/NoMatch"));
+    EXPECT_TRUE(matcher.doesMatch("anything/one/two/three"));
+    EXPECT_TRUE(matcher.doesMatch("1/one/two/three"));
+    EXPECT_TRUE(matcher.doesMatch("hello/one/two/three"));
+
+    EXPECT_FALSE(matcher.doesMatch("one/two/three"));
+    EXPECT_FALSE(matcher.doesMatch("one/any/two/three"));
+    EXPECT_FALSE(matcher.doesMatch("/one/two/three"));
+    EXPECT_FALSE(matcher.doesMatch("five/six/one/two/three"));
 }
 
-TEST(MulticastMatcherTest, checkMultipleSingleLevelWildcard)
+TEST(MulticastMatcherTest, singleLevelWildcardInMiddle)
 {
-    std::string multicastId = "provider/broad/+/part1/+";
-    joynr::MulticastMatcher m(multicastId);
+    std::string multicastId = "one/+/three";
+    joynr::MulticastMatcher matcher(multicastId);
 
-    EXPECT_TRUE(m.doesMatch("provider/broad/AnyPart/part1/AnyPart"));
+    EXPECT_TRUE(matcher.doesMatch("one/anything/three"));
+    EXPECT_TRUE(matcher.doesMatch("one/1/three"));
+    EXPECT_TRUE(matcher.doesMatch("one/here/three"));
 
-    EXPECT_FALSE(m.doesMatch("provider/broad"));
-    EXPECT_FALSE(m.doesMatch("provider/broad/AnyPart"));
-    EXPECT_FALSE(m.doesMatch("provider/broad/AnyPart/part1"));
-    EXPECT_FALSE(m.doesMatch("provider/broad/AnyPart/NoMatch/AnyPart"));
-    EXPECT_FALSE(m.doesMatch("provider/broad/AnyPart/part1/AnyPart/NoMatch"));
+    EXPECT_FALSE(matcher.doesMatch("one/two/four/three"));
+    EXPECT_FALSE(matcher.doesMatch("one/three"));
 }
 
-TEST(MulticastMatcherTest, checkMultiLevelWildcard)
+TEST(MulticastMatcherTest, singleLevelWildcardAtEnd)
 {
-    std::string multicastId = "provider/broad/*";
-    joynr::MulticastMatcher m(multicastId);
+    std::string multicastId = "one/two/+";
+    joynr::MulticastMatcher matcher(multicastId);
 
-    EXPECT_TRUE(m.doesMatch("provider/broad/AnyPart"));
-    EXPECT_TRUE(m.doesMatch("provider/broad"));
-    EXPECT_TRUE(m.doesMatch("provider/broad/AnyPart/AnyPart/AnyPart/AnyPart"));
-    EXPECT_FALSE(m.doesMatch("provider/NoMatch"));
+    EXPECT_TRUE(matcher.doesMatch("one/two/anything"));
+    EXPECT_TRUE(matcher.doesMatch("one/two/3"));
+    EXPECT_TRUE(matcher.doesMatch("one/two/andAnotherPartition"));
+
+    EXPECT_FALSE(matcher.doesMatch("one/two/three/four"));
+    EXPECT_FALSE(matcher.doesMatch("one/two"));
+}
+
+TEST(MulticastMatcherTest, multiLevelWildcardAtEnd)
+{
+    std::string multicastId = "one/two/*";
+    joynr::MulticastMatcher matcher(multicastId);
+
+    EXPECT_TRUE(matcher.doesMatch("one/two/anything"));
+    EXPECT_TRUE(matcher.doesMatch("one/two/3"));
+    EXPECT_TRUE(matcher.doesMatch("one/two/andAnotherPartition"));
+    EXPECT_TRUE(matcher.doesMatch("one/two/three/four"));
+    EXPECT_TRUE(matcher.doesMatch("one/two"));
+
+    EXPECT_FALSE(matcher.doesMatch("one/twothree"));
 }
