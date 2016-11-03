@@ -497,7 +497,7 @@ bool «className»::usesClusterController() const{
 
 			std::string subscriptionId = subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId();
 			std::function<void(const exceptions::ProviderRuntimeException& error)> onError =
-				[this, subscriptionCallback, subscriptionId]
+				[this, subscriptionListener, subscriptionId]
 				(const exceptions::ProviderRuntimeException& error) {
 					std::string message = "Could not register subscription to" \
 							" «broadcastName»." \
@@ -507,7 +507,7 @@ bool «className»::usesClusterController() const{
 					exceptions::SubscriptionException subscriptionException(
 							message,
 							subscriptionId);
-					subscriptionCallback->onError(subscriptionException);
+					subscriptionListener->onError(subscriptionException);
 					subscriptionManager->unregisterSubscription(subscriptionId);
 				};
 			subscriptionManager->registerSubscription(

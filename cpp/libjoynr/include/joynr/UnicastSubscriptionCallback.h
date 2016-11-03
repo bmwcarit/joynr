@@ -50,26 +50,31 @@ public:
     {
     }
 
-    void onError(const exceptions::JoynrRuntimeException& error)
+    void onError(const BasePublication& publication, const exceptions::JoynrRuntimeException& error)
     {
+        std::ignore = publication;
         std::shared_ptr<ISubscriptionListenerBase> listener =
                 Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId);
         listener->onError(error);
     }
 
     template <typename Holder = T>
-    std::enable_if_t<std::is_void<Holder>::value, void> onSuccess()
+    std::enable_if_t<std::is_void<Holder>::value, void> onSuccess(
+            const BasePublication& publication)
     {
-
+        std::ignore = publication;
         auto listener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(
                 Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId));
         listener->onReceive();
     }
 
     template <typename Holder = T>
-    std::enable_if_t<!std::is_void<Holder>::value, void> onSuccess(const Holder& value,
-                                                                   const Ts&... values)
+    std::enable_if_t<!std::is_void<Holder>::value, void> onSuccess(
+            const BasePublication& publication,
+            const Holder& value,
+            const Ts&... values)
     {
+        std::ignore = publication;
         auto listener = std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(
                 Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId));
         listener->onReceive(value, values...);

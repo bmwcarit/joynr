@@ -269,15 +269,16 @@ void SubscriptionManager::unregisterSubscription(const std::string& subscription
                                 subscriptionId,
                                 multicastId);
             };
-            auto subscriptionCaller = subscription->subscriptionCaller;
-            auto onError = [subscriptionId, multicastId, subscriptionCaller](
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener =
+                    subscription->subscriptionListener;
+            auto onError = [subscriptionId, multicastId, subscriptionListener](
                     const joynr::exceptions::ProviderRuntimeException& error) {
                 std::string message = "Unsubscribe from subscription (ID=" + subscriptionId +
                                       ", multicastId=" + multicastId +
                                       ") failed. Could not remove multicast receiver: " +
                                       error.getMessage();
                 exceptions::SubscriptionException subscriptionException(message, subscriptionId);
-                subscriptionCaller->onError(subscriptionException);
+                subscriptionListener->onError(subscriptionException);
             };
             messageRouter->removeMulticastReceiver(multicastId,
                                                    subscription->subscriberParticipantId,
@@ -487,10 +488,11 @@ void SubscriptionManager::MissedPublicationRunnable::run()
             delay = alertAfterInterval - timeSinceLastPublication;
         } else {
             JOYNR_LOG_DEBUG(logger, "Publication missed!");
-            std::shared_ptr<ISubscriptionCallback> callback = subscription->subscriptionCaller;
+            std::shared_ptr<ISubscriptionListenerBase> listener =
+                    subscription->subscriptionListener;
 
             exceptions::PublicationMissedException error(subscriptionId);
-            callback->onError(error);
+            listener->onError(error);
             delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
         JOYNR_LOG_DEBUG(logger, "Rescheduling MissedPublicationRunnable with delay: {}", delay);

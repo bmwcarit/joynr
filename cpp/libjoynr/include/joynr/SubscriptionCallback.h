@@ -50,22 +50,25 @@ public:
     {
     }
 
-    void onError(const exceptions::JoynrRuntimeException& error) override
+    void onError(const BasePublication& publication, const exceptions::JoynrRuntimeException& error)
     {
-        static_cast<Derived*>(this)->onError(error);
+        static_cast<Derived*>(this)->onError(publication, error);
     }
 
     template <typename Holder = T>
-    std::enable_if_t<std::is_void<Holder>::value, void> onSuccess()
+    std::enable_if_t<std::is_void<Holder>::value, void> onSuccess(
+            const BasePublication& publication)
     {
-        static_cast<Derived*>(this)->onSuccess();
+        static_cast<Derived*>(this)->onSuccess(publication);
     }
 
     template <typename Holder = T>
-    std::enable_if_t<!std::is_void<Holder>::value, void> onSuccess(const Holder& value,
-                                                                   const Ts&... values)
+    std::enable_if_t<!std::is_void<Holder>::value, void> onSuccess(
+            const BasePublication& publication,
+            const Holder& value,
+            const Ts&... values)
     {
-        static_cast<Derived*>(this)->onSuccess(value, values...);
+        static_cast<Derived*>(this)->onSuccess(publication, value, values...);
     }
 
     void execute(BasePublication&& publication) override
@@ -100,10 +103,10 @@ private:
     {
         std::shared_ptr<exceptions::JoynrRuntimeException> error = publication.getError();
         if (error) {
-            onError(*error);
+            onError(publication, *error);
             return;
         }
-        onSuccess();
+        onSuccess(publication);
     }
 
     template <typename Holder = T>
@@ -111,37 +114,39 @@ private:
     {
         std::shared_ptr<exceptions::JoynrRuntimeException> error = publication.getError();
         if (error) {
-            onError(*error);
+            onError(publication, *error);
             return;
         }
 
         if (!publication.hasResponse()) {
-            onError(exceptions::JoynrRuntimeException(
-                    "Publication object had no response, discarded message"));
+            onError(publication,
+                    exceptions::JoynrRuntimeException(
+                            "Publication object had no response, discarded message"));
             return;
         }
 
         std::tuple<T, Ts...> responseTuple;
         try {
-            callGetResponse(
-                    responseTuple, std::move(publication), std::index_sequence_for<T, Ts...>{});
+            callGetResponse(responseTuple, publication, std::index_sequence_for<T, Ts...>{});
         } catch (const std::exception& exception) {
-            onError(exceptions::JoynrRuntimeException(exception.what()));
+            onError(publication, exceptions::JoynrRuntimeException(exception.what()));
             return;
         }
 
-        callOnSucces(std::move(responseTuple), std::index_sequence_for<T, Ts...>{});
+        callOnSucces(publication, std::move(responseTuple), std::index_sequence_for<T, Ts...>{});
     }
 
     template <std::size_t... Indices>
-    void callOnSucces(std::tuple<T, Ts...>&& response, std::index_sequence<Indices...>)
+    void callOnSucces(const BasePublication& publication,
+                      std::tuple<T, Ts...>&& response,
+                      std::index_sequence<Indices...>)
     {
-        onSuccess(std::move(std::get<Indices>(response))...);
+        onSuccess(publication, std::move(std::get<Indices>(response))...);
     }
 
     template <std::size_t... Indices>
     static void callGetResponse(std::tuple<T, Ts...>& response,
-                                BasePublication&& publication,
+                                BasePublication& publication,
                                 std::index_sequence<Indices...>)
     {
         publication.getResponse(std::get<Indices>(response)...);
