@@ -126,6 +126,23 @@ TEST_F(MulticastReceiverDirectoryTest, getReceivers)
     EXPECT_EQ(expectedReceivers, receivers);
 }
 
+TEST_F(MulticastReceiverDirectoryTest, directoryCorrectlyHandlesPartitionsExtendingOtherPartition)
+{
+    std::string multicastId1 = "providerId/partition1/partition2";
+    std::string multicastId2 = multicastId1 + "/partition3";
+    std::string receiverId2 = "testReceiverId_TWO";
+    multicastReceiverDirectory.registerMulticastReceiver(multicastId1, receiverId);
+    multicastReceiverDirectory.registerMulticastReceiver(multicastId2, receiverId2);
+
+    std::unordered_set<std::string> expectedReceivers1 = { receiverId };
+    std::unordered_set<std::string> receivers1 = multicastReceiverDirectory.getReceivers(multicastId1);
+    EXPECT_EQ(expectedReceivers1, receivers1);
+
+    std::unordered_set<std::string> expectedReceivers2 = { receiverId2 };
+    std::unordered_set<std::string> receivers2 = multicastReceiverDirectory.getReceivers(multicastId2);
+    EXPECT_EQ(expectedReceivers2, receivers2);
+}
+
 TEST_F(MulticastReceiverDirectoryTest, getReceiversWithWildCards)
 {
     std::vector<std::string> listOfSubscribersId = {"a", "b", "c", "d", "e", "f", "g", "h"};
