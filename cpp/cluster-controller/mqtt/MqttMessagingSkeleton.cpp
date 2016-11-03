@@ -24,11 +24,22 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(MqttMessagingSkeleton);
+
+const std::string MqttMessagingSkeleton::MQTT_MULTI_LEVEL_WILDCARD("#");
+
+std::string MqttMessagingSkeleton::translateMulticastWildcard(std::string topic)
+{
+    if (topic.length() > 0 && topic.back() == util::MULTI_LEVEL_WILDCARD[0]) {
+        topic.back() = MQTT_MULTI_LEVEL_WILDCARD[0];
+    }
+    return topic;
+}
 
 MqttMessagingSkeleton::MqttMessagingSkeleton(MessageRouter& messageRouter,
                                              std::shared_ptr<MqttReceiver> mqttReceiver)
@@ -41,7 +52,7 @@ MqttMessagingSkeleton::MqttMessagingSkeleton(MessageRouter& messageRouter,
 
 void MqttMessagingSkeleton::registerMulticastSubscription(const std::string& multicastId)
 {
-    std::string mqttTopic = joynr::util::translateMulticastWildcard(multicastId);
+    std::string mqttTopic = translateMulticastWildcard(multicastId);
     std::lock_guard<std::mutex> lock(multicastSubscriptionCountMutex);
     if (multicastSubscriptionCount.find(mqttTopic) == multicastSubscriptionCount.cend()) {
         mqttReceiver->subscribeToTopic(mqttTopic);
@@ -53,7 +64,7 @@ void MqttMessagingSkeleton::registerMulticastSubscription(const std::string& mul
 
 void MqttMessagingSkeleton::unregisterMulticastSubscription(const std::string& multicastId)
 {
-    std::string mqttTopic = joynr::util::translateMulticastWildcard(multicastId);
+    std::string mqttTopic = translateMulticastWildcard(multicastId);
     std::lock_guard<std::mutex> lock(multicastSubscriptionCountMutex);
     auto countIterator = multicastSubscriptionCount.find(mqttTopic);
     if (countIterator == multicastSubscriptionCount.cend()) {

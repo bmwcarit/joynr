@@ -290,3 +290,21 @@ TEST_F(MqttMessagingSkeletonTest, unregisterMulticastSubscription_unsubscribesFr
     EXPECT_CALL(*mockMqttReceiver, unsubscribeFromTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.unregisterMulticastSubscription(multicastId);
 }
+
+
+TEST_F(MqttMessagingSkeletonTest, translateWildcard)
+{
+    std::map<std::string, std::string> input2expected = {
+      {"partion0/partion1", "partion0/partion1"},
+      {"partion0/partion1/*", "partion0/partion1/#"},
+      {"partion0/partion1/+", "partion0/partion1/+"}
+    };
+
+    for(auto& testCase : input2expected) {
+        std::string inputPartition = testCase.first;
+        std::string expectedPartition = testCase.second;
+        EXPECT_EQ(expectedPartition, 
+                  MqttMessagingSkeleton::translateMulticastWildcard(inputPartition)
+        );
+    }
+}

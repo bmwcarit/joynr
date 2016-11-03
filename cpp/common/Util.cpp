@@ -110,14 +110,6 @@ std::string attributeGetterFromName(const std::string& attributeName)
     return result;
 }
 
-std::string translateMulticastWildcard(std::string topic)
-{
-    if (topic.length() > 0 && topic.back() == MULTI_LEVEL_WILDCARD[0]) {
-        topic.back() = MQTT_MULTI_LEVEL_WILDCARD[0];
-    }
-    return topic;
-}
-
 std::string createUuid()
 {
     // instantiation of random generator is expensive,
