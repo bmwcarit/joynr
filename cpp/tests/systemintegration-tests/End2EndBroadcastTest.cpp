@@ -609,15 +609,13 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
                 partitions2
     );
 
-    std::string subscriptionId1;
-    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->get(5000, subscriptionId1));
-    std::string subscriptionId2;
-    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->get(5000, subscriptionId2));
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->wait(5000));
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->wait(5000));
 
     // fire broadcast without partitions (should not be received by any subscriber)
     testProvider->fireLocationUpdate(gpsLocation2);
-    EXPECT_FALSE(semaphore.waitFor(std::chrono::seconds(3)));
-    EXPECT_FALSE(altSemaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    EXPECT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -625,8 +623,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
 
     // fire broadcast for subscriber 1 (should not be received by subscriber 2)
     testProvider->fireLocationUpdate(gpsLocation2, partitions1);
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
-    EXPECT_FALSE(altSemaphore.waitFor(std::chrono::seconds(2)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    EXPECT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -634,8 +632,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
 
     // fire broadcast for subscriber 2 (should not be received by subscriber 1)
     testProvider->fireLocationUpdate(gpsLocation2, partitions2);
-    EXPECT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
-    EXPECT_FALSE(semaphore.waitFor(std::chrono::seconds(2)));
+    EXPECT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(3000)));
+    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards) {
