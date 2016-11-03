@@ -569,6 +569,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
+    std::int64_t receiveBroadcastWait = 2000;
 
     std::vector<std::string> partitions1{"partition1", "partition2"};
     std::vector<std::string> partitions2{"partition1", "partition2", "partition3"};
@@ -609,13 +610,13 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
                 partitions2
     );
 
-    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->wait(5000));
-    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->wait(5000));
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->wait(subscribeToBroadcastWait));
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->wait(subscribeToBroadcastWait));
 
     // fire broadcast without partitions (should not be received by any subscriber)
     testProvider->fireLocationUpdate(gpsLocation2);
-    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(3000)));
-    EXPECT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(3000)));
+    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+    EXPECT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
 
     // Waiting between occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -623,8 +624,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
 
     // fire broadcast for subscriber 1 (should not be received by subscriber 2)
     testProvider->fireLocationUpdate(gpsLocation2, partitions1);
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
-    EXPECT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(3000)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+    EXPECT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
 
     // Waiting between occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -632,8 +633,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
 
     // fire broadcast for subscriber 2 (should not be received by subscriber 1)
     testProvider->fireLocationUpdate(gpsLocation2, partitions2);
-    EXPECT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(3000)));
-    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    EXPECT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards) {
