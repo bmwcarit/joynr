@@ -21,10 +21,10 @@ box "Backend App" #F1F1F1
 end box
 
 JeeApp -> jeeLibjoynr: emit{broadcastName}Event(event)
-jeeLibjoynr -> MqttMessagingStub: transmit(message, to: multicastAddress)
-MqttMessagingStub -> MqttBroker: publish(topicName: multicastAddressToTopic(), payload: message)
-MqttBroker -> MqttMessagingSkeleton:  sends message via MQTT
-MqttMessagingSkeleton -> MessageRouter:  route(message, multicastAddress)
+jeeLibjoynr -> MqttMessagingStub: transmit(message, to: multicastId)
+MqttMessagingStub -> MqttBroker: publish(topicName: multicastIdToTopic(), payload: message)
+MqttBroker -> MqttMessagingSkeleton:  send message via MQTT
+MqttMessagingSkeleton -> MessageRouter:  route(message, multicastId)
 MessageRouter -> libjoynr: transmit(message)
 libjoynr -> App: onReceive(event)
 @enduml
