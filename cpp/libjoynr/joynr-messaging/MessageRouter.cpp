@@ -666,21 +666,6 @@ void MessageRouter::resolveNextHop(
     onSuccess(resolved);
 }
 
-std::shared_ptr<IMessagingMulticastSubscriber> MessageRouter::getMulticastSkeleton(
-        std::shared_ptr<const system::RoutingTypes::Address> providerAddress,
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-{
-    std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
-            multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
-    if (!skeleton) {
-        exceptions::ProviderRuntimeException error("No messaging skeleton for multicast "
-                                                   "provider (address=" +
-                                                   providerAddress->toString() + ") found.");
-        onError(error);
-    }
-    return skeleton;
-}
-
 void MessageRouter::registerMulticastReceiver(
         const std::string& multicastId,
         const std::string& subscriberParticipantId,
@@ -690,11 +675,12 @@ void MessageRouter::registerMulticastReceiver(
         std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
 {
     if (isChildMessageRouter()) {
+        // TODO do not invoke parent message router for InProcessMessagingAddress
         parentRouter->addMulticastReceiverAsync(
                 multicastId, subscriberParticipantId, providerParticipantId, onSuccess, onError);
     } else {
         std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
-                getMulticastSkeleton(providerAddress, onError);
+                multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
         if (skeleton) {
             try {
                 skeleton->registerMulticastSubscription(multicastId);
@@ -702,6 +688,12 @@ void MessageRouter::registerMulticastReceiver(
             } catch (const exceptions::JoynrRuntimeException& error) {
                 onError(error);
             }
+        } else {
+            JOYNR_LOG_DEBUG(logger,
+                            "No messaging skeleton found for multicast "
+                            "provider (address=" +
+                                    providerAddress->toString() + ").");
+            onSuccess();
         }
     }
 };
@@ -779,9 +771,6 @@ void MessageRouter::addMulticastReceiver(
             onErrorWrapper(exception);
         }
         return;
-    } else if (std::dynamic_pointer_cast<const joynr::InProcessMessagingAddress>(providerAddress)) {
-        onSuccessWrapper();
-        return;
     }
     registerMulticastReceiver(multicastId,
                               subscriberParticipantId,
@@ -812,9 +801,8 @@ void MessageRouter::removeMulticastReceiver(
         JOYNR_LOG_ERROR(logger, exception.getMessage());
         onError(exception);
         return;
-    } else if (std::dynamic_pointer_cast<const joynr::InProcessMessagingAddress>(providerAddress)) {
-        onSuccess();
     } else if (isChildMessageRouter()) {
+        // TODO do not invoke parent message router for InProcessMessagingAddress
         std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
                 [onError, subscriberParticipantId, multicastId](
                         const exceptions::JoynrException& error) {
@@ -832,11 +820,16 @@ void MessageRouter::removeMulticastReceiver(
                                                    onErrorWrapper);
     } else {
         std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
-                getMulticastSkeleton(providerAddress, onError);
+                multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
         if (skeleton) {
             skeleton->unregisterMulticastSubscription(multicastId);
-            onSuccess();
+        } else {
+            JOYNR_LOG_DEBUG(logger,
+                            "No messaging skeleton found for multicast "
+                            "provider (address=" +
+                                    providerAddress->toString() + ").");
         }
+        onSuccess();
     }
 }
 

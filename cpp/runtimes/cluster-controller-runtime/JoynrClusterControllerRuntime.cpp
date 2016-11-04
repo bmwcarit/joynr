@@ -78,7 +78,6 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttProtocol.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
@@ -257,8 +256,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                            messageRouter,
                                                            wsMessagingStubFactory,
                                                            wsAddress);
-    multicastMessagingSkeletonDirectory
-            ->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(wsCcMessagingSkeleton);
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
     /* LibJoynr */
@@ -539,8 +536,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     stopMessaging();
 
     multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
-    multicastMessagingSkeletonDirectory
-            ->unregisterSkeleton<system::RoutingTypes::WebSocketClientAddress>();
 
     if (joynrDispatcher != nullptr) {
         JOYNR_LOG_TRACE(logger, "joynrDispatcher");
