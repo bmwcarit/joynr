@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,7 @@
  * #L%
  */
 
-/**
- * node wrapper for log4javascript
- *
- * @returns log4javascript wrapper for node.js
- */
-define([], function() {
-    var oldWindow = global.window;
-    /* WORKAROUND: log4javascript node module v. 1.4.15 still expects a window object to be present */
-    global.window = {};
-    var result = require("log4javascript");
-    global.window = oldWindow;
-    return result;
+define("joynr/system/ConsoleAppender", [ "log4javascriptDependency"
+], function(log4javascript) {
+    return log4javascript.BrowserConsoleAppender;
 });

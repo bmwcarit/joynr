@@ -19,9 +19,11 @@
 
 define(
         "joynr/system/LoggingManager",
-        [ "log4javascript"
+        [
+            "log4javascriptDependency",
+            "joynr/system/ConsoleAppender"
         ],
-        function(log4javascript) {
+        function(log4javascript, ConsoleAppender) {
             /**
              * @name LoggingManager
              * @class
@@ -34,7 +36,7 @@ define(
                 loggingContexts = {};
 
                 appenderTypes = {
-                    Console : log4javascript.BrowserConsoleAppender
+                    Console : ConsoleAppender
                 };
 
                 this.reset = function reset() {
