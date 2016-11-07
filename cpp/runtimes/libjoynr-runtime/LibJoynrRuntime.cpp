@@ -135,7 +135,9 @@ void LibJoynrRuntime::init(
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(systemServicesSettings);
+    const bool provisionClusterControllerDiscoveryEntries = false;
+    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(
+            systemServicesSettings, messagingSettings, provisionClusterControllerDiscoveryEntries);
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
     std::string systemServicesDomain = systemServicesSettings.getDomain();
