@@ -36,6 +36,7 @@
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Util.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -46,6 +47,7 @@
 #include "joynr/SubscriptionQos.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/exceptions/SubscriptionException.h"
+#include "common/CallContextStorage.h"
 
 namespace joynr
 {
@@ -120,8 +122,10 @@ PublicationManager::~PublicationManager()
     }
 }
 
-PublicationManager::PublicationManager(DelayedScheduler* scheduler)
-        : publications(),
+PublicationManager::PublicationManager(DelayedScheduler* scheduler,
+                                       IJoynrMessageSender* messageSender)
+        : joynrMessageSender(messageSender),
+          publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
           fileWriteLock(),
@@ -140,8 +144,11 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler)
 {
 }
 
-PublicationManager::PublicationManager(boost::asio::io_service& ioService, int maxThreads)
-        : publications(),
+PublicationManager::PublicationManager(boost::asio::io_service& ioService,
+                                       IJoynrMessageSender* messageSender,
+                                       int maxThreads)
+        : joynrMessageSender(messageSender),
+          publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
           fileWriteLock(),
@@ -220,8 +227,10 @@ void PublicationManager::add(const std::string& proxyParticipantId,
                              IPublicationSender* publicationSender)
 {
     assert(requestCaller);
-    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(
-            proxyParticipantId, providerParticipantId, subscriptionRequest);
+    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(proxyParticipantId,
+                                                                        providerParticipantId,
+                                                                        CallContextStorage::get(),
+                                                                        subscriptionRequest);
     handleAttributeSubscriptionRequest(requestInfo, requestCaller, publicationSender);
 }
 
@@ -326,8 +335,8 @@ void PublicationManager::addBroadcastPublication(
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
 
     // Create a broadcast listener to listen for broadcast events
-    SubscriptionBroadcastListener* broadcastListener =
-            new SubscriptionBroadcastListener(subscriptionId, *this);
+    UnicastBroadcastListener* broadcastListener =
+            new UnicastBroadcastListener(subscriptionId, *this);
 
     // Register the broadcast listener
     std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
@@ -344,8 +353,10 @@ void PublicationManager::add(const std::string& proxyParticipantId,
     JOYNR_LOG_DEBUG(logger,
                     "Added subscription for non existing provider (adding subscriptionRequest "
                     "to queue).");
-    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(
-            proxyParticipantId, providerParticipantId, subscriptionRequest);
+    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(proxyParticipantId,
+                                                                        providerParticipantId,
+                                                                        CallContextStorage::get(),
+                                                                        subscriptionRequest);
     {
         std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
         queuedSubscriptionRequests.insert(
@@ -354,6 +365,19 @@ void PublicationManager::add(const std::string& proxyParticipantId,
 
     subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
     saveAttributeSubscriptionRequestsMap();
+}
+
+void PublicationManager::add(const std::string& proxyParticipantId,
+                             const std::string& providerParticipantId,
+                             MulticastSubscriptionRequest& subscriptionRequest,
+                             IPublicationSender* publicationSender)
+{
+    // silently handle multicast subscription request
+    sendSubscriptionReply(publicationSender,
+                          providerParticipantId,
+                          proxyParticipantId,
+                          subscriptionRequest.getQos()->getExpiryDateMs(),
+                          subscriptionRequest.getSubscriptionId());
 }
 
 void PublicationManager::add(const std::string& proxyParticipantId,
@@ -920,7 +944,10 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         JOYNR_LOG_DEBUG(logger, "run: executing requestInterpreter= {}", attributeGetter);
         Request dummyRequest;
         dummyRequest.setMethodName(attributeGetter);
+
+        CallContextStorage::set(subscriptionRequest->getCallContext());
         requestInterpreter->execute(requestCaller, dummyRequest, onSuccess, onError);
+        CallContextStorage::invalidate();
     }
 }
 

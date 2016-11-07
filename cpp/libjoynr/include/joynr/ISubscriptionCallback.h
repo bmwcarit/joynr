@@ -21,23 +21,22 @@
 
 namespace joynr
 {
-class SubscriptionPublication;
+class BasePublication;
 class SubscriptionReply;
 namespace exceptions
 {
 class JoynrRuntimeException;
 } // namespace exceptions
-  /**
-    * @class ISubscriptionCallback
-    * @brief
-    */
 
+/**
+  * @class ISubscriptionCallback
+  * @brief
+  */
 class ISubscriptionCallback
 {
 public:
-    virtual void onError(const exceptions::JoynrRuntimeException& error) = 0;
     virtual ~ISubscriptionCallback() = default;
-    virtual void execute(SubscriptionPublication&& subscriptionPublication) = 0;
+    virtual void execute(BasePublication&& publication) = 0;
     virtual void execute(const SubscriptionReply& subscriptionReply) = 0;
 };
 

@@ -19,6 +19,12 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.UUID;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -36,14 +42,9 @@ import joynr.types.GlobalDiscoveryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.UUID;
-
 @Singleton
 public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage {
+
     private static final Logger logger = LoggerFactory.getLogger(PropertiesFileParticipantIdStorage.class);
     private final GlobalDiscoveryEntry capabilitiesDirectoryEntry;
     private final GlobalDiscoveryEntry domainAccessControllerEntry;
@@ -80,7 +81,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     @Override
     public String getProviderParticipantId(String domain, String interfaceName, String defaultValue) {
 
-        String token = getProviderParticipantIdKey(domain, interfaceName);
+        String token = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName);
 
         String participantId;
 
@@ -125,15 +126,10 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         return participantId;
     }
 
-    private static String getProviderParticipantIdKey(String domain, String interfaceName) {
-        String token = "joynr.participant." + domain + "." + interfaceName;
-        return token.replace('/', '.');
-    }
-
     @Override
     public String getProviderParticipantId(String domain, String interfaceName) {
         String defaultParticipantId = null;
-        String providerParticipantIdKey = getProviderParticipantIdKey(domain, interfaceName).toLowerCase();
+        String providerParticipantIdKey = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName);
         if (joynrProperties.containsKey(providerParticipantIdKey)) {
             defaultParticipantId = joynrProperties.getProperty(providerParticipantIdKey);
         }

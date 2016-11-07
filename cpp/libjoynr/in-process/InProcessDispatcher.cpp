@@ -35,7 +35,6 @@ InProcessDispatcher::InProcessDispatcher(boost::asio::io_service& ioService)
           replyCallerDirectory("InProcessDispatcher-ReplyCallerDirectory", ioService),
           publicationManager(),
           subscriptionManager()
-
 {
 }
 

@@ -34,7 +34,7 @@ public class MulticastWildcardRegexFactory {
         String patternString = multicastId.replaceAll("^\\+/", "[^\\/]+/");
         patternString = patternString.replaceAll("/\\+/", "/[^\\/]+/");
         patternString = patternString.replaceAll("(.*)/[\\+]$", "$1/[^\\/]+\\$");
-        patternString = patternString.replaceAll("(.*)/[\\*]$", "$1/.*\\$");
+        patternString = patternString.replaceAll("(.*)/[\\*]$", "$1(/.*)?\\$");
         logger.debug("Creating multicast ID regex pattern: {}", patternString);
         return Pattern.compile(patternString);
     }

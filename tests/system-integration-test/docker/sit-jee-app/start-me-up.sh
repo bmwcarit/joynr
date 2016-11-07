@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Give the JEE Discovery Directory a chance to start ...
+sleep 30
+
 function wait_for_endpoint {
 	retry_count=0
 	max_retries=60

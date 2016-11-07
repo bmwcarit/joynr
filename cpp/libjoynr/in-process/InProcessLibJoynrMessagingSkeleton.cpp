@@ -17,7 +17,7 @@
  * #L%
  */
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
-#include "joynr/MessagingQos.h"
+
 #include "joynr/JoynrMessage.h"
 
 namespace joynr

@@ -18,21 +18,18 @@
  */
 #ifndef HTTPSENDER_H
 #define HTTPSENDER_H
-#include "joynr/PrivateCopyAssign.h"
-
-#include "joynr/IMessageSender.h"
-
-#include "joynr/ContentWithDecayTime.h"
-#include "joynr/BrokerUrl.h"
-#include "joynr/Logger.h"
-#include "joynr/DispatcherUtils.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
-#include "joynr/Runnable.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 #include <string>
 #include <memory>
 #include <chrono>
+
+#include "joynr/BrokerUrl.h"
+#include "joynr/DispatcherUtils.h"
+#include "joynr/IMessageSender.h"
+#include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Runnable.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {

@@ -113,8 +113,9 @@ function execute_in_docker {
 #create build dir:
 mkdir -p $(pwd)/../../../../build
 
-if [ -z $NO_JAVA_TEST_BUILD ]
-then
+if [ $NO_JAVA_TEST_BUILD ]; then
+	echo "Skipping Java build ..."
+else
 	# Build Java
 	execute_in_docker "echo \"Generate Java API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests"
 	SKIP_MAVEN_BUILD_CPP_PREREQUISITES=true
@@ -154,10 +155,7 @@ cp -R ../../sit-node-app ${BUILDDIR}
 cp -R ../../../../build/tests ${BUILDDIR}
 # create the directory in any case because it is referenced in Dockerfile below
 mkdir ${BUILDDIR}/sit-java-app
-if [ -z $NO_JAVA_TEST_BUILD ]
-then
-	cp -R ../../sit-java-app/target/sit-java-app-*-jar-with-dependencies.jar ${BUILDDIR}/sit-java-app
-fi
+cp ../../sit-java-app/target/sit-java-app-*-jar-with-dependencies.jar ${BUILDDIR}/sit-java-app
 
 # Find a file with a name which matches 'joynr-[version].rpm'
 find  ../../../../build/joynr/package/RPM/x86_64/ -iregex ".*joynr-[0-9].*rpm" -exec cp {} $BUILDDIR/joynr.rpm \;

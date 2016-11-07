@@ -60,7 +60,7 @@ std::shared_ptr<exceptions::JoynrRuntimeException> BasePublication::getError() c
 
 void BasePublication::setError(std::shared_ptr<exceptions::JoynrRuntimeException> error)
 {
-    error = std::move(error);
+    this->error = std::move(error);
 }
 
 // printing SubscriptionPublication with google-test and google-mock

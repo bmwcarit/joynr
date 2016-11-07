@@ -189,14 +189,12 @@ void LongPollingMessageReceiver::checkServerTime()
 {
     std::string timeCheckUrl = brokerUrl.getTimeCheckUrl().toString();
 
-    IHttpGetBuilder* timeCheckRequestBuilder =
-            HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl);
+    std::unique_ptr<IHttpGetBuilder> timeCheckRequestBuilder(
+            HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl));
     std::shared_ptr<HttpRequest> timeCheckRequest(
             timeCheckRequestBuilder->addHeader("Accept", "text/plain")
                     ->withTimeout(settings.brokerTimeout)
                     ->build());
-    delete timeCheckRequestBuilder;
-    timeCheckRequestBuilder = nullptr;
     JOYNR_LOG_DEBUG(logger, "CheckServerTime: sending request to Bounce Proxy ({})", timeCheckUrl);
     std::chrono::system_clock::time_point localTimeBeforeRequest = std::chrono::system_clock::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();

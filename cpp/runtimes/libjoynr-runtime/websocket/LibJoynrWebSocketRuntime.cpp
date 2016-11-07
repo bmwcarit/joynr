@@ -26,6 +26,7 @@
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/WebSocketMulticastAddressCalculator.h"
 
 namespace joynr
 {
@@ -85,7 +86,10 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> set
     });
 
     connectionEstablishedSemaphore->wait();
-    LibJoynrRuntime::init(factory, libjoynrMessagingAddress, ccMessagingAddress);
+    std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
+            std::make_unique<joynr::WebSocketMulticastAddressCalculator>(ccMessagingAddress);
+    LibJoynrRuntime::init(
+            factory, libjoynrMessagingAddress, ccMessagingAddress, std::move(addressCalculator));
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
@@ -94,6 +98,9 @@ LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
     // WebSocketLibJoynrMessagingSkeleton
     websocket->registerReceiveCallback(nullptr);
     websocket->close();
+    // synchronously stop the underlying boost::asio::io_service
+    // this ensures all asynchronous operations are stopped now
+    // which allows a safe shutdown
     singleThreadIOService->stop();
 }
 

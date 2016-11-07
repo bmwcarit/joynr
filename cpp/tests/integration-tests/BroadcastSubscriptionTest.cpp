@@ -25,7 +25,7 @@
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/Dispatcher.h"
-#include "joynr/SubscriptionCallback.h"
+#include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -129,13 +129,14 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     subscriptionPublication.setResponse(gpsLocation1);
 
     auto future = std::make_shared<Future<std::string>>();
-    auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>
-            >(mockSubscriptionListenerOne, future, subscriptionManager);
+    auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
                 subscribeToName,
                 subscriptionCallback,
+                mockSubscriptionListenerOne,
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
@@ -178,13 +179,14 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     subscriptionPublication.setResponse(gpsLocation1, speed1);
 
     auto future = std::make_shared<Future<std::string>>();
-    auto subscriptionCallback= std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation, double>
-            >(mockSubscriptionListenerTwo, future, subscriptionManager);
+    auto subscriptionCallback= std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation, double>
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
                 subscribeToName,
                 subscriptionCallback,
+                mockSubscriptionListenerTwo,
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider

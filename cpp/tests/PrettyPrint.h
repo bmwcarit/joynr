@@ -26,11 +26,12 @@
 #include "joynr/StatusCode.h"
 #include "joynr/types/DiscoveryEntry.h"
 
-#define EXPECT_EQ_QBYTEARRAY(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.constData() << std::endl << "Expected: " << a.constData() << std::endl
-
 //void initPretty(void);
 
 namespace joynr {
+
+void PrintTo(const JoynrMessage& value, ::std::ostream* os);
+
 // NOTE: Choosing the right PrintTo method is done by template magic by
 //       the compiler. Therefore, the point in time when the PrintTo method
 //       is defined is crucial. So consider defining the method in the same
@@ -38,8 +39,6 @@ namespace joynr {
 //
 // The following PrintTo's are defined directly in the file where the type is
 // defined:
-//    class JoynrMessage;
-//    void PrintTo(const JoynrMessage& value, ::std::ostream* os);
 //    class MessagingQos;
 //    void PrintTo(const MessagingQos& value, ::std::ostream* os);
 
@@ -51,5 +50,4 @@ namespace system {
 }
 }
 void PrintTo(const joynr::StatusCodeEnum& value, ::std::ostream* os);
-void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
 #endif // PRETTYPRINT_H_

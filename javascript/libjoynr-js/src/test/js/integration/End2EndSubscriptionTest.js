@@ -65,6 +65,7 @@ define([
                         var abstractTest = new End2EndAbstractTest("End2EndSubscriptionTest");
                         var setAttribute = abstractTest.setAttribute;
                         var setupSubscriptionAndReturnSpy = abstractTest.setupSubscriptionAndReturnSpy;
+                        var unsubscribeSubscription = abstractTest.unsubscribeSubscription;
                         var callOperation = abstractTest.callOperation;
                         var expectPublication = abstractTest.expectPublication;
 
@@ -398,6 +399,9 @@ define([
                         });
 
                         describe("multicasts with partitions", function() {
+                            function unsubscribeMulticastSubscription(spy) {
+                                unsubscribeSubscription("emptyBroadcast", spy.onFulfilled.calls.mostRecent().args[0]);
+                            }
                             function setupMulticastSubscriptionWithPartitionAndReturnSpy(partitions) {
                                 return setupSubscriptionAndReturnSpy("emptyBroadcast", subscriptionQosOnChange, partitions);
                             }
@@ -419,14 +423,17 @@ define([
                                         "wait for interaction with spy",
                                         timeout || provisioning.ttl)
                                         .then(function() { throw new Error("unexpected publication"); })
-                                        .catch(function() { return null; });
+                                        .catch(function() { return spy; });
                             }
 
-                            function testMulticastWithPartitions(partitions, done) {
-                                return setupMulticastSubscriptionWithPartitionAndReturnSpy(partitions).then(function(spy) {
-                                    return triggerBroadcastWithPartitions(partitions, true).then(function() { return spy; });
+                            function testMulticastWithPartitionsExtended(subscribePartitions, publicationPartitions, times, timeout) {
+                                return setupMulticastSubscriptionWithPartitionAndReturnSpy(subscribePartitions).then(function(spy) {
+                                    return Promise.all(publicationPartitions.map(function(partitions) {
+                                        return triggerBroadcastWithPartitions(partitions, true);
+                                    })).then(function() { return spy; });
                                 }).then(function(spy) {
-                                    return expectPublication(spy).then(function() {
+                                    var noop = function() {};
+                                    return expectMultiplePublications(spy, times, timeout, noop).then(function() {
                                         spy.onReceive.calls.reset();
                                         return spy;
                                     });
@@ -434,23 +441,46 @@ define([
                                     /* the provider sends broadcasts for the complete partition hierarchy.
                                      * However, expect only one publication here
                                      */
-                                    return expectNoMorePublication(spy, 500);
-                                }).then(function() {
+                                    return expectNoMorePublication(spy, 500).then(unsubscribeMulticastSubscription);
+                                });
+                            }
+                            function testMulticastWithPartitions(partitions, done) {
+                                return testMulticastWithPartitionsExtended(partitions, [partitions], 1, 5000).then(function() {
                                     done();
                                     return null;
                                 }).catch(fail);
                             }
 
-                            it("subscribe to non-selective broadcast with empty multicast partitions", function(done) {
+                            it("with empty partitions", function(done) {
                                 testMulticastWithPartitions([], done);
                             });
 
-                            it("subscribe to non-selective broadcast with first-level partition", function(done) {
+                            it("with first-level partition", function(done) {
                                 testMulticastWithPartitions([ "a" ], done);
                             });
 
-                            it("subscribe to non-selective broadcast with multi-level partition", function(done) {
+                            it("with multi-level partition", function(done) {
                                 testMulticastWithPartitions([ "a" , "b", "c", "d", "e", "f", "g"], done);
+                            });
+
+                            it("with multi-level partition including asterisk", function(done) {
+                                var timeout = 5000;
+                                testMulticastWithPartitionsExtended([ "a" , "b", "c", "d", "e", "f", "*"], [[ "a" , "b", "c", "d", "e", "f"]], 1, timeout).then(function() {
+                                    return testMulticastWithPartitionsExtended([ "a" , "b", "c", "d", "e", "f", "*"], [[ "a" , "b", "c", "d", "e", "f", "g", "h"]], 3, timeout);
+                                }).then(function() {
+                                    done();
+                                    return null;
+                                }).catch(fail);
+                            });
+
+                            it("with multi-level partition including plus sign", function(done) {
+                                var timeout = 5000;
+                                testMulticastWithPartitionsExtended([ "a" , "+", "c"], [[ "a" , "b", "c"]], 1, timeout).then(function() {
+                                    return testMulticastWithPartitionsExtended([ "a" , "+", "c"], [[ "a" , "b", "c"], [ "a" , "b", "d"], [ "a" , "xyz", "c" , "d", "e", "f"]], 2, timeout);
+                                }).then(function() {
+                                    done();
+                                    return null;
+                                }).catch(fail);
                             });
 
                             it("subscribe to the same non-selective broadcast with different partitions", function(done) {

@@ -18,6 +18,7 @@
  */
 #ifndef INPROCESSLIBJOYNRMESSAGINGSKELETON_H
 #define INPROCESSLIBJOYNRMESSAGINGSKELETON_H
+
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrExport.h"

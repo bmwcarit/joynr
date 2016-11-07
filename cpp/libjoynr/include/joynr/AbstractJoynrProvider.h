@@ -28,12 +28,15 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/SubscriptionAttributeListener.h"
-#include "joynr/SubscriptionBroadcastListener.h"
+#include "joynr/UnicastBroadcastListener.h"
+#include "joynr/MulticastBroadcastListener.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
 namespace joynr
 {
+
+class CallContext;
 
 /**
  * @brief Abstract class that specifies the interface providers need to implement
@@ -81,13 +84,20 @@ public:
                                      SubscriptionAttributeListener* attributeListener) override;
 
     /**
-     * @brief Register an object that will be informed when an event occurs
+     * @brief Register a listener for unicast broadcasts
      * @param broadcastName The name of the broadcast for which publications shall be done
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
     void registerBroadcastListener(const std::string& broadcastName,
-                                   SubscriptionBroadcastListener* broadcastListener) override;
+                                   UnicastBroadcastListener* broadcastListener) override;
+
+    /**
+     * @brief Register a listener for multicast broadcasts
+     * @param broadcastListener The listener object containing the callbacks for publications and
+     * failures
+     */
+    void registerBroadcastListener(MulticastBroadcastListener* broadcastListener) override;
 
     /**
      * @brief Unregister and delete a broadcast listener
@@ -96,7 +106,7 @@ public:
      * failures
      */
     void unregisterBroadcastListener(const std::string& broadcastName,
-                                     SubscriptionBroadcastListener* broadcastListener) override;
+                                     UnicastBroadcastListener* broadcastListener) override;
 
 protected:
     /**
@@ -107,7 +117,7 @@ protected:
     template <typename T>
     void onAttributeValueChanged(const std::string& attributeName, const T& value)
     {
-        ReadLocker locker(lock);
+        ReadLocker locker(lockAttributeListeners);
 
         if (attributeListeners.find(attributeName) != attributeListeners.cend()) {
             std::vector<SubscriptionAttributeListener*>& listeners =
@@ -132,11 +142,11 @@ protected:
                                 const Ts&... values)
     {
 
-        ReadLocker locker(lock);
-        const std::vector<SubscriptionBroadcastListener*>& listeners =
-                broadcastListeners[broadcastName];
+        ReadLocker locker(lockSelectiveBroadcastListeners);
+        const std::vector<UnicastBroadcastListener*>& listeners =
+                selectiveBroadcastListeners[broadcastName];
         // Inform all the broadcast listeners for this broadcast
-        for (SubscriptionBroadcastListener* listener : listeners) {
+        for (UnicastBroadcastListener* listener : listeners) {
             listener->selectiveBroadcastOccurred(filters, values...);
         }
     }
@@ -144,17 +154,19 @@ protected:
     /**
      * @brief Called by subclasses when a selective broadcast occurs
      * @param broadcastName The name of the broadcast that occurred
-     * @param values The output values of the broadcast
+     * @param values The output values of the broadcastselectiveBroadcastListeners
      */
     template <typename... Ts>
-    void fireBroadcast(const std::string& broadcastName, const Ts&... values)
+    void fireBroadcast(const std::string& broadcastName,
+                       const std::vector<std::string>& partitions,
+                       const Ts&... values)
     {
-        ReadLocker locker(lock);
-        const std::vector<SubscriptionBroadcastListener*>& listeners =
-                broadcastListeners[broadcastName];
+        util::validatePartitions(partitions, false /*do not allow wildcard*/);
+
+        ReadLocker locker(lockBroadcastListeners);
         // Inform all the broadcast listeners for this broadcast
-        for (SubscriptionBroadcastListener* listener : listeners) {
-            listener->broadcastOccurred(values...);
+        for (MulticastBroadcastListener* listener : broadcastListeners) {
+            listener->broadcastOccurred(broadcastName, partitions, values...);
         }
     }
 
@@ -167,12 +179,29 @@ protected:
     [[deprecated("Will be removed by end of the year 2016. Use JoynrRuntime::registerProvider "
                  "instead.")]] types::ProviderQos providerQos;
 
+    /**
+     * @brief Returns a call context object including meta information (such as calling
+     * principal) for the current provider call.
+     *
+     * Method calls on joynr providers are executed by joynr middleware threads. These threads
+     * must not be blocked by the provider to ensure proper joynr function. Providers must
+     * spawn threads to perform computation asynchronously and release the joynr thread. The
+     * call context object is thread local and only valid in the context of the joynr middleware
+     * thread and hence must be copied by the provider for asychronous or future usage.
+     *
+     * @return The current call context
+     */
+    const CallContext& getCallContext() const;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);
 
-    ReadWriteLock lock;
+    ReadWriteLock lockAttributeListeners;
+    ReadWriteLock lockBroadcastListeners;
+    ReadWriteLock lockSelectiveBroadcastListeners;
     std::map<std::string, std::vector<SubscriptionAttributeListener*>> attributeListeners;
-    std::map<std::string, std::vector<SubscriptionBroadcastListener*>> broadcastListeners;
+    std::map<std::string, std::vector<UnicastBroadcastListener*>> selectiveBroadcastListeners;
+    std::vector<MulticastBroadcastListener*> broadcastListeners;
 
     friend class End2EndBroadcastTest;
     friend class End2EndSubscriptionTest;

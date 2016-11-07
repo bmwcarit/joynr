@@ -28,7 +28,7 @@ namespace joynr
 HttpNetworking* HttpNetworking::httpNetworking = new HttpNetworking();
 
 HttpNetworking::HttpNetworking()
-        : curlHandlePool(nullptr),
+        : curlHandlePool(std::make_shared<PerThreadCurlHandlePool>()),
           proxy(),
           connectTimeout(std::chrono::milliseconds::zero()),
           certificateAuthority(),
@@ -37,14 +37,6 @@ HttpNetworking::HttpNetworking()
           httpDebug(false)
 {
     curl_global_init(CURL_GLOBAL_ALL);
-    // curlHandlePool = new DefaultCurlHandlePool;
-    // curlHandlePool = new AlwaysNewCurlHandlePool;
-    curlHandlePool = new PerThreadCurlHandlePool;
-}
-
-HttpNetworking::~HttpNetworking()
-{
-    delete curlHandlePool;
 }
 
 HttpNetworking* HttpNetworking::getInstance()
@@ -125,7 +117,7 @@ void HttpNetworking::setClientCertificatePassword(const std::string& clientCerti
     this->clientCertificatePassword = clientCertificatePassword;
 }
 
-ICurlHandlePool* HttpNetworking::getCurlHandlePool()
+std::shared_ptr<ICurlHandlePool> HttpNetworking::getCurlHandlePool() const
 {
     return curlHandlePool;
 }

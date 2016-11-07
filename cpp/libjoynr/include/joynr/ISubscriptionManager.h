@@ -34,6 +34,7 @@ namespace joynr
 class MulticastSubscriptionRequest;
 class SubscriptionRequest;
 class ISubscriptionCallback;
+class ISubscriptionListenerBase;
 class SubscriptionQos;
 
 namespace exceptions
@@ -66,10 +67,12 @@ public:
      * @param qos
      * @param subscriptionRequest
      */
-    virtual void registerSubscription(const std::string& subscribeToName,
-                                      std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-                                      std::shared_ptr<SubscriptionQos> qos,
-                                      SubscriptionRequest& subscriptionRequest) = 0;
+    virtual void registerSubscription(
+            const std::string& subscribeToName,
+            std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
+            std::shared_ptr<SubscriptionQos> qos,
+            SubscriptionRequest& subscriptionRequest) = 0;
 
     /**
      * @brief Subscribe to a multicast. Modifies the subscription request to include
@@ -91,6 +94,7 @@ public:
             const std::string& providerParticipantId,
             const std::vector<std::string>& partitions,
             std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
             std::shared_ptr<SubscriptionQos> qos,
             MulticastSubscriptionRequest& subscriptionRequest,
             std::function<void()> onSuccess,
@@ -123,14 +127,34 @@ public:
             const std::string& subscriptionId) = 0;
 
     /**
-     * @brief Get a list of shared pointers to the subscription callbacks. The list is empty
+     * @brief Get a shared pointer to the subscription callback. The shared pointer point to null
      * if the multicast ID does not exist.
      *
      * @param multicastId
-     * @return std::forward_list<std::shared_ptr<ISubscriptionCallback>>
+     * @return <std::shared_ptr<ISubscriptionCallback>
      */
-    virtual std::forward_list<std::shared_ptr<ISubscriptionCallback>>
-    getMulticastSubscriptionCallbacks(const std::string& multicastId) = 0;
+    virtual std::shared_ptr<ISubscriptionCallback> getMulticastSubscriptionCallback(
+            const std::string& multicastId) = 0;
+
+    /**
+     * @brief Get a shared pointer to the subscription listener. The shared pointer points to null
+     * if the subscription ID does not exist.
+     *
+     * @param subscriptionId
+     * @return std::shared_ptr<ISubscriptionListenerBase>
+     */
+    virtual std::shared_ptr<ISubscriptionListenerBase> getSubscriptionListener(
+            const std::string& subscriptionId) = 0;
+
+    /**
+     * @brief Get a list of shared pointers to the subscription listeners. The list is empty
+     * if the multicast ID does not exist.
+     *
+     * @param multicastId
+     * @return std::forward_list<std::shared_ptr<ISubscriptionListenerBase>>
+     */
+    virtual std::forward_list<std::shared_ptr<ISubscriptionListenerBase>>
+    getMulticastSubscriptionListeners(const std::string& multicastId) = 0;
 
     /**
      * @brief Converts the expiry date of a subscription into a TTL.

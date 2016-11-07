@@ -24,13 +24,14 @@ define(
         "joynr/messaging/routing/MessageRouter",
         [
             "global/Promise",
+            "joynr/messaging/util/MulticastWildcardRegexFactory",
             "joynr/system/DiagnosticTags",
             "joynr/system/LoggerFactory",
             "joynr/messaging/JoynrMessage",
             "joynr/util/Typing",
             "joynr/util/JSONSerializer",
         ],
-        function(Promise, DiagnosticTags, LoggerFactory, JoynrMessage, Typing, JSONSerializer) {
+        function(Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, JoynrMessage, Typing, JSONSerializer) {
 
             /**
              * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable}
@@ -68,6 +69,7 @@ define(
                 // TODO local replyCallers are registered (using dispatcher as local endpoint) when they are created
 
                 var that = this;
+                var multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
                 var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageRouter");
                 var listener, routingProxy, messagingStub;
                 var queuedAddNextHopCalls = [], queuedRemoveNextHopCalls = [], queuedAddMulticastReceiverCalls = [], queuedRemoveMulticastReceiverCalls = [];
@@ -310,12 +312,19 @@ define(
                             result.push(address);
                         }
                     }
-                    var receivers = multicastReceiversRegistry[joynrMessage.to];
-                    if (receivers !== undefined) {
-                        for (i=0;i<receivers.length;i++){
-                            address = routingTable[receivers[i]];
-                            if (address !== undefined) {
-                                result.push(address);
+                    var multicastIdPattern, receivers;
+                    for (multicastIdPattern in multicastReceiversRegistry) {
+                        if (multicastReceiversRegistry.hasOwnProperty(multicastIdPattern)) {
+                            if(joynrMessage.to.match(new RegExp(multicastIdPattern)) !== null) {
+                                receivers = multicastReceiversRegistry[multicastIdPattern];
+                                if (receivers !== undefined) {
+                                    for (i=0;i<receivers.length;i++){
+                                        address = routingTable[receivers[i]];
+                                        if (address !== undefined) {
+                                            result.push(address);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -457,8 +466,10 @@ define(
                 this.addMulticastReceiver = function addMulticastReceiver(parameters) {
                     //1. handle call in local router
                     //1.a store receiver in multicastReceiverRegistry
-                    if (multicastReceiversRegistry[parameters.multicastId] === undefined) {
-                        multicastReceiversRegistry[parameters.multicastId] = [];
+                    var multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(parameters.multicastId);
+
+                    if (multicastReceiversRegistry[multicastIdPattern] === undefined) {
+                        multicastReceiversRegistry[multicastIdPattern] = [];
 
                         //1.b the first receiver for this multicastId -> inform MessagingSkeleton about receiver
                         var skeleton = messagingSkeletonFactory.getSkeleton(routingTable[parameters.providerParticipantId]);
@@ -467,7 +478,7 @@ define(
                         }
                     }
 
-                    multicastReceiversRegistry[parameters.multicastId].push(parameters.subscriberParticipantId);
+                    multicastReceiversRegistry[multicastIdPattern].push(parameters.subscriberParticipantId);
 
                     //2. forward call to parent router (if available)
                     var promise;
@@ -508,8 +519,9 @@ define(
                 this.removeMulticastReceiver = function removeMulticastReceiver(parameters) {
                     //1. handle call in local router
                     //1.a remove receiver from multicastReceiverRegistry
-                    if (multicastReceiversRegistry[parameters.multicastId] !== undefined) {
-                        var i, receivers = multicastReceiversRegistry[parameters.multicastId];
+                    var multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(parameters.multicastId);
+                    if (multicastReceiversRegistry[multicastIdPattern] !== undefined) {
+                        var i, receivers = multicastReceiversRegistry[multicastIdPattern];
                         for (i = 0; i < receivers.length; i++) {
                             if (receivers[i] === parameters.subscriberParticipantId) {
                                 receivers.splice(i, 1);
@@ -517,7 +529,7 @@ define(
                             }
                         }
                         if (receivers.length === 0) {
-                            delete multicastReceiversRegistry[parameters.multicastId];
+                            delete multicastReceiversRegistry[multicastIdPattern];
 
                             //1.b no receiver anymore for this multicastId -> inform MessagingSkeleton about removed receiver
                             var skeleton = messagingSkeletonFactory.getSkeleton(routingTable[parameters.providerParticipantId]);

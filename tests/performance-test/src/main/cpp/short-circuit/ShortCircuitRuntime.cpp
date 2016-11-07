@@ -34,6 +34,7 @@
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/MqttMulticastAddressCalculator.h"
 
 namespace joynr
 {
@@ -49,9 +50,13 @@ ShortCircuitRuntime::ShortCircuitRuntime()
 
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
 
+    std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
+            std::make_unique<MqttMulticastAddressCalculator>(nullptr);
+
     messageRouter = std::make_shared<MessageRouter>(std::move(messagingStubFactory),
                                                     libjoynrMessagingAddress,
-                                                    singleThreadedIOService.getIOService());
+                                                    singleThreadedIOService.getIOService(),
+                                                    std::move(addressCalculator));
 
     joynrMessageSender = std::make_unique<JoynrMessageSender>(messageRouter);
     joynrDispatcher =
@@ -62,7 +67,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
             std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = new PublicationManager(singleThreadedIOService.getIOService());
+    publicationManager = new PublicationManager(
+            singleThreadedIOService.getIOService(), joynrMessageSender.get());
     subscriptionManager =
             new SubscriptionManager(singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());
@@ -98,7 +104,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                     participantIdStorage,
                                                     dispatcherAddress,
                                                     messageRouter,
-                                                    std::numeric_limits<std::int64_t>::max());
+                                                    std::numeric_limits<std::int64_t>::max(),
+                                                    *publicationManager);
 
     maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
 }

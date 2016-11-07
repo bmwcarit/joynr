@@ -18,6 +18,7 @@
  */
 #ifndef INPROCESSMESSAGINGSKELETON_H
 #define INPROCESSMESSAGINGSKELETON_H
+
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/IMessaging.h"
 

@@ -25,7 +25,6 @@ package io.joynr.jeeintegration;
 import static com.google.inject.util.Modules.override;
 import static java.lang.String.format;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,15 +49,17 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
+import io.joynr.ProvidedBy;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
+import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.JoynrInterface;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -135,14 +136,31 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     }
 
     @Override
-    public JoynrRuntime create(Set<Class<? extends JoynrProvider>> providerInterfaceClasses) {
-        LOG.info("Fetching consolidated joynr properties to use.");
+    public JoynrRuntime create(Set<Class<?>> providerInterfaceClasses) {
+        LOG.info("Creating clusterable participant IDs for discovered providers.");
+        createClusterableParticipantIds(providerInterfaceClasses);
         LOG.info("Provisioning access control for {}", providerInterfaceClasses);
         provisionAccessControl(joynrProperties, joynrLocalDomain, getProviderInterfaceNames(providerInterfaceClasses));
         LOG.info(format("Creating application with joynr properties:%n%s", joynrProperties));
         JoynrRuntime runtime = getInjector().getInstance(JoynrRuntime.class);
         LOG.info("Created runtime: {}", runtime);
         return runtime;
+    }
+
+    private void createClusterableParticipantIds(Set<Class<?>> providerInterfaceClasses) {
+        for (Class<?> joynrProviderClass : providerInterfaceClasses) {
+            String participantIdKey = ParticipantIdKeyUtil.getProviderParticipantIdKey(getLocalDomain(),
+                                                                                       joynrProviderClass);
+            if (!joynrProperties.containsKey(participantIdKey)) {
+                joynrProperties.put(participantIdKey, createClusterableParticipantId(joynrProviderClass));
+            }
+        }
+    }
+
+    private String createClusterableParticipantId(Class<?> joynrProviderClass) {
+        String key = getLocalDomain() + "." + joynrProperties.getProperty(MessagingPropertyKeys.CHANNELID) + "."
+                + getInterfaceName(joynrProviderClass);
+        return key.replace("/", ".");
     }
 
     @Override
@@ -186,19 +204,20 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         return defaultJoynrProperties;
     }
 
-    private String[] getProviderInterfaceNames(Set<Class<? extends JoynrProvider>> providerInterfaceClasses) {
+    private String[] getProviderInterfaceNames(Set<Class<?>> providerInterfaceClasses) {
         Set<String> providerInterfaceNames = new HashSet<>();
-        for (Class<? extends JoynrProvider> providerInterfaceClass : providerInterfaceClasses) {
+        for (Class<?> providerInterfaceClass : providerInterfaceClasses) {
             providerInterfaceNames.add(getInterfaceName(providerInterfaceClass));
         }
         return providerInterfaceNames.toArray(new String[providerInterfaceNames.size()]);
     }
 
-    private String getInterfaceName(Class<? extends JoynrProvider> providerInterfaceClass) {
+    private String getInterfaceName(Class<?> providerInterfaceClass) {
         try {
-            Field interfaceNameField = providerInterfaceClass.getField("INTERFACE_NAME");
-            return (String) interfaceNameField.get(providerInterfaceClass);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            ProvidedBy providedBy = providerInterfaceClass.getAnnotation(ProvidedBy.class);
+            JoynrInterface joynrInterface = providedBy.value().getAnnotation(JoynrInterface.class);
+            return joynrInterface.name();
+        } catch (SecurityException | IllegalArgumentException e) {
             LOG.debug("error getting interface details", e);
             return providerInterfaceClass.getSimpleName();
         }

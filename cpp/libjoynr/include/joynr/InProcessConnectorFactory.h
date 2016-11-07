@@ -34,6 +34,7 @@ namespace joynr
 class InProcessPublicationSender;
 class ISubscriptionManager;
 class PublicationManager;
+class IPlatformSecurityManager;
 
 // traits class which is specialized for every Interface
 // this links Interface with the respective Connector
@@ -70,6 +71,7 @@ public:
         return std::make_unique<Connector>(subscriptionManager,
                                            publicationManager,
                                            inProcessPublicationSender,
+                                           securityManager,
                                            proxyParticipantId,
                                            providerParticipantId,
                                            inProcessEndpointAddress);
@@ -81,6 +83,7 @@ private:
     PublicationManager* publicationManager;
     InProcessPublicationSender* inProcessPublicationSender;
     IRequestCallerDirectory* requestCallerDirectory;
+    std::shared_ptr<IPlatformSecurityManager> securityManager;
     ADD_LOGGER(InProcessConnectorFactory);
 };
 

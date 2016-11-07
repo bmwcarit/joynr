@@ -20,6 +20,7 @@ package io.joynr.discovery.jee;
  */
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -27,6 +28,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
+import com.google.common.collect.Sets;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.jeeintegration.api.ServiceProvider;
@@ -77,34 +79,42 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         }
         GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
                                                                                  clusterControllerId);
-        entityManager.persist(entity);
+        GlobalDiscoveryEntryPersisted persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class,
+                                                                     entity.getParticipantId());
+        if (persisted == null) {
+            entityManager.persist(entity);
+        } else {
+            entityManager.merge(entity);
+        }
     }
 
     @Override
     public GlobalDiscoveryEntry[] lookup(String[] domains, String interfaceName) {
         logger.debug("Looking up global discovery entries for domains {} and interface name {}", domains, interfaceName);
-        String queryString = "from GlobalDiscoveryEntryPersisted where domain in :domains and interfaceName = :interfaceName";
+        String queryString = "from GlobalDiscoveryEntryPersisted gdep where gdep.domain in :domains and gdep.interfaceName = :interfaceName";
         List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
                                                                                     GlobalDiscoveryEntryPersisted.class)
-                                                                       .setParameter("domains", domains)
+                                                                       .setParameter("domains",
+                                                                                     Sets.newHashSet(domains))
                                                                        .setParameter("interfaceName", interfaceName)
                                                                        .getResultList();
         logger.debug("Found discovery entries: {}", queryResult);
-        return queryResult.toArray(new GlobalDiscoveryEntry[queryResult.size()]);
+        return queryResult.stream().map(entry -> { return new GlobalDiscoveryEntry(entry); }).collect(Collectors.toSet()).toArray(new GlobalDiscoveryEntry[queryResult.size()]);
     }
 
     @Override
     public GlobalDiscoveryEntry lookup(String participantId) {
         logger.debug("Looking up global discovery entry for participant ID {}", participantId);
-        GlobalDiscoveryEntryPersisted result = entityManager.find(GlobalDiscoveryEntryPersisted.class, participantId);
-        logger.debug("Found entry {}", result);
-        return result;
+        GlobalDiscoveryEntryPersisted queryResult = entityManager.find(GlobalDiscoveryEntryPersisted.class,
+                                                                       participantId);
+        logger.debug("Found entry {}", queryResult);
+        return queryResult == null ? null : new GlobalDiscoveryEntry(queryResult);
     }
 
     @Override
     public void remove(String[] participantIds) {
         logger.debug("Removing global discovery entries with IDs {}", participantIds);
-        String queryString = "delete from GlobalDiscoveryEntryPersisted where particpantId in :participantIds";
+        String queryString = "delete from GlobalDiscoveryEntryPersisted gdep where gdep.particpantId in :participantIds";
         int deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
                                         .setParameter("participantIds", participantIds)
                                         .executeUpdate();

@@ -81,12 +81,13 @@ public class MulticastWildcardRegexFactoryTest {
     public void testMultiWildcardAtEnd() {
         Pattern pattern = subject.createIdPattern("one/two/*");
         assertNotNull(pattern);
-        assertEquals("one/two/.*$", pattern.pattern());
+        assertEquals("one/two(/.*)?$", pattern.pattern());
         assertTrue(pattern.matcher("one/two/anything").matches());
         assertTrue(pattern.matcher("one/two/3").matches());
         assertTrue(pattern.matcher("one/two/and another partition").matches());
         assertTrue(pattern.matcher("one/two/three/four").matches());
-        assertFalse(pattern.matcher("one/two").matches());
+        assertTrue(pattern.matcher("one/two").matches());
+        assertFalse(pattern.matcher("one/twothree").matches());
     }
 
     @Test(expected = JoynrIllegalStateException.class)

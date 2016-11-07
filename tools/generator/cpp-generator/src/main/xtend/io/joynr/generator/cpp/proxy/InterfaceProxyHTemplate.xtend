@@ -131,20 +131,32 @@ public:
 		}
 
 		«produceSubscribeToBroadcastComments(broadcast)»
-		«produceSubscribeToBroadcastSignature(broadcast, francaIntf)» override {
+		«produceSubscribeToBroadcastSignature(broadcast, francaIntf ,true)» override {
 			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(«IF broadcast.selective»
 						filterParameters,«ENDIF»
 						subscriptionListener,
-						subscriptionQos);
+						subscriptionQos«
+						»«IF !broadcast.selective»«
+						»,
+						partitions«
+						»«ENDIF»
+			);
 		}
 
 		«produceUpdateBroadcastSubscriptionComments(broadcast)»
-		«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf)» override {
-			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(«IF broadcast.selective»
-						filterParameters,«ENDIF»
+		«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, true)» override {
+			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						subscriptionId,
+						«IF broadcast.selective»
+						filterParameters,
+						«ENDIF»
 						subscriptionListener,
-						subscriptionQos,
-						subscriptionId);
+						subscriptionQos«
+						»«IF !broadcast.selective»«
+						»,
+						partitions«
+						»«ENDIF»
+			);
 		}
 	«ENDFOR»
 

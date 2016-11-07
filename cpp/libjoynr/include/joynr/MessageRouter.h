@@ -53,7 +53,10 @@ namespace joynr
 
 class IAccessController;
 class IMessaging;
+class IMessagingMulticastSubscriber;
 class IMessagingStubFactory;
+class IMulticastAddressCalculator;
+class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class JoynrMessage;
 class JoynrMessagingEndpointAddress;
@@ -84,14 +87,18 @@ class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingAbstractProvider
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+                  std::shared_ptr<MulticastMessagingSkeletonDirectory>
+                          multicastMessagingSkeletonDirectory,
                   std::unique_ptr<IPlatformSecurityManager> securityManager,
                   boost::asio::io_service& ioService,
+                  std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                   int maxThreads = 1,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                   std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
                   boost::asio::io_service& ioService,
+                  std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                   int maxThreads = 1,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
@@ -183,11 +190,13 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
+    std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
     using RoutingTable = Directory<std::string, const joynr::system::RoutingTypes::Address>;
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
     ThreadPoolDelayedScheduler messageScheduler;
+    std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     std::unique_ptr<joynr::system::RoutingProxy> parentRouter;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress;
@@ -207,6 +216,17 @@ private:
     getDestinationAddresses(const JoynrMessage& message);
     std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
+
+    std::shared_ptr<IMessagingMulticastSubscriber> getMulticastSkeleton(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+    void registerMulticastReceiver(
+            const std::string& multicastId,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
     void addNextHopToParent(std::string participantId,
                             std::function<void(void)> callbackFct = nullptr,
