@@ -25,7 +25,9 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/SystemServicesSettings.h"
+#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 
+#include "joynr/MessagingSettings.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/Version.h"
@@ -36,7 +38,9 @@ namespace joynr
 {
 
 LocalDiscoveryAggregator::LocalDiscoveryAggregator(
-        const SystemServicesSettings& systemServicesSettings)
+        const SystemServicesSettings& systemServicesSettings,
+        const MessagingSettings& messagingSettings,
+        bool provisionClusterControllerDiscoveryEntries)
         : discoveryProxy(), provisionedDiscoveryEntries()
 {
     std::int64_t lastSeenDateMs = 0;
@@ -69,6 +73,27 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             defaultPublicKeyId);
     provisionedDiscoveryEntries.insert(std::make_pair(
             discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
+
+    if (provisionClusterControllerDiscoveryEntries) {
+        // setting up the provisioned values for GlobalCapabilitiesClient
+        // The GlobalCapabilitiesServer is also provisioned in MessageRouter
+        types::ProviderQos capabilityProviderQos;
+        capabilityProviderQos.setPriority(1);
+        types::Version capabilityProviderVersion(
+                infrastructure::IGlobalCapabilitiesDirectory::MAJOR_VERSION,
+                infrastructure::IGlobalCapabilitiesDirectory::MINOR_VERSION);
+        provisionedDiscoveryEntries.insert(std::make_pair(
+                messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                types::DiscoveryEntry(
+                        capabilityProviderVersion,
+                        messagingSettings.getDiscoveryDirectoriesDomain(),
+                        infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
+                        messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                        capabilityProviderQos,
+                        lastSeenDateMs,
+                        expiryDateMs,
+                        defaultPublicKeyId)));
+    }
 }
 
 void LocalDiscoveryAggregator::setDiscoveryProxy(
