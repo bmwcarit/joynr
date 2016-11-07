@@ -32,6 +32,7 @@ namespace joynr
 {
 class IRequestCallerDirectory;
 class SystemServicesSettings;
+class MessagingSettings;
 
 namespace types
 {
@@ -47,7 +48,9 @@ class DiscoveryQos;
 class JOYNR_EXPORT LocalDiscoveryAggregator : public joynr::system::IDiscoverySync
 {
 public:
-    LocalDiscoveryAggregator(const SystemServicesSettings& systemServicesSettings);
+    LocalDiscoveryAggregator(const SystemServicesSettings& systemServicesSettings,
+                             const MessagingSettings& messagingSettings,
+                             bool provisionClusterControllerDiscoveryEntries);
 
     void setDiscoveryProxy(std::unique_ptr<IDiscoverySync> discoveryProxy);
 

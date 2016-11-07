@@ -1,3 +1,12 @@
+#joynr 0.21.2
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+##Other changes
+* **[C++]** Fix cluster controller crash if many persisted discovery entries are present
+
 #joynr 0.21.1
 This is a minor bug fix release.
 

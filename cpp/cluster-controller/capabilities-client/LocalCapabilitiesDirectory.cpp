@@ -32,7 +32,6 @@
 
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -72,27 +71,6 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           freshnessUpdateTimer(ioService),
           clusterControllerId(clusterControllerId)
 {
-    // setting up the provisioned values for GlobalCapabilitiesClient
-    // The GlobalCapabilitiesServer is also provisioned in MessageRouter
-    types::ProviderQos providerQos;
-    providerQos.setPriority(1);
-    std::int64_t lastSeenDateMs = 0;
-    std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    std::string defaultPublicKeyId("");
-    types::Version providerVersion(infrastructure::IGlobalCapabilitiesDirectory::MAJOR_VERSION,
-                                   infrastructure::IGlobalCapabilitiesDirectory::MINOR_VERSION);
-    this->insertInCache(
-            types::DiscoveryEntry(providerVersion,
-                                  messagingSettings.getDiscoveryDirectoriesDomain(),
-                                  infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
-                                  messagingSettings.getCapabilitiesDirectoryParticipantId(),
-                                  providerQos,
-                                  lastSeenDateMs,
-                                  expiryDateMs,
-                                  defaultPublicKeyId),
-            true,
-            false);
-
     scheduleCleanupTimer();
     scheduleFreshnessUpdate();
 }
