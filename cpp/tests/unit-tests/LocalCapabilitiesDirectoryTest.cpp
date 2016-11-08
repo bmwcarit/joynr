@@ -429,7 +429,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressDelegatesToCapab
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
 
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
-    std::vector<types::DiscoveryEntry> capabilities = callback->getResults(TIMEOUT);
+    std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(TIMEOUT);
 
     EXPECT_EQ(2, capabilities.size());
 
@@ -437,7 +437,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressDelegatesToCapab
     bool firstParticipantIdFound = false;
     bool secondParticipantIdFound = false;
     for (std::uint16_t i = 0; i < capabilities.size(); i++) {
-        types::DiscoveryEntry entry = capabilities.at(i);
+        types::DiscoveryEntryWithMetaInfo entry = capabilities.at(i);
         EXPECT_EQ(DOMAIN_1_NAME, entry.getDomain());
         EXPECT_EQ(INTERFACE_1_NAME, entry.getInterfaceName());
         std::string participantId = entry.getParticipantId();
@@ -465,7 +465,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
-    std::vector<types::DiscoveryEntry> capabilities = callback->getResults(TIMEOUT);
+    std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(TIMEOUT);
     EXPECT_EQ(2, capabilities.size());
     callback->clearResults();
     EXPECT_CALL(
@@ -492,7 +492,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsNoCapability
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupZeroResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
-    std::vector<joynr::types::DiscoveryEntry> capabilities = callback->getResults(TIMEOUT);
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(TIMEOUT);
     EXPECT_EQ(0, capabilities.size());
 }
 
@@ -509,7 +509,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithThreeResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
-    std::vector<types::DiscoveryEntry> capabilities = callback->getResults(TIMEOUT);
+    std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(TIMEOUT);
 
     EXPECT_EQ(3, capabilities.size());
     bool interfaceAddress1Found = false;
@@ -637,7 +637,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
     }
     EXPECT_EQ(3, exceptionCounter);
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
-    std::vector<types::DiscoveryEntry> capabilities = callback->getResults(100);
+    std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(100);
     EXPECT_EQ(1, capabilities.size());
 }
 
@@ -1543,11 +1543,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnMultiProxy)
 {
     const std::vector<std::string> zeroDomains = {};
     const std::vector<std::string> twoDomains = {DOMAIN_1_NAME, DOMAIN_2_NAME};
-    MockCallback<std::vector<joynr::types::DiscoveryEntry>> mockCallback;
-    auto onSuccess = std::bind(&MockCallback<std::vector<joynr::types::DiscoveryEntry>>::onSuccess,
+    MockCallback<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>> mockCallback;
+    auto onSuccess = std::bind(&MockCallback<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>::onSuccess,
                                &mockCallback,
                                std::placeholders::_1);
-    auto onError = std::bind(&MockCallback<std::vector<joynr::types::DiscoveryEntry>>::onError,
+    auto onError = std::bind(&MockCallback<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>::onError,
                              &mockCallback,
                              std::placeholders::_1);
 

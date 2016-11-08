@@ -21,7 +21,7 @@
 
 #include <vector>
 
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/JoynrExport.h"
 
 namespace joynr
@@ -32,7 +32,8 @@ class JOYNR_EXPORT ILocalCapabilitiesCallback
 public:
     virtual ~ILocalCapabilitiesCallback() = default;
 
-    virtual void capabilitiesReceived(const std::vector<types::DiscoveryEntry>& capabilities) = 0;
+    virtual void capabilitiesReceived(
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities) = 0;
     virtual void onError(const joynr::exceptions::JoynrRuntimeException&) = 0;
 };
 

@@ -18,7 +18,7 @@
  */
 #include "joynr/QosArbitrationStrategyFunction.h"
 
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -30,9 +30,9 @@ namespace joynr
 
 INIT_LOGGER(QosArbitrationStrategyFunction);
 
-types::DiscoveryEntry QosArbitrationStrategyFunction::select(
+types::DiscoveryEntryWithMetaInfo QosArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
-        const std::vector<types::DiscoveryEntry>& discoveryEntries) const
+        const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
 {
     std::ignore = customParameters;
     auto selectedDiscoveryEntryIt = discoveryEntries.cend();

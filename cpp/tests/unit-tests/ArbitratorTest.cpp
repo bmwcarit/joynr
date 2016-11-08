@@ -160,10 +160,10 @@ TEST_F(ArbitratorTest, getLastSeen) {
     );
 
     // Create a list of discovery entries
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries;
     for (std::int64_t i = 0; i <= latestLastSeenDateMs; i++) {
         int64_t lastSeenDateMs = i;   std::string participantId = std::to_string(i);
-        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+        discoveryEntries.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                  providerVersion,
                                  domain,
                                  interfaceName,
@@ -171,7 +171,8 @@ TEST_F(ArbitratorTest, getLastSeen) {
                                  providerQos,
                                  lastSeenDateMs,
                                  expiryDateMs,
-                                 publicKeyId
+                                 publicKeyId,
+                                 true
         ));
     }
 
@@ -215,9 +216,9 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     }
 
     // Create a list of discovery entries
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries;
     for (std::size_t i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+        discoveryEntries.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                  providerVersion,
                                  domain,
                                  interfaceName,
@@ -225,7 +226,8 @@ TEST_F(ArbitratorTest, getHighestPriority) {
                                  qosEntries[i],
                                  lastSeenDateMs,
                                  expiryDateMs,
-                                 publicKeyId
+                                 publicKeyId,
+                                 true
         ));
     }
 
@@ -262,7 +264,7 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
                       joynr::types::ProviderScope::GLOBAL,  // discovery scope
                       false                                 // supports on change notifications
     );
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries;
     joynr::types::Version providerVersion;
     int participantIdCounter = 0;
     std::string expectedParticipantId;
@@ -270,7 +272,7 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
         providerVersion.setMajorVersion(expectedVersion.getMajorVersion() + i);
         for (std::int32_t j = -2; j < 2; j++) {
             providerVersion.setMinorVersion(expectedVersion.getMinorVersion() + j);
-            discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+            discoveryEntries.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                      providerVersion,
                                      domain,
                                      interfaceName,
@@ -278,7 +280,8 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
                                      providerQos,
                                      lastSeenDateMs,
                                      expiryDateMs,
-                                     publicKeyId
+                                     publicKeyId,
+                                     true
             ));
             if (providerVersion == expectedVersion) {
                 expectedParticipantId = std::to_string(participantIdCounter);
@@ -333,9 +336,9 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     }
 
     // Create a list of discovery entries
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries;
     for (std::size_t i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+        discoveryEntries.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                  providerVersion,
                                  domain,
                                  interfaceName,
@@ -343,7 +346,8 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
                                  qosEntries[i],
                                  lastSeenDateMs,
                                  expiryDateMs,
-                                 publicKeyId
+                                 publicKeyId,
+                                 true
         ));
     }
 
@@ -406,9 +410,9 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     participantId.push_back("correct_keyword");
 
     // Create a list of discovery entries
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries;
     for (std::size_t i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+        discoveryEntries.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                  providerVersion,
                                  domain,
                                  interfaceName,
@@ -416,7 +420,8 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
                                  qosEntries[i],
                                  lastSeenDateMs,
                                  expiryDateMs,
-                                 publicKeyId
+                                 publicKeyId,
+                                 true
         ));
     }
 
@@ -459,7 +464,7 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
                       joynr::types::ProviderScope::GLOBAL,  // discovery scope
                       false                                 // supports on change notifications
     );
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries;
     joynr::types::Version providerVersion;
     int participantIdCounter = 0;
     std::string expectedParticipantId;
@@ -467,7 +472,7 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
         providerVersion.setMajorVersion(expectedVersion.getMajorVersion() + i);
         for (std::int32_t j = -2; j < 2; j++) {
             providerVersion.setMinorVersion(expectedVersion.getMinorVersion() + j);
-            discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+            discoveryEntries.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                      providerVersion,
                                      domain,
                                      interfaceName,
@@ -475,7 +480,8 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
                                      providerQos,
                                      lastSeenDateMs,
                                      expiryDateMs,
-                                     publicKeyId
+                                     publicKeyId,
+                                     true
             ));
             if (providerVersion == expectedVersion) {
                 expectedParticipantId = std::to_string(participantIdCounter);
@@ -499,11 +505,11 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
 }
 
 TEST_F(ArbitratorTest, retryFiveTimes) {
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     EXPECT_CALL(
                 mockDiscovery,
                 lookup(
-                    A<std::vector<joynr::types::DiscoveryEntry>&>(),
+                    A<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&>(),
                     A<const std::vector<std::string>&>(),
                     A<const std::string&>(),
                     A<const joynr::types::DiscoveryQos&>()
@@ -589,13 +595,13 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
                       false                                 // supports on change notifications
     );
     // discovery entries for first lookup
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries1;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries1;
     std::vector<joynr::types::Version> providerVersions1;
     int participantIdCounter = 0;
     for (std::int32_t i = 0; i < 8; i++) {
         joynr::types::Version providerVersion(i, i);
         providerVersions1.push_back(providerVersion);
-        discoveryEntries1.push_back(joynr::types::DiscoveryEntry(
+        discoveryEntries1.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                  providerVersion,
                                  domain,
                                  interfaceName,
@@ -603,17 +609,18 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
                                  providerQos,
                                  lastSeenDateMs,
                                  expiryDateMs,
-                                 publicKeyId
+                                 publicKeyId,
+                                 true
         ));
         participantIdCounter++;
     }
     // discoveryEntries for subsequent lookups
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries2;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries2;
     std::vector<joynr::types::Version> providerVersions2;
     for (std::int32_t i = 30; i < 36; i++) {
         joynr::types::Version providerVersion(i, i);
         providerVersions2.push_back(providerVersion);
-        discoveryEntries2.push_back(joynr::types::DiscoveryEntry(
+        discoveryEntries2.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                  providerVersion,
                                  domain,
                                  interfaceName,
@@ -621,7 +628,8 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
                                  providerQos,
                                  lastSeenDateMs,
                                  expiryDateMs,
-                                 publicKeyId
+                                 publicKeyId,
+                                 true
         ));
         participantIdCounter++;
     }
@@ -674,13 +682,13 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
                       false                                 // supports on change notifications
     );
     // discovery entries for first lookup
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries1;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries1;
     std::vector<joynr::types::Version> providerVersions1;
     int participantIdCounter = 0;
     for (std::int32_t i = 0; i < 8; i++) {
         joynr::types::Version providerVersion(i, i);
         providerVersions1.push_back(providerVersion);
-        discoveryEntries1.push_back(joynr::types::DiscoveryEntry(
+        discoveryEntries1.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                  providerVersion,
                                  domain,
                                  interfaceName,
@@ -688,17 +696,18 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
                                  providerQos,
                                  lastSeenDateMs,
                                  expiryDateMs,
-                                 publicKeyId
+                                 publicKeyId,
+                                 true
         ));
         participantIdCounter++;
     }
     // discoveryEntries for subsequent lookups
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries2;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries2;
     std::vector<joynr::types::Version> providerVersions2;
     for (std::int32_t i = 30; i < 36; i++) {
         joynr::types::Version providerVersion(i, i);
         providerVersions2.push_back(providerVersion);
-        discoveryEntries2.push_back(joynr::types::DiscoveryEntry(
+        discoveryEntries2.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                  providerVersion,
                                  domain,
                                  interfaceName,
@@ -706,7 +715,8 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
                                  providerQos,
                                  lastSeenDateMs,
                                  expiryDateMs,
-                                 publicKeyId
+                                 publicKeyId,
+                                 true
         ));
         participantIdCounter++;
     }
@@ -759,7 +769,7 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
     );
     // discovery entries for first lookup
     joynr::types::Version providerVersion1(7, 8);
-    joynr::types::DiscoveryEntry discoveryEntry1(
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry1(
                              providerVersion1,
                              domain,
                              interfaceName,
@@ -767,11 +777,12 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
                              providerQos,
                              lastSeenDateMs,
                              expiryDateMs,
-                             publicKeyId
+                             publicKeyId,
+                             true
     );
     // discoveryEntries for subsequent lookups
     joynr::types::Version providerVersion2(23, 12);
-    joynr::types::DiscoveryEntry discoveryEntry2(
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry2(
                              providerVersion2,
                              domain,
                              interfaceName,
@@ -779,7 +790,8 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
                              providerQos,
                              lastSeenDateMs,
                              expiryDateMs,
-                             publicKeyId
+                             publicKeyId,
+                             true
     );
 
     EXPECT_CALL(mockDiscovery, lookup(_,Eq(participantId)))
@@ -823,13 +835,13 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
                       false                                 // supports on change notifications
     );
     // discovery entries for first lookup
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries1;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries1;
     std::vector<joynr::types::Version> providerVersions1;
     int participantIdCounter = 0;
     for (std::int32_t i = 0; i < 8; i++) {
         joynr::types::Version providerVersion(i, i);
         providerVersions1.push_back(providerVersion);
-        discoveryEntries1.push_back(joynr::types::DiscoveryEntry(
+        discoveryEntries1.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                  providerVersion,
                                  domain,
                                  interfaceName,
@@ -837,17 +849,18 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
                                  providerQos,
                                  lastSeenDateMs,
                                  expiryDateMs,
-                                 publicKeyId
+                                 publicKeyId,
+                                 true
         ));
         participantIdCounter++;
     }
     // discoveryEntries for subsequent lookups
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries2;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries2;
     std::vector<joynr::types::Version> providerVersions2;
     for (std::int32_t i = 30; i < 36; i++) {
         joynr::types::Version providerVersion(i, i);
         providerVersions2.push_back(providerVersion);
-        discoveryEntries2.push_back(joynr::types::DiscoveryEntry(
+        discoveryEntries2.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                                  providerVersion,
                                  domain,
                                  interfaceName,
@@ -855,7 +868,8 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
                                  providerQos,
                                  lastSeenDateMs,
                                  expiryDateMs,
-                                 publicKeyId
+                                 publicKeyId,
+                                 true
         ));
         participantIdCounter++;
     }
@@ -1013,9 +1027,9 @@ void ArbitratorTest::testExceptionEmptyResult(Arbitrator &arbitrator){
                       joynr::types::ProviderScope::GLOBAL,  // discovery scope
                       false                                 // supports on change notifications
     );
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries1;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries1;
     joynr::types::Version providerVersion(22, 23);
-    discoveryEntries1.push_back(joynr::types::DiscoveryEntry(
+    discoveryEntries1.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
                              providerVersion,
                              domain,
                              interfaceName,
@@ -1023,11 +1037,12 @@ void ArbitratorTest::testExceptionEmptyResult(Arbitrator &arbitrator){
                              providerQos,
                              lastSeenDateMs,
                              expiryDateMs,
-                             publicKeyId
+                             publicKeyId,
+                             false
     ));
 
     // discoveryEntries for subsequent lookups
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries2;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries2;
 
     EXPECT_CALL(mockDiscovery, lookup(_,_,_,_))
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))

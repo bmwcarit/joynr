@@ -27,16 +27,16 @@ namespace joynr
 
 namespace types
 {
-class DiscoveryEntry;
+class DiscoveryEntryWithMetaInfo;
 class CustomParameter;
 } // namespace types
 
 class ArbitrationStrategyFunction
 {
 public:
-    virtual types::DiscoveryEntry select(
+    virtual types::DiscoveryEntryWithMetaInfo select(
             const std::map<std::string, types::CustomParameter> customParameters,
-            const std::vector<types::DiscoveryEntry>& discoveryEntries) const = 0;
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const = 0;
 };
 } // namnespace joynr
 #endif // ARBITRATIONSTRATEGYFUNCTION_H

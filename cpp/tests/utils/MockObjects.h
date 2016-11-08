@@ -525,14 +525,14 @@ public:
     MOCK_METHOD2(
             lookup,
             void(
-                joynr::types::DiscoveryEntry& result,
+                joynr::types::DiscoveryEntryWithMetaInfo& result,
                 const std::string& participantId
             )
     );
     MOCK_METHOD4(
             lookup,
             void(
-                std::vector<joynr::types::DiscoveryEntry> & result,
+                std::vector<joynr::types::DiscoveryEntryWithMetaInfo> & result,
                 const std::vector<std::string>& domain,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos
@@ -554,20 +554,20 @@ public:
     );
     MOCK_METHOD3(
             lookupAsync,
-            std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntry>>(
+            std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>(
                 const std::string& participantId,
-                std::function<void(const joynr::types::DiscoveryEntry& result)>
+                std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)>
                         onSuccess,
                 std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
             )
     );
     MOCK_METHOD5(
             lookupAsync,
-            std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntry>>>(
+            std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>(
                 const std::vector<std::string>& domain,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos,
-                std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)>
+                std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                         onSuccess,
                 std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
             )
@@ -995,7 +995,7 @@ public:
             lookup,
             void(
                 const std::string& participantId,
-                std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,
+                std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
                 std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError
             ));
 

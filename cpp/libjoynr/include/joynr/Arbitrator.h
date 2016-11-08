@@ -31,7 +31,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/Version.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
 
@@ -81,7 +81,7 @@ private:
     virtual void attemptArbitration();
 
     virtual void receiveCapabilitiesLookupResults(
-            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+            const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
 
     joynr::system::IDiscoverySync& discoveryProxy;
     DiscoveryQos discoveryQos;

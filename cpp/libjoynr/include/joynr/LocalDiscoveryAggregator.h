@@ -27,6 +27,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
@@ -58,13 +59,14 @@ public:
     void add(const joynr::types::DiscoveryEntry& entry) override;
 
     // inherited from joynr::system::IDiscoverySync
-    void lookup(std::vector<joynr::types::DiscoveryEntry>& result,
+    void lookup(std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result,
                 const std::vector<std::string>& domains,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos) override;
 
     // inherited from joynr::system::IDiscoverySync
-    void lookup(joynr::types::DiscoveryEntry& result, const std::string& participantId) override;
+    void lookup(joynr::types::DiscoveryEntryWithMetaInfo& result,
+                const std::string& participantId) override;
 
     // inherited from joynr::system::IDiscoverySync
     void remove(const std::string& participantId) override;
@@ -73,7 +75,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);
 
     std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy;
-    std::map<std::string, joynr::types::DiscoveryEntry> provisionedDiscoveryEntries;
+    std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> provisionedDiscoveryEntries;
 };
 } // namespace joynr
 #endif // LOCALDISCOVERYAGGREGATOR_H

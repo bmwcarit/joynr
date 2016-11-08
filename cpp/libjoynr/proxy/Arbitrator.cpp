@@ -112,11 +112,11 @@ void Arbitrator::startArbitration(
 
 void Arbitrator::attemptArbitration()
 {
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     try {
         if (discoveryQos.getArbitrationStrategy() ==
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
-            types::DiscoveryEntry fixedParticipantResult;
+            types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
             discoveryProxy.lookup(fixedParticipantResult,
                                   discoveryQos.getCustomParameter("fixedParticipantId").getValue());
             result.push_back(fixedParticipantResult);
@@ -135,7 +135,7 @@ void Arbitrator::attemptArbitration()
 }
 
 void Arbitrator::receiveCapabilitiesLookupResults(
-        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries)
 {
     discoveredIncompatibleVersions.clear();
 
@@ -147,11 +147,11 @@ void Arbitrator::receiveCapabilitiesLookupResults(
         return;
     }
 
-    std::vector<joynr::types::DiscoveryEntry> preFilteredDiscoveryEntries;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> preFilteredDiscoveryEntries;
     joynr::types::Version providerVersion;
     std::size_t providersWithoutSupportOnChange = 0;
     std::size_t providersWithIncompatibleVersion = 0;
-    for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
+    for (const joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
         providerVersion = discoveryEntry.getProviderVersion();
@@ -192,7 +192,7 @@ void Arbitrator::receiveCapabilitiesLookupResults(
         }
         return;
     } else {
-        types::DiscoveryEntry res;
+        types::DiscoveryEntryWithMetaInfo res;
 
         try {
             res = arbitrationStrategyFunction->select(

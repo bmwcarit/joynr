@@ -21,7 +21,7 @@
 #include "joynr/KeywordArbitrationStrategyFunction.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/CustomParameter.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -31,9 +31,9 @@ namespace joynr
 
 INIT_LOGGER(KeywordArbitrationStrategyFunction);
 
-types::DiscoveryEntry KeywordArbitrationStrategyFunction::select(
+types::DiscoveryEntryWithMetaInfo KeywordArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
-        const std::vector<types::DiscoveryEntry>& discoveryEntries) const
+        const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
 {
     std::string keyword;
     try {

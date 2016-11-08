@@ -29,13 +29,13 @@ MockLocalCapabilitiesDirectoryCallback::MockLocalCapabilitiesDirectoryCallback()
 }
 
 void MockLocalCapabilitiesDirectoryCallback::capabilitiesReceived(
-        const std::vector<joynr::types::DiscoveryEntry>& capabilities)
+        const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& capabilities)
 {
     this->results = std::move(capabilities);
     semaphore.notify();
 }
 
-std::vector<joynr::types::DiscoveryEntry> MockLocalCapabilitiesDirectoryCallback::getResults(
+std::vector<joynr::types::DiscoveryEntryWithMetaInfo> MockLocalCapabilitiesDirectoryCallback::getResults(
         int timeout)
 {
     const int waitInterval = 20;

@@ -18,7 +18,7 @@
  */
 #include "joynr/FixedParticipantArbitrationStrategyFunction.h"
 
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/CustomParameter.h"
@@ -27,9 +27,9 @@
 namespace joynr
 {
 
-types::DiscoveryEntry FixedParticipantArbitrationStrategyFunction::select(
+types::DiscoveryEntryWithMetaInfo FixedParticipantArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
-        const std::vector<types::DiscoveryEntry>& discoveryEntries) const
+        const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
 {
     std::ignore = customParameters;
     if (discoveryEntries.empty())
