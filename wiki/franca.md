@@ -33,9 +33,7 @@ The following complex data types are supported by joynr:
 Name | Meaning
 -----|--------
 *struct* *<Type>* { *elements* } | Data record
-*union* *<Type>* { *elements* } | Union
 *enumeration* *<Type>* { *values* } | Enumeration
-*array* *<Type>* of *type* | Array of specific type
 *map* *<Type>* { *KeyType* to *ValueType* } | associative array, hash
 *type[]* | inline array
 
