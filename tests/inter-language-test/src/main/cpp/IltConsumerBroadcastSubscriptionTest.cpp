@@ -29,15 +29,12 @@ class IltConsumerBroadcastSubscriptionTest
 {
 public:
     IltConsumerBroadcastSubscriptionTest()
-            : subscriptionIdFutureTimeout(10000),
-              subscriptionRegisteredTimeout(10000),
-              publicationTimeout(10000)
+            : subscriptionIdFutureTimeout(10000), publicationTimeout(10000)
     {
     }
 
 protected:
     std::uint16_t subscriptionIdFutureTimeout;
-    std::chrono::milliseconds subscriptionRegisteredTimeout;
     std::chrono::milliseconds publicationTimeout;
 };
 
@@ -54,7 +51,6 @@ public:
 
 TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePrimitiveParameter)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
@@ -65,8 +61,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePri
 
     auto mockBroadcastWithSinglePrimitiveParameterBroadcastListener =
             std::make_shared<MockBroadcastWithSinglePrimitiveParameterBroadcastListener>();
-    ON_CALL(*mockBroadcastWithSinglePrimitiveParameterBroadcastListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(*mockBroadcastWithSinglePrimitiveParameterBroadcastListener, onError(_))
             .Times(0)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
@@ -83,7 +77,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePri
                                     listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithSinglePrimitiveParameter - subscription registered");
@@ -109,7 +102,6 @@ public:
 
 TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultiplePrimitiveParameters)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     double doubleOut;
     std::string subscriptionId;
@@ -121,8 +113,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
 
     auto mockBroadcastWithMultiplePrimitiveParametersBroadcastListener =
             std::make_shared<MockBroadcastWithMultiplePrimitiveParametersBroadcastListener>();
-    ON_CALL(*mockBroadcastWithMultiplePrimitiveParametersBroadcastListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(*mockBroadcastWithMultiplePrimitiveParametersBroadcastListener, onError(_))
             .Times(0)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
@@ -140,7 +130,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
                                     listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithMultiplePrimitiveParameters - subscription registered");
@@ -168,7 +157,6 @@ public:
 
 TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArrayParameter)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     std::string subscriptionId;
     std::vector<std::string> stringArrayOut;
@@ -180,8 +168,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArr
 
     auto mockBroadcastWithSingleArrayParameterBroadcastListener =
             std::make_shared<MockBroadcastWithSingleArrayParameterBroadcastListener>();
-    ON_CALL(*mockBroadcastWithSingleArrayParameterBroadcastListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(*mockBroadcastWithSingleArrayParameterBroadcastListener, onError(_))
             .Times(0)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
@@ -198,7 +184,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArr
                                     listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleArrayParameter - subscription registered");
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
@@ -232,7 +217,6 @@ public:
 
 TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleArrayParameters)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     std::string subscriptionId;
     std::vector<uint64_t> uInt64ArrayOut;
@@ -246,8 +230,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
 
     auto mockBroadcastWithMultipleArrayParametersBroadcastListener =
             std::make_shared<MockBroadcastWithMultipleArrayParametersBroadcastListener>();
-    ON_CALL(*mockBroadcastWithMultipleArrayParametersBroadcastListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(*mockBroadcastWithMultipleArrayParametersBroadcastListener, onError(_))
             .Times(0)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
@@ -269,7 +251,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
                                     listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithMultipleArrayParameters - subscription registered");
@@ -303,7 +284,6 @@ public:
 
 TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnumerationParameter)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
@@ -314,8 +294,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnu
 
     auto mockBroadcastWithSingleEnumerationParameterBroadcastListener =
             std::make_shared<MockBroadcastWithSingleEnumerationParameterBroadcastListener>();
-    ON_CALL(*mockBroadcastWithSingleEnumerationParameterBroadcastListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(*mockBroadcastWithSingleEnumerationParameterBroadcastListener, onError(_))
             .Times(0)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
@@ -337,7 +315,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnu
                                     listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithSingleEnumerationParameter - subscription registered");
@@ -371,7 +348,6 @@ public:
 TEST_P(IltConsumerBroadcastSubscriptionTest,
        callSubscribeBroadcastWithMultipleEnumerationParameters)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
@@ -382,8 +358,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest,
 
     auto mockBroadcastWithMultipleEnumerationParametersBroadcastListener =
             std::make_shared<MockBroadcastWithMultipleEnumerationParametersBroadcastListener>();
-    ON_CALL(*mockBroadcastWithMultipleEnumerationParametersBroadcastListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(*mockBroadcastWithMultipleEnumerationParametersBroadcastListener, onError(_))
             .Times(0)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
@@ -408,7 +382,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest,
                                     listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMulti"
                        "pleEnumerationParameters - "
@@ -439,7 +412,6 @@ public:
 
 TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStructParameter)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     joynr::interlanguagetest::namedTypeCollection2::ExtendedStructOfPrimitives
             extendedStructOfPrimitivesOut;
@@ -452,8 +424,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
 
     auto mockBroadcastWithSingleStructParameterBroadcastListener =
             std::make_shared<MockBroadcastWithSingleStructParameterBroadcastListener>();
-    ON_CALL(*mockBroadcastWithSingleStructParameterBroadcastListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(*mockBroadcastWithSingleStructParameterBroadcastListener, onError(_))
             .Times(0)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
@@ -472,7 +442,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
                                     listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleStructParameter - subscription registered");
 
@@ -506,7 +475,6 @@ public:
 
 TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleStructParameters)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     joynr::interlanguagetest::namedTypeCollection2::BaseStructWithoutElements
             baseStructWithoutElementsOut;
@@ -521,8 +489,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
 
     auto mockBroadcastWithMultipleStructParametersBroadcastListener =
             std::make_shared<MockBroadcastWithMultipleStructParametersBroadcastListener>();
-    ON_CALL(*mockBroadcastWithMultipleStructParametersBroadcastListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(*mockBroadcastWithMultipleStructParametersBroadcastListener, onError(_))
             .Times(0)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
@@ -544,7 +510,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
                                     listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithMultipleStructParameters - subscription registered");
@@ -558,6 +523,49 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
         EXPECT_TRUE(IltUtil::checkExtendedExtendedBaseStruct(extendedExtendedBaseStructOut));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithMultipleStructParametersBroadcast(
+                subscriptionId);
+    });
+}
+
+TEST_F(IltConsumerBroadcastSubscriptionTest, doNotReceivePublicationsForOtherPartitions)
+{
+    Semaphore publicationSemaphore;
+    int64_t minInterval_ms = 0;
+    int64_t validity = 60000;
+    auto subscriptionQos =
+            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
+    auto mockBroadcastWithSingleEnumerationParameter =
+            std::make_shared<MockBroadcastWithSingleEnumerationParameterBroadcastListener>();
+
+    EXPECT_CALL(*mockBroadcastWithSingleEnumerationParameter, onReceive(_)).Times(1).WillRepeatedly(
+            ReleaseSemaphore(&publicationSemaphore));
+
+    const std::vector<std::string> subscribeToPartitions{"partition0", "partition1"};
+    const std::vector<std::string> broadcastPartitions{"otherPartition"};
+
+    JOYNR_ASSERT_NO_THROW({
+        std::string subscriptionId;
+        auto subscriptionIdFuture =
+                testInterfaceProxy->subscribeToBroadcastWithSingleEnumerationParameterBroadcast(
+                        mockBroadcastWithSingleEnumerationParameter,
+                        subscriptionQos,
+                        subscribeToPartitions);
+
+        subscriptionIdFuture->get(subscriptionIdFutureTimeout, subscriptionId);
+
+        testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter(
+                broadcastPartitions);
+
+        // No broadcast shall be received because the partitions do not match.
+        ASSERT_FALSE(publicationSemaphore.waitFor(std::chrono::milliseconds(2000)));
+
+        // Ensure that we did not receive a publication for another reasons
+        testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter(
+                subscribeToPartitions);
+
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+
+        testInterfaceProxy->unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(
                 subscriptionId);
     });
 }

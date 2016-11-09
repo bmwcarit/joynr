@@ -217,9 +217,6 @@ private:
     std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
 
-    std::shared_ptr<IMessagingMulticastSubscriber> getMulticastSkeleton(
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
     void registerMulticastReceiver(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,

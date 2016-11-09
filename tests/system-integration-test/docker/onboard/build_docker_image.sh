@@ -13,6 +13,13 @@ DOCKER_IMAGE_VERSION=latest
 DOCKER_RUN_ADD_FLAGS=
 JOBS=2
 
+# The --no-XYZ-build options can be used to skip building the given artifact
+# inside a Docker container (which can be quite slow depending on your system).
+# If you do so, then you have to make sure that the build results are available
+# by other means - either you have to have built them locally, or you have to
+# have the build results still lying around from previously executing this
+# script without the relevant '--no-XYZ-build' option.
+
 function print_usage {
 	echo "
 Usage: ./build_docker_image.sh [<options>]

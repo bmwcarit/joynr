@@ -4,10 +4,23 @@
 * **[C++]** During a provider call a call context can be queried which provides the creator user id
   field from the joynr message. Please delete the broadcastsubscriptionrequest-persistence-file and
   subscriptionrequest-persistence-file because the file format changed.
+* **[C++]** Introduced async proxy creation. ProxyBuilder now provides a buildAsync method which
+  accepts a success and an error callback as parameters.
+* **[C++]** Introduced async joynr runtime creation. See JoynrRuntime::createRuntimeAsync for more
+  information.
 
 ##Other changes
 * **[JS]** Introduced mqtt messaging layer, allowing javascript runtimes including
   cluster controller functionality to connect to a mqtt broker.
+
+#joynr 0.21.2
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+##Other changes
+* **[C++]** Fix cluster controller crash if many persisted discovery entries are present
 
 #joynr 0.21.1
 This is a minor bug fix release.

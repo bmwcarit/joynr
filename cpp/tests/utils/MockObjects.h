@@ -50,8 +50,6 @@
 #include "joynr/IMessaging.h"
 #include "joynr/IClientCache.h"
 #include "joynr/ReplyCaller.h"
-#include "joynr/ArbitrationStatus.h"
-#include "joynr/IArbitrationListener.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
@@ -97,6 +95,7 @@
 #include "joynr/IProxyBuilder.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
+#include "joynr/exceptions/JoynrException.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 
@@ -166,6 +165,8 @@ public:
     MOCK_METHOD1_T(setMessagingQos, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
     MOCK_METHOD1_T(setDiscoveryQos, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
     MOCK_METHOD0_T(build, T*());
+    MOCK_METHOD2_T(buildAsync, void(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
+                                    std::function<void(const joynr::exceptions::DiscoveryException&)>));
 };
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
@@ -1184,13 +1185,6 @@ public:
                              const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
     MOCK_CONST_METHOD0(isInitialized, bool ());
     MOCK_CONST_METHOD0(isConnected, bool ());
-};
-
-class MockArbitrationListener : public joynr::IArbitrationListener {
-public:
-    MOCK_METHOD1(setArbitrationStatus, void(joynr::ArbitrationStatus::ArbitrationStatusType arbitrationStatus));
-    MOCK_METHOD1(setParticipantId, void(const std::string& participantId));
-    MOCK_METHOD1(setArbitrationError, void(const joynr::exceptions::DiscoveryException& error));
 };
 
 #ifdef _MSC_VER

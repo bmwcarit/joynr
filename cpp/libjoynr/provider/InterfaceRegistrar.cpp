@@ -23,8 +23,6 @@
 namespace joynr
 {
 
-InterfaceRegistrar* InterfaceRegistrar::registrarInstance = nullptr;
-
 InterfaceRegistrar::InterfaceRegistrar()
         : requestInterpreters(), requestInterpretersMutex(), requestInterpreterCounts()
 {
@@ -32,18 +30,8 @@ InterfaceRegistrar::InterfaceRegistrar()
 
 InterfaceRegistrar& InterfaceRegistrar::instance()
 {
-    static std::mutex mutex;
-
-    // Use double-checked locking so that, under normal use, a
-    // mutex lock is not required.
-    if (!registrarInstance) {
-        std::lock_guard<std::mutex> lock(mutex);
-        if (!registrarInstance) {
-            registrarInstance = new InterfaceRegistrar();
-        }
-    }
-
-    return *registrarInstance;
+    static InterfaceRegistrar registrarInstance;
+    return registrarInstance;
 }
 
 void InterfaceRegistrar::unregisterRequestInterpreter(const std::string& interfaceName)

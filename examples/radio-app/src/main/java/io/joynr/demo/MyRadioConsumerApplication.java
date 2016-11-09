@@ -344,13 +344,9 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             // notifications (neither value notifications nor missed publication notifications) after
             // this date.
             long wsbValidityMs = 60 * 1000;
-            // Notification messages will be sent with this time-to-live. If a notification message can not be
-            // delivered within its TTL, it will be deleted from the system.
-            // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
-            // missed publication notification (depending on the value of the alert interval QoS).
-            int wsbPublicationTtlMs = 5 * 1000;
             weakSignalBroadcastSubscriptionQos = new OnChangeSubscriptionQos();
-            weakSignalBroadcastSubscriptionQos.setMinIntervalMs(wsbMinIntervalMs).setValidityMs(wsbValidityMs).setPublicationTtlMs(wsbPublicationTtlMs);
+            weakSignalBroadcastSubscriptionQos.setMinIntervalMs(wsbMinIntervalMs).setValidityMs(wsbValidityMs);
+
             weakSignalFuture = subscribeToWeakSignal(weakSignalBroadcastSubscriptionQos);
 
             //susbcribe to weak signal with partition "GERMANY"

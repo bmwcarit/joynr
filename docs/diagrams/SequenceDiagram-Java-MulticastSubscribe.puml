@@ -17,18 +17,18 @@ box "Backend" #F1F1F1
 end box
 
 box "Backend App" #F1F1F1
-  participant jeeLibjoynr
+  participant JeeLibjoynr
   participant JeeApp
 end box
 
 App -> libjoynr: subscribe
 activate libjoynr
-libjoynr -> JeeApp: subscriptionRequest
-libjoynr -> MessageRouter: registerMulticastReceiver(multicastAddress, address)
-MessageRouter -> MqttMessagingSkeleton:  registerMulticast(multicastAddress)
-MqttMessagingSkeleton -> MqttBroker:  subscribe(topic: multicastAddressToTopic)
+libjoynr -> JeeLibjoynr: subscriptionRequest
+libjoynr -> MessageRouter: addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId)
+MessageRouter -> MqttMessagingSkeleton:  registerMulticastSubscription(multicastId)
+MqttMessagingSkeleton -> MqttBroker:  subscribe(topic: multicastIdToTopic())
 
-JeeApp -> libjoynr: subscriptionReply
+JeeLibjoynr -> libjoynr: subscriptionReply
 App <-- libjoynr: confirm
 deactivate libjoynr
 

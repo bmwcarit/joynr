@@ -95,16 +95,6 @@ WebSocketCcMessagingSkeleton::~WebSocketCcMessagingSkeleton()
     }
 }
 
-void WebSocketCcMessagingSkeleton::registerMulticastSubscription(const std::string& multicastId)
-{
-    std::ignore = multicastId;
-}
-
-void WebSocketCcMessagingSkeleton::unregisterMulticastSubscription(const std::string& multicastId)
-{
-    std::ignore = multicastId;
-}
-
 void WebSocketCcMessagingSkeleton::transmit(
         JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)

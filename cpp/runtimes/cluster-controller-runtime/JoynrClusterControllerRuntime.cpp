@@ -78,7 +78,6 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttProtocol.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
@@ -257,8 +256,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                            messageRouter,
                                                            wsMessagingStubFactory,
                                                            wsAddress);
-    multicastMessagingSkeletonDirectory
-            ->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(wsCcMessagingSkeleton);
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
     /* LibJoynr */
@@ -424,7 +421,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
     dispatcherAddress = libjoynrMessagingAddress;
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(systemServicesSettings);
+
+    const bool provisionClusterControllerDiscoveryEntries = true;
+    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(
+            systemServicesSettings, messagingSettings, provisionClusterControllerDiscoveryEntries);
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient =
@@ -539,8 +539,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     stopMessaging();
 
     multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
-    multicastMessagingSkeletonDirectory
-            ->unregisterSkeleton<system::RoutingTypes::WebSocketClientAddress>();
 
     if (joynrDispatcher != nullptr) {
         JOYNR_LOG_TRACE(logger, "joynrDispatcher");

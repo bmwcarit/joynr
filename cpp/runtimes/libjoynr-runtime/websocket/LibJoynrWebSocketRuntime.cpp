@@ -38,6 +38,22 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> set
           wsSettings(*this->settings),
           websocket(new WebSocketPpClient(wsSettings, singleThreadIOService->getIOService()))
 {
+}
+
+LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
+{
+    // reset receive callback to remove last reference to MessageRouter in
+    // WebSocketLibJoynrMessagingSkeleton
+    websocket->registerReceiveCallback(nullptr);
+    websocket->close();
+    // synchronously stop the underlying boost::asio::io_service
+    // this ensures all asynchronous operations are stopped now
+    // which allows a safe shutdown
+    singleThreadIOService->stop();
+}
+
+void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallback)
+{
     std::string uuid = util::createUuid();
     // remove dashes
     uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
@@ -52,28 +68,10 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> set
                     "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
                     initializationMsg,
                     libjoynrMessagingAddress->toString());
-    auto connectionEstablishedSemaphore = std::make_shared<Semaphore>(0);
-    auto connectCallback = [this, initializationMsg, connectionEstablishedSemaphore]() mutable {
-        auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
-            // initialization message will be sent after reconnect
-            JOYNR_LOG_ERROR(logger,
-                            "Sending websocket initialization message failed. Error: {}",
-                            e.getMessage());
-        };
-        websocket->sendTextMessage(initializationMsg, onFailure);
-        if (connectionEstablishedSemaphore) {
-            connectionEstablishedSemaphore->notify();
-            connectionEstablishedSemaphore = nullptr;
-        }
-
-    };
-    websocket->registerConnectCallback(connectCallback);
 
     // create connection to parent routing service
     auto ccMessagingAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(
             wsSettings.createClusterControllerMessagingAddress());
-
-    websocket->connect(*ccMessagingAddress);
 
     auto factory = std::make_shared<WebSocketMessagingStubFactory>();
     factory->addServer(*ccMessagingAddress, websocket->getSender());
@@ -85,23 +83,32 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> set
         }
     });
 
-    connectionEstablishedSemaphore->wait();
-    std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
-            std::make_unique<joynr::WebSocketMulticastAddressCalculator>(ccMessagingAddress);
-    LibJoynrRuntime::init(
-            factory, libjoynrMessagingAddress, ccMessagingAddress, std::move(addressCalculator));
-}
+    auto connectCallback = [
+        this,
+        initializationMsg,
+        runtimeCreatedCallback = std::move(runtimeCreatedCallback),
+        factory,
+        libjoynrMessagingAddress,
+        ccMessagingAddress
+    ]()
+    {
+        auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
+            // initialization message will be sent after reconnect
+            JOYNR_LOG_ERROR(logger,
+                            "Sending websocket initialization message failed. Error: {}",
+                            e.getMessage());
+        };
+        websocket->sendTextMessage(initializationMsg, onFailure);
 
-LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
-{
-    // reset receive callback to remove last reference to MessageRouter in
-    // WebSocketLibJoynrMessagingSkeleton
-    websocket->registerReceiveCallback(nullptr);
-    websocket->close();
-    // synchronously stop the underlying boost::asio::io_service
-    // this ensures all asynchronous operations are stopped now
-    // which allows a safe shutdown
-    singleThreadIOService->stop();
+        std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
+                std::make_unique<joynr::WebSocketMulticastAddressCalculator>(ccMessagingAddress);
+        init(factory, libjoynrMessagingAddress, ccMessagingAddress, std::move(addressCalculator));
+
+        runtimeCreatedCallback();
+    };
+
+    websocket->registerConnectCallback(connectCallback);
+    websocket->connect(*ccMessagingAddress);
 }
 
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
