@@ -110,18 +110,20 @@ TEST_F(ArbitratorTest, arbitrationTimeout) {
                     mockDiscovery,
                     discoveryQos,
                     move(lastSeenArbitrationStrategyFunction));
-    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
-    mockArbitrator->setArbitrationListener(mockArbitrationListener.get());
 
-    // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)))
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationError(discoveryException("Arbitration could not be finished in time.")));
+    auto onSuccess = [](const std::string&) {
+        FAIL();
+    };
+    
+    auto onError = [&semaphore](const exceptions::DiscoveryException& exception) {
+        EXPECT_THAT(exception, discoveryException("Arbitration could not be finished in time."));
+        semaphore.notify();
+    };
 
     auto start = std::chrono::system_clock::now();
 
     EXPECT_CALL(*mockArbitrator, attemptArbitration()).Times(AtLeast(1));
-    mockArbitrator->startArbitration();
+    mockArbitrator->startArbitration(onSuccess, onError);
 
     // Wait for timeout
     // Wait for more than discoveryTimeoutMs milliseconds since it might take some time until the 
@@ -134,7 +136,6 @@ TEST_F(ArbitratorTest, arbitrationTimeout) {
 
     JOYNR_LOG_DEBUG(logger, "Time elapsed for unsuccessful arbitration : {}", elapsed.count());
     ASSERT_GE(elapsed.count(), discoveryTimeoutMs);
-    mockArbitrator->removeArbitrationListener();
 }
 
 // Test that the Arbitrator selects the last seen provider
@@ -175,14 +176,17 @@ TEST_F(ArbitratorTest, getLastSeen) {
     }
 
     // Check that the correct participant was selected
-    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
-    lastSeenArbitrator.setArbitrationListener(mockArbitrationListener.get());
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
-    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(lastSeenParticipantId)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
 
-    lastSeenArbitrator.startArbitration();
+    auto onSuccess = [&lastSeenParticipantId](const std::string& participantId) {
+        EXPECT_EQ(lastSeenParticipantId, participantId);
+    };
+    
+    auto onError = [](const exceptions::DiscoveryException&) {
+        FAIL();
+    };
+
+    lastSeenArbitrator.startArbitration(onSuccess, onError);
 }
 
 // Test that the Arbitrator selects the provider with the highest priority
@@ -225,15 +229,18 @@ TEST_F(ArbitratorTest, getHighestPriority) {
         ));
     }
 
-    // Check that the correct participant was selected
-    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
-    qosArbitrator.setArbitrationListener(mockArbitrationListener.get());
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
-    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(participantId.back())));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
 
-    qosArbitrator.startArbitration();
+    // Check that the correct participant was selected
+    auto onSuccess = [&participantId](const std::string& foundParticipantId) {
+        EXPECT_EQ(participantId.back(), foundParticipantId);
+    };
+
+    auto onError = [](const exceptions::DiscoveryException&) {
+        FAIL();
+    };
+
+    qosArbitrator.startArbitration(onSuccess, onError);
 }
 
 // Test that the Arbitrator selects a provider with compatible version
@@ -280,15 +287,18 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
         }
     }
 
-    // Check that the correct participant was selected
-    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
-    qosArbitrator.setArbitrationListener(mockArbitrationListener.get());
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
-    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(expectedParticipantId)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
 
-    qosArbitrator.startArbitration();
+    // Check that the correct participant was selected
+    auto onSuccess = [&expectedParticipantId](const std::string& participantId) {
+        EXPECT_EQ(expectedParticipantId, participantId);
+    };
+
+    auto onError = [](const exceptions::DiscoveryException&) {
+        FAIL();
+    };
+
+    qosArbitrator.startArbitration(onSuccess, onError);
 }
 
 // Test that the Arbitrator selects a provider that supports onChange subscriptions
@@ -337,15 +347,18 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
         ));
     }
 
-    // Check that the correct participant was selected
-    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
-    qosArbitrator.setArbitrationListener(mockArbitrationListener.get());
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
-    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(participantId.back())));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
 
-    qosArbitrator.startArbitration();
+    // Check that the correct participant was selected
+    auto onSuccess = [&participantId](const std::string& foundParticipantId) {
+        EXPECT_EQ(participantId.back(), foundParticipantId);
+    };
+
+    auto onError = [](const exceptions::DiscoveryException&) {
+        FAIL();
+    };
+
+    qosArbitrator.startArbitration(onSuccess, onError);
 }
 
 // Test that the Arbitrator selects the provider with the correct keyword
@@ -407,15 +420,18 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
         ));
     }
 
-    // Check that the correct participant was selected
-    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
-    qosArbitrator.setArbitrationListener(mockArbitrationListener.get());
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
-    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(participantId.back())));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
 
-    qosArbitrator.startArbitration();
+    // Check that the correct participant was selected
+    auto onSuccess = [&participantId](const std::string& foundParticipantId) {
+        EXPECT_EQ(participantId.back(), foundParticipantId);
+    };
+
+    auto onError = [](const exceptions::DiscoveryException&) {
+        FAIL();
+    };
+
+    qosArbitrator.startArbitration(onSuccess, onError);
 }
 
 // Test that the Arbitrator selects the provider with compatible version
@@ -468,15 +484,18 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
         }
     }
 
-    // Check that the correct participant was selected
-    auto mockArbitrationListener = std::make_unique<MockArbitrationListener>();
-    qosArbitrator.setArbitrationListener(mockArbitrationListener.get());
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
-    EXPECT_CALL(*mockArbitrationListener, setParticipantId(Eq(expectedParticipantId)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationSuccessful)));
-    EXPECT_CALL(*mockArbitrationListener, setArbitrationStatus(Eq(joynr::ArbitrationStatus::ArbitrationCanceledForever))).Times(0);
 
-    qosArbitrator.startArbitration();
+    // Check that the correct participant was selected
+    auto onSuccess = [&expectedParticipantId](const std::string& participantId) {
+        EXPECT_EQ(expectedParticipantId, participantId);
+    };
+
+    auto onError = [](const exceptions::DiscoveryException&) {
+        FAIL();
+    };
+
+    qosArbitrator.startArbitration(onSuccess, onError);
 }
 
 TEST_F(ArbitratorTest, retryFiveTimes) {
@@ -509,7 +528,10 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
                     discoveryQos,
                     move(lastSeenArbitrationStrategyFunction));
 
-    lastSeenArbitrator.startArbitration();
+    auto onSuccess = [](const std::string&) { FAIL(); };
+    auto onError = [](const exceptions::DiscoveryException&) { };
+
+    lastSeenArbitrator.startArbitration(onSuccess, onError);
 }
 
 /*
@@ -608,16 +630,19 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    MockArbitrationListener mockArbitrationListener;
-    qosArbitrator.setArbitrationListener(&mockArbitrationListener);
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    auto onSuccess = [](const std::string&) {
+        FAIL();
+    };
 
-    qosArbitrator.startArbitration();
+    auto onError = [&expectedVersions](const exceptions::DiscoveryException& exception) {
+        EXPECT_THAT(exception, noCompatibleProviderFoundException(expectedVersions));
+    };
+
+    qosArbitrator.startArbitration(onSuccess, onError);
 }
 
 // Test that the Arbitrator returns a NoCompatibleProviderFoundException to the listener
@@ -690,16 +715,18 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    MockArbitrationListener mockArbitrationListener;
-    keywordArbitrator.setArbitrationListener(&mockArbitrationListener);
-
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    auto onSuccess = [](const std::string&) {
+        FAIL();
+    };
 
-    keywordArbitrator.startArbitration();
+    auto onError = [&expectedVersions](const exceptions::DiscoveryException& exception) {
+        EXPECT_THAT(exception, noCompatibleProviderFoundException(expectedVersions));
+    };
+
+    keywordArbitrator.startArbitration(onSuccess, onError);
 }
 
 // Test that the Arbitrator reports a NoCompatibleProviderFoundException to the listener
@@ -759,16 +786,18 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
             .WillOnce(testing::SetArgReferee<0>(discoveryEntry1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntry2));
 
-    MockArbitrationListener mockArbitrationListener;
-    fixedParticipantArbitrator.setArbitrationListener(&mockArbitrationListener);
-
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersion2);
 
-    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    auto onSuccess = [](const std::string&) {
+        FAIL();
+    };
 
-    fixedParticipantArbitrator.startArbitration();
+    auto onError = [&expectedVersions](const exceptions::DiscoveryException& exception) {
+        EXPECT_THAT(exception, noCompatibleProviderFoundException(expectedVersions));
+    };
+
+    fixedParticipantArbitrator.startArbitration(onSuccess, onError);
 }
 
 // Test that the lastSeenArbitrator reports a NoCompatibleProviderFoundException to the listener
@@ -835,16 +864,18 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    MockArbitrationListener mockArbitrationListener;
-    lastSeenArbitrator.setArbitrationListener(&mockArbitrationListener);
-
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(mockArbitrationListener, setArbitrationError(noCompatibleProviderFoundException(expectedVersions)));
+    auto onSuccess = [](const std::string&) {
+        FAIL();
+    };
 
-    lastSeenArbitrator.startArbitration();
+    auto onError = [&expectedVersions](const exceptions::DiscoveryException& exception) {
+        EXPECT_THAT(exception, noCompatibleProviderFoundException(expectedVersions));
+    };
+
+    lastSeenArbitrator.startArbitration(onSuccess, onError);
 }
 
 
@@ -866,13 +897,15 @@ void ArbitratorTest::testExceptionFromDiscoveryProxy(Arbitrator &arbitrator){
             .WillOnce(Throw(exception1))
             .WillRepeatedly(Throw(expectedException));
 
-    MockArbitrationListener mockArbitrationListener;
-    arbitrator.setArbitrationListener(&mockArbitrationListener);
+    auto onSuccess = [](const std::string&) {
+        FAIL();
+    };
 
-    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(mockArbitrationListener, setArbitrationError(exceptionFromDiscoveryProxy(expectedException)));
+    auto onError = [&expectedException](const exceptions::DiscoveryException& exception) {
+        EXPECT_THAT(exception, exceptionFromDiscoveryProxy(expectedException));
+    };
 
-    arbitrator.startArbitration();
+    arbitrator.startArbitration(onSuccess, onError);
 }
 
 TEST_F(ArbitratorTest, getHighestPriorityReturnsExceptionFromDiscoveryProxy) {
@@ -934,13 +967,15 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsExceptionFromDiscoveryP
             .WillOnce(Throw(exception1))
             .WillRepeatedly(Throw(expectedException));
 
-    MockArbitrationListener mockArbitrationListener;
-    fixedParticipantArbitrator.setArbitrationListener(&mockArbitrationListener);
+    auto onSuccess = [](const std::string&) {
+        FAIL();
+    };
 
-    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(mockArbitrationListener, setArbitrationError(exceptionFromDiscoveryProxy(expectedException)));
+    auto onError = [&expectedException](const exceptions::DiscoveryException& exception) {
+        EXPECT_THAT(exception, exceptionFromDiscoveryProxy(expectedException));
+    };
 
-    fixedParticipantArbitrator.startArbitration();
+    fixedParticipantArbitrator.startArbitration(onSuccess, onError);
 }
 
 TEST_F(ArbitratorTest, getLastSeenReturnsExceptionFromDiscoveryProxy) {
@@ -964,7 +999,7 @@ TEST_F(ArbitratorTest, getLastSeenReturnsExceptionFromDiscoveryProxy) {
  * Tests that the arbitrators report an exception if no entries were found during the last retry
  */
 
-MATCHER_P(exceptionEmptyResult, originalException, "") {
+MATCHER(exceptionEmptyResult, "") {
     std::string expectedErrorMsg = "No entries found for domain: " + domain +
             ", interface: " + interfaceName;
     return arg.getMessage() == expectedErrorMsg;
@@ -998,14 +1033,15 @@ void ArbitratorTest::testExceptionEmptyResult(Arbitrator &arbitrator){
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    MockArbitrationListener mockArbitrationListener;
-    arbitrator.setArbitrationListener(&mockArbitrationListener);
-    exceptions::JoynrRuntimeException expectedException("expected exception");
+    auto onSuccess = [](const std::string&) {
+        FAIL();
+    };
 
-    EXPECT_CALL(mockArbitrationListener, setArbitrationStatus(Eq(ArbitrationStatus::ArbitrationCanceledForever)));
-    EXPECT_CALL(mockArbitrationListener, setArbitrationError(exceptionEmptyResult(expectedException)));
+    auto onError = [](const exceptions::DiscoveryException& exception) {
+        EXPECT_THAT(exception, exceptionEmptyResult());
+    };
 
-    arbitrator.startArbitration();
+    arbitrator.startArbitration(onSuccess, onError);
 }
 
 TEST_F(ArbitratorTest, getHighestPriorityReturnsExceptionEmptyResult) {

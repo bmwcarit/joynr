@@ -1,0 +1,16 @@
+package io.joynr
+
+interface HelloWorldService {
+
+	version { major 1 minor 0 }
+
+	method sayHello {
+		in {
+			String toName
+		}
+		out {
+			String greeting
+		}
+	}
+
+}

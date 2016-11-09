@@ -28,8 +28,6 @@
 #include "joynr/Request.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/Logger.h"
-#include "joynr/ArbitrationStatus.h"
-#include "joynr/IArbitrationListener.h"
 #include "joynr/IClientCache.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/IConnector.h"

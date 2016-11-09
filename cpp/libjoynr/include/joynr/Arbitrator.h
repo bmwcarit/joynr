@@ -22,11 +22,11 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <functional>
 
 #include "joynr/ArbitrationStrategyFunction.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
-#include "joynr/IArbitrationListener.h"
 #include "joynr/Logger.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
@@ -68,19 +68,9 @@ public:
     /*
      *  Arbitrate until successful or until a timeout occurs
      */
-    void startArbitration();
-
-    /*
-     *  Returns the result of the arbitration.
-     */
-    std::string getParticipantId();
-
-    /*
-     *  setArbitrationCallback expects a callback to a JoynrProviderProxy object which
-     *  should be notified as soon as the arbitration is completed.
-     */
-    void setArbitrationListener(IArbitrationListener* listener);
-    void removeArbitrationListener();
+    void startArbitration(
+            std::function<void(const std::string& participantId)> onSuccess,
+            std::function<void(const exceptions::DiscoveryException& exception)> onError);
 
 private:
     /*
@@ -93,10 +83,6 @@ private:
     virtual void receiveCapabilitiesLookupResults(
             const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
 
-    void notifyArbitrationListener(const std::string& participantId);
-
-    void notifyArbitrationListener(const exceptions::DiscoveryException& error);
-
     joynr::system::IDiscoverySync& discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::types::DiscoveryQos systemDiscoveryQos;
@@ -106,15 +92,12 @@ private:
     std::unordered_set<joynr::types::Version> discoveredIncompatibleVersions;
     exceptions::DiscoveryException arbitrationError;
     std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction;
+    std::function<void(const std::string& participantId)> onSuccessCallback;
+    std::function<void(const exceptions::DiscoveryException& exception)> onErrorCallback;
 
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);
-    void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
-    void setParticipantId(std::string participantId);
-    void setArbitrationError(const exceptions::DiscoveryException& error);
     std::string participantId;
-    ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
-    IArbitrationListener* listener;
-    Semaphore listenerSemaphore;
+    bool arbitrationFinished;
     ADD_LOGGER(Arbitrator);
 };
 

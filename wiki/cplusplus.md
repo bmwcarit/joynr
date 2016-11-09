@@ -121,6 +121,26 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
     ProxyBuilder<<Package>::<Interface>Proxy>* proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
+
+Use the createRuntimeAsync static method of JoynrRuntime to create the runtime asynchronously:
+
+
+```cpp
+    auto onRuntimeCreated = [](std::unique_ptr<JoynrRuntime> createdRuntime) {
+        // Process the created runtime here
+    };
+
+    auto onErrorCallback = [](exceptions::JoynrRuntimeException& exception) {
+        // Process the error here
+    };
+
+    JoynrRuntime::createRuntimeAsync(
+        pathToLibJoynrSettings,
+        onRuntimeCreated,
+        onErrorCallback,
+        pathToMessagingSettings);
+```
+
 ## The discovery quality of service
 
 The class ```DiscoveryQos``` configures how the search for a provider will be handled. It has the following members:
@@ -253,6 +273,23 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
     } catch(joynr::exceptions::DiscoveryException& e) {
         // error handling
     }
+```
+
+Use the buildAsync method of ProxyBuilder to create a proxy asynchronously:
+
+```cpp
+    auto onSuccess = [](std::unique_ptr<<Package>::<Interface>Proxy> proxy) {
+        // Process the created proxy here
+    }
+
+    auto onError = [](const exceptions::DiscoveryException& exception) {
+        // Handle the exception here
+    }
+
+    proxyBuilder->setMessagingQos(messagingQos)
+        ->setCached(false)
+        ->setDiscoveryQos(discoveryQos)
+        ->buildAsync(onSuccess, onError);
 ```
 
 ## Synchronous Remote procedure calls
