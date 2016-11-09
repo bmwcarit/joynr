@@ -487,7 +487,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                             messageRouter.setRoutingProxy(newRoutingProxy);
                             return newRoutingProxy;
                         }).catch(function(error) {
-                            throw new Error("Failed to create discovery proxy: " + error);
+                            throw new Error("Failed to create routing proxy: " + error);
                         });
 
                     // when everything's ready we can trigger the app
