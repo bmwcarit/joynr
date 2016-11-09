@@ -63,6 +63,16 @@ _sed 's/Version:        '${oldVersionWithoutSnapshot}'/Version:        '${newVer
 cpp/distribution/joynr.spec \
 tests/system-integration-test/docker/onboard/joynr-without-test.spec
 
+{
+	_sed 's/		<joynr.version>'${oldVersion}'<\/joynr.version>/		<joynr.version>'${newVersion}'<\/joynr.version>/g' \
+	examples/hello-world/pom.xml
+	_sed 's/	<version>'${oldVersion}'<\/joynr.version>/	<version>'${newVersion}'<\/joynr.version>/g' \
+	examples/hello-world/pom.xml
+	cd examples/hello-world
+	mvn versions:set -DnewVersion=${newVersion}
+	mvn versions:commit
+}
+
 echo "prepare git patch"
 
 countFoundOldVersions=$(git grep -F ${oldVersion} * | grep -v ReleaseNotes | wc -l)
