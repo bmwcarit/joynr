@@ -131,7 +131,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     Semaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
+    EXPECT_CALL(*mockRequestCaller, getLocationMock(_,_))
             .WillRepeatedly(
                 DoAll(
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
@@ -287,7 +287,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     Semaphore semaphore(0);
     EXPECT_CALL(
             *mockRequestCaller,
-            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
+            getLocationMock(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
                         A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>())
     )
             .WillOnce(DoAll(
@@ -393,7 +393,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     Semaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
+    EXPECT_CALL(*mockRequestCaller, getLocationMock(_,_))
             .WillRepeatedly(
                 DoAll(
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
@@ -439,7 +439,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     Semaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
+    EXPECT_CALL(*mockRequestCaller, getLocationMock(_,_))
             .WillRepeatedly(
                 DoAll(
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),

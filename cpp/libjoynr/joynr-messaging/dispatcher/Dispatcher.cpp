@@ -185,7 +185,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                                      std::move(reply));
         };
         // execute request
-        requestInterpreter->execute(caller, request, onSuccess, onError);
+        requestInterpreter->execute(caller, request, std::move(onSuccess), std::move(onError));
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize request object from: {} - error: {}",

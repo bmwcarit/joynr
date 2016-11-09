@@ -76,9 +76,9 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithMapParamete
     auto mockCaller = std::make_shared<MockTestRequestCaller>();
     EXPECT_CALL(
             *mockCaller,
-            mapParameters(A<const types::TestTypes::TStringKeyMap&>(),
-                          A<std::function<void(const types::TestTypes::TStringKeyMap&)>>(),
-                          A<std::function<void(const std::shared_ptr<exceptions::JoynrException>&)>>())
+            mapParametersMock(A<const types::TestTypes::TStringKeyMap&>(),
+                              A<std::function<void(const types::TestTypes::TStringKeyMap&)>>(),
+                              A<std::function<void(const std::shared_ptr<exceptions::JoynrException>&)>>())
     )
             .Times(1);
 
@@ -107,8 +107,8 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     auto mockCaller = std::make_shared<MockTestRequestCaller>();
     EXPECT_CALL(
             *mockCaller,
-            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
-                        A<std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)>>())
+            getLocationMock(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
+                            A<std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)>>())
     )
             .Times(1);
 
@@ -133,7 +133,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithProviderRun
     auto mockCaller = std::make_shared<MockTestRequestCaller>();
     EXPECT_CALL(
             *mockCaller,
-            methodWithProviderRuntimeException(A<std::function<void()>>(),
+            methodWithProviderRuntimeExceptionMock(A<std::function<void()>>(),
                         A<std::function<void(const std::shared_ptr<exceptions::JoynrException>&)>>())
     )
             .Times(1);
@@ -156,7 +156,7 @@ TEST_F(RequestInterpreterTest, execute_callsGetterMethodOnRequestCallerWithProvi
     auto mockCaller = std::make_shared<MockTestRequestCaller>();
     EXPECT_CALL(
             *mockCaller,
-            getAttributeWithProviderRuntimeException(A<std::function<void(const std::int32_t&)>>(),
+            getAttributeWithProviderRuntimeExceptionMock(A<std::function<void(const std::int32_t&)>>(),
                         A<std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)>>())
     )
             .Times(1);

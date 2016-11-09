@@ -926,7 +926,8 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         dummyRequest.setMethodName(attributeGetter);
 
         CallContextStorage::set(subscriptionRequest->getCallContext());
-        requestInterpreter->execute(requestCaller, dummyRequest, onSuccess, onError);
+        requestInterpreter->execute(
+                requestCaller, dummyRequest, std::move(onSuccess), std::move(onError));
         CallContextStorage::invalidate();
     }
 }

@@ -139,7 +139,7 @@ bool «className»::usesClusterController() const{
 					};
 
 			//see header for more information
-			«francaIntf.interfaceCaller»->«getAttributeName»(onSuccess, onError);
+			«francaIntf.interfaceCaller»->«getAttributeName»(std::move(onSuccess), std::move(onError));
 			future->get(«attributeName»);
 		}
 
@@ -154,7 +154,7 @@ bool «className»::usesClusterController() const{
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
-					[future, onSuccess] (const «returnType»& «attributeName») {
+					[future, onSuccess = std::move(onSuccess)] (const «returnType»& «attributeName») {
 						future->onSuccess(«attributeName»);
 						if (onSuccess) {
 							onSuccess(«attributeName»);
@@ -162,7 +162,7 @@ bool «className»::usesClusterController() const{
 					};
 
 			std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)> onErrorWrapper =
-					[future, onError] (const std::shared_ptr<exceptions::ProviderRuntimeException>& error) {
+					[future, onError = std::move(onError)] (const std::shared_ptr<exceptions::ProviderRuntimeException>& error) {
 						future->onError(error);
 						if (onError) {
 							onError(*error);
@@ -170,7 +170,7 @@ bool «className»::usesClusterController() const{
 					};
 
 			//see header for more information
-			«francaIntf.interfaceCaller»->«getAttributeName»(onSuccessWrapper, onErrorWrapper);
+			«francaIntf.interfaceCaller»->«getAttributeName»(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			return future;
 		}
 
@@ -186,7 +186,7 @@ bool «className»::usesClusterController() const{
 
 			auto future = std::make_shared<joynr::Future<void>>();
 			std::function<void()> onSuccessWrapper =
-					[future, onSuccess] () {
+					[future, onSuccess = std::move(onSuccess)] () {
 						future->onSuccess();
 						if (onSuccess) {
 							onSuccess();
@@ -194,7 +194,7 @@ bool «className»::usesClusterController() const{
 					};
 
 			std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)> onErrorWrapper =
-					[future, onError] (const std::shared_ptr<exceptions::ProviderRuntimeException>& error) {
+					[future, onError = std::move(onError)] (const std::shared_ptr<exceptions::ProviderRuntimeException>& error) {
 						future->onError(error);
 						if (onError) {
 							onError(*error);
@@ -203,7 +203,7 @@ bool «className»::usesClusterController() const{
 
 			//see header for more information
 			JOYNR_LOG_ERROR(logger, "#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
-			«francaIntf.interfaceCaller»->«setAttributeName»(«attributeName», onSuccessWrapper, onErrorWrapper);
+			«francaIntf.interfaceCaller»->«setAttributeName»(«attributeName», std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			return future;
 		}
 
@@ -227,7 +227,7 @@ bool «className»::usesClusterController() const{
 					};
 
 			//see header for more information
-			«francaIntf.interfaceCaller»->«setAttributeName»(«attributeName», onSuccess, onError);
+			«francaIntf.interfaceCaller»->«setAttributeName»(«attributeName», std::move(onSuccess), std::move(onError));
 			return future->get();
 		}
 
@@ -348,7 +348,7 @@ bool «className»::usesClusterController() const{
 				[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 				};
-		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
+		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»std::move(onSuccess), std::move(onError));
 		future->get(«method.commaSeperatedUntypedOutputParameterList»);
 	«ENDIF»
 }
@@ -363,7 +363,7 @@ bool «className»::usesClusterController() const{
 		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 		std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
-				[future, onSuccess] («outputTypedConstParamList») {
+				[future, onSuccess = std::move(onSuccess)] («outputTypedConstParamList») {
 					future->onSuccess(«outputUntypedParamList»);
 					if (onSuccess)
 					{
@@ -372,12 +372,12 @@ bool «className»::usesClusterController() const{
 				};
 
 		std::function<void(const std::shared_ptr<exceptions::JoynrException>&)> onErrorWrapper =
-				[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const std::shared_ptr<exceptions::JoynrException>& error) {
+				[future, onRuntimeError = std::move(onRuntimeError)«IF method.hasErrorEnum», onApplicationError = std::move(onApplicationError)«ENDIF»] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 				};
 
-		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper, onErrorWrapper);
+		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»std::move(onSuccessWrapper), std::move(onErrorWrapper));
 		return future;
 	}
 «ENDIF»
@@ -523,8 +523,8 @@ bool «className»::usesClusterController() const{
 							subscriptionListener,
 							subscriptionQos,
 							*subscriptionRequest,
-							onSuccess,
-							onError);
+							std::move(onSuccess),
+							std::move(onError));
 		«ENDIF»
 		return future;
 	}
