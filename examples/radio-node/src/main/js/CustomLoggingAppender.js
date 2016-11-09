@@ -1,4 +1,4 @@
-/*global console: true */
+/*global module: true, console: true */
 
 /*
  * #%L
