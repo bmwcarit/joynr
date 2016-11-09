@@ -56,7 +56,6 @@ public:
     BroadcastSubscriptionTest() :
         singleThreadIOService(),
         mockMessageRouter(new MockMessageRouter(singleThreadIOService.getIOService())),
-        mockRequestCaller(new MockTestRequestCaller()),
         mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
@@ -83,7 +82,6 @@ public:
 protected:
     SingleThreadedIOService singleThreadIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListenerOne;
     std::shared_ptr<MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double> > mockSubscriptionListenerTwo;
 
