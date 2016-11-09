@@ -1,3 +1,13 @@
+#joynr 0.21.3
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+##Other changes
+* **[JS]** Fix bug which prevents successful restore of persisted broadcast subscription
+  requests
+
 #joynr 0.21.2
 This is a minor bug fix release.
 
