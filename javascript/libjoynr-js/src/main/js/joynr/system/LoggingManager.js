@@ -35,14 +35,14 @@ define(
                 appenders = {};
                 loggingContexts = {};
 
-                appenderTypes = {
-                    Console : ConsoleAppender
-                };
+                appenderTypes = {};
 
                 this.reset = function reset() {
                     log4javascript.resetConfiguration();
                     rootLogger = log4javascript.getRootLogger();
                     rootLogger.removeAllAppenders();
+                    appenderTypes = {};
+                    this.registerAppenderClass("Console", ConsoleAppender);
                 };
 
                 /**
