@@ -26,6 +26,31 @@
 
 using namespace joynr;
 
+namespace {
+
+void validatePartitionsAlwaysThrow(bool allowWildCard) {
+    EXPECT_THROW(util::validatePartitions({""},                 allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({" "},                allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"_"},                allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"not_valid"},        allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"ä"},                allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "_ ./$"},     allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "_ ./$"},     allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"+a", "bc"},         allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "*123"},      allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"*", "bc"},          allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"*", "*"},           allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"*", "+"},           allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"*", "+"},           allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "*", "+"},    allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "*", "123"},  allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "*", ""},     allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"a+b", "123"},       allowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"a*b", "123"},       allowWildCard), std::invalid_argument);
+}
+
+} // anonymous namespace
+
 TEST(UtilTest, splitIntoJsonObjects)
 {
     std::string inputStream;
@@ -89,4 +114,58 @@ TEST(UtilTest, splitIntoJsonObjects)
     result = util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
     EXPECT_EQ(result.at(0), R"({"mes\\"sa{ge":{one:two}})");
+}
+
+TEST(UtilTest, createMulticastIdWithPartitions)
+{
+    EXPECT_EQ("providerParticipantId/multicastName/partition0/partition1",
+              util::createMulticastId("providerParticipantId", "multicastName", { "partition0", "partition1"}));
+}
+
+TEST(UtilTest, createMulticastIdWithoutPartitions)
+{
+    std::vector<std::string> partitions;
+    EXPECT_EQ("providerParticipantId/multicastName",
+              util::createMulticastId("providerParticipantId", "multicastName", partitions));
+}
+
+TEST(UtilTest, validateValidPartitionsWithWildCardsDoesNotThrow)
+{
+    bool allowWildCard = true;
+
+    EXPECT_NO_THROW(util::validatePartitions(
+            { "valid", "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+            allowWildCard
+    ));
+    EXPECT_NO_THROW(util::validatePartitions({},                    allowWildCard));
+    EXPECT_NO_THROW(util::validatePartitions({"*"},                 allowWildCard));
+    EXPECT_NO_THROW(util::validatePartitions({"+"},                 allowWildCard));
+    EXPECT_NO_THROW(util::validatePartitions({"abc", "*"},          allowWildCard));
+    EXPECT_NO_THROW(util::validatePartitions({"abc", "+", "123"},   allowWildCard));
+    EXPECT_NO_THROW(util::validatePartitions({"abc", "+", "*"},     allowWildCard));
+    EXPECT_NO_THROW(util::validatePartitions({"+", "+", "+"},       allowWildCard));
+    EXPECT_NO_THROW(util::validatePartitions({"+", "+", "123"},     allowWildCard));
+    EXPECT_NO_THROW(util::validatePartitions({"+", "123", "*"},     allowWildCard));
+
+    allowWildCard = false;
+    EXPECT_NO_THROW(util::validatePartitions(
+            { "valid", "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+            allowWildCard
+    ));
+}
+
+TEST(UtilTest, validateValidPartitionsWithWildCardsThrows)
+{
+    bool doNotAllowWildCard = false;
+    EXPECT_THROW(util::validatePartitions({"*"},                 doNotAllowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"+"},                 doNotAllowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "*"},          doNotAllowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "+", "123"},   doNotAllowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"abc", "+", "*"},     doNotAllowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"+", "+", "+"},       doNotAllowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"+", "+", "123"},     doNotAllowWildCard), std::invalid_argument);
+    EXPECT_THROW(util::validatePartitions({"+", "123", "*"},     doNotAllowWildCard), std::invalid_argument);
+
+    validatePartitionsAlwaysThrow(doNotAllowWildCard);
+    validatePartitionsAlwaysThrow(!doNotAllowWildCard);
 }

@@ -1,6 +1,6 @@
 #joynr 0.22.0
 
-## API relevant changes
+##API relevant changes
 * **[C++]** During a provider call a call context can be queried which provides the creator user id
   field from the joynr message. Please delete the broadcastsubscriptionrequest-persistence-file and
   subscriptionrequest-persistence-file because the file format changed.
@@ -9,8 +9,9 @@
 * **[C++]** Introduced async joynr runtime creation. See JoynrRuntime::createRuntimeAsync for more
   information.
 
-## Other changes
-None.
+##Other changes
+* **[JS]** Introduced mqtt messaging layer, allowing javascript runtimes including
+  cluster controller functionality to connect to a mqtt broker.
 
 #joynr 0.21.2
 This is a minor bug fix release.
@@ -39,6 +40,8 @@ None.
   `@ProviderDomain` annotation. See
   [JEE Documentation / Customising the registration domain](jee.md#provider_domain).
 * **[Java, JS, C++]** Introduce LastSeen arbitration strategy and set it as default arbitration.
+* **[JEE]** Ability to publish multicast messages by injecting the
+  subscription publisher. See [JEE Documentation / Publishing Multicasts](jee.md#publishing_multicasts).
 
 ##Other changes
 * **[Java, C++]** The local capabilities directory will periodically be checked for

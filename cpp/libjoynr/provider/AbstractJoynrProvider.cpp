@@ -30,7 +30,12 @@ namespace joynr
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
 AbstractJoynrProvider::AbstractJoynrProvider()
-        : providerQos(), lock(), attributeListeners(), broadcastListeners()
+        : providerQos(),
+          lockAttributeListeners(),
+          lockBroadcastListeners(),
+          lockSelectiveBroadcastListeners(),
+          attributeListeners(),
+          broadcastListeners()
 {
 }
 #pragma GCC diagnostic pop
@@ -61,7 +66,7 @@ void AbstractJoynrProvider::registerAttributeListener(
         const std::string& attributeName,
         SubscriptionAttributeListener* attributeListener)
 {
-    WriteLocker locker(lock);
+    WriteLocker locker(lockAttributeListeners);
     attributeListeners[attributeName].push_back(attributeListener);
 }
 
@@ -69,7 +74,7 @@ void AbstractJoynrProvider::unregisterAttributeListener(
         const std::string& attributeName,
         SubscriptionAttributeListener* attributeListener)
 {
-    WriteLocker locker(lock);
+    WriteLocker locker(lockAttributeListeners);
     std::vector<SubscriptionAttributeListener*>& listeners = attributeListeners[attributeName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), attributeListener);
@@ -82,20 +87,24 @@ void AbstractJoynrProvider::unregisterAttributeListener(
     }
 }
 
-void AbstractJoynrProvider::registerBroadcastListener(
-        const std::string& broadcastName,
-        SubscriptionBroadcastListener* broadcastListener)
+void AbstractJoynrProvider::registerBroadcastListener(const std::string& broadcastName,
+                                                      UnicastBroadcastListener* broadcastListener)
 {
-    WriteLocker locker(lock);
-    broadcastListeners[broadcastName].push_back(broadcastListener);
+    WriteLocker locker(lockSelectiveBroadcastListeners);
+    selectiveBroadcastListeners[broadcastName].push_back(broadcastListener);
 }
 
-void AbstractJoynrProvider::unregisterBroadcastListener(
-        const std::string& broadcastName,
-        SubscriptionBroadcastListener* broadcastListener)
+void AbstractJoynrProvider::registerBroadcastListener(MulticastBroadcastListener* broadcastListener)
 {
-    WriteLocker locker(lock);
-    std::vector<SubscriptionBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+    WriteLocker locker(lockBroadcastListeners);
+    broadcastListeners.push_back(broadcastListener);
+}
+
+void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broadcastName,
+                                                        UnicastBroadcastListener* broadcastListener)
+{
+    WriteLocker locker(lockSelectiveBroadcastListeners);
+    std::vector<UnicastBroadcastListener*>& listeners = selectiveBroadcastListeners[broadcastName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), broadcastListener);
     assert(listenerIt != listeners.cend());
@@ -103,7 +112,7 @@ void AbstractJoynrProvider::unregisterBroadcastListener(
     listeners.erase(listenerIt);
 
     if (listeners.empty()) {
-        broadcastListeners.erase(broadcastName);
+        selectiveBroadcastListeners.erase(broadcastName);
     }
 }
 

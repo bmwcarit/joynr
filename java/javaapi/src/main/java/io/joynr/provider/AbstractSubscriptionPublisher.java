@@ -19,16 +19,16 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.pubsub.publication.AttributeListener;
-import io.joynr.pubsub.publication.BroadcastFilter;
-import io.joynr.pubsub.publication.BroadcastFilterImpl;
-import io.joynr.pubsub.publication.BroadcastListener;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilter;
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
+import io.joynr.pubsub.publication.BroadcastListener;
+import io.joynr.pubsub.publication.MulticastListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,24 +37,26 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
 
     ConcurrentHashMap<String, List<AttributeListener>> attributeListeners;
     ConcurrentHashMap<String, List<BroadcastListener>> broadcastListeners;
+    List<MulticastListener> multicastListeners;
     protected ConcurrentHashMap<String, List<BroadcastFilter>> broadcastFilters;
 
     public AbstractSubscriptionPublisher() {
         attributeListeners = new ConcurrentHashMap<String, List<AttributeListener>>();
         broadcastListeners = new ConcurrentHashMap<String, List<BroadcastListener>>();
+        multicastListeners = new ArrayList<>();
         broadcastFilters = new ConcurrentHashMap<String, List<BroadcastFilter>>();
     }
 
     /**
      * Called by generated {@code <Interface>AbstractProvider} classes to notify
      * all registered listeners about the attribute change.
-     *
+     * <p>
      * NOTE: Provider implementations should _not_ call this method but use
      * attribute specific {@code <Interface>AbstractProvider.<attribute>Changed}
      * methods.
      *
      * @param attributeName the attribute name as defined in the Franca model.
-     * @param value the new value of the changed attribute.
+     * @param value         the new value of the changed attribute.
      */
     protected void onAttributeValueChanged(String attributeName, Object value) {
         if (!attributeListeners.containsKey(attributeName)) {
@@ -71,14 +73,14 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     /**
      * Called by generated {@code <Interface>AbstractProvider} classes to notify
      * all registered listeners about the fired broadcast.
-     *
+     * <p>
      * NOTE: Provider implementations should _not_ call this method but use
      * broadcast specific {@code <Interface>AbstractProvider.fire<Broadcast>}
      * methods.
      *
-     * @param broadcastName the broadcast name as defined in the Franca model.
+     * @param broadcastName    the broadcast name as defined in the Franca model.
      * @param broadcastFilters the list of filters to apply.
-     * @param values the broadcast arguments.
+     * @param values           the broadcast arguments.
      */
     protected void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
         if (!broadcastListeners.containsKey(broadcastName)) {
@@ -93,11 +95,33 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     }
 
     /**
+     * Called by generated {@code <Interface>AbstractProvider} classes to notify
+     * all registered multicast listeners about the fired multicast.
+     * <p>
+     * NOTE: Provider implementations should _not_ call this method but use
+     * multicast specific {@code <Interface>AbstractProvider.fire<Multicast>}
+     * methods.
+     *
+     * @param multicastName the multicast name as defined in the Franca model (as a non-selective broadcast).
+     * @param partitions    the partitions which will be used in transmitting the multicast
+     * @param values        the broadcast arguments.
+     */
+    protected void fireMulticast(String multicastName, String[] partitions, Object... values) {
+        List<MulticastListener> listeners;
+        synchronized (multicastListeners) {
+            listeners = new ArrayList<>(multicastListeners);
+        }
+        for (MulticastListener listener : listeners) {
+            listener.multicastOccurred(multicastName, partitions, values);
+        }
+    }
+
+    /**
      * Registers an attribute listener that gets notified in case the attribute
      * changes. This is used for on change subscriptions.
      *
-     * @param attributeName the attribute name as defined in the Franca model
-     *      to subscribe to.
+     * @param attributeName     the attribute name as defined in the Franca model
+     *                          to subscribe to.
      * @param attributeListener the listener to add.
      */
     public void registerAttributeListener(String attributeName, AttributeListener attributeListener) {
@@ -111,8 +135,8 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     /**
      * Unregisters an attribute listener.
      *
-     * @param attributeName the attribute name as defined in the Franca model
-     *      to unsubscribe from.
+     * @param attributeName     the attribute name as defined in the Franca model
+     *                          to unsubscribe from.
      * @param attributeListener the listener to remove.
      */
     public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
@@ -136,8 +160,8 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
      * Registers a broadcast listener that gets notified in case the broadcast
      * is fired.
      *
-     * @param broadcastName the broadcast name as defined in the Franca model
-     *      to subscribe to.
+     * @param broadcastName     the broadcast name as defined in the Franca model
+     *                          to subscribe to.
      * @param broadcastListener the listener to add.
      */
     public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
@@ -151,8 +175,8 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     /**
      * Unregisters a broadcast listener.
      *
-     * @param broadcastName the broadcast name as defined in the Franca model
-     *      to unsubscribe from.
+     * @param broadcastName     the broadcast name as defined in the Franca model
+     *                          to unsubscribe from.
      * @param broadcastListener the listener to remove.
      */
     public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
@@ -169,6 +193,20 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
                         + "\" that was never registered");
                 return;
             }
+        }
+    }
+
+    @Override
+    public void registerMulticastListener(MulticastListener multicastListener) {
+        synchronized (multicastListeners) {
+            multicastListeners.add(multicastListener);
+        }
+    }
+
+    @Override
+    public void unregisterMulticastListener(MulticastListener multicastListener) {
+        synchronized (multicastListeners) {
+            multicastListeners.remove(multicastListener);
         }
     }
 
@@ -193,9 +231,8 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     /**
      * Adds multiple broadcast filters to the provider.
      *
-     * @see AbstractSubscriptionPublisher#addBroadcastFilter(BroadcastFilterImpl filter)
-     *
      * @param filters the filters to add.
+     * @see AbstractSubscriptionPublisher#addBroadcastFilter(BroadcastFilterImpl filter)
      */
     public void addBroadcastFilter(BroadcastFilterImpl... filters) {
         List<BroadcastFilterImpl> filtersList = Arrays.asList(filters);

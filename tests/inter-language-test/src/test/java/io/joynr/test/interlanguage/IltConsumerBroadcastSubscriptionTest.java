@@ -43,8 +43,16 @@ import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
+import java.util.List;
+
+@RunWith(Parameterized.class)
 public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
 
@@ -55,6 +63,17 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     // variables that are to be changed inside callbacks must be declared global
     volatile boolean subscribeBroadcastWithSinglePrimitiveParameterCallbackDone = false;
     volatile boolean subscribeBroadcastWithSinglePrimitiveParameterCallbackResult = false;
+
+    private String[] partitions;
+
+    public IltConsumerBroadcastSubscriptionTest(String[] partitions) {
+        this.partitions = partitions;
+    }
+
+    @Parameters
+    public static List<Object[]> data() {
+        return Arrays.asList(new Object[][]{ { new String[]{} }, { new String[]{ "partition0", "partition1" } } });
+    }
 
     @Test
     public void callSubscribeBroadcastWithSinglePrimitiveParameter() {
@@ -99,12 +118,13 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                   subscribeBroadcastWithSinglePrimitiveParameterCallbackDone = true;
                                                                                                               }
                                                                                                           },
-                                                                                                          subscriptionQos);
+                                                                                                          subscriptionQos,
+                                                                                                          partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
-            testInterfaceProxy.methodToFireBroadcastWithSinglePrimitiveParameter();
+            testInterfaceProxy.methodToFireBroadcastWithSinglePrimitiveParameter(partitions);
             LOG.info(name.getMethodName() + " - fire method invoked");
 
             // check results from callback; expect to be finished within 1 second
@@ -200,12 +220,13 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                      subscribeBroadcastWithMultiplePrimitiveParametersCallbackDone = true;
                                                                                                                  }
                                                                                                              },
-                                                                                                             subscriptionQos);
+                                                                                                             subscriptionQos,
+                                                                                                             partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
-            testInterfaceProxy.methodToFireBroadcastWithMultiplePrimitiveParameters();
+            testInterfaceProxy.methodToFireBroadcastWithMultiplePrimitiveParameters(partitions);
             LOG.info(name.getMethodName() + " - fire method invoked");
 
             // check results from callback; expect to be finished within 1 second
@@ -298,12 +319,13 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                               subscribeBroadcastWithSingleArrayParameterCallbackDone = true;
                                                                                                           }
                                                                                                       },
-                                                                                                      subscriptionQos);
+                                                                                                      subscriptionQos,
+                                                                                                      partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
-            testInterfaceProxy.methodToFireBroadcastWithSingleArrayParameter();
+            testInterfaceProxy.methodToFireBroadcastWithSingleArrayParameter(partitions);
             LOG.info(name.getMethodName() + " - fire method invoked");
 
             // check results from callback; expect to be finished within 1 second
@@ -398,12 +420,13 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                  subscribeBroadcastWithMultipleArrayParametersCallbackDone = true;
                                                                                                              }
                                                                                                          },
-                                                                                                         subscriptionQos);
+                                                                                                         subscriptionQos,
+                                                                                                         partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
-            testInterfaceProxy.methodToFireBroadcastWithMultipleArrayParameters();
+            testInterfaceProxy.methodToFireBroadcastWithMultipleArrayParameters(partitions);
             LOG.info(name.getMethodName() + " - fire method invoked");
 
             // check results from callback; expect to be finished within 1 second
@@ -496,12 +519,13 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                     subscribeBroadcastWithSingleEnumerationParameterCallbackDone = true;
                                                                                                                 }
                                                                                                             },
-                                                                                                            subscriptionQos);
+                                                                                                            subscriptionQos,
+                                                                                                            partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
-            testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter();
+            testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter(partitions);
             LOG.info(name.getMethodName() + " - fire method invoked");
 
             // check results from callback; expect to be finished within 1 second
@@ -596,12 +620,13 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                        subscribeBroadcastWithMultipleEnumerationParametersCallbackDone = true;
                                                                                                                    }
                                                                                                                },
-                                                                                                               subscriptionQos);
+                                                                                                               subscriptionQos,
+                                                                                                               partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
-            testInterfaceProxy.methodToFireBroadcastWithMultipleEnumerationParameters();
+            testInterfaceProxy.methodToFireBroadcastWithMultipleEnumerationParameters(partitions);
             LOG.info(name.getMethodName() + " - fire method invoked");
 
             // check results from callback; expect to be finished within 1 second
@@ -694,12 +719,13 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                subscribeBroadcastWithSingleStructParameterCallbackDone = true;
                                                                                                            }
                                                                                                        },
-                                                                                                       subscriptionQos);
+                                                                                                       subscriptionQos,
+                                                                                                       partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
-            testInterfaceProxy.methodToFireBroadcastWithSingleStructParameter();
+            testInterfaceProxy.methodToFireBroadcastWithSingleStructParameter(partitions);
             LOG.info(name.getMethodName() + " - fire method invoked");
 
             // check results from callback; expect to be finished within 1 second
@@ -794,12 +820,13 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                   subscribeBroadcastWithMultipleStructParametersCallbackDone = true;
                                                                                                               }
                                                                                                           },
-                                                                                                          subscriptionQos);
+                                                                                                          subscriptionQos,
+                                                                                                          partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
-            testInterfaceProxy.methodToFireBroadcastWithMultipleStructParameters();
+            testInterfaceProxy.methodToFireBroadcastWithMultipleStructParameters(partitions);
             LOG.info(name.getMethodName() + " - fire method invoked");
 
             // check results from callback; expect to be finished within 1 second

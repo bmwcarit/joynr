@@ -22,9 +22,11 @@ package io.joynr.dispatching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +41,10 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
+import io.joynr.pubsub.SubscriptionQos;
 import joynr.JoynrMessage;
+import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionRequest;
 import joynr.PeriodicSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
@@ -219,8 +224,7 @@ public class JoynrMessageFactoryTest {
         JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                              toParticipantId,
                                                                              subscriptionRequest,
-                                                                             messagingQos,
-                                                                             false);
+                                                                             messagingQos);
         assertEquals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
         assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
         assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
@@ -251,5 +255,42 @@ public class JoynrMessageFactoryTest {
                                                                       new MessagingQos());
         assertNotNull(joynrMessage.getHeader().get("test"));
         assertEquals("test", joynrMessage.getHeader().get("test"));
+    }
+
+    @Test
+    public void testCreateMulticastMessage() {
+        String multicastId = "multicastId";
+        MulticastPublication multicastPublication = new MulticastPublication(Collections.emptyList(), multicastId);
+
+        JoynrMessage joynrMessage = joynrMessageFactory.createMulticast(fromParticipantId,
+                                                                        multicastPublication,
+                                                                        messagingQos);
+
+        assertNotNull(joynrMessage);
+        assertEquals(fromParticipantId, joynrMessage.getFrom());
+        assertEquals(multicastId, joynrMessage.getTo());
+        assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
+        assertTrue(joynrMessage.getPayload().contains(MulticastPublication.class.getName()));
+    }
+
+    @Test
+    public void testCreateMulticastSubscriptionRequest() {
+        String multicastId = "multicastId";
+        String subscriptionId = "subscriptionId";
+        String multicastName = "multicastName";
+        SubscriptionQos subscriptionQos = mock(SubscriptionQos.class);
+
+        MulticastSubscriptionRequest multicastSubscriptionRequest = new MulticastSubscriptionRequest(multicastId,
+                                                                                                     subscriptionId,
+                                                                                                     multicastName,
+                                                                                                     subscriptionQos);
+
+        JoynrMessage result = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
+                                                                            toParticipantId,
+                                                                            multicastSubscriptionRequest,
+                                                                            messagingQos);
+
+        assertNotNull(result);
+        assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, result.getType());
     }
 }

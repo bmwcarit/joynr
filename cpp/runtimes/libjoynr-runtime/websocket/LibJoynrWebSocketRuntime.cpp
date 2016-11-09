@@ -26,6 +26,7 @@
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/WebSocketMulticastAddressCalculator.h"
 
 namespace joynr
 {
@@ -99,7 +100,9 @@ void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallb
         };
         websocket->sendTextMessage(initializationMsg, onFailure);
 
-        init(factory, libjoynrMessagingAddress, ccMessagingAddress);
+        std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
+                std::make_unique<joynr::WebSocketMulticastAddressCalculator>(ccMessagingAddress);
+        init(factory, libjoynrMessagingAddress, ccMessagingAddress, std::move(addressCalculator));
 
         runtimeCreatedCallback();
     };

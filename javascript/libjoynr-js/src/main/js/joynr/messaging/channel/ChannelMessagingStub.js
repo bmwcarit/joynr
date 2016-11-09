@@ -31,23 +31,9 @@ define("joynr/messaging/channel/ChannelMessagingStub", [
      * @param {Object} settings
      * @param {ChannelMessagingSender|Object} settings.channelMessagingSender the channel message sender to send the messages with
      * @param {String} settings.channelId the destination channelId
+     * @param {MessageReplyToAddressCalculator} settings.messageReplyToAddressCalculator calculates the replyTo address
      */
     function ChannelMessagingStub(settings) {
-        var serializedChannelAddress;
-        Util.checkProperty(settings.channelMessagingSender, [
-            "Object",
-            "ChannelMessagingSender"
-        ], "settings.channelMessagingSender");
-        Util.checkProperty(
-                settings.destinationChannelAddress,
-                "ChannelAddress",
-                "settings.destinationChannelAddress");
-        Util
-                .checkProperty(
-                        settings.myChannelAddress,
-                        "ChannelAddress",
-                        "settings.myChannelAddress");
-        serializedChannelAddress = JSON.stringify(settings.myChannelAddress);
 
         /**
          * @name ChannelMessagingStub#transmit
@@ -67,7 +53,7 @@ define("joynr/messaging/channel/ChannelMessagingStub", [
                         return Promise.reject(new Error(errorMsg));
                     }
                     // if outgoing request => set my own channel address as replyChannelId
-                    joynrMessage.replyChannelId = serializedChannelAddress;
+                    settings.messageReplyToAddressCalculator.setReplyTo(joynrMessage);
                     return settings.channelMessagingSender.send(
                             joynrMessage,
                             settings.destinationChannelAddress);

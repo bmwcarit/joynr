@@ -35,4 +35,9 @@ public interface MessageRouter {
     public void removeNextHop(String participantId);
 
     public boolean resolveNextHop(String participantId);
+
+    void addMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId);
+
+    void removeMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId);
+
 }

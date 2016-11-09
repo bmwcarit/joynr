@@ -237,4 +237,34 @@ interface Routing {
 			Boolean resolved
 		}
 	}
+
+	<**
+		@description: Adds a new receiver via their participant ID to for the
+			identified multicasts.
+	**>
+	method addMulticastReceiver {
+		in {
+			<** @description: the multicast ID the receiver is interested in. **>
+			String multicastId
+			<** @description: the participant ID of the receiver. **>
+			String subscriberParticipantId
+			<** @description: the participant ID of the provider. **>
+			String providerParticipantId
+		}
+	}
+
+	<**
+		@description: Removes a new receiver via their participant ID to for the
+			identified multicasts which was previously added via addMulticastReceiver.
+	**>
+	method removeMulticastReceiver {
+		in {
+			<** @description: the multicast ID the receiver registered for. **>
+			String multicastId
+			<** @description: the participant ID of the receiver. **>
+			String subscriberParticipantId
+			<** @description: the participant ID of the provider. **>
+			String providerParticipantId
+		}
+	}
 }

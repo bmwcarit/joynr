@@ -22,8 +22,6 @@
 namespace joynr
 {
 
-const SubscriptionReply SubscriptionReply::NULL_RESPONSE = SubscriptionReply();
-
 SubscriptionReply::SubscriptionReply() : subscriptionId(), error(nullptr)
 {
 }

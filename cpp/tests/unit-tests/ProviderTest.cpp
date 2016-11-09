@@ -64,3 +64,21 @@ TEST(ProviderTest, defaultVersionIsSetCorrectly) {
     EXPECT_EQ(expectedDefaultMajorVersion, tests::TestWithoutVersionProvider::MAJOR_VERSION);
     EXPECT_EQ(expectedDefaultMinorVersion, tests::TestWithoutVersionProvider::MINOR_VERSION);
 }
+
+class MyTestProvider : public tests::DefaulttestProvider {
+public:
+    void fireLocation(
+            const joynr::types::Localisation::GpsLocation& location,
+            const std::vector<std::string>& partitions = std::vector<std::string>()
+    ) override {
+        tests::DefaulttestProvider::fireLocation(location, partitions);
+    }
+};
+
+TEST(ProviderTest, fireBroadcastWithInvalidPartionsThrows) {
+    MyTestProvider provider;
+    EXPECT_THROW(
+            provider.fireLocation(types::Localisation::GpsLocation(), { "invalid / partition" }),
+            std::invalid_argument
+    );
+}

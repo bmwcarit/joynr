@@ -26,6 +26,8 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/types/Version.h"
+#include "joynr/IJoynrMessageSender.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/SingleThreadedIOService.h"
 
 using namespace joynr;
@@ -43,10 +45,13 @@ public:
             expectedParticipantId("testParticipantId"),
             singleThreadedIOService(),
             mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
-            expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION)
+            expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
+            mockJoynrMessageSender(new MockJoynrMessageSender()),
+            pubManager(singleThreadedIOService.getIOService(), mockJoynrMessageSender)
     {
         singleThreadedIOService.start();
     }
+
     void SetUp(){
         std::vector<IDispatcher*> dispatcherList;
         mockDispatcher = new MockDispatcher();
@@ -58,13 +63,17 @@ public:
                     mockParticipantIdStorage,
                     dispatcherAddress,
                     mockMessageRouter,
-                    std::numeric_limits<std::int64_t>::max()
+                    std::numeric_limits<std::int64_t>::max(),
+                    pubManager
         );
     }
+
     void TearDown(){
         delete capabilitiesRegistrar;
         delete mockDispatcher;
+        delete mockJoynrMessageSender;
     }
+
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
@@ -78,6 +87,8 @@ protected:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     const types::Version expectedProviderVersion;
+    IJoynrMessageSender* mockJoynrMessageSender;
+    PublicationManager pubManager;
 };
 
 TEST_F(CapabilitiesRegistrarTest, add){

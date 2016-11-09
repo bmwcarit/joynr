@@ -28,6 +28,7 @@ import com.google.inject.name.Names;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 import io.joynr.messaging.routing.GlobalAddressFactory;
+import io.joynr.messaging.routing.MulticastAddressCalculator;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -49,5 +50,10 @@ public class AtmosphereMessagingModule extends AbstractModule {
         globalAddresses.addBinding().to(LongPollingHttpGlobalAddressFactory.class);
 
         bind(MessageReceiver.class).to(LongPollingMessageReceiver.class).asEagerSingleton();
+
+        Multibinder<MulticastAddressCalculator> multicastAddressCalculatorMultibinder = Multibinder.newSetBinder(binder(),
+                                                                                                                 new TypeLiteral<MulticastAddressCalculator>() {
+                                                                                                                 });
+        multicastAddressCalculatorMultibinder.addBinding().to(LongPollingHttpMulticastAddressCalculator.class);
     }
 }

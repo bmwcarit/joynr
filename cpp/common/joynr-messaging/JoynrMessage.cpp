@@ -83,8 +83,11 @@ const std::string JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY = "oneWay";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_REPLY = "reply";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST = "request";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION = "subscriptionPublication";
+const std::string JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST = "multicast";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY = "subscriptionReply";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST = "subscriptionRequest";
+const std::string JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST =
+        "multicastSubscriptionRequest";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST =
         "broadcastSubscriptionRequest";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
@@ -92,13 +95,16 @@ const std::string JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP = "subscrip
 const std::string JoynrMessage::VALUE_CONTENT_TYPE_TEXT_PLAIN = "text/plain";
 const std::string JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON = "application/json";
 
-JoynrMessage::JoynrMessage() : type(""), header(), payload()
+JoynrMessage::JoynrMessage() : type(""), header(), payload(), receivedFromGlobal(false)
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
 
 JoynrMessage::JoynrMessage(const JoynrMessage& message)
-        : type(message.type), header(message.header), payload(message.payload)
+        : type(message.type),
+          header(message.header),
+          payload(message.payload),
+          receivedFromGlobal(false)
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
@@ -108,6 +114,7 @@ JoynrMessage& JoynrMessage::operator=(const JoynrMessage& message)
     type = message.type;
     header = message.header;
     payload = message.payload;
+    receivedFromGlobal = message.receivedFromGlobal;
     generateAndSetMsgIdHeaderIfAbsent();
     return *this;
 }
@@ -115,7 +122,8 @@ JoynrMessage& JoynrMessage::operator=(const JoynrMessage& message)
 JoynrMessage::JoynrMessage(JoynrMessage&& message)
         : type(std::move(message.type)),
           header(std::move(message.header)),
-          payload(std::move(message.payload))
+          payload(std::move(message.payload)),
+          receivedFromGlobal(std::move(message.receivedFromGlobal))
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
@@ -125,6 +133,7 @@ JoynrMessage& JoynrMessage::operator=(JoynrMessage&& message)
     type = std::move(message.type);
     header = std::move(message.header);
     payload = std::move(message.payload);
+    receivedFromGlobal = std::move(message.receivedFromGlobal);
     generateAndSetMsgIdHeaderIfAbsent();
     return *this;
 }
@@ -139,6 +148,8 @@ void JoynrMessage::generateAndSetMsgIdHeaderIfAbsent()
 
 bool JoynrMessage::operator==(const JoynrMessage& message) const
 {
+    // Since receivedFromGlobal is a transient and auxiliary attribute which has nothing to do with
+    // the identity of a JoynrMessage it is omitted from the comparison.
     return type == message.getType() && payload == message.payload && header == message.header;
 }
 
@@ -348,6 +359,16 @@ std::string JoynrMessage::getHeaderEffort() const
 void JoynrMessage::setHeaderEffort(const std::string& effort)
 {
     setHeaderForKey(HEADER_EFFORT(), effort);
+}
+
+bool JoynrMessage::isReceivedFromGlobal() const
+{
+    return receivedFromGlobal;
+}
+
+void JoynrMessage::setReceivedFromGlobal(bool receivedFromGlobal)
+{
+    this->receivedFromGlobal = receivedFromGlobal;
 }
 
 } // namespace joynr

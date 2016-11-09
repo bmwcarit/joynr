@@ -1,0 +1,35 @@
+@startuml
+
+box "Application" #F1F1F1
+  participant App
+  participant libjoynr
+end box
+
+box "Cluster Controller" #F1F1F1
+  participant MessageRouter
+  participant MessagingStub	
+  participant MqttMessagingSkeleton
+
+end box
+
+box "Backend" #F1F1F1
+  participant MqttBroker
+end box
+
+box "Backend App" #F1F1F1
+  participant JeeLibjoynr
+  participant JeeApp
+end box
+
+App -> libjoynr: subscribe
+activate libjoynr
+libjoynr -> JeeLibjoynr: subscriptionRequest
+libjoynr -> MessageRouter: addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId)
+MessageRouter -> MqttMessagingSkeleton:  registerMulticastSubscription(multicastId)
+MqttMessagingSkeleton -> MqttBroker:  subscribe(topic: multicastIdToTopic())
+
+JeeLibjoynr -> libjoynr: subscriptionReply
+App <-- libjoynr: confirm
+deactivate libjoynr
+
+@enduml

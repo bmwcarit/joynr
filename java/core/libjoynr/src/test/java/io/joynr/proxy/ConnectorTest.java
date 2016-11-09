@@ -43,7 +43,6 @@ import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -129,9 +128,9 @@ public class ConnectorTest {
             AttributeSubscriptionListener<GpsPosition> listener = new AttributeSubscriptionAdapter<GpsPosition>();
             Object[] args = new Object[]{ listener, subscriptionQos, subscriptionId };
             Method method = LocalisationSubscriptionInterface.class.getDeclaredMethod("subscribeToGPSPosition",
+                                                                                      String.class,
                                                                                       AttributeSubscriptionListener.class,
-                                                                                      SubscriptionQos.class,
-                                                                                      String.class);
+                                                                                      SubscriptionQos.class);
             AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method, args, future);
             connector.executeSubscriptionMethod(attributeSubscription);
             Mockito.verify(subscriptionManager, times(1))

@@ -26,6 +26,8 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/MulticastPublication.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
@@ -34,7 +36,6 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/IRequestInterpreter.h"
 #include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
-#include "joynr/PublicationInterpreter.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/InterfaceRegistrar.h"
@@ -302,6 +303,28 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     }
 }
 
+void Dispatcher::handleMulticastSubscriptionRequestReceived(const JoynrMessage& message)
+{
+    JOYNR_LOG_TRACE(logger, "Starting handleMulticastSubscriptionRequestReceived");
+    assert(publicationManager != nullptr);
+
+    std::string jsonSubscriptionRequest = message.getPayload();
+
+    // PublicationManager is responsible for deleting SubscriptionRequests
+    MulticastSubscriptionRequest subscriptionRequest;
+    try {
+        joynr::serializer::deserializeFromJson(subscriptionRequest, jsonSubscriptionRequest);
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_ERROR(
+                logger,
+                "Unable to deserialize broadcast subscription request object from: {} - error: {}",
+                jsonSubscriptionRequest,
+                e.what());
+    }
+    publicationManager->add(
+            message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest, messageSender);
+}
+
 void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message)
 {
     JOYNR_LOG_TRACE(logger, "Starting handleBroadcastSubscriptionRequestReceived");
@@ -391,6 +414,41 @@ void Dispatcher::handleSubscriptionReplyReceived(const JoynrMessage& message)
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize subscription reply object from: {} - error: {}",
                         jsonSubscriptionReply,
+                        e.what());
+    }
+}
+
+void Dispatcher::handleMulticastReceived(const JoynrMessage& message)
+{
+    std::string jsonMulticastPublication = message.getPayload();
+
+    try {
+        MulticastPublication multicastPublication;
+        joynr::serializer::deserializeFromJson(multicastPublication, jsonMulticastPublication);
+
+        const std::string multicastId = multicastPublication.getMulticastId();
+
+        assert(subscriptionManager != nullptr);
+
+        std::shared_ptr<ISubscriptionCallback> callback =
+                subscriptionManager->getMulticastSubscriptionCallback(multicastId);
+        if (callback == nullptr) {
+            JOYNR_LOG_ERROR(logger,
+                            "Dropping multicast publication for non/no more existing subscription "
+                            "with multicastId = {}",
+                            multicastId);
+            return;
+        }
+
+        // TODO: enable for periodic attribute subscriptions
+        // when MulticastPublication is extended by subscriptionId
+        // subscriptionManager->touchSubscriptionState(subscriptionId);
+
+        callback->execute(std::move(multicastPublication));
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to deserialize multicast publication object from: {} - error: {}",
+                        jsonMulticastPublication,
                         e.what());
     }
 }

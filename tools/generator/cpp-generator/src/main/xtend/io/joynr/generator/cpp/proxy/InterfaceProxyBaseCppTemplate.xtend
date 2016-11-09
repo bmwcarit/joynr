@@ -138,9 +138,21 @@ void «className»::handleArbitrationFinished(
 	}
 
 	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
+		std::string errorMsg;
 		if (!connector){
-			std::string errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-					 because the communication end partner is not (yet) known";
+			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
+				because the communication end partner is not (yet) known";
+		}
+
+		«IF !broadcast.selective»
+			try {
+				util::validatePartitions(partitions, true);
+			} catch (std::invalid_argument exception) {
+				errorMsg = "invalid argument:\n" + std::string(exception.what());
+			}
+		«ENDIF»
+
+		if (!errorMsg.empty()) {
 			JOYNR_LOG_WARN(logger, errorMsg);
 			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
 			auto future = std::make_shared<Future<std::string>>();
@@ -148,6 +160,7 @@ void «className»::handleArbitrationFinished(
 			subscriptionListener->onError(*error);
 			return future;
 		}
+
 		«IF broadcast.selective»
 			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					filterParameters,
@@ -156,14 +169,26 @@ void «className»::handleArbitrationFinished(
 		«ELSE»
 			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					subscriptionListener,
-					subscriptionQos);
+					subscriptionQos,
+					partitions);
 		«ENDIF»
 	}
 
 	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className)» {
+		std::string errorMsg;
 		if (!connector){
-			std::string errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-					 because the communication end partner is not (yet) known";
+			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
+				because the communication end partner is not (yet) known";
+		}
+
+		«IF !broadcast.selective»
+			try {
+				util::validatePartitions(partitions, true);
+			} catch (std::invalid_argument exception) {
+				errorMsg = "invalid argument:\n" + std::string(exception.what());
+			}
+		«ENDIF»
+		if (!errorMsg.empty()) {
 			JOYNR_LOG_WARN(logger, errorMsg);
 			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
 			auto future = std::make_shared<Future<std::string>>();
@@ -171,17 +196,19 @@ void «className»::handleArbitrationFinished(
 			subscriptionListener->onError(*error);
 			return future;
 		}
+
 		«IF broadcast.selective»
 			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						subscriptionId,
 						filterParameters,
 						subscriptionListener,
-						subscriptionQos,
-						subscriptionId);
+						subscriptionQos);
 		«ELSE»
 			return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						subscriptionId,
 						subscriptionListener,
 						subscriptionQos,
-						subscriptionId);
+						partitions);
 		«ENDIF»
 	}
 «ENDFOR»

@@ -233,6 +233,32 @@ define(
                                     info.qos.maxIntervalMs);
                         });
 
+                        it(
+                                "createMulticastId",
+                                function() {
+                                    expect(SubscriptionUtil.createMulticastId("a", "b")).toEqual(
+                                            "a/b");
+                                    expect(SubscriptionUtil.createMulticastId("a", "b", []))
+                                            .toEqual("a/b");
+                                    expect(SubscriptionUtil.createMulticastId("a", "b", [ "c"
+                                    ])).toEqual("a/b/c");
+                                    expect(SubscriptionUtil.createMulticastId("a", "b", [
+                                        "c",
+                                        "d"
+                                    ])).toEqual("a/b/c/d");
+                                    expect(SubscriptionUtil.createMulticastId("a", "b", [
+                                        "c",
+                                        "d",
+                                        "e"
+                                    ])).toEqual("a/b/c/d/e");
+                                    expect(SubscriptionUtil.createMulticastId("a", "b", [
+                                        "c",
+                                        "d",
+                                        "e",
+                                        "f"
+                                    ])).toEqual("a/b/c/d/e/f");
+                                });
+
                         it("deserialize multiple subscriptions shall work", function() {
                             var info1 =
                                     createSubscriptionInformation(
@@ -403,6 +429,153 @@ define(
                                             newSubscriptions[origin2.subscriptionId].qos.maxIntervalMs)
                                             .toBe(origin2.qos.maxIntervalMs);
 
+                                });
+                        describe(
+                                "validatePartitions",
+                                function() {
+                                    it("does not throw with valid partitions", function() {
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([
+                                                "a",
+                                                "b",
+                                                "0",
+                                                "D",
+                                                "Z"
+                                            ]);
+                                        }).not.toThrow();
+                                    });
+                                    it("throws with invalid partitions", function() {
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([ ""
+                                            ]);
+                                        }).toThrow();
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([ "_"
+                                            ]);
+                                        }).toThrow();
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([ "./$"
+                                            ]);
+                                        }).toThrow();
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([ "\uD83D"
+                                            ]);
+                                        }).toThrow();
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([ "\uDE33"
+                                            ]);
+                                        }).toThrow();
+                                    });
+                                    it("supports the plus sign", function() {
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([
+                                                "a",
+                                                "b",
+                                                "+",
+                                                "c"
+                                            ]);
+                                        }).not.toThrow();
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([ "+"
+                                            ]);
+                                        }).not.toThrow();
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([
+                                                "a",
+                                                "+"
+                                            ]);
+                                        }).not.toThrow();
+                                    });
+                                    it(
+                                            "throws if plus sign is conjugated with characters in one partition",
+                                            function() {
+                                                expect(function() {
+                                                    SubscriptionUtil.validatePartitions([ "+xy"
+                                                    ]);
+                                                }).toThrow();
+                                                expect(function() {
+                                                    SubscriptionUtil.validatePartitions([ "x+y"
+                                                    ]);
+                                                }).toThrow();
+                                                expect(function() {
+                                                    SubscriptionUtil.validatePartitions([ "xy+"
+                                                    ]);
+                                                }).toThrow();
+                                            });
+                                    it("throws if star is not the last partition", function() {
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([
+                                                "*",
+                                                "1"
+                                            ]);
+                                        }).toThrow();
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([
+                                                "1",
+                                                "*",
+                                                "2"
+                                            ]);
+                                        }).toThrow();
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "*",
+                                                "4",
+                                                "5",
+                                                "6"
+                                            ]);
+                                        }).toThrow();
+                                    });
+                                    it(
+                                            "throws if star is conjugated with characters in one partition",
+                                            function() {
+                                                expect(function() {
+                                                    SubscriptionUtil.validatePartitions([ "*xy"
+                                                    ]);
+                                                }).toThrow();
+                                                expect(function() {
+                                                    SubscriptionUtil.validatePartitions([ "x*y"
+                                                    ]);
+                                                }).toThrow();
+                                                expect(function() {
+                                                    SubscriptionUtil.validatePartitions([ "xy*"
+                                                    ]);
+                                                }).toThrow();
+                                            });
+                                    it("supports combinations of plus sign and star", function() {
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([
+                                                "+",
+                                                "+",
+                                                "*"
+                                            ]);
+                                        }).not.toThrow();
+                                    });
+                                    it("does not throw if star is the last partition", function() {
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([ "*"
+                                            ]);
+                                        }).not.toThrow();
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([
+                                                "1",
+                                                "*"
+                                            ]);
+                                        }).not.toThrow();
+                                        expect(function() {
+                                            SubscriptionUtil.validatePartitions([
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4",
+                                                "5",
+                                                "6",
+                                                "*"
+                                            ]);
+                                        }).not.toThrow();
+                                    });
                                 });
                     });
         });

@@ -29,26 +29,27 @@ define("joynr/provider/ProviderEvent", [
      * @name ProviderEvent
      * @constructor
      *
-     * @param {Provider} parent is the provider object that contains this attribute
-     * @param {Object} [implementation] the definition of the event implementation
-     * @param {String} eventName the name of the event
-     * @param {Object} outputParameterProperties the output parameter names and types
-     * @param {Object} filterSettings the filter settings
+     * @param {Object}
+     *            settings the settings for this provider event
+     * @param {String}
+     *            settings.eventName the name of the event
+     * @param {Boolean}
+     *            settings.selective true if the broadcast is selective
+     * @param {Object}
+     *            settings.outputParameterProperties the output parameter names and types
+     * @param {Object}
+     *            settings.filterSettings the filter settings
      */
-    function ProviderEvent(
-            parent,
-            implementation,
-            eventName,
-            outputParameterProperties,
-            filterSettings) {
+    function ProviderEvent(settings) {
         if (!(this instanceof ProviderEvent)) {
             // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-            return new ProviderEvent(implementation, eventName);
+            return new ProviderEvent(settings);
         }
 
         var callbacks = [];
         var filters = [];
 
+        this.selective = settings.selective;
         /**
          * @name ProviderEvent#checkFilterParameters
          * @param {BroadcastFilterParameters} filterParameters
@@ -59,13 +60,13 @@ define("joynr/provider/ProviderEvent", [
                 function checkFilterParameters(filterParametersInput) {
                     var filterParameters = filterParametersInput || {};
                     return SubscriptionUtil.checkFilterParameters(
-                            filterSettings,
+                            settings.filterSettings,
                             filterParameters.filterParameters,
-                            eventName);
+                            settings.eventName);
                 };
 
         this.createBroadcastOutputParameters = function createBroadcastOutputParameters() {
-            return new BroadcastOutputParameters(outputParameterProperties);
+            return new BroadcastOutputParameters(settings.outputParameterProperties);
         };
 
         /**
@@ -78,12 +79,17 @@ define("joynr/provider/ProviderEvent", [
          *
          * @param {BroadcastOutputParameters}
          *     broadcastOutputParameters the broadcast output parameters
+         * @param {String[]}
+         *     [partitions] - the partitions to be used for multicasts
+         * @throws {Error} if partitions contains invalid characters
          */
-        this.fire = function fire(broadcastOutputParameters) {
+        this.fire = function fire(broadcastOutputParameters, partitions) {
+            SubscriptionUtil.validatePartitions(partitions);
             // the Util.fire method accepts exactly one argument for the callback
             var data = {
                 broadcastOutputParameters : broadcastOutputParameters,
-                filters : filters
+                filters : filters,
+                partitions : partitions || []
             };
             Util.fire(callbacks, data);
         };

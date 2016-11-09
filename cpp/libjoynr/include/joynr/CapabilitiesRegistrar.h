@@ -53,7 +53,8 @@ public:
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
             std::shared_ptr<MessageRouter> messageRouter,
-            std::int64_t defaultExpiryIntervalMs);
+            std::int64_t defaultExpiryIntervalMs,
+            PublicationManager& publicationManager);
 
     template <class T>
     std::string add(const std::string& domain,
@@ -68,6 +69,9 @@ public:
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
+
+        provider->registerBroadcastListener(
+                new MulticastBroadcastListener(participantId, publicationManager));
 
         for (IDispatcher* currentDispatcher : dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
@@ -136,6 +140,7 @@ private:
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
     std::int64_t defaultExpiryIntervalMs;
+    PublicationManager& publicationManager;
     ADD_LOGGER(CapabilitiesRegistrar);
 };
 

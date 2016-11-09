@@ -67,7 +67,7 @@ class InterfaceSubscriptionTemplate extends InterfaceTemplate {
 				public Future<String> subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
 
 				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «attributeType».class)
-				public Future<String> subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
+				public Future<String> subscribeTo«attributeName.toFirstUpper»(String subscriptionId, AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
 
 				public void unsubscribeFrom«attributeName.toFirstUpper»(String subscriptionId);
 			«ENDIF»

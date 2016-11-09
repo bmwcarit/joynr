@@ -21,14 +21,21 @@
 #include <chrono>
 #include <cstdint>
 #include <mutex>
+
 #include <boost/asio/io_service.hpp>
 
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/SubscriptionException.h"
 #include "joynr/ISubscriptionCallback.h"
+#include "joynr/MessageRouter.h"
+#include "joynr/MulticastReceiverDirectory.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
+#include "joynr/SubscriptionListener.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionUtil.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -36,15 +43,20 @@ namespace joynr
 class SubscriptionManager::Subscription
 {
 public:
-    explicit Subscription(std::shared_ptr<ISubscriptionCallback> subscriptionCaller);
+    explicit Subscription(std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+                          std::shared_ptr<ISubscriptionListenerBase> subscriptionListener);
     ~Subscription() = default;
 
     std::int64_t timeOfLastPublication;
     std::shared_ptr<ISubscriptionCallback> subscriptionCaller;
+    std::shared_ptr<ISubscriptionListenerBase> subscriptionListener;
     std::recursive_mutex mutex;
     bool isStopped;
     std::uint32_t subscriptionEndRunnableHandle;
     std::uint32_t missedPublicationRunnableHandle;
+    std::string multicastId;
+    std::string subscriberParticipantId;
+    std::string providerParticipantId;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Subscription);
@@ -63,27 +75,36 @@ SubscriptionManager::~SubscriptionManager()
 
 INIT_LOGGER(SubscriptionManager);
 
-SubscriptionManager::SubscriptionManager(boost::asio::io_service& ioService)
+SubscriptionManager::SubscriptionManager(boost::asio::io_service& ioService,
+                                         std::shared_ptr<MessageRouter> messageRouter)
         : subscriptions(),
+          multicastSubscribers(),
+          multicastSubscribersMutex(),
+          messageRouter(messageRouter),
           missedPublicationScheduler(
                   new SingleThreadedDelayedScheduler("MissedPublications", ioService))
 {
 }
 
-SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler)
-        : subscriptions(), missedPublicationScheduler(scheduler)
+SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler,
+                                         std::shared_ptr<MessageRouter> messageRouter)
+        : subscriptions(),
+          multicastSubscribers(),
+          multicastSubscribersMutex(),
+          messageRouter(messageRouter),
+          missedPublicationScheduler(scheduler)
 {
 }
 
 void SubscriptionManager::registerSubscription(
         const std::string& subscribeToName,
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+        std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
         std::shared_ptr<SubscriptionQos> qos,
         SubscriptionRequest& subscriptionRequest)
 {
     // Register the subscription
     std::string subscriptionId = subscriptionRequest.getSubscriptionId();
-    JOYNR_LOG_DEBUG(logger, "Subscription registered. ID={}", subscriptionId);
 
     if (subscriptions.contains(subscriptionId)) {
         // pre-existing subscription: remove it first from the internal data structure
@@ -107,9 +128,10 @@ void SubscriptionManager::registerSubscription(
                                     " in the past. Now: " + std::to_string(now));
     }
 
-    auto subscription = std::make_shared<Subscription>(subscriptionCaller);
+    auto subscription = std::make_shared<Subscription>(subscriptionCaller, subscriptionListener);
 
     subscriptions.insert(subscriptionId, subscription);
+    JOYNR_LOG_DEBUG(logger, "Subscription registered. ID={}", subscriptionId);
 
     {
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
@@ -138,34 +160,135 @@ void SubscriptionManager::registerSubscription(
                     std::chrono::milliseconds(subscriptionExpiryDateMs - now));
         }
     }
-    subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(subscribeToName);
+}
+
+void SubscriptionManager::registerSubscription(
+        const std::string& subscribeToName,
+        const std::string& subscriberParticipantId,
+        const std::string& providerParticipantId,
+        const std::vector<std::string>& partitions,
+        std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+        std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
+        std::shared_ptr<SubscriptionQos> qos,
+        MulticastSubscriptionRequest& subscriptionRequest,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::string multicastId =
+            util::createMulticastId(providerParticipantId, subscribeToName, partitions);
+    subscriptionRequest.setMulticastId(multicastId);
+    {
+        std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
+        std::string subscriptionId = subscriptionRequest.getSubscriptionId();
+
+        // remove pre-exisiting multicast subscription
+        if (subscriptions.contains(subscriptionId)) {
+            std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
+            std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
+            std::string oldMulticastId = subscription->multicastId;
+            if (multicastId != oldMulticastId) {
+                unregisterSubscription(subscriptionId);
+            } else {
+                // do not call message router if multicast id has not changed
+                subscriptions.remove(subscriptionId);
+                stopSubscription(subscription);
+            }
+        }
+
+        // register multicast subscription
+        registerSubscription(subscribeToName,
+                             subscriptionCaller,
+                             subscriptionListener,
+                             qos,
+                             subscriptionRequest);
+        std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
+        {
+            std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
+            subscription->multicastId = multicastId;
+            subscription->subscriberParticipantId = subscriberParticipantId;
+            subscription->providerParticipantId = providerParticipantId;
+        }
+        if (!multicastSubscribers.contains(multicastId, subscriptionId)) {
+            messageRouter->addMulticastReceiver(multicastId,
+                                                subscriberParticipantId,
+                                                providerParticipantId,
+                                                onSuccess,
+                                                onError);
+            multicastSubscribers.registerMulticastReceiver(multicastId, subscriptionId);
+        } else {
+            onSuccess();
+        }
+    }
+}
+
+void SubscriptionManager::stopSubscription(std::shared_ptr<Subscription> subscription)
+{
+    std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
+    subscription->isStopped = true;
+    if (subscription->subscriptionEndRunnableHandle != DelayedScheduler::INVALID_RUNNABLE_HANDLE) {
+        missedPublicationScheduler->unschedule(subscription->subscriptionEndRunnableHandle);
+        subscription->subscriptionEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
+    }
+    if (subscription->missedPublicationRunnableHandle !=
+        DelayedScheduler::INVALID_RUNNABLE_HANDLE) {
+        missedPublicationScheduler->unschedule(subscription->missedPublicationRunnableHandle);
+        subscription->missedPublicationRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
+    }
 }
 
 void SubscriptionManager::unregisterSubscription(const std::string& subscriptionId)
 {
-    if (subscriptions.contains(subscriptionId)) {
-        std::shared_ptr<Subscription> subscription(subscriptions.take(subscriptionId));
-        JOYNR_LOG_DEBUG(
-                logger, "Called unregister / unsubscribe on subscription id= {}", subscriptionId);
-        std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
-        subscription->isStopped = true;
-        if (subscription->subscriptionEndRunnableHandle !=
-            DelayedScheduler::INVALID_RUNNABLE_HANDLE) {
-            missedPublicationScheduler->unschedule(subscription->subscriptionEndRunnableHandle);
-            subscription->subscriptionEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
-        }
-        if (subscription->missedPublicationRunnableHandle !=
-            DelayedScheduler::INVALID_RUNNABLE_HANDLE) {
-            missedPublicationScheduler->unschedule(subscription->missedPublicationRunnableHandle);
-            subscription->missedPublicationRunnableHandle =
-                    DelayedScheduler::INVALID_RUNNABLE_HANDLE;
-        }
-    } else {
+    if (!subscriptions.contains(subscriptionId)) {
         JOYNR_LOG_DEBUG(logger,
                         "Called unregister on a non/no longer existent subscription, used id= {}",
                         subscriptionId);
+        return;
     }
+    std::shared_ptr<Subscription> subscription(subscriptions.take(subscriptionId));
+    std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
+    JOYNR_LOG_DEBUG(
+            logger, "Called unregister / unsubscribe on subscription id= {}", subscriptionId);
+    {
+        std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
+        std::string multicastId = subscription->multicastId;
+        if (!multicastId.empty()) {
+            stopSubscription(subscription);
+            // remove multicast subscriber
+            if (!multicastSubscribers.unregisterMulticastReceiver(multicastId, subscriptionId)) {
+                JOYNR_LOG_FATAL(
+                        logger,
+                        "No multicast subscriber found for subscriptionId={}, multicastId={}",
+                        subscriptionId,
+                        multicastId);
+                return;
+            }
+            auto onSuccess = [subscriptionId, multicastId]() {
+                JOYNR_LOG_DEBUG(logger,
+                                "Multicast receiver unregistered. ID={}, multicastId={}",
+                                subscriptionId,
+                                multicastId);
+            };
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener =
+                    subscription->subscriptionListener;
+            auto onError = [subscriptionId, multicastId, subscriptionListener](
+                    const joynr::exceptions::ProviderRuntimeException& error) {
+                std::string message = "Unsubscribe from subscription (ID=" + subscriptionId +
+                                      ", multicastId=" + multicastId +
+                                      ") failed. Could not remove multicast receiver: " +
+                                      error.getMessage();
+                exceptions::SubscriptionException subscriptionException(message, subscriptionId);
+                subscriptionListener->onError(subscriptionException);
+            };
+            messageRouter->removeMulticastReceiver(multicastId,
+                                                   subscription->subscriberParticipantId,
+                                                   subscription->providerParticipantId,
+                                                   onSuccess,
+                                                   onError);
+            return;
+        }
+    }
+    stopSubscription(subscription);
 }
 
 #if 0
@@ -250,15 +373,71 @@ std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallb
     }
 }
 
+std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getMulticastSubscriptionCallback(
+        const std::string& multicastId)
+{
+    std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
+    auto subscriptionIds = multicastSubscribers.getReceivers(multicastId);
+    if (subscriptionIds.empty()) {
+        JOYNR_LOG_WARN(logger,
+                       "Trying to acces a non existing subscription callback for mutlicast id={}",
+                       multicastId);
+        return std::shared_ptr<ISubscriptionCallback>();
+    }
+    return getSubscriptionCallback(*(subscriptionIds.begin()));
+}
+
+std::shared_ptr<ISubscriptionListenerBase> SubscriptionManager::getSubscriptionListener(
+        const std::string& subscriptionId)
+{
+    JOYNR_LOG_DEBUG(logger, "Getting subscription listener for subscription id={}", subscriptionId);
+    if (!subscriptions.contains(subscriptionId)) {
+        JOYNR_LOG_WARN(logger,
+                       "Trying to acces a non existing subscription listener for id={}",
+                       subscriptionId);
+        return std::shared_ptr<ISubscriptionListenerBase>();
+    }
+
+    std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
+
+    {
+        std::lock_guard<std::recursive_mutex> subscriptionLockers(subscription->mutex);
+        return subscription->subscriptionListener;
+    }
+}
+
+std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> SubscriptionManager::
+        getMulticastSubscriptionListeners(const std::string& multicastId)
+{
+    std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners;
+    {
+        std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
+        auto subscriptionIds = multicastSubscribers.getReceivers(multicastId);
+        for (const auto& subscriptionId : subscriptionIds) {
+            std::shared_ptr<ISubscriptionListenerBase> listener =
+                    getSubscriptionListener(subscriptionId);
+            if (listener) {
+                listeners.push_front(listener);
+            }
+        }
+    }
+    return listeners;
+}
+
 //------ SubscriptionManager::Subscription ---------------------------------------
 SubscriptionManager::Subscription::Subscription(
-        std::shared_ptr<ISubscriptionCallback> subscriptionCaller)
+        std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+        std::shared_ptr<ISubscriptionListenerBase> subscriptionListener)
         : timeOfLastPublication(0),
           subscriptionCaller(subscriptionCaller),
+          subscriptionListener(subscriptionListener),
           mutex(),
           isStopped(false),
           subscriptionEndRunnableHandle(),
-          missedPublicationRunnableHandle()
+          missedPublicationRunnableHandle(),
+          multicastId(),
+          subscriberParticipantId(),
+          providerParticipantId()
 {
 }
 
@@ -306,10 +485,11 @@ void SubscriptionManager::MissedPublicationRunnable::run()
             delay = alertAfterInterval - timeSinceLastPublication;
         } else {
             JOYNR_LOG_DEBUG(logger, "Publication missed!");
-            std::shared_ptr<ISubscriptionCallback> callback = subscription->subscriptionCaller;
+            std::shared_ptr<ISubscriptionListenerBase> listener =
+                    subscription->subscriptionListener;
 
             exceptions::PublicationMissedException error(subscriptionId);
-            callback->onError(error);
+            listener->onError(error);
             delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
         JOYNR_LOG_DEBUG(logger, "Rescheduling MissedPublicationRunnable with delay: {}", delay);

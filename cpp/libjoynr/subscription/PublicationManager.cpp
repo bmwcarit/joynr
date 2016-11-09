@@ -36,6 +36,7 @@
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Util.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -121,8 +122,11 @@ PublicationManager::~PublicationManager()
     }
 }
 
-PublicationManager::PublicationManager(boost::asio::io_service& ioService, int maxThreads)
-        : publications(),
+PublicationManager::PublicationManager(boost::asio::io_service& ioService,
+                                       IJoynrMessageSender* messageSender,
+                                       int maxThreads)
+        : joynrMessageSender(messageSender),
+          publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
           fileWriteLock(),
@@ -311,8 +315,8 @@ void PublicationManager::addBroadcastPublication(
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
 
     // Create a broadcast listener to listen for broadcast events
-    SubscriptionBroadcastListener* broadcastListener =
-            new SubscriptionBroadcastListener(subscriptionId, *this);
+    UnicastBroadcastListener* broadcastListener =
+            new UnicastBroadcastListener(subscriptionId, *this);
 
     // Register the broadcast listener
     std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
@@ -341,6 +345,19 @@ void PublicationManager::add(const std::string& proxyParticipantId,
 
     subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
     saveAttributeSubscriptionRequestsMap();
+}
+
+void PublicationManager::add(const std::string& proxyParticipantId,
+                             const std::string& providerParticipantId,
+                             MulticastSubscriptionRequest& subscriptionRequest,
+                             IPublicationSender* publicationSender)
+{
+    // silently handle multicast subscription request
+    sendSubscriptionReply(publicationSender,
+                          providerParticipantId,
+                          proxyParticipantId,
+                          subscriptionRequest.getQos()->getExpiryDateMs(),
+                          subscriptionRequest.getSubscriptionId());
 }
 
 void PublicationManager::add(const std::string& proxyParticipantId,

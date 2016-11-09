@@ -35,8 +35,6 @@ public:
     bool operator==(const SubscriptionReply& other) const;
     bool operator!=(const SubscriptionReply& other) const;
 
-    const static SubscriptionReply NULL_RESPONSE;
-
     SubscriptionReply(const SubscriptionReply& other);
     SubscriptionReply();
 

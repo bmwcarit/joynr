@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.CheckForNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,5 +86,13 @@ public class MessagingSkeletonFactory {
         for (IMessagingSkeleton messagingSkeleton : messagingSkeletons.values()) {
             messagingSkeleton.shutdown();
         }
+    }
+
+    @CheckForNull
+    public IMessagingSkeleton getSkeleton(Address address) {
+        if (address != null) {
+            return messagingSkeletons.get(address.getClass());
+        }
+        return null;
     }
 }

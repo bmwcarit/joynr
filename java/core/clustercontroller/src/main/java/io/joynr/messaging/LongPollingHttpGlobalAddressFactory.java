@@ -33,7 +33,7 @@ import io.joynr.messaging.routing.TransportReadyListener;
 @Singleton
 public class LongPollingHttpGlobalAddressFactory extends HttpGlobalAddressFactory implements ChannelCreatedListener {
 
-    private static final String SUPPORTED_TRANSPORT_LONGPOLLING = "longpolling";
+    protected static final String SUPPORTED_TRANSPORT_LONGPOLLING = "longpolling";
     private String myChannelId;
     private String messagingEndpointUrl;
     private List<TransportReadyListener> addressReadyListeners = new ArrayList<TransportReadyListener>();

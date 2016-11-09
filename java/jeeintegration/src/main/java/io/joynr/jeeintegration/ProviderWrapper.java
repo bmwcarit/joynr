@@ -38,6 +38,7 @@ import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
 import io.joynr.messaging.JoynrMessageCreator;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Deferred;
@@ -45,6 +46,7 @@ import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.MultiValueDeferred;
 import io.joynr.provider.Promise;
+import io.joynr.provider.SubscriptionPublisher;
 import io.joynr.provider.SubscriptionPublisherInjection;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
@@ -66,6 +68,20 @@ public class ProviderWrapper implements InvocationHandler {
 
     private static final List<Method> OBJECT_METHODS = Arrays.asList(Object.class.getMethods());
 
+    private static final String SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME = "setSubscriptionPublisher";
+    // Sanity check that the method exists
+    static {
+        try {
+            SubscriptionPublisherInjection.class.getMethod(SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME,
+                                                           SubscriptionPublisher.class);
+        } catch (NoSuchMethodException e) {
+            LOG.error("Expecting to find method named {} with one argument of type {}, but not found on {}",
+                      SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME,
+                      SubscriptionPublisher.class,
+                      SubscriptionPublisherInjection.class);
+        }
+    }
+
     private Bean<?> bean;
     private BeanManager beanManager;
     private Injector injector;
@@ -77,8 +93,8 @@ public class ProviderWrapper implements InvocationHandler {
      * @param bean
      *            the bean reference to which calls will be delegated.
      * @param beanManager
-     *            the bean manager
-     * @param injector
+     *            the bean manager.
+     * @param injector the Guice injector.
      */
     public ProviderWrapper(Bean<?> bean, BeanManager beanManager, Injector injector) {
         this.bean = bean;
@@ -223,6 +239,10 @@ public class ProviderWrapper implements InvocationHandler {
     private Object createDelegateForMethod(Method method, boolean isProviderMethod) {
         if (OBJECT_METHODS.contains(method) || isProviderMethod) {
             return this;
+        }
+        if (SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME.equals(method.getName())
+                && SubscriptionPublisherInjection.class.isAssignableFrom(method.getDeclaringClass())) {
+            return SubscriptionPublisherInjectionWrapper.createInvocationHandler(bean, beanManager).createProxy();
         }
         return bean.create((CreationalContext) beanManager.createCreationalContext(bean));
     }

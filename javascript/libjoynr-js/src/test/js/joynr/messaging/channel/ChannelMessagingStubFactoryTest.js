@@ -22,8 +22,9 @@
 define([
     "global/Promise",
     "joynr/system/RoutingTypes/ChannelAddress",
-    "joynr/messaging/channel/ChannelMessagingStubFactory"
-], function(Promise, ChannelAddress, ChannelMessagingStubFactory) {
+    "joynr/messaging/channel/ChannelMessagingStubFactory",
+    "joynr/messaging/MessageReplyToAddressCalculator"
+], function(Promise, ChannelAddress, ChannelMessagingStubFactory, MessageReplyToAddressCalculator) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", function() {
         var channelMessagingSender, channelMessagingStubFactory, destChannelId;
@@ -45,7 +46,10 @@ define([
                 messagingEndpointUrl : url
             });
             channelMessagingStubFactory = new ChannelMessagingStubFactory({
-                channelMessagingSender : channelMessagingSender
+                channelMessagingSender : channelMessagingSender,
+                messageReplyToAddressCalculator : new MessageReplyToAddressCalculator({
+                    replyToAddress : ""
+                })
             });
 
             channelMessagingStubFactory.globalAddressReady(channelAddress2);

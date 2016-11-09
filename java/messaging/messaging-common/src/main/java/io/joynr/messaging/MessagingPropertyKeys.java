@@ -42,6 +42,7 @@ public final class MessagingPropertyKeys {
     public static final String PROPERTY_SERVLET_SHUTDOWN_TIMEOUT = "joynr.servlet.shutdown.timeout";
     public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
     public static final String PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION = "joynr.servlet.skiplongpollderegistration";
+    public static final String PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT = "joynr.messaging.primaryglobaltransport";
 
     private MessagingPropertyKeys() {
         throw new AssertionError();

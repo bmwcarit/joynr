@@ -151,6 +151,15 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
+    public void unsubscribe(String topic) {
+        try {
+            mqttClient.unsubscribe(topic);
+        } catch (MqttException e) {
+            throw new JoynrRuntimeException("Unable to unsubscribe from " + topic, e);
+        }
+    }
+
+    @Override
     public void shutdown() {
         logger.info("Attempting shutdown of MQTT connection.");
         try {

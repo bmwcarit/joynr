@@ -35,4 +35,6 @@ public interface JoynrMqttClient {
 
     public void subscribe(String topic);
 
+    public void unsubscribe(String topic);
+
 }

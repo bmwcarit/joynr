@@ -41,6 +41,7 @@ class InterfaceBroadcastTemplate extends InterfaceTemplate {
 package «packagePath»;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
+import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
@@ -105,21 +106,23 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 
 		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				String subscriptionId,
 				«listenerInterface» broadcastListener,
 				OnChangeSubscriptionQos subscriptionQos,
-				«filterParameterType» filterParameters,
-				String subscriptionId);
+				«filterParameterType» filterParameters);
 	«ELSE»
-		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
-				«listenerInterface» subscriptionListener,
-				OnChangeSubscriptionQos subscriptionQos);
-
-		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
+		@JoynrMulticast(name = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» subscriptionListener,
 				OnChangeSubscriptionQos subscriptionQos,
-				String subscriptionId);
+				String... partitions);
+
+		@JoynrMulticast(name = "«broadcastName»")
+		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				String subscriptionId,
+				«listenerInterface» subscriptionListener,
+				OnChangeSubscriptionQos subscriptionQos,
+				String... partitions);
 	«ENDIF»
 
 	abstract void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(String subscriptionId);

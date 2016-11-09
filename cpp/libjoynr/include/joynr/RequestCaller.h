@@ -29,7 +29,7 @@ namespace joynr
 {
 
 class SubscriptionAttributeListener;
-class SubscriptionBroadcastListener;
+class UnicastBroadcastListener;
 
 class JOYNR_EXPORT RequestCaller
 {
@@ -47,9 +47,9 @@ public:
 
     // Get and set the broadcast listeners listening on the provider
     virtual void registerBroadcastListener(const std::string& broadcastName,
-                                           SubscriptionBroadcastListener* broadcastListener) = 0;
+                                           UnicastBroadcastListener* broadcastListener) = 0;
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
-                                             SubscriptionBroadcastListener* broadcastListener) = 0;
+                                             UnicastBroadcastListener* broadcastListener) = 0;
 
     virtual types::Version getProviderVersion() = 0;
 

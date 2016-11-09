@@ -21,6 +21,7 @@ package io.joynr.provider;
 
 import io.joynr.pubsub.publication.AttributeListener;
 import io.joynr.pubsub.publication.BroadcastListener;
+import io.joynr.pubsub.publication.MulticastListener;
 
 public interface SubscriptionPublisherObservable {
 
@@ -61,4 +62,19 @@ public interface SubscriptionPublisherObservable {
      * @param broadcastListener the listener to remove.
      */
     public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener);
+
+    /**
+     * Registers a multicast listener which will be notified anytime a multicast is fired.
+     *
+     * @param multicastListener the listener to register.
+     */
+    public void registerMulticastListener(MulticastListener multicastListener);
+
+    /**
+     * Unregisters a listener previously registered with {@link #registerMulticastListener(MulticastListener)}}. If the
+     * listener passed in was not previously registered or has already been unregistered, then this is a no-op.
+     *
+     * @param multicastListener the listener to unregister.
+     */
+    public void unregisterMulticastListener(MulticastListener multicastListener);
 }

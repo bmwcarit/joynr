@@ -66,8 +66,10 @@ module.exports = function(config) {
             {pattern: 'test-classes/integration/WorkerUtils.js', included: false},
 
             {pattern: 'test-classes/integration/LibJoynrTest.js', included: false},
-            {pattern: 'test-classes/integration/End2EndCommTest.js', included: false},
+            {pattern: 'test-classes/integration/End2EndAbstractTest.js', included: false},
             {pattern: 'test-classes/integration/End2EndDatatypesTest.js', included: false},
+            {pattern: 'test-classes/integration/End2EndRPCTest.js', included: false},
+            {pattern: 'test-classes/integration/End2EndSubscriptionTest.js', included: false},
 
             'test-classes/test-system-integration.js'
     ],
@@ -126,7 +128,7 @@ module.exports = function(config) {
 
     // outputDir is already located in 'target'
     junitReporter: {
-      outputDir: 'jstd-test-results',
+      outputDir: 'test-results',
       outputFile: 'TestSystemIntegration.xml',
       suite: '',
       useBrowserName: false,

@@ -22,14 +22,12 @@
 namespace joynr
 {
 
-const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
-
-SubscriptionPublication::SubscriptionPublication() : subscriptionId(), error()
+SubscriptionPublication::SubscriptionPublication() : BasePublication(), subscriptionId()
 {
 }
 
 SubscriptionPublication::SubscriptionPublication(BaseReply&& baseReply)
-        : BaseReply::BaseReply(std::move(baseReply)), subscriptionId(), error()
+        : BasePublication(std::move(baseReply)), subscriptionId()
 {
 }
 
@@ -45,34 +43,12 @@ void SubscriptionPublication::setSubscriptionId(const std::string& subscriptionI
 
 bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const
 {
-    // if error ptr do not point to the same object
-    if (error != other.getError()) {
-        // if exactly one of error and other.getError() is a nullptr
-        if (error == nullptr || other.getError() == nullptr) {
-            return false;
-        }
-        // compare actual objects
-        if (!(*error.get() == *other.getError().get())) {
-            return false;
-        }
-    }
-
-    return subscriptionId == other.getSubscriptionId() && BaseReply::operator==(other);
+    return subscriptionId == other.getSubscriptionId() && BasePublication::operator==(other);
 }
 
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const
 {
     return !(*this == other);
-}
-
-std::shared_ptr<exceptions::JoynrRuntimeException> SubscriptionPublication::getError() const
-{
-    return error;
-}
-
-void SubscriptionPublication::setError(std::shared_ptr<exceptions::JoynrRuntimeException> error)
-{
-    this->error = std::move(error);
 }
 
 // printing SubscriptionPublication with google-test and google-mock
@@ -81,8 +57,9 @@ void PrintTo(const SubscriptionPublication& subscriptionPublication, ::std::ostr
     *os << "SubscriptionPublication{";
     *os << "subscriptionId:" << subscriptionPublication.subscriptionId;
     *os << ", ";
-    *os << "error:" << subscriptionPublication.error ? "null"
-                                                     : subscriptionPublication.error->getMessage();
+    *os << "error:" << subscriptionPublication.getError()
+            ? "null"
+            : subscriptionPublication.getError()->getMessage();
     *os << ", SKIPPED printing BaseReply";
     *os << "}";
 }

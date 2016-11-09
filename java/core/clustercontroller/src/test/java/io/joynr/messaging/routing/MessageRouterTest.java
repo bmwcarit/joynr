@@ -20,7 +20,13 @@ package io.joynr.messaging.routing;
  */
 
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,11 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -42,23 +44,27 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
-
 import io.joynr.common.ExpiryDate;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.MessageRouterImpl;
-import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.messaging.routing.RoutingTableImpl;
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageRouterTest {
@@ -66,12 +72,18 @@ public class MessageRouterTest {
     private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
     private final ChannelAddress channelAddress = new ChannelAddress("http://testUrl", channelId);
 
-    private RoutingTable routingTable = new RoutingTableImpl();
+    private RoutingTable routingTable = spy(new RoutingTableImpl());
+    private AddressManager addressManager = spy(new AddressManager(routingTable,
+                                                                   new AddressManager.PrimaryGlobalTransportHolder(null),
+                                                                   Sets.<MulticastAddressCalculator> newHashSet(),
+                                                                   new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory())));
 
     @Mock
     private ChannelMessagingStubFactory messagingStubFactoryMock;
     @Mock
     private IMessaging messagingStubMock;
+    @Mock
+    private ChannelMessagingSkeleton messagingSkeletonMock;
 
     private MessageRouter messageRouter;
     private JoynrMessage joynrMessage;
@@ -90,6 +102,8 @@ public class MessageRouterTest {
             protected void configure() {
                 bind(MessageRouter.class).to(MessageRouterImpl.class);
                 bind(RoutingTable.class).toInstance(routingTable);
+                bind(AddressManager.class).toInstance(addressManager);
+                bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
                                 .toInstance(msgRetryIntervalMs);
 
@@ -98,6 +112,18 @@ public class MessageRouterTest {
                 }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
                 }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
                 messagingStubFactory.addBinding(ChannelAddress.class).toInstance(messagingStubFactoryMock);
+
+                MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+                messagingSkeletonFactory = MapBinder.newMapBinder(binder(),
+                                                                  new TypeLiteral<Class<? extends Address>>() {
+                                                                  },
+                                                                  new TypeLiteral<IMessagingSkeleton>() {
+                                                                  },
+                                                                  Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
+                messagingSkeletonFactory.addBinding(ChannelAddress.class).toInstance(messagingSkeletonMock);
+
+                Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
+                });
 
                 routingTable.put(toParticipantId, channelAddress);
                 joynrMessage = new JoynrMessage();
@@ -141,6 +167,26 @@ public class MessageRouterTest {
             return;
         }
         fail("scheduling an expired message should throw");
+    }
+
+    @Test
+    public void testRetryForNoParticipantFound() throws Exception {
+        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(1000));
+        joynrMessage.setTo("I don't exist");
+        messageRouter.route(joynrMessage);
+        Thread.sleep(100);
+        verify(routingTable, atLeast(2)).containsKey("I don't exist");
+        verify(addressManager, atLeast(2)).getAddresses(joynrMessage);
+    }
+
+    @Test
+    public void testNoRetryForMulticastWithoutAddress() throws Exception {
+        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(1000));
+        joynrMessage.setType(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        joynrMessage.setTo("multicastId");
+        messageRouter.route(joynrMessage);
+        Thread.sleep(100);
+        verify(addressManager).getAddresses(joynrMessage);
     }
 
 }
