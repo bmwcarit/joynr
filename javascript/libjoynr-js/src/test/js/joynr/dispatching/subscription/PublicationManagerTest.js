@@ -526,12 +526,43 @@ define(
                                             localStorage,
                                             joynrInstanceId);
                             publicationManagerWithRestore.addPublicationProvider(providerId, provider);
-                            publicationManagerWithRestore.restore();
+                            publicationManagerWithRestore.restore(callbackDispatcher);
                             // increasing the time by one tick ensures all async callbacks within the
                             // publication manager are invoked
                             increaseFakeTime(1);
+                            expect(callbackDispatcher).toHaveBeenCalled();
+                            expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(intervalSubscriptionRequest.subscriptionId);
+                            expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
                             done();
                         });
+
+                        it( "restores a persisted event subscription request correctly", function(done) {
+                            localStorage.clear();
+                            publicationManager.addPublicationProvider(providerId, provider);
+                            publicationManager.handleEventSubscriptionRequest(
+                                    proxyId,
+                                    providerId,
+                                    onChangeBroadcastSubscriptionRequest,
+                                    callbackDispatcher);
+
+                            //now, a valid subscription should be correctly persisted -> let's restore
+
+                            var publicationManagerWithRestore =
+                                    new PublicationManager(
+                                            dispatcherSpy,
+                                            localStorage,
+                                            joynrInstanceId);
+                            publicationManagerWithRestore.addPublicationProvider(providerId, provider);
+                            publicationManagerWithRestore.restore(callbackDispatcher);
+                            // increasing the time by one tick ensures all async callbacks within the
+                            // publication manager are invoked
+                            increaseFakeTime(1);
+                            expect(callbackDispatcher).toHaveBeenCalled();
+                            expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(onChangeBroadcastSubscriptionRequest.subscriptionId);
+                            expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
+                            done();
+                        });
+
                         it(
                                 "does not publish when interval subscription has an endDate in the past",
                                 function(done) {

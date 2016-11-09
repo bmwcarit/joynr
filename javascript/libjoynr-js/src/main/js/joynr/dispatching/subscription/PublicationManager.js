@@ -25,6 +25,8 @@ define(
             "global/Promise",
             "joynr/proxy/SubscriptionQos",
             "joynr/proxy/PeriodicSubscriptionQos",
+            "joynr/dispatching/types/BroadcastSubscriptionRequest",
+            "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/SubscriptionPublication",
             "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionStop",
@@ -44,6 +46,8 @@ define(
                 Promise,
                 SubscriptionQos,
                 PeriodicSubscriptionQos,
+                BroadcastSubscriptionRequest,
+                SubscriptionRequest,
                 SubscriptionPublication,
                 SubscriptionReply,
                 SubscriptionStop,
@@ -876,7 +880,7 @@ define(
 
                             // make sure the provider is registered
                             if (provider === undefined) {
-                                log.error("Provider with participantId "
+                                log.info("Provider with participantId "
                                     + providerParticipantId
                                     + "not found. Queueing subscription request...");
                                 queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
@@ -1110,7 +1114,7 @@ define(
 
                             // make sure the provider is registered
                             if (provider === undefined) {
-                                log.error("Provider with participantId "
+                                log.info("Provider with participantId "
                                     + providerParticipantId
                                     + "not found. Queueing subscription request...");
                                 queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
@@ -1330,7 +1334,12 @@ define(
                                                 pendingSubscriptions[pendingSubscription];
                                         delete pendingSubscriptions[pendingSubscription];
 
-                                        if (subscriptionObject.filterParameters === undefined) {
+                                        this.handleSubscriptionRequest(
+                                                subscriptionObject.proxyParticipantId,
+                                                subscriptionObject.providerParticipantId,
+                                                subscriptionObject);
+                                        /*
+                                        if (subscriptionObject._typeName === SubscriptionRequest._typeName) {
                                             // call attribute subscription handler
                                             this.handleSubscriptionRequest(
                                                 subscriptionObject.proxyParticipantId,
@@ -1339,10 +1348,12 @@ define(
                                         } else {
                                             // call event subscription handler
                                             this.handleEventSubscriptionRequest(
-                                                subscriptionObject.proxyParticipantId,
-                                                subscriptionObject.providerParticipantId,
-                                                subscriptionObject);
+                                                        subscriptionObject.proxyParticipantId,
+                                                        subscriptionObject.providerParticipantId,
+                                                        subscriptionObject);
+                                            }
                                         }
+                                        */
                                     }
                                 }
                             }
@@ -1355,7 +1366,7 @@ define(
                  * @function
                  */
                 this.restore =
-                        function restore() {
+                        function restore(callbackAsync) {
                             if (!isReady()) {
                                 throw new Error("PublicationManager is already shut down");
                             }
@@ -1372,10 +1383,22 @@ define(
                                         if (item !== null && item !== undefined) {
                                             try {
                                                 subscriptionInfo = JSON.parse(item);
-                                                this.handleSubscriptionRequest(
-                                                        subscriptionInfo.proxyParticipantId,
-                                                        subscriptionInfo.providerParticipantId,
-                                                        subscriptionInfo);
+                                                if (subscriptionInfo.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE) {
+                                                    // call attribute subscription handler
+                                                    this.handleSubscriptionRequest(
+                                                            subscriptionInfo.proxyParticipantId,
+                                                            subscriptionInfo.providerParticipantId,
+                                                            subscriptionInfo,
+                                                            callbackAsync);
+                                                } else {
+                                                    // call broadcast subscription handler
+                                                    this.handleEventSubscriptionRequest(
+                                                            subscriptionInfo.proxyParticipantId,
+                                                            subscriptionInfo.providerParticipantId,
+                                                            subscriptionInfo,
+                                                            callbackAsync);
+                                                }
+                                                /*jslint nomen:false*/
                                             } catch (err) {
                                                 throw new Error(err);
                                             }
