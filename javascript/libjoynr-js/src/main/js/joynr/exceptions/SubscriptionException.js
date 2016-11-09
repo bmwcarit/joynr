@@ -19,10 +19,11 @@
 
 define("joynr/exceptions/SubscriptionException", [
     "joynr/types/TypeRegistrySingleton",
+    "joynr/util/Typing",
     "joynr/util/UtilInternal",
     "joynr/exceptions/JoynrRuntimeException",
     "joynr/system/LoggerFactory"
-], function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
+], function(TypeRegistrySingleton, Typing, Util, JoynrRuntimeException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -65,7 +66,7 @@ define("joynr/exceptions/SubscriptionException", [
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.SubscriptionException");
 
         if (settings) {
-            Util.checkPropertyIfDefined(
+            Typing.checkPropertyIfDefined(
                     settings.subscriptionId,
                     "String",
                     "settings.subscriptionId");

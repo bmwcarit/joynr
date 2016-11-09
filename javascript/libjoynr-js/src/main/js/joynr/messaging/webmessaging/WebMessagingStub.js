@@ -19,10 +19,9 @@
 
 define("joynr/messaging/webmessaging/WebMessagingStub", [
     "global/Promise",
-    "joynr/util/UtilInternal",
     "joynr/util/JSONSerializer",
     "joynr/system/LoggerFactory"
-], function(Promise, Util, JSONSerializer, LoggerFactory) {
+], function(Promise, JSONSerializer, LoggerFactory) {
 
     /**
      * @name WebMessagingStub
@@ -43,7 +42,7 @@ define("joynr/messaging/webmessaging/WebMessagingStub", [
          */
         this.transmit =
                 function transmit(message) {
-                    //TODO: check why sending a JoynrMessage provoces the following error
+                    //TODO: check why sending a JoynrMessage provokes the following error
                     // maybe enumerability or visibility of members while using Object.defineProperties
                     /*
                      DataCloneError: An object could not be cloned.

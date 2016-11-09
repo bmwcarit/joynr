@@ -63,7 +63,7 @@ define([
             }).not.toThrow();
         });
 
-        it("calls correctly window.postMessage correctly", function(done) {
+        it("calls window.postMessage correctly", function(done) {
             var param = {
                 message : joynrMessage
             };

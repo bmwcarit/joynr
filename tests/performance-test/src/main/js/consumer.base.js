@@ -37,7 +37,7 @@ var consumerBase = {
             console.log("Using domain " + options.domain);
             console.error("Performing " + options.numRuns + " runs");
             var viaClusterController = options.viacc == 'true';
-            console.log("Short-circuit-test: " + viaClusterController);
+            console.log("Via cluster-contoller: " + viaClusterController);
             var provisioning = testbase.provisioning_common;
             if (viaClusterController) {
                 provisioning.ccAddress.host = options.cchost;
@@ -45,6 +45,7 @@ var consumerBase = {
                 joynr.selectRuntime("websocket.libjoynr");
             } else {
                 provisioning.bounceProxyBaseUrl = options.bounceProxyBaseUrl;
+                provisioning.brokerUri = options.brokerUri;
                 provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
                 joynr.selectRuntime("inprocess");
             }
@@ -73,6 +74,9 @@ var consumerBase = {
         } else {
             return Promise.resolve();
         }
+    },
+    shutdown : function() {
+        return joynr.shutdown();
     },
     registerProvider : function() {
         var providerQos = new joynr.types.ProviderQos({
@@ -173,6 +177,11 @@ var consumerBase = {
             numRuns = numRuns / (Math.sqrt(byteArraySizeFactor));
         }
         return consumerBase.executeBenchmark("echoByteArray " + byteArraySize, testProcedure, numRuns);
+    },
+    echoByteArrayWithSizeTimesK : function() {
+        if (options.skipByteArraySizeTimesK === undefined || options.skipByteArraySizeTimesK === true) {
+            consumerBase.echoByteArray(1000);
+        }
     }
 };
 module.exports = consumerBase;

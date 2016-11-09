@@ -355,15 +355,20 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     });
 
                     messagingSkeletonFactory = new MessagingSkeletonFactory();
-                    messagingStubFactory = new MessagingStubFactory({
-                        messagingStubFactories : {
-                            InProcessAddress : new InProcessMessagingStubFactory(),
-                            WebSocketAddress : new WebSocketMessagingStubFactory({
-                                address : ccAddress,
-                                sharedWebSocket : sharedWebSocket
-                            })
-                        }
+
+                    var messagingStubFactories = {};
+                    /*jslint nomen: true */
+                    messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
+                    messagingStubFactories[WebSocketAddress._typeName] = new WebSocketMessagingStubFactory({
+                        address : ccAddress,
+                        sharedWebSocket : sharedWebSocket
                     });
+                    /*jslint nomen: false */
+
+                    messagingStubFactory = new MessagingStubFactory({
+                        messagingStubFactories :messagingStubFactories
+                    });
+
                     messageRouter = new MessageRouter({
                         initialRoutingTable : initialRoutingTable,
                         persistency : persistency,

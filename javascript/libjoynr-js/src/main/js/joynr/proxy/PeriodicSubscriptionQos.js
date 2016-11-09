@@ -20,11 +20,12 @@
 define(
         "joynr/proxy/PeriodicSubscriptionQos",
         [
+            "joynr/util/Typing",
             "joynr/util/UtilInternal",
             "joynr/proxy/SubscriptionQos",
             "joynr/system/LoggerFactory"
         ],
-        function(Util, SubscriptionQos, LoggerFactory) {
+        function(Typing, Util, SubscriptionQos, LoggerFactory) {
 
             var defaultSettings;
 
@@ -105,7 +106,7 @@ define(
                  * @type String
                  */
                 Util.objectDefineProperty(this, "_typeName", "joynr.PeriodicSubscriptionQos");
-                Util.checkPropertyIfDefined(settings, "Object", "settings");
+                Typing.checkPropertyIfDefined(settings, "Object", "settings");
                 if (settings && !(settings instanceof PeriodicSubscriptionQos)) {
                     if (settings.period !== undefined) {
                         log
@@ -114,7 +115,7 @@ define(
                         settings.periodMs = settings.period;
                         settings.period = undefined;
                     }
-                    Util.checkPropertyIfDefined(settings.periodMs, "Number", "settings.periodMs");
+                    Typing.checkPropertyIfDefined(settings.periodMs, "Number", "settings.periodMs");
                     if (settings.alertAfterInterval !== undefined) {
                         log
                                 .warn("PeriodicSubscriptionQos has been invoked with deprecated settings member \"alertAfterInterval\". "
@@ -122,7 +123,7 @@ define(
                         settings.alertAfterIntervalMs = settings.alertAfterInterval;
                         settings.alertAfterInterval = undefined;
                     }
-                    Util.checkPropertyIfDefined(
+                    Typing.checkPropertyIfDefined(
                             settings.alertAfterIntervalMs,
                             "Number",
                             "settings.alertAfterIntervalMs");

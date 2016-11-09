@@ -250,15 +250,26 @@ define("joynr/util/UtilInternal", [
      * @param {Object}
      *          data provided as callback argument
      * @param {Object}
-     *          filters filter array provided as callback argument
+     *          data.broadcastOutputParameters broadcasts output params
+     * @param {Object}
+     *          data.filters filter array provided as callback argument
      */
-    UtilInternal.fire = function fire(callbacks, data, filters) {
+    UtilInternal.fire = function fire(callbacks, data) {
         var callbackFct;
         for (callbackFct in callbacks) {
             if (callbacks.hasOwnProperty(callbackFct)) {
                 callbacks[callbackFct](data);
             }
         }
+    };
+
+    UtilInternal.enrichObjectWithSetPrototypeOf = function() {
+        //if Object.setPrototypeOf already exists? -> do nothing;
+        Object.setPrototypeOf = Object.setPrototypeOf || function(object, prototype) {
+            /*jslint sub: true*/
+            object['__proto__'] = prototype;
+            /*jslint sub: false*/
+        };
     };
 
     UtilInternal.extend(UtilInternal, UtilExternal);

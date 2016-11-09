@@ -94,7 +94,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 					configurable : false,
 					writable : false,
 					enumerable : true,
-					value : "«type.joynrTypeName»"
+					value : «type.joynrName»._typeName
 				});
 				«IF type.base != null»
 
@@ -120,14 +120,6 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 					 * @type «member.jsdocTypeName»
 					 */
 				«ENDFOR»
-				Object.defineProperty(this, 'checkMembers', {
-					enumerable: false,
-					value: function checkMembers(check) {
-						«FOR member : members»
-						check(this.«member.joynrName», «member.checkPropertyTypeName», "members.«member.joynrName»");
-						«ENDFOR»
-					}
-				});
 
 				if (members !== undefined) {
 					«FOR member : members»
@@ -136,6 +128,25 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 				}
 
 			};
+
+			Object.defineProperty(«type.joynrName», "_typeName", {
+				configurable : false,
+				writable : false,
+				enumerable : false,
+				value : "«type.joynrTypeName»"
+			});
+
+			Object.defineProperty(«type.joynrName», 'checkMembers', {
+				enumerable: false,
+				configurable: false,
+				writable: false,
+				readable: true,
+				value: function checkMembers(instance, check) {
+					«FOR member : members»
+					check(instance.«member.joynrName», «member.checkPropertyTypeName», "members.«member.joynrName»");
+					«ENDFOR»
+				}
+			});
 
 			/**
 			 * @name «type.joynrName»#MAJOR_VERSION

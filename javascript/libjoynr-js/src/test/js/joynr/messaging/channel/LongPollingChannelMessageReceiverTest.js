@@ -93,7 +93,8 @@ define([
                             };
 
                             joynrMessage = new JoynrMessage({
-                                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+                                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                                payload : "hello"
                             });
                             joynrMessage.setHeader(
                                     JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE,
@@ -101,7 +102,6 @@ define([
                             joynrMessage.setHeader(
                                     JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID,
                                     "me");
-                            joynrMessage.payload = "hello";
 
                             // instantiate CommunicationModule spy
                             atmosphereSpy = jasmine.createSpyObj("atmosphere", [

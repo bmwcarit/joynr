@@ -24,8 +24,8 @@
  *
  * @returns constructor for a localStorage object
  */
-define([ "joynr/util/Util"
-], function(Util) {
+define([ "joynr/util/Typing"
+], function(Typing) {
     /**
      * constructor for a localStorage object
      * @param {Object}
@@ -38,7 +38,7 @@ define([ "joynr/util/Util"
     var LocalStorage =
             function(settings) {
                 settings = settings || {};
-                Util.checkPropertyIfDefined(
+                Typing.checkPropertyIfDefined(
                         settings.clearPersistency,
                         "Boolean",
                         "settings.clearPersistency");

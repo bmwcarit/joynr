@@ -36,13 +36,13 @@ define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
      */
     var MqttMessagingSkeleton =
             function MqttMessagingSkeleton(settings) {
-                Util.checkProperty(settings, "Object", "settings");
-                Util.checkProperty(settings.client, "SharedMqttClient", "settings.client");
-                Util.checkProperty(
+                Typing.checkProperty(settings, "Object", "settings");
+                Typing.checkProperty(settings.client, "SharedMqttClient", "settings.client");
+                Typing.checkProperty(
                         settings.messageRouter,
                         "MessageRouter",
                         "settings.messageRouter");
-                Util.checkProperty(settings.address, "MqttAddress", "settings.address");
+                Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
 
                 var multicastSubscriptionCount = {};
 

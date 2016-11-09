@@ -18,11 +18,10 @@
  */
 
 define("joynr/dispatching/types/MulticastSubscriptionRequest", [
-    "joynr/util/UtilInternal",
     "joynr/util/Typing",
     "joynr/proxy/OnChangeSubscriptionQos",
     "joynr/proxy/BroadcastFilterParameters"
-], function(Util, Typing, OnChangeSubscriptionQos, BroadcastFilterParameters) {
+], function(Typing, OnChangeSubscriptionQos, BroadcastFilterParameters) {
 
     var defaultSettings = {
         qos : new OnChangeSubscriptionQos()
@@ -39,11 +38,11 @@ define("joynr/dispatching/types/MulticastSubscriptionRequest", [
      *            [settings.subscriptionQos] the subscriptionQos
      */
     function MulticastSubscriptionRequest(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.multicastId, "String", "settings.multicastId");
-        Util.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-        Util.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
-        Util.checkPropertyIfDefined(settings.qos, [
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.multicastId, "String", "settings.multicastId");
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+        Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
+        Typing.checkPropertyIfDefined(settings.qos, [
             "Object",
             "OnChangeSubscriptionQos"
         ], "settings.qos");

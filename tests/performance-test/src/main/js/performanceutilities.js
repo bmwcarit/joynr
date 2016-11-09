@@ -45,7 +45,7 @@ PerformanceUtilities.createRandomNumber = function createRandomNumber(max) {
  * available, a default value will be used.
  */
 PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
-    var domain, stringLength, byteArrayLength, numRuns, timeout, viacc, cchost, ccport, host;
+    var bounceProxyBaseUrl, domain, stringLength, byteArrayLength, numRuns, timeout, brokerUri, viacc, cchost, ccport, host, skipByteArraySizeTimesK;
 
     if(environment.domain != undefined) {
         domain = environment.domain;
@@ -83,6 +83,12 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         viacc = 'true';
     }
 
+    if(environment.brokerUri != undefined) {
+        brokerUri = environment.brokerUri;
+    } else {
+        brokerUri = 'tcp://localhost:1883';
+    }
+
     if(environment.bounceProxyBaseUrl != undefined) {
         bounceProxyBaseUrl = environment.bounceProxyBaseUrl;
     } else {
@@ -90,15 +96,21 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
     }
 
     if(environment.cchost != undefined) {
-    	cchost = environment.cchost;
+        cchost = environment.cchost;
     } else {
-    	cchost = 'localhost';
+        cchost = 'localhost';
     }
 
     if(environment.ccport != undefined) {
-    	ccport = environment.ccport;
+        ccport = environment.ccport;
     } else {
-    	ccport = 4242;
+        ccport = 4242;
+    }
+
+    if(environment.skipByteArraySizeTimesK != undefined) {
+        skipByteArraySizeTimesK = environment.skipByteArraySizeTimesK;
+    } else {
+        skipByteArraySizeTimesK = false;
     }
 
     return {
@@ -107,10 +119,12 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         'numRuns' : numRuns,
         'timeout' : timeout,
         'domain' : domain,
+        'brokerUri' : brokerUri,
         'viacc' : viacc,
         'cchost': cchost,
         'ccport': ccport,
-        'bounceProxyBaseUrl': bounceProxyBaseUrl
+        'bounceProxyBaseUrl': bounceProxyBaseUrl,
+        'skipByteArraySizeTimesK': skipByteArraySizeTimesK
     };
 };
 

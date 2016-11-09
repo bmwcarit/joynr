@@ -59,6 +59,7 @@ define(
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/messaging/browser/BrowserMessagingStubFactory",
             "joynr/messaging/browser/BrowserMessagingSkeleton",
+            "joynr/system/RoutingTypes/BrowserAddress",
             "joynr/messaging/webmessaging/WebMessagingStub",
             "joynr/messaging/webmessaging/WebMessagingSkeleton",
             "joynr/messaging/channel/LongPollingChannelMessageReceiver",
@@ -122,6 +123,7 @@ define(
                 InProcessAddress,
                 BrowserMessagingStubFactory,
                 BrowserMessagingSkeleton,
+                BrowserAddress,
                 WebMessagingStub,
                 WebMessagingSkeleton,
                 LongPollingChannelMessageReceiver,
@@ -455,20 +457,24 @@ define(
 
                             messagingSkeletonFactory = new MessagingSkeletonFactory();
 
-                            messagingStubFactory = new MessagingStubFactory({
-                                messagingStubFactories : {
-                                    InProcessAddress : new InProcessMessagingStubFactory(),
-                                    BrowserAddress : new BrowserMessagingStubFactory({
-                                        webMessagingStub : webMessagingStub
-                                    }),
-                                    ChannelAddress : channelMessagingStubFactory,
-                                    MqttAddress : new MqttMessagingStubFactory({
-                                        client : mqttClient,
-                                        address : mqttAddress,
-                                        messageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
-                                    })
-                                }
+                            var messagingStubFactories = {};
+                            /*jslint nomen: true */
+                            messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
+                            messagingStubFactories[BrowserAddress._typeName] = new BrowserMessagingStubFactory({
+                                webMessagingStub : webMessagingStub
                             });
+                            messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
+                            messagingStubFactories[MqttAddress._typeName] = new MqttMessagingStubFactory({
+                                client : mqttClient,
+                                address : mqttAddress,
+                                messageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
+                            });
+                            /*jslint nomen: false */
+
+                            messagingStubFactory = new MessagingStubFactory({
+                                messagingStubFactories :messagingStubFactories
+                            });
+
                             messageRouter = new MessageRouter({
                                 initialRoutingTable : initialRoutingTable,
                                 persistency : persistency,

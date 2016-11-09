@@ -18,10 +18,10 @@
  */
 
 define("joynr/messaging/mqtt/MqttMessagingStubFactory", [
-    "joynr/util/Util",
+    "joynr/util/Typing",
     "joynr/messaging/mqtt/MqttMessagingStub",
     "joynr/system/RoutingTypes/MqttAddress"
-], function(Util, MqttMessagingStub, MqttAddress) {
+], function(Typing, MqttMessagingStub, MqttAddress) {
 
     /**
      * @constructor
@@ -36,10 +36,10 @@ define("joynr/messaging/mqtt/MqttMessagingStubFactory", [
      */
     var MqttMessagingStubFactory =
             function MqttMessagingStubFactory(settings) {
-                Util.checkProperty(settings, "Object", "settings");
-                Util.checkProperty(settings.address, "MqttAddress", "address");
-                Util.checkProperty(settings.client, "SharedMqttClient", "client");
-                Util.checkProperty(
+                Typing.checkProperty(settings, "Object", "settings");
+                Typing.checkProperty(settings.address, "MqttAddress", "address");
+                Typing.checkProperty(settings.client, "SharedMqttClient", "client");
+                Typing.checkProperty(
                         settings.messageReplyToAddressCalculator,
                         "MessageReplyToAddressCalculator",
                         "messageReplyToAddressCalculator");
@@ -49,7 +49,7 @@ define("joynr/messaging/mqtt/MqttMessagingStubFactory", [
                  * @function
                  */
                 this.build = function build(address) {
-                    Util.checkProperty(address, "MqttAddress", "address");
+                    Typing.checkProperty(address, "MqttAddress", "address");
 
                     return new MqttMessagingStub({
                         address : address,

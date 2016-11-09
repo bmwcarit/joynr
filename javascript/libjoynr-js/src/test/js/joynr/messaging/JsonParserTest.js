@@ -22,129 +22,122 @@ define([
     "joynr/system/LoggerFactory"
 ], function(JsonParser, LoggerFactory) {
 
-    var lowerTestCase = TestCase;
-    var JsonParserTest = lowerTestCase("JsonParserTest");
+    describe("libjoynr-js.joynr.messaging.JsonParserTest", function() {
+        var log = LoggerFactory.getLogger("JsonParserTest");
 
-    var log = LoggerFactory.getLogger("JsonParserTest");
+        it("testSimpleObject", function() {
+            var object1 = {
+                x : "xü/"
+            };
 
-    JsonParserTest.prototype.setUp = function() {
+            var json = JSON.stringify(object1);
+            var jsonParser = new JsonParser(json);
+            var object1result = jsonParser.next;
 
-    };
+            expect(object1).toEqual(object1result);
+        });
 
-    JsonParserTest.prototype.testSimpleObject = function() {
+        it("testParseMultipleObjects", function() {
+            var object1 = {
+                x : "x"
+            };
+            var object2 = {
+                y : "y"
+            };
 
-        var object1 = {
-            x : "xü/"
-        };
+            var concatenatedJson = JSON.stringify(object1) + JSON.stringify(object2);
+            var jsonParser = new JsonParser(concatenatedJson);
+            var object1result = jsonParser.next;
 
-        var json = JSON.stringify(object1);
-        var jsonParser = new JsonParser(json);
-        var object1result = jsonParser.next;
+            expect(object1).toEqual(object1result);
+        });
 
-        assertEquals(object1, object1result);
-    };
-
-    JsonParserTest.prototype.testParseMultipleObjects = function() {
-        var object1 = {
-            x : "x"
-        };
-        var object2 = {
-            y : "y"
-        };
-
-        var concatenatedJson = JSON.stringify(object1) + JSON.stringify(object2);
-        var jsonParser = new JsonParser(concatenatedJson);
-        var object1result = jsonParser.next;
-
-        assertEquals(object1, object1result);
-    };
-
-    JsonParserTest.prototype.testParseMultipleComplexObjects = function() {
-
-        var objs = [
-            {
-                dog : "dog",
-                cat : "cat",
-                mouse : {
-                    giraffe : "tall",
-                    pigeon : {
-                        snake : "(/Z(bjkljbslkjw78sjk()?H(2ä#"
+        it("testParseMultipleComplexObjects", function() {
+            var objs = [
+                {
+                    dog : "dog",
+                    cat : "cat",
+                    mouse : {
+                        giraffe : "tall",
+                        pigeon : {
+                            snake : "(/Z(bjkljbslkjw78sjk()?H(2ä#"
+                        },
+                        snail : [ {
+                            a : "slow"
+                        }
+                        ]
                     },
-                    snail : [ {
-                        a : "slow"
-                    }
+                    lion : "roar",
+                    zoo : [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9
                     ]
                 },
-                lion : "roar",
-                zoo : [
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                    6,
-                    7,
-                    8,
-                    9
-                ]
-            },
-            {
-                car : "BMW",
-                truck : "big",
-                plane : {
-                    wings : 2.0
+                {
+                    car : "BMW",
+                    truck : "big",
+                    plane : {
+                        wings : 2.0
+                    }
+                },
+                {
+                    red : "red",
+                    green : "green",
+                    yellow : {
+                        purple : "purple"
+                    }
+                },
+                {
+                    1 : 1,
+                    2 : 2,
+                    3 : {
+                        33 : "33333333333333",
+                        44 : "4444444444444444"
+                    }
                 }
-            },
-            {
-                red : "red",
-                green : "green",
-                yellow : {
-                    purple : "purple"
-                }
-            },
-            {
-                1 : 1,
-                2 : 2,
-                3 : {
-                    33 : "33333333333333",
-                    44 : "4444444444444444"
-                }
+            ];
+            var i;
+            var concatenatedJson = "";
+            for (i = 0; i < objs.length; i++) {
+                concatenatedJson += JSON.stringify(objs[i]);
             }
-        ];
-        var i;
-        var concatenatedJson = "";
-        for (i = 0; i < objs.length; i++) {
-            concatenatedJson += JSON.stringify(objs[i]);
-        }
 
-        var jsonParser = new JsonParser(concatenatedJson);
-        var x = 0;
-        while (jsonParser.hasNext) {
-            var next = jsonParser.next;
-            assertEquals("object not found in parsed result", objs[x], next);
-            x++;
-        }
-        assertEquals("not all objects were found", x, objs.length);
-    };
+            var jsonParser = new JsonParser(concatenatedJson);
+            var x = 0;
+            while (jsonParser.hasNext) {
+                var next = jsonParser.next;
+                expect(objs[x]).toEqual(next);
+                x++;
+            }
+            expect(x).toEqual(objs.length);
+        });
 
-    JsonParserTest.prototype.testParseInvalidObjects = function() {
+        it("testParseInvalidObjects", function() {
 
-        var object1 = {
-            x : "x"
-        };
-        var object2 = "a";
+            var object1 = {
+                x : "x"
+            };
+            var object2 = "a";
 
-        var concatenatedJson = JSON.stringify(object1) + JSON.stringify(object2);
-        var jsonParser = new JsonParser(concatenatedJson);
+            var concatenatedJson = JSON.stringify(object1) + JSON.stringify(object2);
+            var jsonParser = new JsonParser(concatenatedJson);
 
-        var next = null;
-        // TODO this should work with:
-        // assertException(jsonParser.next, "SyntaxError");
-        try {
-            next = jsonParser.next;
-        } catch (e) {
-            assertEquals("SyntaxError", e.name);
-        }
-        assertNull(next);
-    };
+            var next = null;
+            // TODO this should work with:
+            // assertException(jsonParser.next, "SyntaxError");
+            try {
+                next = jsonParser.next;
+            } catch (e) {
+                expect("SyntaxError").toEqual(e.name);
+            }
+            expect(next).toBeNull();
+        });
+    });
 });

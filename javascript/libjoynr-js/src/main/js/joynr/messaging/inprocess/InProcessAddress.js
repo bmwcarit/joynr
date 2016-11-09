@@ -28,6 +28,20 @@ define("joynr/messaging/inprocess/InProcessAddress", [], function() {
     function InProcessAddress(inProcessMessagingSkeleton) {
 
         /**
+         * @name InProcessAddress#_typeName
+         * @type String
+         * @readonly
+         */
+        /*jslint nomen: true */
+        Object.defineProperty(this, "_typeName", {
+            configurable : false,
+            writable : false,
+            enumerable : false,
+            value : InProcessAddress._typeName
+        });
+        /*jslint nomen: false */
+
+        /**
          * The receive function from the corresponding local messaging receiver
          * @name InProcessAddress#getSkeleton
          * @function
@@ -38,6 +52,18 @@ define("joynr/messaging/inprocess/InProcessAddress", [], function() {
             return inProcessMessagingSkeleton;
         };
     }
+
+    /**
+     * @name InProcessAddress#_typeName
+     * @type String
+     * @readonly
+     */
+    Object.defineProperty(InProcessAddress, "_typeName", {
+        configurable : false,
+        writable : false,
+        enumerable : false,
+        value : "joynr.system.RoutingTypes.InProcessAddress"
+    });
 
     return InProcessAddress;
 

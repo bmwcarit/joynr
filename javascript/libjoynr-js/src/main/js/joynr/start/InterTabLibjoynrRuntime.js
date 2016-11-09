@@ -365,14 +365,17 @@ define(
 
                             messagingSkeletonFactory = new MessagingSkeletonFactory();
 
-                            messagingStubFactory = new MessagingStubFactory({
-                                messagingStubFactories : {
-                                    InProcessAddress : new InProcessMessagingStubFactory(),
-                                    BrowserAddress : new BrowserMessagingStubFactory({
-                                        webMessagingStub : webMessagingStub
-                                    })
-                                }
+                            var messagingStubFactories = {};
+                            /*jslint nomen: true */
+                            messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
+                            messagingStubFactories[BrowserAddress._typeName] = new BrowserMessagingStubFactory({
+                                webMessagingStub : webMessagingStub
                             });
+                            /*jslint nomen: false */
+                            messagingStubFactory = new MessagingStubFactory({
+                                messagingStubFactories :messagingStubFactories
+                            });
+
                             messageRouter = new MessageRouter({
                                 initialRoutingTable : initialRoutingTable,
                                 persistency : persistency,

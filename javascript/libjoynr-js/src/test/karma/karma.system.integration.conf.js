@@ -47,7 +47,6 @@ module.exports = function(config) {
             {pattern: 'classes/joynr.js', included: false},
             {pattern: 'classes/libjoynr-deps.js', included: false},
             {pattern: 'classes/joynr/**/*.js', included: false},
-            {pattern: 'test-classes/require.config.common.js', included: false},
             {pattern: 'test-classes/test/**/*.js', included: false},
             {pattern: 'test-classes/joynr/provisioning/*.js', included: false},
             {pattern: 'test-classes/joynr/vehicle/*.js', included: false},

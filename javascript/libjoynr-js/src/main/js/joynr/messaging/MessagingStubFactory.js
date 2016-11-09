@@ -44,7 +44,9 @@ define("joynr/messaging/MessagingStubFactory", [
          */
         this.createMessagingStub =
                 function createMessagingStub(address) {
-                    var className = Typing.getObjectType(address);
+                    /*jslint nomen: true */
+                    var className = address._typeName;
+                    /*jslint nomen: false */
                     var factory = messagingStubFactories[className];
 
                     if (Util.checkNullUndefined(factory)) {

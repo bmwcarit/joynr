@@ -22,21 +22,63 @@ define("joynr/util/Typing", [
     "joynr/types/TypeRegistrySingleton"
 ], function(joynr, TypeRegistrySingleton) {
 
-    var translateJoynrTypeToJavascriptTypeTable = {};
-    translateJoynrTypeToJavascriptTypeTable.Boolean = "Boolean";
-    translateJoynrTypeToJavascriptTypeTable.Byte = "Number";
-    translateJoynrTypeToJavascriptTypeTable.Short = "Number";
-    translateJoynrTypeToJavascriptTypeTable.Integer = "Number";
-    translateJoynrTypeToJavascriptTypeTable.Long = "Number";
-    translateJoynrTypeToJavascriptTypeTable.Float = "Number";
-    translateJoynrTypeToJavascriptTypeTable.Double = "Number";
-    translateJoynrTypeToJavascriptTypeTable.String = "String";
-
     /**
      * @name Typing
      * @class
      */
     var Typing = {};
+
+    Typing.checkProperty =
+            function(obj, type, description) {
+                if (obj === undefined) {
+                    throw new Error(description + " is undefined");
+                }
+                if (typeof type === "string" && Typing.getObjectType(obj) !== type) {
+                    throw new Error(description
+                        + " is not of type "
+                        + type
+                        + ". Actual type is "
+                        + Typing.getObjectType(obj));
+                }
+                if (Object.prototype.toString.call(type) === "[object Array]"
+                    && !Typing.getObjectType(obj).match("^" + type.join("$|^") + "$")) {
+                    throw new Error(description
+                        + " is not of a type from "
+                        + type
+                        + ". Actual type is "
+                        + Typing.getObjectType(obj));
+                }
+                if (typeof type === "function" && !(obj instanceof type)) {
+                    throw new Error(description
+                        + " is not of type "
+                        + Typing.getObjectType(type)
+                        + ". Actual type is "
+                        + Typing.getObjectType(obj));
+                }
+            };
+
+    /**
+     * Checks if the variable is of specified type
+     * @function Typing#checkPropertyIfDefined
+     *
+     * @param {?}
+     *            obj the object
+     * @param {String|Function}
+     *            type a string representation of the the data type (e.g. "Boolean", "Number",
+     *             "String", "Array", "Object", "Function"
+     *            "MyCustomType", "Object|MyCustomType") or a constructor function to check against
+     *             using instanceof (e.g. obj
+     *            instanceof type)
+     * @param {String}
+     *            description a description for the thrown error
+     * @throws an
+     *             error if the object not of the given type
+     */
+    Typing.checkPropertyIfDefined = function(obj, type, description) {
+        if (obj !== undefined && obj !== null) {
+            Typing.checkProperty(obj, type, description);
+        }
+    };
 
     /**
      * @function Typing#getObjectType
@@ -48,28 +90,8 @@ define("joynr/util/Typing", [
         if (obj === null || obj === undefined) {
             throw new Error("cannot determine the type of an undefined object");
         }
-        var funcNameRegex = /function ([$\w]+)\(/;
-        var results = funcNameRegex.exec(obj.constructor.toString());
+        var results = /function ([$\w]+)\(/.exec(obj.constructor.toString());
         return (results && results.length > 1) ? results[1] : "";
-    };
-
-    /**
-     * Translates the Joynr Types to Javascript Types
-     *
-     * @function Typing#translateJoynrTypeToJavascriptType
-     * @param {String} joynrType the joynr type string
-     * @returns {String} the javascript type or the joynrType if not found
-     * @throws {Error} an error when input parameters are nullable (undefined or null)
-     */
-    Typing.translateJoynrTypeToJavascriptType = function(joynrType) {
-        if (joynrType === undefined || joynrType === null) {
-            throw new Error("cannot determine javascript type of \"" + joynrType + "\"");
-        }
-
-        if (joynrType.charAt(joynrType.length - 1) === ']') {
-            return "Array";
-        }
-        return translateJoynrTypeToJavascriptTypeTable[joynrType] || joynrType;
     };
 
     /**

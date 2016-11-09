@@ -26,12 +26,12 @@ define(
             "global/Mqtt",
             "joynr/messaging/JoynrMessage",
             "joynr/messaging/MessagingQosEffort",
-            "joynr/util/Util",
             "joynr/util/JSONSerializer",
             "joynr/util/LongTimer",
+            "joynr/util/Typing",
             "joynr/system/LoggerFactory"
         ],
-        function(Promise, Mqtt, JoynrMessage, MessagingQosEffort, Util, JSONSerializer, LongTimer, LoggerFactory) {
+        function(Promise, Mqtt, JoynrMessage, MessagingQosEffort, JSONSerializer, LongTimer, Typing, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.mqtt.SharedMqttClient");
 
             /**
@@ -110,8 +110,8 @@ define(
              */
             var SharedMqttClient =
                     function SharedMqttClient(settings) {
-                        Util.checkProperty(settings, "Object", "settings");
-                        Util.checkProperty(
+                        Typing.checkProperty(settings, "Object", "settings");
+                        Typing.checkProperty(
                                 settings.address,
                                 "MqttAddress",
                                 "settings.address");

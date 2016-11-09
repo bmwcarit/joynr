@@ -94,7 +94,7 @@ define([
             // call
 
             expect(function() {
-                sharedWebSocket.send(new JoynrMessage());
+                sharedWebSocket.send(new JoynrMessage({}));
             }).not.toThrow(); // correct call
             expect(function() {
                 sharedWebSocket.send({});
