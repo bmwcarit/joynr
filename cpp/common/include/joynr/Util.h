@@ -70,7 +70,16 @@ std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
 
 std::string attributeGetterFromName(const std::string& attributeName);
 
+/*
+ * Return the content of fileName as a string.
+ * It assumes the file exists and is accessible.
+ */
 std::string loadStringFromFile(const std::string& fileName);
+
+/*
+ * It saves strToSave to the specified fileName.
+ * The file does not need to exists.
+ */
 void saveStringToFile(const std::string& fileName, const std::string& strToSave);
 
 /**
