@@ -32,6 +32,13 @@ set(
 include(GenerateJoynrExports)
 
 if(${BUILD_CLUSTER_CONTROLLER})
+    option(
+        ENABLE_ACCESS_CONTROL
+        "Should access control be enabled for the cluster-controller?"
+        OFF
+    )
+    message(STATUS "option ENABLE_ACCESS_CONTROL=" ${ENABLE_ACCESS_CONTROL})
+
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
     set(
         JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES
@@ -328,6 +335,13 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${cluster-controller_HEADERS}
         ${cluster-controller_SOURCES}
     )
+
+    if(ENABLE_ACCESS_CONTROL)
+        target_compile_definitions(
+            cluster-controller
+            PRIVATE
+            JOYNR_ENABLE_ACCESS_CONTROL)
+    endif(ENABLE_ACCESS_CONTROL)
 
     AddClangFormat(cluster-controller)
 

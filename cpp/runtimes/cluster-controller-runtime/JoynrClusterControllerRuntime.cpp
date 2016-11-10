@@ -500,8 +500,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
 
+#ifdef JOYNR_ENABLE_ACCESS_CONTROL
     // Do this after local capabilities directory and message router have been initialized.
     enableAccessController(messagingSettings, messageRouter);
+#endif // JOYNR_ENABLE_ACCESS_CONTROL
 }
 
 void JoynrClusterControllerRuntime::enableAccessController(
