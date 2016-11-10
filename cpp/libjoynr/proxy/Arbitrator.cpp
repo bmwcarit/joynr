@@ -137,7 +137,6 @@ void Arbitrator::attemptArbitration()
 void Arbitrator::receiveCapabilitiesLookupResults(
         const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
-    std::string res;
     discoveredIncompatibleVersions.clear();
 
     // Check for empty results
@@ -193,14 +192,16 @@ void Arbitrator::receiveCapabilitiesLookupResults(
         }
         return;
     } else {
+        types::DiscoveryEntry res;
+
         try {
             res = arbitrationStrategyFunction->select(
                     discoveryQos.getCustomParameters(), preFilteredDiscoveryEntries);
         } catch (const exceptions::DiscoveryException& e) {
             arbitrationError = e;
         }
-        if (!res.empty()) {
-            onSuccessCallback(res);
+        if (!res.getParticipantId().empty()) {
+            onSuccessCallback(res.getParticipantId());
             arbitrationFinished = true;
         }
     }

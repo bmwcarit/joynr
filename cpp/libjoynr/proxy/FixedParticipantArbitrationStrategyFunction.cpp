@@ -27,7 +27,7 @@
 namespace joynr
 {
 
-std::string FixedParticipantArbitrationStrategyFunction::select(
+types::DiscoveryEntry FixedParticipantArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
         const std::vector<types::DiscoveryEntry>& discoveryEntries) const
 {
@@ -38,6 +38,6 @@ std::string FixedParticipantArbitrationStrategyFunction::select(
     if (discoveryEntries.size() > 1)
         throw exceptions::DiscoveryException("No provider found for given ParticipantId");
 
-    return discoveryEntries.front().getParticipantId();
+    return discoveryEntries.front();
 }
 } // namespace joynr

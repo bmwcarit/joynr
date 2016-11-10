@@ -34,7 +34,7 @@ class CustomParameter;
 class ArbitrationStrategyFunction
 {
 public:
-    virtual std::string select(
+    virtual types::DiscoveryEntry select(
             const std::map<std::string, types::CustomParameter> customParameters,
             const std::vector<types::DiscoveryEntry>& discoveryEntries) const = 0;
 };

@@ -46,8 +46,9 @@ class LastSeenArbitrationStrategyFunction : public ArbitrationStrategyFunction
 public:
     ~LastSeenArbitrationStrategyFunction() = default;
     LastSeenArbitrationStrategyFunction() = default;
-    std::string select(std::map<std::string, types::CustomParameter> customParameters,
-                       const std::vector<types::DiscoveryEntry>& discoveryEntries) const final;
+    types::DiscoveryEntry select(
+            std::map<std::string, types::CustomParameter> customParameters,
+            const std::vector<types::DiscoveryEntry>& discoveryEntries) const final;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LastSeenArbitrationStrategyFunction);
