@@ -45,10 +45,12 @@ void ReceivedMessageRunnable::shutdown()
 
 void ReceivedMessageRunnable::run()
 {
+    const std::string messageType = message.getType();
+
     JOYNR_LOG_DEBUG(logger,
                     "Running ReceivedMessageRunnable for message type: {}, msg ID: {} and "
                     "payload: {}",
-                    message.getType(),
+                    messageType,
                     message.getHeaderMessageId(),
                     message.getPayload());
     if (isExpired()) {
@@ -62,30 +64,28 @@ void ReceivedMessageRunnable::run()
 
     CallContextStorage::set(callContext);
 
-    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
+    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
         dispatcher.handleRequestReceived(message);
-    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY) {
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY) {
         dispatcher.handleReplyReceived(message);
-    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY) {
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY) {
         dispatcher.handleOneWayRequestReceived(message);
-    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
         dispatcher.handleSubscriptionRequestReceived(message);
-    } else if (message.getType() ==
-               JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         dispatcher.handleBroadcastSubscriptionRequestReceived(message);
-    } else if (message.getType() ==
-               JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
         dispatcher.handleMulticastSubscriptionRequestReceived(message);
-    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
         dispatcher.handleSubscriptionReplyReceived(message);
-    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
         dispatcher.handleMulticastReceived(message);
-    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
         dispatcher.handlePublicationReceived(message);
-    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {
         dispatcher.handleSubscriptionStopReceived(message);
     } else {
-        JOYNR_LOG_FATAL(logger, "unknown message type: {}", message.getType());
+        JOYNR_LOG_FATAL(logger, "unknown message type: {}", messageType);
         assert(false);
     }
 
