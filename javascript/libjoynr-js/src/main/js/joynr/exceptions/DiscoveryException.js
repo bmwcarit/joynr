@@ -20,8 +20,10 @@
 define("joynr/exceptions/DiscoveryException", [
     "joynr/types/TypeRegistrySingleton",
     "joynr/util/UtilInternal",
+    "joynr/exceptions/JoynrRuntimeException",
     "joynr/system/LoggerFactory"
-], function(TypeRegistrySingleton, Util, LoggerFactory) {
+], function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
+    var defaultSettings;
 
     /**
      * @classdesc
@@ -49,6 +51,7 @@ define("joynr/exceptions/DiscoveryException", [
         }
 
         var log = LoggerFactory.getLogger("joynr.exceptions.DiscoveryException");
+        var joynrRuntimeException = new JoynrRuntimeException(settings);
 
         /**
          * Used for serialization.
@@ -63,7 +66,11 @@ define("joynr/exceptions/DiscoveryException", [
          * @type String
          */
         this.detailMessage = undefined;
+
+        Util.extend(this, defaultSettings, settings, joynrRuntimeException);
     }
+
+    defaultSettings = {};
 
     TypeRegistrySingleton.getInstance().addType(
             "joynr.exceptions.DiscoveryException",
