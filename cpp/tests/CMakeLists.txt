@@ -169,6 +169,16 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         "${JOYNR_BINARY_DIR}/Release/test-resources/testclient.pem"
         @ONLY
     )
+    configure_file(
+        "resources/MessagingSettingsWithAccessControl.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MessagingSettingsWithAccessControl.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MessagingSettingsWithAccessControl.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MessagingSettingsWithAccessControl.settings"
+        @ONLY
+    )
 else()
     configure_file(
         "resources/integrationtest.settings"
@@ -238,6 +248,11 @@ else()
     configure_file(
         "resources/testclient.pem"
         "${JOYNR_BINARY_DIR}/test-resources/testclient.pem"
+        @ONLY
+    )
+    configure_file(
+        "resources/MessagingSettingsWithAccessControl.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MessagingSettingsWithAccessControl.settings"
         @ONLY
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
