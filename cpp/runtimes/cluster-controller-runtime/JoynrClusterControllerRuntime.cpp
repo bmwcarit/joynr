@@ -27,6 +27,8 @@
 #include <mosquittopp.h>
 #include "websocket/WebSocketCcMessagingSkeleton.h"
 
+#include "cluster-controller/access-control/AccessController.h"
+#include "cluster-controller/access-control/LocalDomainAccessStore.h"
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
 #include "cluster-controller/http-communication-manager/HttpMessagingSkeleton.h"
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
@@ -37,6 +39,11 @@
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 #include "cluster-controller/mqtt/MqttReceiver.h"
 #include "cluster-controller/mqtt/MqttSender.h"
+
+#include "joynr/infrastructure/DacTypes/ControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
+#include "joynr/serializer/Serializer.h"
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -96,6 +103,8 @@ namespace joynr
 
 INIT_LOGGER(JoynrClusterControllerRuntime);
 
+static const std::string ACC_ENTRIES_FILE = "CCAccessControl.entries";
+
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::unique_ptr<Settings> settings,
         std::shared_ptr<IMessageReceiver> httpMessageReceiver,
@@ -125,6 +134,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           connectorFactory(nullptr),
           settings(std::move(settings)),
           libjoynrSettings(*(this->settings)),
+          localDomainAccessController(nullptr),
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
           dbusSettings(nullptr),
           ccDbusMessageRouterAdapter(nullptr),
@@ -489,6 +499,64 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     capabilitiesProxyBuilder->setDiscoveryQos(discoveryQos);
 
     capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
+
+    // Do this after local capabilities directory and message router have been initialized.
+    enableAccessController(messagingSettings, messageRouter);
+}
+
+void JoynrClusterControllerRuntime::enableAccessController(
+        MessagingSettings& messagingSettings,
+        std::shared_ptr<MessageRouter> messageRouter)
+{
+    if (!messagingSettings.enableAccessController()) {
+        return;
+    }
+
+    if (!joynr::util::fileExists(ACC_ENTRIES_FILE)) {
+        JOYNR_LOG_WARN(
+                logger, "AccessControl was enabled but {} does not exists.", ACC_ENTRIES_FILE);
+        return;
+    }
+
+    std::vector<std::shared_ptr<joynr::infrastructure::DacTypes::ControlEntry>>
+            accessControlEntries;
+    try {
+        joynr::serializer::deserializeFromJson(
+                accessControlEntries, joynr::util::loadStringFromFile(ACC_ENTRIES_FILE));
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+        return;
+    } catch (const std::invalid_argument& ex) {
+        JOYNR_LOG_ERROR(logger,
+                        "Could not deserialize access control entries from {}: {}",
+                        ACC_ENTRIES_FILE,
+                        ex.what());
+        return;
+    }
+
+    auto localDomainAccessStore = std::make_unique<joynr::LocalDomainAccessStore>();
+
+    // Use update methods to insert deserialized entries in access store
+    for (const std::shared_ptr<joynr::infrastructure::DacTypes::ControlEntry> entry :
+         accessControlEntries) {
+        if (auto masterEntry = std::dynamic_pointer_cast<
+                    joynr::infrastructure::DacTypes::MasterAccessControlEntry>(entry)) {
+            localDomainAccessStore->updateMasterAccessControlEntry(*masterEntry);
+        } else if (auto ownerEntry = std::dynamic_pointer_cast<
+                           joynr::infrastructure::DacTypes::OwnerAccessControlEntry>(entry)) {
+            localDomainAccessStore->updateOwnerAccessControlEntry(*ownerEntry);
+        } else {
+            JOYNR_LOG_ERROR(logger, "Access control contains unrecognized entry. Skipping...");
+        }
+    }
+
+    localDomainAccessController =
+            std::make_unique<joynr::LocalDomainAccessController>(std::move(localDomainAccessStore));
+
+    auto accessController = std::make_shared<joynr::AccessController>(
+            *localCapabilitiesDirectory, *localDomainAccessController);
+
+    messageRouter->setAccessController(accessController);
 }
 
 void JoynrClusterControllerRuntime::registerRoutingProvider()

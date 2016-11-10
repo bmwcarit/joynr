@@ -24,6 +24,7 @@
 #include <memory>
 #include <vector>
 
+#include "cluster-controller/access-control/LocalDomainAccessController.h"
 #include "cluster-controller/mqtt/MqttSettings.h"
 
 #include "joynr/ClientQCache.h"
@@ -135,9 +136,10 @@ protected:
     InProcessPublicationSender* inProcessPublicationSender;
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     ConnectorFactory* connectorFactory;
-    // take ownership, so a pointer is used
+
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
+    std::unique_ptr<LocalDomainAccessController> localDomainAccessController;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     DbusSettings* dbusSettings;
@@ -157,6 +159,8 @@ private:
     MqttSettings mqttSettings;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
 
+    void enableAccessController(MessagingSettings& messagingSettings,
+                                std::shared_ptr<MessageRouter> messageRouter);
     friend class ::JoynrClusterControllerRuntimeTest;
 };
 
