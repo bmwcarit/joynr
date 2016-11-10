@@ -91,7 +91,7 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
 {
     bool hasPermission = convertToBool(permission);
 
-    if (hasPermission == false) {
+    if (!hasPermission) {
         JOYNR_LOG_ERROR(owningAccessController.logger,
                         "Message {} to domain {}, interface {} failed ACL check",
                         message.getHeaderMessageId(),
@@ -157,7 +157,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
     bool hasPermission = convertToBool(permission);
 
-    if (hasPermission == false) {
+    if (!hasPermission) {
         JOYNR_LOG_ERROR(owningAccessController.logger,
                         "Message {} to domain {}, interface/operation {}/{} failed ACL check",
                         message.getHeaderMessageId(),
