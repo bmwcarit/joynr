@@ -35,7 +35,6 @@ class JoynrRuntimeException;
 class ISubscriptionCallback
 {
 public:
-    virtual void onError(const exceptions::JoynrRuntimeException& error) = 0;
     virtual ~ISubscriptionCallback() = default;
     virtual void execute(BasePublication&& publication) = 0;
     virtual void execute(const SubscriptionReply& subscriptionReply) = 0;

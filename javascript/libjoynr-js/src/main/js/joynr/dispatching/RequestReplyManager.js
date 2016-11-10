@@ -260,9 +260,6 @@ define(
                                 return;
                             }
 
-                            // augment the type information
-                            //var typedArgs = Typing.augmentTypes(request.params, typeRegistry);
-
                             // if there's an operation available to call
                             var result;
                             if (provider[request.methodName]

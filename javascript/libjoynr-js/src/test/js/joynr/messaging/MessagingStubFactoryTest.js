@@ -1,3 +1,5 @@
+/*jslint nomen: true */
+
 /*
  * #%L
  * %%
@@ -24,8 +26,12 @@ define([ "joynr/messaging/MessagingStubFactory"
         var messagingStub1, messagingStub2, factory1, factory2;
         var messagingStubFactory, address1, address2, address3;
 
-        function Address1() {}
-        function Address2() {}
+        function Address1() {
+            this._typeName = "Address1";
+        }
+        function Address2() {
+            this._typeName = "Address2";
+        }
 
         beforeEach(function(done) {
             messagingStub1 = {
@@ -98,3 +104,4 @@ define([ "joynr/messaging/MessagingStubFactory"
     });
 
 });
+/*jslint nomen: false */

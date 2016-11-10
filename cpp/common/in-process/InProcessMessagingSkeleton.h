@@ -19,10 +19,8 @@
 #ifndef INPROCESSMESSAGINGSKELETON_H
 #define INPROCESSMESSAGINGSKELETON_H
 
-#include <string>
-
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/IMessagingMulticastSubscriber.h"
+#include "joynr/IMessaging.h"
 
 namespace joynr
 {
@@ -34,16 +32,13 @@ class JoynrMessage;
     InProcessLibJoynrMessagingSkeleton.
   */
 
-class JOYNRCOMMON_EXPORT InProcessMessagingSkeleton : public IMessagingMulticastSubscriber
+class JOYNRCOMMON_EXPORT InProcessMessagingSkeleton : public IMessaging
 {
 public:
     ~InProcessMessagingSkeleton() override = default;
     void transmit(JoynrMessage& message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override = 0;
-
-    void registerMulticastSubscription(const std::string& multicastId) override = 0;
-    void unregisterMulticastSubscription(const std::string& multicastId) override = 0;
 
 private:
 };

@@ -17,8 +17,8 @@
  * #L%
  */
 
-define("joynr/messaging/browser/BrowserMulticastAddressCalculator", [ "joynr/util/UtilInternal"
-], function(Util) {
+define("joynr/messaging/browser/BrowserMulticastAddressCalculator", [ "joynr/util/Typing"
+], function(Typing) {
 
     /**
      * @constructor BrowserMulticastAddressCalculator
@@ -28,8 +28,8 @@ define("joynr/messaging/browser/BrowserMulticastAddressCalculator", [ "joynr/uti
      *            settings.globalAddress
      */
     var BrowserMulticastAddressCalculator = function BrowserMulticastAddressCalculator(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.globalAddress, "BrowserAddress", "settings.globalAddress");
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.globalAddress, "BrowserAddress", "settings.globalAddress");
 
         /**
          * Calculates the multicast address for the submitted joynr message

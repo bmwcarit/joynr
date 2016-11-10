@@ -21,11 +21,14 @@
 #define LIBJOYNRWEBSOCKETRUNTIME_H
 
 #include <memory>
+#include <functional>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "joynr/Settings.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -37,7 +40,7 @@ class LibJoynrWebSocketRuntime : public LibJoynrRuntime
     WebSocketSettings wsSettings;
 
 public:
-    explicit LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings);
+    LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings);
     ~LibJoynrWebSocketRuntime() override;
 
 protected:
@@ -48,9 +51,12 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);
 
     void onWebSocketError(const std::string& errorMessage);
+    void connect(std::function<void()> runtimeCreatedCallback);
 
     std::shared_ptr<WebSocketPpClient> websocket;
     ADD_LOGGER(LibJoynrWebSocketRuntime);
+
+    friend class JoynrRuntime;
 };
 
 } // namespace joynr

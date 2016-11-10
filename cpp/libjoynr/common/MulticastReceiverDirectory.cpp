@@ -38,7 +38,8 @@ void MulticastReceiverDirectory::registerMulticastReceiver(const std::string& mu
                     multicastId,
                     receiverId);
     std::lock_guard<std::recursive_mutex> lock(mutex);
-    multicastReceivers[multicastId].insert(receiverId);
+    MulticastMatcher matcher(multicastId);
+    multicastReceivers[matcher].insert(receiverId);
 }
 
 bool MulticastReceiverDirectory::unregisterMulticastReceiver(const std::string& multicastId,
@@ -50,7 +51,8 @@ bool MulticastReceiverDirectory::unregisterMulticastReceiver(const std::string& 
                     receiverId);
     std::lock_guard<std::recursive_mutex> lock(mutex);
     if (contains(multicastId)) {
-        std::unordered_set<std::string>& receivers = multicastReceivers[multicastId];
+        MulticastMatcher matcher(multicastId);
+        std::unordered_set<std::string>& receivers = multicastReceivers[matcher];
         receivers.erase(receiverId);
         JOYNR_LOG_DEBUG(logger,
                         "removed multicast receiver: multicastId={}, receiverId={}",
@@ -58,7 +60,7 @@ bool MulticastReceiverDirectory::unregisterMulticastReceiver(const std::string& 
                         receiverId);
         if (receivers.empty()) {
             JOYNR_LOG_DEBUG(logger, "removed last multicast receiver: multicastId={}", multicastId);
-            multicastReceivers.erase(multicastId);
+            multicastReceivers.erase(matcher);
         }
         return true;
     }
@@ -70,16 +72,22 @@ std::unordered_set<std::string> MulticastReceiverDirectory::getReceivers(
 {
     JOYNR_LOG_DEBUG(logger, "get multicast receivers: multicastId={}", multicastId);
     std::lock_guard<std::recursive_mutex> lock(mutex);
-    if (contains(multicastId)) {
-        return multicastReceivers[multicastId];
+
+    std::unordered_set<std::string> foundReceivers;
+    for (const std::pair<MulticastMatcher, std::unordered_set<std::string>>& pair :
+         multicastReceivers) {
+        if (pair.first.doesMatch(multicastId)) {
+            foundReceivers.insert(pair.second.cbegin(), pair.second.cend());
+        }
     }
-    return std::unordered_set<std::string>();
+    return foundReceivers;
 }
 
 bool MulticastReceiverDirectory::contains(const std::string& multicastId)
 {
     std::lock_guard<std::recursive_mutex> lock(mutex);
-    return multicastReceivers.find(multicastId) != multicastReceivers.cend();
+    MulticastMatcher matcher(multicastId);
+    return multicastReceivers.find(matcher) != multicastReceivers.cend();
 }
 
 bool MulticastReceiverDirectory::contains(const std::string& multicastId,

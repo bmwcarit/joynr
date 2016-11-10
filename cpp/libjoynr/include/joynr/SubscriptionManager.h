@@ -92,6 +92,7 @@ public:
      */
     void registerSubscription(const std::string& subscribeToName,
                               std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+                              std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
                               std::shared_ptr<SubscriptionQos> qos,
                               SubscriptionRequest& subscriptionRequest) override;
 
@@ -116,6 +117,7 @@ public:
             const std::string& providerParticipantId,
             const std::vector<std::string>& partitions,
             std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
             std::shared_ptr<SubscriptionQos> qos,
             MulticastSubscriptionRequest& subscriptionRequest,
             std::function<void()> onSuccess,
@@ -149,13 +151,33 @@ public:
             const std::string& subscriptionId) override;
 
     /**
-     * @brief Get a list of shared pointers to the subscription callbacks. The list is empty
+     * @brief Get a shared pointer to the subscription callback. The shared pointer point to null
      * if the multicast ID does not exist.
      *
      * @param multicastId
-     * @return std::forward_list<std::shared_ptr<ISubscriptionCallback>>
+     * @return <std::shared_ptr<ISubscriptionCallback>
      */
-    std::forward_list<std::shared_ptr<ISubscriptionCallback>> getMulticastSubscriptionCallbacks(
+    std::shared_ptr<ISubscriptionCallback> getMulticastSubscriptionCallback(
+            const std::string& multicastId) override;
+
+    /**
+     * @brief Get a shared pointer to the subscription listener. The shared pointer points to null
+     * if the subscription ID does not exist.
+     *
+     * @param subscriptionId
+     * @return std::shared_ptr<ISubscriptionListenerBase>
+     */
+    std::shared_ptr<ISubscriptionListenerBase> getSubscriptionListener(
+            const std::string& subscriptionId) override;
+
+    /**
+     * @brief Get a list of shared pointers to the subscription listeners. The list is empty
+     * if the multicast ID does not exist.
+     *
+     * @param multicastId
+     * @return std::forward_list<std::shared_ptr<ISubscriptionListenerBase>>
+     */
+    std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> getMulticastSubscriptionListeners(
             const std::string& multicastId) override;
 
 private:

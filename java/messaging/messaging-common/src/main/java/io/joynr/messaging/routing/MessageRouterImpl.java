@@ -260,10 +260,15 @@ public class MessageRouterImpl implements MessageRouter {
     public void shutdown() {
         scheduler.shutdown();
         try {
-            scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS);
+            if (!scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                logger.error("Message Scheduler did not shut down in time. Timedout out waiting for executor service to shutdown after {}ms.",
+                             TERMINATION_TIMEOUT);
+                logger.debug("Attempting to shutdown scheduler {} forcibly.", scheduler);
+                scheduler.shutdownNow();
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            logger.error("Message Scheduler did not shut down in time: {}", e.getMessage());
+            logger.error("Message Scheduler shutdown interrupted: {}", e.getMessage());
         }
     }
 

@@ -54,6 +54,18 @@ public class MulticastWildcardRegexFactoryTest {
     }
 
     @Test
+    public void testOnlySingleLevelWildcard() {
+        Pattern pattern = subject.createIdPattern("+");
+        assertNotNull(pattern);
+        assertEquals("[^/]+", pattern.pattern());
+        assertTrue(pattern.matcher("onelevelhere").matches());
+        assertFalse(pattern.matcher("one/two").matches());
+        assertFalse(pattern.matcher("/one").matches());
+        assertFalse(pattern.matcher("one/").matches());
+        assertFalse(pattern.matcher("/one/two").matches());
+    }
+
+    @Test
     public void testSingleWildcardInMiddle() {
         Pattern pattern = subject.createIdPattern("one/+/three");
         assertNotNull(pattern);
@@ -81,12 +93,25 @@ public class MulticastWildcardRegexFactoryTest {
     public void testMultiWildcardAtEnd() {
         Pattern pattern = subject.createIdPattern("one/two/*");
         assertNotNull(pattern);
-        assertEquals("one/two/.*$", pattern.pattern());
+        assertEquals("one/two(/.*)?$", pattern.pattern());
         assertTrue(pattern.matcher("one/two/anything").matches());
         assertTrue(pattern.matcher("one/two/3").matches());
         assertTrue(pattern.matcher("one/two/and another partition").matches());
         assertTrue(pattern.matcher("one/two/three/four").matches());
-        assertFalse(pattern.matcher("one/two").matches());
+        assertTrue(pattern.matcher("one/two").matches());
+        assertFalse(pattern.matcher("one/twothree").matches());
+        assertFalse(pattern.matcher("").matches());
+    }
+
+    @Test
+    public void testOnlyMultiWildcard() {
+        Pattern pattern = subject.createIdPattern("*");
+        assertNotNull(pattern);
+        assertEquals(".+", pattern.pattern());
+        assertTrue(pattern.matcher("one").matches());
+        assertTrue(pattern.matcher("one/two").matches());
+        assertTrue(pattern.matcher("one/two/three").matches());
+        assertFalse(pattern.matcher("").matches());
     }
 
     @Test(expected = JoynrIllegalStateException.class)

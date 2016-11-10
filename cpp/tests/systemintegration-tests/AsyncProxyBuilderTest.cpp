@@ -1,0 +1,116 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+#include <memory>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "tests/utils/MockObjects.h"
+#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/tests/testProxy.h"
+
+using namespace ::testing;
+using namespace joynr;
+
+class AsyncProxyBuilderTest : public ::testing::Test
+{
+public:
+    void SetUp()
+    {
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeoutMs(100);
+        auto integrationSettings = std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
+        Settings settings("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings");
+        Settings::merge(settings, *integrationSettings, false);
+        runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(integrationSettings));
+
+        runtime->start();
+    }
+
+    void TearDown()
+    {
+        const bool deleteChannel = true;
+        runtime->stop(deleteChannel);
+        // Delete persisted files
+        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+    }
+
+protected:
+    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
+    DiscoveryQos discoveryQos;
+};
+
+TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
+{
+    const std::string domain = "testDomain";
+    auto testProvider = std::make_shared<MockTestProvider>();
+
+    types::ProviderQos providerQos;
+    providerQos.setPriority(2);
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>(domain);
+
+    Semaphore onSuccessCalledSemaphore;
+
+    auto onSuccess = [&onSuccessCalledSemaphore](std::unique_ptr<tests::testProxy> proxy) {
+        onSuccessCalledSemaphore.notify();
+        EXPECT_NE(nullptr, proxy);
+    };
+
+    auto onFailure = [](const joynr::exceptions::DiscoveryException&) {
+        FAIL();
+    };
+
+    testProxyBuilder->setMessagingQos(MessagingQos(50000))
+                    ->setCached(false)
+                    ->setDiscoveryQos(discoveryQos)
+                    ->buildAsync(onSuccess, onFailure);
+
+    EXPECT_TRUE(onSuccessCalledSemaphore.waitFor(std::chrono::seconds(10)));
+}
+
+TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
+{
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>("unknownDomain");
+
+    Semaphore onErrorCalledSemaphore;
+
+    auto onSuccess = [](std::unique_ptr<tests::testProxy>) {
+        FAIL();
+    };
+
+    auto onFailure = [&onErrorCalledSemaphore](const joynr::exceptions::DiscoveryException&) {
+        onErrorCalledSemaphore.notify();
+    };
+
+    testProxyBuilder->setMessagingQos(MessagingQos(50000))
+                    ->setCached(false)
+                    ->setDiscoveryQos(discoveryQos)
+                    ->buildAsync(onSuccess, onFailure);
+
+    EXPECT_TRUE(onErrorCalledSemaphore.waitFor(std::chrono::seconds(10)));
+}

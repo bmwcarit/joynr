@@ -20,7 +20,7 @@
 
 using namespace ::testing;
 
-class IltConsumerAsyncMethodTest : public IltAbstractConsumerTest
+class IltConsumerAsyncMethodTest : public IltAbstractConsumerTest<::testing::Test>
 {
 public:
     IltConsumerAsyncMethodTest() = default;

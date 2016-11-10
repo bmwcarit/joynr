@@ -17,8 +17,8 @@
  * #L%
  */
 
-define("joynr/messaging/webmessaging/WebMessagingAddress", [ "joynr/util/Util"
-], function(Util) {
+define("joynr/messaging/webmessaging/WebMessagingAddress", [ "joynr/util/Typing"
+], function(Typing) {
 
     /**
      * @constructor WebMessagingAddress
@@ -27,9 +27,9 @@ define("joynr/messaging/webmessaging/WebMessagingAddress", [ "joynr/util/Util"
      * @param {String} settings.origin the default origin, the messages should be sent to
      */
     function WebMessagingAddress(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.window, "Object", "settings.window");
-        Util.checkProperty(settings.origin, "String", "settings.origin");
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.window, "Object", "settings.window");
+        Typing.checkProperty(settings.origin, "String", "settings.origin");
 
         /**
          * @name WebMessagingAddress#getWindow

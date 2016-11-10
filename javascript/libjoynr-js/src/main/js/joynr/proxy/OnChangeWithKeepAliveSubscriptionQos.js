@@ -20,11 +20,12 @@
 define(
         "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
         [
+            "joynr/util/Typing",
             "joynr/util/UtilInternal",
             "joynr/proxy/OnChangeSubscriptionQos",
             "joynr/system/LoggerFactory"
         ],
-        function(Util, OnChangeSubscriptionQos, LoggerFactory) {
+        function(Typing, Util, OnChangeSubscriptionQos, LoggerFactory) {
 
             var defaultSettings;
 
@@ -131,7 +132,7 @@ define(
                         this,
                         "_typeName",
                         "joynr.OnChangeWithKeepAliveSubscriptionQos");
-                Util.checkPropertyIfDefined(settings, "Object", "settings");
+                Typing.checkPropertyIfDefined(settings, "Object", "settings");
                 if (settings && !(settings instanceof OnChangeWithKeepAliveSubscriptionQos)) {
                     if (settings.maxInterval !== undefined) {
                         log
@@ -140,7 +141,7 @@ define(
                         settings.maxIntervalMs = settings.maxInterval;
                         settings.maxInterval = undefined;
                     }
-                    Util.checkPropertyIfDefined(
+                    Typing.checkPropertyIfDefined(
                             settings.maxIntervalMs,
                             "Number",
                             "settings.maxIntervalMs");
@@ -151,7 +152,7 @@ define(
                         settings.alertAfterIntervalMs = settings.alertAfterInterval;
                         settings.alertAfterInterval = undefined;
                     }
-                    Util.checkPropertyIfDefined(
+                    Typing.checkPropertyIfDefined(
                             settings.alertAfterIntervalMs,
                             "Number",
                             "settings.alertAfterIntervalMs");

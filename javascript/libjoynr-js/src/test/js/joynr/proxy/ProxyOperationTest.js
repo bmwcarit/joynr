@@ -103,14 +103,16 @@ define([
                                 {
                                     inputParameter : [ {
                                         name : "radioStation",
-                                        type : 'joynr.vehicle.radiotypes.RadioStation'
+                                        type : 'joynr.vehicle.radiotypes.RadioStation',
+                                        javascriptType : 'joynr.vehicle.radiotypes.RadioStation'
                                     }
                                     ]
                                 },
                                 {
                                     inputParameter : [ {
                                         name : "radioStation",
-                                        type : 'String'
+                                        type : 'String',
+                                        javascriptType : 'string'
                                     }
                                     ],
                                     outputParameter : []
@@ -257,7 +259,8 @@ define([
                                     testForCorrectReturnValues("testMethodHavingEnumAsReturnValue",
                                                                 [ {
                                                                     name : "returnEnum",
-                                                                    type : TestEnum.ZERO._typeName
+                                                                    type : TestEnum.ZERO._typeName,
+                                                                    javascriptType : TestEnum.ZERO._typeName
                                                                 }],
                                                                 ["ZERO"],
                                                                 {
@@ -303,10 +306,12 @@ define([
                                     testForCorrectReturnValues("testMultipleReturnValues",
                                                                 [ {
                                                                     name : "returnEnum",
-                                                                    type : TestEnum.ZERO._typeName
+                                                                    type : TestEnum.ZERO._typeName,
+                                                                    javascriptType : TestEnum.ZERO._typeName
                                                                 }, {
                                                                     name : "returnString",
-                                                                    type : String
+                                                                    type : "String",
+                                                                    javascriptType : "string"
                                                                 }],
                                                                 ["ZERO", "stringValue"],
                                                                 {
@@ -327,7 +332,8 @@ define([
                                                                 [ {
                                                                     name : "returnEnum",
                                                                     // currently, we generate the type of the array element into the signature
-                                                                    type : TestEnum.ZERO._typeName
+                                                                    type : TestEnum.ZERO._typeName + "[]",
+                                                                    javascriptType : "Array"
                                                                 }],
                                                                 [["ZERO", "ONE"]],
                                                                 {

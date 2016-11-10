@@ -37,30 +37,11 @@ define("joynr/dispatching/types/Reply", [
      */
     function Reply(settings) {
         var i;
-        Util.checkProperty(settings, [
-            "joynr.Reply",
-            "Object"
-        ], "settings");
-        Util.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
-        // "response" is not set in case an exception is returned
-        Util.checkPropertyIfDefined(settings.response, "Array", "settings.response");
         if (settings.response) {
             for (i = 0; i < settings.response.length; i++) {
                 settings.response[i] = Util.ensureTypedValues(settings.response[i]);
             }
         }
-        // if present "error" must be one of the exception types
-        Util.checkPropertyIfDefined(settings.error, [
-            "Object",
-            "ApplicationException",
-            "DiscoveryException",
-            "IllegalAccessException",
-            "JoynrException",
-            "JoynrRuntimeException",
-            "MethodInvocationException",
-            "ProviderRuntimeException"
-        ], "settings.error");
-
         // must contain exactly one of the two alternatives
         if (!settings.response && !settings.error) {
             throw new Error("Reply object does neither contain response nor error");
@@ -73,11 +54,17 @@ define("joynr/dispatching/types/Reply", [
          * @name Reply#requestReplyId
          * @type String
          */
+        this.requestReplyId = settings.requestReplyId;
         /**
          * @name Reply#response
          * @type Array
          */
-        Util.extend(this, settings);
+        this.response = settings.response;
+        /**
+         * @name Reply#error
+         * @type Object
+         */
+        this.error = settings.error;
 
         /**
          * The joynr type name
@@ -85,7 +72,13 @@ define("joynr/dispatching/types/Reply", [
          * @name Reply#_typeName
          * @type String
          */
-        Typing.augmentTypeName(this, "joynr");
+        Object.defineProperty(this, "_typeName", {
+            value : "joynr.Reply",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
 
         return Object.freeze(this);
     }

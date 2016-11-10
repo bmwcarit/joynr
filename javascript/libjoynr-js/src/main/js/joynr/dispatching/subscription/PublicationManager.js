@@ -940,7 +940,7 @@ define(
 
                             // make sure the provider is registered
                             if (provider === undefined) {
-                                log.error("Provider with participantId "
+                                log.info("Provider with participantId "
                                     + providerParticipantId
                                     + "not found. Queueing subscription request...");
                                 queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
@@ -1470,7 +1470,7 @@ define(
                                         delete pendingSubscriptions[pendingSubscription];
 
                                         /*jslint nomen:true*/
-                                        if (subscriptionObject._typeName === SubscriptionRequest._typeName) {
+                                        if (subscriptionObject.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE) {
                                             // call attribute subscription handler
                                             this.handleSubscriptionRequest(
                                                 subscriptionObject.proxyParticipantId,
@@ -1478,7 +1478,7 @@ define(
                                                 subscriptionObject);
                                         } else {
                                             // call broadcast subscription handler
-                                            if (subscriptionObject._typeName === BroadcastSubscriptionRequest._typeName) {
+                                            if (subscriptionObject.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST) {
                                                 this.handleBroadcastSubscriptionRequest(
                                                         subscriptionObject.proxyParticipantId,
                                                         subscriptionObject.providerParticipantId,
@@ -1503,7 +1503,7 @@ define(
                  * @function
                  */
                 this.restore =
-                        function restore() {
+                        function restore(callbackAsync) {
                             if (!isReady()) {
                                 throw new Error("PublicationManager is already shut down");
                             }
@@ -1521,24 +1521,27 @@ define(
                                             try {
                                                 subscriptionInfo = JSON.parse(item);
                                                 /*jslint nomen:true*/
-                                                if (subscriptionInfo._typeName === SubscriptionRequest._typeName) {
+                                                if (subscriptionInfo.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE) {
                                                     // call attribute subscription handler
                                                     this.handleSubscriptionRequest(
                                                         subscriptionInfo.proxyParticipantId,
                                                         subscriptionInfo.providerParticipantId,
-                                                        subscriptionInfo);
+                                                        subscriptionInfo,
+                                                        callbackAsync);
                                                 } else {
                                                     // call broadcast subscription handler
-                                                    if (subscriptionInfo._typeName === BroadcastSubscriptionRequest._typeName) {
+                                                    if (subscriptionInfo.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST) {
                                                         this.handleBroadcastSubscriptionRequest(
                                                                 subscriptionInfo.proxyParticipantId,
                                                                 subscriptionInfo.providerParticipantId,
-                                                                subscriptionInfo);
+                                                                subscriptionInfo,
+                                                                callbackAsync);
                                                     } else {
                                                         this.handleMulticastSubscriptionRequest(
                                                                 subscriptionInfo.proxyParticipantId,
                                                                 subscriptionInfo.providerParticipantId,
-                                                                subscriptionInfo);
+                                                                subscriptionInfo,
+                                                                callbackAsync);
                                                     }
                                                 }
                                                 /*jslint nomen:false*/

@@ -26,19 +26,19 @@ define("joynr/messaging/inprocess/InProcessMessagingStub", [], function() {
      * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton to send the joynr messages to
      */
     function InProcessMessagingStub(inProcessMessagingSkeleton) {
-
-        /**
-         * @name InProcessMessagingStub#transmit
-         * @function
-         *
-         * @param {JoynrMessage} message the message to transmit
-         * @returns {Object} A+ promise object
-         */
-        this.transmit = function transmit(joynrMessage) {
-            return inProcessMessagingSkeleton.receiveMessage(joynrMessage);
-        };
+        this.inProcessMessagingSkeleton = inProcessMessagingSkeleton;
     }
 
+    /**
+     * @name InProcessMessagingStub#transmit
+     * @function
+     *
+     * @param {JoynrMessage} message the message to transmit
+     * @returns {Object} A+ promise object
+     */
+    InProcessMessagingStub.prototype.transmit = function transmit(joynrMessage) {
+        return this.inProcessMessagingSkeleton.receiveMessage(joynrMessage);
+    };
     return InProcessMessagingStub;
 
 });

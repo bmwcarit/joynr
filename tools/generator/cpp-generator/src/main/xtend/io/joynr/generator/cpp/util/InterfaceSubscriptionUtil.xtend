@@ -106,7 +106,7 @@ class InterfaceSubscriptionUtil {
 std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className»::«ENDIF»subscribeTo«attribute.joynrName.toFirstUpper»(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 			std::shared_ptr<joynr::SubscriptionQos> subscriptionQos«IF updateSubscription»,
-			std::string& subscriptionId«ENDIF»)
+			const std::string& subscriptionId«ENDIF»)
 '''
 
 	def produceSubscribeToAttributeSignature(FAttribute attribute) {
@@ -127,7 +127,7 @@ std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className�
 
 	def produceUnsubscribeFromAttributeSignature(FAttribute attribute, String className)
 '''
-void «IF className != null»«className»::«ENDIF»unsubscribeFrom«attribute.joynrName.toFirstUpper»(std::string& subscriptionId)
+void «IF className != null»«className»::«ENDIF»unsubscribeFrom«attribute.joynrName.toFirstUpper»(const std::string& subscriptionId)
 '''
 
 	def produceUnsubscribeFromAttributeSignature(FAttribute attribute) {
@@ -139,7 +139,7 @@ void «IF className != null»«className»::«ENDIF»unsubscribeFrom«attribute.
 «val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className»::«ENDIF»subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 			«IF updateSubscription»
-			std::string& subscriptionId,
+			const std::string& subscriptionId,
 			«ENDIF»
 			«IF broadcast.selective»
 			const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
@@ -180,7 +180,7 @@ std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className�
 
 	def produceUnsubscribeFromBroadcastSignature(FBroadcast broadcast, String className)
 '''
-void «IF className != null»«className»::«ENDIF»unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(std::string& subscriptionId)
+void «IF className != null»«className»::«ENDIF»unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(const std::string& subscriptionId)
 '''
 
 	def produceUnsubscribeFromBroadcastSignature(FBroadcast broadcast) {

@@ -50,8 +50,6 @@
 #include "joynr/IMessaging.h"
 #include "joynr/IClientCache.h"
 #include "joynr/ReplyCaller.h"
-#include "joynr/ArbitrationStatus.h"
-#include "joynr/IArbitrationListener.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
@@ -97,6 +95,7 @@
 #include "joynr/IProxyBuilder.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
+#include "joynr/exceptions/JoynrException.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 
@@ -158,6 +157,8 @@ public:
     MOCK_METHOD1_T(setMessagingQos, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
     MOCK_METHOD1_T(setDiscoveryQos, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
     MOCK_METHOD0_T(build, T*());
+    MOCK_METHOD2_T(buildAsync, void(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
+                                    std::function<void(const joynr::exceptions::DiscoveryException&)>));
 };
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
@@ -188,8 +189,6 @@ public:
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
-    MOCK_METHOD1(registerMulticastSubscription, void(const std::string& multicastId));
-    MOCK_METHOD1(unregisterMulticastSubscription, void(const std::string& multicastId));
     MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };
 
@@ -725,6 +724,12 @@ public:
                 false)
     { }
 
+    MOCK_METHOD3(resolveNextHopAsync,
+                 std::shared_ptr<joynr::Future<bool>>(
+                     const std::string& participantId,
+                     std::function<void(const bool& resolved)> onSuccess,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
+
     MOCK_METHOD5(addMulticastReceiverAsync,
         std::shared_ptr<joynr::Future<void>> (
             const std::string& multicastId,
@@ -905,22 +910,39 @@ public:
     using SubscriptionManager::SubscriptionManager;
 
     MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& subscriptionId));
-    MOCK_METHOD4(registerSubscription,void(const std::string& subscribeToName,
-                                                    std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
-                                                    std::shared_ptr<joynr::SubscriptionQos> qos,
-                                                    joynr::SubscriptionRequest& subscriptionRequest));
-    MOCK_METHOD9(registerSubscription,void(const std::string& subscribeToName,
+    MOCK_METHOD5(registerSubscription,void(const std::string& subscribeToName,
+                                           std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
+                                           std::shared_ptr<joynr::ISubscriptionListenerBase> subscriptionListener,
+                                           std::shared_ptr<joynr::SubscriptionQos> qos,
+                                           joynr::SubscriptionRequest& subscriptionRequest));
+    MOCK_METHOD10(registerSubscription,void(const std::string& subscribeToName,
                                            const std::string& subscriberParticipantId,
                                            const std::string& providerParticipantId,
                                            const std::vector<std::string>& partitions,
                                            std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
+                                           std::shared_ptr<joynr::ISubscriptionListenerBase> subscriptionListener,
                                            std::shared_ptr<joynr::SubscriptionQos> qos,
                                            joynr::MulticastSubscriptionRequest& subscriptionRequest,
                                            std::function<void()> onSuccess,
                                            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
     MOCK_METHOD1(unregisterSubscription, void(const std::string& subscriptionId));
     MOCK_METHOD1(touchSubscriptionState,void(const std::string& subscriptionId));
-    MOCK_METHOD1(getMulticastSubscriptionCallbacks, std::forward_list<std::shared_ptr<joynr::ISubscriptionCallback>>(const std::string& multicastId));
+    MOCK_METHOD1(
+        getMulticastSubscriptionCallback,
+        std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& multicastId)
+    );
+    MOCK_METHOD1(
+        getSubscriptionListener,
+        std::shared_ptr<joynr::ISubscriptionListenerBase>(
+                const std::string& subscriptionId
+        )
+    );
+    MOCK_METHOD1(
+        getMulticastSubscriptionListeners,
+        std::forward_list<std::shared_ptr<joynr::ISubscriptionListenerBase>>(
+                const std::string& multicastId
+        )
+    );
 };
 
 class MockSubscriptionCallback : public joynr::ISubscriptionCallback {
@@ -1130,13 +1152,6 @@ public:
                              const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
     MOCK_CONST_METHOD0(isInitialized, bool ());
     MOCK_CONST_METHOD0(isConnected, bool ());
-};
-
-class MockArbitrationListener : public joynr::IArbitrationListener {
-public:
-    MOCK_METHOD1(setArbitrationStatus, void(joynr::ArbitrationStatus::ArbitrationStatusType arbitrationStatus));
-    MOCK_METHOD1(setParticipantId, void(const std::string& participantId));
-    MOCK_METHOD1(setArbitrationError, void(const joynr::exceptions::DiscoveryException& error));
 };
 
 #ifdef _MSC_VER

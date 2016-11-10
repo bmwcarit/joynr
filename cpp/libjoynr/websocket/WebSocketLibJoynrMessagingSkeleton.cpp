@@ -18,8 +18,9 @@
  */
 #include "WebSocketLibJoynrMessagingSkeleton.h"
 
-#include "joynr/serializer/Serializer.h"
+#include "joynr/JoynrMessage.h"
 #include "joynr/MessageRouter.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -64,6 +65,10 @@ void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const std::string
             return;
         }
         JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
+
+        if (joynrMsg.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+            joynrMsg.setReceivedFromGlobal(true);
+        }
 
         auto onFailure = [joynrMsg](const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_ERROR(logger,

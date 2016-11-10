@@ -71,7 +71,7 @@ define([
                         var subscriptionManagerOnError;
                         var log =
                                 LoggerFactory
-                                        .getLogger("joynr.dispatching.TestSubscriptionManager");
+                                        .getLogger("joynr.dispatching.SubscriptionManagerTest");
                         var fakeTime = 1371553100000;
                         var dispatcherSpy;
                         var dispatcherSpyOnError;

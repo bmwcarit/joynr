@@ -255,7 +255,7 @@ function start_java_provider_cc {
 	log 'Starting Java provider CC (with in process clustercontroller).'
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport=mqtt > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport="mqtt" > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider cc with PID $PROVIDER_PID"
 	# Allow some time for startup
@@ -420,6 +420,7 @@ function clean_up {
 	cd $ILT_DIR
 	rm -f derby.log npm-debug.log
 	rm -fr localStorageStorage
+	rm -rf target/discoverydb
 }
 
 # prepare JavaScript

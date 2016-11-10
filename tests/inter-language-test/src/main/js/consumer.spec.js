@@ -1744,7 +1744,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             });
         });
 
-        it("callSubscribeBroadcastWithSinglePrimitiveParameter", function() {
+        callSubscribeBroadcastWithSinglePrimitiveParameter = function(partitionsToUse) {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
             var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
@@ -1759,6 +1759,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 log("callSubscribeBroadcastWithSinglePrimitiveParameter");
                 testInterfaceProxy.broadcastWithSinglePrimitiveParameter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
+                    "partitions" : partitionsToUse,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError,
                     "onSubscribed": spy.onSubscribed
@@ -1801,7 +1802,9 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 // best if we would wait here for some time, and then fire the broadcast
                 spy.onFulfilled.reset();
                 spy.onError.reset();
-                testInterfaceProxy.methodToFireBroadcastWithSinglePrimitiveParameter().then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.methodToFireBroadcastWithSinglePrimitiveParameter({
+                    partitions: partitionsToUse
+                }).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
@@ -1850,9 +1853,17 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
+        }
+
+        it("callSubscribeBroadcastWithSinglePrimitiveParameter_NoPartitions", function() {
+            callSubscribeBroadcastWithSinglePrimitiveParameter([]);
         });
 
-        it("callSubscribeBroadcastWithMultiplePrimitiveParameters", function() {
+        it("callSubscribeBroadcastWithSinglePrimitiveParameter_SimplePartitions", function() {
+            callSubscribeBroadcastWithSinglePrimitiveParameter(["partition0", "partition1"]);
+        });
+
+        callSubscribeBroadcastWithMultiplePrimitiveParameters = function(partitionsToUse) {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
             var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
@@ -1866,6 +1877,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 log("subscribeBroadcastWithMultiplePrimitiveParameters");
                 testInterfaceProxy.broadcastWithMultiplePrimitiveParameters.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
+                    "partitions" : partitionsToUse,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError,
                     "onSubscribed": spy.onSubscribed
@@ -1896,7 +1908,9 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 // execute fire method here
                 spy.onFulfilled.reset();
                 spy.onError.reset();
-                testInterfaceProxy.methodToFireBroadcastWithMultiplePrimitiveParameters().then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.methodToFireBroadcastWithMultiplePrimitiveParameters({
+                    partitions: partitionsToUse
+                }).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
@@ -1947,9 +1961,17 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
+        }
+
+        it("callSubscribeBroadcastWithMultiplePrimitiveParameters_NoPartitions", function() {
+            callSubscribeBroadcastWithMultiplePrimitiveParameters([]);
         });
 
-        it("callSubscribeBroadcastWithSingleArrayParameter", function() {
+        it("callSubscribeBroadcastWithMultiplePrimitiveParameters_SimplePartitions", function() {
+            callSubscribeBroadcastWithMultiplePrimitiveParameters(["partition0", "partition1"]);
+        });
+
+        callSubscribeBroadcastWithSingleArrayParameter = function(partitionsToUse) {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
             var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
@@ -1963,6 +1985,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 log("callSubscribeBroadcastWithSingleArrayParameter");
                 testInterfaceProxy.broadcastWithSingleArrayParameter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
+                    "partitions" : partitionsToUse,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError,
                     "onSubscribed": spy.onSubscribed
@@ -1993,7 +2016,9 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 // execute fire method here
                 spy.onFulfilled.reset();
                 spy.onError.reset();
-                testInterfaceProxy.methodToFireBroadcastWithSingleArrayParameter().then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.methodToFireBroadcastWithSingleArrayParameter({
+                    partitions: partitionsToUse
+                }).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
@@ -2042,9 +2067,17 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
+        }
+
+        it("callSubscribeBroadcastWithSingleArrayParameter_NoPartitions", function() {
+            callSubscribeBroadcastWithSingleArrayParameter([]);
         });
 
-        it("callSubscribeBroadcastWithMultipleArrayParameters", function() {
+        it("callSubscribeBroadcastWithSingleArrayParameter_SimplePartitions", function() {
+            callSubscribeBroadcastWithSingleArrayParameter(["partition0", "partition1"]);
+        });
+
+        callSubscribeBroadcastWithMultipleArrayParameters = function(partitionsToUse) {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
             var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
@@ -2058,6 +2091,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 log("callSubscribeBroadcastWithMultipleArrayParameters");
                 testInterfaceProxy.broadcastWithMultipleArrayParameters.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
+                    "partitions" : partitionsToUse,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError,
                     "onSubscribed": spy.onSubscribed
@@ -2089,7 +2123,9 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 // execute fire method here
                 spy.onFulfilled.reset();
                 spy.onError.reset();
-                testInterfaceProxy.methodToFireBroadcastWithMultipleArrayParameters().then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.methodToFireBroadcastWithMultipleArrayParameters({
+                    partitions: partitionsToUse
+                }).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
@@ -2140,9 +2176,17 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
+        }
+
+        it("callSubscribeBroadcastWithMultipleArrayParameters_NoPartitions", function() {
+            callSubscribeBroadcastWithMultipleArrayParameters([]);
         });
 
-        it("callSubscribeBroadcastWithSingleEnumerationParameter", function() {
+        it("callSubscribeBroadcastWithMultipleArrayParameters_SimplePartitions", function() {
+            callSubscribeBroadcastWithMultipleArrayParameters(["partition0", "partition1"]);
+        });
+
+        callSubscribeBroadcastWithSingleEnumerationParameter = function(partitionsToUse) {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
             var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
@@ -2156,6 +2200,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 log("callSubscribeBroadcastWithSingleEnumerationParameter");
                 testInterfaceProxy.broadcastWithSingleEnumerationParameter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
+                    "partitions" : partitionsToUse,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError,
                     "onSubscribed": spy.onSubscribed
@@ -2186,7 +2231,9 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 // execute fire method here
                 spy.onFulfilled.reset();
                 spy.onError.reset();
-                testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter().then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter({
+                    partitions: partitionsToUse
+                }).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
@@ -2235,9 +2282,17 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
+        }
+
+        it("callSubscribeBroadcastWithSingleEnumerationParameter_NoPartitions", function() {
+            callSubscribeBroadcastWithSingleEnumerationParameter([]);
         });
 
-        it("callSubscribeBroadcastWithMultipleEnumerationParameter", function() {
+        it("callSubscribeBroadcastWithSingleEnumerationParameter_SimplePartitions", function() {
+            callSubscribeBroadcastWithSingleEnumerationParameter(["partition0", "partition1"]);
+        });
+
+        callSubscribeBroadcastWithMultipleEnumerationParameter = function(partitionsToUse) {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
             var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
@@ -2251,6 +2306,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 log("callSubscribeBroadcastWithMultipleEnumerationParameters");
                 testInterfaceProxy.broadcastWithMultipleEnumerationParameters.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
+                    "partitions" : partitionsToUse,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError,
                     "onSubscribed": spy.onSubscribed
@@ -2284,7 +2340,9 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 // execute fire method here
                 spy.onFulfilled.reset();
                 spy.onError.reset();
-                testInterfaceProxy.methodToFireBroadcastWithMultipleEnumerationParameters().then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.methodToFireBroadcastWithMultipleEnumerationParameters({
+                    partitions: partitionsToUse
+                }).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
@@ -2334,9 +2392,17 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
+        }
+
+        it("callSubscribeBroadcastWithMultipleEnumerationParameter_NoPartitions", function() {
+            callSubscribeBroadcastWithMultipleEnumerationParameter([]);
         });
 
-        it("callSubscribeBroadcastWithSingleStructParameter", function() {
+        it("callSubscribeBroadcastWithMultipleEnumerationParameter_SimplePartitions", function() {
+            callSubscribeBroadcastWithMultipleEnumerationParameter(["partition0", "partition1"]);
+        });
+
+        callSubscribeBroadcastWithSingleStructParameter = function(partitionsToUse) {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
             var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
@@ -2350,6 +2416,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 log("callSubscribeBroadcastWithSingleStructParameter");
                 testInterfaceProxy.broadcastWithSingleStructParameter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
+                    "partitions" : partitionsToUse,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError,
                     "onSubscribed": spy.onSubscribed
@@ -2385,7 +2452,9 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 // best if we would wait here for some time, and then fire the broadcast
                 spy.onFulfilled.reset();
                 spy.onError.reset();
-                testInterfaceProxy.methodToFireBroadcastWithSingleStructParameter().then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.methodToFireBroadcastWithSingleStructParameter({
+                    partitions: partitionsToUse
+                }).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
@@ -2434,9 +2503,17 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
+        }
+
+        it("callSubscribeBroadcastWithSingleStructParameter_NoPartitions", function() {
+            callSubscribeBroadcastWithSingleStructParameter([]);
         });
 
-        it("callSubscribeBroadcastWithMultipleStructParameter", function() {
+        it("callSubscribeBroadcastWithSingleStructParameter_SimplePartitions", function() {
+            callSubscribeBroadcastWithSingleStructParameter(["partition0", "partition1"]);
+        });
+
+        callSubscribeBroadcastWithMultipleStructParameter = function(partitionsToUse) {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
             var subscriptionId;
             var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
@@ -2449,6 +2526,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 log("callSubscribeBroadcastWithMultipleStructParameters");
                 testInterfaceProxy.broadcastWithMultipleStructParameters.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
+                    "partitions" : partitionsToUse,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError,
                     "onSubscribed": spy.onSubscribed
@@ -2479,12 +2557,14 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 // execute fire method here
                 spy.onFulfilled.reset();
                 spy.onError.reset();
-                testInterfaceProxy.methodToFireBroadcastWithMultipleStructParameters().then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.methodToFireBroadcastWithMultipleStructParameters({
+                    partitions: partitionsToUse
+                }).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-            }, "callSubscribeBroadcastWithMultipleStructParameters methodToFireBroadcastWithSinglePrimitiveParameter", 5000);
+            }, "callSubscribeBroadcastWithMultipleStructParameters methodToFireBroadcastWithMultipleStructParameters", 5000);
 
             runs(function() {
                 if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
@@ -2522,6 +2602,120 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
             }, "callSubscribeBroadcastWithMultipleStructParameters unsubscribe", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+            });
+        }
+
+        it("callSubscribeBroadcastWithMultipleStructParameter_NoPartitions", function() {
+            callSubscribeBroadcastWithMultipleStructParameter([]);
+        });
+
+        it("callSubscribeBroadcastWithMultipleStructParameter_SimplePartitions", function() {
+            callSubscribeBroadcastWithMultipleStructParameter(["partition0", "partition1"]);
+        });
+
+        it("doNotReceivePublicationsForOtherPartitions", function() {
+            var spy = jasmine.createSpyObj("spy",
+                [ "onFulfilled", "onError", "onPublication", "onPublicationError", "onSubscribed" ]);
+            var subscriptionId;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
+
+            var subscribeToPartitions = ["partition0", "partition1"];
+            var broadcastPartition = ["otherPartition"];
+
+            runs(function() {
+                log("doNotReceivePublicationsForOtherPartitions");
+                testInterfaceProxy.broadcastWithSingleEnumerationParameter.subscribe({
+                    "subscriptionQos": subscriptionQosOnChange,
+                    "partitions" : subscribeToPartitions,
+                    "onReceive": spy.onPublication,
+                    "onError": spy.onPublicationError,
+                    "onSubscribed": spy.onSubscribed
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "doNotReceivePublicationsForOtherPartitions waitForSubscribe", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+                subscriptionId = spy.onFulfilled.calls[0].args[0];
+                log("subscriptionId = " + subscriptionId);
+            });
+
+            waitsFor(function() {
+                return spy.onSubscribed.callCount > 0;
+            }, "doNotReceivePublicationsForOtherPartitions onSubscribed", 5000);
+
+            runs(function() {
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                spy.onPublication.reset();
+                spy.onPublicationError.reset();
+                testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter({
+                    partitions: broadcastPartition
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0 ||
+                       spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
+            }, "doNotReceivePublicationsForOtherPartitions receiveNoPublication", 2000);
+
+            runs(function() {
+                // The partitions do not match. Expect no broadcast
+                expect(spy.onPublication.callCount).toEqual(0);
+                expect(spy.onPublicationError.callCount).toEqual(0);
+            });
+
+            runs(function() {
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                spy.onPublication.reset();
+                spy.onPublicationError.reset();
+                // Make sure there is no other reason that we did not receive any broadcast
+                testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter({
+                    partitions: subscribeToPartitions
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount;
+            }, "doNotReceivePublicationsForOtherPartitions receivePublication", 2000);
+
+            waitsFor(function() {
+                // Wait until testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter finished
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "doNotReceivePublicationsForOtherPartitions fireBroadcastFinished", 5000);
+
+            runs(function() {
+                expect(spy.onPublication.callCount).toEqual(1);
+                expect(spy.onPublicationError.callCount).toEqual(0);
+            });
+
+            runs(function() {
+                // unsubscribe
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                testInterfaceProxy.broadcastWithMultipleStructParameters.unsubscribe({
+                    "subscriptionId": subscriptionId
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "doNotReceivePublicationsForOtherPartitions unsubscribe", 5000);
 
             runs(function() {
                 if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {

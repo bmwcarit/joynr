@@ -19,15 +19,14 @@
 #ifndef INTERFACEREGISTRAR_H
 #define INTERFACEREGISTRAR_H
 
-#include "joynr/JoynrExport.h"
+#include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_map>
 
 #include "joynr/IRequestInterpreter.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/RequestCaller.h"
-
-#include <mutex>
-#include <unordered_map>
-#include <string>
-#include <memory>
 
 namespace joynr
 {
@@ -71,7 +70,6 @@ public:
 private:
     InterfaceRegistrar();
     DISALLOW_COPY_AND_ASSIGN(InterfaceRegistrar);
-    static InterfaceRegistrar* registrarInstance;
 
     // Thread safe hash table of request interpreters
     std::unordered_map<std::string, std::shared_ptr<IRequestInterpreter>> requestInterpreters;

@@ -35,7 +35,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
 
-#include "joynr/IMessagingMulticastSubscriber.h"
+#include "joynr/IMessaging.h"
 
 namespace joynr
 {
@@ -56,8 +56,7 @@ class WebSocketAddress;
  * @class WebSocketCcMessagingSkeleton
  * @brief Messaging skeleton for the cluster controller
  */
-class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT WebSocketCcMessagingSkeleton
-        : public IMessagingMulticastSubscriber
+class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT WebSocketCcMessagingSkeleton : public IMessaging
 {
     using Config = websocketpp::config::asio;
     using MessagePtr = Config::message_type::ptr;
@@ -85,9 +84,6 @@ public:
     void transmit(JoynrMessage& message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
-
-    void registerMulticastSubscription(const std::string& multicastId) override;
-    void unregisterMulticastSubscription(const std::string& multicastId) override;
 
 private:
     void onConnectionClosed(ConnectionHandle hdl);

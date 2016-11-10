@@ -246,5 +246,17 @@ define(
                                             .toBe(2);
                                     done();
                                 });
+                        it("throws error if fire is invoked with invalid partitions", function() {
+                            expect(function() {
+                                weakSignal.fire(weakSignal.createBroadcastOutputParameters(), [ "_"
+                                ]);
+                            }).toThrow();
+                            expect(
+                                    function() {
+                                        weakSignal.fire(weakSignal
+                                                .createBroadcastOutputParameters(), [ "./$"
+                                        ]);
+                                    }).toThrow();
+                        });
                     });
         }); // require

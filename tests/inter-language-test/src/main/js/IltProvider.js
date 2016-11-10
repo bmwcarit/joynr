@@ -677,98 +677,98 @@ exports.implementation = {
     broadcastWithMultipleStructParameters : {},
     broadcastWithFiltering : {},
 
-    methodToFireBroadcastWithSinglePrimitiveParameter : function() {
-        prettyLog("IltProvider.methodToFireBroadcastWithSinglePrimitiveParameter() called");
+    methodToFireBroadcastWithSinglePrimitiveParameter : function(opArgs) {
+        prettyLog("IltProvider.methodToFireBroadcastWithSinglePrimitiveParameter(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
             var stringOut = "boom";
             var outputParameters = self.broadcastWithSinglePrimitiveParameter.createBroadcastOutputParameters();
             outputParameters.setStringOut(stringOut);
-            self.broadcastWithSinglePrimitiveParameter.fire(outputParameters);
+            self.broadcastWithSinglePrimitiveParameter.fire(outputParameters, opArgs.partitions);
             resolve();
         });
     },
 
-    methodToFireBroadcastWithMultiplePrimitiveParameters : function() {
-        prettyLog("IltProvider.methodToFireBroadcastWithMultiplePrimitiveParameters() called");
+    methodToFireBroadcastWithMultiplePrimitiveParameters : function(opArgs) {
+        prettyLog("IltProvider.methodToFireBroadcastWithMultiplePrimitiveParameters(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
             var stringOut = "boom";
             var doubleOut = 1.1;
             var outputParameters = self.broadcastWithMultiplePrimitiveParameters.createBroadcastOutputParameters();
             outputParameters.setStringOut(stringOut);
             outputParameters.setDoubleOut(doubleOut);
-            self.broadcastWithMultiplePrimitiveParameters.fire(outputParameters);
+            self.broadcastWithMultiplePrimitiveParameters.fire(outputParameters, opArgs.partitions);
             resolve();
         });
     },
 
-    methodToFireBroadcastWithSingleArrayParameter : function() {
-        prettyLog("IltProvider.methodToFireBroadcastWithSingleArrayParameter() called");
+    methodToFireBroadcastWithSingleArrayParameter : function(opArgs) {
+        prettyLog("IltProvider.methodToFireBroadcastWithSingleArrayParameter(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
             var stringArrayOut = IltUtil.createStringArray();
             var outputParameters = self.broadcastWithSingleArrayParameter.createBroadcastOutputParameters();
             outputParameters.setStringArrayOut(stringArrayOut);
-            self.broadcastWithSingleArrayParameter.fire(outputParameters);
+            self.broadcastWithSingleArrayParameter.fire(outputParameters, opArgs.partitions);
             resolve();
         });
     },
 
-    methodToFireBroadcastWithMultipleArrayParameters : function() {
-        prettyLog("IltProvider.methodToFireBroadcastWithMultipleArrayParameters() called");
+    methodToFireBroadcastWithMultipleArrayParameters : function(opArgs) {
+        prettyLog("IltProvider.methodToFireBroadcastWithMultipleArrayParameters(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
             var uInt64ArrayOut = IltUtil.createUInt64Array();
             var structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();
             var outputParameters = self.broadcastWithMultipleArrayParameters.createBroadcastOutputParameters();
             outputParameters.setUInt64ArrayOut(uInt64ArrayOut);
             outputParameters.setStructWithStringArrayArrayOut(structWithStringArrayArrayOut);
-            self.broadcastWithMultipleArrayParameters.fire(outputParameters);
+            self.broadcastWithMultipleArrayParameters.fire(outputParameters, opArgs.partitions);
             resolve();
         });
     },
 
-    methodToFireBroadcastWithSingleEnumerationParameter : function() {
-        prettyLog("IltProvider.methodToFireBroadcastWithSingleEnumerationParameter() called");
+    methodToFireBroadcastWithSingleEnumerationParameter : function(opArgs) {
+        prettyLog("IltProvider.methodToFireBroadcastWithSingleEnumerationParameter(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
             var enumerationOut = ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
             var outputParameters = self.broadcastWithSingleEnumerationParameter.createBroadcastOutputParameters();
             outputParameters.setEnumerationOut(enumerationOut);
-            self.broadcastWithSingleEnumerationParameter.fire(outputParameters);
+            self.broadcastWithSingleEnumerationParameter.fire(outputParameters, opArgs.partitions);
             resolve();
         });
     },
 
-    methodToFireBroadcastWithMultipleEnumerationParameters : function() {
-        prettyLog("IltProvider.methodToFireBroadcastWithMultipleEnumerationParameters() called");
+    methodToFireBroadcastWithMultipleEnumerationParameters : function(opArgs) {
+        prettyLog("IltProvider.methodToFireBroadcastWithMultipleEnumerationParameters(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
             var extendedEnumerationOut = ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
             var enumerationOut = Enumeration.ENUM_0_VALUE_1;
             var outputParameters = self.broadcastWithMultipleEnumerationParameters.createBroadcastOutputParameters();
             outputParameters.setExtendedEnumerationOut(extendedEnumerationOut);
             outputParameters.setEnumerationOut(enumerationOut);
-            self.broadcastWithMultipleEnumerationParameters.fire(outputParameters);
+            self.broadcastWithMultipleEnumerationParameters.fire(outputParameters, opArgs.partitions);
             resolve();
         });
     },
 
-    methodToFireBroadcastWithSingleStructParameter : function() {
-        prettyLog("IltProvider.methodToFireBroadcastWithSingleStructParameter() called");
+    methodToFireBroadcastWithSingleStructParameter : function(opArgs) {
+        prettyLog("IltProvider.methodToFireBroadcastWithSingleStructParameter(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
             var extendedStructOfPrimitivesOut = IltUtil.createExtendedStructOfPrimitives();
             var outputParameters = self.broadcastWithSingleStructParameter.createBroadcastOutputParameters();
             outputParameters.setExtendedStructOfPrimitivesOut(extendedStructOfPrimitivesOut);
-            self.broadcastWithSingleStructParameter.fire(outputParameters);
+            self.broadcastWithSingleStructParameter.fire(outputParameters, opArgs.partitions);
             resolve();
         });
     },
 
-    methodToFireBroadcastWithMultipleStructParameters : function() {
-        prettyLog("IltProvider.methodToFireBroadcastWithMultipleStructParameters() called");
+    methodToFireBroadcastWithMultipleStructParameters : function(opArgs) {
+        prettyLog("IltProvider.methodToFireBroadcastWithMultipleStructParameters(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
             var baseStructWithoutElementsOut = IltUtil.createBaseStructWithoutElements();
             var extendedExtendedBaseStructOut = IltUtil.createExtendedExtendedBaseStruct();
             var outputParameters = self.broadcastWithMultipleStructParameters.createBroadcastOutputParameters();
             outputParameters.setBaseStructWithoutElementsOut(baseStructWithoutElementsOut);
             outputParameters.setExtendedExtendedBaseStructOut(extendedExtendedBaseStructOut);
-            self.broadcastWithMultipleStructParameters.fire(outputParameters);
+            self.broadcastWithMultipleStructParameters.fire(outputParameters, opArgs.partitions);
             resolve();
         });
     },

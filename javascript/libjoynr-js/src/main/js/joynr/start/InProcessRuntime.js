@@ -406,16 +406,19 @@ define(
 
                             messagingSkeletonFactory = new MessagingSkeletonFactory();
 
+                            var messagingStubFactories = {};
+                            /*jslint nomen: true */
+                            messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
+                            messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
+                            messagingStubFactories[MqttAddress._typeName] = new MqttMessagingStubFactory({
+                                client : mqttClient,
+                                address : mqttAddress,
+                                messageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
+                            });
+                            /*jslint nomen: false */
+
                             messagingStubFactory = new MessagingStubFactory({
-                                messagingStubFactories : {
-                                    InProcessAddress : new InProcessMessagingStubFactory(),
-                                    ChannelAddress : channelMessagingStubFactory,
-                                    MqttAddress : new MqttMessagingStubFactory({
-                                        client : mqttClient,
-                                        address : mqttAddress,
-                                        messageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
-                                    })
-                                }
+                                messagingStubFactories :messagingStubFactories
                             });
 
                             messageRouter = new MessageRouter({

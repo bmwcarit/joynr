@@ -98,6 +98,7 @@ public:
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                   std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
                   boost::asio::io_service& ioService,
+                  std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                   int maxThreads = 1,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
@@ -216,9 +217,13 @@ private:
     std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
 
-    std::shared_ptr<IMessagingMulticastSubscriber> getMulticastSkeleton(
+    void registerMulticastReceiver(
+            const std::string& multicastId,
+            const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
     void addNextHopToParent(std::string participantId,
                             std::function<void(void)> callbackFct = nullptr,

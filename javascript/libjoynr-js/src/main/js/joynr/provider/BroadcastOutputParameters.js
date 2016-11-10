@@ -20,9 +20,10 @@
  */
 
 define("joynr/provider/BroadcastOutputParameters", [
+    "joynr/util/Typing",
     "joynr/util/UtilInternal",
     "joynr/system/LoggerFactory"
-], function(Util, LoggerFactory) {
+], function(Typing, Util, LoggerFactory) {
 
     /**
      * Constructor of BroadcastOutputParameters object used for subscriptions in generated provider objects
@@ -49,7 +50,7 @@ define("joynr/provider/BroadcastOutputParameters", [
          * @type String
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastOutputParameters");
-        Util.checkPropertyIfDefined(outputParameterProperties, "Array", "outputParameters");
+        Typing.checkPropertyIfDefined(outputParameterProperties, "Array", "outputParameters");
 
         function makeSetterFunction(obj, pos) {
             return function(arg) {

@@ -19,10 +19,8 @@
  * #L%
  */
 
-define("joynr/messaging/channel/ChannelMessagingStub", [
-    "global/Promise",
-    "joynr/util/UtilInternal"
-], function(Promise, Util) {
+define("joynr/messaging/channel/ChannelMessagingStub", [ "global/Promise"
+], function(Promise) {
 
     /**
      * @name ChannelMessagingStub
@@ -34,7 +32,6 @@ define("joynr/messaging/channel/ChannelMessagingStub", [
      * @param {MessageReplyToAddressCalculator} settings.messageReplyToAddressCalculator calculates the replyTo address
      */
     function ChannelMessagingStub(settings) {
-
         /**
          * @name ChannelMessagingStub#transmit
          * @function

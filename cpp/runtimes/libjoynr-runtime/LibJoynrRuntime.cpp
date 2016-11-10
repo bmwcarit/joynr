@@ -24,6 +24,7 @@
 
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
+#include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionManager.h"
@@ -74,7 +75,8 @@ LibJoynrRuntime::~LibJoynrRuntime()
 void LibJoynrRuntime::init(
         std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress,
+        std::unique_ptr<IMulticastAddressCalculator> addressCalculator)
 {
     // create messaging stub factory
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
@@ -88,7 +90,8 @@ void LibJoynrRuntime::init(
     // create message router
     messageRouter = std::make_shared<MessageRouter>(std::move(messagingStubFactory),
                                                     libjoynrMessagingAddress,
-                                                    singleThreadIOService->getIOService());
+                                                    singleThreadIOService->getIOService(),
+                                                    std::move(addressCalculator));
 
     messageRouter->loadRoutingTable(libjoynrSettings->getMessageRouterPersistenceFilename());
     startLibJoynrMessagingSkeleton(messageRouter);
@@ -137,7 +140,9 @@ void LibJoynrRuntime::init(
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(systemServicesSettings);
+    const bool provisionClusterControllerDiscoveryEntries = false;
+    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(
+            systemServicesSettings, messagingSettings, provisionClusterControllerDiscoveryEntries);
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
     std::string systemServicesDomain = systemServicesSettings.getDomain();
@@ -175,11 +180,13 @@ void LibJoynrRuntime::init(
 
     std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder(
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain));
-    joynr::system::IDiscoverySync* proxy =
+
+    joynr::system::DiscoveryProxy* proxy =
             discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
                     ->setCached(false)
                     ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                     ->build();
+
     discoveryProxy->setDiscoveryProxy(std::unique_ptr<joynr::system::IDiscoverySync>(proxy));
     capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
             dispatcherList,

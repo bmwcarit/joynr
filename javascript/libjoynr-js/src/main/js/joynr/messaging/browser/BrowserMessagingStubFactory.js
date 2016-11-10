@@ -18,9 +18,9 @@
  */
 
 define("joynr/messaging/browser/BrowserMessagingStubFactory", [
-    "joynr/util/Util",
+    "joynr/util/Typing",
     "joynr/messaging/browser/BrowserMessagingStub"
-], function(Util, BrowserMessagingStub) {
+], function(Typing, BrowserMessagingStub) {
 
     /**
      * @constructor
@@ -30,8 +30,8 @@ define("joynr/messaging/browser/BrowserMessagingStubFactory", [
      * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
      */
     function BrowserMessagingStubFactory(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(
                 settings.webMessagingStub,
                 "WebMessagingStub",
                 "settings.webMessagingStub");
@@ -43,7 +43,7 @@ define("joynr/messaging/browser/BrowserMessagingStubFactory", [
          * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
          */
         this.build = function build(address) {
-            Util.checkProperty(address, "BrowserAddress", "address");
+            Typing.checkProperty(address, "BrowserAddress", "address");
 
             return new BrowserMessagingStub({
                 windowId : address.windowId,

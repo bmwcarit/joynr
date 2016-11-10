@@ -22,6 +22,7 @@
 define("joynr/dispatching/subscription/SubscriptionManager", [
     "global/Promise",
     "joynr/messaging/MessagingQos",
+    "joynr/messaging/util/MulticastWildcardRegexFactory",
     "joynr/start/settings/defaultMessagingSettings",
     "joynr/proxy/SubscriptionQos",
     "joynr/dispatching/types/SubscriptionStop",
@@ -41,6 +42,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 ], function(
         Promise,
         MessagingQos,
+        MulticastWildcardRegexFactory,
         defaultMessagingSettings,
         SubscriptionQos,
         SubscriptionStop,
@@ -64,6 +66,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
      *            dispatcher
      */
     function SubscriptionManager(dispatcher) {
+        var multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
         var log = LoggerFactory.getLogger("joynr.dispatching.subscription.SubscriptionManager");
         var typeRegistry = TypeRegistrySingleton.getInstance();
         if (!(this instanceof SubscriptionManager)) {
@@ -222,18 +225,18 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         }
 
         function removeRequestFromMulticastSubscribers(multicastId, subscriptionId) {
-            var i,subscribers;
-            if (multicastSubscribers[multicastId] === undefined) {
-                return;
-            }
-            subscribers = multicastSubscribers[multicastId];
-            for(i=0;i<subscribers.length;i++) {
-                if (subscribers[i] === subscriptionId) {
-                    subscribers.splice(i,1);
-                    if (subscribers.length === 0) {
-                        delete multicastSubscribers[multicastId];
+            var i,multicastIdPattern, subscribers;
+            for (multicastIdPattern in multicastSubscribers) {
+                if (multicastSubscribers.hasOwnProperty(multicastIdPattern)) {
+                    subscribers = multicastSubscribers[multicastIdPattern];
+                    for(i=0;i<subscribers.length;i++) {
+                        if (subscribers[i] === subscriptionId) {
+                            subscribers.splice(i,1);
+                            if (subscribers.length === 0) {
+                                delete multicastSubscribers[multicastIdPattern];
+                            }
+                        }
                     }
-                    return;
                 }
             }
         }
@@ -353,10 +356,11 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 
         function addRequestToMulticastSubscribers(multicastId, subscriptionId) {
             var i,subscribers;
-            if (multicastSubscribers[multicastId] === undefined) {
-                multicastSubscribers[multicastId] = [];
+            var multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
+            if (multicastSubscribers[multicastIdPattern] === undefined) {
+                multicastSubscribers[multicastIdPattern] = [];
             }
-            subscribers = multicastSubscribers[multicastId];
+            subscribers = multicastSubscribers[multicastIdPattern];
             for(i=0;i<subscribers.length;i++) {
                 if (subscribers[i] === subscriptionId) {
                     return;
@@ -513,32 +517,41 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param publication
          *            {MulticastPublication} incoming multicast publication
          */
-        this.handleMulticastPublication =
-                function handleMulticastPublication(publication) {
-                    var i,subscribers=multicastSubscribers[publication.multicastId];
-                    if (subscribers === undefined) {
-                        throw new Error("Publication cannot be handled, as no subscription with "
-                                + "multicastId " + publication.multicastId + " is known.");
-                    }
-                    for (i=0;i<subscribers.length;i++) {
-                        var subscriptionListener = subscriptionListeners[subscribers[i]];
-                        if (publication.error) {
-                            if (subscriptionListener.onError) {
-                                subscriptionListener.onError(publication.error);
-                            } else {
-                                log.debug("subscriptionListener with Id \"" + subscribers[i]
+        this.handleMulticastPublication = function handleMulticastPublication(publication) {
+            var i,multicastIdPattern, subscribers, subscribersFound = false;
+            for (multicastIdPattern in multicastSubscribers) {
+                if (multicastSubscribers.hasOwnProperty(multicastIdPattern)) {
+                    if(publication.multicastId.match(new RegExp(multicastIdPattern)) !== null) {
+                        subscribers = multicastSubscribers[multicastIdPattern];
+                        if (subscribers !== undefined) {
+                            subscribersFound = true;
+                            for (i=0;i<subscribers.length;i++) {
+                                var subscriptionListener = subscriptionListeners[subscribers[i]];
+                                if (publication.error) {
+                                    if (subscriptionListener.onError) {
+                                        subscriptionListener.onError(publication.error);
+                                    } else {
+                                        log.debug("subscriptionListener with Id \"" + subscribers[i]
                                         + "\" has no onError callback. Skipping error publication");
-                            }
-                        } else if (publication.response) {
-                            if (subscriptionListener.onReceive) {
-                                subscriptionListener.onReceive(publication.response);
-                            } else {
-                                log.debug("subscriptionListener with Id \"" + subscribers[i]
-                                + "\" has no onReceive callback. Skipping multicast publication");
+                                    }
+                                } else if (publication.response) {
+                                    if (subscriptionListener.onReceive) {
+                                        subscriptionListener.onReceive(publication.response);
+                                    } else {
+                                        log.debug("subscriptionListener with Id \"" + subscribers[i]
+                                        + "\" has no onReceive callback. Skipping multicast publication");
+                                    }
+                                }
                             }
                         }
                     }
-                };
+                }
+            }
+            if (!subscribersFound) {
+                throw new Error("Publication cannot be handled, as no subscription with "
+                        + "multicastId " + publication.multicastId + " is known.");
+            }
+        };
 
         /**
          * @name SubscriptionManager#handlePublication

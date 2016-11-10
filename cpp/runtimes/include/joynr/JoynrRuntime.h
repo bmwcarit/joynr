@@ -22,6 +22,7 @@
 #include <cassert>
 #include <string>
 #include <memory>
+#include <functional>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
@@ -156,7 +157,7 @@ public:
     }
 
     /**
-     * @brief Create a JoynrRuntime object
+     * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param pathToLibjoynrSettings
      * @param pathToMessagingSettings
      * @return pointer to a JoynrRuntime instance
@@ -165,11 +166,41 @@ public:
                                        const std::string& pathToMessagingSettings = "");
 
     /**
-     * @brief Create a JoynrRuntime object
+     * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param settings settings object
      * @return pointer to a JoynrRuntime instance
      */
     static JoynrRuntime* createRuntime(std::unique_ptr<Settings> settings);
+
+    /**
+     * @brief Create a JoynrRuntime object. The call does not block. A callback
+     * will be called when the runtime creation finished.
+     * @param pathToLibjoynrSettings Path to lib joynr setting files
+     * @param runtimeCreatedCallback Is called when the runtime is available
+     * @param runtimeCreationErrorCallback Is called when an error occurs
+     * @param pathToMessagingSettings
+     * @return pointer to a JoynrRuntime instance
+     */
+    static void createRuntimeAsync(const std::string& pathToLibjoynrSettings,
+                                   std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
+                                           runtimeCreatedCallback,
+                                   std::function<void(exceptions::JoynrRuntimeException& exception)>
+                                           runtimeCreationErrorCallback,
+                                   const std::string& pathToMessagingSettings = "");
+
+    /**
+     * @brief Create a JoynrRuntime object. The call does not block. A callback
+     * will be called when the runtime creation finished.
+     * @param settings settings object
+     * @param runtimeCreatedCallback Is called when the runtime is available
+     * @param runtimeCreationErrorCallback Is called when an error occurs
+     * @return pointer to a JoynrRuntime instance
+     */
+    static void createRuntimeAsync(std::unique_ptr<Settings> settings,
+                                   std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
+                                           runtimeCreatedCallback,
+                                   std::function<void(exceptions::JoynrRuntimeException& exception)>
+                                           runtimeCreationErrorCallback);
 
 protected:
     // NOTE: The implementation of the constructor and destructor must be inside this
@@ -181,6 +212,9 @@ protected:
      * @param settings The system service settings
      */
     explicit JoynrRuntime(Settings& settings);
+
+    static std::unique_ptr<Settings> createSettings(const std::string& pathToLibjoynrSettings,
+                                                    const std::string& pathToMessagingSettings);
 
     std::unique_ptr<SingleThreadedIOService> singleThreadIOService;
 

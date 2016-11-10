@@ -17,8 +17,7 @@
  * #L%
  */
 
-define("joynr/messaging/websocket/WebSocketMessagingStub", [ "joynr/util/Util"
-], function(Util) {
+define("joynr/messaging/websocket/WebSocketMessagingStub", [], function() {
 
     /**
      * @name WebSocketMessagingStub
@@ -41,5 +40,6 @@ define("joynr/messaging/websocket/WebSocketMessagingStub", [ "joynr/util/Util"
             return sharedWebSocket.send(joynrMessage);
         };
     };
+
     return WebSocketMessagingStub;
 });

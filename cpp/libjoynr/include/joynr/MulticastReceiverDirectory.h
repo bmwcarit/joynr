@@ -20,12 +20,14 @@
 #define MULTICASTRECEIVERDIRECTORY_H
 
 #include <mutex>
+#include <regex>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
+#include "joynr/MulticastMatcher.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -50,7 +52,10 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MulticastReceiverDirectory);
     ADD_LOGGER(MulticastReceiverDirectory);
-    std::unordered_map<std::string, std::unordered_set<std::string>> multicastReceivers;
+
+    std::unordered_map<MulticastMatcher, std::unordered_set<std::string>, MulticastMatcherHash>
+            multicastReceivers;
+
     std::recursive_mutex mutex;
 };
 

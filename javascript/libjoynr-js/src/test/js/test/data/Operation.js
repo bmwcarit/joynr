@@ -32,7 +32,8 @@ define("test/data/Operation", [
             signature : {
                 inputParameter : [ {
                     name : "parameter",
-                    type : "String"
+                    type : "String",
+                    javascriptType : "string"
                 }
                 ],
                 error : {
@@ -56,7 +57,8 @@ define("test/data/Operation", [
             signature : {
                 inputParameter : [ {
                     name : "parameter",
-                    type : "joynr.tests.testTypes.TestEnum"
+                    type : "joynr.tests.testTypes.TestEnum",
+                    javascriptType : "joynr.tests.testTypes.TestEnum"
                 }
                 ],
                 outputParameter : [],
@@ -77,7 +79,8 @@ define("test/data/Operation", [
             signature : {
                 inputParameter : [ {
                     name : "complex",
-                    type : "joynr.vehicle.radiotypes.RadioStation"
+                    type : "joynr.vehicle.radiotypes.RadioStation",
+                    javascriptType : "joynr.vehicle.radiotypes.RadioStation"
                 }
                 ],
                 error : {
@@ -102,7 +105,8 @@ define("test/data/Operation", [
                 inputParameter : [],
                 outputParameter : [ {
                     name : "bool",
-                    type : "Boolean"
+                    type : "Boolean",
+                    javascriptType : "boolean"
                 }
                 ],
                 fireAndForget: false
@@ -121,7 +125,8 @@ define("test/data/Operation", [
                 inputParameter : [],
                 outputParameter : [ {
                     name : "int",
-                    type : "Integer"
+                    type : "Integer",
+                    javascriptType : "number"
                 }
                 ],
                 fireAndForget: false
@@ -140,7 +145,8 @@ define("test/data/Operation", [
                 inputParameter : [],
                 outputParameter : [ {
                     name : "radioStation",
-                    type : "joynr.vehicle.radiotypes.RadioStation"
+                    type : "joynr.vehicle.radiotypes.RadioStation",
+                    javascriptType : "joynr.vehicle.radiotypes.RadioStation"
                 }
                 ],
                 fireAndForget: false
@@ -160,11 +166,13 @@ define("test/data/Operation", [
                 outputParameter : [
                     {
                         name : "radioStation",
-                        type : "joynr.vehicle.radiotypes.RadioStation"
+                        type : "joynr.vehicle.radiotypes.RadioStation",
+                        javascriptType : "joynr.vehicle.radiotypes.RadioStation"
                     },
                     {
                         name : "secondOutputParameter",
-                        type : "String"
+                        type : "String",
+                        javascriptType : "string"
                     }
                 ],
                 fireAndForget: false
@@ -186,19 +194,23 @@ define("test/data/Operation", [
                 inputParameter : [
                     {
                         name : "bool",
-                        type : "Boolean"
+                        type : "Boolean",
+                        javascriptType : "boolean"
                     },
                     {
                         name : "number",
-                        type : "Integer"
+                        type : "Integer",
+                        javascriptType : "number"
                     },
                     {
                         name : "string",
-                        type : "String"
+                        type : "String",
+                        javascriptType : "string"
                     },
                     {
                         name : "array",
-                        type : "Integer[]"
+                        type : "Integer[]",
+                        javascriptType : "Array"
                     }
                 ],
                 error : {
@@ -243,7 +255,8 @@ define("test/data/Operation", [
             signature : {
                 inputParameter : [ {
                     name : "parameter",
-                    type : "String"
+                    type : "String",
+                    javascriptType : "string"
                 }
                 ],
                 error : {

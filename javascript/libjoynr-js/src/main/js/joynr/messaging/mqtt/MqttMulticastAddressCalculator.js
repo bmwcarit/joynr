@@ -18,9 +18,9 @@
  */
 
 define("joynr/messaging/mqtt/MqttMulticastAddressCalculator", [
-    "joynr/util/UtilInternal",
+    "joynr/util/Typing",
     "joynr/system/RoutingTypes/MqttAddress"
-], function(Util, MqttAddress) {
+], function(Typing, MqttAddress) {
 
     /**
      * @constructor MqttMulticastAddressCalculator
@@ -30,8 +30,8 @@ define("joynr/messaging/mqtt/MqttMulticastAddressCalculator", [
      *            settings.globalAddress
      */
     var MqttMulticastAddressCalculator = function MqttMulticastAddressCalculator(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.globalAddress, "MqttAddress", "settings.globalAddress");
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.globalAddress, "MqttAddress", "settings.globalAddress");
 
         /**
          * Calculates the multicast address for the submitted joynr message

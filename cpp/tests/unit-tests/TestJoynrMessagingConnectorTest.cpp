@@ -21,7 +21,7 @@
 #include "joynr/IReplyCaller.h"
 #include <string>
 #include "utils/MockObjects.h"
-#include "joynr/SubscriptionCallback.h"
+#include "joynr/ISubscriptionCallback.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/SingleThreadedIOService.h"
 
@@ -116,6 +116,7 @@ public:
                                              const std::string& providerParticipantId,
                                              const std::vector<std::string>& partitions,
                                              std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
+                                             std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
                                              std::shared_ptr<joynr::SubscriptionQos> qos,
                                              joynr::MulticastSubscriptionRequest& subscriptionRequest,
                                              std::function<void()> onSuccess,
@@ -124,13 +125,14 @@ public:
         std::ignore = subscriberParticipantId;
         std::ignore = providerParticipantId;
         std::ignore = partitions;
+        std::ignore = subscriptionCaller;
         std::ignore = onSuccess;
         std::ignore = onError;
         subscriptionRequest.setQos(qos);
-        std::shared_ptr<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>> typedCallback =
-                std::dynamic_pointer_cast<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>>(subscriptionCaller);
+        std::shared_ptr<ISubscriptionListener<joynr::types::Localisation::GpsLocation, float>> typedListener =
+                std::dynamic_pointer_cast<ISubscriptionListener<joynr::types::Localisation::GpsLocation, float>>(subscriptionListener);
 
-        typedCallback->onSuccess(gpsLocation, floatValue);
+        typedListener->onReceive(gpsLocation, floatValue);
     }
 };
 
@@ -251,18 +253,22 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     auto mockListener = std::make_shared<MockGpsFloatSubscriptionListener>();
 
     EXPECT_CALL(
-                        mockSubscriptionManager,
-                        registerSubscription(
-                            Eq("locationUpdateWithSpeed"), //subscribeToName
-                            _, // subscriberParticipantId
-                            _, // providerParticipantId
-                            _, // partitions
-                            _, // subscriptionCaller
-                            _, // messaging QoS
-                            _, // subscriptionRequest
-                            _, // onSuccess
-                            _ // onError
-                        )).WillOnce(testing::Invoke(this, &TestJoynrMessagingConnectorTest::invokeMulticastSubscriptionCallback));
+        mockSubscriptionManager,
+        registerSubscription(
+            Eq("locationUpdateWithSpeed"), //subscribeToName
+            _, // subscriberParticipantId
+            _, // providerParticipantId
+            _, // partitions
+            _, // subscriptionCaller
+            _, // subscriptionListener
+            _, // messaging QoS
+            _, // subscriptionRequest
+            _, // onSuccess
+            _ // onError
+        )
+    ).WillOnce(
+            testing::Invoke(this, &TestJoynrMessagingConnectorTest::invokeMulticastSubscriptionCallback)
+    );
 
     // Use a semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))

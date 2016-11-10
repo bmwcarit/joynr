@@ -20,10 +20,11 @@
 define(
         "joynr/proxy/SubscriptionQos",
         [
+            "joynr/util/Typing",
             "joynr/util/UtilInternal",
             "joynr/system/LoggerFactory"
         ],
-        function(Util, LoggerFactory) {
+        function(Typing, Util, LoggerFactory) {
 
             var defaultSettings;
 
@@ -102,7 +103,7 @@ define(
                  * @type String
                  */
                 Util.objectDefineProperty(this, "_typeName", "joynr.SubscriptionQos");
-                Util.checkPropertyIfDefined(settings, "Object", "settings");
+                Typing.checkPropertyIfDefined(settings, "Object", "settings");
                 if (settings && !(settings instanceof SubscriptionQos)) {
                     if (settings.expiryDate !== undefined) {
                         log
@@ -120,7 +121,7 @@ define(
                         settings.expiryDateMs = Date.now() + settings.validityMs;
                         settings.validityMs = undefined;
                     }
-                    Util.checkPropertyIfDefined(
+                    Typing.checkPropertyIfDefined(
                             settings.expiryDateMs,
                             "Number",
                             "settings.expiryDateMs");
@@ -131,7 +132,7 @@ define(
                         settings.publicationTtlMs = settings.publicationTtl;
                         settings.publicationTtl = undefined;
                     }
-                    Util.checkPropertyIfDefined(
+                    Typing.checkPropertyIfDefined(
                             settings.publicationTtlMs,
                             "Number",
                             "settings.publicationTtlMs");

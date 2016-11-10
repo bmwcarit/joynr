@@ -2,7 +2,7 @@
 
 function usage
 {
-    echo "usage: joynr-docker build | push | pull [--repository|-r mydockerrepo.org --version|-v versionnumber --additionaltags|-a <comma-separated list of tags>]"
+    echo "usage: joynr-docker build | push | pull | remove [--repository mydockerrepo.org --version versionnumber --additionaltags|-a <comma-separated list of tags>]"
 }
 
 repository=
@@ -23,7 +23,7 @@ echo "PARAM is: $1"
                                 repository=${1%/}/
                                 ;;
         -v | --version )        shift
-                                version=":$1"
+                                version="$1"
                                 ;;
         -h | --help )           usage
                                 exit
@@ -54,14 +54,14 @@ function build
 {
     for image in "${listOfImages[@]}"
     do
-        docker build -t ${repository}${image}${version} ${image}/
-        echo "building image: ${repository}${image}${version}"
+        docker build -t ${repository}${image}:${version} ${image}/
+        echo "building image: ${repository}${image}:${version}"
         IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
 
         for tag in "${tags[@]}"; do
-            echo "tagging image ${repository}${image}${version} with tag ${tag}"
-            docker tag ${repository}${image}${version} ${repository}${image}:${tag}
-            docker tag ${repository}${image}${version} ${image}:${tag}
+            echo "tagging image ${repository}${image}:${version} with tag ${tag}"
+            docker tag ${repository}${image}:${version} ${repository}${image}:${tag}
+            docker tag ${repository}${image}:${version} ${image}:${tag}
         done
     done
 }
@@ -71,7 +71,7 @@ function pull
     echo "pulling from repository: $repository for version:$version"
     for image in "${listOfImages[@]}"
     do
-        docker pull ${repository}${image}${version}
+        docker pull ${repository}${image}:${version}
     done
 }
 
@@ -80,7 +80,7 @@ function push
     echo "pushing to repository: $repository with version:$version"
     for image in "${listOfImages[@]}"
     do
-        docker push ${repository}${image}${version}
+        docker push ${repository}${image}:${version}
 
         IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
 
@@ -91,6 +91,31 @@ function push
     done
 }
 
+function remove
+{
+    echo "removing from repository: $repository version:$version"
+    repositoryurl=$repository
+    if [[ "$repositoryurl" == *"v2"* ]]
+    then
+        echo "repository name already equipped with docker specific namespaces. Skipping repository name modification..."
+        repository=`echo $repository | cut -d'/' -f1`/`echo $repository | cut -d'/' -f3-`
+    else
+        repositoryurl=`echo $repository | cut -d'/' -f1`/v2/`echo $repository | cut -d'/' -f2-`
+        echo "repository name $repository is not equipped with docker specific namespaces. Modified repository name: $repositoryurl"
+    fi
+    for image in "${listOfImages[@]}"
+    do
+        docker rmi ${repository}${image}:${version}
+        digest=`curl -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' -s -I https://${repositoryurl}${image}/manifests/${version} | grep 'Docker-Content-Digest' | cut -d':' -f2- | cut -d\  -f2- | tr -d '\r'`
+        if [ -z "$digest" ]
+        then
+            echo "Docker-Content-Digest for docker image ${repository}${image}:${version} not found. Skipping tag removal..."
+        else
+            echo "Docker-Content-Digest for docker image ${repository}${image}:${version} found: ${digest}. Deleting tag"
+            curl --request DELETE https://${repositoryurl}${image}/manifests/${digest}
+        fi
+    done
+}
 
 case $command in
     build )                 build
@@ -100,6 +125,9 @@ case $command in
                             exit
                             ;;
     pull )                  pull
+                            exit
+                            ;;
+    remove )                remove
                             exit
                             ;;
     * )                     usage

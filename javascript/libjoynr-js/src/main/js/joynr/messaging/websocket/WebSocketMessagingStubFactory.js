@@ -18,10 +18,10 @@
  */
 
 define("joynr/messaging/websocket/WebSocketMessagingStubFactory", [
-    "joynr/util/Util",
+    "joynr/util/Typing",
     "joynr/messaging/websocket/WebSocketMessagingStub",
     "joynr/system/RoutingTypes/WebSocketAddress"
-], function(Util, WebSocketMessagingStub, WebSocketAddress) {
+], function(Typing, WebSocketMessagingStub, WebSocketAddress) {
 
     /**
      * @constructor
@@ -34,9 +34,9 @@ define("joynr/messaging/websocket/WebSocketMessagingStubFactory", [
      *            settings.address of the websocket for the websocket server
      */
     var WebSocketMessagingStubFactory = function WebSocketMessagingStubFactory(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.address, "WebSocketAddress", "address");
-        Util.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.address, "WebSocketAddress", "address");
+        Typing.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
 
         var addresses = {};
         addresses[settings.address] = new WebSocketMessagingStub({
@@ -48,7 +48,7 @@ define("joynr/messaging/websocket/WebSocketMessagingStubFactory", [
          * @function
          */
         this.build = function build(address) {
-            Util.checkProperty(address, "WebSocketAddress", "address");
+            Typing.checkProperty(address, "WebSocketAddress", "address");
 
             if (addresses[address] === undefined) {
                 addresses[address] = new WebSocketMessagingStub({

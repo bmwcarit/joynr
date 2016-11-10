@@ -19,10 +19,11 @@
 
 define("joynr/exceptions/JoynrRuntimeException", [
     "joynr/types/TypeRegistrySingleton",
+    "joynr/util/Typing",
     "joynr/util/UtilInternal",
     "joynr/exceptions/JoynrException",
     "joynr/system/LoggerFactory"
-], function(TypeRegistrySingleton, Util, JoynrException, LoggerFactory) {
+], function(TypeRegistrySingleton, Typing, Util, JoynrException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -60,7 +61,7 @@ define("joynr/exceptions/JoynrRuntimeException", [
          * @type String
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrRuntimeException");
-        Util.checkPropertyIfDefined(settings, "Object", "settings");
+        Typing.checkPropertyIfDefined(settings, "Object", "settings");
         Util.extend(this, defaultSettings, settings, exception);
     }
 
