@@ -41,6 +41,7 @@ define("joynr/exceptions/ApplicationException", [
      *
      * @param {Object}
      *            [settings] the settings object for the constructor call
+     * @param settings.error the error enum to be reported
      * @param {String}
      *            [settings.detailMessage] message containing details
      *            about the error
