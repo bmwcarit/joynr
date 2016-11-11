@@ -8,10 +8,40 @@
   accepts a success and an error callback as parameters.
 * **[C++]** Introduced async joynr runtime creation. See JoynrRuntime::createRuntimeAsync for more
   information.
+* Non-selective broadcasts support partitions to control broadcast delivery to subscribers.
+  * **[C++]** On provider side the fire broadcast method has now an optional partitions argument;
+    see [C++ documentation for firing a broadcast](cplusplus.md#firing-a-broadcast). On consumer
+    side the subscribe method has now an optional partitions argument; see [C++ documentation for
+    subscribing to a broadcast](cplusplus.md#subscribing-to-a-%28non-selective%29-broadcast). The
+    subscription ID parameter of the subscribe method for updating an existing subscription moved
+    from the last to the first position in the argument list. In addition, it also has now an
+    optional partitions argument; see [C++ documentation for updating an existing subscription]
+    (cplusplus.md#updating-a-%28non-selective%29-broadcast-subscription).
+  * **[Java]** On provider side the fire broadcast method has now an optional varargs argument to
+    provide partitions; see [Java documentation for firing a broadcast](java.md#firing-a-broadcast).
+    On consumer side the subscribe method has now an optional varargs argument to provide
+    partitions; see [Java documentation for subscribing to a broadcast]
+    (java.md#subscribing-to-a-%28non-selective%29-broadcast). The subscription ID parameter of the
+    subscribe method for updating an existing subscription moved from the last to the first position
+    in the argument list. In addition, it has now an optional varargs argument to provide
+    partitions; see [Java documentation for updating an existing subscription]
+    (java.md#updating-a-%28non-selective%29-broadcast-subscription).
+  * **[JS]** On provider side the fire broadcast method has now an optional partitions argument; see
+    [JavaScript documentation for firing a broadcast](javascript.md#sending-a-broadcast). On
+    consumer side the subscribe method has now an optional partitions entry in the subscription
+    settings object; see [JavaScript documentation for subscribing to a broadcast]
+    (javascript.md#subscribing-to-a-%28non-selective%29-broadcast). The subscription settings object
+    of the subscribe method for updating an existing subscription has also an optional partitions
+    entry; see [JavaScript documentation for updating an existing subscription]
+    (javascript.md#updating-a-%28non-selective%29-broadcast-subscription).
 
 ##Other changes
 * **[JS]** Introduced mqtt messaging layer, allowing javascript runtimes including
   cluster controller functionality to connect to a mqtt broker.
+* On top of MQTT messaging, joynr uses now a multicast approach to send non-selective broadcast
+  publications instead of sending an unicast message to each subscriber. See the [Multicast Concept
+  Documentation](../docs/multicast.md) for more details. This change breaks the compatibility on the
+  messaging layer to joynr version 0.21.x.
 
 #joynr 0.21.3
 This is a minor bug fix release.
