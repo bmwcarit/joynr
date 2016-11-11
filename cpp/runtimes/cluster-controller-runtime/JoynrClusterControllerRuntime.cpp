@@ -221,9 +221,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {
         try {
             using system::RoutingTypes::MqttAddress;
-            MqttAddress address;
-            joynr::serializer::deserializeFromJson(address, capabilitiesDirectoryChannelId);
-            auto globalCapabilitiesDirectoryAddress = std::make_shared<MqttAddress>(address);
+            auto globalCapabilitiesDirectoryAddress = std::make_shared<MqttAddress>();
+            joynr::serializer::deserializeFromJson(
+                    *globalCapabilitiesDirectoryAddress, capabilitiesDirectoryChannelId);
             messageRouter->addProvisionedNextHop(
                     capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
         } catch (const std::invalid_argument& e) {
@@ -232,7 +232,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                             capabilitiesDirectoryChannelId,
                             e.what());
         }
-
     } else {
         auto globalCapabilitiesDirectoryAddress =
                 std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(

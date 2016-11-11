@@ -1,5 +1,9 @@
 package io.joynr.accesscontrol;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import io.joynr.accesscontrol.broadcastlistener.LdacDomainRoleEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMasterAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryChangedBroadcastListener;
@@ -12,22 +16,13 @@ import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import joynr.OnChangeSubscriptionQos;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MediatorAccessControlEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerProxy;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
+import joynr.infrastructure.GlobalDomainAccessControllerProxy;
 
 /*
  * #%L
@@ -347,35 +342,35 @@ public class GlobalDomainAccessControllerClient {
 
     public void subscribeToDomainRoleEntryChangedBroadcast(LdacDomainRoleEntryChangedBroadcastListener ldacDomainRoleEntryChangedBroadcastListener,
                                                            OnChangeSubscriptionQos broadcastSubscriptionQos,
-                                                           DomainRoleEntryChangedBroadcastFilterParameters domainRoleFilterParameters) {
+                                                           String... partitions) {
         getProxy(TTL_30_DAYS_IN_MS).subscribeToDomainRoleEntryChangedBroadcast(ldacDomainRoleEntryChangedBroadcastListener,
                                                                                broadcastSubscriptionQos,
-                                                                               domainRoleFilterParameters);
+                                                                               partitions);
 
     }
 
     public Future<String> subscribeToMasterAccessControlEntryChangedBroadcast(LdacMasterAccessControlEntryChangedBroadcastListener ldacMasterAccessControlEntryChangedBroadcastListener,
                                                                               OnChangeSubscriptionQos broadcastSubscriptionQos,
-                                                                              MasterAccessControlEntryChangedBroadcastFilterParameters masterAcefilterParameters) {
+                                                                              String... partitions) {
         return getProxy(TTL_30_DAYS_IN_MS).subscribeToMasterAccessControlEntryChangedBroadcast(ldacMasterAccessControlEntryChangedBroadcastListener,
                                                                                                broadcastSubscriptionQos,
-                                                                                               masterAcefilterParameters);
+                                                                                               partitions);
     }
 
     public Future<String> subscribeToMediatorAccessControlEntryChangedBroadcast(LdacMediatorAccessControlEntryChangedBroadcastListener ldacMediatorAccessControlEntryChangedBroadcastListener,
                                                                                 OnChangeSubscriptionQos broadcastSubscriptionQos,
-                                                                                MediatorAccessControlEntryChangedBroadcastFilterParameters mediatorAceFilterParameters) {
+                                                                                String... partitions) {
         return getProxy(TTL_30_DAYS_IN_MS).subscribeToMediatorAccessControlEntryChangedBroadcast(ldacMediatorAccessControlEntryChangedBroadcastListener,
                                                                                                  broadcastSubscriptionQos,
-                                                                                                 mediatorAceFilterParameters);
+                                                                                                 partitions);
     }
 
     public Future<String> subscribeToOwnerAccessControlEntryChangedBroadcast(LdacOwnerAccessControlEntryChangedBroadcastListener ldacOwnerAccessControlEntryChangedBroadcastListener,
                                                                              OnChangeSubscriptionQos broadcastSubscriptionQos,
-                                                                             OwnerAccessControlEntryChangedBroadcastFilterParameters ownerAceFilterParameters) {
+                                                                             String... partitions) {
         return getProxy(TTL_30_DAYS_IN_MS).subscribeToOwnerAccessControlEntryChangedBroadcast(ldacOwnerAccessControlEntryChangedBroadcastListener,
                                                                                               broadcastSubscriptionQos,
-                                                                                              ownerAceFilterParameters);
+                                                                                              partitions);
 
     }
 

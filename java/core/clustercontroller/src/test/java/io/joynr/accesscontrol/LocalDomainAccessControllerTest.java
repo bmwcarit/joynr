@@ -32,14 +32,6 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import joynr.types.GlobalDiscoveryEntry;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
@@ -51,16 +43,22 @@ import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import joynr.OnChangeSubscriptionQos;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
-import joynr.infrastructure.GlobalDomainAccessControllerProxy;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
+import joynr.infrastructure.GlobalDomainAccessControllerProxy;
+import joynr.types.GlobalDiscoveryEntry;
 import net.sf.ehcache.CacheManager;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalDomainAccessControllerTest {
@@ -151,7 +149,7 @@ public class LocalDomainAccessControllerTest {
         Method method = GlobalDomainAccessControllerProxy.class.getMethod("subscribeToDomainRoleEntryChangedBroadcast",
                                                                           DomainRoleEntryChangedBroadcastListener.class,
                                                                           OnChangeSubscriptionQos.class,
-                                                                          DomainRoleEntryChangedBroadcastFilterParameters.class);
+                                                                          String[].class);
         verify(proxyInvocationHandlerMock, times(1)).invoke(any(Object.class), eq(method), any(Object[].class));
     }
 

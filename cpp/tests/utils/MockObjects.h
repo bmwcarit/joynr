@@ -99,14 +99,6 @@
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 
-#include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerMasterRegistrationControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerOwnerRegistrationControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerMediatorRegistrationControlEntryChangedBroadcastFilterParameters.h"
-
 #include "joynr/MulticastPublication.h"
 #include "joynr/MessagingQos.h"
 
@@ -1066,31 +1058,6 @@ public:
                 std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
             )
     );
-
-    MOCK_METHOD3(subscribeToDomainRoleEntryChangedBroadcast,
-                 std::string(
-                     joynr::infrastructure::GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters,
-                     std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::DomainRoleEntry,
-                                                                 joynr::infrastructure::DacTypes::ChangeType::Enum>>,
-                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
-    MOCK_METHOD3(subscribeToOwnerAccessControlEntryChangedBroadcast,
-                 std::string(
-                     joynr::infrastructure::GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters,
-                     std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::OwnerAccessControlEntry,
-                                                                 joynr::infrastructure::DacTypes::ChangeType::Enum>>,
-                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
-    MOCK_METHOD3(subscribeToMediatorAccessControlEntryChangedBroadcast,
-                 std::string(
-                     joynr::infrastructure::GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters,
-                     std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::ChangeType::Enum,
-                                                                 joynr::infrastructure::DacTypes::MasterAccessControlEntry>>,
-                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
-    MOCK_METHOD3(subscribeToMasterAccessControlEntryChangedBroadcast,
-                 std::string(
-                     joynr::infrastructure::GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters,
-                     std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::ChangeType::Enum,
-                                                                 joynr::infrastructure::DacTypes::MasterAccessControlEntry>>,
-                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
 
 };
 
