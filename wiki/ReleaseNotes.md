@@ -8,6 +8,8 @@
   accepts a success and an error callback as parameters.
 * **[C++]** Introduced async joynr runtime creation. See JoynrRuntime::createRuntimeAsync for more
   information.
+* Non-selective broadcasts work only with MQTT until further notice.
+  HTTP is currently not supported.
 * Non-selective broadcasts support partitions to control broadcast delivery to subscribers.
   * **[C++]** On provider side the fire broadcast method has now an optional partitions argument;
     see [C++ documentation for firing a broadcast](cplusplus.md#firing-a-broadcast). On consumer
