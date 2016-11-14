@@ -43,6 +43,7 @@ import io.joynr.proxy.Callback;
 import joynr.exceptions.ApplicationException;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -219,7 +220,7 @@ public class Arbitrator {
         return reason;
     }
 
-    private class DiscoveryCallback extends Callback<DiscoveryEntry[]> {
+    private class DiscoveryCallback extends Callback<DiscoveryEntryWithMetaInfo[]> {
 
             @Override
             public void onFailure(JoynrRuntimeException error) {
@@ -227,13 +228,13 @@ public class Arbitrator {
             }
 
             @Override
-            public void onSuccess(DiscoveryEntry[] discoveryEntries) {
+            public void onSuccess(DiscoveryEntryWithMetaInfo[] discoveryEntries) {
                 assert discoveryEntries != null : "Discovery entries may not be null.";
                 if (allDomainsDiscovered(discoveryEntries)) {
                     logger.debug("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
-                    Set<DiscoveryEntry> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
+                    Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
 
-                    Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
+                    Collection<DiscoveryEntryWithMetaInfo> selectedCapabilities = arbitrationStrategyFunction
                             .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
 
                     logger.debug("Selected capabilities: {}", selectedCapabilities);
@@ -269,7 +270,7 @@ public class Arbitrator {
                 return allDomainsDiscovered;
             }
 
-            private Set<String> getParticipantIds(Collection<DiscoveryEntry> selectedCapabilities) {
+            private Set<String> getParticipantIds(Collection<DiscoveryEntryWithMetaInfo> selectedCapabilities) {
                 Set<String> participantIds = new HashSet<>();
                 for (DiscoveryEntry selectedCapability : selectedCapabilities) {
                     if (selectedCapability != null) {
@@ -280,13 +281,13 @@ public class Arbitrator {
                 return participantIds;
             }
 
-        private Set<DiscoveryEntry> filterDiscoveryEntries(DiscoveryEntry[] discoveryEntries) {
-            Set<DiscoveryEntry> discoveryEntriesSet;
+        private Set<DiscoveryEntryWithMetaInfo> filterDiscoveryEntries(DiscoveryEntryWithMetaInfo[] discoveryEntries) {
+            Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet;
             // If onChange subscriptions are required ignore
             // providers that do not support them
             if (discoveryQos.getProviderMustSupportOnChange()) {
                 discoveryEntriesSet = new HashSet<>(discoveryEntries.length);
-                for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+                for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
                     ProviderQos providerQos = discoveryEntry.getQos();
                     if (providerQos.getSupportsOnChangeSubscriptions()) {
                         discoveryEntriesSet.add(discoveryEntry);

@@ -25,16 +25,17 @@ import java.util.Collection;
 import java.util.Map;
 
 import joynr.types.CustomParameter;
-import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public class KeywordArbitrationStrategyFunction extends ArbitrationStrategyFunction {
 
     @Override
-    public Collection<DiscoveryEntry> select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities) {
+    public Collection<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                         Collection<DiscoveryEntryWithMetaInfo> capabilities) {
         String requestedKeyword = parameters.get(ArbitrationConstants.KEYWORD_PARAMETER);
-        DiscoveryEntry capabilityWithKeyword = null;
+        DiscoveryEntryWithMetaInfo capabilityWithKeyword = null;
 
-        for (DiscoveryEntry discoveryEntry : capabilities) {
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             // Search for a matching keyword parameter
             CustomParameter keywordParameter = findQosParameter(discoveryEntry, ArbitrationConstants.KEYWORD_PARAMETER);
             if (keywordParameter != null) {

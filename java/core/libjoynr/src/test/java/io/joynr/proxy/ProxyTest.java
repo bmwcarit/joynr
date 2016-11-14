@@ -84,6 +84,7 @@ import joynr.Request;
 import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListener;
@@ -199,23 +200,27 @@ public class ProxyTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
-                                                                   domain,
-                                                                   TestInterface.INTERFACE_NAME,
-                                                                   toParticipantId,
-                                                                   new ProviderQos(),
-                                                                   System.currentTimeMillis(),
-                                                                   System.currentTimeMillis() + ONE_MINUTE_IN_MS,
-                                                                   "publicKeyId");
+                DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                           domain,
+                                                                                           TestInterface.INTERFACE_NAME,
+                                                                                           toParticipantId,
+                                                                                           new ProviderQos(),
+                                                                                           System.currentTimeMillis(),
+                                                                                           System.currentTimeMillis()
+                                                                                                   + ONE_MINUTE_IN_MS,
+                                                                                           "publicKeyId",
+                                                                                           true);
 
-                DiscoveryEntry[] fakeCapabilitiesResult = { discoveryEntry };
+                DiscoveryEntryWithMetaInfo[] fakeCapabilitiesResult = { discoveryEntry };
                 ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);
                 return null;
             }
-        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
-                                                 Mockito.<String[]> any(),
-                                                 Mockito.<String> any(),
-                                                 Mockito.<joynr.types.DiscoveryQos> any());
+        })
+               .when(localDiscoveryAggregator)
+               .lookup(Mockito.<Callback> any(),
+                       Mockito.<String[]> any(),
+                       Mockito.<String> any(),
+                       Mockito.<joynr.types.DiscoveryQos> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -257,13 +262,13 @@ public class ProxyTest {
         discoveryEntryVersionFilterField.setAccessible(true);
         discoveryEntryVersionFilterField.set(ArbitratorFactory.class, discoveryEntryVersionFilter);
 
-        doAnswer(new Answer<Set<DiscoveryEntry>>() {
+        doAnswer(new Answer<Set<DiscoveryEntryWithMetaInfo>>() {
             @Override
-            public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
-                return (Set<DiscoveryEntry>) invocation.getArguments()[1];
+            public Set<DiscoveryEntryWithMetaInfo> answer(InvocationOnMock invocation) throws Throwable {
+                return (Set<DiscoveryEntryWithMetaInfo>) invocation.getArguments()[1];
             }
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
-                                                    Mockito.<Set<DiscoveryEntry>> any(),
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
                                                     Mockito.<Map<String, Set<Version>>> any());
     }
 

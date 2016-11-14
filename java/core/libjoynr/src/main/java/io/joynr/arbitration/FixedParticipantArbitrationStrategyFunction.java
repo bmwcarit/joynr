@@ -24,7 +24,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
-import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,11 +33,12 @@ public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStra
     private static final Logger logger = LoggerFactory.getLogger(FixedParticipantArbitrationStrategyFunction.class);
 
     @Override
-    public Collection<DiscoveryEntry> select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities) {
+    public Collection<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                         Collection<DiscoveryEntryWithMetaInfo> capabilities) {
         String participantId = parameters.get(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD);
         logger.trace("starting select Provider by participant Id: {}", participantId);
-        DiscoveryEntry capabilityWithParticipantId = null;
-        for (DiscoveryEntry discoveryEntry : capabilities) {
+        DiscoveryEntryWithMetaInfo capabilityWithParticipantId = null;
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             if (discoveryEntry.getParticipantId().equals(participantId)) {
                 capabilityWithParticipantId = discoveryEntry;
                 break;

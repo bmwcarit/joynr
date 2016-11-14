@@ -27,7 +27,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 /**
  * Arbitrator using a custom parameter in the QoS map called "priority". The provider with the highest priority value is
@@ -38,12 +38,12 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
     private static final Logger logger = LoggerFactory.getLogger(HighestPriorityArbitrationStrategyFunction.class);
 
     @Override
-    public final Collection<DiscoveryEntry> select(Map<String, String> parameters,
-                                                   final Collection<DiscoveryEntry> capabilities) {
+    public final Collection<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                               final Collection<DiscoveryEntryWithMetaInfo> capabilities) {
         logger.trace("starting select Provider by priority");
-        DiscoveryEntry highestPriorityCapability = null;
+        DiscoveryEntryWithMetaInfo highestPriorityCapability = null;
         long highestPriority = -1L;
-        for (DiscoveryEntry discoveryEntry : capabilities) {
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             // Search for the provider with the highest priority
             Long priority = discoveryEntry.getQos().getPriority();
             logger.trace("Looking at capability with priority " + priority.toString());

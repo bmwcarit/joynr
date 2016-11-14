@@ -43,6 +43,7 @@ import joynr.Request;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 import org.junit.Before;
@@ -109,14 +110,16 @@ public class AccessControllerTest {
         message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, messagingQos);
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
-                                                           testDomain,
-                                                           testInterface,
-                                                           toParticipantId,
-                                                           new ProviderQos(),
-                                                           System.currentTimeMillis(),
-                                                           System.currentTimeMillis() + ONE_MINUTE_IN_MS,
-                                                           testPublicKeyId);
+        DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                   testDomain,
+                                                                                   testInterface,
+                                                                                   toParticipantId,
+                                                                                   new ProviderQos(),
+                                                                                   System.currentTimeMillis(),
+                                                                                   System.currentTimeMillis()
+                                                                                           + ONE_MINUTE_IN_MS,
+                                                                                   testPublicKeyId,
+                                                                                   false);
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(discoveryEntry);
     }
 

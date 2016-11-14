@@ -27,7 +27,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 /**
  * Arbitrator using the lastSeenDateMs. The provider with the latest lastSeenDateMs value is
@@ -37,12 +37,12 @@ public class LastSeenArbitrationStrategyFunction extends ArbitrationStrategyFunc
     private static final Logger logger = LoggerFactory.getLogger(LastSeenArbitrationStrategyFunction.class);
 
     @Override
-    public final Collection<DiscoveryEntry> select(Map<String, String> parameters,
-                                                   final Collection<DiscoveryEntry> capabilities) {
+    public final Collection<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                               final Collection<DiscoveryEntryWithMetaInfo> capabilities) {
         logger.trace("starting select Provider by lastSeenDateMs");
-        DiscoveryEntry latestSeenCapability = null;
+        DiscoveryEntryWithMetaInfo latestSeenCapability = null;
         long latestSeenDateMs = -1L;
-        for (DiscoveryEntry discoveryEntry : capabilities) {
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             // Search for the provider with the highest lastSeenDateMs
             Long lastSeenDateMs = discoveryEntry.getLastSeenDateMs();
             logger.trace("Looking at capability with lastSeenDateMs " + lastSeenDateMs);

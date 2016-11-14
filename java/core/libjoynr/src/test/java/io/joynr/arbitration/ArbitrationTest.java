@@ -61,6 +61,7 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -86,7 +87,7 @@ public class ArbitrationTest {
     private ArbitrationCallback arbitrationCallback;
     @Mock
     private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
-    protected ArrayList<DiscoveryEntry> capabilitiesList;
+    protected ArrayList<DiscoveryEntryWithMetaInfo> capabilitiesList;
     private String expectedParticipantId = "expectedParticipantId";
     Address expectedEndpointAddress;
 
@@ -95,7 +96,7 @@ public class ArbitrationTest {
     public void setUp() throws Exception {
         initMocks(this);
 
-        capabilitiesList = new ArrayList<DiscoveryEntry>();
+        capabilitiesList = new ArrayList<DiscoveryEntryWithMetaInfo>();
 
         doAnswer(new Answer<Object>() {
 
@@ -103,7 +104,7 @@ public class ArbitrationTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
                 assert (arguments[0] instanceof Callback);
-                ((Callback) arguments[0]).resolve((Object) capabilitiesList.toArray(new DiscoveryEntry[0]));
+                ((Callback) arguments[0]).resolve((Object) capabilitiesList.toArray(new DiscoveryEntryWithMetaInfo[0]));
                 return null;
             }
         }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
@@ -121,7 +122,7 @@ public class ArbitrationTest {
                 return (Set<DiscoveryEntry>) invocation.getArguments()[1];
             }
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
-                                                    Mockito.<Set<DiscoveryEntry>> any(),
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
                                                     Mockito.<Map<String, Set<Version>>> any());
     }
 
@@ -131,26 +132,28 @@ public class ArbitrationTest {
         CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword) };
         providerQos.setCustomParameters(qosParameters);
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                expectedParticipantId,
-                                                providerQos,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            expectedParticipantId,
+                                                            providerQos,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
         ProviderQos providerQos2 = new ProviderQos();
         CustomParameter[] qosParameters2 = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
         providerQos2.setCustomParameters(qosParameters2);
 
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "wrongParticipantId",
-                                                providerQos2,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "wrongParticipantId",
+                                                            providerQos2,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -177,26 +180,28 @@ public class ArbitrationTest {
         providerQos.setCustomParameters(qosParameters);
 
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                expectedParticipantId,
-                                                providerQos,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            expectedParticipantId,
+                                                            providerQos,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
         ProviderQos providerQos2 = new ProviderQos();
         CustomParameter[] qosParameters2 = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
         providerQos2.setCustomParameters(qosParameters2);
 
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "wrongParticipantId",
-                                                providerQos2,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "wrongParticipantId",
+                                                            providerQos2,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
         int discoveryTimeout = 0; // use minimal timeout to prevent restarting arbitration
         discoveryQos = new DiscoveryQos(discoveryTimeout, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
@@ -228,14 +233,15 @@ public class ArbitrationTest {
         // Create a capability entry for a provider with the correct keyword but that does not support onChange subscriptions
         providerQos.setCustomParameters(qosParameters);
         providerQos.setSupportsOnChangeSubscriptions(false);
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "wrongParticipantId",
-                                                providerQos,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "wrongParticipantId",
+                                                            providerQos,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
         // Create a capability entry for a provider with the correct keyword and that also supports onChange subscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -244,14 +250,15 @@ public class ArbitrationTest {
         providerQos2.setSupportsOnChangeSubscriptions(true);
 
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "expectedParticipantId",
-                                                providerQos2,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "expectedParticipantId",
+                                                            providerQos2,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -275,32 +282,35 @@ public class ArbitrationTest {
     public void testLastSeenArbitrator() {
         ProviderQos providerQos = new ProviderQos();
 
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "wrongParticipantId",
-                                                providerQos,
-                                                222L,
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "wrongParticipantId",
+                                                            providerQos,
+                                                            222L,
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                expectedParticipantId,
-                                                providerQos,
-                                                333L,
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            expectedParticipantId,
+                                                            providerQos,
+                                                            333L,
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "thirdParticipantId",
-                                                providerQos,
-                                                111L,
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "thirdParticipantId",
+                                                            providerQos,
+                                                            111L,
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.LastSeen, Long.MAX_VALUE);
 
@@ -325,26 +335,28 @@ public class ArbitrationTest {
         providerQos.setPriority(testPriority);
 
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                expectedParticipantId,
-                                                providerQos,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            expectedParticipantId,
+                                                            providerQos,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
         long lessPrior = 1;
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(lessPrior);
 
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "wrongParticipantId",
-                                                providerQos2,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "wrongParticipantId",
+                                                            providerQos2,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
         long negativePriority = -10;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
@@ -352,14 +364,15 @@ public class ArbitrationTest {
         Address thirdEndpointAddress = new ChannelAddress("http://testUrl", "thirdChannelId");
         ArrayList<Address> thirdEndpointAddresses = new ArrayList<Address>();
         thirdEndpointAddresses.add(thirdEndpointAddress);
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "thirdParticipantId",
-                                                providerQos3,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "thirdParticipantId",
+                                                            providerQos3,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -386,37 +399,40 @@ public class ArbitrationTest {
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
         ArrayList<Address> expectedEndpointAddresses = new ArrayList<Address>();
         expectedEndpointAddresses.add(expectedEndpointAddress);
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                expectedParticipantId,
-                                                providerQos,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            expectedParticipantId,
+                                                            providerQos,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(Long.MIN_VALUE);
 
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "wrongParticipantId",
-                                                providerQos2,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "wrongParticipantId",
+                                                            providerQos2,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
         long negativePriority = Long.MIN_VALUE;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
 
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "thirdParticipantId",
-                                                providerQos3,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "thirdParticipantId",
+                                                            providerQos3,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -444,14 +460,15 @@ public class ArbitrationTest {
         providerQos.setSupportsOnChangeSubscriptions(true);
 
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                expectedParticipantId,
-                                                providerQos,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            expectedParticipantId,
+                                                            providerQos,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -461,14 +478,15 @@ public class ArbitrationTest {
         Address otherEndpointAddress = new ChannelAddress("http://testUrl", "otherChannelId");
         ArrayList<Address> otherEndpointAddresses = new ArrayList<Address>();
         otherEndpointAddresses.add(otherEndpointAddress);
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "wrongParticipantId",
-                                                providerQos2,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "wrongParticipantId",
+                                                            providerQos2,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos3 = new ProviderQos();
@@ -478,14 +496,15 @@ public class ArbitrationTest {
         Address thirdEndpointAddress = new ChannelAddress("http://testUrl", "thirdChannelId");
         ArrayList<Address> thirdEndpointAddresses = new ArrayList<Address>();
         thirdEndpointAddresses.add(thirdEndpointAddress);
-        capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
-                                                domain,
-                                                TestInterface.INTERFACE_NAME,
-                                                "thirdParticipantId",
-                                                providerQos3,
-                                                System.currentTimeMillis(),
-                                                NO_EXPIRY,
-                                                publicKeyId));
+        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                            domain,
+                                                            TestInterface.INTERFACE_NAME,
+                                                            "thirdParticipantId",
+                                                            providerQos3,
+                                                            System.currentTimeMillis(),
+                                                            NO_EXPIRY,
+                                                            publicKeyId,
+                                                            true));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         discoveryQos.setProviderMustSupportOnChange(true);
@@ -512,14 +531,15 @@ public class ArbitrationTest {
         ProviderQos providerQos = new ProviderQos();
 
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
-                                                           domain,
-                                                           TestInterface.INTERFACE_NAME,
-                                                           expectedParticipantId,
-                                                           providerQos,
-                                                           System.currentTimeMillis(),
-                                                           NO_EXPIRY,
-                                                           publicKeyId);
+        DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                   domain,
+                                                                                   TestInterface.INTERFACE_NAME,
+                                                                                   expectedParticipantId,
+                                                                                   providerQos,
+                                                                                   System.currentTimeMillis(),
+                                                                                   NO_EXPIRY,
+                                                                                   publicKeyId,
+                                                                                   true);
         capabilitiesList.add(discoveryEntry);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
@@ -535,7 +555,7 @@ public class ArbitrationTest {
         arbitrator.startArbitration();
 
         verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
-                                                             eq(new HashSet<DiscoveryEntry>(capabilitiesList)));
+                                                             eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
         verify(arbitrationCallback, times(1)).onSuccess(eq(new ArbitrationResult(expectedParticipantId)));
 
     }
@@ -551,14 +571,15 @@ public class ArbitrationTest {
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
         String[] participantIds = new String[]{ "first-participant", "second-participant" };
         for (int index = 0; index < participantIds.length; index++) {
-            DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
-                                                               domain,
-                                                               TestInterface.INTERFACE_NAME,
-                                                               participantIds[index],
-                                                               providerQos,
-                                                               System.currentTimeMillis(),
-                                                               NO_EXPIRY,
-                                                               publicKeyId);
+            DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                       domain,
+                                                                                       TestInterface.INTERFACE_NAME,
+                                                                                       participantIds[index],
+                                                                                       providerQos,
+                                                                                       System.currentTimeMillis(),
+                                                                                       NO_EXPIRY,
+                                                                                       publicKeyId,
+                                                                                       true);
             capabilitiesList.add(discoveryEntry);
         }
 
@@ -575,7 +596,7 @@ public class ArbitrationTest {
         arbitrator.startArbitration();
 
         verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
-                                                             eq(new HashSet<DiscoveryEntry>(capabilitiesList)));
+                                                             eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
         ArbitrationResult expectedArbitrationResult = new ArbitrationResult(participantIds);
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
@@ -588,14 +609,15 @@ public class ArbitrationTest {
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
         String[] participantIds = new String[]{ "first-participant", "second-participant" };
         for (int index = 0; index < participantIds.length; index++) {
-            DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(index, index),
-                                                               domain,
-                                                               TestInterface.INTERFACE_NAME,
-                                                               participantIds[index],
-                                                               providerQos,
-                                                               System.currentTimeMillis(),
-                                                               NO_EXPIRY,
-                                                               publicKeyId);
+            DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(index, index),
+                                                                                       domain,
+                                                                                       TestInterface.INTERFACE_NAME,
+                                                                                       participantIds[index],
+                                                                                       providerQos,
+                                                                                       System.currentTimeMillis(),
+                                                                                       NO_EXPIRY,
+                                                                                       publicKeyId,
+                                                                                       true);
             capabilitiesList.add(discoveryEntry);
         }
 
@@ -612,36 +634,37 @@ public class ArbitrationTest {
         arbitrator.startArbitration();
 
         verify(discoveryEntryVersionFilter).filter(interfaceVersion,
-                                                   new HashSet<DiscoveryEntry>(capabilitiesList),
+                                                   new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList),
                                                    new HashMap<String, Set<Version>>());
     }
 
     @Test
     public void testIncompatibleVersionsReported() {
         Version incompatibleVersion = new Version(100, 100);
-        final Collection<DiscoveryEntry> discoveryEntries = Lists.newArrayList(new DiscoveryEntry(incompatibleVersion,
+        final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Lists.newArrayList(new DiscoveryEntryWithMetaInfo(incompatibleVersion,
                                                                                             domain,
                                                                                             interfaceName,
                                                                                             "first-participant",
                                                                                             new ProviderQos(),
                                                                                             System.currentTimeMillis(),
                                                                                             NO_EXPIRY,
-                                                                                            "public-key-1"));
+                                                                                            "public-key-1",
+                                                                                            true));
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
         when(arbitrationStrategyFunction.select(Mockito.<Map<String, String>> any(),
-                                                Mockito.<Collection<DiscoveryEntry>> any())).thenReturn(new HashSet<DiscoveryEntry>());
-        doAnswer(new Answer<Set<DiscoveryEntry>>() {
+                                                Mockito.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>());
+        doAnswer(new Answer<Set<DiscoveryEntryWithMetaInfo>>() {
             @SuppressWarnings("unchecked")
             @Override
-            public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
+            public Set<DiscoveryEntryWithMetaInfo> answer(InvocationOnMock invocation) throws Throwable {
                 Map<String, Set<Version>> filteredVersions = (Map<String, Set<Version>>) invocation.getArguments()[2];
-                Set<DiscoveryEntry> discoveryEntries = (Set<DiscoveryEntry>) invocation.getArguments()[1];
+                Set<DiscoveryEntryWithMetaInfo> discoveryEntries = (Set<DiscoveryEntryWithMetaInfo>) invocation.getArguments()[1];
                 filteredVersions.put(domain, Sets.newHashSet(discoveryEntries.iterator().next().getProviderVersion()));
                 discoveryEntries.clear();
                 return new HashSet<>();
             }
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
-                                                   Mockito.<Set<DiscoveryEntry>> any(),
+                                                   Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
                                                    Mockito.<Map<String, Set<Version>>> any());
         DiscoveryQos discoveryQos = new DiscoveryQos(10L, arbitrationStrategyFunction, 0L);
         reset(localDiscoveryAggregator);
@@ -650,10 +673,10 @@ public class ArbitrationTest {
             @SuppressWarnings("unchecked")
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                ((Callback<DiscoveryEntry[]>) invocation.getArguments()[0]).resolve((Object) discoveryEntries.toArray(new DiscoveryEntry[1]));
+                ((Callback<DiscoveryEntryWithMetaInfo[]>) invocation.getArguments()[0]).resolve((Object) discoveryEntries.toArray(new DiscoveryEntryWithMetaInfo[1]));
                 return null;
             }
-        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntry[]>> any(),
+        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntryWithMetaInfo[]>> any(),
                                                  eq(new String[]{ domain }),
                                                  eq(interfaceName),
                                                  Mockito.<joynr.types.DiscoveryQos> any());
@@ -678,28 +701,30 @@ public class ArbitrationTest {
         final Version incompatibleVersion = new Version(100, 100);
         final String domain1 = "domain1";
         final String domain2 = "domain2";
-        final DiscoveryEntry discoveryEntry1 = new DiscoveryEntry(incompatibleVersion,
+        final DiscoveryEntryWithMetaInfo discoveryEntry1 = new DiscoveryEntryWithMetaInfo(incompatibleVersion,
                                                                                             domain1,
                                                                                             interfaceName,
                                                                                             "participant1",
                                                                                             new ProviderQos(),
                                                                                             System.currentTimeMillis(),
                                                                                             NO_EXPIRY,
-                                                                                            "public-key-1");
-        final DiscoveryEntry discoveryEntry2 = new DiscoveryEntry(incompatibleVersion,
+                                                                                            "public-key-1",
+                                                                                            true);
+        final DiscoveryEntryWithMetaInfo discoveryEntry2 = new DiscoveryEntryWithMetaInfo(incompatibleVersion,
                               domain2,
                               interfaceName,
                               "participant2",
                               new ProviderQos(),
                               System.currentTimeMillis(),
                               NO_EXPIRY,
-                              "public-key-2");
-        final Collection<DiscoveryEntry> discoveryEntries = Lists.newArrayList(discoveryEntry1,
+                              "public-key-2",
+                              true);
+        final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Lists.newArrayList(discoveryEntry1,
                                                                                discoveryEntry2);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
         when(arbitrationStrategyFunction.select(Mockito.<Map<String, String>> any(),
-                                                Mockito.<Collection<DiscoveryEntry>> any())).thenReturn(new HashSet<DiscoveryEntry>());
+                                                Mockito.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>());
         doAnswer(new Answer<Set<DiscoveryEntry>>() {
             @SuppressWarnings("unchecked")
             @Override
@@ -712,7 +737,7 @@ public class ArbitrationTest {
                 return new HashSet<>();
             }
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
-                                                   Mockito.<Set<DiscoveryEntry>> any(),
+                                                   Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
                                                    Mockito.<Map<String, Set<Version>>> any());
         DiscoveryQos discoveryQos = new DiscoveryQos(10L, arbitrationStrategyFunction, 0L);
         reset(localDiscoveryAggregator);
@@ -721,10 +746,10 @@ public class ArbitrationTest {
             @SuppressWarnings("unchecked")
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                ((Callback<DiscoveryEntry[]>) invocation.getArguments()[0]).resolve((Object) discoveryEntries.toArray(new DiscoveryEntry[2]));
+                ((Callback<DiscoveryEntryWithMetaInfo[]>) invocation.getArguments()[0]).resolve((Object) discoveryEntries.toArray(new DiscoveryEntryWithMetaInfo[2]));
                 return null;
             }
-        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntry[]>> any(),
+        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntryWithMetaInfo[]>> any(),
                                                  any(String[].class),
                                                  eq(interfaceName),
                                                  Mockito.<joynr.types.DiscoveryQos> any());
