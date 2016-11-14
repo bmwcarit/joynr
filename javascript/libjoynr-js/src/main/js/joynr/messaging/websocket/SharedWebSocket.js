@@ -203,11 +203,6 @@ define(
                          *            joynrMessage the joynr message to transmit
                          */
                         this.send = function send(joynrMessage) {
-                            try {
-                                Typing.checkProperty(joynrMessage, "JoynrMessage", "joynrMessage");
-                            } catch (e) {
-                                throw e;
-                            }
                             return sendMessage(websocket, joynrMessage, queuedMessages).catch(function(e1) {
                                     resetConnection();
                                 });

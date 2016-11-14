@@ -97,9 +97,6 @@ define([
                 sharedWebSocket.send(new JoynrMessage({}));
             }).not.toThrow(); // correct call
             expect(function() {
-                sharedWebSocket.send({});
-            }).toThrow(); // object sent is of wrong type
-            expect(function() {
                 sharedWebSocket.onmessage = undefined;
             }).toThrow(); // callback must be a function
 
