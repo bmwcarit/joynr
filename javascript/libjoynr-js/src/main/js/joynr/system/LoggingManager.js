@@ -321,7 +321,9 @@ define(
                                     }
                                 }
                             }
-                            appenders = createConfiguredAppenders(settings.configuration.appenders);
+                            appenders =
+                                    createConfiguredAppenders(settings.configuration.appenders
+                                        || {});
                             createConfiguredLoggers(settings.configuration.loggers);
                         };
 
