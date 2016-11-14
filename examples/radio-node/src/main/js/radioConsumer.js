@@ -46,19 +46,19 @@ var runDemo = function(radioProxy) {
             }
         );
     }).catch(function(error) {
-        prettyLog("RPC: radioProxy.addFavoriteStation(radioStation) failed: " + error);
+        prettyLog("RPC: radioProxy.addFavoriteStation(radioStation) failed: " + JSON.stringify(error));
     }).then(function() {
         prettyLog("RPC: radioProxy.addFavoriteStation(radioStation) returned");
         prettyLog("radioProxy.shuffleStations()...");
         return radioProxy.shuffleStations();
     }).catch(function(error) {
-        prettyLog("RPC: radioProxy.shuffleStations() failed: " + error);
+        prettyLog("RPC: radioProxy.shuffleStations() failed: " + JSON.stringify(error));
     }).then(function(value) {
         prettyLog("RPC: radioProxy.shuffleStations() returned");
         prettyLog("ATTRIBUTE GET: currentStation after shuffle...");
         return radioProxy.currentStation.get();
     }).catch(function(error) {
-        prettyLog("ATTRIBUTE GET: currentStation failed: " + error);
+        prettyLog("ATTRIBUTE GET: currentStation failed: " + JSON.stringify(error));
     }).then(function(value) {
         prettyLog("ATTRIBUTE GET: currentStation returned: " + JSON.stringify(value));
     });
@@ -199,7 +199,7 @@ var runInteractiveConsole =
                             prettyLog("RPC: radioProxy.shuffleStations returned. ");
                             return null;
                         }).catch(function(error) {
-                            prettyLog("RPC: radioProxy.shuffleStations failed: " + error);
+                            prettyLog("RPC: radioProxy.shuffleStations failed: " + JSON.stringify(error));
                             return error;
                        });
                         break;
