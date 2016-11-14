@@ -6,7 +6,8 @@
   "main": "src/main/js/radioConsumer.js",
   "private": true,
   "dependencies": {
-     "joynr" : ">=0.22.0-rc1"
+     "joynr" : ">=0.22.0-rc1",
+     "node-localstorage": "1.3.0"
   },
   "config": {
     "runtime": "websocket",
