@@ -609,7 +609,7 @@ define("joynr/dispatching/Dispatcher", [
          */
         this.receive =
                 function receive(joynrMessage) {
-                    log.debug("received message with id \"" + joynrMessage.msgId);
+                    log.debug("received message with id \"" + joynrMessage.msgId + "\"");
                     switch (joynrMessage.type) {
 
                         case JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST:
