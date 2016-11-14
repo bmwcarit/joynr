@@ -909,6 +909,42 @@ define(
                                 subscriptionRequest,
                                 callbackDispatcher) {
                             var exception;
+                            var timeToEndDate = 0;
+                            var attributeName = subscriptionRequest.subscribedToName;
+                            var subscriptionId = subscriptionRequest.subscriptionId;
+
+                            // if endDate is defined (also exclude default value 0 for
+                            // the expiryDateMs qos-property)
+                            if (subscriptionRequest.qos !== undefined
+                                && subscriptionRequest.qos.expiryDateMs !== undefined
+                                && subscriptionRequest.qos.expiryDateMs !== SubscriptionQos.NO_EXPIRY_DATE) {
+                                timeToEndDate = subscriptionRequest.qos.expiryDateMs - Date.now();
+
+                                // if endDate lies in the past => don't add the subscription
+                                if (timeToEndDate <= 0) {
+                                    exception = new SubscriptionException({
+                                        detailMessage: "error handling subscription request: "
+                                            + JSONSerializer.stringify(subscriptionRequest)
+                                            + ". expiryDateMs "
+                                            + subscriptionRequest.qos.expiryDateMs
+                                            + "for ProviderAttribute "
+                                            + attributeName
+                                            + " for providerId "
+                                            + providerParticipantId
+                                            + " lies in the past",
+                                        subscriptionId : subscriptionId
+                                    });
+                                    log.error(exception.detailMessage);
+                                    callbackDispatcherAsync(
+                                            {
+                                                error : exception,
+                                                subscriptionId : subscriptionId
+                                            },
+                                            callbackDispatcher);
+                                    return;
+                                }
+                            }
+
                             if (!isReady()) {
                                 exception = new SubscriptionException({
                                     detailMessage: "error handling subscription request: "
@@ -936,8 +972,6 @@ define(
                                             providerParticipantId,
                                             subscriptionRequest);
 
-                            var subscriptionId = subscriptionInfo.subscriptionId;
-
                             // in case the subscriptionId is already used in a previous
                             // subscription, remove this one
                             removeSubscription(subscriptionId, true);
@@ -961,7 +995,6 @@ define(
                             }
 
                             // make sure the provider contains the attribute being subscribed to
-                            var attributeName = subscriptionRequest.subscribedToName;
                             var attribute = provider[attributeName];
                             if (attribute === undefined) {
                                 exception = new SubscriptionException({
@@ -1030,43 +1063,6 @@ define(
                                 return;
                             }
 
-                            // if endDate is defined (also exclude default value 0 for
-                            // the expiryDateMs qos-property)
-                            if (subscriptionInfo.qos.expiryDateMs !== undefined
-                                && subscriptionInfo.qos.expiryDateMs !== SubscriptionQos.NO_EXPIRY_DATE) {
-                                var timeToEndDate = subscriptionRequest.qos.expiryDateMs - Date.now();
-
-                                // if endDate lies in the past => don't add the subscription
-                                if (timeToEndDate <= 0) {
-                                    exception = new SubscriptionException({
-                                        detailMessage: "error handling subscription request: "
-                                            + JSONSerializer.stringify(subscriptionRequest)
-                                            + ". expiryDateMs "
-                                            + subscriptionRequest.qos.expiryDateMs
-                                            + "for ProviderAttribute "
-                                            + attributeName
-                                            + " for providerId "
-                                            + providerParticipantId
-                                            + " lies in the past",
-                                        subscriptionId : subscriptionId
-                                    });
-                                    log.error(exception.detailMessage);
-                                    callbackDispatcherAsync(
-                                            {
-                                                error : exception,
-                                                subscriptionId : subscriptionId
-                                            },
-                                            callbackDispatcher);
-                                    return;
-                                }
-
-                                // schedule to remove subscription from internal maps
-                                subscriptionInfo.endDateTimeout =
-                                        LongTimer.setTimeout(function subscriptionReachedEndDate() {
-                                            removeSubscription(subscriptionId);
-                                        }, timeToEndDate);
-                            }
-
                             // Set up publication interval if maxIntervalMs is a number
                             //(not (is not a number)) ...
                             var periodMs = getPeriod(subscriptionInfo);
@@ -1091,10 +1087,19 @@ define(
                                             callbackDispatcher);
                                     return;
                                 }
-                                // call the get method on the provider at the set interval
-                                subscriptionInfo.subscriptionInterval =
-                                        triggerPublicationTimer(subscriptionInfo, periodMs);
                             }
+
+                            if (timeToEndDate > 0) {
+                                // schedule to remove subscription from internal maps
+                                subscriptionInfo.endDateTimeout =
+                                    LongTimer.setTimeout(function subscriptionReachedEndDate() {
+                                        removeSubscription(subscriptionId);
+                                    }, timeToEndDate);
+                            }
+
+                            // call the get method on the provider at the set interval
+                            subscriptionInfo.subscriptionInterval =
+                                triggerPublicationTimer(subscriptionInfo, periodMs);
 
                             // save subscriptionInfo to subscriptionId => subscription and
                             // ProviderAttribute => subscription map
@@ -1130,6 +1135,42 @@ define(
                                 multicast) {
                     var requestType = multicast ? "multicast" : "broadcast" + " subscription request";
                     var exception;
+                    var timeToEndDate = 0;
+                    var eventName = subscriptionRequest.subscribedToName;
+                    var subscriptionId = subscriptionRequest.subscriptionId;
+
+                    // if endDate is defined (also exclude default value 0 for
+                    // the expiryDateMs qos-property)
+                    if (subscriptionRequest.qos !== undefined
+                        && subscriptionRequest.qos.expiryDateMs !== undefined
+                        && subscriptionRequest.qos.expiryDateMs !== SubscriptionQos.NO_EXPIRY_DATE) {
+                        timeToEndDate = subscriptionRequest.qos.expiryDateMs - Date.now();
+
+                        // if endDate lies in the past => don't add the subscription
+                        if (timeToEndDate <= 0) {
+                            exception = new SubscriptionException({
+                                detailMessage: "error handling " + requestType + ": "
+                                    + JSONSerializer.stringify(subscriptionRequest)
+                                    + ". expiryDateMs "
+                                    + subscriptionRequest.qos.expiryDateMs
+                                    + "for ProviderEvent "
+                                    + eventName
+                                    + " for providerId "
+                                    + providerParticipantId
+                                    + " lies in the past",
+                                subscriptionId : subscriptionId
+                            });
+                            log.error(exception.detailMessage);
+                            callbackDispatcherAsync(
+                                    {
+                                        error : exception,
+                                        subscriptionId : subscriptionId
+                                    },
+                                    callbackDispatcher);
+                            return;
+                        }
+                    }
+
                     if (!isReady()) {
                         exception = new SubscriptionException({
                             detailMessage: "error handling " + requestType + ": "
@@ -1158,8 +1199,6 @@ define(
                                 providerParticipantId,
                                 subscriptionRequest);
 
-                    var subscriptionId = subscriptionInfo.subscriptionId;
-
                     // in case the subscriptionId is already used in a previous
                     // subscription, remove this one
                     removeSubscription(subscriptionId, true);
@@ -1183,7 +1222,6 @@ define(
                     }
 
                     // make sure the provider contains the event being subscribed to
-                    var eventName = subscriptionRequest.subscribedToName;
                     var event = provider[eventName];
                     if (event === undefined) {
                         exception = new SubscriptionException({
@@ -1229,43 +1267,6 @@ define(
                         return;
                     }
 
-                    // if endDate is defined (also exclude default value 0 for
-                    // the expiryDateMs qos-property)
-                    if (subscriptionInfo.qos.expiryDateMs !== undefined
-                        && subscriptionInfo.qos.expiryDateMs !== SubscriptionQos.NO_EXPIRY_DATE) {
-                        var timeToEndDate = subscriptionRequest.qos.expiryDateMs - Date.now();
-
-                        // if endDate lies in the past => don't add the subscription
-                        if (timeToEndDate <= 0) {
-                            exception = new SubscriptionException({
-                                detailMessage: "error handling " + requestType + ": "
-                                    + JSONSerializer.stringify(subscriptionRequest)
-                                    + ". expiryDateMs "
-                                    + subscriptionRequest.qos.expiryDateMs
-                                    + "for ProviderEvent "
-                                    + eventName
-                                    + " for providerId "
-                                    + providerParticipantId
-                                    + " lies in the past",
-                                subscriptionId : subscriptionId
-                            });
-                            log.error(exception.detailMessage);
-                            callbackDispatcherAsync(
-                                    {
-                                        error : exception,
-                                        subscriptionId : subscriptionId
-                                    },
-                                    callbackDispatcher);
-                            return;
-                        }
-
-                        // schedule to remove subscription from internal maps
-                        subscriptionInfo.endDateTimeout =
-                                LongTimer.setTimeout(function subscriptionReachedEndDate() {
-                                    removeSubscription(subscriptionId);
-                                }, timeToEndDate);
-                    }
-
                     if (multicast) {
                         var multicastId = subscriptionInfo.multicastId;
                         if (event.selective) {
@@ -1308,6 +1309,14 @@ define(
                                     callbackDispatcher);
                             return;
                         }
+                    }
+
+                    if (timeToEndDate > 0) {
+                        // schedule to remove subscription from internal maps
+                        subscriptionInfo.endDateTimeout =
+                            LongTimer.setTimeout(function subscriptionReachedEndDate() {
+                                removeSubscription(subscriptionId);
+                            }, timeToEndDate);
                     }
 
                     // save subscriptionInfo to subscriptionId => subscription and
