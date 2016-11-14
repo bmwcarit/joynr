@@ -36,6 +36,7 @@ import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import joynr.MethodMetaInformation;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 /**
  * This class creates a connector to access a service over JoynRPC using Java dynamic proxies.
@@ -74,10 +75,10 @@ public class JoynrMessagingConnectorFactory {
      * @return connector to execute remote procedure calls
      */
     public JoynrMessagingConnectorInvocationHandler create(final String fromParticipantId,
-                                                           final Set<String> toParticipantIds,
+                                                           final Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                                            final MessagingQos qosSettings) {
 
-        return new JoynrMessagingConnectorInvocationHandler(toParticipantIds,
+        return new JoynrMessagingConnectorInvocationHandler(toDiscoveryEntries,
                                                             fromParticipantId,
                                                             qosSettings,
                                                             requestReplyManager,

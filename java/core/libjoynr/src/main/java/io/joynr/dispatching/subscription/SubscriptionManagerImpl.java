@@ -50,6 +50,8 @@ import joynr.BroadcastSubscriptionRequest;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +145,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public void registerAttributeSubscription(String fromParticipantId,
-                                              Set<String> toParticipantIds,
+                                              Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                               AttributeSubscribeInvocation request) {
         if (!request.hasSubscriptionId()) {
             request.setSubscriptionId(UUID.randomUUID().toString());
@@ -185,13 +187,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
 
         // TODO pass the future to the messageSender and set the error state when exceptions are thrown
-        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, requestObject, messagingQos, false);
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toDiscoveryEntries, requestObject, messagingQos, false);
 
     }
 
     @Override
     public void registerBroadcastSubscription(String fromParticipantId,
-                                              Set<String> toParticipantIds,
+                                              Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                               BroadcastSubscribeInvocation request) {
         if (!request.hasSubscriptionId()) {
             request.setSubscriptionId(UUID.randomUUID().toString());
@@ -216,12 +218,12 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
         }
 
-        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, requestObject, messagingQos, true);
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toDiscoveryEntries, requestObject, messagingQos, true);
     }
 
     @Override
     public void unregisterSubscription(String fromParticipantId,
-                                       Set<String> toParticipantIds,
+                                       Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                        String subscriptionId,
                                        MessagingQos qosSettings) {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
@@ -235,7 +237,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
 
         dispatcher.sendSubscriptionStop(fromParticipantId,
-                                        toParticipantIds,
+                                        toDiscoveryEntries,
                                         subscriptionStop,
                                         new MessagingQos(qosSettings));
     }

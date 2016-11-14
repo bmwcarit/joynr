@@ -1,7 +1,5 @@
 package io.joynr.arbitration;
 
-import static org.junit.Assert.assertEquals;
-
 /*
  * #%L
  * %%
@@ -21,6 +19,7 @@ import static org.junit.Assert.assertEquals;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -33,7 +32,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -132,15 +130,16 @@ public class ArbitrationTest {
         CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword) };
         providerQos.setCustomParameters(qosParameters);
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            expectedParticipantId,
-                                                            providerQos,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                           domain,
+                                                                                           TestInterface.INTERFACE_NAME,
+                                                                                           expectedParticipantId,
+                                                                                           providerQos,
+                                                                                           System.currentTimeMillis(),
+                                                                                           NO_EXPIRY,
+                                                                                           publicKeyId,
+                                                                                           true);
+        capabilitiesList.add(expectedDiscoveryEntry);
         ProviderQos providerQos2 = new ProviderQos();
         CustomParameter[] qosParameters2 = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
         providerQos2.setCustomParameters(qosParameters2);
@@ -165,8 +164,9 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+
+            ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
+            Mockito.verify(arbitrationCallback, Mockito.times(1)).onSuccess(Mockito.eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -216,8 +216,7 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1)).onError(any(Throwable.class));
-            Mockito.verify(arbitrationCallback, Mockito.never())
-                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+            Mockito.verify(arbitrationCallback, Mockito.never()).onSuccess(Mockito.any(ArbitrationResult.class));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -250,15 +249,16 @@ public class ArbitrationTest {
         providerQos2.setSupportsOnChangeSubscriptions(true);
 
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            "expectedParticipantId",
-                                                            providerQos2,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                           domain,
+                                                                                           TestInterface.INTERFACE_NAME,
+                                                                                           "expectedParticipantId",
+                                                                                           providerQos2,
+                                                                                           System.currentTimeMillis(),
+                                                                                           NO_EXPIRY,
+                                                                                           publicKeyId,
+                                                                                           true);
+        capabilitiesList.add(expectedDiscoveryEntry);
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -271,8 +271,9 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+
+            ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
+            Mockito.verify(arbitrationCallback, Mockito.times(1)).onSuccess(Mockito.eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -292,15 +293,16 @@ public class ArbitrationTest {
                                                             publicKeyId,
                                                             true));
 
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            expectedParticipantId,
-                                                            providerQos,
-                                                            333L,
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                           domain,
+                                                                                           TestInterface.INTERFACE_NAME,
+                                                                                           expectedParticipantId,
+                                                                                           providerQos,
+                                                                                           333L,
+                                                                                           NO_EXPIRY,
+                                                                                           publicKeyId,
+                                                                                           true);
+        capabilitiesList.add(expectedDiscoveryEntry);
 
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                             domain,
@@ -322,8 +324,9 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+
+            ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
+            Mockito.verify(arbitrationCallback, Mockito.times(1)).onSuccess(Mockito.eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -335,15 +338,17 @@ public class ArbitrationTest {
         providerQos.setPriority(testPriority);
 
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            expectedParticipantId,
-                                                            providerQos,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                           domain,
+                                                                                           TestInterface.INTERFACE_NAME,
+                                                                                           expectedParticipantId,
+                                                                                           providerQos,
+                                                                                           System.currentTimeMillis(),
+                                                                                           NO_EXPIRY,
+                                                                                           publicKeyId,
+                                                                                           true);
+        capabilitiesList.add(expectedDiscoveryEntry);
+
         long lessPrior = 1;
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(lessPrior);
@@ -384,8 +389,9 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+
+            ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
+            Mockito.verify(arbitrationCallback, Mockito.times(1)).onSuccess(Mockito.eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -445,8 +451,7 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1)).onError(any(Throwable.class));
-            Mockito.verify(arbitrationCallback, Mockito.never())
-                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+            Mockito.verify(arbitrationCallback, Mockito.never()).onSuccess(Mockito.any(ArbitrationResult.class));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -460,15 +465,16 @@ public class ArbitrationTest {
         providerQos.setSupportsOnChangeSubscriptions(true);
 
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            expectedParticipantId,
-                                                            providerQos,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                           domain,
+                                                                                           TestInterface.INTERFACE_NAME,
+                                                                                           expectedParticipantId,
+                                                                                           providerQos,
+                                                                                           System.currentTimeMillis(),
+                                                                                           NO_EXPIRY,
+                                                                                           publicKeyId,
+                                                                                           true);
+        capabilitiesList.add(expectedDiscoveryEntry);
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -517,8 +523,9 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
-            Mockito.verify(arbitrationCallback, Mockito.times(1))
-                   .onSuccess(Mockito.eq(new ArbitrationResult(expectedParticipantId)));
+
+            ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
+            Mockito.verify(arbitrationCallback, Mockito.times(1)).onSuccess(Mockito.eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -543,7 +550,7 @@ public class ArbitrationTest {
         capabilitiesList.add(discoveryEntry);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(any(Map.class), any(Collection.class))).thenReturn(Arrays.asList(discoveryEntry));
+        when(arbitrationStrategyFunction.select(any(Map.class), any(Collection.class))).thenReturn(Sets.newHashSet(discoveryEntry));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
@@ -556,7 +563,9 @@ public class ArbitrationTest {
 
         verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
                                                              eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
-        verify(arbitrationCallback, times(1)).onSuccess(eq(new ArbitrationResult(expectedParticipantId)));
+
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(discoveryEntry);
+        verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
 
     }
 
@@ -584,7 +593,7 @@ public class ArbitrationTest {
         }
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(any(Map.class), any(Collection.class))).thenReturn(capabilitiesList);
+        when(arbitrationStrategyFunction.select(any(Map.class), any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
@@ -597,7 +606,9 @@ public class ArbitrationTest {
 
         verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
                                                              eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(participantIds);
+
+        DiscoveryEntryWithMetaInfo[] expectedDiscoveryEntries = new DiscoveryEntryWithMetaInfo[capabilitiesList.size()];
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(capabilitiesList.toArray(expectedDiscoveryEntries));
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 
@@ -622,7 +633,7 @@ public class ArbitrationTest {
         }
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(any(Map.class), any(Collection.class))).thenReturn(capabilitiesList);
+        when(arbitrationStrategyFunction.select(any(Map.class), any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),

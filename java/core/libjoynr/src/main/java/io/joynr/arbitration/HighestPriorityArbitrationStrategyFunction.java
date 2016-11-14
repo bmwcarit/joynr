@@ -1,7 +1,5 @@
 package io.joynr.arbitration;
 
-import java.util.Arrays;
-
 /*
  * #%L
  * %%
@@ -23,9 +21,12 @@ import java.util.Arrays;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Sets;
 
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
@@ -38,8 +39,8 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
     private static final Logger logger = LoggerFactory.getLogger(HighestPriorityArbitrationStrategyFunction.class);
 
     @Override
-    public final Collection<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
-                                                               final Collection<DiscoveryEntryWithMetaInfo> capabilities) {
+    public final Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                        final Collection<DiscoveryEntryWithMetaInfo> capabilities) {
         logger.trace("starting select Provider by priority");
         DiscoveryEntryWithMetaInfo highestPriorityCapability = null;
         long highestPriority = -1L;
@@ -54,6 +55,6 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
         }
         logger.trace("capability with highest priority: " + highestPriority + "\r\n" + highestPriorityCapability);
 
-        return highestPriorityCapability == null ? null : Arrays.asList(highestPriorityCapability);
+        return highestPriorityCapability == null ? null : Sets.newHashSet(highestPriorityCapability);
     }
 }

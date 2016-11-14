@@ -45,6 +45,8 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,13 +81,13 @@ public class DispatcherImpl implements Dispatcher {
 
     @Override
     public void sendSubscriptionRequest(String fromParticipantId,
-                                        Set<String> toParticipantIds,
+                                        Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos messagingQos,
                                         boolean broadcast) {
-        for (String toParticipantId : toParticipantIds) {
+        for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                                 toParticipantId,
+                                                                                 toDiscoveryEntry.getParticipantId(),
                                                                                  subscriptionRequest,
                                                                                  messagingQos,
                                                                                  broadcast);
@@ -96,12 +98,12 @@ public class DispatcherImpl implements Dispatcher {
 
     @Override
     public void sendSubscriptionStop(String fromParticipantId,
-                                     Set<String> toParticipantIds,
+                                     Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                      SubscriptionStop subscriptionStop,
                                      MessagingQos messagingQos) {
-        for (String toParticipantId : toParticipantIds) {
+        for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
-                                                                              toParticipantId,
+                                                                              toDiscoveryEntry.getParticipantId(),
                                                                               subscriptionStop,
                                                                               messagingQos);
             messageRouter.route(message);

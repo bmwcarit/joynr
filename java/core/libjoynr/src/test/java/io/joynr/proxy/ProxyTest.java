@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -83,7 +84,6 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.Address;
-import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
@@ -124,6 +124,8 @@ public class ProxyTest {
 
     private String domain;
     private String toParticipantId;
+    private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
+    private Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
     private String asyncReplyText = "replyText";
 
     @Mock
@@ -160,10 +162,23 @@ public class ProxyTest {
         public static final String INTERFACE_NAME = "TestInterface";
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Before
     public void setUp() throws Exception {
+        domain = "TestDomain";
         toParticipantId = "TestParticipantId";
+        toDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                          domain,
+                                                          TestInterface.INTERFACE_NAME,
+                                                          toParticipantId,
+                                                          new ProviderQos(),
+                                                          System.currentTimeMillis(),
+                                                          System.currentTimeMillis() + ONE_MINUTE_IN_MS,
+                                                          "publicKeyId",
+                                                          true);
+        toDiscoveryEntries = new HashSet<DiscoveryEntryWithMetaInfo>();
+        toDiscoveryEntries.add(toDiscoveryEntry);
+
         MockitoAnnotations.initMocks(this);
         Injector injector = Guice.createInjector(new AbstractModule() {
 
@@ -200,60 +215,52 @@ public class ProxyTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                                                           domain,
-                                                                                           TestInterface.INTERFACE_NAME,
-                                                                                           toParticipantId,
-                                                                                           new ProviderQos(),
-                                                                                           System.currentTimeMillis(),
-                                                                                           System.currentTimeMillis()
-                                                                                                   + ONE_MINUTE_IN_MS,
-                                                                                           "publicKeyId",
-                                                                                           true);
 
-                DiscoveryEntryWithMetaInfo[] fakeCapabilitiesResult = { discoveryEntry };
+                DiscoveryEntryWithMetaInfo[] fakeCapabilitiesResult = { toDiscoveryEntry };
                 ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);
                 return null;
             }
-        })
-               .when(localDiscoveryAggregator)
-               .lookup(Mockito.<Callback> any(),
-                       Mockito.<String[]> any(),
-                       Mockito.<String> any(),
-                       Mockito.<joynr.types.DiscoveryQos> any());
+        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
+                                                 Mockito.<String[]> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<joynr.types.DiscoveryQos> any());
 
         Mockito.doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                AttributeSubscribeInvocation request = (AttributeSubscribeInvocation) args[2];
-                if (request.getSubscriptionId() == null) {
-                    request.setSubscriptionId(UUID.randomUUID().toString());
-                }
-                request.getFuture().resolve(request.getSubscriptionId());
-                return null;
-            }
-        }).when(subscriptionManager).registerAttributeSubscription(any(String.class),
-                                                                   (Set<String>) argThat(contains(toParticipantId)),
-                                                                   Mockito.any(AttributeSubscribeInvocation.class));
+                   @Override
+                   public Object answer(InvocationOnMock invocation) {
+                       Object[] args = invocation.getArguments();
+                       AttributeSubscribeInvocation request = (AttributeSubscribeInvocation) args[2];
+                       if (request.getSubscriptionId() == null) {
+                           request.setSubscriptionId(UUID.randomUUID().toString());
+                       }
+                       request.getFuture().resolve(request.getSubscriptionId());
+                       return null;
+                   }
+               })
+               .when(subscriptionManager)
+               .registerAttributeSubscription(any(String.class),
+                                              (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                              // eq(toDiscoveryEntries),
+                                              Mockito.any(AttributeSubscribeInvocation.class));
 
         Mockito.doAnswer(new Answer<Object>() { //TODO simulate resolve here ! subscription reply bastern ... handle subscriptionreply ausführen.. 
-            @Override
-            public Object answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                BroadcastSubscribeInvocation request = (BroadcastSubscribeInvocation) args[2];
-                if (request.getSubscriptionId() == null) {
-                    request.setSubscriptionId(UUID.randomUUID().toString());
+                   @Override
+                   public Object answer(InvocationOnMock invocation) {
+                       Object[] args = invocation.getArguments();
+                       BroadcastSubscribeInvocation request = (BroadcastSubscribeInvocation) args[2];
+                       if (request.getSubscriptionId() == null) {
+                           request.setSubscriptionId(UUID.randomUUID().toString());
 
-                }
-                request.getFuture().resolve(request.getSubscriptionId());
-                return null;
-            }
-        }).when(subscriptionManager).registerBroadcastSubscription(any(String.class),
-                                                                   (Set<String>) argThat(contains(toParticipantId)),
-                                                                   Mockito.any(BroadcastSubscribeInvocation.class));
-
-        domain = "TestDomain";
+                       }
+                       request.getFuture().resolve(request.getSubscriptionId());
+                       return null;
+                   }
+               })
+               .when(subscriptionManager)
+               .registerBroadcastSubscription(any(String.class),
+                                              (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                              // eq(toDiscoveryEntries),
+                                              Mockito.any(BroadcastSubscribeInvocation.class));
 
         discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         messagingQos = new MessagingQos();
@@ -305,7 +312,7 @@ public class ProxyTest {
     public void createProxyAndCallSyncMethodSuccess() throws Exception {
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
         Mockito.when(requestReplyManager.sendSyncRequest(Mockito.<String> any(),
-                                                         Mockito.<String> any(),
+                                                         Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                          Mockito.<Request> any(),
                                                          Mockito.<SynchronizedReplyCaller> any(),
                                                          Mockito.<MessagingQos> any()))
@@ -322,7 +329,7 @@ public class ProxyTest {
     public void createProxyAndCallSyncMethodFailWithApplicationError() throws Exception {
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
         Mockito.when(requestReplyManager.sendSyncRequest(Mockito.<String> any(),
-                                                         Mockito.<String> any(),
+                                                         Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                          Mockito.<Request> any(),
                                                          Mockito.<SynchronizedReplyCaller> any(),
                                                          Mockito.<MessagingQos> any()))
@@ -365,7 +372,7 @@ public class ProxyTest {
                 return null;
             }
         }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
-                                                 Mockito.<String> any(),
+                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                  Mockito.<Request> any(),
                                                  Mockito.<MessagingQos> any());
         final Future<String> future = proxy.asyncMethod(callback);
@@ -404,7 +411,7 @@ public class ProxyTest {
                 return null;
             }
         }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
-                                                 Mockito.<String> any(),
+                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                  Mockito.<Request> any(),
                                                  Mockito.<MessagingQos> any());
 
@@ -450,7 +457,7 @@ public class ProxyTest {
                 return null;
             }
         }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
-                                                 Mockito.<String> any(),
+                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                  Mockito.<Request> any(),
                                                  Mockito.<MessagingQos> any());
 
@@ -488,7 +495,8 @@ public class ProxyTest {
         ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                            // eq(toDiscoveryEntries),
                                                                             subscriptionRequest.capture());
         assertEquals("locationUpdate", subscriptionRequest.getValue().getBroadcastName());
     }
@@ -514,7 +522,8 @@ public class ProxyTest {
         ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                            // eq(toDiscoveryEntries),
                                                                             subscriptionRequest.capture());
 
         assertEquals("locationUpdateSelective", subscriptionRequest.getValue().getBroadcastName());
@@ -522,7 +531,8 @@ public class ProxyTest {
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId.get(100L));
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     (Set<String>) argThat(contains(toParticipantId)),
+                                                                     (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                     // eq(toDiscoveryEntries),
                                                                      eq(subscriptionId.get()),
                                                                      any(MessagingQos.class));
     }
@@ -546,7 +556,8 @@ public class ProxyTest {
         ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                            // eq(toDiscoveryEntries),
                                                                             subscriptionRequest.capture());
 
         assertEquals("locationUpdate", subscriptionRequest.getValue().getBroadcastName());
@@ -554,7 +565,8 @@ public class ProxyTest {
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId.get(100L));
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     (Set<String>) argThat(contains(toParticipantId)),
+                                                                     (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                     // eq(toDiscoveryEntries),
                                                                      eq(subscriptionId.get()),
                                                                      any(MessagingQos.class));
     }
@@ -582,7 +594,8 @@ public class ProxyTest {
         ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                            // eq(toDiscoveryEntries),
                                                                             subscriptionRequest.capture());
 
         assertEquals("locationUpdate", subscriptionRequest.getValue().getBroadcastName());
@@ -611,7 +624,8 @@ public class ProxyTest {
         ArgumentCaptor<AttributeSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(AttributeSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                            // eq(toDiscoveryEntries),
                                                                             subscriptionRequest.capture());
 
         assertEquals("guidanceActive", subscriptionRequest.getValue().getAttributeName());
@@ -619,7 +633,8 @@ public class ProxyTest {
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId.get());
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     (Set<String>) argThat(contains(toParticipantId)),
+                                                                     (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                     // eq(toDiscoveryEntries),
                                                                      eq(subscriptionId.get()),
                                                                      any(MessagingQos.class));
     }
@@ -650,7 +665,8 @@ public class ProxyTest {
         ArgumentCaptor<AttributeSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(AttributeSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                            // eq(toDiscoveryEntries),
                                                                             subscriptionRequest.capture());
 
         assertEquals("guidanceActive", subscriptionRequest.getValue().getAttributeName());
@@ -668,8 +684,10 @@ public class ProxyTest {
         proxy.unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     (Set<String>) argThat(contains(toParticipantId)),
+                                                                     (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                     // eq(toDiscoveryEntries),
                                                                      eq(subscriptionId),
                                                                      any(MessagingQos.class));
     }
+
 }

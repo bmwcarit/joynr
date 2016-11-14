@@ -39,6 +39,7 @@ import java.util.concurrent.ScheduledFuture;
 
 import joynr.PeriodicSubscriptionQos;
 import joynr.exceptions.PublicationMissedException;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -79,6 +80,7 @@ public class SubscriptionTimersTest {
 
     private String fromParticipantId;
     private String toParticipantId;
+    private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Future<String> future;
 
     class IntegerReference extends TypeReference<Integer> {
@@ -91,6 +93,8 @@ public class SubscriptionTimersTest {
         attributeName = "testAttribute";
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
+        toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        toDiscoveryEntry.setParticipantId(toParticipantId);
         future = new Future<String>();
     }
 
@@ -112,7 +116,7 @@ public class SubscriptionTimersTest {
                                                                                             qos,
                                                                                             future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toParticipantId),
+                                                          Sets.newHashSet(toDiscoveryEntry),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
         Thread.sleep(subscriptionLength);
@@ -153,7 +157,7 @@ public class SubscriptionTimersTest {
                                                                                             qos,
                                                                                             future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toParticipantId),
+                                                          Sets.newHashSet(toDiscoveryEntry),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 

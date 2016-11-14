@@ -22,7 +22,6 @@ package io.joynr.arbitration;
 import static java.lang.String.format;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -234,13 +233,12 @@ public class Arbitrator {
                     logger.debug("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
                     Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
 
-                    Collection<DiscoveryEntryWithMetaInfo> selectedCapabilities = arbitrationStrategyFunction
+                    Set<DiscoveryEntryWithMetaInfo> selectedCapabilities = arbitrationStrategyFunction
                             .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
 
                     logger.debug("Selected capabilities: {}", selectedCapabilities);
                     if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
-                        Set<String> participantIds = getParticipantIds(selectedCapabilities);
-                        arbitrationResult.setParticipantIds(participantIds);
+                        arbitrationResult.setDiscoveryEntries(selectedCapabilities);
                         arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
                     } else {
                         arbitrationFailed();
@@ -268,17 +266,6 @@ public class Arbitrator {
             }
 
                 return allDomainsDiscovered;
-            }
-
-            private Set<String> getParticipantIds(Collection<DiscoveryEntryWithMetaInfo> selectedCapabilities) {
-                Set<String> participantIds = new HashSet<>();
-                for (DiscoveryEntry selectedCapability : selectedCapabilities) {
-                    if (selectedCapability != null) {
-                        participantIds.add(selectedCapability.getParticipantId());
-                    }
-                }
-                logger.debug("Resulting participant IDs: {}", participantIds);
-                return participantIds;
             }
 
         private Set<DiscoveryEntryWithMetaInfo> filterDiscoveryEntries(DiscoveryEntryWithMetaInfo[] discoveryEntries) {

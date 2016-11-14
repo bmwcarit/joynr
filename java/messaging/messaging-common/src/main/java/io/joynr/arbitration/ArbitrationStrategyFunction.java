@@ -21,6 +21,7 @@ package io.joynr.arbitration;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
@@ -52,8 +53,8 @@ public abstract class ArbitrationStrategyFunction {
      * arbitration result. A value of <code>null</code> or an empty collection
      * are used to indicate that there was no match.
      */
-    abstract Collection<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
-                                                           Collection<DiscoveryEntryWithMetaInfo> capabilities);
+    abstract Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                    Collection<DiscoveryEntryWithMetaInfo> capabilities);
 
     @CheckForNull
     protected CustomParameter findQosParameter(DiscoveryEntry discoveryEntry, String parameterName) {

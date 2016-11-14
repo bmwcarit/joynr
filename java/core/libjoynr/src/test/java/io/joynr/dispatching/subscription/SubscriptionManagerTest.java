@@ -68,6 +68,7 @@ import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionManagerTest {
@@ -100,6 +101,7 @@ public class SubscriptionManagerTest {
 
     private String fromParticipantId;
     private String toParticipantId;
+    private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Future<String> future;
 
     @Mock
@@ -158,6 +160,8 @@ public class SubscriptionManagerTest {
         qosSettings = new MessagingQos();
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
+        toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        toDiscoveryEntry.setParticipantId(toParticipantId);
         future = new Future<String>();
     }
 
@@ -175,7 +179,7 @@ public class SubscriptionManagerTest {
                                                                                             qos,
                                                                                             future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toParticipantId),
+                                                          Sets.newHashSet(toDiscoveryEntry),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
@@ -189,7 +193,7 @@ public class SubscriptionManagerTest {
                                                              Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   (Set<String>) argThat(contains(toParticipantId)),
+                                                   (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class),
                                                    eq(false));
@@ -206,7 +210,7 @@ public class SubscriptionManagerTest {
                                                                                             onChangeQos,
                                                                                             future);
         subscriptionManager.registerBroadcastSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toParticipantId),
+                                                          Sets.newHashSet(toDiscoveryEntry),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
@@ -219,11 +223,11 @@ public class SubscriptionManagerTest {
         verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
                                                              Mockito.any(ScheduledFuture.class));
 
-        verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   (Set<String>) argThat(contains(toParticipantId)),
-                                                   any(SubscriptionRequest.class),
-                                                   any(MessagingQos.class),
-                                                   eq(true));
+        verify(dispatcher, times(1)).sendSubscriptionRequest(eq(fromParticipantId),
+                                                             (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                             any(SubscriptionRequest.class),
+                                                             any(MessagingQos.class),
+                                                             eq(true));
     }
 
     @SuppressWarnings("unchecked")
@@ -240,7 +244,7 @@ public class SubscriptionManagerTest {
                                                                                 qosWithoutExpiryDate,
                                                                                 future);
         subscriptionId = request.getSubscriptionId();
-        subscriptionManager.registerAttributeSubscription(fromParticipantId, Sets.newHashSet(toParticipantId), request);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, Sets.newHashSet(toDiscoveryEntry), request);
 
         verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
         verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
@@ -251,7 +255,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionEndFutures, never()).put(Mockito.anyString(), Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   (Set<String>) argThat(contains(toParticipantId)),
+                                                   (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class),
                                                    eq(false));
@@ -266,7 +270,7 @@ public class SubscriptionManagerTest {
         Mockito.when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
         Mockito.when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
         subscriptionManager.unregisterSubscription(fromParticipantId,
-                                                   Sets.newHashSet(toParticipantId),
+                                                   Sets.newHashSet(toDiscoveryEntry),
                                                    subscriptionId,
                                                    qosSettings);
 
@@ -274,7 +278,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionState).stop();
 
         verify(dispatcher, times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
-                                                          (Set<String>) argThat(contains(toParticipantId)),
+                                                          (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
                                                           Mockito.eq(new SubscriptionStop(subscriptionId)),
                                                           Mockito.any(MessagingQos.class));
 

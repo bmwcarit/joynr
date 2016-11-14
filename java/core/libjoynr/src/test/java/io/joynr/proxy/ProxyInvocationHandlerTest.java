@@ -45,6 +45,7 @@ import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.annotation.FireAndForget;
 import io.joynr.messaging.MessagingQos;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProxyInvocationHandlerTest {
@@ -118,7 +119,11 @@ public class ProxyInvocationHandlerTest {
             }
         });
 
-        proxyInvocationHandler.createConnector(new ArbitrationResult("participantId"));
+        ArbitrationResult arbitrationResult = new ArbitrationResult();
+        DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
+        discoveryEntry.setParticipantId("participantId");
+        arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
+        proxyInvocationHandler.createConnector(arbitrationResult);
 
         // if the bug that causes one thread to hang in arbitration exists, one
         // of these calls will never return, causing the test to timeout and fail
@@ -134,7 +139,11 @@ public class ProxyInvocationHandlerTest {
         Method fireAndForgetMethod = TestServiceSync.class.getMethod("callMe", new Class<?>[]{ String.class });
         Object[] args = new Object[]{ "test" };
 
-        proxyInvocationHandler.createConnector(new ArbitrationResult("participantId"));
+        ArbitrationResult arbitrationResult = new ArbitrationResult();
+        DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
+        discoveryEntry.setParticipantId("participantId");
+        arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
+        proxyInvocationHandler.createConnector(arbitrationResult);
         proxyInvocationHandler.invoke(fireAndForgetMethod, args);
 
         verify(connectorInvocationHandler).executeOneWayMethod(fireAndForgetMethod, args);

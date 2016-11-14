@@ -26,6 +26,7 @@ import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.SubscriptionReply;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 import java.util.Set;
 
@@ -34,15 +35,15 @@ import javax.annotation.CheckForNull;
 public interface SubscriptionManager {
 
     void registerAttributeSubscription(String fromParticipantId,
-                                       Set<String> toParticipantIds,
+                                       Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                        AttributeSubscribeInvocation subscriptionRequest);
 
     void registerBroadcastSubscription(String fromParticipantId,
-                                       Set<String> toParticipantIds,
+                                       Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                        BroadcastSubscribeInvocation subscriptionRequest);
 
     void unregisterSubscription(String fromParticipantId,
-                                Set<String> toParticipantIds,
+                                Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                 String subscriptionId,
                                 MessagingQos qosSettings);
 
