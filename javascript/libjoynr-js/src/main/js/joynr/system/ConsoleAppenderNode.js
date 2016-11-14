@@ -36,27 +36,34 @@ define("joynr/system/ConsoleAppender", [], function() {
      * @name ConsoleAppender#append
      * @function
      */
-    ConsoleAppender.prototype.append = function(loggingEvent) {
-        var formattedMessage = loggingEvent.getCombinedMessages(), appender = this;
+    ConsoleAppender.prototype.append =
+            function(loggingEvent) {
+                var formattedMessage = loggingEvent.getCombinedMessages(), appender = this;
 
-        var getFormattedMessage = function() {
-            try {
-                var layout = appender.getLayout();
-                formattedMessage = layout.format(loggingEvent);
-                if (layout.ignoresThrowable() && loggingEvent.exception) {
-                    formattedMessage += loggingEvent.getThrowableStrRep();
-                }
-            } catch (e) {
+                var getFormattedMessage = function() {
+                    try {
+                        var layout = appender.getLayout();
+                        formattedMessage = layout.format(loggingEvent);
+                        if (layout.ignoresThrowable() && loggingEvent.exception) {
+                            formattedMessage += loggingEvent.getThrowableStrRep();
+                        }
+                    } catch (e) {
 
-            }
-            return formattedMessage;
-        };
+                    }
+                    return formattedMessage;
+                };
 
-        var logLevel = loggingEvent.level.name.toLowerCase();
-        formattedMessage = "[" + logLevel + "] " + getFormattedMessage();
-        console[logLevel] = console[logLevel] || console.log;
-        console[logLevel](formattedMessage);
-    };
+                var logLevel = loggingEvent.level.name.toLowerCase();
+                formattedMessage =
+                        "["
+                            + loggingEvent.logger.name
+                            + "]["
+                            + logLevel
+                            + "] "
+                            + getFormattedMessage();
+                console[logLevel] = console[logLevel] || console.log;
+                console[logLevel](formattedMessage);
+            };
 
     return ConsoleAppender;
 
