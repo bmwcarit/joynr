@@ -276,7 +276,7 @@ define(
                  *
                  * @function LoggingManager#createConfiguredLoggers
                  */
-                function createConfiguredLoggers(configuration, appenders) {
+                function createConfiguredLoggers(configuration) {
                     var i, loggerConfigs, keyConfig, config, loggerKey;
 
                     if (Object.prototype.toString.call(configuration.logger) === "[object Array]") {
@@ -297,7 +297,7 @@ define(
 
                     for (i = 0; i < loggerConfigs.length; i++) {
                         config = loggerConfigs[i];
-                        that.createLogger(config, appenders);
+                        that.createLogger(config);
                     }
                 }
 
