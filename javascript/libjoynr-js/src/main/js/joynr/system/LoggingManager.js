@@ -181,8 +181,10 @@ define(
                 this.registerAppenderClass =
                         function registerAppenderClass(appenderTypeName, constructor) {
                             var appendFunction = constructor.prototype.append;
+                            var toStringFunction = constructor.prototype.toString;
                             constructor.prototype = new log4javascript.Appender();
                             constructor.prototype.append = appendFunction;
+                            constructor.prototype.toString = toStringFunction;
                             appenderTypes[appenderTypeName] = constructor;
                         };
 

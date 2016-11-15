@@ -186,12 +186,11 @@ define("joynr/system/DistributedLoggingAppender", [
             loggingProxy = newProxy;
             setInterval(flush, flushInterval);
         };
-    }
 
-    DistributedLoggingAppender.prototype = new LoggingManager.Appender();
-    // DistributedLoggingAppender.prototype.layout = new LoggingManager.NullLayout();
-    // DistributedLoggingAppender.prototype.threshold =
-    //     LoggingManager.getLogLevel(LoggingManager.LogLevel.DEBUG);
+        this.toString = function toString() {
+            return "DistributedLoggingAppender";
+        };
+    }
 
     return DistributedLoggingAppender;
 

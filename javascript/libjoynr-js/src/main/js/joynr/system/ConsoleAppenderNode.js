@@ -65,6 +65,10 @@ define("joynr/system/ConsoleAppender", [], function() {
                 console[logLevel](formattedMessage);
             };
 
+    ConsoleAppender.prototype.toString = function toString() {
+        return "ConsoleAppender";
+    };
+
     return ConsoleAppender;
 
 });
