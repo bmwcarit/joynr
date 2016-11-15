@@ -251,6 +251,36 @@ define(
                             queuedRemoveMulticastReceiverCalls = undefined;
                         };
 
+                /*
+                 * this method is called when no address can be found in the local routing table 
+                 */
+                function resolveNextHopInternal(participantId) {
+                    var address, addressString;
+
+                    addressString = persistency.getItem(that.getStorageKey(participantId));
+                    if ((addressString === undefined
+                        || addressString === null || addressString === '{}')) {
+                        persistency.removeItem(that.getStorageKey(participantId));
+                    } else {
+                        address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
+                        routingTable[participantId] = address;
+                    }
+                    if (address === undefined && routingProxy !== undefined) {
+                        return routingProxy.resolveNextHop({
+                                participantId : participantId
+                            }).then(function(opArgs) {
+                                if (opArgs.resolved) {
+                                    routingTable[participantId] = parentMessageRouterAddress;
+                                    return parentMessageRouterAddress;
+                                }
+                                throw new Error("nextHop cannot be resolved, as participant with id "
+                                                + participantId
+                                                + " is not reachable by parent routing table");
+                            });
+                    }
+                    return Promise.resolve(address);
+                }
+
                 /**
                  * Looks up an Address for a given participantId (next hop)
                  *
@@ -268,32 +298,12 @@ define(
                         return Promise.reject(new Error("message router is already shut down"));
                     }
 
-                    var address, addressString;
-                    address = routingTable[participantId];
+                    var address = routingTable[participantId];
 
                     if (address === undefined) {
-                        addressString = persistency.getItem(that.getStorageKey(participantId));
-                        if ((addressString === undefined
-                            || addressString === null || addressString === '{}')) {
-                            persistency.removeItem(that.getStorageKey(participantId));
-                        } else {
-                            address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
-                            routingTable[participantId] = address;
-                        }
+                        return resolveNextHopInternal(participantId);
                     }
-                    if (address === undefined && routingProxy !== undefined) {
-                        return routingProxy.resolveNextHop({
-                                participantId : participantId
-                            }).then(function(opArgs) {
-                                if (opArgs.resolved) {
-                                    routingTable[participantId] = parentMessageRouterAddress;
-                                    return parentMessageRouterAddress;
-                                }
-                                throw new Error("nextHop cannot be resolved, as participant with id "
-                                                + participantId
-                                                + " is not reachable by parent routing table");
-                            });
-                    }
+
                     return Promise.resolve(address);
                 };
 
@@ -391,7 +401,14 @@ define(
                     if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST) {
                         return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal));
                     }
-                    return that.resolveNextHop(joynrMessage.to).then(forwardToRouteInternal);
+
+                    var participantId = joynrMessage.to;
+                    var address = routingTable[participantId];
+                    if (address !== undefined) {
+                        return routeInternal(address, joynrMessage);
+                    }
+
+                    return resolveNextHopInternal(participantId).then(forwardToRouteInternal);
                 };
 
                 /**
