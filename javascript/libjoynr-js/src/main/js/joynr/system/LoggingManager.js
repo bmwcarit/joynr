@@ -102,7 +102,8 @@ define(
                             appender = new AppenderConstructor(config, loggingContexts);
                             if (config.ThresholdFilter !== undefined
                                 && config.ThresholdFilter.level !== undefined) {
-                                appender.setThreshold(config.ThresholdFilter.level);
+                                appender.setThreshold(this
+                                        .getLogLevel(config.ThresholdFilter.level));
                             }
 
                             if (config.PatternLayout !== undefined
