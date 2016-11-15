@@ -18,6 +18,7 @@
  */
 #include "joynr/ProxyBase.h"
 #include "joynr/Util.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include <tuple>
 
 namespace joynr
@@ -35,8 +36,8 @@ ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
           domain(domain),
           qosSettings(qosSettings),
           cached(cached),
-          providerParticipantId(""),
-          proxyParticipantId("")
+          proxyParticipantId(""),
+          providerDiscoveryEntry()
 {
     proxyParticipantId = util::createUuid();
 }
@@ -45,11 +46,12 @@ ProxyBase::~ProxyBase()
 {
 }
 
-void ProxyBase::handleArbitrationFinished(const std::string& participantId,
-                                          bool useInProcessConnector)
+void ProxyBase::handleArbitrationFinished(
+        const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
+        bool useInProcessConnector)
 {
     std::ignore = useInProcessConnector;
-    providerParticipantId = participantId;
+    this->providerDiscoveryEntry = providerDiscoveryEntry;
 }
 
 std::string ProxyBase::getProxyParticipantId()

@@ -59,7 +59,7 @@ Arbitrator::Arbitrator(
 }
 
 void Arbitrator::startArbitration(
-        std::function<void(const std::string& participantId)> onSuccess,
+        std::function<void(const types::DiscoveryEntryWithMetaInfo& discoveryEntry)> onSuccess,
         std::function<void(const exceptions::DiscoveryException& exception)> onError)
 {
     onSuccessCallback = onSuccess;
@@ -201,7 +201,7 @@ void Arbitrator::receiveCapabilitiesLookupResults(
             arbitrationError = e;
         }
         if (!res.getParticipantId().empty()) {
-            onSuccessCallback(res.getParticipantId());
+            onSuccessCallback(res);
             arbitrationFinished = true;
         }
     }

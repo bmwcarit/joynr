@@ -35,6 +35,7 @@
 #include "joynr/ReplyCaller.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
@@ -45,15 +46,16 @@ class ISubscriptionManager;
 class JOYNR_EXPORT AbstractJoynrMessagingConnector : public IConnector
 {
 public:
-    AbstractJoynrMessagingConnector(IJoynrMessageSender* joynrMessageSender,
-                                    ISubscriptionManager* subscriptionManager,
-                                    const std::string& domain,
-                                    const std::string& interfaceName,
-                                    const std::string& proxyParticipantId,
-                                    const std::string& providerParticipantId,
-                                    const MessagingQos& qosSettings,
-                                    IClientCache* cache,
-                                    bool cached);
+    AbstractJoynrMessagingConnector(
+            IJoynrMessageSender* joynrMessageSender,
+            ISubscriptionManager* subscriptionManager,
+            const std::string& domain,
+            const std::string& interfaceName,
+            const std::string& proxyParticipantId,
+            const MessagingQos& qosSettings,
+            IClientCache* cache,
+            bool cached,
+            const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry);
     bool usesClusterController() const override;
     ~AbstractJoynrMessagingConnector() override = default;
 
@@ -112,6 +114,7 @@ protected:
     MessagingQos qosSettings;
     IClientCache* cache;
     bool cached;
+    types::DiscoveryEntryWithMetaInfo providerDiscoveryEntry;
     ADD_LOGGER(AbstractJoynrMessagingConnector);
 
 private:

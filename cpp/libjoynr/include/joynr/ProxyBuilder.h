@@ -37,6 +37,7 @@
 #include "joynr/Future.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/IProxyBuilder.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
@@ -200,16 +201,18 @@ void ProxyBuilder<T>::buildAsync(
     arbitrator = ArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
-    auto arbitrationSucceeds = [this, onSuccess, onError](const std::string& participantId) {
-        if (participantId.empty()) {
+    auto arbitrationSucceeds =
+            [this, onSuccess, onError](const types::DiscoveryEntryWithMetaInfo& discoverEntry) {
+        if (discoverEntry.getParticipantId().empty()) {
             onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
                                                    "arbitrator but ParticipantId is empty"));
             return;
         }
 
-        bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
+        bool useInProcessConnector =
+                requestCallerDirectory->containsRequestCaller(discoverEntry.getParticipantId());
         std::unique_ptr<T> proxy(proxyFactory->createProxy<T>(domain, messagingQos, cached));
-        proxy->handleArbitrationFinished(participantId, useInProcessConnector);
+        proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
 
         messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
 

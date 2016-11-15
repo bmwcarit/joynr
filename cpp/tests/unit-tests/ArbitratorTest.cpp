@@ -29,6 +29,7 @@
 #include "joynr/QosArbitrationStrategyFunction.h"
 #include "joynr/FixedParticipantArbitrationStrategyFunction.h"
 #include "joynr/KeywordArbitrationStrategyFunction.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 #include "tests/utils/MockObjects.h"
 
@@ -111,10 +112,10 @@ TEST_F(ArbitratorTest, arbitrationTimeout) {
                     discoveryQos,
                     move(lastSeenArbitrationStrategyFunction));
 
-    auto onSuccess = [](const std::string&) {
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();
     };
-    
+
     auto onError = [&semaphore](const exceptions::DiscoveryException& exception) {
         EXPECT_THAT(exception, discoveryException("Arbitration could not be finished in time."));
         semaphore.notify();
@@ -179,10 +180,10 @@ TEST_F(ArbitratorTest, getLastSeen) {
     // Check that the correct participant was selected
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
 
-    auto onSuccess = [&lastSeenParticipantId](const std::string& participantId) {
-        EXPECT_EQ(lastSeenParticipantId, participantId);
+    auto onSuccess = [&lastSeenParticipantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+        EXPECT_EQ(lastSeenParticipantId, discoveryEntry.getParticipantId());
     };
-    
+
     auto onError = [](const exceptions::DiscoveryException&) {
         FAIL();
     };
@@ -234,8 +235,8 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
 
     // Check that the correct participant was selected
-    auto onSuccess = [&participantId](const std::string& foundParticipantId) {
-        EXPECT_EQ(participantId.back(), foundParticipantId);
+    auto onSuccess = [&participantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+        EXPECT_EQ(participantId.back(), discoveryEntry.getParticipantId());
     };
 
     auto onError = [](const exceptions::DiscoveryException&) {
@@ -293,8 +294,8 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
 
     // Check that the correct participant was selected
-    auto onSuccess = [&expectedParticipantId](const std::string& participantId) {
-        EXPECT_EQ(expectedParticipantId, participantId);
+    auto onSuccess = [&expectedParticipantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+        EXPECT_EQ(expectedParticipantId, discoveryEntry.getParticipantId());
     };
 
     auto onError = [](const exceptions::DiscoveryException&) {
@@ -354,8 +355,8 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
 
     // Check that the correct participant was selected
-    auto onSuccess = [&participantId](const std::string& foundParticipantId) {
-        EXPECT_EQ(participantId.back(), foundParticipantId);
+    auto onSuccess = [&participantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+        EXPECT_EQ(participantId.back(), discoveryEntry.getParticipantId());
     };
 
     auto onError = [](const exceptions::DiscoveryException&) {
@@ -428,8 +429,8 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
 
     // Check that the correct participant was selected
-    auto onSuccess = [&participantId](const std::string& foundParticipantId) {
-        EXPECT_EQ(participantId.back(), foundParticipantId);
+    auto onSuccess = [&participantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+        EXPECT_EQ(participantId.back(), discoveryEntry.getParticipantId());
     };
 
     auto onError = [](const exceptions::DiscoveryException&) {
@@ -493,8 +494,8 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
     ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
 
     // Check that the correct participant was selected
-    auto onSuccess = [&expectedParticipantId](const std::string& participantId) {
-        EXPECT_EQ(expectedParticipantId, participantId);
+    auto onSuccess = [&expectedParticipantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+        EXPECT_EQ(expectedParticipantId, discoveryEntry.getParticipantId());
     };
 
     auto onError = [](const exceptions::DiscoveryException&) {
@@ -534,7 +535,7 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
                     discoveryQos,
                     move(lastSeenArbitrationStrategyFunction));
 
-    auto onSuccess = [](const std::string&) { FAIL(); };
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) { FAIL(); };
     auto onError = [](const exceptions::DiscoveryException&) { };
 
     lastSeenArbitrator.startArbitration(onSuccess, onError);
@@ -642,7 +643,7 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    auto onSuccess = [](const std::string&) {
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();
     };
 
@@ -728,7 +729,7 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    auto onSuccess = [](const std::string&) {
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();
     };
 
@@ -801,7 +802,7 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersion2);
 
-    auto onSuccess = [](const std::string&) {
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();
     };
 
@@ -881,7 +882,7 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    auto onSuccess = [](const std::string&) {
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();
     };
 
@@ -911,7 +912,7 @@ void ArbitratorTest::testExceptionFromDiscoveryProxy(Arbitrator &arbitrator){
             .WillOnce(Throw(exception1))
             .WillRepeatedly(Throw(expectedException));
 
-    auto onSuccess = [](const std::string&) {
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();
     };
 
@@ -981,7 +982,7 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsExceptionFromDiscoveryP
             .WillOnce(Throw(exception1))
             .WillRepeatedly(Throw(expectedException));
 
-    auto onSuccess = [](const std::string&) {
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();
     };
 
@@ -1048,7 +1049,7 @@ void ArbitratorTest::testExceptionEmptyResult(Arbitrator &arbitrator){
             .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
             .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
 
-    auto onSuccess = [](const std::string&) {
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();
     };
 

@@ -24,6 +24,7 @@
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -96,15 +97,20 @@ public:
     Semaphore semaphore;
 
     tests::testJoynrMessagingConnector* createConnector(bool cacheEnabled) {
+        types::DiscoveryEntryWithMetaInfo discoveryEntry;
+
+        discoveryEntry.setParticipantId(providerParticipantId);
+        discoveryEntry.setIsLocal(false);
+
         return new tests::testJoynrMessagingConnector(
                     mockJoynrMessageSender,
                     &mockSubscriptionManager,
                     "myDomain",
                     proxyParticipantId,
-                    providerParticipantId,
                     MessagingQos(),
                     &mockClientCache,
-                    cacheEnabled);
+                    cacheEnabled,
+                    discoveryEntry);
     }
 
     tests::Itest* createFixture(bool cacheEnabled) override {

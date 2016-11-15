@@ -80,6 +80,7 @@ internalRequestObject.setParams(
 #include <cstdint>
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 «FOR method : getMethods(francaIntf)»
 	«IF method.hasErrorEnum»
@@ -110,11 +111,11 @@ internalRequestObject.setParams(
 		joynr::ISubscriptionManager* subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
-		const std::string& providerParticipantId,
 		const joynr::MessagingQos &qosSettings,
 		joynr::IClientCache *cache,
-		bool cached)
-	: joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, providerParticipantId, qosSettings, cache, cached)
+		bool cached,
+		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
+	: joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, qosSettings, cache, cached, providerDiscoveryEntry)
 {
 }
 
