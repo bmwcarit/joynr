@@ -57,7 +57,7 @@ public interface SubscriptionManager {
 
     Class<?> getAttributeType(String subscriptionId);
 
-    Class<?>[] getBroadcastOutParameterTypes(String subscriptionId);
+    Class<?>[] getUnicastPublicationOutParameterTypes(String subscriptionId);
 
     boolean isBroadcast(String subscriptionId);
 

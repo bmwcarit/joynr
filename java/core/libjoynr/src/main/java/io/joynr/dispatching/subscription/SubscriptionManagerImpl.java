@@ -68,7 +68,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     private ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory;
     private ConcurrentMap<String, Future<String>> subscriptionFutureMap;
     private ConcurrentMap<String, Class<?>> subscriptionTypes;
-    private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes;
+    private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes;
     private ConcurrentMap<String, PubSubState> subscriptionStates;
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
     private ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures; // These futures will be needed if a
@@ -94,7 +94,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.missedPublicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
         this.subscriptionTypes = Maps.newConcurrentMap();
-        this.subscriptionBroadcastTypes = Maps.newConcurrentMap();
+        this.unicastBroadcastTypes = Maps.newConcurrentMap();
         this.subscriptionFutureMap = Maps.newConcurrentMap();
         this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
     }
@@ -120,7 +120,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.missedPublicationTimers = missedPublicationTimers;
         this.subscriptionEndFutures = subscriptionEndFutures;
         this.subscriptionTypes = subscriptionAttributeTypes;
-        this.subscriptionBroadcastTypes = subscriptionBroadcastTypes;
+        this.unicastBroadcastTypes = subscriptionBroadcastTypes;
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
         this.subscriptionFutureMap = subscriptionFutureMap;
@@ -214,7 +214,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                  public SubscriptionRequest execute() {
                                      String subscriptionId = request.getSubscriptionId();
                                      logger.debug("Broadcast subscription registered with Id: " + subscriptionId);
-                                     subscriptionBroadcastTypes.put(subscriptionId, request.getOutParameterTypes());
+                                     unicastBroadcastTypes.put(subscriptionId, request.getOutParameterTypes());
                                      broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                                                 request.getBroadcastSubscriptionListener());
                                      return new BroadcastSubscriptionRequest(request.getSubscriptionId(),
@@ -247,8 +247,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                                        Sets.<String> newHashSet());
                                          }
                                          multicastSubscribersDirectory.get(multicastIdPattern).add(subscriptionId);
-                                         subscriptionBroadcastTypes.put(multicastId,
-                                                                        multicastSubscribeInvocation.getOutParameterTypes());
+                                         unicastBroadcastTypes.put(multicastId,
+                                                                   multicastSubscribeInvocation.getOutParameterTypes());
                                          broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                                                     multicastSubscribeInvocation.getListener());
                                          return new MulticastSubscriptionRequest(multicastId,
@@ -438,8 +438,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
-    public Class<?>[] getBroadcastOutParameterTypes(String subscriptionId) {
-        return subscriptionBroadcastTypes.get(subscriptionId);
+    public Class<?>[] getUnicastPublicationOutParameterTypes(String subscriptionId) {
+        return unicastBroadcastTypes.get(subscriptionId);
     }
 
     private void removeSubscription(String subscriptionId) {
@@ -453,7 +453,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
         subscriptionStates.remove(subscriptionId);
         subscriptionListenerDirectory.remove(subscriptionId);
-        subscriptionBroadcastTypes.remove(subscriptionId);
+        unicastBroadcastTypes.remove(subscriptionId);
         broadcastSubscriptionListenerDirectory.remove(subscriptionId);
         for (Set<String> subscriptionIds : multicastSubscribersDirectory.values()) {
             subscriptionIds.remove(subscriptionId);
