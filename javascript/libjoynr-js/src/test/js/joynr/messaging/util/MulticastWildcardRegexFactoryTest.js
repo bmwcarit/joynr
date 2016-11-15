@@ -39,6 +39,9 @@ define([ "joynr/messaging/util/MulticastWildcardRegexFactory"
                     expect(match(multicastId, pattern)).toEqual(true);
                     expect(match("a/b", pattern)).toEqual(false);
                     expect(match("a", pattern)).toEqual(false);
+                    expect(match("a/b/c/d", pattern)).toEqual(false);
+                    expect(match("b/a/b/c/d", pattern)).toEqual(false);
+                    expect(match("b/a/b/c", pattern)).toEqual(false);
                 });
             });
             describe("works correctly for partitions with wildcards", function() {
@@ -54,6 +57,10 @@ define([ "joynr/messaging/util/MulticastWildcardRegexFactory"
                         expect(match("a/bc", pattern)).toEqual(false);
                         expect(match("a/c", pattern)).toEqual(false);
                         expect(match("a", pattern)).toEqual(false);
+                        expect(match("b", pattern)).toEqual(false);
+                        expect(match("b/a", pattern)).toEqual(false);
+                        expect(match("b/a/b", pattern)).toEqual(false);
+                        expect(match("b/a/b/c", pattern)).toEqual(false);
                     });
                 });
                 describe("having plus sign", function() {
@@ -67,6 +74,8 @@ define([ "joynr/messaging/util/MulticastWildcardRegexFactory"
                         expect(match("a/b/c/d", pattern)).toEqual(false);
                         expect(match("a/b/c", pattern)).toEqual(false);
                         expect(match("a/b", pattern)).toEqual(false);
+                        expect(match("b/a/b", pattern)).toEqual(false);
+                        expect(match("b/a/b/c/d/e", pattern)).toEqual(false);
                     });
                     it("in the middle", function() {
                         //the first two elements are ignored, as they are providerParticipantId + multicastName
@@ -76,6 +85,7 @@ define([ "joynr/messaging/util/MulticastWildcardRegexFactory"
                         expect(match("a/b/c/a/e", pattern)).toEqual(true);
                         expect(match("a/b/c/012345/e", pattern)).toEqual(true);
                         expect(match("a/b/c/012345", pattern)).toEqual(false);
+                        expect(match("a/b/c/d/e/f", pattern)).toEqual(false);
                     });
                     it("at the end", function() {
                         var multicastId = "a/b/c/d/+";
