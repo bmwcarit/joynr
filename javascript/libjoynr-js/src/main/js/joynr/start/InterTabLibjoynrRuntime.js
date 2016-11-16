@@ -586,6 +586,10 @@ define(
                                 typeRegistry.shutdown();
                             }
 
+                            if (loggingManager !== undefined) {
+                                loggingManager.shutdown();
+                            }
+
                             return Promise.all([]/* TODO: insert promises here */).then(function() {
                                 joynrState = JoynrStates.SHUTDOWN;
                                 log.debug("joynr shut down");

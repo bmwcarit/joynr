@@ -330,6 +330,16 @@ define(
                             createConfiguredLoggers(settings.configuration.loggers);
                         };
 
+                this.shutdown = function() {
+                    var i, appender;
+                    for (i = 0; i < appenders.length; i++) {
+                        appender = appenders[i];
+                        if (appender !== undefined && appender.shtudown !== undefined) {
+                            appender.shutdown();
+                        }
+                    }
+                };
+
                 this.reset();
             }
 
