@@ -1,6 +1,8 @@
 #joynr 0.22.0
 
 ##API relevant changes
+* **[Java]** constant PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT has been moved to
+  io.joynr.messaging.MessagingPropertyKeys
 * **[C++]** During a provider call a call context can be queried which provides the creator user id
   field from the joynr message. Please delete the broadcastsubscriptionrequest-persistence-file and
   subscriptionrequest-persistence-file because the file format changed.
