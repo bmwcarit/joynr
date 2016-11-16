@@ -340,7 +340,7 @@ public class DispatcherImpl implements Dispatcher {
 
     private void handle(MulticastPublication multicastPublication) {
         try {
-            Object[] values = getPublicationValues(subscriptionManager.getUnicastPublicationOutParameterTypes(multicastPublication.getMulticastId()),
+            Object[] values = getPublicationValues(subscriptionManager.getMulticastPublicationOutParameterTypes(multicastPublication.getMulticastId()),
                                                    (List<?>) multicastPublication.getResponse());
             subscriptionManager.handleMulticastPublication(multicastPublication.getMulticastId(), values);
         } catch (Exception e) {

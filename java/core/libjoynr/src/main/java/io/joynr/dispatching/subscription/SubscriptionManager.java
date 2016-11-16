@@ -59,6 +59,8 @@ public interface SubscriptionManager {
 
     Class<?>[] getUnicastPublicationOutParameterTypes(String subscriptionId);
 
+    Class<?>[] getMulticastPublicationOutParameterTypes(String multicastId);
+
     boolean isBroadcast(String subscriptionId);
 
     BroadcastSubscriptionListener getBroadcastSubscriptionListener(String subscriptionId);
