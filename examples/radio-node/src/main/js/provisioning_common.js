@@ -38,14 +38,14 @@ provisioning.logging = {
                     type : "Custom",
                     name : "CUSTOM",
                     PatternLayout : {
-                        pattern : "%m"
+                        pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
                     }
                 },
                 {
                     type : "Console",
                     name : "STDOUT",
                     PatternLayout : {
-                        pattern : "%m"
+                        pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
                     }
                 }
             ]
