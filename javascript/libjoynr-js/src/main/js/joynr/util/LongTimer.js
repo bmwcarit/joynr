@@ -32,7 +32,7 @@ define("joynr/util/LongTimer", [], function() {
 
     LongTimer.maxTime = Math.pow(2, 31) - 1;
 
-    var highestTimeoutId = -1;
+    var highestTimeoutId = 0;
     LongTimer.timeoutMap = {};
 
     function timeoutPortion(timeoutId) {

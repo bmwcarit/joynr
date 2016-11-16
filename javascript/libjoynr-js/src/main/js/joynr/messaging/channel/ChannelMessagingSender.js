@@ -171,7 +171,7 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
          * @private
          */
         function createExpiryTimer(queuedMessage) {
-            if (queuedMessage.expiryTimer) {
+            if (queuedMessage.expiryTimer !== undefined) {
                 LongTimer.clearTimeout(queuedMessage.expiryTimer);
                 queuedMessage.expiryTimer = undefined;
             }
@@ -256,10 +256,10 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
           */
          this.shutdown = function shutdown() {
              messageQueue.forEach(function(queuedMessage) {
-                 if (queuedMessage.expiryTimer) {
+                 if (queuedMessage.expiryTimer !== undefined) {
                      LongTimer.clearTimeout(queuedMessage.expiryTimer);
                  }
-                 if (queuedMessage.resendTimer) {
+                 if (queuedMessage.resendTimer !== undefined) {
                      LongTimer.clearTimeout(queuedMessage.resendTimer);
                  }
                  queuedMessage.reject(new Error("ChannelMessagingSender is already shut down"));
