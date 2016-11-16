@@ -115,9 +115,9 @@ The ```main()``` function must setup the configuration (provider domain etc.) an
 As a prerequisite, the **provider** and **consumer domain** need to be defined as shown below.
 
 ```cpp
-    // setup providerDomain, pathToMessagingSettings, pathToMessagingSettings
+    // setup providerDomain, pathToMessagingSettings, and optionally pathToMessagingSettings
     JoynrRuntime* runtime =
-        JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
+        JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
     ProxyBuilder<<Package>::<Interface>Proxy>* proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
@@ -145,19 +145,22 @@ Use the createRuntimeAsync static method of JoynrRuntime to create the runtime a
 
 The class ```DiscoveryQos``` configures how the search for a provider will be handled. It has the following members:
 
-* **discoveryTimeoutMs**  Timeout for discovery process (milliseconds), afterwards triggers
-   DiscoveryException if no provider was found or NoCompatibleProviderFoundException containing the
-   versions of the discovered incompatible providers
-* **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds), only younger
-   entries will be considered. If no suitable providers are found, then depending on the
-   discoveryScope, a remote global lookup may be triggered.
-* **arbitrationStrategy** The arbitration strategy (see below)
-* **customParameters** special parameters, that must match, e.g. keyword (see below)
+* **discoveryTimeoutMs**  Timeout for the discovery process (milliseconds) if no compatible
+  provider was found within the given time. A timeout triggers a DiscoveryException or
+  NoCompatibleProviderFoundException containing the versions of the discovered incompatible
+  providers.
 * **retryIntervalMs** The time to wait between discovery retries after encountering a discovery error.
-* **discoveryScope** default: LOCAL_AND_GLOBAL (details see below)
+* **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds), only younger
+  entries will be considered. If no suitable providers are found, then depending on the
+  discoveryScope, a remote global lookup may be triggered.
+* **arbitrationStrategy** The arbitration strategy (details see below)
+* **discoveryScope** The discovery scope (details see below)
+* **providerMustSupportOnChange** If set to true, select only providers which support onChange
+  subscriptions (set by the provider in its providerQos settings)
+* **customParameters** special parameters, that must match, e.g. keyword (see below)
 
-The **discoveryScope** defines, whether a suitable provider will be searched only in the local
-capabilities directory or also in the global one.
+The enumeration **DiscoveryScope** defines options to decide, whether a suitable provider will be
+searched in the local capabilities directory or in the global one.
 
 Available values are as follows:
 
@@ -168,22 +171,26 @@ Available values are as follows:
    capabilities directory.
 * **GLOBAL_ONLY** Only the global entries will be looked at.
 
+**Default discovery scope:** ```LOCAL_THEN_GLOBAL```
+
 Whenever global entries are involved, they are first searched in the local cache. In case no global
 entries are found in the cache, a remote lookup is triggered.
 
-The enumeration ```ArbitrationStrategy``` defines special options to select a Provider:
+The enumeration **ArbitrationStrategy** defines how the results of the scoped lookup will be sorted
+and / or filtered to select a Provider:
 
 * **LAST_SEEN** The participant that was last refreshed (i.e. with the most current last seen date)
- will be selected
+  will be selected
 * **HIGHEST_PRIORITY** Entries will be considered according to priority
 * **KEYWORD** Only entries that have a matching keyword will be considered
 * **FIXED_PARTICIPANT** select provider which matches the participantId provided as custom parameter
-   in DiscoveryQos (see below), if existing
+  in DiscoveryQos (see below), if existing
 * **LOCAL_ONLY** (not implemented yet, will throw DiscoveryException)
 
-**Default arbitration strategy:** LAST_SEEN
+**Default arbitration strategy:** ```LAST_SEEN```
 
-The priority is set by the provider through the call ```providerQos.setPriority()```.
+The priority used by the arbitration strategy *HighestPriority* is set by the provider through the
+call ```providerQos.setPriority()```.
 
 Class ```DiscoveryQos``` also provides keys for the key-value pair for the custom Parameters of
 discoveryScope:
@@ -208,17 +215,23 @@ Example for the creation of a DiscoveryQos class object:
 DiscoveryQos discoveryQos;
 
 discoveryQos.setDiscoveryTimeoutMs(10000); // optional, default 30000
-discoveryQos.setCacheMaxAgeMs(0); // optional, default 0
-discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // default HP
-discoveryQos.addCustomParameter(key, value); // optional, default none
-discoveryQos.setProviderMustSupportOnChange(true); // optional, default false
 discoveryQos.setRetryIntervalMs(1000); // optional, default 1000
+discoveryQos.setCacheMaxAgeMs(0); // optional, default DiscoveryQos::DO_NOT_USE_CACHE (0)
+// optional, default LAST_SEEN
+discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+discoveryQos.setDiscoveryScope(DiscoveryScope::LOCAL_ONLY); // optional, default LOCAL_THEN_GLOBAL
+discoveryQos.setProviderMustSupportOnChange(true); // optional, default false
+discoveryQos.addCustomParameter(key, value); // optional, default none
 ```
 
 ## The message quality of service
 
-The ```MesssagingQos``` class defines the roundtrip timeout for RPC requests in milliseconds
-and allows definition of additional custom message headers.
+The ```MesssagingQos``` class defines the **roundtrip timeout in milliseconds** for **RPC requests**
+(getter/setter/method calls) and unsubscribe requests and it allows definition of additional custom
+message headers.
+The ttl for subscription requests is calculated from the ```expiryDateMs```
+in the [SubscriptionQos](#quality-of-service-settings-for-subscriptions) settings.
+The ttl of internal joynr messages cannot be changed.
 
 If no specific setting is given, the default roundtrip timeout is 60 seconds.
 The keys of custom message headers may contain ascii alphanumeric or hyphen.
@@ -251,7 +264,11 @@ The consumer application instance must create one **proxy** per used Franca inte
 * **subscribe** or **unsubscribe** to its **attributes** or **update** a subscription
 * **subscribe** or **unsubscribe** to its **broadcasts** or **update** a subscription
 
-In case no suitable provider can be found during discovery, a ```DiscoveryException``` is thrown.
+The ProxyBuilder requires the provider's domain. Optionally, **messagingQos** and
+**discoveryQos** settings can be specified if the default settings are not suitable.
+
+In case no suitable provider can be found during discovery, a ```DiscoveryException``` or
+```NoCompatibleProviderFoundException``` is thrown.
 
 ```cpp
     DiscoveryQos discoveryQos;
@@ -263,9 +280,9 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 
     try {
-        <Package>::<Interface>Proxy* proxy = proxyBuilder->setMessagingQos(messagingQos)
-            ->setCached(false)
-            ->setDiscoveryQos(discoveryQos)
+        <Package>::<Interface>Proxy* proxy = proxyBuilder
+            ->setMessagingQos(messagingQos) // optional
+            ->setDiscoveryQos(discoveryQos) // optional
             ->build();
 
         // call methods, subscribe to broadcasts etc.
@@ -286,9 +303,8 @@ Use the buildAsync method of ProxyBuilder to create a proxy asynchronously:
         // Handle the exception here
     }
 
-    proxyBuilder->setMessagingQos(messagingQos)
-        ->setCached(false)
-        ->setDiscoveryQos(discoveryQos)
+    proxyBuilder->setMessagingQos(messagingQos) // optional
+        ->setDiscoveryQos(discoveryQos) // optional
         ->buildAsync(onSuccess, onError);
 ```
 
@@ -321,7 +337,6 @@ callback has to be provided for the API call in order to receive the result and 
 Note the current thread will still be blocked until the Joynr message is internally set up and
 serialized. It will then be enqueued and handled by a Joynr Middleware thread.
 The message order on Joynr RPCs will not be preserved.
-If no return type exists, the term ```Void``` is used instead.
 
 ```cpp
 #include "joynr/<Package>/<TypeCollection>/<Type>.h"
@@ -364,18 +379,27 @@ try {
 The abstract class ```SubscriptionQos``` has the following members:
 
 * **expiryDateMs** Absolute Time until notifications will be send (milliseconds)
-* **publicationTtlMs** Lifespan of a notification (milliseconds), it will be deleted afterwards
+* **publicationTtlMs** Lifespan of a notification (milliseconds), the notification will be deleted
+  afterwards
+  Known Issue: subscriptionQos passed when subscribing to a non-selective broadcast are ignored.
+  The API will be changed in the future: proxy subscribe calls will no longer take a
+  subscriptionQos; instead the publication TTL will be settable on the provider side.
+
+
 
 ### PeriodicSubscriptionQos
 
-The class ```PeriodicSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following additional members:
+The class ```PeriodicSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following
+additional members:
 
 * **periodMs** defines how long to wait before sending an update even if the value did not change
-* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
+* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification
+  will be raised (milliseconds)
 
 This class can be used for subscriptions to attributes.
 
-Note that updates will be send only based on the specified interval and not based on changes of the attribute.
+Note that updates will be send only based on the specified interval and not based on changes of the
+attribute.
 
 ### OnChangeSubscriptionQos
 
@@ -391,11 +415,15 @@ to attributes if no periodic update is required.
 The class ```OnChangeWithKeepAliveSubscriptionQos``` inherits from ```OnChangeSubscriptionQos``` and has the following additional members:
 
 * **maxIntervalMs** Maximum time to wait between notifications, if value has not changed
-* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
+* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification
+  will be raised (milliseconds)
 
-This class can be used for subscriptions to attributes. Updates will then be sent based both periodically and after a change (i.e. this acts like a combination of ```PeriodicSubscriptionQos``` and ```OnChangeSubscriptionQos```).
+This class can be used for subscriptions to attributes. Updates will then be sent based both
+periodically and after a change (i.e. this acts like a combination of ```PeriodicSubscriptionQos```
+and ```OnChangeSubscriptionQos```).
 
-Using it for subscriptions to broadcasts is theoretically possible because of inheritance but makes no sense (in this case the additional members will be ignored).
+Using it for subscriptions to broadcasts is theoretically possible because of inheritance but makes
+no sense (in this case the additional members will be ignored).
 
 
 ## Subscribing to an attribute
@@ -504,10 +532,22 @@ earlier subscribeTo call.
 proxy->unsubscribeFrom<Attribute>(subscriptionId);
 ```
 
-## Subscribing to a broadcast unconditionally
+## Subscribing to a (non-selective) broadcast
 
-Broadcast subscription informs the application in case a broadcast is fired from provider side and
-returns the output values via callback.
+A Broadcast subscription informs the application in case a broadcast is fired by a provider.
+The output values are returned via a callback function.
+
+A broadcast is selective only if it is declared with the `selective` keyword in Franca, otherwise it
+is non-selective.
+
+Non-selective broadcast subscriptions can be passed optional **partitions**. A partition is a
+hierarchical list of strings similar to a URL path. Subscribing to a partition will cause only those
+broadcasts to be sent to the consumer that match the partition. Note that the partition is set when
+subscribing on the consumer side, and must match the partition set on the provider side when the
+broadcast is performed.
+
+Example: a consumer could set a partition of "europe", "germany", "munich" to receive broadcasts for
+Munich only. The matching provider would use the same partition when sending the broadcast.
 
 The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
 by the subscribeTo call. It can be used later to update the subscription or to unsubscribe from it.
@@ -566,9 +606,16 @@ auto listener = std::make_shared<ISubscriptionListener<OutputType1>[, ... <Outpu
 auto qos = std::make_shared<OnChangeSubscriptionQos>();
 // define details of qos by calling its setters here
 
+// optionally specifiy partitions here
+const std::vector<std::string> partitions {partitionLevel1,
+                                           ...
+                                           partitionLevelN};
+
 std::shared_ptr<Future<std::string>> subscriptionIdFuture = proxy->subscribeTo<Broadcast>Broadcast(
     listener,
-    qos
+    qos,
+    // optional parameter for multicast subscriptions (subscriptions to non selective broadcasts)
+    partitions
 );
 
 ...
@@ -584,18 +631,20 @@ try {
     // handle timeout
 }
 ```
+The [partition syntax is explained in the multicast concept](../docs/multicast.md#partitions)
 
-## Updating an unconditional broadcast subscription
+## Updating a (non-selective) broadcast subscription
 
 The subscribeTo method can also be used to update an existing subscription, when the
 **subscriptionId** is given as additional parameter as follows:
 
 ```cpp
-std::shared_ptr<Future<std::string>> subscriptionIdFuture =
-    <interface>Proxy.subscribeTo<Broadcast>Broadcast(
-            listener,
-            qos,
-            subscriptionId
+std::shared_ptr<Future<std::string>> subscriptionIdFuture = proxy.subscribeTo<Broadcast>Broadcast(
+    subscriptionId,
+    listener,
+    qos,
+    // optional parameter for multicast subscriptions (subscriptions to non selective broadcasts)
+    partitions
 );
 ```
 
@@ -607,10 +656,10 @@ broadcast output values are passed to the consumer via callback.
 
 The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
 by the subscribeTo call (see section
-[Subscribing to a broadcast unconditionally](#subscribing-to-a-broadcast-unconditionally)).
+[Subscribing to a (non-selective) broadcast](#subscribing-to-a-%28non-selective%29-broadcast)).
 
 To receive the subscription, a **callback** has to be provided (cf. section
-[Subscribing to a broadcast unconditionally](#subscribing-to-a-broadcast-unconditionally)).
+[Subscribing to a (non-selective) broadcast](#subscribing-to-a-%28non-selective%29-broadcast)).
 
 In addition to the normal broadcast subscription, the **filter parameters** for this broadcast must
 be created and initialized as additional parameters to the ```subscribeTo``` method. These filter
@@ -653,10 +702,10 @@ The subscribeTo method can also be used to update an existing subscription, when
 ```cpp
 std::shared_ptr<Future<std::string>> subscriptionIdFuture =
     <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+            subscriptionId,
             <broadcast>BroadcastFilterParams,
             listener,
-            qos,
-            subscriptionId
+            qos
 );
 ```
 
@@ -725,18 +774,47 @@ main(int argc, char** argv)
 ### Creating the runtime
 
 ```cpp
-    // setup pathToLibJoynrSettings, pathToMessagingSettings
+    // setup pathToLibJoynrSettings, and optionally pathToMessagingSettings
     JoynrRuntime* runtime =
-        JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
+        JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
+```
+
+### The Provider quality of service
+
+The ```ProviderQos``` has the following members:
+
+* **customParameters** e.g. the key-value for the arbitration strategy Keyword during discovery
+* **priority** the priority used for arbitration strategy HighestPriority during discovery
+* **scope** the Provider scope (see below), used in discovery
+* **supportsOnChangeSubscriptions** whether the provider supports subscriptions on changes
+
+The **ProviderScope** can be
+* **LOCAL** The provider will be registered in the local capability directory
+* **GLOBAL** The provider will be registered in the local and global capability directory
+
+Example:
+
+```cpp
+types::ProviderQos providerQos;
+providerQos.setCustomParameters(customParameters);
+providerQos.setPriority(100);
+providerQos.setScope(ProviderScope.GLOBAL);
+providerQos.setSupportsOnChangeSubscriptions(true);
 ```
 
 ### Registering provider
-For each interface a specific provider class instance must be registered. From that time on, the provider will be reachable from outside and react on incoming requests (e.g. method RPC etc.). It can be found by consumers through Discovery.
+For each interface a specific provider class instance must be registered. From that time on, the
+provider will be reachable from outside and react on incoming requests (e.g. method RPC etc.).
+It can be found by consumers through Discovery.
 Any specific broadcast filters must be added prior to registry.
 
 ```cpp
     // create instance of provider class
     std::shared_ptr<My<Interface>Provider> provider(new My<Interface>Provider());
+
+    // set up providerQos
+    types::ProviderQos providerQos;
+    // call setters to configure providerQos
 
     // create filter instance for each broadcast filter
     std::shared_ptr<<Broadcast>BroadcastFilter> <broadcast>BroadcastFilter(
@@ -744,7 +822,7 @@ Any specific broadcast filters must be added prior to registry.
     provider->addBroadcastFilter(<broadcast>BroadcastFilter);
 
     runtime->registerProvider<<Package>::<Interface>Provider>(
-        providerDomain, provider);
+        providerDomain, provider, providerQos);
 ```
 
 ### Shutting down
@@ -769,31 +847,6 @@ The following Joynr C++ include files are required:
 #include "My<Interface>Provider.h"
 ```
 
-### The Provider quality of service
-
-The ```ProviderQos``` has the following members:
-
-* **customParameters** e.g. the key-value for the arbitration strategy Keyword during discovery
-* **providerVersion** the version of the provider
-* **priority** the priority used for arbitration strategy HighestPriority during discovery
-* **scope** the Provider scope (see below), used in discovery
-* **supportsOnChangeSubscriptions** whether the provider supports subscriptions on changes
-
-The **ProviderScope** can be
-* **LOCAL** The provider will be registered in the local capability directory
-* **GLOBAL** The provider will be registered in the local and global capability directory
-
-Example:
-
-```cpp
-types::ProviderQos providerQos;
-providerQos.setCustomParameters(customParameters);
-providerQos.setProviderVersion(1);
-providerQos.setPriority(100);
-providerQos.setScope(ProviderScope.GLOBAL);
-providerQos.setSupportsOnChangeSubscriptions(true);
-```
-
 ### The base class
 The provider class must extend the generated class ```joynr::<Package>::Default<Interface>Provider```  and implement getter and setter methods for each Franca attribute and a method for each method of the Franca interface. In order to send broadcasts the generated code of the super class ```joynr::<Interface>Provider``` can be used.
 
@@ -805,8 +858,6 @@ using namespace joynr;
 My<Interface>Provider::My<Interface>Provider()
     : Default<Interface>Provider()
 {
-    // call setters to configure inherited providerQos
-    providerQos.setPriority(<priorityValue>);
     ...
 }
 
@@ -894,10 +945,23 @@ void My<Interface>Provider::fire<Broadcast>Event()
     ...
     // setup outputValue(s)
     ...
+    // optional: the partition to be used for the broadcast
+    // Note: wildcards are only allowed on consumer side
+    const std::vector<std::string> partitions {partitionLevel1,
+                                               ...
+                                               partitionLevelN};
+
     // use method provided by generators to send the broadcast
-    fire<Broadcast>(outputValue1, ... , outputValueN);
+    fire<Broadcast>(
+        outputValue1,
+        ... ,
+        outputValueN,
+        // optional: the partitions to be used for multicasts
+        partitions
+        );
 }
 ```
+The [partition syntax is explained in the multicast concept](../docs/multicast.md#partitions)
 
 ## Selective (filtered) broadcasts
 In contrast to unfiltered broadcasts, to realize selective (filtered) broadcasts, the filter logic has to be implemented and registered by the provider. If multiple filters are registered on the same provider and broadcast, all filters are applied in a chain and the broadcast is only delivered if all filters in the chain return true.

@@ -749,15 +749,17 @@ interface GlobalDomainAccessController {
 			entry is added, an existing entry changed or is removed.
 			The event includes new domain role entry as well as the type of
 			the change.
-			The interface provider offers a filter for this selective broadcast.
-			This filter filters events based on userIdOfInterest filter parameter
-			or does no filtering if this parameter is not set.
 			Used by the LocalDomainAccessController to subscribe to updates for
 			the current user.
-		@param: userIdOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the userId of interest
+			MULTICAST PARTITIONS:
+			When firing the event, it is broadcast using the user ID of the
+			domain role as a partition. So when subscribing you either have
+			to subscribe using a wildcard partition (e.g. '+'), or else subscribe
+			for exactly the user ID you're interested in.
+			Note, however, that as partitions only acceess alpha-numeric characters
+			all other characters (such as '.') are stripped from the various values.
 	**>
-	broadcast domainRoleEntryChanged selective {
+	broadcast domainRoleEntryChanged {
 		out {
 			DacTypes.ChangeType typeOfChange
 			DacTypes.DomainRoleEntry changedDomainRoleEntry
@@ -769,24 +771,13 @@ interface GlobalDomainAccessController {
 			control entry is added or an existing entry is changed or removed.
 			The event includes the new access control entry as well as the
 			the type of change.
-			The interface provider offers two filters for this selective
-			broadcast.
-			The user ID filter filters events based on the userIdOfInterest,
-			or does no filtering if these parameters are not set. It is used
-			by the LocalDomainAccessController to subscribe to updates for the
-			current user.
-			The domain/interface filter filters events based on domainOfInterest
-			and interfaceOfInterest filter parameters, or does no filtering if
-			these parameters are not set. It is used by the
-			LocalDomainAccessController.
-		@param: userIdOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the userId of interest
-		@param: domainOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the domain of interest
-		@param: interfaceOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the interface of interest
+			MULTICAST PARTITINOS:
+			This even is broadcast using the following partition structure:
+			<user ID> / <domain> / <interface>
+			Note, however, that as partitions only acceess alpha-numeric characters
+			all other characters (such as '.') are stripped from the various values.
 	**>
-	broadcast masterAccessControlEntryChanged selective {
+	broadcast masterAccessControlEntryChanged {
 		out {
 			DacTypes.ChangeType typeOfChange
 			DacTypes.MasterAccessControlEntry changedMasterAce
@@ -797,24 +788,13 @@ interface GlobalDomainAccessController {
 		@description: Event that is fired when new mediator access
 			control entry is added or an existing entry is changed or removed.
 			The event includes the new mediator access control entry.
-			The interface provider offers two filters for this selective
-			broadcast.
-			The user ID filter filters events based on the userIdOfInterest,
-			or does no filtering if these parameters are not set. It is used
-			by the LocalDomainAccessController to subscribe to updates for the
-			current user.
-			The domain/interface filter filters events based on domainOfInterest
-			and interfaceOfInterest filter parameters, or does no filtering if
-			these parameters are not set. It is used by the
-			LocalDomainAccessController.
-		@param: userIdOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the userId of interest
-		@param: domainOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the domain of interest
-		@param: interfaceOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the interface of interest
+			MULTICAST PARTITINOS:
+			This even is broadcast using the following partition structure:
+			<user ID> / <domain> / <interface>
+			Note, however, that as partitions only acceess alpha-numeric characters
+			all other characters (such as '.') are stripped from the various values.
 	**>
-	broadcast mediatorAccessControlEntryChanged selective {
+	broadcast mediatorAccessControlEntryChanged {
 		out {
 			DacTypes.ChangeType typeOfChange
 			DacTypes.MasterAccessControlEntry changedMediatorAce
@@ -826,24 +806,13 @@ interface GlobalDomainAccessController {
 			control entry is added or an existing entry is changed or removed.
 			The event includes the new owner access control entry as well as the
 			type of the change.
-			The interface provider offers two filters for this selective
-			broadcast.
-			The user ID filter filters events based on the userIdOfInterest,
-			or does no filtering if these parameters are not set. It is used
-			by the LocalDomainAccessController to subscribe to updates for the
-			current user.
-			The domain/interface filter filters events based on domainOfInterest
-			and interfaceOfInterest filter parameters, or does no filtering if
-			these parameters are not set. It is used by the
-			LocalDomainAccessController.
-		@param: userIdOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the userId of interest
-		@param: domainOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the domain of interest
-		@param: interfaceOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the interface of interest
+			MULTICAST PARTITINOS:
+			This even is broadcast using the following partition structure:
+			<user ID> / <domain> / <interface>
+			Note, however, that as partitions only acceess alpha-numeric characters
+			all other characters (such as '.') are stripped from the various values.
 	**>
-	broadcast ownerAccessControlEntryChanged selective {
+	broadcast ownerAccessControlEntryChanged {
 		out {
 			DacTypes.ChangeType typeOfChange
 			DacTypes.OwnerAccessControlEntry changedOwnerAce
@@ -855,16 +824,15 @@ interface GlobalDomainAccessController {
 			control entry is added or an existing entry is changed or removed.
 			The event includes the new master registration control entry as
 			well as the type of change.
-			The interface provider offers a filter for this selective
-			broadcast.
-			The user ID filter filters events based on the userIdOfInterest,
-			or does no filtering if this parameter is not set. It is used
-			by the LocalDomainAccessController to subscribe to updates for the
-			current user.
-		@param: userIdOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the userId of interest
+			MULTICAST PARTITINOS:
+			When firing the event, it is broadcast using the user ID of the
+			domain role as a partition. So when subscribing you either have
+			to subscribe using a wildcard partition (e.g. '+'), or else subscribe
+			for exactly the user ID you're interested in.
+			Note, however, that as partitions only acceess alpha-numeric characters
+			all other characters (such as '.') are stripped from the various values.
 	**>
-	broadcast masterRegistrationControlEntryChanged selective {
+	broadcast masterRegistrationControlEntryChanged {
 		out {
 			DacTypes.ChangeType typeOfChange
 			DacTypes.MasterRegistrationControlEntry changedMasterRce
@@ -876,16 +844,15 @@ interface GlobalDomainAccessController {
 			control entry is added or an existing entry is changed or removed.
 			The event includes the new master registration control entry as
 			well as the type of change.
-			The interface provider offers a filter for this selective
-			broadcast.
-			The user ID filter filters events based on the userIdOfInterest,
-			or does no filtering if this parameter is not set. It is used
-			by the LocalDomainAccessController to subscribe to updates for the
-			current user.
-		@param: userIdOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the userId of interest
+			MULTICAST PARTITINOS:
+			When firing the event, it is broadcast using the user ID of the
+			domain role as a partition. So when subscribing you either have
+			to subscribe using a wildcard partition (e.g. '+'), or else subscribe
+			for exactly the user ID you're interested in.
+			Note, however, that as partitions only acceess alpha-numeric characters
+			all other characters (such as '.') are stripped from the various values.
 	**>
-	broadcast mediatorRegistrationControlEntryChanged selective {
+	broadcast mediatorRegistrationControlEntryChanged {
 		out {
 			DacTypes.ChangeType typeOfChange
 			DacTypes.MasterRegistrationControlEntry changedMediatorRce
@@ -897,16 +864,15 @@ interface GlobalDomainAccessController {
 			control entry is added or an existing entry is changed or removed.
 			The event includes the new owner registration control entry as
 			well as the type of the change.
-			The interface provider offers a filter for this selective
-			broadcast.
-			The user ID filter filters events based on the userIdOfInterest,
-			or does no filtering if this parameter is not set. It is used
-			by the LocalDomainAccessController to subscribe to updates for the
-			current user.
-		@param: userIdOfInterest (String) filter parameter that is used by the
-			broadcast filter and defines the userId of interest
+			MULTICAST PARTITINOS:
+			When firing the event, it is broadcast using the user ID of the
+			domain role as a partition. So when subscribing you either have
+			to subscribe using a wildcard partition (e.g. '+'), or else subscribe
+			for exactly the user ID you're interested in.
+			Note, however, that as partitions only acceess alpha-numeric characters
+			all other characters (such as '.') are stripped from the various values.
 	**>
-	broadcast ownerRegistrationControlEntryChanged selective {
+	broadcast ownerRegistrationControlEntryChanged {
 		out {
 			DacTypes.ChangeType typeOfChange
 			DacTypes.OwnerRegistrationControlEntry changedOwnerRce

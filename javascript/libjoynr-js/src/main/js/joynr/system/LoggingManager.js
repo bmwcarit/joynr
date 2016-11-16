@@ -19,9 +19,11 @@
 
 define(
         "joynr/system/LoggingManager",
-        [ "log4javascript"
+        [
+            "log4javascriptDependency",
+            "joynr/system/ConsoleAppender"
         ],
-        function(log4javascript) {
+        function(log4javascript, ConsoleAppender) {
             /**
              * @name LoggingManager
              * @class
@@ -33,14 +35,14 @@ define(
                 appenders = {};
                 loggingContexts = {};
 
-                appenderTypes = {
-                    Console : log4javascript.BrowserConsoleAppender
-                };
+                appenderTypes = {};
 
                 this.reset = function reset() {
                     log4javascript.resetConfiguration();
                     rootLogger = log4javascript.getRootLogger();
                     rootLogger.removeAllAppenders();
+                    appenderTypes = {};
+                    this.registerAppenderClass("Console", ConsoleAppender);
                 };
 
                 /**
@@ -100,7 +102,8 @@ define(
                             appender = new AppenderConstructor(config, loggingContexts);
                             if (config.ThresholdFilter !== undefined
                                 && config.ThresholdFilter.level !== undefined) {
-                                appender.setThreshold(config.ThresholdFilter.level);
+                                appender.setThreshold(this
+                                        .getLogLevel(config.ThresholdFilter.level));
                             }
 
                             if (config.PatternLayout !== undefined
@@ -178,8 +181,10 @@ define(
                 this.registerAppenderClass =
                         function registerAppenderClass(appenderTypeName, constructor) {
                             var appendFunction = constructor.prototype.append;
+                            var toStringFunction = constructor.prototype.toString;
                             constructor.prototype = new log4javascript.Appender();
                             constructor.prototype.append = appendFunction;
+                            constructor.prototype.toString = toStringFunction;
                             appenderTypes[appenderTypeName] = constructor;
                         };
 
@@ -274,7 +279,7 @@ define(
                  *
                  * @function LoggingManager#createConfiguredLoggers
                  */
-                function createConfiguredLoggers(configuration, appenders) {
+                function createConfiguredLoggers(configuration) {
                     var i, loggerConfigs, keyConfig, config, loggerKey;
 
                     if (Object.prototype.toString.call(configuration.logger) === "[object Array]") {
@@ -295,7 +300,7 @@ define(
 
                     for (i = 0; i < loggerConfigs.length; i++) {
                         config = loggerConfigs[i];
-                        that.createLogger(config, appenders);
+                        that.createLogger(config);
                     }
                 }
 
@@ -307,10 +312,23 @@ define(
                  * @param {Config} settings - log4j2-style JSON config, but as JavaScript object
                  *            (i.e. already parsed)
                  */
-                this.configure = function configure(settings) {
-                    appenders = createConfiguredAppenders(settings.configuration.appenders);
-                    createConfiguredLoggers(settings.configuration.loggers);
-                };
+                this.configure =
+                        function configure(settings) {
+                            if (settings.appenderClasses !== undefined) {
+                                var appenderClassKey;
+                                for (appenderClassKey in settings.appenderClasses) {
+                                    if (settings.appenderClasses.hasOwnProperty(appenderClassKey)) {
+                                        this.registerAppenderClass(
+                                                appenderClassKey,
+                                                settings.appenderClasses[appenderClassKey]);
+                                    }
+                                }
+                            }
+                            appenders =
+                                    createConfiguredAppenders(settings.configuration.appenders
+                                        || {});
+                            createConfiguredLoggers(settings.configuration.loggers);
+                        };
 
                 this.reset();
             }

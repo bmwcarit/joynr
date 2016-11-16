@@ -31,7 +31,7 @@ require.config({
 
     paths : {
         "atmosphere" : "lib/atmosphere",
-        "log4javascript" : "lib/log4javascript",
+        "log4javascriptDependency" : "lib/log4javascript",
         "bluebird" : "lib/bluebird",
         "mqtt" : "lib/mqtt",
         "JsonParser" : "lib/JsonParser",

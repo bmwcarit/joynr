@@ -39,56 +39,268 @@ This project has following dependencies:
    │  ├─ requirejs (2.3.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ requirejs/package.json
    │  ├─ underscore (1.8.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ underscore/package.json
    │  └─ walkdir (0.0.11) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ walkdir/package.json
-   └─ joynr ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr/package.json
-      ├─ atmosphere.js (2.3.2) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr ~ atmosphere.js/package.json
-      │  ├─ eventsource (0.1.6) ── MIT (http://github.com/aslakhellesoy/eventsource-node/raw/master/LICENSE) ── node_modules/joynr ~ atmosphere.js ~ eventsource/package.json
-      │  │  └─ original (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original/package.json
-      │  │     └─ url-parse (1.0.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original ~ url-parse/package.json
-      │  │        ├─ querystringify (0.0.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original ~ url-parse ~ querystringify/package.json
-      │  │        └─ requires-port (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original ~ url-parse ~ requires-port/package.json
-      │  ├─ ws (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws/package.json
-      │  │  ├─ options (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ options/README.md
-      │  │  └─ ultron (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ ultron/package.json
-      │  └─ xmlhttprequest (1.8.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ xmlhttprequest/package.json
-      ├─ bluebird (3.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ bluebird/package.json
-      │  └─ bluebird (3.3.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ bluebird/package.json
-      ├─ jasmine-node (1.14.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node/package.json
-      │  ├─ coffee-script (1.11.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ coffee-script/package.json
-      │  │  └─ underscore (1.8.3) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ underscore/package.json
-      │  ├─ gaze (0.3.4) ── MIT (https://github.com/shama/gaze/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze/package.json
-      │  │  ├─ fileset (0.1.8) ── MIT (https://github.com/mklabs/node-fileset/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze ~ fileset/package.json
-      │  │  │  └─ glob (3.2.11) ── BSD 2-clause "Simplified" License (http://www.opensource.org/licenses/BSD-2-Clause) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob/package.json
-      │  │  │     ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ inherits/package.json
-      │  │  │     └─ minimatch (0.3.0) ── MIT (http://github.com/isaacs/minimatch/raw/master/LICENSE) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch/package.json
-      │  │  │        ├─ lru-cache (2.7.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch ~ lru-cache/package.json
-      │  │  │        └─ sigmund (1.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch ~ sigmund/package.json
-      │  │  └─ minimatch (0.2.14) ── MIT (http://github.com/isaacs/minimatch/raw/master/LICENSE) ── node_modules/jasmine-node ~ gaze ~ minimatch/package.json
-      │  │     ├─ lru-cache (2.7.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ minimatch ~ lru-cache/package.json
-      │  │     └─ sigmund (1.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ minimatch ~ sigmund/package.json
-      │  ├─ jasmine-growl-reporter (0.0.3) ── MIT (https://raw.github.com/AlphaHydrae/jasmine-growl-reporter/master/LICENSE.txt) ── node_modules/jasmine-node ~ jasmine-growl-reporter/package.json
-      │  │  └─ growl (1.7.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ jasmine-growl-reporter ~ growl/Readme.md
-      │  ├─ jasmine-reporters (1.0.2) ── MIT (https://raw.github.com/larrymyers/jasmine-reporters/master/LICENSE) ── node_modules/jasmine-node ~ jasmine-reporters/package.json
-      │  │  └─ mkdirp (0.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ mkdirp/package.json
-      │  ├─ requirejs (2.3.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ requirejs/package.json
-      │  └─ walkdir (0.0.11) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ walkdir/package.json
-      ├─ log4js (0.6.29) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr ~ log4js/package.json
-      │  ├─ async (0.2.10) ── MIT (https://github.com/caolan/async/raw/master/LICENSE) ── node_modules/joynr ~ log4js ~ async/package.json
-      │  ├─ readable-stream (1.0.34) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream/package.json
-      │  │  ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream ~ core-util-is/package.json
-      │  │  ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ log4js ~ readable-stream ~ inherits/package.json
-      │  │  ├─ isarray (0.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream ~ isarray/package.json
-      │  │  └─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream ~ string_decoder/package.json
-      │  ├─ semver (4.3.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ log4js ~ semver/package.json
-      │  └─ underscore (1.8.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ underscore/package.json
-      ├─ node-localstorage (1.3.0) ── MIT (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ node-localstorage/package.json
-      │  └─ write-file-atomic (1.2.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic/package.json
-      │     ├─ graceful-fs (4.1.9) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ graceful-fs/package.json
-      │     ├─ imurmurhash (0.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ imurmurhash/package.json
-      │     └─ slide (1.1.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ slide/package.json
-      ├─ promise (7.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ promise/package.json
-      │  └─ asap (2.0.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ promise ~ asap/package.json
-      ├─ requirejs (2.1.22) ── BSD (https://github.com/jrburke/r.js/blob/master/LICENSE), MIT (https://github.com/jrburke/r.js/blob/master/LICENSE) ── node_modules/joynr ~ requirejs/package.json
-      ├─ ws (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws/package.json
-      │  ├─ options (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ options/README.md
-      │  └─ ultron (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ ultron/package.json
-      └─ xmlhttprequest (1.8.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ xmlhttprequest/package.json
+   ├─ joynr ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr/package.json
+   │  ├─ atmosphere.js (2.3.2) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr ~ atmosphere.js/package.json
+   │  │  ├─ eventsource (0.1.6) ── MIT (http://github.com/aslakhellesoy/eventsource-node/raw/master/LICENSE) ── node_modules/joynr ~ atmosphere.js ~ eventsource/package.json
+   │  │  │  └─ original (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original/package.json
+   │  │  │     └─ url-parse (1.0.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original ~ url-parse/package.json
+   │  │  │        ├─ querystringify (0.0.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original ~ url-parse ~ querystringify/package.json
+   │  │  │        └─ requires-port (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ atmosphere.js ~ eventsource ~ original ~ url-parse ~ requires-port/package.json
+   │  │  ├─ ws (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws/package.json
+   │  │  │  ├─ options (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ options/README.md
+   │  │  │  └─ ultron (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ ultron/package.json
+   │  │  └─ xmlhttprequest (1.8.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ xmlhttprequest/package.json
+   │  ├─ bluebird (3.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ bluebird/package.json
+   │  │  └─ bluebird (3.3.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ bluebird/package.json
+   │  ├─ jasmine-node (1.14.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node/package.json
+   │  │  ├─ coffee-script (1.11.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ coffee-script/package.json
+   │  │  │  └─ underscore (1.8.3) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ underscore/package.json
+   │  │  ├─ gaze (0.3.4) ── MIT (https://github.com/shama/gaze/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze/package.json
+   │  │  │  ├─ fileset (0.1.8) ── MIT (https://github.com/mklabs/node-fileset/blob/master/LICENSE-MIT) ── node_modules/jasmine-node ~ gaze ~ fileset/package.json
+   │  │  │  │  └─ glob (3.2.11) ── BSD 2-clause "Simplified" License (http://www.opensource.org/licenses/BSD-2-Clause) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob/package.json
+   │  │  │  │     ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ inherits/package.json
+   │  │  │  │     └─ minimatch (0.3.0) ── MIT (http://github.com/isaacs/minimatch/raw/master/LICENSE) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch/package.json
+   │  │  │  │        ├─ lru-cache (2.7.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch ~ lru-cache/package.json
+   │  │  │  │        └─ sigmund (1.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ fileset ~ glob ~ minimatch ~ sigmund/package.json
+   │  │  │  └─ minimatch (0.2.14) ── MIT (http://github.com/isaacs/minimatch/raw/master/LICENSE) ── node_modules/jasmine-node ~ gaze ~ minimatch/package.json
+   │  │  │     ├─ lru-cache (2.7.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ minimatch ~ lru-cache/package.json
+   │  │  │     └─ sigmund (1.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/jasmine-node ~ gaze ~ minimatch ~ sigmund/package.json
+   │  │  ├─ jasmine-growl-reporter (0.0.3) ── MIT (https://raw.github.com/AlphaHydrae/jasmine-growl-reporter/master/LICENSE.txt) ── node_modules/jasmine-node ~ jasmine-growl-reporter/package.json
+   │  │  │  └─ growl (1.7.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ jasmine-growl-reporter ~ growl/Readme.md
+   │  │  ├─ jasmine-reporters (1.0.2) ── MIT (https://raw.github.com/larrymyers/jasmine-reporters/master/LICENSE) ── node_modules/jasmine-node ~ jasmine-reporters/package.json
+   │  │  │  └─ mkdirp (0.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ mkdirp/package.json
+   │  │  ├─ requirejs (2.3.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ requirejs/package.json
+   │  │  └─ walkdir (0.0.11) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jasmine-node ~ walkdir/package.json
+   │  ├─ log4javascript (1.4.15) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr ~ log4javascript/license.txt
+   │  ├─ node-localstorage (1.3.0) ── MIT (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ node-localstorage/package.json
+   │  │  └─ write-file-atomic (1.2.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic/package.json
+   │  │     ├─ graceful-fs (4.1.10) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ graceful-fs/package.json
+   │  │     ├─ imurmurhash (0.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ imurmurhash/package.json
+   │  │     └─ slide (1.1.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ slide/package.json
+   │  ├─ promise (7.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ promise/package.json
+   │  │  └─ asap (2.0.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ promise ~ asap/package.json
+   │  ├─ requirejs (2.1.22) ── BSD (https://github.com/jrburke/r.js/blob/master/LICENSE), MIT (https://github.com/jrburke/r.js/blob/master/LICENSE) ── node_modules/joynr ~ requirejs/package.json
+   │  ├─ ws (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws/package.json
+   │  │  ├─ options (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ options/README.md
+   │  │  └─ ultron (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws ~ ultron/package.json
+   │  └─ xmlhttprequest (1.8.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ xmlhttprequest/package.json
+   └─ mqtt (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt/package.json
+      ├─ commist (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ commist/package.json
+      │  ├─ leven (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ commist ~ leven/package.json
+      │  └─ minimist (1.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ minimist/package.json
+      ├─ concat-stream (1.5.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream/package.json
+      │  ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ inherits/package.json
+      │  ├─ readable-stream (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream/package.json
+      │  │  ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream ~ core-util-is/package.json
+      │  │  ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream ~ isarray/package.json
+      │  │  ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream ~ process-nextick-args/package.json
+      │  │  ├─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream ~ string_decoder/package.json
+      │  │  └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream ~ util-deprecate/package.json
+      │  └─ typedarray (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ typedarray/package.json
+      ├─ end-of-stream (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ end-of-stream/package.json
+      │  └─ once (1.3.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ end-of-stream ~ once/package.json
+      │     └─ wrappy (1.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ end-of-stream ~ once ~ wrappy/package.json
+      ├─ help-me (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me/package.json
+      │  ├─ callback-stream (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ callback-stream/package.json
+      │  │  └─ readable-stream (2.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream/package.json
+      │  │     ├─ buffer-shims (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ buffer-shims/package.json
+      │  │     ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ core-util-is/package.json
+      │  │     ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ isarray/package.json
+      │  │     ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ process-nextick-args/package.json
+      │  │     ├─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ string_decoder/package.json
+      │  │     └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ util-deprecate/package.json
+      │  ├─ commist (1.0.0) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ commist/package.json
+      │  │  └─ leven (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ commist ~ leven/package.json
+      │  ├─ glob-stream (5.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream/package.json
+      │  │  ├─ extend (3.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ extend/package.json
+      │  │  ├─ glob (5.0.15) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob/package.json
+      │  │  │  ├─ inflight (1.0.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ inflight/package.json
+      │  │  │  │  ├─ once (1.4.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ once/package.json
+      │  │  │  │  │  └─ wrappy (1.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ once ~ wrappy/package.json
+      │  │  │  │  └─ wrappy (1.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ inflight ~ wrappy/package.json
+      │  │  │  ├─ minimatch (3.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ minimatch/package.json
+      │  │  │  │  └─ brace-expansion (1.1.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ minimatch ~ brace-expansion/package.json
+      │  │  │  │     ├─ balanced-match (0.4.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ minimatch ~ brace-expansion ~ balanced-match/package.json
+      │  │  │  │     └─ concat-map (0.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ minimatch ~ brace-expansion ~ concat-map/package.json
+      │  │  │  ├─ once (1.4.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ once/package.json
+      │  │  │  │  └─ wrappy (1.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ once ~ wrappy/package.json
+      │  │  │  └─ path-is-absolute (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ path-is-absolute/package.json
+      │  │  ├─ glob-parent (3.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob-parent/package.json
+      │  │  │  ├─ is-glob (3.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob-parent ~ is-glob/package.json
+      │  │  │  │  └─ is-extglob (2.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob-parent ~ is-glob ~ is-extglob/package.json
+      │  │  │  └─ path-dirname (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob-parent ~ path-dirname/package.json
+      │  │  ├─ micromatch (2.3.11) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch/package.json
+      │  │  │  ├─ arr-diff (2.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ arr-diff/package.json
+      │  │  │  │  └─ arr-flatten (1.0.1) ── MIT (https://github.com/jonschlinkert/arr-flatten/blob/master/LICENSE) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ arr-diff ~ arr-flatten/package.json
+      │  │  │  │     ├─ glob (5.0.15) [Dev] ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob/package.json
+      │  │  │  │     │  ├─ inflight (1.0.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ inflight/package.json
+      │  │  │  │     │  │  └─ wrappy (1.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ inflight ~ wrappy/package.json
+      │  │  │  │     │  ├─ minimatch (3.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ minimatch/package.json
+      │  │  │  │     │  │  └─ brace-expansion (1.1.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ minimatch ~ brace-expansion/package.json
+      │  │  │  │     │  │     ├─ balanced-match (0.4.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ minimatch ~ brace-expansion ~ balanced-match/package.json
+      │  │  │  │     │  │     └─ concat-map (0.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ minimatch ~ brace-expansion ~ concat-map/package.json
+      │  │  │  │     │  └─ path-is-absolute (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ glob ~ path-is-absolute/package.json
+      │  │  │  │     └─ kind-of (3.0.4) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ kind-of/package.json
+      │  │  │  │        └─ is-buffer (1.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ kind-of ~ is-buffer/package.json
+      │  │  │  ├─ array-unique (0.2.1) ── MIT (https://github.com/jonschlinkert/array-unique/blob/master/LICENSE) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ array-unique/package.json
+      │  │  │  ├─ braces (1.8.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces/package.json
+      │  │  │  │  ├─ expand-range (1.8.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range/package.json
+      │  │  │  │  │  └─ fill-range (2.2.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range/package.json
+      │  │  │  │  │     ├─ is-number (2.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range ~ is-number/package.json
+      │  │  │  │  │     ├─ isobject (2.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range ~ isobject/package.json
+      │  │  │  │  │     │  └─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range ~ isobject ~ isarray/package.json
+      │  │  │  │  │     ├─ randomatic (1.1.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range ~ randomatic/package.json
+      │  │  │  │  │     │  └─ is-number (2.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range ~ is-number/package.json
+      │  │  │  │  │     ├─ repeat-element (1.1.2) ── MIT (https://github.com/jonschlinkert/repeat-element/blob/master/LICENSE) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ repeat-element/package.json
+      │  │  │  │  │     └─ repeat-string (1.6.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range ~ repeat-string/package.json
+      │  │  │  │  │        └─ isobject (2.1.0) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range ~ isobject/package.json
+      │  │  │  │  │           └─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range ~ isobject ~ isarray/package.json
+      │  │  │  │  ├─ preserve (0.2.0) ── MIT (https://github.com/jonschlinkert/preserve/blob/master/LICENSE-MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ preserve/package.json
+      │  │  │  │  └─ repeat-element (1.1.2) ── MIT (https://github.com/jonschlinkert/repeat-element/blob/master/LICENSE) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ repeat-element/package.json
+      │  │  │  ├─ expand-brackets (0.1.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ expand-brackets/package.json
+      │  │  │  │  └─ is-posix-bracket (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ expand-brackets ~ is-posix-bracket/package.json
+      │  │  │  ├─ extglob (0.3.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ extglob/package.json
+      │  │  │  │  ├─ is-extglob (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ is-extglob/package.json
+      │  │  │  │  └─ micromatch (2.3.11) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch/package.json
+      │  │  │  │     ├─ arr-diff (2.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ arr-diff/package.json
+      │  │  │  │     │  └─ arr-flatten (1.0.1) ── MIT (https://github.com/jonschlinkert/arr-flatten/blob/master/LICENSE) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ arr-diff ~ arr-flatten/package.json
+      │  │  │  │     ├─ array-unique (0.2.1) ── MIT (https://github.com/jonschlinkert/array-unique/blob/master/LICENSE) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ array-unique/package.json
+      │  │  │  │     ├─ braces (1.8.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces/package.json
+      │  │  │  │     │  ├─ expand-range (1.8.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range/package.json
+      │  │  │  │     │  │  └─ fill-range (2.2.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range/package.json
+      │  │  │  │     │  │     ├─ randomatic (1.1.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range ~ randomatic/package.json
+      │  │  │  │     │  │     └─ repeat-string (1.6.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ expand-range ~ fill-range ~ repeat-string/package.json
+      │  │  │  │     │  └─ preserve (0.2.0) ── MIT (https://github.com/jonschlinkert/preserve/blob/master/LICENSE-MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ braces ~ preserve/package.json
+      │  │  │  │     ├─ expand-brackets (0.1.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ expand-brackets/package.json
+      │  │  │  │     │  └─ is-posix-bracket (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ expand-brackets ~ is-posix-bracket/package.json
+      │  │  │  │     ├─ extglob (0.3.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ extglob/package.json
+      │  │  │  │     ├─ filename-regex (2.0.0) ── MIT (https://github.com/regexps/filename-regex/blob/master/LICENSE-MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ filename-regex/package.json
+      │  │  │  │     ├─ is-glob (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ is-glob/package.json
+      │  │  │  │     ├─ normalize-path (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ normalize-path/package.json
+      │  │  │  │     ├─ object.omit (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ object.omit/package.json
+      │  │  │  │     │  ├─ for-own (0.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ object.omit ~ for-own/package.json
+      │  │  │  │     │  │  └─ for-in (0.1.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ object.omit ~ for-own ~ for-in/package.json
+      │  │  │  │     │  └─ is-extendable (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ object.omit ~ is-extendable/package.json
+      │  │  │  │     ├─ parse-glob (3.0.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ parse-glob/package.json
+      │  │  │  │     │  ├─ glob-base (0.3.0) ── MIT (https://github.com/jonschlinkert/glob-base/blob/master/LICENSE) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ parse-glob ~ glob-base/package.json
+      │  │  │  │     │  │  └─ glob-parent (2.0.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ parse-glob ~ glob-base ~ glob-parent/package.json
+      │  │  │  │     │  └─ is-dotfile (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ parse-glob ~ is-dotfile/package.json
+      │  │  │  │     └─ regex-cache (0.4.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ regex-cache/package.json
+      │  │  │  │        └─ is-equal-shallow (0.1.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ regex-cache ~ is-equal-shallow/package.json
+      │  │  │  │           └─ is-primitive (2.0.0) ── MIT (https://github.com/jonschlinkert/is-primitive/blob/master/LICENSE) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ regex-cache ~ is-primitive/package.json
+      │  │  │  ├─ filename-regex (2.0.0) ── MIT (https://github.com/regexps/filename-regex/blob/master/LICENSE-MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ filename-regex/package.json
+      │  │  │  ├─ is-extglob (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ is-extglob/package.json
+      │  │  │  ├─ is-glob (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ is-glob/package.json
+      │  │  │  ├─ kind-of (3.0.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ kind-of/package.json
+      │  │  │  │  └─ is-buffer (1.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ kind-of ~ is-buffer/package.json
+      │  │  │  ├─ normalize-path (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ normalize-path/package.json
+      │  │  │  ├─ object.omit (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ object.omit/package.json
+      │  │  │  │  ├─ for-own (0.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ object.omit ~ for-own/package.json
+      │  │  │  │  │  └─ for-in (0.1.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ object.omit ~ for-own ~ for-in/package.json
+      │  │  │  │  └─ is-extendable (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ object.omit ~ is-extendable/package.json
+      │  │  │  ├─ parse-glob (3.0.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ parse-glob/package.json
+      │  │  │  │  ├─ glob-base (0.3.0) ── MIT (https://github.com/jonschlinkert/glob-base/blob/master/LICENSE) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ parse-glob ~ glob-base/package.json
+      │  │  │  │  │  └─ glob-parent (2.0.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ parse-glob ~ glob-base ~ glob-parent/package.json
+      │  │  │  │  └─ is-dotfile (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ parse-glob ~ is-dotfile/package.json
+      │  │  │  └─ regex-cache (0.4.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ regex-cache/package.json
+      │  │  │     ├─ is-equal-shallow (0.1.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ regex-cache ~ is-equal-shallow/package.json
+      │  │  │     └─ is-primitive (2.0.0) ── MIT (https://github.com/jonschlinkert/is-primitive/blob/master/LICENSE) ── node_modules/mqtt ~ help-me ~ glob-stream ~ micromatch ~ regex-cache ~ is-primitive/package.json
+      │  │  ├─ ordered-read-streams (0.3.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ ordered-read-streams/package.json
+      │  │  │  ├─ is-stream (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ ordered-read-streams ~ is-stream/package.json
+      │  │  │  └─ through2 (0.6.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ through2/package.json
+      │  │  │     ├─ readable-stream (1.0.34) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ through2 ~ readable-stream/package.json
+      │  │  │     │  ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ through2 ~ readable-stream ~ core-util-is/package.json
+      │  │  │     │  ├─ isarray (0.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ through2 ~ readable-stream ~ isarray/package.json
+      │  │  │     │  └─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ through2 ~ readable-stream ~ string_decoder/package.json
+      │  │  │     └─ xtend (4.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ xtend/package.json
+      │  │  ├─ through2 (0.6.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ through2/package.json
+      │  │  │  └─ readable-stream (1.0.34) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ through2 ~ readable-stream/package.json
+      │  │  │     ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ through2 ~ readable-stream ~ core-util-is/package.json
+      │  │  │     ├─ isarray (0.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ through2 ~ readable-stream ~ isarray/package.json
+      │  │  │     └─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ through2 ~ readable-stream ~ string_decoder/package.json
+      │  │  ├─ to-absolute-glob (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ to-absolute-glob/package.json
+      │  │  │  └─ extend-shallow (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ to-absolute-glob ~ extend-shallow/package.json
+      │  │  │     └─ is-extendable (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ to-absolute-glob ~ extend-shallow ~ is-extendable/package.json
+      │  │  └─ unique-stream (2.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream/package.json
+      │  │     ├─ json-stable-stringify (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream ~ json-stable-stringify/package.json
+      │  │     │  └─ jsonify (0.0.0) ── public domain ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream ~ json-stable-stringify ~ jsonify/package.json
+      │  │     └─ through2-filter (2.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream ~ through2-filter/package.json
+      │  │        ├─ concat-stream (1.5.2) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream/package.json
+      │  │        │  ├─ readable-stream (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream/package.json
+      │  │        │  │  ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream ~ core-util-is/package.json
+      │  │        │  │  ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream ~ isarray/package.json
+      │  │        │  │  ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream ~ process-nextick-args/package.json
+      │  │        │  │  ├─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream ~ string_decoder/package.json
+      │  │        │  │  └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ readable-stream ~ util-deprecate/package.json
+      │  │        │  └─ typedarray (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ concat-stream ~ typedarray/package.json
+      │  │        └─ through2 (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream ~ through2-filter ~ through2/package.json
+      │  │           └─ readable-stream (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream ~ through2-filter ~ through2 ~ readable-stream/package.json
+      │  │              ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream ~ through2-filter ~ through2 ~ readable-stream ~ core-util-is/package.json
+      │  │              ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream ~ through2-filter ~ through2 ~ readable-stream ~ isarray/package.json
+      │  │              ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream ~ through2-filter ~ through2 ~ readable-stream ~ process-nextick-args/package.json
+      │  │              ├─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream ~ through2-filter ~ through2 ~ readable-stream ~ string_decoder/package.json
+      │  │              └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ glob-stream ~ unique-stream ~ through2-filter ~ through2 ~ readable-stream ~ util-deprecate/package.json
+      │  └─ through2 (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ through2/package.json
+      │     └─ readable-stream (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ through2 ~ readable-stream/package.json
+      │        ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ through2 ~ readable-stream ~ core-util-is/package.json
+      │        ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ through2 ~ readable-stream ~ isarray/package.json
+      │        ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ through2 ~ readable-stream ~ process-nextick-args/package.json
+      │        ├─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ through2 ~ readable-stream ~ string_decoder/package.json
+      │        └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ help-me ~ through2 ~ readable-stream ~ util-deprecate/package.json
+      ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ inherits/package.json
+      ├─ minimist (1.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ minimist/package.json
+      ├─ mqtt-packet (5.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ mqtt-packet/package.json
+      │  ├─ bl (1.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ mqtt-packet ~ bl/package.json
+      │  │  └─ readable-stream (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ mqtt-packet ~ bl ~ readable-stream/package.json
+      │  │     ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ mqtt-packet ~ bl ~ readable-stream ~ core-util-is/package.json
+      │  │     ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ mqtt-packet ~ bl ~ readable-stream ~ isarray/package.json
+      │  │     ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ mqtt-packet ~ process-nextick-args/package.json
+      │  │     ├─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ mqtt-packet ~ bl ~ readable-stream ~ string_decoder/package.json
+      │  │     └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ mqtt-packet ~ bl ~ readable-stream ~ util-deprecate/package.json
+      │  └─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ mqtt-packet ~ process-nextick-args/package.json
+      ├─ pump (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ pump/package.json
+      │  ├─ end-of-stream (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ end-of-stream/package.json
+      │  │  └─ once (1.3.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ end-of-stream ~ once/package.json
+      │  │     └─ wrappy (1.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ end-of-stream ~ once ~ wrappy/package.json
+      │  └─ once (1.4.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ pump ~ once/package.json
+      │     └─ wrappy (1.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ pump ~ once ~ wrappy/package.json
+      ├─ readable-stream (2.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream/package.json
+      │  ├─ buffer-shims (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ buffer-shims/package.json
+      │  ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ core-util-is/package.json
+      │  ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ isarray/package.json
+      │  ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ process-nextick-args/package.json
+      │  ├─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ string_decoder/package.json
+      │  └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ readable-stream ~ util-deprecate/package.json
+      ├─ reinterval (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ reinterval/package.json
+      ├─ split2 (2.1.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ split2/package.json
+      │  └─ through2 (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ split2 ~ through2/package.json
+      │     └─ readable-stream (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ split2 ~ through2 ~ readable-stream/package.json
+      │        ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ split2 ~ through2 ~ readable-stream ~ core-util-is/package.json
+      │        ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ split2 ~ through2 ~ readable-stream ~ isarray/package.json
+      │        ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ split2 ~ through2 ~ readable-stream ~ process-nextick-args/package.json
+      │        ├─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ split2 ~ through2 ~ readable-stream ~ string_decoder/package.json
+      │        └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ split2 ~ through2 ~ readable-stream ~ util-deprecate/package.json
+      ├─ websocket-stream (3.3.0) ── BSD 2-clause "Simplified" License (http://www.opensource.org/licenses/BSD-2-Clause) ── node_modules/mqtt ~ websocket-stream/package.json
+      │  ├─ duplexify (3.5.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ duplexify/package.json
+      │  │  ├─ end-of-stream (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ duplexify ~ end-of-stream/package.json
+      │  │  │  └─ once (1.3.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ websocket-stream ~ duplexify ~ end-of-stream ~ once/package.json
+      │  │  │     └─ wrappy (1.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/mqtt ~ websocket-stream ~ duplexify ~ end-of-stream ~ once ~ wrappy/package.json
+      │  │  └─ stream-shift (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ duplexify ~ stream-shift/package.json
+      │  │     └─ through2 (2.0.1) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2/package.json
+      │  │        └─ readable-stream (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream/package.json
+      │  │           ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream ~ core-util-is/package.json
+      │  │           ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream ~ isarray/package.json
+      │  │           ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream ~ process-nextick-args/package.json
+      │  │           ├─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream ~ string_decoder/package.json
+      │  │           └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream ~ util-deprecate/package.json
+      │  ├─ through2 (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2/package.json
+      │  │  └─ readable-stream (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream/package.json
+      │  │     ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream ~ core-util-is/package.json
+      │  │     ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream ~ isarray/package.json
+      │  │     ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream ~ process-nextick-args/package.json
+      │  │     ├─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream ~ string_decoder/package.json
+      │  │     └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ through2 ~ readable-stream ~ util-deprecate/package.json
+      │  └─ ws (1.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ ws/package.json
+      │     ├─ options (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ ws ~ options/README.md
+      │     └─ ultron (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ websocket-stream ~ ws ~ ultron/package.json
+      └─ xtend (4.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt ~ xtend/package.json
