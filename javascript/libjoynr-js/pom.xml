@@ -666,6 +666,7 @@
 						<exclude>jsdoc3.conf.json</exclude>
 						<exclude>src/main/resources/libjoynrEndFrag.js</exclude>
 						<exclude>package.json</exclude>
+						<exclude>src/test/resources/node/shutdown/package.json</exclude>
 						<exclude>src/test/resources/spec/support/jasmine.json</exclude>
 					</excludes>
 				</configuration>
@@ -879,6 +880,35 @@
 									<goal>exec</goal>
 								</goals>
 							</execution>
+
+							<!-- run nodejs based integration tests -->
+
+							<!-- maven doesn't keep the execution permission of
+								${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh.
+								So we fix it here -->
+							<execution>
+								<configuration>
+									<executable>chmod</executable>
+									<commandlineArgs>+x ${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</commandlineArgs>
+								</configuration>
+								<id>process-integration-tests-nodejs</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<configuration>
+									<executable>${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</executable>
+									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
+								</configuration>
+								<id>run-integration-tests-nodejs</id>
+								<phase>integration-test</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+
 						</executions>
 					</plugin>
 					<!-- run karma -->
