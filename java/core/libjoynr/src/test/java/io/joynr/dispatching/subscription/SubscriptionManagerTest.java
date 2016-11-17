@@ -229,7 +229,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
         verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
-                                          Mockito.eq(qos.getExpiryDateMs()),
+                                          Mockito.eq(onChangeQos.getExpiryDateMs()),
                                           Mockito.eq(TimeUnit.MILLISECONDS));
         verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
                                                              Mockito.any(ScheduledFuture.class));
