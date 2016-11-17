@@ -41,3 +41,6 @@ joynr uses Maven for generating C++ code. You can use your own local Maven repos
 ```--jobs 4``` restricts the number of jobs of the executed make calls to 4 (default is 8, which may lead to errors on too weak machines)
 
 ```-e JOYNR_INSTALL_DIR=/data/build/joynr``` in the second command makes the build results of the first execution available for the second script since they are necessary to build the radio app.
+
+## Building natively in Mac OS X
+Please consult the wiki: [Building joynr C++ in Mac OS X](cpp_building_joynr_mac.md).
