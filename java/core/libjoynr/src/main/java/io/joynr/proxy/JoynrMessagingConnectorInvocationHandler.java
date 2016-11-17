@@ -149,7 +149,6 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         Reply reply;
         String requestReplyId = request.getRequestReplyId();
         SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
-                                                                                      toParticipantIds,
                                                                                       requestReplyId,
                                                                                       request);
         ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms());
