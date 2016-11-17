@@ -296,6 +296,12 @@ std::int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
     return value;
 }
 
+std::uint64_t MessagingSettings::DEFAULT_TTL_UPLIFT_MS()
+{
+    static const std::uint64_t value(0);
+    return value;
+}
+
 std::uint64_t MessagingSettings::DEFAULT_MAXIMUM_TTL_MS()
 {
     static const std::uint64_t value(30UL * 24UL * 60UL * 60UL * 1000UL); // 30 days
@@ -305,6 +311,12 @@ std::uint64_t MessagingSettings::DEFAULT_MAXIMUM_TTL_MS()
 const std::string& MessagingSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
 {
     static const std::string value("messaging/capabilities-freshness-update-interval-ms");
+    return value;
+}
+
+const std::string& MessagingSettings::SETTING_TTL_UPLIFT_MS()
+{
+    static const std::string value("messaging/ttl-uplift-ms");
     return value;
 }
 
@@ -558,6 +570,16 @@ void MessagingSettings::setSendMsgMaxTtl(std::int64_t ttl_ms)
     settings.set(SETTING_SEND_MESSAGE_MAX_TTL(), ttl_ms);
 }
 
+void MessagingSettings::setTtlUpliftMs(std::uint64_t ttlUpliftMs)
+{
+    settings.set(SETTING_TTL_UPLIFT_MS(), ttlUpliftMs);
+}
+
+std::uint64_t MessagingSettings::getTtlUpliftMs() const
+{
+    return settings.get<std::uint64_t>(SETTING_TTL_UPLIFT_MS());
+}
+
 std::chrono::milliseconds MessagingSettings::getCapabilitiesFreshnessUpdateIntervalMs() const
 {
     return std::chrono::milliseconds(
@@ -639,6 +661,9 @@ void MessagingSettings::checkSettings()
     if (!settings.contains(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS())) {
         setPurgeExpiredDiscoveryEntriesIntervalMs(
                 DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
+    }
+    if (!settings.contains(SETTING_TTL_UPLIFT_MS())) {
+        settings.set(SETTING_TTL_UPLIFT_MS(), DEFAULT_TTL_UPLIFT_MS());
     }
 }
 
