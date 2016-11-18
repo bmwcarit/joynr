@@ -391,7 +391,9 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     // clustercontroller messaging handled by the messageRouter
                     messageRouterSkeleton.registerListener(messageRouter.route);
-                    dispatcher = new Dispatcher(messageRouterStub, new PlatformSecurityManager());
+                    var ttlUpLiftMs = (provisioning.messaging && provisioning.messaging.TTL_UPLIFT) ?
+                        provisioning.messaging.TTL_UPLIFT : undefined;
+                    dispatcher = new Dispatcher(messageRouterStub, new PlatformSecurityManager(), ttlUpLiftMs);
 
                     libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                     libjoynrMessagingSkeleton.registerListener(dispatcher.receive);

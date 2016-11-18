@@ -22,6 +22,7 @@ define("joynr/start/settings/defaultMessagingSettings", [ "joynr/messaging/Messa
     return {
         // 30 days
         MAX_MESSAGING_TTL_MS : 2592000000,
+        TTL_UPLIFT : 0,
         effort : MessagingQosEffort.NORMAL
     };
 
