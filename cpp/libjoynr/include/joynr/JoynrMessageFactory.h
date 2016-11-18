@@ -50,7 +50,7 @@ class MulticastSubscriptionRequest;
 class JOYNR_EXPORT JoynrMessageFactory
 {
 public:
-    JoynrMessageFactory();
+    explicit JoynrMessageFactory(std::uint64_t ttlUpliftMs = 0);
 
     JoynrMessage createRequest(const std::string& senderId,
                                const std::string& receiverId,
@@ -113,6 +113,7 @@ private:
                  std::string&& payload) const;
 
     std::unique_ptr<IPlatformSecurityManager> securityManager;
+    std::uint64_t ttlUpliftMs;
     ADD_LOGGER(JoynrMessageFactory);
 };
 

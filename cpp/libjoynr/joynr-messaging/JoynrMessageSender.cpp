@@ -35,8 +35,9 @@ namespace joynr
 
 INIT_LOGGER(JoynrMessageSender);
 
-JoynrMessageSender::JoynrMessageSender(std::shared_ptr<MessageRouter> messageRouter)
-        : dispatcher(nullptr), messageRouter(messageRouter), messageFactory()
+JoynrMessageSender::JoynrMessageSender(std::shared_ptr<MessageRouter> messageRouter,
+                                       std::uint64_t ttlUpliftMs)
+        : dispatcher(nullptr), messageRouter(messageRouter), messageFactory(ttlUpliftMs)
 {
 }
 
