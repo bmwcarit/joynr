@@ -464,7 +464,7 @@ private:
 
 } // namespace joynr
 
-MUESLI_REGISTER_TYPE(joynr::exceptions::JoynrException, "joynr.exceptions.JoynrException");
+MUESLI_REGISTER_TYPE(joynr::exceptions::JoynrException, "joynr.exceptions.JoynrException")
 MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::JoynrRuntimeException,
                                  joynr::exceptions::JoynrException,
                                  "joynr.exceptions.JoynrRuntimeException")
