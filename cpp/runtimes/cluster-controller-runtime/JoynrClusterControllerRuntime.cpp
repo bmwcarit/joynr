@@ -259,7 +259,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     /* LibJoynr */
     assert(messageRouter);
-    joynrMessageSender = new JoynrMessageSender(messageRouter);
+    joynrMessageSender = new JoynrMessageSender(messageRouter, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
@@ -386,8 +386,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       * libJoynr side
       *
       */
-    publicationManager =
-            new PublicationManager(singleThreadIOService->getIOService(), joynrMessageSender);
+    publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
+                                                joynrMessageSender,
+                                                messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(

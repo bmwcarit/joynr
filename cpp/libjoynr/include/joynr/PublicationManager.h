@@ -83,6 +83,7 @@ class JOYNR_EXPORT PublicationManager
 public:
     PublicationManager(boost::asio::io_service& ioService,
                        IJoynrMessageSender* messageSender,
+                       std::uint64_t ttlUplift = 0,
                        int maxThreads = 1);
     virtual ~PublicationManager();
     /**
@@ -260,6 +261,8 @@ private:
 
     // Read/write lock for broadcast filters
     mutable ReadWriteLock broadcastFilterLock;
+
+    std::uint64_t ttlUplift;
 
     // PublisherRunnables are used to send publications via a ThreadPool
     class PublisherRunnable;
