@@ -22,6 +22,7 @@
 * [Broadcast Tutorial](wiki/Broadcast-Tutorial.md) -- Learn about (selective) broadcasts and
   implement a geocast.
 * [Distribution](wiki/Distribution.md) -- How to get joynr.
+* [Infrastructure](wiki/infrastructure.md) -- Setting up the joynr infrastucture components for your environment
 * [Glassfish Settings](wiki/Glassfish-settings.md) -- Settings you need to run joynr backend
   services on Glassfish application servers.
 * [Release Notes](wiki/ReleaseNotes.md) -- All joynr releases and API changes at a glance.
