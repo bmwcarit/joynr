@@ -455,7 +455,7 @@ if(CMAKE_BUILD_TYPE_TOLOWER MATCHES debug)
     set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
     set(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level evaluated at runtime")
 else()
-    set(JOYNR_MAX_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level")
+    set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
     set(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level evaluated at runtime")
 endif()
 

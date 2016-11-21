@@ -66,28 +66,6 @@ std::string attributeGetterFromName(const std::string& attributeName);
 std::string loadStringFromFile(const std::string& fileName);
 void saveStringToFile(const std::string& fileName, const std::string& strToSave);
 
-template <class T>
-std::vector<T> convertIntListToEnumList(const std::vector<int>& inputList)
-{
-    std::vector<T> ret;
-    ret.reserve(inputList.size());
-    for (const int& i : inputList) {
-        ret.push_back((T)i);
-    }
-    return ret;
-}
-
-template <class T>
-std::vector<int> convertEnumListToIntList(const std::vector<T>& enumList)
-{
-    std::vector<int> enumAsIntList;
-    enumAsIntList.reserve(enumList.size());
-    for (const T& e : enumList) {
-        enumAsIntList.push_back(e);
-    }
-    return enumAsIntList;
-}
-
 /**
  * Create a Uuid for use in Joynr.
  *

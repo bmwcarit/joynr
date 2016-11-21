@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+#include <map>
 #include <boost/type_index.hpp>
 #include <boost/algorithm/string/erase.hpp>
 #include <spdlog/spdlog.h>
@@ -131,25 +132,20 @@ struct LogLevelInitializer
         }
 
         const std::string runtimeLogLevelName(logLevelEnv);
-        const std::array<spdlog::level::level_enum, 7> logLevels{{spdlog::level::trace,
-                                                                  spdlog::level::debug,
-                                                                  spdlog::level::info,
-                                                                  spdlog::level::warn,
-                                                                  spdlog::level::err,
-                                                                  spdlog::level::critical,
-                                                                  spdlog::level::off}};
+        const std::map<std::string, spdlog::level::level_enum> logLevels{
+                {"TRACE", spdlog::level::trace},
+                {"DEBUG", spdlog::level::debug},
+                {"INFO", spdlog::level::info},
+                {"WARN", spdlog::level::warn},
+                {"ERROR", spdlog::level::err},
+                {"FATAL", spdlog::level::critical}};
 
-        auto matchingLogLevel =
-                std::find_if(logLevels.cbegin(),
-                             logLevels.cend(),
-                             [&runtimeLogLevelName](spdlog::level::level_enum logLevel) {
-                    return runtimeLogLevelName == spdlog::level::to_str(logLevel);
-                });
+        auto matchingLogLevel = logLevels.find(runtimeLogLevelName);
 
         if (matchingLogLevel == logLevels.cend()) {
             spdlog::set_level(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL);
         } else {
-            spdlog::set_level(*matchingLogLevel);
+            spdlog::set_level(matchingLogLevel->second);
         }
     }
 };

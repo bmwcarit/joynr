@@ -668,6 +668,10 @@ define(
                                 typeRegistry.shutdown();
                             }
 
+                            if (loggingManager !== undefined) {
+                                loggingManager.shutdown();
+                            }
+
                             joynrState = JoynrStates.SHUTDOWN;
                             log.debug("joynr shut down");
                             return Promise.resolve();

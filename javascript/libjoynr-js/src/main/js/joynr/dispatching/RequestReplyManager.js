@@ -86,7 +86,7 @@ define(
                  */
                 function deleteReplyCaller(requestReplyId) {
                     var replyCaller = replyCallers[requestReplyId];
-                    if (replyCaller && replyCaller.replyCallMissedTimer) {
+                    if (replyCaller && replyCaller.replyCallMissedTimer !== undefined) {
                         LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
                     }
                     delete replyCallers[requestReplyId];
@@ -429,7 +429,7 @@ define(
                  */
                 this.handleReply =
                         function handleReply(reply) {
-                            var replyCaller = replyCallers[reply.requestReplyId];
+                    var replyCaller = replyCallers[reply.requestReplyId];
 
                             if (replyCaller === undefined) {
                                 log
@@ -451,7 +451,7 @@ define(
                                 } else {
                                     replyCaller.resolve(reply.response);
                                 }
-                                if (replyCaller.replyCallMissedTimer) {
+                                if (replyCaller.replyCallMissedTimer !== undefined) {
                                     LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
                                 }
                                 delete replyCallers[reply.requestReplyId];

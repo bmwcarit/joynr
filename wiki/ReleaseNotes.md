@@ -1,6 +1,8 @@
 #joynr 0.22.0
 
 ##API relevant changes
+* **[Java]** constant PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT has been moved to
+  io.joynr.messaging.MessagingPropertyKeys
 * **[C++]** During a provider call a call context can be queried which provides the creator user id
   field from the joynr message. Please delete the broadcastsubscriptionrequest-persistence-file and
   subscriptionrequest-persistence-file because the file format changed.
@@ -8,6 +10,11 @@
   accepts a success and an error callback as parameters.
 * **[C++]** Introduced async joynr runtime creation. See JoynrRuntime::createRuntimeAsync for more
   information.
+* **[C++]** joynr can now be built with a static and a dynamic log level. The corresponding cmake
+  properties are called JOYNR_MAX_LOG_LEVEL and JOYNR_DEFAULT_RUNTIME_LOG_LEVEL. In order to change
+  the dynamic log level at runtime a environment variable, which is called "JOYNR_LOG_LEVEL", must
+  be exported before any joynr component starts. The runtime log levels are called "TRACE", "DEBUG",
+  "INFO", "WARNING", "ERROR" and "FATAL".
 * Non-selective broadcasts work only with MQTT until further notice.
   HTTP is currently not supported.
 * Non-selective broadcasts support partitions to control broadcast delivery to subscribers.

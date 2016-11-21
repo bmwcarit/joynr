@@ -52,7 +52,7 @@ CustomerLoggingAppender.prototype.append = function(loggingEvent) {
     };
 
     var logLevel = loggingEvent.level.name.toLowerCase();
-    formattedMessage = "[Custom][" + loggingEvent.logger.name + "][" + logLevel + "] " + getFormattedMessage();
+    formattedMessage = getFormattedMessage();
     console[logLevel] = console[logLevel] || console.log;
     console[logLevel](formattedMessage);
 };

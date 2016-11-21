@@ -129,28 +129,19 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testMulticastWithPartitionsAndWildcards() throws Exception {
+    public void testMulticastWithPartitionsAndMultiLevelWildcard() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class).setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                                             .setMessagingQos(messagingQos)
+                                             .setDiscoveryQos(discoveryQos)
+                                             .build();
         final List<String> errors = new ArrayList<>();
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos(), "one", "+", "three");
-        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                semaphore.release();
-            }
         }, new OnChangeSubscriptionQos(), "one", "*");
-        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                semaphore.release();
-            }
-        }, new OnChangeSubscriptionQos(), "one", "two", "three");
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
@@ -161,8 +152,70 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
 
+        provider.fireEmptyBroadcast("anotherOne");
+        provider.fireEmptyBroadcast("one"); // match
+        provider.fireEmptyBroadcast("one", "two"); // match
+        provider.fireEmptyBroadcast("one", "two", "three"); // match
+        provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six"); // match
+        semaphore.acquire(4);
+        if (errors.size() > 0) {
+            fail("Got errors. " + errors);
+        }
+    }
+
+    @Test
+    public void testMulticastWithPartitionsAndSingleLevelWildcard() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                                             .setMessagingQos(messagingQos)
+                                             .setDiscoveryQos(discoveryQos)
+                                             .build();
+        final List<String> errors = new ArrayList<>();
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new OnChangeSubscriptionQos(), "one", "+", "three");
+
+        // wait to allow the subscription request to arrive at the provider
+        Thread.sleep(500);
+
+        provider.fireEmptyBroadcast("anotherOne");
+        provider.fireEmptyBroadcast("one");
+        provider.fireEmptyBroadcast("one", "two");
+        provider.fireEmptyBroadcast("one", "two", "three"); // match
+        provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six");
+        semaphore.acquire(1);
+        if (errors.size() > 0) {
+            fail("Got errors. " + errors);
+        }
+    }
+
+    @Test
+    public void testMulticastWithPartitionsAndSingleLevelWildcardAsLastPartition() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                                             .setMessagingQos(messagingQos)
+                                             .setDiscoveryQos(discoveryQos)
+                                             .build();
+        final List<String> errors = new ArrayList<>();
+        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new OnChangeSubscriptionQos(), "one", "+");
+
+        // wait to allow the subscription request to arrive at the provider
+        Thread.sleep(500);
+
+        provider.fireEmptyBroadcast("anotherOne");
+        provider.fireEmptyBroadcast("one");
+        provider.fireEmptyBroadcast("one", "two"); // match
         provider.fireEmptyBroadcast("one", "two", "three");
-        semaphore.acquire(3);
+        provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six");
+        semaphore.acquire(1);
         if (errors.size() > 0) {
             fail("Got errors. " + errors);
         }
