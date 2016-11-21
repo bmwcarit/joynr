@@ -38,6 +38,12 @@ namespace joynr
 namespace util
 {
 
+bool fileExists(const std::string& fileName)
+{
+    std::ifstream fileToTest(fileName);
+    return fileToTest.good();
+}
+
 void saveStringToFile(const std::string& fileName, const std::string& strToSave)
 {
     std::fstream file;

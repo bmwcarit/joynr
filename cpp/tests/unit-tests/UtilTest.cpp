@@ -169,3 +169,17 @@ TEST(UtilTest, validateValidPartitionsWithWildCardsThrows)
     validatePartitionsAlwaysThrow(doNotAllowWildCard);
     validatePartitionsAlwaysThrow(!doNotAllowWildCard);
 }
+
+TEST(UtilTest, checkFileExists)
+{
+    EXPECT_TRUE(util::fileExists("."));
+    EXPECT_TRUE(util::fileExists(".."));
+    EXPECT_FALSE(util::fileExists(util::createUuid() + "_NOT_EXISTING_FILE"));
+
+    const std::string fileToTest = "TEST_ThisFileIsCreatedAndDeletedAtRuntime.check";
+    EXPECT_FALSE(util::fileExists(fileToTest));
+    util::saveStringToFile(fileToTest, " ");
+    EXPECT_TRUE(util::fileExists(fileToTest));
+    std::remove(fileToTest.c_str());
+    EXPECT_FALSE(util::fileExists(fileToTest));
+}
