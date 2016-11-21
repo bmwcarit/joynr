@@ -49,6 +49,13 @@ static const std::string SINGLE_LEVEL_WILDCARD("+");
 static const std::string MULTI_LEVEL_WILDCARD("*");
 static const std::string MULTICAST_PARTITION_SEPARATOR("/");
 
+/**
+ * @brief Check if the specified file exists and is readable.
+ * @param filePath
+ * @return true if file exists, false otherwise
+ */
+bool fileExists(const std::string& fileName);
+
 std::string createMulticastId(const std::string& providerParticipantId,
                               const std::string& multicastName,
                               const std::vector<std::string>& partitions);
