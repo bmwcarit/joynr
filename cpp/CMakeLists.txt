@@ -188,6 +188,12 @@ option(
 )
 message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
 
+if(NOT DEFINED BUILD_SHARED_LIBS)
+    set(BUILD_SHARED_LIBS ON)
+endif()
+
+message(STATUS "option BUILD_SHARED_LIBS=" ${BUILD_SHARED_LIBS})
+
 include(LocateProgram)
 include(AddClangFormat)
 

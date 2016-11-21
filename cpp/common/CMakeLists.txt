@@ -123,7 +123,7 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 add_library(
     JoynrCommon
-    SHARED
+    # library type is set via BUILD_SHARED_LIBS
     ${JoynrCommon_HEADERS}
     ${JoynrCommon_SOURCES}
 )
@@ -204,6 +204,7 @@ install(
     EXPORT JoynrTargets
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     # this will flatten directory hierarchy of headder files
     # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
