@@ -19,6 +19,7 @@
 #include "joynr/JoynrRuntime.h"
 #include "JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -35,6 +36,34 @@ JoynrRuntime* JoynrRuntime::createRuntime(const std::string& pathToLibjoynrSetti
 JoynrRuntime* JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
 {
     return JoynrClusterControllerRuntime::create(std::move(settings));
+}
+
+void JoynrRuntime::createRuntimeAsync(
+        const std::string& pathToLibjoynrSettings,
+        std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)> runtimeCreatedCallback,
+        std::function<void(exceptions::JoynrRuntimeException& exception)>
+                runtimeCreationErrorCallback,
+        const std::string& pathToMessagingSettings)
+{
+    try {
+        runtimeCreatedCallback(std::unique_ptr<JoynrRuntime>(
+                createRuntime(pathToLibjoynrSettings, pathToMessagingSettings)));
+    } catch (exceptions::JoynrRuntimeException& exception) {
+        runtimeCreationErrorCallback(exception);
+    }
+}
+
+void JoynrRuntime::createRuntimeAsync(
+        std::unique_ptr<Settings> settings,
+        std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)> runtimeCreatedCallback,
+        std::function<void(exceptions::JoynrRuntimeException& exception)>
+                runtimeCreationErrorCallback)
+{
+    try {
+        runtimeCreatedCallback(std::unique_ptr<JoynrRuntime>(createRuntime(std::move(settings))));
+    } catch (exceptions::JoynrRuntimeException& exception) {
+        runtimeCreationErrorCallback(exception);
+    }
 }
 
 } // namespace joynr

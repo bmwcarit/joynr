@@ -45,6 +45,7 @@ class MessagingQos;
 class RequestCaller;
 class JoynrMessage;
 class JoynrMessageSender;
+class CallContext;
 
 class JOYNR_EXPORT Dispatcher : public IDispatcher
 {
@@ -80,11 +81,13 @@ private:
     void handleRequestReceived(const JoynrMessage& message);
     void handleOneWayRequestReceived(const JoynrMessage& message);
     void handleReplyReceived(const JoynrMessage& message);
+    void handleMulticastReceived(const JoynrMessage& message);
     void handlePublicationReceived(const JoynrMessage& message);
     void handleSubscriptionRequestReceived(const JoynrMessage& message);
     void handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message);
     void handleSubscriptionStopReceived(const JoynrMessage& message);
     void handleSubscriptionReplyReceived(const JoynrMessage& message);
+    void handleMulticastSubscriptionRequestReceived(const JoynrMessage& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Dispatcher);

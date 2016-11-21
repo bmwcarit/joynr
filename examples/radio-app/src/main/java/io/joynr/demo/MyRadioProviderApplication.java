@@ -30,7 +30,6 @@ import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.CCWebSocketRuntimeModule;
-import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -206,7 +205,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
     private static void configureMqtt(Properties joynrConfig) {
         joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
-        joynrConfig.put(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+        joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
     }
 
     @Override
@@ -228,6 +227,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                 case 's':
                     provider.shuffleStations();
                     break;
+                case 'p':
+                    provider.fireWeakSignalEventWithPartition();
+                    break;
                 case 'w':
                     provider.fireWeakSignalEvent();
                     break;
@@ -236,7 +238,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                     break;
                 default:
                     LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n"
-                            + " w\tto fire weak signal event\n" + " n\tto fire station discovered event\n");
+                            + " w\tto fire weak signal event\n"
+                            + " p\tto fire weak signal event with country of current station as partition\n"
+                            + " n\tto fire station discovered event\n");
                     break;
                 }
             }

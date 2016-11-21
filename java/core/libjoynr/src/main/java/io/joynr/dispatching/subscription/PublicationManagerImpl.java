@@ -61,8 +61,11 @@ import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.AttributeListener;
 import io.joynr.pubsub.publication.BroadcastFilter;
 import io.joynr.pubsub.publication.BroadcastListener;
+import io.joynr.pubsub.publication.MulticastListener;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
+import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
@@ -86,6 +89,8 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private final ConcurrentMap<String, UnregisterAttributeListener> unregisterAttributeListeners;
     // Map SubscriptionId -> UnregisterBroadcastListener
     private final ConcurrentMap<String, UnregisterBroadcastListener> unregisterBroadcastListeners;
+    // Map provider participant ID -> MulticastListener
+    private final ConcurrentMap<String, MulticastListener> multicastListeners;
 
     private AttributePollInterpreter attributePollInterpreter;
     private ScheduledExecutorService cleanupScheduler;
@@ -176,6 +181,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         this.subscriptionEndFutures = Maps.newConcurrentMap();
         this.unregisterAttributeListeners = Maps.newConcurrentMap();
         this.unregisterBroadcastListeners = Maps.newConcurrentMap();
+        this.multicastListeners = Maps.newConcurrentMap();
         this.attributePollInterpreter = attributePollInterpreter;
         providerDirectory.addListener(this);
 
@@ -285,6 +291,19 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         dispatcher.sendSubscriptionReply(providerParticipantId, proxyParticipantId, subscriptionReply, messagingQos);
     }
 
+    private void handleMulticastSubscriptionRequest(String proxyParticipantId,
+                                                    String providerParticipantId,
+                                                    MulticastSubscriptionRequest subscriptionRequest,
+                                                    ProviderContainer providerContainer) {
+        logger.debug("Received multicast subscription request {} for provider with participant ID {}",
+                     subscriptionRequest,
+                     providerParticipantId);
+        dispatcher.sendSubscriptionReply(providerParticipantId,
+                                         proxyParticipantId,
+                                         new SubscriptionReply(subscriptionRequest.getSubscriptionId()),
+                                         createMessagingQos(subscriptionRequest.getQos()));
+    }
+
     private void addSubscriptionRequest(String proxyParticipantId,
                                         String providerParticipantId,
                                         SubscriptionRequest subscriptionRequest,
@@ -304,6 +323,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                 handleBroadcastSubscriptionRequest(proxyParticipantId,
                                                    providerParticipantId,
                                                    (BroadcastSubscriptionRequest) subscriptionRequest,
+                                                   providerContainer);
+            } else if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
+                handleMulticastSubscriptionRequest(proxyParticipantId,
+                                                   providerParticipantId,
+                                                   (MulticastSubscriptionRequest) subscriptionRequest,
                                                    providerContainer);
             } else {
                 handleSubscriptionRequest(publicationInformation, subscriptionRequest, providerContainer);
@@ -709,13 +733,43 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     }
 
     @Override
-    public void entryAdded(String providerParticipantId, ProviderContainer providerContainer) {
+    public void multicastOccurred(String providerParticipantId,
+                                  String multicastName,
+                                  String[] partitions,
+                                  Object... values) {
+        logger.debug("Multicast occurred for {} / {} / {} / {}",
+                     providerParticipantId,
+                     multicastName,
+                     Arrays.toString(partitions),
+                     Arrays.toString(values));
+        String multicastId = MulticastIdUtil.createMulticastId(providerParticipantId, multicastName, partitions);
+        MulticastPublication multicastPublication = new MulticastPublication(Arrays.asList(values), multicastId);
+        MessagingQos messagingQos = new MessagingQos();
+        dispatcher.sendMulticast(providerParticipantId, multicastPublication, messagingQos);
+    }
+
+    @Override
+    public void entryAdded(final String providerParticipantId, ProviderContainer providerContainer) {
         restoreQueuedSubscription(providerParticipantId, providerContainer);
+        MulticastListener multicastListener = new MulticastListener() {
+            @Override
+            public void multicastOccurred(String multicastName, String[] partitions, Object[] values) {
+                PublicationManagerImpl.this.multicastOccurred(providerParticipantId, multicastName, partitions, values);
+            }
+        };
+        multicastListeners.putIfAbsent(providerParticipantId, multicastListener);
+        providerContainer.getSubscriptionPublisher()
+                         .registerMulticastListener(multicastListeners.get(providerParticipantId));
     }
 
     @Override
     public void entryRemoved(String providerParticipantId) {
         stopPublicationByProviderId(providerParticipantId);
+        ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
+        if (providerContainer != null) {
+            providerContainer.getSubscriptionPublisher()
+                             .unregisterMulticastListener(multicastListeners.remove(providerParticipantId));
+        }
     }
 
     @Override

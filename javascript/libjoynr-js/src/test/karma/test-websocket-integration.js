@@ -32,7 +32,7 @@ require.config({
     paths : {
         "joynr/Runtime" : "joynr/Runtime.inprocess",
         "atmosphere" : "lib/atmosphere",
-        "log4javascript" : "lib/log4javascript",
+        "log4javascriptDependency" : "lib/log4javascript",
         "bluebird" : "lib/bluebird",
         "JsonParser" : "lib/JsonParser",
         "uuid" : "lib/uuid-annotated",

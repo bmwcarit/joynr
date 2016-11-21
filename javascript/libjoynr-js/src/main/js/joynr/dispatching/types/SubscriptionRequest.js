@@ -46,10 +46,10 @@ define("joynr/dispatching/types/SubscriptionRequest", [
      *            [settings.qos] the subscriptionQos
      */
     function SubscriptionRequest(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-        Util.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
-        Util.checkPropertyIfDefined(settings.qos, [
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+        Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
+        Typing.checkPropertyIfDefined(settings.qos, [
             "Object",
             "OnChangeSubscriptionQos",
             "PeriodicSubscriptionQos",
@@ -76,10 +76,31 @@ define("joynr/dispatching/types/SubscriptionRequest", [
          * @name SubscriptionRequest#_typeName
          * @type String
          */
-        Typing.augmentTypeName(this, "joynr");
+
+        Object.defineProperty(this, "_typeName", {
+            value : "joynr.SubscriptionRequest",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
 
         return Object.freeze(this);
     }
+
+    /**
+     * The joynr type name
+     *
+     * @name Request#_typeName
+     * @type String
+     */
+    Object.defineProperty(SubscriptionRequest, "_typeName", {
+        value : "joynr.SubscriptionRequest",
+        readable : true,
+        writable : false,
+        enumerable : true,
+        configurable : false
+    });
 
     return SubscriptionRequest;
 

@@ -668,6 +668,7 @@ void IltProvider::methodWithExtendedErrorEnum(
 }
 
 void IltProvider::methodToFireBroadcastWithSinglePrimitiveParameter(
+        const std::vector<std::string>& partitions,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
@@ -679,11 +680,12 @@ void IltProvider::methodToFireBroadcastWithSinglePrimitiveParameter(
     JOYNR_LOG_WARN(
             logger, "**********************************************************************");
     std::string stringOut = "boom";
-    fireBroadcastWithSinglePrimitiveParameter(stringOut);
+    fireBroadcastWithSinglePrimitiveParameter(stringOut, partitions);
     onSuccess();
 }
 
 void IltProvider::methodToFireBroadcastWithMultiplePrimitiveParameters(
+        const std::vector<std::string>& partitions,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
@@ -696,11 +698,12 @@ void IltProvider::methodToFireBroadcastWithMultiplePrimitiveParameters(
             logger, "*************************************************************************");
     double doubleOut = 1.1;
     std::string stringOut = "boom";
-    fireBroadcastWithMultiplePrimitiveParameters(doubleOut, stringOut);
+    fireBroadcastWithMultiplePrimitiveParameters(doubleOut, stringOut, partitions);
     onSuccess();
 }
 
 void IltProvider::methodToFireBroadcastWithSingleArrayParameter(
+        const std::vector<std::string>& partitions,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
@@ -709,11 +712,12 @@ void IltProvider::methodToFireBroadcastWithSingleArrayParameter(
     JOYNR_LOG_WARN(logger, "* IltProvider::methodToFireBroadcastWithSingleArrayParameter called");
     JOYNR_LOG_WARN(logger, "******************************************************************");
     std::vector<std::string> stringArrayOut = IltUtil::createStringArray();
-    fireBroadcastWithSingleArrayParameter(stringArrayOut);
+    fireBroadcastWithSingleArrayParameter(stringArrayOut, partitions);
     onSuccess();
 }
 
 void IltProvider::methodToFireBroadcastWithMultipleArrayParameters(
+        const std::vector<std::string>& partitions,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
@@ -725,11 +729,13 @@ void IltProvider::methodToFireBroadcastWithMultipleArrayParameters(
     std::vector<uint64_t> uInt64ArrayOut = IltUtil::createUInt64Array();
     std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>
             structWithStringArrayArrayOut = IltUtil::createStructWithStringArrayArray();
-    fireBroadcastWithMultipleArrayParameters(uInt64ArrayOut, structWithStringArrayArrayOut);
+    fireBroadcastWithMultipleArrayParameters(
+            uInt64ArrayOut, structWithStringArrayArrayOut, partitions);
     onSuccess();
 }
 
 void IltProvider::methodToFireBroadcastWithSingleEnumerationParameter(
+        const std::vector<std::string>& partitions,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
@@ -745,11 +751,12 @@ void IltProvider::methodToFireBroadcastWithSingleEnumerationParameter(
                     joynr::interlanguagetest::namedTypeCollection2::
                             ExtendedTypeCollectionEnumerationInTypeCollection::
                                     ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
-    fireBroadcastWithSingleEnumerationParameter(enumerationOut);
+    fireBroadcastWithSingleEnumerationParameter(enumerationOut, partitions);
     onSuccess();
 }
 
 void IltProvider::methodToFireBroadcastWithMultipleEnumerationParameters(
+        const std::vector<std::string>& partitions,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
@@ -768,11 +775,13 @@ void IltProvider::methodToFireBroadcastWithMultipleEnumerationParameters(
             ExtendedEnumerationWithPartlyDefinedValues::
                     ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
     enumerationOut = joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_1;
-    fireBroadcastWithMultipleEnumerationParameters(extendedEnumerationOut, enumerationOut);
+    fireBroadcastWithMultipleEnumerationParameters(
+            extendedEnumerationOut, enumerationOut, partitions);
     onSuccess();
 }
 
 void IltProvider::methodToFireBroadcastWithSingleStructParameter(
+        const std::vector<std::string>& partitions,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
@@ -782,11 +791,12 @@ void IltProvider::methodToFireBroadcastWithSingleStructParameter(
     JOYNR_LOG_WARN(logger, "*******************************************************************");
     joynr::interlanguagetest::namedTypeCollection2::ExtendedStructOfPrimitives
             extendedStructOfPrimitivesOut = IltUtil::createExtendedStructOfPrimitives();
-    fireBroadcastWithSingleStructParameter(extendedStructOfPrimitivesOut);
+    fireBroadcastWithSingleStructParameter(extendedStructOfPrimitivesOut, partitions);
     onSuccess();
 }
 
 void IltProvider::methodToFireBroadcastWithMultipleStructParameters(
+        const std::vector<std::string>& partitions,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
@@ -805,7 +815,7 @@ void IltProvider::methodToFireBroadcastWithMultipleStructParameters(
     baseStructWithoutElementsOut = IltUtil::createBaseStructWithoutElements();
     extendedExtendedBaseStructOut = IltUtil::createExtendedExtendedBaseStruct();
     fireBroadcastWithMultipleStructParameters(
-            baseStructWithoutElementsOut, extendedExtendedBaseStructOut);
+            baseStructWithoutElementsOut, extendedExtendedBaseStructOut, partitions);
     onSuccess();
 }
 

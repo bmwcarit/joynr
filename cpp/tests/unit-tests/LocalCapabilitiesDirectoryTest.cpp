@@ -93,6 +93,7 @@ public:
 
     ~LocalCapabilitiesDirectoryTest()
     {
+        singleThreadedIOService.stop();
         std::remove(settingsFileName.c_str());
     }
 
@@ -1505,7 +1506,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
     localCapabilitiesDirectory->add(entry3);
 
     // create a new object
-    localCapabilitiesDirectory = std::make_unique<LocalCapabilitiesDirectory>(messagingSettings,
+    auto localCapabilitiesDirectory2 = std::make_unique<LocalCapabilitiesDirectory>(messagingSettings,
                                                                               capabilitiesClient,
                                                                               LOCAL_ADDRESS,
                                                                               mockMessageRouter,
@@ -1514,11 +1515,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                                                               "clusterControllerId");
 
     // load persistency
-    localCapabilitiesDirectory->loadPersistedFile();
+    localCapabilitiesDirectory2->loadPersistedFile();
 
     // check all entries are there
     for (auto& partecipantID : participantIds) {
-        localCapabilitiesDirectory->lookup(partecipantID, callback);
+        localCapabilitiesDirectory2->lookup(partecipantID, callback);
         EXPECT_EQ(1, callback->getResults(1000).size());
         callback->clearResults();
     }

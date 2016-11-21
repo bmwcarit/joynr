@@ -26,12 +26,11 @@ var consumerBase = require("./consumer.base.js");
 console.log = function() {};
 
 consumerBase.initialize().then(function() {
-    return consumerBase.echoString()
-        .then(consumerBase.echoComplexStruct)
+    return consumerBase.echoComplexStruct()
+        .then(consumerBase.echoString)
         .then(consumerBase.echoByteArray)
-        .then(function(){
-             return consumerBase.echoByteArray(1000);
-        })
+        .then(consumerBase.echoByteArrayWithSizeTimesK)
+        .then(consumerBase.shutdown)
         .then(function() {
             console.log("SUCCEEDED");
             process.exit(0);

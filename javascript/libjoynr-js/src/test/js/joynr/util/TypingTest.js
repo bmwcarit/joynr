@@ -1,5 +1,5 @@
-/*jslint newcap: true, nomen: true */
-
+/*jslint es5: true, newcap: true, nomen: true */
+/*global fail: true, xit: true */
 /*
  * #%L
  * %%
@@ -23,6 +23,7 @@ define(
         [
             "joynr/util/Typing",
             "joynr/start/TypeRegistry",
+            "joynr/system/LoggerFactory",
             "joynr/types/TypeRegistrySingleton",
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderQos",
@@ -30,12 +31,15 @@ define(
             "joynr/types/Version",
             "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/ComplexRadioStation",
+            "joynr/datatypes/exampleTypes/ComplexStruct",
             "joynr/datatypes/exampleTypes/Country",
-            "joynr/tests/testTypes/TestEnum"
+            "joynr/tests/testTypes/TestEnum",
+            "global/Promise"
         ],
         function(
                 Typing,
                 TypeRegistry,
+                LoggerFactory,
                 TypeRegistrySingleton,
                 DiscoveryEntry,
                 ProviderQos,
@@ -43,8 +47,10 @@ define(
                 Version,
                 RadioStation,
                 ComplexRadioStation,
+                ComplexStruct,
                 Country,
-                TestEnum) {
+                TestEnum,
+                Promise) {
 
             function MyCustomObj() {}
             function _TestConstructor123_() {}
@@ -57,6 +63,8 @@ define(
                 this.e = e;
             }
 
+            MyType.getMemberType = function(i) {};
+
             function MySecondType(a, b, c, d, e) {
                 this._typeName = "MySecondTypeName";
                 this.a = a;
@@ -65,6 +73,28 @@ define(
                 this.d = d;
                 this.e = e;
             }
+
+            MySecondType.getMemberType = function(i) {};
+
+            beforeEach(function(done) {
+                var datatypePromises =
+                        [
+                            "joynr.vehicle.radiotypes.RadioStation",
+                            "joynr.datatypes.exampleTypes.ComplexRadioStation",
+                            "joynr.datatypes.exampleTypes.ComplexStruct",
+                            "joynr.datatypes.exampleTypes.Country",
+                            "joynr.tests.testTypes.TestEnum"
+                        ].map(function(datatype) {
+                            return TypeRegistrySingleton.getInstance().getTypeRegisteredPromise(
+                                    datatype,
+                                    1000);
+                        });
+
+                Promise.all(datatypePromises).then(function() {
+                    done();
+                    return null;
+                }).catch(fail);
+            });
 
             describe("libjoynr-js.joynr.Typing", function() {
                 it("is defined and of correct type", function(done) {
@@ -117,6 +147,8 @@ define(
             describe(
                     "libjoynr-js.joynr.Typing.augmentType",
                     function() {
+
+                        var log = LoggerFactory.getLogger("joynr.util.TypingTest");
 
                         var tests =
                                 [
@@ -313,6 +345,39 @@ define(
                             done();
                         });
 
+                        xit(
+                                "performance measurement of augmenting struct types",
+                                function() {
+                                    var i, rawInput, timeStart, delta, times = 5000, typeRegistry =
+                                            TypeRegistrySingleton.getInstance();
+                                    typeRegistry.addType("joynr.datatypes.exampleTypes.ComplexStruct", ComplexStruct);
+                                    /*jslint nomen: true */
+                                    rawInput =
+                                            {
+                                                _typeName : "joynr.datatypes.exampleTypes.ComplexStruct",
+                                                num32 : "123456",
+                                                num64 : "123456789",
+                                                str : "looooooooooooooooooooooooooooooooooooooongStriiiiiiiiiiiiiiiiiiiiiiiing",
+                                                data : []
+                                            };
+                                    /*jslint nomen: false */
+                                    for (i = 0; i < 1000; i++) {
+                                        rawInput.data.push("0");
+                                    }
+
+                                    timeStart = Date.now();
+                                    for (i = 0; i < times; i++) {
+                                        Typing.augmentTypes(rawInput, typeRegistry);
+                                    }
+                                    delta = Date.now() - timeStart;
+                                    log
+                                            .info("Time took for augmenting struct type \"ComplexStruct\""
+                                                + times
+                                                + " times: "
+                                                + delta
+                                                + "ms");
+                                });
+
                         it(
                                 "throws when giving a function or an object with a custom type",
                                 function(done) {
@@ -342,6 +407,22 @@ define(
                                             .getInstance(), "joynr.tests.testTypes.TestEnum"))
                                     .toBe(expected);
                             done();
+                        });
+
+                        it("augmentTypes is able to deal with error enums as input", function() {
+                            var fixture, expected, result, typeRegistry =
+                                    TypeRegistrySingleton.getInstance();
+                            fixture = {
+                                "_typeName" : "joynr.tests.testTypes.TestEnum",
+                                "name" : "ZERO"
+                            };
+                            expected = TestEnum.ZERO;
+                            result = Typing.augmentTypes(fixture, typeRegistry);
+                            expect(result.name).toBeDefined();
+                            expect(result.name).toBe(expected.name);
+                            expect(result.value).toBeDefined();
+                            expect(result.value).toBe(expected.value);
+                            expect(result).toBe(expected);
                         });
 
                         it(
@@ -483,6 +564,94 @@ define(
                     done();
                 });
 
+            });
+
+            function testTypingCheckProperty(functionName) {
+                function CustomObj() {}
+                function AnotherCustomObj() {}
+                var objects = [
+                    true,
+                    1,
+                    "a string",
+                    [],
+                    {},
+                    function() {},
+                    new CustomObj(),
+                    new AnotherCustomObj()
+                ];
+                var types = [
+                    "Boolean",
+                    "Number",
+                    "String",
+                    "Array",
+                    "Object",
+                    "Function",
+                    CustomObj,
+                    AnotherCustomObj
+                ];
+
+                it("provides the correct type information", function() {
+                    var i, j;
+                    function functionBuilder(object, type) {
+                        return function() {
+                            Typing[functionName](object, type, "some description");
+                        };
+                    }
+
+                    for (i = 0; i < objects.length; ++i) {
+                        for (j = 0; j < types.length; ++j) {
+                            var test = expect(functionBuilder(objects[i], types[j]));
+
+                            if (i === j) {
+                                test.not.toThrow();
+                            } else {
+                                test.toThrow();
+                            }
+                        }
+                    }
+                });
+
+                it("supports type alternatives", function() {
+                    var type = [
+                        "Object",
+                        "CustomObj"
+                    ];
+                    expect(function() {
+                        Typing[functionName]({}, type, "some description");
+                    }).not.toThrow();
+                    expect(function() {
+                        Typing[functionName](new CustomObj(), type, "some description");
+                    }).not.toThrow();
+                    expect(function() {
+                        Typing[functionName](new AnotherCustomObj(), type, "some description");
+                    }).toThrow();
+                });
+            }
+
+            describe("libjoynr-js.joynr.Typing.checkProperty", function() {
+                testTypingCheckProperty("checkProperty");
+
+                it("throws on null and undefined", function() {
+                    expect(function() {
+                        Typing.checkProperty(undefined, "undefined", "some description");
+                    }).toThrow();
+                    expect(function() {
+                        Typing.checkProperty(null, "null", "some description");
+                    }).toThrow();
+                });
+            });
+
+            describe("libjoynr-js.joynr.Typing.checkPropertyIfDefined", function() {
+                testTypingCheckProperty("checkPropertyIfDefined");
+
+                it("does not throw on null or undefined", function() {
+                    expect(function() {
+                        Typing.checkPropertyIfDefined(undefined, "undefined", "some description");
+                    }).not.toThrow();
+                    expect(function() {
+                        Typing.checkPropertyIfDefined(null, "null", "some description");
+                    }).not.toThrow();
+                });
             });
 
         });

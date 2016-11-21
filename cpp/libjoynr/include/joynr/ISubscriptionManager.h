@@ -20,17 +20,27 @@
 #ifndef ISUBSCRIPTIONMANAGER_H
 #define ISUBSCRIPTIONMANAGER_H
 
-#include <string>
+#include <forward_list>
+#include <functional>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "joynr/JoynrExport.h"
 
 namespace joynr
 {
 
+class MulticastSubscriptionRequest;
 class SubscriptionRequest;
 class ISubscriptionCallback;
+class ISubscriptionListenerBase;
 class SubscriptionQos;
+
+namespace exceptions
+{
+class ProviderRuntimeException;
+} // namespace exceptions
 
 /**
   * @class ISubscriptionManager
@@ -50,18 +60,45 @@ public:
 
     /**
      * @brief Subscribe to an attribute or broadcast. Modifies the subscription request to include
-     * all necessary information (side effect). Takes ownership of the ISubscriptionCallback, i.e.
-     * deletes the callback when no longer required.
+     * all necessary information (side effect).
      *
      * @param subscribeToName
      * @param subscriptionCaller
      * @param qos
      * @param subscriptionRequest
      */
-    virtual void registerSubscription(const std::string& subscribeToName,
-                                      std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-                                      std::shared_ptr<SubscriptionQos> qos,
-                                      SubscriptionRequest& subscriptionRequest) = 0;
+    virtual void registerSubscription(
+            const std::string& subscribeToName,
+            std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
+            std::shared_ptr<SubscriptionQos> qos,
+            SubscriptionRequest& subscriptionRequest) = 0;
+
+    /**
+     * @brief Subscribe to a multicast. Modifies the subscription request to include
+     * all necessary information (side effect).
+     *
+     * @param subscribeToName
+     * @param subscriberParticipantId
+     * @param providerParticipantId
+     * @param partition
+     * @param subscriptionCaller
+     * @param qos
+     * @param subscriptionRequest
+     * @param onSuccess
+     * @param onError
+     */
+    virtual void registerSubscription(
+            const std::string& subscribeToName,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            const std::vector<std::string>& partitions,
+            std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
+            std::shared_ptr<SubscriptionQos> qos,
+            MulticastSubscriptionRequest& subscriptionRequest,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) = 0;
 
     /**
      * @brief Stop the subscription. Removes the callback and stops the notifications
@@ -88,6 +125,36 @@ public:
      */
     virtual std::shared_ptr<ISubscriptionCallback> getSubscriptionCallback(
             const std::string& subscriptionId) = 0;
+
+    /**
+     * @brief Get a shared pointer to the subscription callback. The shared pointer point to null
+     * if the multicast ID does not exist.
+     *
+     * @param multicastId
+     * @return <std::shared_ptr<ISubscriptionCallback>
+     */
+    virtual std::shared_ptr<ISubscriptionCallback> getMulticastSubscriptionCallback(
+            const std::string& multicastId) = 0;
+
+    /**
+     * @brief Get a shared pointer to the subscription listener. The shared pointer points to null
+     * if the subscription ID does not exist.
+     *
+     * @param subscriptionId
+     * @return std::shared_ptr<ISubscriptionListenerBase>
+     */
+    virtual std::shared_ptr<ISubscriptionListenerBase> getSubscriptionListener(
+            const std::string& subscriptionId) = 0;
+
+    /**
+     * @brief Get a list of shared pointers to the subscription listeners. The list is empty
+     * if the multicast ID does not exist.
+     *
+     * @param multicastId
+     * @return std::forward_list<std::shared_ptr<ISubscriptionListenerBase>>
+     */
+    virtual std::forward_list<std::shared_ptr<ISubscriptionListenerBase>>
+    getMulticastSubscriptionListeners(const std::string& multicastId) = 0;
 
     /**
      * @brief Converts the expiry date of a subscription into a TTL.

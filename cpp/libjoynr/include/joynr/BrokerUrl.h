@@ -49,6 +49,7 @@ public:
     Url getBrokerChannelsBaseUrl() const;
     Url getDeleteChannelUrl(const std::string& mcid) const;
     Url getTimeCheckUrl() const;
+    std::string toString() const;
 
 private:
     std::string brokerBaseUrl;

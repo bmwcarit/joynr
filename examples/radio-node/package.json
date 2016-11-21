@@ -1,12 +1,13 @@
 {
   "name": "radio-node",
-  "version": "0.21.3",
+  "version": "0.22.0",
   "license": "Apache-2.0",
   "description": "simple app to demonstrate usage of joynr",
   "main": "src/main/js/radioConsumer.js",
   "private": true,
   "dependencies": {
-     "joynr" : ">=0.21.3"
+     "joynr" : ">=0.22.0",
+     "node-localstorage": "1.3.0"
   },
   "config": {
     "runtime": "websocket",
@@ -15,11 +16,12 @@
       "host": "localhost",
       "port": "4242"
     },
-    "bounceProxyBaseUrl": "http://localhost:8080"
+    "bounceProxyBaseUrl": "http://localhost:8080",
+    "brokerUri": "tcp://localhost:1883"
   },
   "scripts": {
       "preinstall": "npm install ../../javascript/libjoynr-js/target/node-classes",
-      "startconsumer" : "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl node src/main/js/radioConsumer.js",
-      "startprovider" : "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl node src/main/js/radioProvider.js"
+      "startconsumer" : "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri node src/main/js/radioConsumer.js",
+      "startprovider" : "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri node src/main/js/radioProvider.js"
   }
 }

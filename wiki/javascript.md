@@ -103,27 +103,34 @@ joynr.load(provisioning).then(function(loadedJoynr) {
 The ```DiscoveryQos``` configures how the search for a provider will be handled. It has the
 following members:
 
-* **discoveryTimeoutMs**  Timeout for the discovery process (milliseconds). A timeout triggers an exception.
+* **discoveryTimeoutMs**  Timeout for the discovery process (milliseconds) if no compatible
+  provider was found within the given time. A timeout triggers a DiscoveryException or
+  NoCompatibleProviderFoundException containing the versions of the discovered incompatible
+  providers.
+* **discoveryRetryDelayMs** The time to wait between discovery retries after encountering a
+  discovery error.
+* **arbitrationStrategy** The arbitration strategy (details see below)
 * **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds); only younger
-entries will be considered. If no suitable providers are found, depending on the discoveryScope,
-a remote global lookup may be triggered.
-* **arbitrationStrategy** (details see below)
+  entries will be considered. If no suitable providers are found, depending on the discoveryScope,
+  a remote global lookup may be triggered.
+* **discoveryScope** The discovery scope (details see below)
+* **providerMustSupportOnChange** If set to true, select only providers which support onChange
+  subscriptions (set by the provider in its providerQos settings)
 * **additionalParameters** special application-specific parameters that must match, e.g. a keyword
-* **discoveryRetryDelayMs** The time to wait between discovery retries after encountering a discovery
-error.
-* **discoveryScope** (details see below)
 
-The **discoveryScope** defines whether a suitable provider will be searched only in the local
-capabilities directory or also in the global one.
+The enumeration **discoveryScope** defines options to decide whether a suitable provider will be
+searched in the local capabilities directory or in the global one.
 
 Available values are as follows:
 
 * **LOCAL\_ONLY** Only entries from local capability directory will be searched
 * **LOCAL\_THEN\_GLOBAL** Entries will be taken from local capabilities directory, unless no such
-entries exist, in which case global entries will be considered as well.
+  entries exist, in which case global entries will be considered as well.
 * **LOCAL\_AND\_GLOBAL** Entries will be taken from local capabilities directory and from global
-capabilities directory.
+  capabilities directory.
 * **GLOBAL\_ONLY** Only the global entries will be looked at.
+
+**Default discovery scope:** ```LOCAL_THEN_GLOBAL```
 
 Whenever global entries are involved, they are first searched in the local cache. In case no global
 entries are found in the cache, a remote lookup is triggered.
@@ -137,13 +144,13 @@ the result of `myFunction.bind(myParam)` has to be used as arbitration strategy.
 
 **Predefined arbitration strategies:**
 * **ArbitrationStrategyCollection.LastSeen** The participant that was last refreshed (i.e. with the
-most current last seen date) will be selected
+  most current last seen date) will be selected
 * **ArbitrationStrategyCollection.Nothing** use DefaultArbitrator which picks the first discovered
    entry with compatible version
 * **ArbitrationStrategyCollection.HighestPriority** Highest priority provider will be selected
 * **ArbitrationStrategyCollection.Keyword** Only a Provider that has keyword set will be selected
 
-**Default arbitration strategy:** LastSeen
+**Default arbitration strategy:** ```ArbitrationStrategyCollection.LastSeen```
 
 The priority used by the arbitration strategy *HighestPriority* is set by the provider in its
 providerQos settings.
@@ -151,25 +158,39 @@ providerQos settings.
 Example for setting up a ```DiscoveryQos``` object:
 ```javascript
 // additionalParameters unclear
-// there is currently no ArbitrationConstants in Javascript
+// there is currently no ArbitrationConstants in Javascript like in Java
 // { "keyword" : "someKeyword" }
 // { "fixedParticipantId" : "someParticipantId" }
 // { }
-//
+
 var discoveryQos = new joynr.proxy.DiscoveryQos({
     discoveryTimeoutMs : 30000,
+    discoveryRetryDelayMs : 1000,
+    arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
     cacheMaxAgeMs : 0,
-    arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-    additionalParameters: {},
-    discoveryScope : DiscoveryScope.LOCAL\_ONLY,
-    discoveryRetryDelayMs : 1000
+    discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+    providerMustSupportOnChange : false,
+    // additional parameters are used for arbitration strategy Keyword (key: "keyword")
+    // or can be used for custom arbitration strategies
+    additionalParameters : {
+        "key1": "value1",
+        ...
+        "keyN": "valueN"
+    }
 });
 ```
 
+Missing parameters will be replaced by the default settings.
+
 ## The message quality of service
 
-The ```MesssagingQos``` object defines the roundtrip timeout for RPC requests in milliseconds
-and allows definition of additional custom message headers.
+The ```MesssagingQos``` object defines the **roundtrip timeout in milliseconds** for
+**RPC requests** (getter/setter/method calls) and unsubscribe requests and it allows
+definition of additional custom message headers.
+The ttl for subscription requests is calculated from the ```expiryDateMs```
+in the [SubscriptionQos](#subscription-quality-of-service) settings.
+The ttl of internal joynr messages (e.g. provider discovery) can be set via the
+internalMessagingQosValue in the [provisioning settings](JavaScriptTutorial.md#provisioning)
 
 If no specific setting is given, the default roundtrip timeout is 60 seconds.
 The keys of custom message headers may contain ascii alphanumeric or hyphen.
@@ -192,7 +213,7 @@ var messagingQos = new joynr.messaging.MessagingQos({
 });
 
 // optional
-messaging.putCustomHeader("anotherKey", "anotherValue");
+messagingQos.putCustomHeader("anotherKey", "anotherValue");
 ```
 
 ## Building a proxy
@@ -202,13 +223,18 @@ Proxy creation is necessary before services from a provider can be called:
 * **subscribe** or **unsubscribe** to its **attributes** or **update** a subscription
 * **subscribe** or **unsubscribe** to its **broadcasts** or **update** a subscription
 
-The call requires **messagingQos** and **discoveryQos** settings as well as the provider's domain.
+The ProxyBuilder.build call requires the provider's domain. Optionally, **messagingQos** and
+**discoveryQos** settings can be specified if the default settings are not suitable.
+
+In case no suitable provider can be found during discovery, a `DiscoveryException` or
+`NoCompatibleProviderFoundException` is thrown.
 
 ```javascript
-var messagingQos, discoveryQos;
-
-// setup messagingQos, discoveryQos
 var domain = "<ProviderDomain>";
+
+var messagingQos, discoveryQos;
+// setup messagingQos, discoveryQos
+
 joynr.proxyBuilder.build(<Interface>Proxy, {
     domain: domain,
     discoveryQos: discoveryQos, // optional
@@ -252,13 +278,16 @@ changes. The following sections cover the 4 quality of service objects available
 ```SubscriptionQos``` has the following members:
 
 * **expiryDateMs** Absolute Time until notifications will be send (in milliseconds)
-* **publicationTtlMs** Lifespan of a notification (in milliseconds), the notification will be deleted
-afterwards
+* **publicationTtlMs** Lifespan of a notification (in milliseconds), the notification will be
+  deleted afterwards
+  Known Issue: subscriptionQos passed when subscribing to a non-selective broadcast are ignored.
+  The API will be changed in the future: proxy subscribe calls will no longer take a
+  subscriptionQos; instead the publication TTL will be settable on the provider side.
 
 ```javascript
 var subscriptionQos = new joynr.proxy.SubscriptionQos({
-    expiryDateMs : 1000,
-    publicationTtlMs : 1000
+    expiryDateMs : 0,
+    publicationTtlMs : 10000
 });
 ```
 
@@ -277,22 +306,24 @@ The default values are as follows:
 
 * **periodMs** defines how long to wait before sending an update even if the value did not change
 * **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification
-will be sent (milliseconds)
+  will be sent (milliseconds)
 
-This object can be used for subscriptions to attributes. Note that updates will be sent only based
-on the specified interval, and not as a result of an attribute change.
+This object can be used for subscriptions to attributes.
+
+Note that updates will be sent only based on the specified interval, and not as a result of an
+attribute change.
 
 ```javascript
 var subscriptionQosPeriodic = new joynr.proxy.PeriodicSubscriptionQos({
-    periodMs : 1000,
-    alertAfterIntervalMs : 1000
+    periodMs : 60000,
+    alertAfterIntervalMs : 0
 });
 ```
 The default values are as follows:
 ```
 {
-    periodMs: PeriodicSubscriptionQos.MIN_PERIOD // 50
-    alertAfterIntervalMs: PeriodicSubscriptionQos.NEVER_ALERT // 0
+    periodMs: PeriodicSubscriptionQos.DEFAULT_PERIOD_MS // 60000
+    alertAfterIntervalMs: PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL // 0
 }
 ```
 
@@ -309,13 +340,13 @@ to attributes if no periodic update is required.
 Example:
 ```javascript
 var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-    minIntervalMs : 50
+    minIntervalMs : 1000
 });
 ```
 The default is as follows:
 ```
 {
-    minIntervalMs: OnChangeSubscriptionQos.MIN_INTERVAL // 50
+    minIntervalMs: OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS // 1000
 }
 ```
 
@@ -326,7 +357,7 @@ and has the following additional members:
 
 * **maxIntervalMs** Maximum time to wait between notifications, if value has not changed
 * **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification
-will be sent (milliseconds)
+  will be sent (milliseconds)
 
 This object can be used for subscriptions to attributes. Updates will then be sent both
 periodically and after a change (i.e. this acts like a combination of PeriodicSubscriptionQos
@@ -338,14 +369,15 @@ makes no sense (in this case the additional members will be ignored).
 Example:
 ```javascript
 var subscriptionQosOnChangeWithKeepAlive = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
-    maxIntervalMs : 2000
+    maxIntervalMs : 60000,
+    alertAfterIntervalMs: 0
 });
 ```
 The default is as follows:
 ```
 {
-    maxIntervalMs : 0
-    alertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT // 0
+    maxIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS // 60000
+    alertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL // 0
 }
 ```
 
@@ -422,7 +454,7 @@ The ```subscribe()``` method can also be used to update an existing subscription
 ## Unsubscribing from an attribute
 
 Unsubscribing from an attribute subscription requires the **subscriptionId** returned by the
-ealier subscribe call.
+earlier subscribe call.
 
 ```javascript
 <interface>Proxy.<Attribute>.unsubscribe({
@@ -434,10 +466,22 @@ ealier subscribe call.
 });
 ```
 
-## Subscribing to a broadcast unconditionally
+## Subscribing to a (non-selective) broadcast
 
-Broadcast subscription informs the application in case a broadcast is fired from provider side
-and provides the output values via a callback function.
+A Broadcast subscription informs the application in case a broadcast is fired by a provider.
+The output values are returned via a callback function.
+
+A broadcast is selective only if it is declared with the `selective` keyword in Franca, otherwise it
+is non-selective.
+
+Non-selective broadcast subscriptions can be passed optional **partitions**. A partition is a
+hierarchical list of strings similar to a URL path. Subscribing to a partition will cause only those
+broadcasts to be sent to the consumer that match the partition. Note that the partition is set when
+subscribing on the consumer side, and must match the partition set on the provider side when the
+broadcast is performed.
+
+Example: a consumer could set a partition of "europe", "germany", "munich" to receive broadcasts for
+Munich only. The matching provider would use the same partition when sending the broadcast.
 
 The **subscriptionId** is returned asynchronously after the subscription is successfully registered
 at the provider. It can be used later to update the subscription or to unsubscribe from it.
@@ -465,14 +509,20 @@ provided as outlined below.
         // - SubscriptionException if the subscription registration failed at the provider
         // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
+
+    // optional parameter for multicast subscriptions (subscriptions to non selective broadcasts)
+    partitions: [partitionLevel1,
+                 ...
+                 partitionLevelN]
 }).then(function(subscriptionId) {
     // subscription successful, store subscriptionId for later use
 }).catch(function(error) {
     // handle error case
 });
 ```
+The [partition syntax is explained in the multicast concept](../docs/multicast.md#partitions)
 
-## Updating an unconditional broadcast subscription
+## Updating a (non-selective) broadcast subscription
 
 The ```subscribe()``` method can also be used to update an existing subscription, when the
 **subscriptionId** is passed as an additional parameter as follows:
@@ -495,6 +545,11 @@ The ```subscribe()``` method can also be used to update an existing subscription
         // - SubscriptionException if the subscription registration failed at the provider
         // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
+
+    // optional parameter for multicast subscriptions (subscriptions to non selective broadcasts)
+    partitions: [partitionLevel1,
+                 ...
+                 partitionLevelN]
 }).then(function(subscriptionId) {
     // subscription update successful, the subscriptionId should be the same as before
 }).catch(function(error) {
@@ -819,9 +874,17 @@ this.fire<Broadcast> = function() {
     outputParameters = self.<broadcast>.createBroadcastOutputParameters();
     // foreach output parameter of the broadcast
     outputParameters.set<Parameter>(value);
-    self.<broadcast>.fire(outputParameters);
+
+    // optional: the partitions to be used for the broadcast
+    // Note: wildcards are only allowed on consumer side
+    var partitions = [partitionLevel1,
+                      ...
+                      partitionLevelN];
+
+    self.<broadcast>.fire(outputParameters[, partitions]);
 }
 ```
+The [partition syntax is explained in the multicast concept](../docs/multicast.md#partitions)
 
 ## Selective (filtered) broadcasts
 

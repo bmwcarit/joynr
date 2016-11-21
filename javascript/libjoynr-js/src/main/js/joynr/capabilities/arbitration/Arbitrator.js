@@ -99,6 +99,23 @@ define(
                     applicationDiscoveryQos,
                     proxyVersion,
                     deferred) {
+                function retryCapabilityDiscovery (errorMsg) {
+                    // retry discovery in discoveryRetryDelayMs ms
+                    if (errorMsg) {
+                        deferred.errorMsg = errorMsg;
+                    }
+                    deferred.discoveryRetryTimer = LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
+                        delete deferred.discoveryRetryTimer;
+                        discoverCapabilities(
+                                capabilityDiscoveryStub,
+                                domains,
+                                interfaceName,
+                                applicationDiscoveryQos,
+                                proxyVersion,
+                                deferred);
+                    }, applicationDiscoveryQos.discoveryRetryDelayMs);
+                }
+
                 // discover caps from local capabilities directory
                 capabilityDiscoveryStub.lookup(domains, interfaceName, new DiscoveryQos({
                     discoveryScope : applicationDiscoveryQos.discoveryScope,
@@ -144,22 +161,14 @@ define(
                                 deferred.pending = false;
                                 deferred.resolve(versionCompatibleArbitratedCaps);
                             } else {
-                                // retry discovery in discoveryRetryDelayMs ms
-                                deferred.discoveryRetryTimer = LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
-                                    delete deferred.discoveryRetryTimer;
-                                    discoverCapabilities(
-                                            capabilityDiscoveryStub,
-                                            domains,
-                                            interfaceName,
-                                            applicationDiscoveryQos,
-                                            proxyVersion,
-                                            deferred);
-                                }, applicationDiscoveryQos.discoveryRetryDelayMs);
+                                retryCapabilityDiscovery();
                             }
                         }
+                        return null;
                 }).catch(function(error) {
-                    deferred.pending = false;
-                    deferred.reject(error);
+                    if (deferred.pending) {
+                        retryCapabilityDiscovery(error.message);
+                    }
                 });
             }
 
@@ -258,7 +267,8 @@ define(
                                                                                     + settings.interfaceName
                                                                                     + "\" with discoveryQos \""
                                                                                     + JSON.stringify(settings.discoveryQos)
-                                                                                    + "\"" }));
+                                                                                    + "\""
+                                                                                    + (deferred.errorMsg !== undefined ? (". Error: " + deferred.errorMsg) : "")}));
                                                                         }
                                                                     },
                                                                     settings.discoveryQos.discoveryTimeoutMs);

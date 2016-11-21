@@ -36,6 +36,8 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/messaging/websocket/SharedWebSocket",
     "joynr/messaging/websocket/WebSocketMessagingSkeleton",
     "joynr/messaging/websocket/WebSocketMessagingStubFactory",
+    "joynr/messaging/websocket/WebSocketMulticastAddressCalculator",
+    "joynr/messaging/MessagingSkeletonFactory",
     "joynr/messaging/MessagingStubFactory",
     "joynr/messaging/routing/MessageRouter",
     "joynr/messaging/routing/MessageQueue",
@@ -84,6 +86,8 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         SharedWebSocket,
         WebSocketMessagingSkeleton,
         WebSocketMessagingStubFactory,
+        WebSocketMulticastAddressCalculator,
+        MessagingSkeletonFactory,
         MessagingStubFactory,
         MessageRouter,
         MessageQueue,
@@ -136,6 +140,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         var initialRoutingTable;
         var untypedCapabilities;
         var typedCapabilities;
+        var messagingSkeletonFactory;
         var messagingStubFactory;
         var messageRouter;
         var libjoynrMessagingSkeleton;
@@ -345,25 +350,36 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     });
 
                     webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-                        sharedWebSocket : sharedWebSocket
+                        sharedWebSocket : sharedWebSocket,
+                        mainTransport : true
                     });
 
-                    messagingStubFactory = new MessagingStubFactory({
-                        messagingStubFactories : {
-                            InProcessAddress : new InProcessMessagingStubFactory(),
-                            WebSocketAddress : new WebSocketMessagingStubFactory({
-                                address : ccAddress,
-                                sharedWebSocket : sharedWebSocket
-                            })
-                        }
+                    messagingSkeletonFactory = new MessagingSkeletonFactory();
+
+                    var messagingStubFactories = {};
+                    /*jslint nomen: true */
+                    messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
+                    messagingStubFactories[WebSocketAddress._typeName] = new WebSocketMessagingStubFactory({
+                        address : ccAddress,
+                        sharedWebSocket : sharedWebSocket
                     });
+                    /*jslint nomen: false */
+
+                    messagingStubFactory = new MessagingStubFactory({
+                        messagingStubFactories :messagingStubFactories
+                    });
+
                     messageRouter = new MessageRouter({
                         initialRoutingTable : initialRoutingTable,
                         persistency : persistency,
                         typeRegistry : typeRegistry,
                         joynrInstanceId : uuid(),
+                        messagingSkeletonFactory : messagingSkeletonFactory,
                         messagingStubFactory : messagingStubFactory,
                         messageQueue : new MessageQueue(messageQueueSettings),
+                        multicastAddressCalculator : new WebSocketMulticastAddressCalculator({
+                            globalAddress : ccAddress
+                        }),
                         parentMessageRouterAddress : ccAddress,
                         incomingAddress : localAddress
                     });
@@ -380,6 +396,11 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                     libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
+                    messagingSkeletonFactory.setSkeletons({
+                        InProcessAddress : libjoynrMessagingSkeleton,
+                        WebSocketAddress : webSocketMessagingSkeleton
+                    });
+
                     requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                     subscriptionManager = new SubscriptionManager(dispatcher);
                     publicationManager =
@@ -388,6 +409,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     dispatcher.registerRequestReplyManager(requestReplyManager);
                     dispatcher.registerSubscriptionManager(subscriptionManager);
                     dispatcher.registerPublicationManager(publicationManager);
+                    dispatcher.registerMessageRouter(messageRouter);
 
                     participantIdStorage = new ParticipantIdStorage(persistency, uuid);
                     discovery = new InProcessStub();
@@ -465,7 +487,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                             messageRouter.setRoutingProxy(newRoutingProxy);
                             return newRoutingProxy;
                         }).catch(function(error) {
-                            throw new Error("Failed to create discovery proxy: " + error);
+                            throw new Error("Failed to create routing proxy: " + error);
                         });
 
                     // when everything's ready we can trigger the app
@@ -533,6 +555,10 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     if (typeRegistry !== undefined) {
                         typeRegistry.shutdown();
+                    }
+
+                    if (loggingManager !== undefined) {
+                        loggingManager.shutdown();
                     }
 
                     joynrState = JoynrStates.SHUTDOWN;

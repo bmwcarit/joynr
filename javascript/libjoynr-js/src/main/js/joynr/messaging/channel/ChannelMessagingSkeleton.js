@@ -20,10 +20,9 @@
 define("joynr/messaging/channel/ChannelMessagingSkeleton", [
     "joynr/util/Typing",
     "joynr/types/TypeRegistrySingleton",
-    "joynr/util/Util",
     "joynr/system/LoggerFactory",
     "joynr/system/RoutingTypes/ChannelAddress"
-], function(Typing, TypeRegistrySingleton, Util, LoggerFactory, ChannelAddress) {
+], function(Typing, TypeRegistrySingleton, LoggerFactory, ChannelAddress) {
 
     /**
      * @name ChannelMessagingSkeleton
@@ -35,7 +34,7 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
     function ChannelMessagingSkeleton(settings) {
         var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
 
-        Util.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings, "Object", "settings");
         if (settings.messageRouter === undefined) {
             throw new Error("messageRouter is undefined");
         }

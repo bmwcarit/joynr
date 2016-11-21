@@ -25,7 +25,7 @@ bool IltUtil::useRestrictedUnsignedRange = true;
 
 // joynr::Logger logger("IltAbstractConsumerTest");
 
-class IltConsumerGetterSetterTest : public IltAbstractConsumerTest
+class IltConsumerGetterSetterTest : public IltAbstractConsumerTest<::testing::Test>
 {
 public:
     IltConsumerGetterSetterTest() = default;

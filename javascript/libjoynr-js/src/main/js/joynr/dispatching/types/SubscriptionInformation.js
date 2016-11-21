@@ -43,9 +43,15 @@ define("joynr/dispatching/types/SubscriptionInformation", [
         this.providerParticipantId = providerParticipantId;
         this.subscriptionId = request.subscriptionId;
         this.subscribedToName = request.subscribedToName;
-        this.filterParameters = request.filterParameters;
         this.qos = request.qos;
-        this.lastPublication = 0;
+        if (subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_MULTICAST) {
+            this.multicastId = request.multicastId;
+        } else {
+            this.lastPublication = 0;
+            if (subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST) {
+                this.filterParameters = request.filterParameters;
+            }
+        }
 
         /**
          * The joynr type name
@@ -58,6 +64,7 @@ define("joynr/dispatching/types/SubscriptionInformation", [
 
     SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE = "subscription_type_attribute";
     SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST = "subscription_type_broadcast";
+    SubscriptionInformation.SUBSCRIPTION_TYPE_MULTICAST = "subscription_type_multicast";
 
     return SubscriptionInformation;
 

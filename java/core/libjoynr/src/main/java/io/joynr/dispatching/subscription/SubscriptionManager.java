@@ -19,17 +19,18 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
+import java.util.Set;
+
+import javax.annotation.CheckForNull;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.SubscriptionReply;
-
-import java.util.Set;
-
-import javax.annotation.CheckForNull;
 
 public interface SubscriptionManager {
 
@@ -40,6 +41,10 @@ public interface SubscriptionManager {
     void registerBroadcastSubscription(String fromParticipantId,
                                        Set<String> toParticipantIds,
                                        BroadcastSubscribeInvocation subscriptionRequest);
+
+    void registerMulticastSubscription(String fromParticipantId,
+                                       Set<String> toParticipantIds,
+                                       MulticastSubscribeInvocation multicastSubscribeInvocation);
 
     void unregisterSubscription(String fromParticipantId,
                                 Set<String> toParticipantIds,
@@ -52,7 +57,9 @@ public interface SubscriptionManager {
 
     Class<?> getAttributeType(String subscriptionId);
 
-    Class<?>[] getBroadcastOutParameterTypes(String subscriptionId);
+    Class<?>[] getUnicastPublicationOutParameterTypes(String subscriptionId);
+
+    Class<?>[] getMulticastPublicationOutParameterTypes(String multicastId);
 
     boolean isBroadcast(String subscriptionId);
 
@@ -62,6 +69,8 @@ public interface SubscriptionManager {
     <T> AttributeSubscriptionListener<T> getSubscriptionListener(String subscriptionId);
 
     void handleBroadcastPublication(String subscriptionId, Object[] broadcastValues);
+
+    void handleMulticastPublication(String multicastId, Object[] publicizedValues);
 
     <T> void handleAttributePublication(String subscriptionId, T attributeValue);
 

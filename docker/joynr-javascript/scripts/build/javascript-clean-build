@@ -31,6 +31,12 @@ done
   mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 )
 
+echo '####################################################'
+echo '# start services'
+echo '####################################################'
+mosquitto -c /etc/mosquitto/mosquitto.conf -v &
+MOSQUITTO_PID=$!
+
 (
   echo "building joynr JavaScript API"
   cd javascript
@@ -40,3 +46,9 @@ done
   -Dskip.unpack-license-info=true \
   -DskipTests=$SKIPTESTS
 )
+
+echo '####################################################'
+echo '# stop services'
+echo '####################################################'
+kill -TERM $MOSQUITTO_PID
+wait $MOSQUITTO_PID

@@ -64,27 +64,6 @@ define([ "joynr/messaging/JoynrMessage"
             done();
         });
 
-        it("has members that cannot be changed after initialization", function(done) {
-            var joynrMessage = new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
-            });
-            var messageHeader;
-
-            // the following setting os fields should have no effect. These are not writable.
-            /*jslint newcap: true, nomen: true */
-            joynrMessage._typeName = "nonsense";
-            expect(joynrMessage._typeName).toEqual("joynr.JoynrMessage");
-            /*jslint newcap: false, nomen: false */
-
-            joynrMessage.type = "nonsense";
-            expect(joynrMessage.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
-
-            messageHeader = joynrMessage.header;
-            joynrMessage.header = "nonsense";
-            expect(joynrMessage.header).toEqual(messageHeader);
-            done();
-        });
-
         it("has a header that can be set", function(done) {
             var payload = "hello";
             var joynrMessage = new JoynrMessage({
@@ -144,17 +123,26 @@ define([ "joynr/messaging/JoynrMessage"
             done();
         });
 
-        it("has a payload that can be set", function(done) {
+        it("has a payload that can be set", function() {
             var payload = "hello";
             var joynrMessage = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
                 payload : payload
             });
             expect(joynrMessage.payload).toEqual(payload);
-            done();
         });
 
-        it("has comfort functions for setting values", function(done) {
+        it("allows to change receivedFromGlobal", function() {
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : "hello"
+            });
+            expect(joynrMessage.isReceivedFromGlobal).toBe(false);
+            joynrMessage.setReceivedFromGlobal(true);
+            expect(joynrMessage.isReceivedFromGlobal).toBe(true);
+        });
+
+        it("has comfort functions for setting values", function() {
             var joynrMessage = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
             });
@@ -164,10 +152,9 @@ define([ "joynr/messaging/JoynrMessage"
             joynrMessage.from = fields.from;
             joynrMessage.expiryDate = fields.expiryDate;
             joynrMessage.replyChannelId = fields.replyChannelId;
-            done();
         });
 
-        it("has members that can be stringified to json", function(done) {
+        it("has members that can be stringified to json", function() {
             var joynrMessage = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
             });
@@ -196,7 +183,6 @@ define([ "joynr/messaging/JoynrMessage"
 
             expect(newJoynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID])
                     .toEqual(fields.to);
-            done();
         });
 
     });

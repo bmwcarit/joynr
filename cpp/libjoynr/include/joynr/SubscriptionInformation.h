@@ -44,10 +44,10 @@ public:
     virtual ~SubscriptionInformation() = default;
     bool operator==(const SubscriptionInformation& subscriptionInformation) const;
 
-    std::string getProxyId() const;
+    const std::string& getProxyId() const;
     void setProxyId(const std::string& id);
 
-    std::string getProviderId() const;
+    const std::string& getProviderId() const;
     void setProviderId(const std::string& id);
 
     template <typename Archive>

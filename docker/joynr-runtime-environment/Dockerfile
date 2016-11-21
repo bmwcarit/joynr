@@ -59,7 +59,7 @@ RUN cd /tmp/libjoynr-js/target/node-classes \
 ###################################################
 COPY files/test-base /tmp/test-base
 
-RUN cd /tmp/test-base/src/main/js/ \
+RUN cd /tmp/test-base/ \
 	&& npm config set http-proxy ${http_proxy} \
 	&& npm config set https-proxy ${https_proxy} \
 	&& npm install -g \

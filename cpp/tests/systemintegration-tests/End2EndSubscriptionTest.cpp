@@ -191,7 +191,7 @@ protected:
         waitForAttributeSubscriptionArrivedAtProvider(testProvider, attributeName);
 
         // Wait for a subscription message to arrive
-        EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+        EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
         delete testProxy;
     }
@@ -229,7 +229,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration) {
     JOYNR_EXPECT_NO_THROW(
         subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
     );
-    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
 
     delete testProxy;
@@ -265,7 +265,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
     JOYNR_EXPECT_NO_THROW(
         subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
     );
-    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
 
     // update subscription
@@ -279,7 +279,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
     JOYNR_EXPECT_NO_THROW(
         subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
     );
-    EXPECT_EQ(true, semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
     // subscription id from update is the same as the original subscription id
     EXPECT_EQ(subscriptionId, subscriptionIdFromFuture);
@@ -317,13 +317,19 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
 INSTANTIATE_TEST_CASE_P(Http,
         End2EndSubscriptionTest,
         testing::Values(
-            std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings","test-resources/HttpSystemIntegrationTest2.settings")
+            std::make_tuple(
+                "test-resources/HttpSystemIntegrationTest1.settings",
+                "test-resources/HttpSystemIntegrationTest2.settings"
+            )
         )
 );
 
 INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
         End2EndSubscriptionTest,
         testing::Values(
-            std::make_tuple("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings","test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings")
+            std::make_tuple(
+                "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings",
+                "test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+            )
         )
 );

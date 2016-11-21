@@ -48,6 +48,9 @@ class InterfaceProviderHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include <string>
+«IF !francaIntf.broadcasts.filter[selective].empty»
+	#include <vector>
+«ENDIF»
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -194,11 +197,20 @@ public:
 		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete
 		 * provider to signal an occured event. It is used to implement broadcast
 		 * publications.
-		 * @param «broadcastName» the new broadcast value
+		 «FOR parameter: getOutputParameters(broadcast)»
+		 * @param «parameter.name» the value for the broadcast output parameter «parameter.name»
+		 «ENDFOR»
+		 «IF !broadcast.selective»
+		 * @param partitions optional list of partitions for this broadcast. Broadcast notifications
+		 * are only sent to subscribers for these partitions.
+		 «ENDIF»
 		 */
 		virtual void fire«broadcastName.toFirstUpper»(
 				«IF !broadcast.outputParameters.empty»
-					«broadcast.commaSeperatedTypedConstOutputParameterList»
+					«broadcast.commaSeperatedTypedConstOutputParameterList»«IF !broadcast.selective»,«ENDIF»
+				«ENDIF»
+				«IF !broadcast.selective»
+					const std::vector<std::string>& partitions = std::vector<std::string>()
 				«ENDIF»
 		) = 0;
 

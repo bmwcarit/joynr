@@ -94,7 +94,8 @@ public class WebSocketTest {
         ccWebSocketMessagingSkeleton = new WebSocketMessagingSkeleton(serverAddress,
                                                                       webSocketJettyServerFactory,
                                                                       messageRouterMock,
-                                                                      objectMapper);
+                                                                      objectMapper,
+                                                                      new WebSocketMessagingSkeleton.MainTransportFlagBearer());
 
         ownAddress = new WebSocketClientAddress(UUID.randomUUID().toString());
         webSocketJettyClientFactory = new WebSocketJettyClientFactory(ownAddress,
@@ -108,7 +109,8 @@ public class WebSocketTest {
         libWebSocketMessagingSkeleton = new WebSocketMessagingSkeleton(serverAddress,
                                                                        webSocketJettyClientFactory,
                                                                        messageRouterMock,
-                                                                       new ObjectMapper());
+                                                                       new ObjectMapper(),
+                                                                       new WebSocketMessagingSkeleton.MainTransportFlagBearer());
         ccWebSocketMessagingSkeleton.init();
         libWebSocketMessagingSkeleton.init();
     }

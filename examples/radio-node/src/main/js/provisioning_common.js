@@ -19,22 +19,43 @@
  * #L%
  */
 
+var CustomLoggingAppender = require("./CustomLoggingAppender.js");
+
 var provisioning = {};
 provisioning.ccAddress = {
     protocol : "ws",
     path : ""
 };
 
-provisioning.persistency = {
-    clearPersistency : true,
-    location : "./radioLocalStorage"
-};
-
 provisioning.logging = {
+    appenderClasses : {
+        "Custom" : CustomLoggingAppender
+    },
     configuration : {
+        appenders : {
+            appender : [
+                {
+                    type : "Custom",
+                    name : "CUSTOM",
+                    PatternLayout : {
+                        pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                    }
+                },
+                {
+                    type : "Console",
+                    name : "STDOUT",
+                    PatternLayout : {
+                        pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                    }
+                }
+            ]
+        },
         loggers : {
             root : {
-                level : "debug"
+                level : "debug",
+                AppenderRef : [{
+                    ref : "CUSTOM"
+                }]
             }
         }
     }

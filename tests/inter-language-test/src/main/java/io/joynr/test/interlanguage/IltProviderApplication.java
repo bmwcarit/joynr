@@ -114,6 +114,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
 
             if (transport.contains("mqtt")) {
                 LOG.info("Configuring MQTT...");
+                joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
             }
             return Modules.override(runtimeModule).with(backendTransportModules);

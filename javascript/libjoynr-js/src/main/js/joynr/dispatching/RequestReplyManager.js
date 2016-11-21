@@ -86,7 +86,7 @@ define(
                  */
                 function deleteReplyCaller(requestReplyId) {
                     var replyCaller = replyCallers[requestReplyId];
-                    if (replyCaller && replyCaller.replyCallMissedTimer) {
+                    if (replyCaller && replyCaller.replyCallMissedTimer !== undefined) {
                         LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
                     }
                     delete replyCallers[requestReplyId];
@@ -260,9 +260,6 @@ define(
                                 return;
                             }
 
-                            // augment the type information
-                            //var typedArgs = Typing.augmentTypes(request.params, typeRegistry);
-
                             // if there's an operation available to call
                             var result;
                             if (provider[request.methodName]
@@ -432,7 +429,7 @@ define(
                  */
                 this.handleReply =
                         function handleReply(reply) {
-                            var replyCaller = replyCallers[reply.requestReplyId];
+                    var replyCaller = replyCallers[reply.requestReplyId];
 
                             if (replyCaller === undefined) {
                                 log
@@ -454,7 +451,7 @@ define(
                                 } else {
                                     replyCaller.resolve(reply.response);
                                 }
-                                if (replyCaller.replyCallMissedTimer) {
+                                if (replyCaller.replyCallMissedTimer !== undefined) {
                                     LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
                                 }
                                 delete replyCallers[reply.requestReplyId];

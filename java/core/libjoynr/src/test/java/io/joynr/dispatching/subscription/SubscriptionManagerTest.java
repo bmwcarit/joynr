@@ -20,7 +20,10 @@ package io.joynr.dispatching.subscription;
  */
 
 import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -28,46 +31,53 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
+import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
+import joynr.MulticastPublication;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionManagerTest {
@@ -86,9 +96,11 @@ public class SubscriptionManagerTest {
 
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory = spy(new ConcurrentHashMap<String, AttributeSubscriptionListener<?>>());
     private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory = spy(new ConcurrentHashMap<String, BroadcastSubscriptionListener>());
+    private ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory = spy(new ConcurrentHashMap<Pattern, Set<String>>());
     private ConcurrentMap<String, PubSubState> subscriptionStates = spy(new ConcurrentHashMap<String, PubSubState>());
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers = spy(new ConcurrentHashMap<String, MissedPublicationTimer>());
-    private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes = spy(Maps.<String, Class<?>[]> newConcurrentMap());
+    private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes = spy(Maps.<String, Class<?>[]> newConcurrentMap());
+    private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes = spy(Maps.<Pattern, Class<?>[]> newConcurrentMap());
     private ConcurrentMap<String, Future<String>> subscriptionFutureMap = spy(Maps.<String, Future<String>> newConcurrentMap());
 
     @Mock
@@ -110,18 +122,24 @@ public class SubscriptionManagerTest {
     @Mock
     private Dispatcher dispatcher;
 
+    @Mock
+    private MulticastWildcardRegexFactory multicastWildcardRegexFactory;
+
     @Before
     public void setUp() {
         subscriptionManager = new SubscriptionManagerImpl(attributeSubscriptionDirectory,
                                                           broadcastSubscriptionDirectory,
+                                                          multicastSubscribersDirectory,
                                                           subscriptionStates,
                                                           missedPublicationTimers,
                                                           subscriptionEndFutures,
                                                           subscriptionAttributeTypes,
-                                                          subscriptionBroadcastTypes,
+                                                          unicastBroadcastTypes,
+                                                          multicastBroadcastTypes,
                                                           subscriptionFutureMap,
                                                           cleanupScheduler,
-                                                          dispatcher);
+                                                          dispatcher,
+                                                          multicastWildcardRegexFactory);
         subscriptionId = "testSubscription";
 
         attributeName = "testAttribute";
@@ -191,8 +209,7 @@ public class SubscriptionManagerTest {
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
                                                    (Set<String>) argThat(contains(toParticipantId)),
                                                    any(SubscriptionRequest.class),
-                                                   any(MessagingQos.class),
-                                                   eq(false));
+                                                   any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -214,7 +231,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
         verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
-                                          Mockito.eq(qos.getExpiryDateMs()),
+                                          Mockito.eq(onChangeQos.getExpiryDateMs()),
                                           Mockito.eq(TimeUnit.MILLISECONDS));
         verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
                                                              Mockito.any(ScheduledFuture.class));
@@ -222,8 +239,7 @@ public class SubscriptionManagerTest {
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
                                                    (Set<String>) argThat(contains(toParticipantId)),
                                                    any(SubscriptionRequest.class),
-                                                   any(MessagingQos.class),
-                                                   eq(true));
+                                                   any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -253,8 +269,63 @@ public class SubscriptionManagerTest {
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
                                                    (Set<String>) argThat(contains(toParticipantId)),
                                                    any(SubscriptionRequest.class),
-                                                   any(MessagingQos.class),
-                                                   eq(false));
+                                                   any(MessagingQos.class));
+    }
+
+    private static interface TestMulticastSubscriptionInterface {
+        @JoynrMulticast(name = "myMulticast")
+        void subscribeToMyMulticast();
+    }
+
+    @Test
+    public void testRegisterMulticastSubscription() throws Exception {
+        testRegisterMulticastSubscription(null);
+    }
+
+    @Test
+    public void testRegisterMulticastSubscriptionWithExistingSubscriptionId() throws Exception {
+        testRegisterMulticastSubscription(subscriptionId);
+    }
+
+    @Test
+    public void testRegisterMulticastSubscriptionWithPartitions() throws Exception {
+        testRegisterMulticastSubscription(null, "one", "two", "three");
+    }
+
+    private void testRegisterMulticastSubscription(String subscriptionId, String ... partitions) throws Exception {
+        Method method = TestMulticastSubscriptionInterface.class.getMethod("subscribeToMyMulticast", new Class[0]);
+        BroadcastSubscriptionListener listener = spy(new BroadcastSubscriptionListener() {
+            @Override
+            public void onError(SubscriptionException error) {
+            }
+            @Override
+            public void onSubscribed(String subscriptionId) {
+            }
+            public void onReceive() {
+            }
+        });
+        SubscriptionQos subscriptionQos = mock(OnChangeSubscriptionQos.class);
+        Object[] args;
+        if (subscriptionId == null) {
+            args = new Object[] {listener, subscriptionQos, partitions };
+        } else {
+            args = new Object[] { subscriptionId, listener, subscriptionQos, partitions };
+        }
+        String multicastId = MulticastIdUtil.createMulticastId(toParticipantId, "myMulticast", partitions);
+        Set<String> subscriptionIdSet = new HashSet<>();
+        Pattern multicastIdPattern = Pattern.compile(multicastId);
+        multicastSubscribersDirectory.put(multicastIdPattern, subscriptionIdSet);
+        when(multicastWildcardRegexFactory.createIdPattern(multicastId)).thenReturn(multicastIdPattern);
+
+        MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method, args, future);
+
+        subscriptionManager.registerMulticastSubscription(fromParticipantId, Sets.newHashSet(toParticipantId), invocation);
+
+        verify(multicastSubscribersDirectory).put(any(Pattern.class), anySet());
+        assertEquals(1, subscriptionIdSet.size());
+        if (subscriptionId != null) {
+            assertEquals(subscriptionId, subscriptionIdSet.iterator().next());
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -262,9 +333,9 @@ public class SubscriptionManagerTest {
     public void unregisterSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                         JsonGenerationException, JsonMappingException, IOException {
 
-        Mockito.when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
-        Mockito.when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
-        Mockito.when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
+        when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
+        when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
+        when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
         subscriptionManager.unregisterSubscription(fromParticipantId,
                                                    Sets.newHashSet(toParticipantId),
                                                    subscriptionId,
@@ -353,6 +424,47 @@ public class SubscriptionManagerTest {
         subscriptionManager.handleSubscriptionReply(subscriptionReply);
         verify(futureMock).onSuccess(eq(subscriptionId));
         verify(broadcastListener).onSubscribed(eq(subscriptionId));
+    }
+
+    private interface TestBroadcastListener extends BroadcastSubscriptionListener {
+        void onReceive(String value);
+    }
+
+    @Test
+    public void testHandleMulticastSubscriptionWithWildcardSubscribers() {
+        MulticastPublication multicastPublication = new MulticastPublication(Arrays.asList("one"), "one/two/three");
+
+        Pattern subscriberOnePattern = Pattern.compile("one/[^/]+/three");
+        String subscriberOneId = "one";
+        multicastSubscribersDirectory.putIfAbsent(subscriberOnePattern, Sets.newHashSet(subscriberOneId));
+
+        Pattern subscriberTwoPattern = Pattern.compile("one/two/three");
+        String subscriberTwoId = "two";
+        multicastSubscribersDirectory.putIfAbsent(subscriberTwoPattern, Sets.newHashSet(subscriberTwoId));
+
+        Pattern subscriberThreePattern = Pattern.compile("four/five/six");
+        String subscriberThreeId = "three";
+        multicastSubscribersDirectory.putIfAbsent(subscriberThreePattern, Sets.newHashSet(subscriberThreeId));
+
+        Class[] types = new Class[]{ String.class };
+        unicastBroadcastTypes.putIfAbsent(subscriberOneId, types);
+        unicastBroadcastTypes.putIfAbsent(subscriberTwoId, types);
+        unicastBroadcastTypes.putIfAbsent(subscriberThreeId, types);
+
+        TestBroadcastListener listenerOne = mock(TestBroadcastListener.class);
+        broadcastSubscriptionDirectory.putIfAbsent(subscriberOneId, listenerOne);
+
+        TestBroadcastListener listenerTwo = mock(TestBroadcastListener.class);
+        broadcastSubscriptionDirectory.putIfAbsent(subscriberTwoId, listenerTwo);
+
+        TestBroadcastListener listenerThree = mock(TestBroadcastListener.class);
+        broadcastSubscriptionDirectory.putIfAbsent(subscriberThreeId, listenerThree);
+
+        subscriptionManager.handleMulticastPublication("one/two/three", new Object[]{ "value" });
+
+        verify(listenerOne).onReceive(anyString());
+        verify(listenerTwo).onReceive(anyString());
+        verify(listenerThree, never()).onReceive(anyString());
     }
 
 }

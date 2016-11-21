@@ -19,10 +19,11 @@
 
 define("joynr/exceptions/MethodInvocationException", [
     "joynr/types/TypeRegistrySingleton",
+    "joynr/util/Typing",
     "joynr/util/UtilInternal",
     "joynr/exceptions/JoynrRuntimeException",
     "joynr/system/LoggerFactory"
-], function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
+], function(TypeRegistrySingleton, Typing, Util, JoynrRuntimeException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -39,6 +40,8 @@ define("joynr/exceptions/MethodInvocationException", [
      *
      * @param {Object}
      *            [settings] the settings object for the constructor call
+     * @param {Version} [settings.providerVersion] the version of the provider
+     *            which could not handle the method invocation
      * @param {String}
      *            [settings.detailMessage] message containing details
      *            about the error
@@ -68,8 +71,8 @@ define("joynr/exceptions/MethodInvocationException", [
          * @type String
          */
         if (settings) {
-            Util.checkProperty(settings, "Object", "settings");
-            Util.checkPropertyIfDefined(
+            Typing.checkProperty(settings, "Object", "settings");
+            Typing.checkPropertyIfDefined(
                     settings.providerVersion,
                     "Version",
                     "settings.providerVersion");

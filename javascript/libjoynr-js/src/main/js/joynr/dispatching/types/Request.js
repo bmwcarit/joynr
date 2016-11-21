@@ -18,16 +18,20 @@
  */
 
 define("joynr/dispatching/types/Request", [
-    "joynr/dispatching/types/OneWayRequest",
     "joynr/util/UtilInternal",
     "joynr/util/Typing",
     "uuid"
-], function(OneWayRequest, Util, Typing, uuid) {
+], function(Util, Typing, uuid) {
 
     var defaultSettings = {
         paramDatatypes : [],
         params : []
     };
+
+    var rrBase = uuid();
+    var rrIndex = 0;
+
+    Util.enrichObjectWithSetPrototypeOf();
 
     /**
      * @name Request
@@ -49,38 +53,17 @@ define("joynr/dispatching/types/Request", [
      *            settings.params.array
      */
     function Request(settings) {
-        if (!(this instanceof Request)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new Request(settings);
-        }
         var i;
-        var oneWayRequest = new OneWayRequest(settings);
-        settings.requestReplyId = settings.requestReplyId || uuid();
+        settings.requestReplyId = settings.requestReplyId || (rrBase + "_" + rrIndex++);
 
-        Util.checkProperty(settings, [
-            "joynr.Request",
-            "Object"
-        ], "settings");
-        Util.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
-
-        /**
-         * @name Request#requestReplyId
-         * @type String
-         */
-        /**
-         * @name Request#methodName
-         * @type String
-         */
-        /**
-         * @name Request#paramDatatypes
-         * @type Array
-         */
-        /**
-         * @name Request#params
-         * @type Array
-         */
-        Util.extend(this, defaultSettings, settings, oneWayRequest);
+        if (settings.params) {
+            for (i = 0; i < settings.params.length; i++) {
+                settings.params[i] = Util.ensureTypedValues(settings.params[i]);
+            }
+        }
+        if (!settings.paramDatatypes) {
+            settings.paramDatatypes = [];
+        }
 
         /**
          * The joynr type name
@@ -88,9 +71,12 @@ define("joynr/dispatching/types/Request", [
          * @name Request#_typeName
          * @type String
          */
-        Typing.augmentTypeName(this, "joynr");
+        /*jslint nomen: true*/
+        settings._typeName = "joynr.Request";
+        /*jslint nomen: false */
+        Object.setPrototypeOf(settings, Request.prototype);
 
-        return Object.freeze(this);
+        return settings;
     }
 
     return Request;

@@ -536,6 +536,8 @@ private:
     class OwnerAccessControlEntryChangedBroadcastListener;
     std::shared_ptr<OwnerAccessControlEntryChangedBroadcastListener>
             ownerAccessControlEntryChangedBroadcastListener;
+
+    static std::string sanitizeForPartition(const std::string& value);
 };
 } // namespace joynr
 #endif // LOCALDOMAINACCESSCONTROLLER_H

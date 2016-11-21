@@ -51,9 +51,8 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://sit-jee-app:8080");
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.systemintegrationtest.jee");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://mqttbroker:1883");
-        joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
-                                    "http://joynrbackend:8080/discovery/channels/discoverydirectory_channelid/");
-        joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://joynrbackend:8080/bounceproxy/");
+        joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://mqttbroker:1883");
+        joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://mqttbroker:1883");
 
         for (Map.Entry<String, String> envEntry : System.getenv().entrySet()) {
             if (envEntry.getKey().toLowerCase().startsWith("joynr") && envEntry.getValue() != null) {

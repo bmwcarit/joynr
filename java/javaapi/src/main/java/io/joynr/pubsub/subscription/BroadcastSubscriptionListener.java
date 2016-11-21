@@ -21,24 +21,16 @@ package io.joynr.pubsub.subscription;
 
 import io.joynr.exceptions.SubscriptionException;
 
-public interface BroadcastSubscriptionListener {
-    /**
-     * Gets called when the subscription is successfully registered at the provider
-     *
-     * Since the onSubscribed callback is called by a communication middleware thread, it should
-     * not be blocked, wait for user interaction, or do larger computation.
-     *
-     * @param subscriptionId the subscription id of the subscription as string
-     */
-    void onSubscribed(String subscriptionId);
+public interface BroadcastSubscriptionListener extends SubscriptionListener {
 
     /**
-     * Gets called if the subscription registration failed at the provider
+     * Gets called if the subscription registration failed at the provider.
      *
      * Since the onError callback is called by a communication middleware thread, it should not
      * be blocked, wait for user interaction, or do larger computation.
      *
-     * @param error SubscriptionException describing the error
+     * @param error JoynrRuntimeException describing the error
      */
     void onError(SubscriptionException error);
+
 }

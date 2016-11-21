@@ -56,7 +56,8 @@ define([
 
         it("communicates with the websocket server", function(done) {
             var radioProxy;
-            IntegrationUtils.buildProxy(RadioProxy).then(function(newRadioProxy) {
+            var domain = "WebSocketTest-"+Date.now();
+            IntegrationUtils.buildProxy(RadioProxy, domain).then(function(newRadioProxy) {
                 radioProxy = newRadioProxy;
                 return radioProxy.isOn.set({
                     value : true

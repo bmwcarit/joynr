@@ -41,27 +41,6 @@ define([
 
         });
 
-        it("throws on missing params", function() {
-            // throws on missing subscriptionId
-            expect(function() {
-                var temp = new SubscriptionPublication({
-                    response : "response"
-                });
-            }).toThrow();
-
-            // throws on missing response
-            expect(function() {
-                var temp = new SubscriptionPublication({
-                    subscriptionId : "id"
-                });
-            }).toThrow();
-
-            // throws on wrong settings object type
-            expect(function() {
-                var temp = new SubscriptionPublication("wrong type");
-            }).toThrow();
-        });
-
         it("is constructs with correct member values", function() {
             var subscriptionId = "testSubscriptionId";
             var response = "response";

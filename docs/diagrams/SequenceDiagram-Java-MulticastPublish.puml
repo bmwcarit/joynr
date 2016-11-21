@@ -1,0 +1,30 @@
+@startuml
+
+box "Application" #F1F1F1
+  participant App
+  participant libjoynr
+end box
+
+box "Cluster Controller" #F1F1F1
+  participant MessageRouter
+  participant MqttMessagingSkeleton	
+end box
+
+box "Backend" #F1F1F1
+  participant MqttBroker
+end box
+
+box "Backend App" #F1F1F1
+  participant MqttMessagingStub
+  participant jeeLibjoynr
+  participant JeeApp
+end box
+
+JeeApp -> jeeLibjoynr: emit{broadcastName}Event(event)
+jeeLibjoynr -> MqttMessagingStub: transmit(message, to: multicastId)
+MqttMessagingStub -> MqttBroker: publish(topicName: multicastIdToTopic(), payload: message)
+MqttBroker -> MqttMessagingSkeleton:  send message via MQTT
+MqttMessagingSkeleton -> MessageRouter:  route(message, multicastId)
+MessageRouter -> libjoynr: transmit(message)
+libjoynr -> App: onReceive(event)
+@enduml

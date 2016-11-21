@@ -20,6 +20,7 @@ package io.joynr.discovery.jee;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -103,8 +104,26 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         entityManager.clear();
         GlobalDiscoveryEntry result = subject.lookup("participantId");
         assertNotNull(result);
-        assertTrue(result instanceof GlobalDiscoveryEntryPersisted);
-        assertEquals(TOPIC_NAME, ((GlobalDiscoveryEntryPersisted) result).getClusterControllerId());
+        assertTrue(result instanceof GlobalDiscoveryEntry);
+        assertFalse(result instanceof GlobalDiscoveryEntryPersisted);
+        GlobalDiscoveryEntry persisted = (GlobalDiscoveryEntry) result;
+        assertEquals(testGlobalDiscoveryEntry.getInterfaceName(), persisted.getInterfaceName());
+        assertEquals(testGlobalDiscoveryEntry.getDomain(), persisted.getDomain());
+    }
+
+    @Test
+    public void testAddAndLookupMultiDomain() throws Exception {
+        subject.add(testGlobalDiscoveryEntry);
+        entityManager.flush();
+        entityManager.clear();
+        GlobalDiscoveryEntry[] result = subject.lookup(new String[]{ testGlobalDiscoveryEntry.getDomain() },
+                                                       testGlobalDiscoveryEntry.getInterfaceName());
+        assertNotNull(result);
+        assertEquals(1, result.length);
+        assertTrue(result[0] instanceof GlobalDiscoveryEntry);
+        assertFalse(result[0] instanceof GlobalDiscoveryEntryPersisted);
+        assertEquals(testGlobalDiscoveryEntry.getDomain(), ((GlobalDiscoveryEntry) result[0]).getDomain());
+        assertEquals(testGlobalDiscoveryEntry.getInterfaceName(), ((GlobalDiscoveryEntry) result[0]).getInterfaceName());
     }
 
     @Test
@@ -130,6 +149,17 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class, testGlobalDiscoveryEntry.getParticipantId());
         assertNotNull(persisted);
         assertTrue(initialLastSeen < persisted.getLastSeenDateMs());
+    }
+
+    @Test
+    public void testAddTwice() throws Exception {
+        subject.add(testGlobalDiscoveryEntry);
+        subject.add(testGlobalDiscoveryEntry);
+
+        GlobalDiscoveryEntry[] persisted = subject.lookup(new String[]{ testGlobalDiscoveryEntry.getDomain() },
+                                                          testGlobalDiscoveryEntry.getInterfaceName());
+        assertNotNull(persisted);
+        assertEquals(1, persisted.length);
     }
 
 }

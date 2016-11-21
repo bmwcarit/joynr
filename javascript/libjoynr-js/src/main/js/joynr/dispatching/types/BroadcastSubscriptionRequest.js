@@ -39,14 +39,14 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
      *            [settings.subscriptionQos] the subscriptionQos
      */
     function BroadcastSubscriptionRequest(settings) {
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-        Util.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
-        Util.checkPropertyIfDefined(settings.qos, [
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+        Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
+        Typing.checkPropertyIfDefined(settings.qos, [
             "Object",
             "OnChangeSubscriptionQos"
         ], "settings.qos");
-        Util.checkPropertyIfDefined(settings.filterParameters, [
+        Typing.checkPropertyIfDefined(settings.filterParameters, [
             "Object",
             "BroadcastFilterParameters"
         ], "settings.filterParameters");
@@ -55,19 +55,24 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
          * @name BroadcastSubscriptionRequest#subscriptionId
          * @type String
          */
-        /**
-         * @name BroadcastSubscriptionRequest#qos
-         * @type Object|OnChangeSubscriptionQos
-         */
+        this.subscriptionId = settings.subscriptionId;
         /**
          * @name BroadcastSubscriptionRequest#subscribedToName
          * @type String
          */
+        this.subscribedToName = settings.subscribedToName;
+        /**
+         * @name BroadcastSubscriptionRequest#qos
+         * @type Object|OnChangeSubscriptionQos
+         */
+        this.qos = settings.qos || defaultSettings.qos;
         /**
          * @name BroadcastSubscriptionRequest#filterParameters
          * @type Object|BroadcastFilterParameters
          */
-        Util.extend(this, defaultSettings, settings);
+        if (settings.filterParameters !== undefined) {
+            this.filterParameters = settings.filterParameters;
+        }
         /**
          * The joynr type name
          *
@@ -76,9 +81,30 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
          */
         Typing.augmentTypeName(this, "joynr");
 
+        Object.defineProperty(this, "_typeName", {
+            value : "joynr.BroadcastSubscriptionRequest",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
+
         return Object.freeze(this);
     }
 
+    /**
+     * The joynr type name
+     *
+     * @name Request#_typeName
+     * @type String
+     */
+    Object.defineProperty(BroadcastSubscriptionRequest, "_typeName", {
+        value : "joynr.BroadcastSubscriptionRequest",
+        readable : true,
+        writable : false,
+        enumerable : true,
+        configurable : false
+    });
     return BroadcastSubscriptionRequest;
 
 });

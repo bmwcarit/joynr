@@ -38,6 +38,8 @@ define(
             "joynr/messaging/webmessaging/WebMessagingSkeleton",
             "joynr/messaging/browser/BrowserMessagingStubFactory",
             "joynr/messaging/browser/BrowserMessagingSkeleton",
+            "joynr/messaging/browser/BrowserMulticastAddressCalculator",
+            "joynr/messaging/MessagingSkeletonFactory",
             "joynr/messaging/MessagingStubFactory",
             "joynr/messaging/routing/MessageRouter",
             "joynr/messaging/routing/MessageQueue",
@@ -85,6 +87,8 @@ define(
                 WebMessagingSkeleton,
                 BrowserMessagingStubFactory,
                 BrowserMessagingSkeleton,
+                BrowserMulticastAddressCalculator,
+                MessagingSkeletonFactory,
                 MessagingStubFactory,
                 MessageRouter,
                 MessageQueue,
@@ -139,6 +143,7 @@ define(
                 var initialRoutingTable;
                 var untypedCapabilities;
                 var typedCapabilities;
+                var messagingSkeletonFactory;
                 var messagingStubFactory;
                 var messageRouter;
                 var libjoynrMessagingSkeleton;
@@ -358,22 +363,31 @@ define(
                                 webMessagingSkeleton : webMessagingSkeleton
                             });
 
-                            messagingStubFactory = new MessagingStubFactory({
-                                messagingStubFactories : {
-                                    InProcessAddress : new InProcessMessagingStubFactory(),
-                                    BrowserAddress : new BrowserMessagingStubFactory({
-                                        webMessagingStub : webMessagingStub
-                                    })
-                                }
+                            messagingSkeletonFactory = new MessagingSkeletonFactory();
+
+                            var messagingStubFactories = {};
+                            /*jslint nomen: true */
+                            messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
+                            messagingStubFactories[BrowserAddress._typeName] = new BrowserMessagingStubFactory({
+                                webMessagingStub : webMessagingStub
                             });
+                            /*jslint nomen: false */
+                            messagingStubFactory = new MessagingStubFactory({
+                                messagingStubFactories :messagingStubFactories
+                            });
+
                             messageRouter = new MessageRouter({
                                 initialRoutingTable : initialRoutingTable,
                                 persistency : persistency,
                                 typeRegistry : typeRegistry,
                                 joynrInstanceId : provisioning.windowId,
+                                messagingSkeletonFactory : messagingSkeletonFactory,
                                 messagingStubFactory : messagingStubFactory,
                                 messageQueue : new MessageQueue(messageQueueSettings),
                                 parentMessageRouterAddress : ccAddress,
+                                multicastAddressCalculator : new BrowserMulticastAddressCalculator({
+                                    globalAddress : ccAddress
+                                }),
                                 incomingAddress : libjoynrInterTabAddress
                             });
                             browserMessagingSkeleton.registerListener(messageRouter.route);
@@ -390,6 +404,11 @@ define(
                             libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                             libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
+                            messagingSkeletonFactory.setSkeletons({
+                                InProcessAddress : libjoynrMessagingSkeleton,
+                                BrowserAddress : browserMessagingSkeleton
+                            });
+
                             requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                             subscriptionManager = new SubscriptionManager(dispatcher);
                             publicationManager =
@@ -401,6 +420,7 @@ define(
                             dispatcher.registerRequestReplyManager(requestReplyManager);
                             dispatcher.registerSubscriptionManager(subscriptionManager);
                             dispatcher.registerPublicationManager(publicationManager);
+                            dispatcher.registerMessageRouter(messageRouter);
 
                             participantIdStorage = new ParticipantIdStorage(persistency, uuid);
                             discovery = new InProcessStub();
@@ -564,6 +584,10 @@ define(
 
                             if (typeRegistry !== undefined) {
                                 typeRegistry.shutdown();
+                            }
+
+                            if (loggingManager !== undefined) {
+                                loggingManager.shutdown();
                             }
 
                             return Promise.all([]/* TODO: insert promises here */).then(function() {

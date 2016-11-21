@@ -33,18 +33,10 @@ This project has following dependencies:
       │  └─ xmlhttprequest (1.8.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ xmlhttprequest/package.json
       ├─ bluebird (3.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ bluebird/package.json
       │  └─ bluebird (3.3.5) [Dev] ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ bluebird/package.json
-      ├─ log4js (0.6.29) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr ~ log4js/package.json
-      │  ├─ async (0.2.10) ── MIT (https://github.com/caolan/async/raw/master/LICENSE) ── node_modules/joynr ~ log4js ~ async/package.json
-      │  ├─ readable-stream (1.0.34) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream/package.json
-      │  │  ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream ~ core-util-is/package.json
-      │  │  ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ log4js ~ readable-stream ~ inherits/package.json
-      │  │  ├─ isarray (0.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream ~ isarray/package.json
-      │  │  └─ string_decoder (0.10.31) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ readable-stream ~ string_decoder/package.json
-      │  ├─ semver (4.3.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ log4js ~ semver/package.json
-      │  └─ underscore (1.8.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ log4js ~ underscore/package.json
+      ├─ log4javascript (1.4.15) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr ~ log4javascript/license.txt
       ├─ node-localstorage (1.3.0) ── MIT (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ node-localstorage/package.json
       │  └─ write-file-atomic (1.2.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic/package.json
-      │     ├─ graceful-fs (4.1.9) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ graceful-fs/package.json
+      │     ├─ graceful-fs (4.1.10) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ graceful-fs/package.json
       │     ├─ imurmurhash (0.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ imurmurhash/package.json
       │     └─ slide (1.1.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ node-localstorage ~ write-file-atomic ~ slide/package.json
       ├─ promise (7.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ promise/package.json

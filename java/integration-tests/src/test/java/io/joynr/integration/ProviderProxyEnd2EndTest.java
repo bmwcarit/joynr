@@ -19,9 +19,14 @@ package io.joynr.integration;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.AtmosphereMessagingModule;
@@ -34,10 +39,7 @@ import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import org.junit.Ignore;
 
 public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
@@ -86,4 +88,10 @@ public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
         dummyApplications.clear();
     }
 
+    // Remove once we have support multicast for http / long polling
+    @Ignore
+    @Override
+    public void testSimpleBroadcast() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
+        // Noop
+    }
 }

@@ -22,24 +22,26 @@ package test.io.joynr.jeeintegration.messaging;
  * #L%
  */
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import io.joynr.common.ExpiryDate;
 import io.joynr.jeeintegration.messaging.JeeMessageRouter;
+import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Unit tests for the {@link io.joynr.jeeintegration.messaging.JeeMessageRouter}.
@@ -47,16 +49,37 @@ import joynr.system.RoutingTypes.Address;
 @RunWith(MockitoJUnitRunner.class)
 public class JeeMessageRouterTest {
 
+    @Mock
+    private ScheduledExecutorService scheduler;
+
+    @Mock
+    private MessagingStubFactory messagingStubFactory;
+
+    @Mock
+    private MessagingSkeletonFactory messagingSkeletonFactory;
+
+    @Mock
+    private RoutingTable routingTable;
+
+    @Mock
+    private AddressManager addressManager;
+
+    @Mock
+    private MulticastReceiverRegistry multicastReceiverRegistry;
+
     @Test
     public void testScheduleMessage() {
         Address address = new Address();
         JoynrMessage message = new JoynrMessage();
         message.setTo("to");
-        ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
-        MessagingStubFactory messagingStubFactory = mock(MessagingStubFactory.class);
-        RoutingTable routingTable = mock(RoutingTable.class);
         when(routingTable.get("to")).thenReturn(address);
-        JeeMessageRouter subject = new JeeMessageRouter(routingTable, scheduler, 1000L, messagingStubFactory);
+        JeeMessageRouter subject = new JeeMessageRouter(routingTable,
+                                                        scheduler,
+                                                        1000L,
+                                                        messagingStubFactory,
+                                                        messagingSkeletonFactory,
+                                                        addressManager,
+                                                        multicastReceiverRegistry);
 
         message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000L));
         subject.route(message);
@@ -66,10 +89,13 @@ public class JeeMessageRouterTest {
 
     @Test
     public void testShutdown() throws InterruptedException {
-        ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
-        MessagingStubFactory messagingStubFactory = mock(MessagingStubFactory.class);
-        RoutingTable routingTable = mock(RoutingTable.class);
-        JeeMessageRouter subject = new JeeMessageRouter(routingTable, scheduler, 1000L, messagingStubFactory);
+        JeeMessageRouter subject = new JeeMessageRouter(routingTable,
+                                                        scheduler,
+                                                        1000L,
+                                                        messagingStubFactory,
+                                                        messagingSkeletonFactory,
+                                                        addressManager,
+                                                        multicastReceiverRegistry);
 
         subject.shutdown();
 

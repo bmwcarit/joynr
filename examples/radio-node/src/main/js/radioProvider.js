@@ -32,6 +32,16 @@ var runInteractiveConsole = function(radioProvider, onDone) {
             description : "help",
             options : {}
         },
+        MULTICAST : {
+            value : "w",
+            description : "multicast weak signal",
+            options : {}
+        },
+        MULTICASTP : {
+            value : "p",
+            description : "multicast weak signal with country of current station as partition",
+            options : {}
+        },
         QUIT : {
             value : "q",
             description : "quit",
@@ -54,8 +64,14 @@ var runInteractiveConsole = function(radioProvider, onDone) {
             case MODES.QUIT.value:
                 rl.close();
                 break;
+            case MODES.MULTICAST.value:
+                radioProvider.fireWeakSignal();
+                break;
+            case MODES.MULTICASTP.value:
+                radioProvider.fireWeakSignalWithPartition();
+                break;
             case MODES.SHUFFLE.value:
-                radioProvider.shuffleStations.callOperation([], []);
+                radioProvider.shuffleStations({});
                 break;
             case '':
                 break;
@@ -92,8 +108,14 @@ log("domain: " + domain);
 
 var provisioning = require("./provisioning_common.js");
 
+provisioning.persistency = {
+    //clearPersistency : true,
+    location : "./radioLocalStorageProvider"
+};
+
 if (process.env.runtime !== undefined) {
     if (process.env.runtime === "inprocess") {
+        provisioning.brokerUri = process.env.brokerUri;
         provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl;
         provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
         joynr.selectRuntime("inprocess");
@@ -117,14 +139,15 @@ joynr.load(provisioning).then(function(loadedJoynr) {
         supportsOnChangeSubscriptions : true
     });
 
+    var radioProviderImpl = new MyRadioProvider();
     var radioProvider = joynr.providerBuilder.build(
         RadioProvider,
-        MyRadioProvider.implementation);
-    MyRadioProvider.setProvider(radioProvider);
+        radioProviderImpl);
+    radioProviderImpl.setProvider(radioProvider);
 
     joynr.registration.registerProvider(domain, radioProvider, providerQos).then(function() {
         log("provider registered successfully");
-        runInteractiveConsole(radioProvider, function() {
+        runInteractiveConsole(radioProviderImpl, function() {
             return joynr.registration.unregisterProvider(domain, radioProvider)
             .finally(function() {
                 joynr.shutdown();

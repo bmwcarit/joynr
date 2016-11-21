@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <string>
 
 #include <boost/asio/io_service.hpp>
 #include <websocketpp/config/asio.hpp>

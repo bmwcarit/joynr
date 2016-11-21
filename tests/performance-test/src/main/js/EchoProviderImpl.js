@@ -30,19 +30,10 @@ var log = testbase.logging.log;
 
 exports.implementation = {
     echoString : function(opArgs) {
-        prettyLog("EchoProvider.echoString(" + JSON.stringify(opArgs) + ") called");
-        return new Promise(function(resolve, reject) {
-            if (opArgs.data === undefined) {
-                reject(new joynr.exceptions.ProviderRuntimeException(
-                        {detailMessage: "echoString: invalid argument data"}));
-            } else {
-                resolve({responseData: opArgs.data});
-            }
-        });
+        return {responseData: opArgs.data};
     },
 
     echoByteArray : function(opArgs) {
-        prettyLog("EchoProvider.echoByteArray(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
             if (opArgs.data === undefined) {
                 reject(new joynr.exceptions.ProviderRuntimeException(
@@ -54,7 +45,6 @@ exports.implementation = {
     },
 
     echoComplexStruct : function(opArgs) {
-        prettyLog("EchoProvider.echoComplexStruct(" + JSON.stringify(opArgs) + ") called");
         return new Promise(function(resolve, reject) {
             if (opArgs.data === undefined) {
                 reject(new joynr.exceptions.ProviderRuntimeException(

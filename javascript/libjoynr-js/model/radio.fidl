@@ -169,6 +169,15 @@ interface Radio {
 		}
 	}
 
+	method triggerBroadcastsWithPartitions {
+		in {
+			String broadcastName
+			UInt32 times
+			String[] partitions
+			Boolean hierarchicBroadcast //if set to true, for each partition level a broadcast is fired
+		}
+	}
+
 	broadcast broadcastWithEnum {
 		out {
 			Country enumOutput

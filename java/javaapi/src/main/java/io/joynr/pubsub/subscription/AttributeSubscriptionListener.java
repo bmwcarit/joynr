@@ -21,16 +21,7 @@ package io.joynr.pubsub.subscription;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 
-public interface AttributeSubscriptionListener<T> {
-    /**
-     * Gets called when the subscription is successfully registered at the provider
-     *
-     * Since the onSubscribed callback is called by a communication middleware thread, it should
-     * not be blocked, wait for user interaction, or do larger computation.
-     *
-     * @param subscriptionId the subscription id of the subscription as string
-     */
-    void onSubscribed(String subscriptionId);
+public interface AttributeSubscriptionListener<T> extends SubscriptionListener {
 
     /**
      * Gets called on every received publication
@@ -43,7 +34,7 @@ public interface AttributeSubscriptionListener<T> {
     void onReceive(T value);
 
     /**
-     * Gets called on every error that is detected on the subscription
+     * Gets called on every error that is detected on the subscription.
      *
      * Since the onError callback is called by a communication middleware thread, it should not
      * be blocked, wait for user interaction, or do larger computation.
@@ -51,4 +42,5 @@ public interface AttributeSubscriptionListener<T> {
      * @param error JoynrRuntimeException describing the error
      */
     void onError(JoynrRuntimeException error);
+
 }

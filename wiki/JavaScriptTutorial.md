@@ -180,6 +180,7 @@ var inProcessProvisioning = {
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional
     persistency: persistencyValue, //optional
+    brokerUrl: <url of the mqtt broker>, // e.g. tcp://127.0.0.1:9001
     bounceProxyBaseUrl: <base url to the bounce proxy>, // e.g. http://127.0.0.1:8080
     bounceProxyUrl: <url to bounce proxy>, // e.g. http://127.0.0.1:8080/bounceproxy/
     channelId: <channelId to be used>, // optional
@@ -199,6 +200,7 @@ var interTabClusterControllerProvisioning = {
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional
     persistency: persistencyValue, //optional
+    brokerUrl: <url of the mqtt broker>, // e.g. tcp://127.0.0.1:9001
     bounceProxyBaseUrl: <base url to the bounce proxy>, // e.g. http://127.0.0.1:8080
     bounceProxyUrl: <url to bounce proxy>, // e.g. http://127.0.0.1:8080/bounceproxy/
     channelId: <channelId to be used>, // optional

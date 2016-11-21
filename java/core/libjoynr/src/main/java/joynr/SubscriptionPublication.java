@@ -1,13 +1,9 @@
 package joynr;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-
-import java.util.List;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,26 +19,26 @@ import java.util.List;
  * #L%
  */
 
-public class SubscriptionPublication implements JoynrMessageType {
+import java.util.List;
+
+import io.joynr.exceptions.JoynrRuntimeException;
+
+public class SubscriptionPublication extends AbstractPublication {
 
     private static final long serialVersionUID = 1L;
 
     private String subscriptionId;
-    private List<? extends Object> response;
-    private JoynrRuntimeException error;
 
     public SubscriptionPublication() {
     }
 
     public SubscriptionPublication(List<? extends Object> response, String subscriptionId) {
-        this.response = response;
-        this.error = null;
+        super(response);
         this.subscriptionId = subscriptionId;
     }
 
     public SubscriptionPublication(JoynrRuntimeException error, String subscriptionId) {
-        this.error = error;
-        this.response = null;
+        super(error);
         this.subscriptionId = subscriptionId;
     }
 
@@ -54,64 +50,33 @@ public class SubscriptionPublication implements JoynrMessageType {
         this.subscriptionId = subscriptionId;
     }
 
-    public Object getResponse() {
-        return response;
-    }
-
-    public JoynrRuntimeException getError() {
-        return error;
-    }
-
     @Override
     public String toString() {
         return "SubscriptionPublication [" + "subscriptionId=" + subscriptionId + ", "
-                + (response != null ? "response=" + response + ", " : "") + (error != null ? "error=" + error : "")
-                + "]";
+                + (getResponse() != null ? "response=" + getResponse() + ", " : "")
+                + (getError() != null ? "error=" + getError() : "") + "]";
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o)
             return true;
-        }
-        if (obj == null) {
+        if (o == null || getClass() != o.getClass())
             return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if (!super.equals(o))
             return false;
-        }
-        SubscriptionPublication other = (SubscriptionPublication) obj;
-        if (error == null) {
-            if (other.error != null) {
-                return false;
-            }
-        } else if (!error.equals(other.error)) {
-            return false;
-        }
-        if (response == null) {
-            if (other.response != null) {
-                return false;
-            }
-        } else if (!response.equals(other.response)) {
-            return false;
-        }
-        if (subscriptionId == null) {
-            if (other.subscriptionId != null) {
-                return false;
-            }
-        } else if (!subscriptionId.equals(other.subscriptionId)) {
-            return false;
-        }
-        return true;
+
+        SubscriptionPublication that = (SubscriptionPublication) o;
+
+        return subscriptionId.equals(that.subscriptionId);
+
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
-        result = prime * result + ((error == null) ? 0 : error.hashCode());
-        result = prime * result + ((response == null) ? 0 : response.hashCode());
-        result = prime * result + ((subscriptionId == null) ? 0 : subscriptionId.hashCode());
+        int result = super.hashCode();
+        result = prime * result + subscriptionId.hashCode();
         return result;
     }
 }

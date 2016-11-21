@@ -133,6 +133,22 @@ void JoynrMessageSender::sendBroadcastSubscriptionRequest(
     }
 }
 
+void JoynrMessageSender::sendMulticastSubscriptionRequest(
+        const std::string& senderParticipantId,
+        const std::string& receiverParticipantId,
+        const MessagingQos& qos,
+        const MulticastSubscriptionRequest& subscriptionRequest)
+{
+    try {
+        JoynrMessage message = messageFactory.createMulticastSubscriptionRequest(
+                senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (const std::invalid_argument& exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
+}
+
 void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticipantId,
                                                const std::string& receiverParticipantId,
                                                const MessagingQos& qos,
@@ -190,6 +206,25 @@ void JoynrMessageSender::sendSubscriptionPublication(
                 subscriptionPublication.getSubscriptionId(),
                 receiverParticipantId,
                 e.getMessage());
+    }
+}
+
+void JoynrMessageSender::sendMulticast(const std::string& fromParticipantId,
+                                       const MulticastPublication& multicastPublication,
+                                       const MessagingQos& messagingQos)
+{
+    try {
+        JoynrMessage message = messageFactory.createMulticastPublication(
+                fromParticipantId, messagingQos, multicastPublication);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (const std::invalid_argument& exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "MulticastPublication with multicastId {} could not be sent. Error: {}",
+                        multicastPublication.getMulticastId(),
+                        e.getMessage());
     }
 }
 

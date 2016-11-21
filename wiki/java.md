@@ -189,40 +189,57 @@ public static void main(String[] args) throws IOException {
 
 The class ```DiscoveryQos``` configures how the search for a provider will be handled. It has the following members:
 
-* **discoveryTimeoutMs**  Timeout for discovery process (milliseconds), afterwards triggers DiscoveryException
-* **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds), only younger entries will be considered. If no suitable providers are found, then depending on the discoveryScope, a remote global lookup may be triggered.
-* **arbitrationStrategy** The arbitration strategy (see below)
-* **customParameters** special parameters, that must match, e.g. keyword (see below)
+* **discoveryTimeoutMs**  Timeout for discovery process (milliseconds)  if no compatible
+  provider was found within the given time. A timeout triggers a DiscoveryException or
+  NoCompatibleProviderFoundException containing the versions of the discovered incompatible
+  providers.
 * **retryIntervalMs** The time to wait between discovery retries after encountering a discovery error.
-* **discoveryScope** default: LOCAL_AND_GLOBAL (details see below)
+* **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds), only younger
+  entries will be considered. If no suitable providers are found, then depending on the
+  discoveryScope, a remote global lookup may be triggered.
+* **arbitrationStrategy** The arbitration strategy (details see below)
+* **discoveryScope** The discovery scope (details see below)
+* **providerMustSupportOnChange** If set to true, select only providers which support onChange
+  subscriptions (set by the provider in its providerQos settings)
+* **customParameters** special parameters, that must match, e.g. keyword (see below)
 
-The **discoveryScope** defines, whether a suitable provider will be searched only in the local capabilities directory or also in the global one.
+The enumeration **discoveryScope** defines options to decide whether a suitable provider will be
+searched in the local capabilities directory or in the global one.
 
 Available values are as follows:
 
 * **LOCAL_ONLY** Only entries from local capability directory will be searched
-* **LOCAL_THEN_GLOBAL** Entries will be taken from local capabilities directory, unless no such entries exist, in which case global entries will be looked at as well.
-* **LOCAL_AND_GLOBAL** Entries will be taken from local capabilities directory and from global capabilities directory.
+* **LOCAL_THEN_GLOBAL** Entries will be taken from local capabilities directory, unless no such
+  entries exist, in which case global entries will be looked at as well.
+* **LOCAL_AND_GLOBAL** Entries will be taken from local capabilities directory and from global
+  capabilities directory.
 * **GLOBAL_ONLY** Only the global entries will be looked at.
 
-Whenever global entries are involved, they are first searched in the local cache. In case no global entries are found in the cache, a remote lookup is triggered.
+**Default discovery scope:** ```LOCAL_AND_GLOBAL```
 
-The enumeration ```ArbitrationStrategy``` defines special options to select a Provider:
+Whenever global entries are involved, they are first searched in the local cache. In case no global
+entries are found in the cache, a remote lookup is triggered.
+
+The enumeration ```ArbitrationStrategy``` defines how the results of the scoped lookup will be
+sorted and / or filtered to select a Provider:
+
 * **LastSeen** The participant that was last refreshed (i.e. with the most current last seen date)
-will be selected
+  will be selected
 * **NotSet** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
 * **HighestPriority** Entries will be considered according to priority
 * **Keyword** Only entries that have a matching keyword will be considered
 * **FixedChannel** select provider which matches the participantId provided as custom parameter in
-   DiscoveryQos, if existing
+   DiscoveryQos (see below), if existing
 * **Custom** Allows you to provide a `ArbitrationStrategyFunction` to allow custom
-selection of discovered entries
+  selection of discovered entries
 
-**Default arbitration strategy:** LastSeen
+**Default arbitration strategy:** ```LastSeen```
 
-The priority is set by the provider through the call ```providerQos.setPriority()```.
+The priority used by the arbitration strategy *HighestPriority* is set by the provider through the
+call ```providerQos.setPriority()```.
 
-Class ```ArbitrationConstants``` provides keys for the key-value pair for the custom Parameters of discoveryScope:
+Class ```ArbitrationConstants``` provides keys for the key-value pair for the custom Parameters of
+discoveryScope:
 
 * **PRIORITY_PARAMETER** (apparently not implemented as of now)
 * **KEYWORD_PARAMETER**
@@ -245,18 +262,27 @@ Example for the creation of a DiscoveryQos class object:
 DiscoveryQos discoveryQos = new DiscoveryQos();
 
 discoveryQos.setDiscoveryTimeoutMs(10000); // optional, default 30000
-discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE); // optional, default 0
-discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority); // default HP
-discoveryQos.addCustomParameter(key, value); // optional, default none
-discoveryQos.setProviderMustSupportOnChange(true); // optional, default false
 discoveryQos.setRetryIntervalMs(1000); // optional, default 1000
-discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_AND_GLOBAL); // optional, default as stated
+discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE); // optional, default 0
+// optional, default as stated above
+discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
+// optional, default as stated above
+discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_AND_GLOBAL);
+discoveryQos.setProviderMustSupportOnChange(true); // optional, default false
+discoveryQos.addCustomParameter(key, value); // optional, default none
 ```
 
 ## The message quality of service
 
-The ```MesssagingQos``` class defines the roundtrip timeout for RPC requests in milliseconds
-and allows definition of additional custom message headers.
+The ```MesssagingQos``` class defines the **roundtrip timeout in milliseconds** for **RPC requests**
+(getter/setter/method calls) and unsubscribe requests and it allows definition of additional custom
+message headers.
+
+The ttl for subscription requests is calculated from the ```expiryDateMs```
+in the [SubscriptionQos](#quality-of-service-settings-for-subscriptions) settings.
+For internal joynr messages, the value of PROPERTY_MESSAGING_MAXIMUM_TTL_MS is used.
+*GlobalDomainAccessControllerClient and GlobalCapabilitiesDirectoryClient use TTL_30_DAYS_IN_MS
+(30 days)*
 
 If no specific setting is given, the default roundtrip timeout is 60 seconds.
 The keys of custom message headers may contain ascii alphanumeric or hyphen.
@@ -288,13 +314,15 @@ Inside the ```run()``` method, the consumer application instance must create one
 * **subscribe** or **unsubscribe** to its **attributes** or **update** a subscription
 * **subscribe** or **unsubscribe** to its **broadcasts** or **update** a subscription
 
-In case no suitable provider can be found during discovery, a ```DiscoveryException``` is thrown.
+In case no suitable provider can be found during discovery, a ```DiscoveryException``` or
+```NoCompatibleProviderFoundException``` is thrown.
 In case of communication errors, a ```JoynrCommunicationException``` is thrown.
 
 ```java
 @Override
 public void run() {
     DiscoveryQos discoveryQos = new DiscoveryQos();
+    MessagingQos messagingQos = new MessagingQos();
     // the qos can be fine tuned here by calling setters
 
     ProxyBuilder<<Interface>Proxy> proxyBuilder =
@@ -302,8 +330,8 @@ public void run() {
     try {
         // Also can call proxyBuilder.build(callback)
         <interface>Proxy = proxyBuilder.
-            setMessagingQos(new MessagingQos()).
-            setDiscoveryQos(discoveryQos).
+            setMessagingQos(messagingQos). // optional
+            setDiscoveryQos(discoveryQos). // optional
             build();
         // call methods, subscribe to broadcasts etc.
         // enter some event loop
@@ -321,7 +349,7 @@ It is also possible to obtain a proxy for targeting multiple providers. You can 
 this by specifying a set of domains, by providing a custom `ArbitrationStrategyFunction`
 (see The discovery quality of service above) or a combination of the two.
 When you create such a multi-proxy, a call to a method on that proxy will result in 'n'
-calls to the providers, where 'n' is the number of providers targeted.  
+calls to the providers, where 'n' is the number of providers targeted.
 It is only possible to send calls to multiple providers if the methods are fire-and-forget.
 Attempts to make calls to non-fire-and-forget methods from a multi-proxy will result in an
 exception being thrown.
@@ -432,6 +460,8 @@ public void run() {
         <ReturnType> result = future.get(timeOutInMilliseconds);
     } catch (InterruptedException|JoynrRuntimeException e) {
         // handle error
+    } catch (ApplicationException e) {
+        // optional special error handling in case model contains error enumeration
     }
     ...
 }
@@ -493,6 +523,8 @@ public void run() {
         //   result.<returnParameterN>
     } catch (InterruptedException|JoynrRuntimeException e) {
         // handle error
+    } catch (ApplicationException e) {
+        // optional special error handling in case model contains error enumeration
     }
     ...
 }
@@ -523,22 +555,30 @@ public void onFailure(<Method>ErrorEnum errorEnum) {
 The abstract class ```SubscriptionQos``` has the following members:
 
 * **expiryDateMs** Absolute time until notifications will be send (milliseconds)
-* **publicationTtlMs** Lifespan of a notification (milliseconds), it will be deleted afterwards
+* **publicationTtlMs** Lifespan of a notification (milliseconds), the notification will be deleted
+  afterwards
+  Known Issue: subscriptionQos passed when subscribing to a non-selective broadcast are ignored.
+  The API will be changed in the future: proxy subscribe calls will no longer take a
+  subscriptionQos; instead the publication TTL will be settable on the provider side.
 
 ### PeriodicSubscriptionQos
 
-The class ```PeriodicSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following additional members:
+The class ```PeriodicSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following
+additional members:
 
 * **periodMs** defines how long to wait before sending an update even if the value did not change
-* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
+* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification
+  will be raised (milliseconds)
 
 This class can be used for subscriptions to attributes.
 
-Note that updates will be send only based on the specified interval and not based on changes of the attribute.
+Note that updates will be send only based on the specified interval and not based on changes of the
+attribute.
 
 ### OnChangeSubscriptionQos
 
-The class ```OnChangeSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following additional members:
+The class ```OnChangeSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following
+additional members:
 
 * **minIntervalMs** Minimum time to wait between successive notifications (milliseconds)
 
@@ -547,14 +587,19 @@ to attributes if no periodic update is required.
 
 ### OnchangeWithKeepAliveSubscriptionQos
 
-The class ```OnChangeWithKeepAliveSubscriptionQos``` inherits from ```OnChangeSubscriptionQos``` and has the following additional members:
+The class ```OnChangeWithKeepAliveSubscriptionQos``` inherits from ```OnChangeSubscriptionQos```
+and has the following additional members:
 
 * **maxIntervalMs** Maximum time to wait between notifications, if value has not changed
-* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
+* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification
+  will be raised (milliseconds)
 
-This class can be used for subscriptions to attributes. Updates will then be sent based both periodically and after a change (i.e. this acts like a combination of ```PeriodicSubscriptionQos``` and ```OnChangeSubscriptionQos```).
+This class can be used for subscriptions to attributes. Updates will then be sent based both
+periodically and after a change (i.e. this acts like a combination of ```PeriodicSubscriptionQos```
+and ```OnChangeSubscriptionQos```).
 
-Using it for subscriptions to broadcasts is theoretically possible because of inheritance but makes no sense (in this case the additional members will be ignored).
+Using it for subscriptions to broadcasts is theoretically possible because of inheritance but makes
+no sense (in this case the additional members will be ignored).
 
 ## Subscribing to an attribute
 
@@ -641,6 +686,7 @@ The subscribeTo method can also be used to update an existing subscription, when
 ```java
     try {
         subscriptionIdFuture = <interface>Proxy.subscribeTo<Attribute>(
+            subscriptionId,
             new AttributeSubscriptionAdapter<AttributeType>() {
                 // Gets called on every received publication
                 @Override
@@ -664,8 +710,7 @@ The subscribeTo method can also be used to update an existing subscription, when
                     //   arrive in time
                 }
             },
-            qos,
-            subscriptionId
+            qos
         );
     } catch (JoynrRuntimeException e) {
         // handle error
@@ -694,10 +739,22 @@ public void run() {
 }
 ```
 
-## Subscribing to a broadcast unconditionally
+## Subscribing to a (non-selective) broadcast
 
-Broadcast subscription informs the application in case a broadcast is fired from provider side and
-returns the output values via callback.
+A broadcast subscription informs the application in case a broadcast is fired by a provider.
+The output value is returned to the consumer via a callback function.
+
+A broadcast is selective only if it is declared with the selective keyword in Franca, otherwise it
+is non-selective.
+
+Non-selective broadcast subscriptions can be passed optional **partitions**. A partition is a
+hierarchical list of strings similar to a URL path. Subscribing to a partition will cause only those
+broadcasts to be sent to the consumer that match the partition. Note that the partition is set when
+subscribing on the consumer side, and must match the partition set on the provider side when the
+broadcast is performed.
+
+Example: a consumer could set a partition of "europe", "germany", "munich" to receive broadcasts for
+Munich only. The matching provider would use the same partition when sending the broadcast.
 
 The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
 by the subscribeTo call. It can be used later to update the subscription or to unsubscribe from it.
@@ -728,6 +785,8 @@ public void run() {
         int minIntervalMs;
         long expiryDateMs;
         int publicationTtlMs;
+        String partitionLevel1;
+        String partitionLevel2;
         ...
         // provide values for minIntervalMs, expiryDateMs, publicationTtlMs here
         ...
@@ -755,7 +814,10 @@ public void run() {
                     // handle error
                 }
             },
-            qos
+            qos,
+            partitionLevel1, // optional partitions
+            ...
+            partitionLevelN // optional partitions
         );
         ...
     } catch (DiscoveryException e) {
@@ -776,12 +838,14 @@ public void run() {
 }
 ```
 
-## Updating an unconditional broadcast subscription
+## Updating a (non-selective) broadcast subscription
 
-The subscribeTo method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
+The subscribeTo method can also be used to update an existing subscription, when the
+**subscriptionId** is passed as additional parameter as follows:
 
 ```java
 subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+    subscriptionId,
     new <Broadcast>BroadcastAdapter() {
         // Gets called on every received publication
         @Override
@@ -803,7 +867,9 @@ subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
         }
     },
     qos,
-    subscriptionId
+    partitionLevel1, // optional partitions
+    ...
+    partitionLevelN // optional partitions
 );
 ```
 
@@ -815,10 +881,10 @@ broadcast output values are passed to the consumer via callback.
 
 The **subscriptionId** can be retrieved via the callback (onSubscribed) and via the future returned
 by the subscribeTo call (see section
-[Subscribing to a broadcast unconditionally](#subscribing-to-a-broadcast-unconditionally)).
+[Subscribing to a (non-selective) broadcast](#subscribing-to-a-%28non-selective%29-broadcast)).
 
 To receive the subscription, a **callback** has to be provided (cf. section
-[Subscribing to a broadcast unconditionally](#subscribing-to-a-broadcast-unconditionally)).
+[Subscribing to a (non-selective) broadcast](#subscribing-to-a-%28non-selective%29-broadcast)).
 
 In addition to the normal broadcast subscription, the filter parameters for this broadcast must be
 created and initialized as additional parameters to the ```subscribeTo``` method. These filter
@@ -891,10 +957,11 @@ public void run() {
 ## Updating a broadcast subscription with filter parameters
 
 The subscribeTo method can also be used to update an existing subscription, when the
-**subscriptionId** is given as additional parameter as follows:
+**subscriptionId** is passed as additional parameter as follows:
 
 ```java
-        subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+        subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
+            subscriptionId,
             new <Broadcast>BroadcastAdapter() {
                 // Gets called on every received publication
                 @Override
@@ -916,8 +983,7 @@ The subscribeTo method can also be used to update an existing subscription, when
                 }
             },
             qos,
-            filter,
-            subscriptionId
+            filter
         );
 ```
 
@@ -1065,6 +1131,29 @@ public static void main(String[] args) {
 }
 ```
 
+### The Provider quality of service
+
+The ```ProviderQos``` has the following members:
+
+* **customParameters** e.g. the key-value for the arbitration strategy Keyword during discovery
+* **priority** the priority used for arbitration strategy HighestPriority during discovery
+* **scope** the Provider scope (see below), used in discovery
+* **supportsOnChangeSubscriptions** whether the provider supports subscriptions on changes
+
+The **ProviderScope** can be
+* **LOCAL** The provider will be registered in the local capability directory
+* **GLOBAL** The provider will be registered in the local and global capability directory
+
+Example:
+
+```java
+ProviderQos providerQos = new ProviderQos();
+providerQos.setCustomParameters(customParameters);
+providerQos.setPriority(100);
+providerQos.setScope(ProviderScope.GLOBAL);
+providerQos.setSupportsOnChangeSubscriptions(true);
+```
+
 ### The run method
 The run method registers the interface specific provider class instance. From that
 time on, the provider will be reachable from outside and react on incoming requests (e.g. method
@@ -1080,7 +1169,7 @@ public void run() {
     <interface>provider.addBroadcastFilter(new <Filter>BroadcastFilter());
     ProviderQos providerQos = new ProviderQos();
     // use setters on providerQos as required
-    // set the priority, used for (default) arbitration by highest priority
+    // set the priority, used for arbitration by highest priority
     long priorityValue;
     // set priorityValue
     providerQos.setPriority(priorityValue);
@@ -1156,31 +1245,6 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.<Package>.<Interface>AbstractProvider;
-```
-
-### The Provider quality of service
-
-The ```ProviderQos``` has the following members:
-
-* **customParameters** e.g. the key-value for the arbitration strategy Keyword during discovery
-* **providerVersion** the version of the provider
-* **priority** the priority used for arbitration strategy HighestPriority during discovery
-* **scope** the Provider scope (see below), used in discovery
-* **supportsOnChangeSubscriptions** whether the provider supports subscriptions on changes
-
-The **ProviderScope** can be
-* **LOCAL** The provider will be registered in the local capability directory
-* **GLOBAL** The provider will be registered in the local and global capability directory
-
-Example:
-
-```java
-ProviderQos providerQos = new ProviderQos();
-providerQos.setCustomParameters(customParameters);
-providerQos.setProviderVersion(1);
-providerQos.setPriority(100);
-providerQos.setScope(ProviderScope.GLOBAL);
-providerQos.setSupportsOnChangeSubscriptions(true);
 ```
 
 ### The base class
@@ -1335,7 +1399,8 @@ public Promise<<Method>Deferred>> <method>(... parameters ...) {
 ```
 
 ### Firing a broadcast
-Firing a broadcast blocks the current thread until the message is serialized.
+A broadcast can be emitted using the following method. Note that firing a broadcast blocks the
+current thread until the message is serialized.
 
 ```java
 // for any Franca type named "<Type>" used
@@ -1352,6 +1417,19 @@ public void fire<Broadcast>Event {
     fire<Broadcast>(outputValue1, ... , outputValueN);
 }
 ```
+
+Optionally a **partition** can be set when firing a (non-selective) broadcast:
+
+```java
+fire<Broadcast>(outputValue1,
+                outputValue2,
+                partitionLevel1,
+                ...
+                partitionLevelN);
+```
+// Note: wildcards are only allowed on consumer side
+The [partition syntax is explained in the multicast concept](../docs/multicast.md#partitions)
+
 ## Selective (filtered) broadcasts
 In contrast to unfiltered broadcasts, to realize selective (filtered) broadcasts, the filter logic
 has to be implemented and registered by the provider. If multiple filters are registered on the same

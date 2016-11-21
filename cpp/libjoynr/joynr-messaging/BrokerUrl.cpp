@@ -121,4 +121,9 @@ Url BrokerUrl::getTimeCheckUrl() const
     return timeCheckUrl;
 }
 
+std::string BrokerUrl::toString() const
+{
+    return brokerBaseUrl;
+}
+
 } // namespace joynr

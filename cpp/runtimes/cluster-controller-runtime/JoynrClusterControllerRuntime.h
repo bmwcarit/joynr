@@ -60,6 +60,7 @@ class WebSocketCcMessagingSkeleton;
 class InProcessMessagingSkeleton;
 class HttpMessagingSkeleton;
 class MqttMessagingSkeleton;
+class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class Settings;
 class JoynrMessageSender;
@@ -143,7 +144,7 @@ protected:
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
-    std::unique_ptr<WebSocketCcMessagingSkeleton> wsCcMessagingSkeleton;
+    std::shared_ptr<WebSocketCcMessagingSkeleton> wsCcMessagingSkeleton;
     bool httpMessagingIsRunning;
     bool mqttMessagingIsRunning;
     bool doMqttMessaging;
@@ -154,6 +155,7 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
     MqttSettings mqttSettings;
+    std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
 
     friend class ::JoynrClusterControllerRuntimeTest;
 };

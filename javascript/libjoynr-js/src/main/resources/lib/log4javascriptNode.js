@@ -22,11 +22,11 @@
  *
  * @returns log4javascript wrapper for node.js
  */
-define([ "log4js"
-], function(log4js) {
-    log4js.Appender = function() {};
-    log4js.NullLayout = function() {};
-    log4js.Level = log4js.levels;
-
-    return log4js;
+define([], function() {
+    var oldWindow = global.window;
+    /* WORKAROUND: log4javascript node module v. 1.4.15 still expects a window object to be present */
+    global.window = {};
+    var result = require("log4javascript");
+    global.window = oldWindow;
+    return result;
 });

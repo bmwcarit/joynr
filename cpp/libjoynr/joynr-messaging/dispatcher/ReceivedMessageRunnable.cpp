@@ -21,6 +21,7 @@
 #include <cassert>
 
 #include "joynr/Dispatcher.h"
+#include "common/CallContextStorage.h"
 
 namespace joynr
 {
@@ -56,6 +57,11 @@ void ReceivedMessageRunnable::run()
         return;
     }
 
+    CallContext callContext;
+    callContext.setPrincipal(message.getHeaderCreatorUserId());
+
+    CallContextStorage::set(callContext);
+
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
         dispatcher.handleRequestReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY) {
@@ -67,8 +73,13 @@ void ReceivedMessageRunnable::run()
     } else if (message.getType() ==
                JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         dispatcher.handleBroadcastSubscriptionRequestReceived(message);
+    } else if (message.getType() ==
+               JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
+        dispatcher.handleMulticastSubscriptionRequestReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
         dispatcher.handleSubscriptionReplyReceived(message);
+    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+        dispatcher.handleMulticastReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
         dispatcher.handlePublicationReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {
@@ -77,6 +88,8 @@ void ReceivedMessageRunnable::run()
         JOYNR_LOG_FATAL(logger, "unknown message type: {}", message.getType());
         assert(false);
     }
+
+    CallContextStorage::invalidate();
 }
 
 } // namespace joynr

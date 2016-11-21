@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.java.messaging</groupId>
 		<artifactId>bounceproxy</artifactId>
-		<version>0.21.3</version>
+		<version>0.22.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 

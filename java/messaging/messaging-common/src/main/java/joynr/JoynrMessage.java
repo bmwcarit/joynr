@@ -50,14 +50,17 @@ public class JoynrMessage implements JoynrType {
     public static final String MESSAGE_TYPE_SUBSCRIPTION_REPLY = "subscriptionReply";
     public static final String MESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
     public static final String MESSAGE_TYPE_PUBLICATION = "subscriptionPublication";
+    public static final String MESSAGE_TYPE_MULTICAST = "multicast";
 
     public static final String MESSAGE_CUSTOM_HEADER_PREFIX = "custom-";
     public static final String CONTENT_TYPE_TEXT_PLAIN = "text/plain";
     public static final String CONTENT_TYPE_APPLICATION_JSON = "application/json";
+    public static final String MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST = "multicastSubscriptionRequest";
 
     private String type;
     private Map<String, String> header;
     private String payload;
+    private transient Boolean receivedFromGlobal;
 
     public JoynrMessage() {
         this(null, new HashMap<String, String>(), null);
@@ -134,6 +137,15 @@ public class JoynrMessage implements JoynrType {
 
     public void setPayload(String payload) {
         this.payload = payload;
+    }
+
+    @JsonIgnore
+    public boolean isReceivedFromGlobal() {
+        return Boolean.TRUE.equals(receivedFromGlobal);
+    }
+
+    public void setReceivedFromGlobal(boolean receivedFromGlobal) {
+        this.receivedFromGlobal = receivedFromGlobal;
     }
 
     @Override

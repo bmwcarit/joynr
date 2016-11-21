@@ -25,28 +25,36 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
+import io.joynr.proxy.invocation.SubscriptionInvocation;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.BroadcastSubscriptionRequest;
+import joynr.MulticastSubscriptionRequest;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
@@ -58,9 +66,11 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> subscriptionListenerDirectory;
     private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionListenerDirectory;
+    private ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory;
     private ConcurrentMap<String, Future<String>> subscriptionFutureMap;
     private ConcurrentMap<String, Class<?>> subscriptionTypes;
-    private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes;
+    private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes;
+    private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes;
     private ConcurrentMap<String, PubSubState> subscriptionStates;
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
     private ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures; // These futures will be needed if a
@@ -71,44 +81,55 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     private ScheduledExecutorService cleanupScheduler;
     private Dispatcher dispatcher;
 
+    private final MulticastWildcardRegexFactory multicastWildcardRegexFactory;
+
     @Inject
     public SubscriptionManagerImpl(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
-                                   Dispatcher dispatcher) {
-        super();
+                                   Dispatcher dispatcher,
+                                   MulticastWildcardRegexFactory multicastWildcardRegexFactory) {
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
         this.subscriptionListenerDirectory = Maps.newConcurrentMap();
         this.broadcastSubscriptionListenerDirectory = Maps.newConcurrentMap();
+        this.multicastSubscribersDirectory = Maps.newConcurrentMap();
         this.subscriptionStates = Maps.newConcurrentMap();
         this.missedPublicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
         this.subscriptionTypes = Maps.newConcurrentMap();
-        this.subscriptionBroadcastTypes = Maps.newConcurrentMap();
+        this.unicastBroadcastTypes = Maps.newConcurrentMap();
+        this.multicastBroadcastTypes = Maps.newConcurrentMap();
         this.subscriptionFutureMap = Maps.newConcurrentMap();
+        this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
     }
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public SubscriptionManagerImpl(ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory,
                                    ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory,
+                                   ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory,
                                    ConcurrentMap<String, PubSubState> subscriptionStates,
                                    ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
                                    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
                                    ConcurrentMap<String, Class<?>> subscriptionAttributeTypes,
-                                   ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes,
+                                   ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes,
+                                   ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes,
                                    ConcurrentMap<String, Future<String>> subscriptionFutureMap,
                                    ScheduledExecutorService cleanupScheduler,
-                                   Dispatcher dispatcher) {
+                                   Dispatcher dispatcher,
+                                   MulticastWildcardRegexFactory multicastWildcardRegexFactory) {
         super();
         this.subscriptionListenerDirectory = attributeSubscriptionDirectory;
         this.broadcastSubscriptionListenerDirectory = broadcastSubscriptionDirectory;
+        this.multicastSubscribersDirectory = multicastSubscribersDirectory;
         this.subscriptionStates = subscriptionStates;
         this.missedPublicationTimers = missedPublicationTimers;
         this.subscriptionEndFutures = subscriptionEndFutures;
         this.subscriptionTypes = subscriptionAttributeTypes;
-        this.subscriptionBroadcastTypes = subscriptionBroadcastTypes;
+        this.unicastBroadcastTypes = unicastBroadcastTypes;
+        this.multicastBroadcastTypes = multicastBroadcastTypes;
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
         this.subscriptionFutureMap = subscriptionFutureMap;
+        this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
     }
 
     private void cancelExistingSubscriptionEndRunnable(String subscriptionId) {
@@ -144,79 +165,132 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     @Override
     public void registerAttributeSubscription(String fromParticipantId,
                                               Set<String> toParticipantIds,
-                                              AttributeSubscribeInvocation request) {
-        if (!request.hasSubscriptionId()) {
-            request.setSubscriptionId(UUID.randomUUID().toString());
-        }
-        SubscriptionQos qos = request.getQos();
-        registerSubscription(qos, request.getSubscriptionId());
-        logger.info("Attribute subscription registered with Id: " + request.getSubscriptionId());
-        subscriptionTypes.put(request.getSubscriptionId(), request.getAttributeTypeReference());
-        subscriptionListenerDirectory.put(request.getSubscriptionId(), request.getAttributeSubscriptionListener());
-        subscriptionFutureMap.put(request.getSubscriptionId(), request.getFuture());
+                                              final AttributeSubscribeInvocation request) {
+        registerSubscription(fromParticipantId,
+                             toParticipantIds,
+                             request,
+                             new RegisterDataAndCreateSubscriptionRequest() {
+                                 @Override
+                                 public SubscriptionRequest execute() {
+                                     SubscriptionQos qos = request.getQos();
+                                     logger.debug("Attribute subscription registered with Id: "
+                                             + request.getSubscriptionId());
+                                     subscriptionTypes.put(request.getSubscriptionId(),
+                                                           request.getAttributeTypeReference());
+                                     subscriptionListenerDirectory.put(request.getSubscriptionId(),
+                                                                       request.getAttributeSubscriptionListener());
+                                     subscriptionFutureMap.put(request.getSubscriptionId(), request.getFuture());
 
-        if (qos instanceof HeartbeatSubscriptionInformation) {
-            HeartbeatSubscriptionInformation heartbeat = (HeartbeatSubscriptionInformation) qos;
+                                     if (qos instanceof HeartbeatSubscriptionInformation) {
+                                         HeartbeatSubscriptionInformation heartbeat = (HeartbeatSubscriptionInformation) qos;
 
-            // alerts only if alert after interval > 0
-            if (heartbeat.getAlertAfterIntervalMs() > 0) {
+                                         // alerts only if alert after interval > 0
+                                         if (heartbeat.getAlertAfterIntervalMs() > 0) {
 
-                logger.info("Will notify if updates are missed.");
+                                             logger.info("Will notify if updates are missed.");
 
-                missedPublicationTimers.put(request.getSubscriptionId(),
-                                            new MissedPublicationTimer(qos.getExpiryDateMs(),
-                                                                       heartbeat.getPeriodMs(),
-                                                                       heartbeat.getAlertAfterIntervalMs(),
-                                                                       request.getAttributeSubscriptionListener(),
-                                                                       subscriptionStates.get(request.getSubscriptionId()),
-                                                                       request.getSubscriptionId()));
-            }
-        }
+                                             missedPublicationTimers.put(request.getSubscriptionId(),
+                                                                         new MissedPublicationTimer(qos.getExpiryDateMs(),
+                                                                                                    heartbeat.getPeriodMs(),
+                                                                                                    heartbeat.getAlertAfterIntervalMs(),
+                                                                                                    request.getAttributeSubscriptionListener(),
+                                                                                                    subscriptionStates.get(request.getSubscriptionId()),
+                                                                                                    request.getSubscriptionId()));
+                                         }
+                                     }
 
-        SubscriptionRequest requestObject = new SubscriptionRequest(request.getSubscriptionId(),
+                                     return new SubscriptionRequest(request.getSubscriptionId(),
                                                                     request.getAttributeName(),
                                                                     request.getQos());
-
-        MessagingQos messagingQos = new MessagingQos();
-        if (qos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
-            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
-        } else {
-            messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
-        }
-
-        // TODO pass the future to the messageSender and set the error state when exceptions are thrown
-        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, requestObject, messagingQos, false);
+                                 }
+                             });
 
     }
 
     @Override
     public void registerBroadcastSubscription(String fromParticipantId,
                                               Set<String> toParticipantIds,
-                                              BroadcastSubscribeInvocation request) {
-        if (!request.hasSubscriptionId()) {
-            request.setSubscriptionId(UUID.randomUUID().toString());
-        }
-        String subscriptionId = request.getSubscriptionId();
-        subscriptionFutureMap.put(subscriptionId, request.getFuture());
-
-        registerSubscription(request.getQos(), subscriptionId);
-        logger.info("Attribute subscription registered with Id: " + subscriptionId);
-        subscriptionBroadcastTypes.put(subscriptionId, request.getOutParameterTypes());
-        broadcastSubscriptionListenerDirectory.put(subscriptionId, request.getBroadcastSubscriptionListener());
-
-        SubscriptionRequest requestObject = new BroadcastSubscriptionRequest(request.getSubscriptionId(),
+                                              final BroadcastSubscribeInvocation request) {
+        registerSubscription(fromParticipantId,
+                             toParticipantIds,
+                             request,
+                             new RegisterDataAndCreateSubscriptionRequest() {
+                                 @Override
+                                 public SubscriptionRequest execute() {
+                                     String subscriptionId = request.getSubscriptionId();
+                                     logger.debug("Broadcast subscription registered with Id: " + subscriptionId);
+                                     unicastBroadcastTypes.put(subscriptionId, request.getOutParameterTypes());
+                                     broadcastSubscriptionListenerDirectory.put(subscriptionId,
+                                                                                request.getBroadcastSubscriptionListener());
+                                     return new BroadcastSubscriptionRequest(request.getSubscriptionId(),
                                                                              request.getBroadcastName(),
                                                                              request.getFilterParameters(),
                                                                              request.getQos());
+                                 }
+                             });
+    }
+
+    @Override
+    public void registerMulticastSubscription(String fromParticipantId,
+                                              Set<String> toParticipantIds,
+                                              final MulticastSubscribeInvocation multicastSubscribeInvocation) {
+        for (String toParticipantId : toParticipantIds) {
+            final String multicastId = MulticastIdUtil.createMulticastId(toParticipantId,
+                                                                         multicastSubscribeInvocation.getSubscriptionName(),
+                                                                         multicastSubscribeInvocation.getPartitions());
+            registerSubscription(fromParticipantId,
+                                 toParticipantIds,
+                                 multicastSubscribeInvocation,
+                                 new RegisterDataAndCreateSubscriptionRequest() {
+                                     @Override
+                                     public SubscriptionRequest execute() {
+                                         String subscriptionId = multicastSubscribeInvocation.getSubscriptionId();
+                                         logger.debug("Multicast subscription registered with Id: " + subscriptionId);
+                                         Pattern multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
+                                         if (!multicastSubscribersDirectory.containsKey(multicastIdPattern)) {
+                                             multicastSubscribersDirectory.putIfAbsent(multicastIdPattern,
+                                                                                       Sets.<String> newHashSet());
+                                         }
+                                         multicastSubscribersDirectory.get(multicastIdPattern).add(subscriptionId);
+                                         multicastBroadcastTypes.putIfAbsent(multicastIdPattern,
+                                                                             multicastSubscribeInvocation.getOutParameterTypes());
+                                         broadcastSubscriptionListenerDirectory.put(subscriptionId,
+                                                                                    multicastSubscribeInvocation.getListener());
+                                         return new MulticastSubscriptionRequest(multicastId,
+                                                                                 multicastSubscribeInvocation.getSubscriptionId(),
+                                                                                 multicastSubscribeInvocation.getSubscriptionName(),
+                                                                                 multicastSubscribeInvocation.getQos());
+                                     }
+                                 });
+        }
+    }
+
+    private static interface RegisterDataAndCreateSubscriptionRequest {
+        SubscriptionRequest execute();
+    }
+
+    private void registerSubscription(String fromParticipantId,
+                                      Set<String> toParticipantIds,
+                                      SubscriptionInvocation subscriptionInvocation,
+                                      RegisterDataAndCreateSubscriptionRequest registerDataAndCreateSubscriptionRequest) {
+        if (!subscriptionInvocation.hasSubscriptionId()) {
+            subscriptionInvocation.setSubscriptionId(UUID.randomUUID().toString());
+        }
+        String subscriptionId = subscriptionInvocation.getSubscriptionId();
+        subscriptionFutureMap.put(subscriptionId, subscriptionInvocation.getFuture());
+        registerSubscription(subscriptionInvocation.getQos(), subscriptionId);
+
+        SubscriptionRequest subscriptionRequest = registerDataAndCreateSubscriptionRequest.execute();
+
         MessagingQos messagingQos = new MessagingQos();
-        SubscriptionQos qos = requestObject.getQos();
+        SubscriptionQos qos = subscriptionRequest.getQos();
         if (qos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
             messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
         } else {
             messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
         }
 
-        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, requestObject, messagingQos, true);
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, subscriptionRequest, messagingQos);
     }
 
     @Override
@@ -254,6 +328,17 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             logger.error("Broadcast publication could not be processed", e);
+        }
+    }
+
+    @Override
+    public void handleMulticastPublication(String multicastId, Object[] publicizedValues) {
+        for (Map.Entry<Pattern, Set<String>> entry : multicastSubscribersDirectory.entrySet()) {
+            if (entry.getKey().matcher(multicastId).matches()) {
+                for (String subscriptionId : entry.getValue()) {
+                    handleBroadcastPublication(subscriptionId, publicizedValues);
+                }
+            }
         }
     }
 
@@ -358,11 +443,23 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
-    public Class<?>[] getBroadcastOutParameterTypes(String subscriptionId) {
-        return subscriptionBroadcastTypes.get(subscriptionId);
+    public Class<?>[] getUnicastPublicationOutParameterTypes(String subscriptionId) {
+        return unicastBroadcastTypes.get(subscriptionId);
     }
 
-    protected void removeSubscription(String subscriptionId) {
+    @Override
+    public Class<?>[] getMulticastPublicationOutParameterTypes(String multicastId) {
+        Class<?>[] outParamterTypes = null;
+        for (Map.Entry<Pattern, Class<?>[]> entry : multicastBroadcastTypes.entrySet()) {
+            if (entry.getKey().matcher(multicastId).matches()) {
+                outParamterTypes = entry.getValue();
+                break;
+            }
+        }
+        return outParamterTypes;
+    }
+
+    private void removeSubscription(String subscriptionId) {
         if (missedPublicationTimers.containsKey(subscriptionId)) {
             missedPublicationTimers.get(subscriptionId).cancel();
             missedPublicationTimers.remove(subscriptionId);
@@ -373,6 +470,15 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
         subscriptionStates.remove(subscriptionId);
         subscriptionListenerDirectory.remove(subscriptionId);
+        unicastBroadcastTypes.remove(subscriptionId);
+        broadcastSubscriptionListenerDirectory.remove(subscriptionId);
+        for (Entry<Pattern, Set<String>> entry : multicastSubscribersDirectory.entrySet()) {
+            Set<String> subscriptionIds = entry.getValue();
+            subscriptionIds.remove(subscriptionId);
+            if (subscriptionIds.isEmpty()) {
+                multicastBroadcastTypes.remove(entry.getKey());
+            }
+        }
         subscriptionTypes.remove(subscriptionId);
     }
 

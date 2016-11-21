@@ -26,14 +26,14 @@ var requirejsConfig = {
         "JsonParser" : "lib/JsonParser",
         "uuid" : "lib/uuid-annotated",
 
-        "joynr/system/LoggingManager" : "joynr/system/LoggingManagerNode",
+        "joynr/system/ConsoleAppender" : "joynr/system/ConsoleAppenderNode",
         "joynr/security/PlatformSecurityManager" : "joynr/security/PlatformSecurityManagerNode",
         "global/LocalStorage" : "global/LocalStorageNode",
         "global/XMLHttpRequest" : "global/XMLHttpRequestNode",
         "atmosphere" : "lib/atmosphereNode",
-        "log4javascript" : "lib/log4javascriptNode",
+        "log4javascriptDependency" : "lib/log4javascriptNode",
         "global/WebSocket" : "global/WebSocketNode",
-
+        "global/Mqtt" : "global/Mqtt",
         "joynr/Runtime" : "joynr/Runtime.websocket.libjoynr"
     }
 };

@@ -20,12 +20,13 @@
 #define SUBSCRIPTIONCALLBACK_H
 
 #include <memory>
+#include <tuple>
 
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionListener.h"
 #include "ISubscriptionManager.h"
-#include "joynr/PublicationInterpreter.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/BasePublication.h"
 #include "joynr/Future.h"
 #include "joynr/SubscriptionReply.h"
 
@@ -36,45 +37,50 @@ namespace joynr
   * @class SubscriptionCallback
   * @brief
   */
-template <typename T, typename... Ts>
+template <typename Derived, typename T, typename... Ts>
 class SubscriptionCallback : public ISubscriptionCallback
 {
 public:
-    explicit SubscriptionCallback(std::shared_ptr<ISubscriptionListener<T, Ts...>> listener,
+    explicit SubscriptionCallback(const std::string& subscriptionId,
                                   std::shared_ptr<Future<std::string>> future,
                                   ISubscriptionManager* subscriptionManager)
-            : listener(std::move(listener)),
+            : subscriptionId(subscriptionId),
               future(std::move(future)),
               subscriptionManager(subscriptionManager)
     {
     }
 
-    void onError(const exceptions::JoynrRuntimeException& error) override
+    void onError(const BasePublication& publication, const exceptions::JoynrRuntimeException& error)
     {
-        listener->onError(error);
+        static_cast<Derived*>(this)->onError(publication, error);
     }
 
     template <typename Holder = T>
-    std::enable_if_t<std::is_void<Holder>::value, void> onSuccess()
+    std::enable_if_t<std::is_void<Holder>::value, void> onSuccess(
+            const BasePublication& publication)
     {
-        listener->onReceive();
+        static_cast<Derived*>(this)->onSuccess(publication);
     }
 
     template <typename Holder = T>
-    std::enable_if_t<!std::is_void<Holder>::value, void> onSuccess(const Holder& value,
-                                                                   const Ts&... values)
+    std::enable_if_t<!std::is_void<Holder>::value, void> onSuccess(
+            const BasePublication& publication,
+            const Holder& value,
+            const Ts&... values)
     {
-        listener->onReceive(value, values...);
+        static_cast<Derived*>(this)->onSuccess(publication, value, values...);
     }
 
-    void execute(SubscriptionPublication&& subscriptionPublication) override
+    void execute(BasePublication&& publication) override
     {
-        PublicationInterpreter<T, Ts...>::execute(*this, std::move(subscriptionPublication));
+        interpret(std::move(publication));
     }
 
     void execute(const SubscriptionReply& subscriptionReply) override
     {
         std::shared_ptr<exceptions::JoynrRuntimeException> error = subscriptionReply.getError();
+        std::shared_ptr<ISubscriptionListenerBase> listener =
+                subscriptionManager->getSubscriptionListener(subscriptionId);
         if (error) {
             subscriptionManager->unregisterSubscription(subscriptionReply.getSubscriptionId());
             future->onError(error);
@@ -86,12 +92,65 @@ public:
     }
 
 protected:
-    std::shared_ptr<ISubscriptionListener<T, Ts...>> listener;
+    std::string subscriptionId;
     std::shared_ptr<Future<std::string>> future;
     ISubscriptionManager* subscriptionManager;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);
+    template <typename Holder = T>
+    std::enable_if_t<std::is_void<Holder>::value, void> interpret(BasePublication&& publication)
+    {
+        std::shared_ptr<exceptions::JoynrRuntimeException> error = publication.getError();
+        if (error) {
+            onError(publication, *error);
+            return;
+        }
+        onSuccess(publication);
+    }
+
+    template <typename Holder = T>
+    std::enable_if_t<!std::is_void<Holder>::value, void> interpret(BasePublication&& publication)
+    {
+        std::shared_ptr<exceptions::JoynrRuntimeException> error = publication.getError();
+        if (error) {
+            onError(publication, *error);
+            return;
+        }
+
+        if (!publication.hasResponse()) {
+            onError(publication,
+                    exceptions::JoynrRuntimeException(
+                            "Publication object had no response, discarded message"));
+            return;
+        }
+
+        std::tuple<T, Ts...> responseTuple;
+        try {
+            callGetResponse(responseTuple, publication, std::index_sequence_for<T, Ts...>{});
+        } catch (const std::exception& exception) {
+            onError(publication, exceptions::JoynrRuntimeException(exception.what()));
+            return;
+        }
+
+        callOnSucces(publication, std::move(responseTuple), std::index_sequence_for<T, Ts...>{});
+    }
+
+    template <std::size_t... Indices>
+    void callOnSucces(const BasePublication& publication,
+                      std::tuple<T, Ts...>&& response,
+                      std::index_sequence<Indices...>)
+    {
+        onSuccess(publication, std::move(std::get<Indices>(response))...);
+    }
+
+    template <std::size_t... Indices>
+    static void callGetResponse(std::tuple<T, Ts...>& response,
+                                BasePublication& publication,
+                                std::index_sequence<Indices...>)
+    {
+        publication.getResponse(std::get<Indices>(response)...);
+    }
 };
 
 } // namespace joynr

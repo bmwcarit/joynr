@@ -77,45 +77,6 @@ define([
             done();
         });
 
-        it("throws on missing or wrongly typed arguments in constructur", function(done) {
-            expect(function() {
-                // settings object is undefined
-                webSocketMessagingStub = new WebSocketMessagingStub();
-            }).toThrow();
-
-            expect(function() {
-                // both arguments, websocket and origin are missing
-                webSocketMessagingStub = new WebSocketMessagingStub({});
-            }).toThrow();
-
-            expect(function() {
-                webSocketMessagingStub = new WebSocketMessagingStub({
-                    address : ccAddress,
-                    sharedWebSocket : sharedWebSocket
-                });
-            }).not.toThrow();
-            done();
-        });
-
-        it("throws on missing or wrongly typed arguments in transmit", function(done) {
-            expect(function() {
-                webSocketMessagingStub.transmit(undefined);
-            }).toThrow();
-            expect(function() {
-                webSocketMessagingStub.transmit(null);
-            }).toThrow();
-            expect(function() {
-                webSocketMessagingStub.transmit("");
-            }).toThrow();
-            expect(function() {
-                webSocketMessagingStub.transmit({});
-            }).toThrow();
-            expect(function() {
-                webSocketMessagingStub.transmit(joynrMessage);
-            }).not.toThrow();
-            done();
-        });
-
         it("calls websocket.send correctly", function(done) {
             webSocketMessagingStub.transmit(joynrMessage);
             expect(sharedWebSocket.send).toHaveBeenCalledWith(joynrMessage);

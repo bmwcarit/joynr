@@ -51,10 +51,6 @@ class InterfaceInProcessConnectorHTemplate extends InterfaceTemplate{
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName»Connector.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/InProcessConnectorFactory.h"
-#include "joynr/SubscriptionRequest.h"
-«IF francaIntf.broadcasts.size > 0»
-#include "joynr/BroadcastSubscriptionRequest.h"
-«ENDIF»
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Logger.h"
@@ -69,6 +65,16 @@ namespace joynr {
 	class InProcessAddress;
 	class ISubscriptionManager;
 	class PublicationManager;
+	class IPlatformSecurityManager;
+	«IF !francaIntf.attributes.empty»
+		class SubscriptionRequest;
+	«ENDIF»
+	«IF !francaIntf.broadcasts.filter[selective].empty»
+		class BroadcastSubscriptionRequest;
+	«ENDIF»
+	«IF !francaIntf.broadcasts.filter[!selective].empty»
+		class MulticastSubscriptionRequest;
+	«ENDIF»
 	template <class ... Ts> class Future;
 	template <typename... Ts> class ISubscriptionListener;
 
@@ -93,12 +99,17 @@ private:
 				SubscriptionRequest& subscriptionRequest);
 «ENDFOR»
 «FOR broadcast: francaIntf.broadcasts»
-«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
-«val broadcastName = broadcast.joynrName»
+	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
+	«val broadcastName = broadcast.joynrName»
 	std::shared_ptr<joynr::Future<std::string>> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
-			BroadcastSubscriptionRequest& subscriptionRequest);
+			«IF broadcast.selective»
+				BroadcastSubscriptionRequest& subscriptionRequest);
+			«ELSE»
+				std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest,
+				const std::vector<std::string>& partitions);
+			«ENDIF»
 «ENDFOR»
 public:
 
@@ -116,6 +127,7 @@ public:
 				joynr::ISubscriptionManager* subscriptionManager,
 				joynr::PublicationManager* publicationManager,
 				joynr::InProcessPublicationSender* inProcessPublicationSender,
+				std::shared_ptr<joynr::IPlatformSecurityManager> securityManager,
 				const std::string& proxyParticipantId,
 				const std::string& providerParticipantId,
 				std::shared_ptr<joynr::InProcessAddress> address
@@ -146,6 +158,7 @@ private:
 	joynr::ISubscriptionManager* subscriptionManager;
 	joynr::PublicationManager* publicationManager;
 	joynr::InProcessPublicationSender* inProcessPublicationSender;
+	std::shared_ptr<joynr::IPlatformSecurityManager> securityManager;
 };
 «getNamespaceEnder(francaIntf)»
 

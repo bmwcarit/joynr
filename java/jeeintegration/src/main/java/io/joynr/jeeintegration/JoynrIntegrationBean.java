@@ -38,18 +38,14 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
-import io.joynr.jeeintegration.api.ProviderDomain;
-import joynr.types.ProviderQos;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Injector;
-
+import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
-import io.joynr.provider.JoynrProvider;
 import io.joynr.runtime.JoynrRuntime;
+import joynr.types.ProviderQos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Singleton EJB which will create and keep the Joynr runtime and also shut it down when the app server shuts down as
@@ -167,10 +163,10 @@ public class JoynrIntegrationBean {
     }
 
     @SuppressWarnings("unchecked")
-    private Set<Class<? extends JoynrProvider>> getServiceProviderInterfaceClasses(Set<Bean<?>> serviceProviderBeans) {
-        Set<Class<? extends JoynrProvider>> result = new HashSet<>();
+    private Set<Class<?>> getServiceProviderInterfaceClasses(Set<Bean<?>> serviceProviderBeans) {
+        Set<Class<?>> result = new HashSet<>();
         for (Bean<?> bean : serviceProviderBeans) {
-            result.add((Class<? extends JoynrProvider>) bean.getBeanClass()
+            result.add(bean.getBeanClass()
                                                             .getAnnotation(ServiceProvider.class)
                                                             .serviceInterface());
         }

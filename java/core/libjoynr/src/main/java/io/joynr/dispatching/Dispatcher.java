@@ -1,7 +1,5 @@
 package io.joynr.dispatching;
 
-import java.util.Set;
-
 /*
  * #%L
  * %%
@@ -21,8 +19,11 @@ import java.util.Set;
  * #L%
  */
 
+import java.util.Set;
+
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingQos;
+import joynr.MulticastPublication;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
@@ -32,8 +33,7 @@ public interface Dispatcher extends MessageArrivedListener {
     public void sendSubscriptionRequest(String fromParticipantId,
                                         Set<String> toParticipantId,
                                         SubscriptionRequest subscriptionRequest,
-                                        MessagingQos qosSettings,
-                                        boolean broadcast);
+                                        MessagingQos qosSettings);
 
     public void sendSubscriptionStop(String fromParticipantId,
                                      Set<String> toParticipantId,
@@ -50,10 +50,10 @@ public interface Dispatcher extends MessageArrivedListener {
                                SubscriptionReply subscriptionReply,
                                MessagingQos qosSettings);
 
+    void sendMulticast(String fromParticipantId, MulticastPublication multicastPublication, MessagingQos messagingQos);
+
     /**
-     *
-     * @param clear
-     *            indicates whether the channel should be closed
+     * @param clear indicates whether the channel should be closed
      */
     public void shutdown(boolean clear);
 }

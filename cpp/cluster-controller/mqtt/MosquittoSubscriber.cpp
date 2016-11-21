@@ -17,9 +17,11 @@
  * #L%
  */
 #include <cstring>
+#include <mutex>
 
 #include "MosquittoSubscriber.h"
 
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingSettings.h"
@@ -37,7 +39,10 @@ MosquittoSubscriber::MosquittoSubscriber(const MessagingSettings& settings,
           mqttSettings(),
           channelId(channelId),
           topic(),
+          additionalTopics(),
+          additionalTopicsMutex(),
           channelCreatedSemaphore(channelCreatedSemaphore),
+          isConnected(false),
           isRunning(false),
           isChannelAvailable(false),
           onTextMessageReceived(nullptr)
@@ -71,6 +76,7 @@ void MosquittoSubscriber::run()
         int rc = loop();
 
         if (rc) {
+            isConnected = false;
             if (rc == MOSQ_ERR_CONN_LOST) {
                 JOYNR_LOG_DEBUG(logger,
                                 "error: connection to broker lost ({}), trying to reconnect...",
@@ -146,49 +152,87 @@ void MosquittoSubscriber::on_connect(int rc)
         }
     } else {
         JOYNR_LOG_DEBUG(logger, "Mosquitto Connection established");
-        subscribeToTopic();
+        isConnected = true;
+        restoreSubscriptions();
     }
 }
 
-void MosquittoSubscriber::subscribeToTopic()
+void MosquittoSubscriber::restoreSubscriptions()
 {
-    while (!isChannelAvailable) {
+    while (!isChannelAvailable && isRunning) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
-    // TODO: Check mid in callback on_subscribe instead of generated mid (NULL)
-    int rc = subscribe(nullptr, topic.c_str(), getMqttQos());
-    if (rc == MOSQ_ERR_SUCCESS) {
-        JOYNR_LOG_DEBUG(logger, "Subscribed to {}", topic);
-    } else if (rc == MOSQ_ERR_INVAL) {
-        JOYNR_LOG_ERROR(logger,
-                        "Subscription to {} failed: error: {} (invalid input parameters)",
-                        topic,
-                        std::to_string(rc));
-    } else {
-        // MOSQ_ERR_NOMEM || MOSQ_ERR_NO_CONN
-        JOYNR_LOG_DEBUG(logger,
-                        "error subscribing to {}: {} ({}), retrying...",
-                        topic,
-                        std::to_string(rc),
-                        mosqpp::strerror(rc));
-        std::this_thread::sleep_for(mqttSettings.reconnectSleepTimeMs);
-        subscribeToTopic();
+    try {
+        subscribeToTopicInternal(topic);
+        std::lock_guard<std::recursive_mutex> lock(additionalTopicsMutex);
+        for (const std::string& additionalTopic : additionalTopics) {
+            subscribeToTopicInternal(additionalTopic);
+        }
+    } catch (const exceptions::JoynrRuntimeException& error) {
+        JOYNR_LOG_ERROR(logger, "Error subscribing to Mqtt topic, error: ", error.getMessage());
     }
 }
 
-void MosquittoSubscriber::unsubscribeFromTopic()
+void MosquittoSubscriber::subscribeToTopicInternal(const std::string& topic)
+{
+    // TODO: Check mid in callback on_subscribe instead of generated mid (NULL)
+    int rc = subscribe(nullptr, topic.c_str(), getMqttQos());
+    switch (rc) {
+    case (MOSQ_ERR_SUCCESS):
+        JOYNR_LOG_DEBUG(logger, "Subscribed to {}", topic);
+        break;
+    case (MOSQ_ERR_NO_CONN):
+        JOYNR_LOG_DEBUG(logger,
+                        "Subscription to {} failed: error: {} (not connected to a broker). "
+                        "Subscription will be restored on connect.",
+                        topic,
+                        std::to_string(rc));
+        break;
+    default:
+        // MOSQ_ERR_INVAL, MOSQ_ERR_NOMEM
+        std::string errorMsg = "Subscription to " + topic + " failed: error: " +
+                               std::to_string(rc) + " (" + mosqpp::strerror(rc) + ")";
+        throw exceptions::JoynrRuntimeException(errorMsg);
+    }
+}
+
+void MosquittoSubscriber::subscribeToTopic(const std::string& topic)
+{
+    while (!isChannelAvailable && isRunning) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+    }
+    {
+        std::lock_guard<std::recursive_mutex> lock(additionalTopicsMutex);
+        if (additionalTopics.find(topic) != additionalTopics.end()) {
+            JOYNR_LOG_DEBUG(logger, "already subscribed to topic {}", topic);
+            return;
+        }
+        subscribeToTopicInternal(topic);
+        additionalTopics.insert(topic);
+    }
+}
+
+void MosquittoSubscriber::unsubscribeFromTopic(const std::string& topic)
 {
     if (isChannelAvailable) {
-        int rc = unsubscribe(nullptr, topic.c_str());
-        if (rc == MOSQ_ERR_SUCCESS) {
-            JOYNR_LOG_DEBUG(logger, "Unsubscribed from {}", topic);
-        } else {
-            // MOSQ_ERR_INVAL || MOSQ_ERR_NOMEM || MOSQ_ERR_NO_CONN
-            JOYNR_LOG_ERROR(logger,
-                            "Unsubscribe from {} failed: error: {} ({})",
-                            topic,
-                            std::to_string(rc),
-                            mosqpp::strerror(rc));
+        std::lock_guard<std::recursive_mutex> lock(additionalTopicsMutex);
+        if (additionalTopics.find(topic) == additionalTopics.end()) {
+            JOYNR_LOG_DEBUG(logger, "Unsubscribe called for non existing topic {}", topic);
+            return;
+        }
+        additionalTopics.erase(topic);
+        if (isConnected && isRunning) {
+            int rc = unsubscribe(nullptr, topic.c_str());
+            if (rc == MOSQ_ERR_SUCCESS) {
+                JOYNR_LOG_DEBUG(logger, "Unsubscribed from {}", topic);
+            } else {
+                // MOSQ_ERR_INVAL || MOSQ_ERR_NOMEM || MOSQ_ERR_NO_CONN
+                JOYNR_LOG_ERROR(logger,
+                                "Unsubscribe from {} failed: error: {} ({})",
+                                topic,
+                                std::to_string(rc),
+                                mosqpp::strerror(rc));
+            }
         }
     }
 }

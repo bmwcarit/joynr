@@ -54,7 +54,10 @@ public class MqttMessagingStub implements IMessaging {
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
         mqttMessageReplyToAddressCalculator.setReplyTo(message);
-        String topic = address.getTopic() + PRIORITY_LOW + message.getTo();
+        String topic = address.getTopic();
+        if (!JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            topic += PRIORITY_LOW + message.getTo();
+        }
         String serializedMessage = messageSerializer.serialize(message);
         int qosLevel = DEFAULT_QOS_LEVEL;
         String effortHeaderValue = message.getHeaderValue(JoynrMessage.HEADER_NAME_EFFORT);
