@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JoynrMessageFactoryTtlUpliftTest {
+public class TtlUpliftTest {
     private static final long TTL = 1000;
     private static final long TTL_UPLIFT_MS = 10000;
     JoynrMessageFactory joynrMessageFactory;
