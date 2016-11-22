@@ -51,6 +51,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.SubscriptionException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
@@ -96,6 +97,10 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private ScheduledExecutorService cleanupScheduler;
     private Dispatcher dispatcher;
     private ProviderDirectory providerDirectory;
+
+    @Inject(optional = true)
+    @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
+    private long ttlUpliftMs = 0;
 
     static class PublicationInformation {
         private String providerParticipantId;
@@ -236,6 +241,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
             messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
         } else {
+            // TTL uplift will be done in JoynrMessageFactory
             messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
         }
         return messagingQos;
@@ -348,6 +354,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
             messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
         } else {
+            // TTL uplift will be done in JoynrMessageFactory
             messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
         }
 
@@ -386,10 +393,23 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
     private long validateAndGetSubscriptionEndDelay(SubscriptionRequest subscriptionRequest) {
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
-        long subscriptionEndDelay = subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE ? SubscriptionQos.NO_EXPIRY_DATE
-                : subscriptionQos.getExpiryDateMs() - System.currentTimeMillis();
+        long subscriptionEndDelay = getSubscriptionEndDelay(subscriptionQos);
         if (subscriptionEndDelay < 0) {
             throw new SubscriptionException(subscriptionRequest.getSubscriptionId(), "Subscription expired.");
+        }
+        return subscriptionEndDelay;
+    }
+
+    private long getSubscriptionEndDelay(SubscriptionQos subscriptionQos) {
+        long subscriptionEndDelay;
+        if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
+            subscriptionEndDelay = SubscriptionQos.NO_EXPIRY_DATE;
+        } else {
+            if (subscriptionQos.getExpiryDateMs() > (Long.MAX_VALUE - ttlUpliftMs)) {
+                subscriptionEndDelay = Long.MAX_VALUE - System.currentTimeMillis();
+            } else {
+                subscriptionEndDelay = subscriptionQos.getExpiryDateMs() + ttlUpliftMs - System.currentTimeMillis();
+            }
         }
         return subscriptionEndDelay;
     }
@@ -526,9 +546,10 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     }
 
     private boolean isExpired(PublicationInformation publicationInformation) {
-        long expiryDate = publicationInformation.subscriptionRequest.getQos().getExpiryDateMs();
-        logger.debug("ExpiryDate - System.currentTimeMillis: " + (expiryDate - System.currentTimeMillis()));
-        return (expiryDate != SubscriptionQos.NO_EXPIRY_DATE && expiryDate <= System.currentTimeMillis());
+        SubscriptionQos subscriptionQos = publicationInformation.subscriptionRequest.getQos();
+        long subscriptionEndDelay = getSubscriptionEndDelay(subscriptionQos);
+        logger.debug("ExpiryDate - System.currentTimeMillis: " + subscriptionEndDelay);
+        return (subscriptionEndDelay != SubscriptionQos.NO_EXPIRY_DATE && subscriptionEndDelay <= 0);
     }
 
     /**
@@ -722,6 +743,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                     JsonMappingException,
                                                     IOException {
         MessagingQos messagingQos = new MessagingQos();
+        // TTL uplift will be done in JoynrMessageFactory
         messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtlMs());
         Set<String> toParticipantIds = new HashSet<>();
         toParticipantIds.add(publicationInformation.proxyParticipantId);
