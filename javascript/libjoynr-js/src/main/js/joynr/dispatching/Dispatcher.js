@@ -103,6 +103,22 @@ define(
                 }
 
                 /**
+                 * @name Dispatcher#upLiftExpiryDateInSubscriptionRequest
+                 * @function
+                 * @private
+                 *
+                 * @param {subscriptionRequest}
+                 *            the subscription request
+                 * @returns the subscription request with qos.expiry date
+                 *          with TTL_UPLIFT added as time delta
+                 */
+                function upLiftExpiryDateInSubscriptionRequest(subscriptionRequest) {
+                    subscriptionRequest.qos.expiryDateMs =
+                        upLiftTtl(subscriptionRequest.qos.expiryDateMs);
+                    return subscriptionRequest;
+                }
+
+                /**
                  * @name Dispatcher#parsePayload
                  * @function
                  * @private
@@ -692,8 +708,9 @@ define(
                                                 .handleSubscriptionRequest(
                                                         joynrMessage.from,
                                                         joynrMessage.to,
-                                                        new SubscriptionRequest(
-                                                                parsePayload(joynrMessage)),
+                                                        upLiftExpiryDateInSubscriptionRequest(
+                                                                new SubscriptionRequest(
+                                                                        parsePayload(joynrMessage))),
                                                         function(subscriptionReply) {
                                                             sendSubscriptionReply(
                                                                     {
@@ -717,8 +734,9 @@ define(
                                         publicationManager.handleBroadcastSubscriptionRequest(
                                                 joynrMessage.from,
                                                 joynrMessage.to,
-                                                new BroadcastSubscriptionRequest(
-                                                        parsePayload(joynrMessage)),
+                                                upLiftExpiryDateInSubscriptionRequest(
+                                                        new BroadcastSubscriptionRequest(
+                                                                parsePayload(joynrMessage))),
                                                 function(subscriptionReply) {
                                                     sendSubscriptionReply({
                                                         from : joynrMessage.to,
@@ -740,8 +758,9 @@ define(
                                         publicationManager.handleMulticastSubscriptionRequest(
                                                 joynrMessage.from,
                                                 joynrMessage.to,
-                                                new MulticastSubscriptionRequest(
-                                                        parsePayload(joynrMessage)),
+                                                upLiftExpiryDateInSubscriptionRequest(
+                                                        new MulticastSubscriptionRequest(
+                                                                parsePayload(joynrMessage))),
                                                 function(subscriptionReply) {
                                                     sendSubscriptionReply({
                                                         from : joynrMessage.to,
