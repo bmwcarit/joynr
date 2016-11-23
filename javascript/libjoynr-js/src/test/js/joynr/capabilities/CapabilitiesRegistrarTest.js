@@ -316,16 +316,13 @@ define([
                             done();
                         });
 
-                        it("returns the promise success from capabilites stub", function(done) {
+                        it("returns the provider participant ID", function(done) {
                             capabilitiesRegistrar.registerCapability(
                                     authToken,
                                     domain,
                                     provider,
                                     providerQos).then(function(result) {
-                                        expect(result).toEqual([
-                                                              undefined,
-                                                                  undefined
-                                                                  ]);
+                                        expect(result).toEqual(participantId);
                                         done();
                                         return null;
                                     }).catch(function(error) {

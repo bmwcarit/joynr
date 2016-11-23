@@ -179,7 +179,9 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                     return Promise.all([
                         messageRouterPromise,
                         discoveryStubPromise
-                    ]);
+                    ]).then(function() {
+                        return participantId;
+                    });
                 };
 
         /**
