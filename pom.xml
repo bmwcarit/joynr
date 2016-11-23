@@ -1300,7 +1300,7 @@
 				<plugin>
 					<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
 					<artifactId>maven-java-formatter-plugin</artifactId>
-					<version>0.3.1</version>
+					<version>0.4</version>
 					<executions>
 						<execution>
 							<goals>
@@ -1311,6 +1311,7 @@
 					<configuration>
 						<lineEnding>KEEP</lineEnding>
 						<configFile>java-formatter/code-formatter-config.xml</configFile>
+						<overrideConfigCompilerVersion>true</overrideConfigCompilerVersion>
 					</configuration>
 					<dependencies>
 						<dependency>
