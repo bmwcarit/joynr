@@ -745,7 +745,7 @@ export(PACKAGE Joynr)
 # install the export targets for use with the install-tree
 install(
     EXPORT JoynrTargets
-    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
+    DESTINATION "${INSTALL_CMAKE_DIR}"
     FILE "JoynrTargets.cmake"
 )
 
@@ -902,7 +902,7 @@ configure_file(
 # install the JoynrConfig.cmake and JoynrConfigVersion.cmake
 install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfig.cmake.install-tree"
-    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
+    DESTINATION "${INSTALL_CMAKE_DIR}"
     RENAME "JoynrConfig.cmake"
 )
 install(
@@ -913,7 +913,7 @@ install(
         "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
         "CMake/CheckDltImportTargets.cmake"
-    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
+    DESTINATION "${INSTALL_CMAKE_DIR}"
 )
 
 # install the NOTICE-CPP
