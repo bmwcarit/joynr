@@ -45,6 +45,7 @@ public:
     bool unregisterMulticastReceiver(const std::string& multicastId, const std::string& receiverId);
 
     std::unordered_set<std::string> getReceivers(const std::string& multicastId);
+    std::vector<std::string> getMulticastIds() const;
 
     bool contains(const std::string& multicastId);
 
