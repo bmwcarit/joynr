@@ -406,7 +406,7 @@ define([
                                 routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
                                     "addMulticastReceiver"
                                 ]);
-    
+
                                routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
 
                                expect(messageRouter.hasMulticastReceivers()).toBe(false);
@@ -515,6 +515,7 @@ define([
                         describe("route multicast messages", function() {
                             var parameters;
                             var multicastMessage;
+                            var addressOfSubscriberParticipant;
                             beforeEach(function() {
                                 parameters = {
                                     multicastId : "multicastId- " + uuid(),
@@ -538,7 +539,10 @@ define([
                                 /* add routing table entry for parameters.subscriberParticipantId,
                                  * otherwise messaging stub call can be executed by the message router
                                  */
-                                messageRouter.addNextHop(parameters.subscriberParticipantId, new BrowserAddress());
+                                addressOfSubscriberParticipant = new BrowserAddress({
+                                    windowId : "windowIdOfSubscriberParticipant"
+                                });
+                                messageRouter.addNextHop(parameters.subscriberParticipantId, addressOfSubscriberParticipant);
                             });
 
                             it("never, if message is received from global and NO local receiver", function() {
@@ -568,20 +572,37 @@ define([
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(2);
                             });
 
-                            it("three times, if message is received from global and two local receivers available", function() {
+                            it("twice, if message is received from global and two local receivers available with same receiver address", function() {
                                 messageRouter.addMulticastReceiver(parameters);
                                 var parametersForSndReceiver = {
                                     multicastId : parameters.multicastId,
                                     subscriberParticipantId : "subscriberParticipantId2",
                                     providerParticipantId : "providerParticipantId"
                                 };
+
                                 messageRouter.addMulticastReceiver(parametersForSndReceiver);
-                                messageRouter.addNextHop(parametersForSndReceiver.subscriberParticipantId, new BrowserAddress());
+                                messageRouter.addNextHop(parametersForSndReceiver.subscriberParticipantId, addressOfSubscriberParticipant);
+                                messageRouter.route(multicastMessage);
+                                expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                                expect(messagingStubSpy.transmit.calls.count()).toBe(2);
+                            });
+
+                            it("three times, if message is received from global and two local receivers available with different receiver address", function() {
+                                messageRouter.addMulticastReceiver(parameters);
+                                var parametersForSndReceiver = {
+                                    multicastId : parameters.multicastId,
+                                    subscriberParticipantId : "subscriberParticipantId2",
+                                    providerParticipantId : "providerParticipantId"
+                                };
+
+                                messageRouter.addMulticastReceiver(parametersForSndReceiver);
+                                messageRouter.addNextHop(parametersForSndReceiver.subscriberParticipantId, new BrowserAddress({
+                                    windowId : "windowIdOfNewSubscribeParticipant"
+                                }));
                                 messageRouter.route(multicastMessage);
                                 expect(messagingStubSpy.transmit).toHaveBeenCalled();
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(3);
                             });
-
                         });
 
                         it(
