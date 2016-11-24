@@ -5,6 +5,16 @@
 * **[JS]** Bugfix: For non-selective broadcast subscriptions the listeners could be called too
   often if multiple matching listeners were found.
 
+#joynr 0.21.4
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+##Other changes
+* **[C++]** Fix bug in generated data types if base and derived classes have different
+  package names.
+
 #joynr 0.22.0
 
 ##API relevant changes
