@@ -53,8 +53,8 @@ public abstract class ArbitrationStrategyFunction {
      * arbitration result. A value of <code>null</code> or an empty collection
      * are used to indicate that there was no match.
      */
-    abstract Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
-                                                    Collection<DiscoveryEntryWithMetaInfo> capabilities);
+    protected abstract Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                              Collection<DiscoveryEntryWithMetaInfo> capabilities);
 
     @CheckForNull
     protected CustomParameter findQosParameter(DiscoveryEntry discoveryEntry, String parameterName) {
