@@ -16,15 +16,15 @@ function _sed {
 
 oldVersion=$1
 newVersion=$2
-oldVersionWithoutSnapshot=`echo $oldVersion | sed -e "s/-SNAPSHOT//g"`
-newVersionWithoutSnapshot=`echo $newVersion | sed -e "s/-SNAPSHOT//g"`
-IFS='.' read -a version <<< "$newVersionWithoutSnapshot"
+oldVersionWithoutSuffix=`echo $oldVersion | sed -e "s/-.\+//g"`
+newVersionWithoutSuffix=`echo $newVersion | sed -e "s/-.\+//g"`
+IFS='.' read -a version <<< "$newVersionWithoutSuffix"
 
 _sed 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt
 _sed 's/set(JOYNR_MINOR_VERSION .*)/set(JOYNR_MINOR_VERSION '${version[1]}')/g' cpp/CMakeLists.txt
 _sed 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
 
-_sed 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSnapshot}' REQUIRED)/g' \
+_sed 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSuffix}' REQUIRED)/g' \
 examples/radio-app/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
@@ -59,9 +59,19 @@ javascript/libjoynr-js/package.json
 _sed 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
 java/core/clustercontroller-standalone/README
 
-_sed 's/Version:        '${oldVersionWithoutSnapshot}'/Version:        '${newVersionWithoutSnapshot}'/g' \
+_sed 's/Version:        '${oldVersionWithoutSuffix}'/Version:        '${newVersionWithoutSuffix}'/g' \
 cpp/distribution/joynr.spec \
 tests/system-integration-test/docker/onboard/joynr-without-test.spec
+
+{
+	_sed 's/		<joynr.version>'${oldVersion}'<\/joynr.version>/		<joynr.version>'${newVersion}'<\/joynr.version>/g' \
+	examples/hello-world/pom.xml
+	_sed 's/	<version>'${oldVersion}'<\/joynr.version>/	<version>'${newVersion}'<\/joynr.version>/g' \
+	examples/hello-world/pom.xml
+	cd examples/hello-world
+	mvn versions:set -DnewVersion=${newVersion}
+	mvn versions:commit
+}
 
 echo "prepare git patch"
 

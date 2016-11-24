@@ -90,7 +90,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 				return future;
 			}
 			else{
-				return connector->«getAttribute»Async(onSuccess, onError);
+				return connector->«getAttribute»Async(std::move(onSuccess), std::move(onError));
 			}
 		}
 
@@ -114,7 +114,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 				return future;
 			}
 			else{
-				return connector->«setAttribute»Async(«attributeName», onSuccess, onError);
+				return connector->«setAttribute»Async(«attributeName», std::move(onSuccess), std::move(onError));
 			}
 		}
 
@@ -142,7 +142,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 				return future;
 			}
 			else{
-				return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»onSuccess, «IF method.hasErrorEnum»onApplicationError, «ENDIF»onRuntimeError);
+				return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»std::move(onSuccess), «IF method.hasErrorEnum»std::move(onApplicationError), «ENDIF»std::move(onRuntimeError));
 			}
 		}
 	«ENDIF»

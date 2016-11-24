@@ -61,6 +61,9 @@ define("joynr/dispatching/types/Request", [
                 settings.params[i] = Util.ensureTypedValues(settings.params[i]);
             }
         }
+        if (!settings.paramDatatypes) {
+            settings.paramDatatypes = [];
+        }
 
         /**
          * The joynr type name

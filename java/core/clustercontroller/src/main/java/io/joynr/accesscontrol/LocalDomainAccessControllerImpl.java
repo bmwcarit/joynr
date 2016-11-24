@@ -29,7 +29,6 @@ import javax.annotation.CheckForNull;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-
 import io.joynr.accesscontrol.broadcastlistener.LdacDomainRoleEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMasterAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryChangedBroadcastListener;
@@ -54,14 +53,9 @@ import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MediatorAccessControlEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastFilterParameters;
 import joynr.system.Discovery;
 import joynr.system.Routing;
 import joynr.types.GlobalDiscoveryEntry;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +68,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     private static final long QOS_PUBLICATION_TTL_MS = 5 * 1000L;
 
     private static final Logger LOG = LoggerFactory.getLogger(LocalDomainAccessControllerImpl.class);
+    private static final String SINGLE_LEVEL_WILDCARD = "+";
 
     private final String discoveryDirectoriesDomain;
     private AccessControlAlgorithm accessControlAlgorithm = new AccessControlAlgorithm();
@@ -502,17 +497,19 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         }
     }
 
+    private String sanitiseForPartition(String value) {
+        return value.replaceAll("[^a-zA-Z0-9]", "");
+    }
+
     private void subscribeForDreChange(String userId) {
         long wsbExpiryDate = System.currentTimeMillis() + QOS_DURATION_MS;
         OnChangeSubscriptionQos broadcastSubscriptionQos = new OnChangeSubscriptionQos();
         broadcastSubscriptionQos.setMinIntervalMs(QOS_MIN_INTERVAL_MS)
                                 .setExpiryDateMs(wsbExpiryDate)
                                 .setPublicationTtlMs(QOS_PUBLICATION_TTL_MS);
-        DomainRoleEntryChangedBroadcastFilterParameters domainRoleFilterParameters = new DomainRoleEntryChangedBroadcastFilterParameters();
-        domainRoleFilterParameters.setUserIdOfInterest(userId);
         globalDomainAccessControllerClient.subscribeToDomainRoleEntryChangedBroadcast(new LdacDomainRoleEntryChangedBroadcastListener(localDomainAccessStore),
                                                                                       broadcastSubscriptionQos,
-                                                                                      domainRoleFilterParameters);
+                                                                                      sanitiseForPartition(userId));
     }
 
     private AceSubscription subscribeForAceChange(String domain, String interfaceName) {
@@ -521,26 +518,23 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         broadcastSubscriptionQos.setMinIntervalMs(QOS_MIN_INTERVAL_MS)
                                 .setExpiryDateMs(wsbExpiryDate)
                                 .setPublicationTtlMs(QOS_PUBLICATION_TTL_MS);
-        MasterAccessControlEntryChangedBroadcastFilterParameters masterAcefilterParameters = new MasterAccessControlEntryChangedBroadcastFilterParameters();
-        masterAcefilterParameters.setDomainOfInterest(domain);
-        masterAcefilterParameters.setInterfaceOfInterest(interfaceName);
         Future<String> mastersubscriptionId = globalDomainAccessControllerClient.subscribeToMasterAccessControlEntryChangedBroadcast(new LdacMasterAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
                                                                                                                                      broadcastSubscriptionQos,
-                                                                                                                                     masterAcefilterParameters);
+                                                                                                                                     SINGLE_LEVEL_WILDCARD,
+                                                                                                                                     sanitiseForPartition(domain),
+                                                                                                                                     sanitiseForPartition(interfaceName));
 
-        MediatorAccessControlEntryChangedBroadcastFilterParameters mediatorAceFilterParameters = new MediatorAccessControlEntryChangedBroadcastFilterParameters();
-        mediatorAceFilterParameters.setDomainOfInterest(domain);
-        mediatorAceFilterParameters.setInterfaceOfInterest(interfaceName);
         Future<String> mediatorsubscriptionId = globalDomainAccessControllerClient.subscribeToMediatorAccessControlEntryChangedBroadcast(new LdacMediatorAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
                                                                                                                                          broadcastSubscriptionQos,
-                                                                                                                                         mediatorAceFilterParameters);
+                                                                                                                                         SINGLE_LEVEL_WILDCARD,
+                                                                                                                                         sanitiseForPartition(domain),
+                                                                                                                                         sanitiseForPartition(interfaceName));
 
-        OwnerAccessControlEntryChangedBroadcastFilterParameters ownerAceFilterParameters = new OwnerAccessControlEntryChangedBroadcastFilterParameters();
-        ownerAceFilterParameters.setDomainOfInterest(domain);
-        ownerAceFilterParameters.setInterfaceOfInterest(interfaceName);
         Future<String> ownersubscriptionId = globalDomainAccessControllerClient.subscribeToOwnerAccessControlEntryChangedBroadcast(new LdacOwnerAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
                                                                                                                                    broadcastSubscriptionQos,
-                                                                                                                                   ownerAceFilterParameters);
+                                                                                                                                   SINGLE_LEVEL_WILDCARD,
+                                                                                                                                   sanitiseForPartition(domain),
+                                                                                                                                   sanitiseForPartition(interfaceName));
 
         return new AceSubscription(mastersubscriptionId, mediatorsubscriptionId, ownersubscriptionId);
     }

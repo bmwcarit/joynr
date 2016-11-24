@@ -99,7 +99,8 @@ public class SubscriptionManagerTest {
     private ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory = spy(new ConcurrentHashMap<Pattern, Set<String>>());
     private ConcurrentMap<String, PubSubState> subscriptionStates = spy(new ConcurrentHashMap<String, PubSubState>());
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers = spy(new ConcurrentHashMap<String, MissedPublicationTimer>());
-    private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes = spy(Maps.<String, Class<?>[]> newConcurrentMap());
+    private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes = spy(Maps.<String, Class<?>[]> newConcurrentMap());
+    private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes = spy(Maps.<Pattern, Class<?>[]> newConcurrentMap());
     private ConcurrentMap<String, Future<String>> subscriptionFutureMap = spy(Maps.<String, Future<String>> newConcurrentMap());
 
     @Mock
@@ -133,7 +134,8 @@ public class SubscriptionManagerTest {
                                                           missedPublicationTimers,
                                                           subscriptionEndFutures,
                                                           subscriptionAttributeTypes,
-                                                          subscriptionBroadcastTypes,
+                                                          unicastBroadcastTypes,
+                                                          multicastBroadcastTypes,
                                                           subscriptionFutureMap,
                                                           cleanupScheduler,
                                                           dispatcher,
@@ -229,7 +231,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
         verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
-                                          Mockito.eq(qos.getExpiryDateMs()),
+                                          Mockito.eq(onChangeQos.getExpiryDateMs()),
                                           Mockito.eq(TimeUnit.MILLISECONDS));
         verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
                                                              Mockito.any(ScheduledFuture.class));
@@ -445,9 +447,9 @@ public class SubscriptionManagerTest {
         multicastSubscribersDirectory.putIfAbsent(subscriberThreePattern, Sets.newHashSet(subscriberThreeId));
 
         Class[] types = new Class[]{ String.class };
-        subscriptionBroadcastTypes.putIfAbsent(subscriberOneId, types);
-        subscriptionBroadcastTypes.putIfAbsent(subscriberTwoId, types);
-        subscriptionBroadcastTypes.putIfAbsent(subscriberThreeId, types);
+        unicastBroadcastTypes.putIfAbsent(subscriberOneId, types);
+        unicastBroadcastTypes.putIfAbsent(subscriberTwoId, types);
+        unicastBroadcastTypes.putIfAbsent(subscriberThreeId, types);
 
         TestBroadcastListener listenerOne = mock(TestBroadcastListener.class);
         broadcastSubscriptionDirectory.putIfAbsent(subscriberOneId, listenerOne);

@@ -391,7 +391,9 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     // clustercontroller messaging handled by the messageRouter
                     messageRouterSkeleton.registerListener(messageRouter.route);
-                    dispatcher = new Dispatcher(messageRouterStub, new PlatformSecurityManager());
+                    var ttlUpLiftMs = (provisioning.messaging && provisioning.messaging.TTL_UPLIFT) ?
+                        provisioning.messaging.TTL_UPLIFT : undefined;
+                    dispatcher = new Dispatcher(messageRouterStub, new PlatformSecurityManager(), ttlUpLiftMs);
 
                     libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                     libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
@@ -487,7 +489,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                             messageRouter.setRoutingProxy(newRoutingProxy);
                             return newRoutingProxy;
                         }).catch(function(error) {
-                            throw new Error("Failed to create discovery proxy: " + error);
+                            throw new Error("Failed to create routing proxy: " + error);
                         });
 
                     // when everything's ready we can trigger the app
@@ -555,6 +557,10 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     if (typeRegistry !== undefined) {
                         typeRegistry.shutdown();
+                    }
+
+                    if (loggingManager !== undefined) {
+                        loggingManager.shutdown();
                     }
 
                     joynrState = JoynrStates.SHUTDOWN;

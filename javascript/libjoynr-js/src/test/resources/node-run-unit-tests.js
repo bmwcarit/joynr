@@ -55,11 +55,11 @@ requirejs.config({
     paths : {
         "JsonParser" : "lib/JsonParser",
         "uuid" : "lib/uuid-annotated",
-        "joynr/system/LoggingManager" : "joynr/system/LoggingManagerNode",
+        "joynr/system/ConsoleAppender" : "joynr/system/ConsoleAppenderNode",
         "joynr/security/PlatformSecurityManager" : "joynr/security/PlatformSecurityManagerNode",
         "global/LocalStorage" : "../test-classes/global/LocalStorageNodeTests",
         "atmosphere" : "lib/atmosphereNode",
-        "log4javascript" : "lib/log4javascriptNode",
+        "log4javascriptDependency" : "lib/log4javascriptNode",
         "global/WebSocket" : "../test-classes/global/WebSocketMock",
         "global/WaitsFor" : "../test-classes/global/WaitsFor",
         "joynr/Runtime" : "joynr/Runtime.inprocess",

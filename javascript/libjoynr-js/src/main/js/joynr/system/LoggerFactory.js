@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
  * #L%
  */
 
-define("joynr/system/LoggerFactory", [ "joynr/system/LoggingManager"
-], function(LoggingManager) {
+define("joynr/system/LoggerFactory", [
+    "joynr/system/LoggingManager",
+    "joynr/system/DefaultLoggerConfiguration"
+], function(LoggingManager, defaultConfig) {
     /**
      * @name LoggerFactory
      * @class
@@ -37,7 +39,9 @@ define("joynr/system/LoggerFactory", [ "joynr/system/LoggingManager"
      */
     LoggerFactory.getLogger = function getLogger(name) {
         if (loggingManager === undefined) {
-            LoggerFactory.init(new LoggingManager());
+            var newLoggingManager = new LoggingManager();
+            newLoggingManager.configure(defaultConfig);
+            LoggerFactory.init(newLoggingManager);
         }
 
         return loggingManager.getLogger(name);

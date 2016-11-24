@@ -99,14 +99,6 @@
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 
-#include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerMasterRegistrationControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerOwnerRegistrationControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerMediatorRegistrationControlEntryChangedBroadcastFilterParameters.h"
-
 #include "joynr/MulticastPublication.h"
 #include "joynr/MessagingQos.h"
 
@@ -828,27 +820,27 @@ public:
     {
         ON_CALL(
                 *this,
-                getLocation(_,_)
+                getLocationMock(_,_)
         )
                 .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeLocationOnSuccessFct));
         ON_CALL(
                 *this,
-                getListOfStrings(_,_)
+                getListOfStringsMock(_,_)
         )
                 .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeListOfStringsOnSuccessFct));
         ON_CALL(
                 *this,
-                getAttributeWithProviderRuntimeException(_,_)
+                getAttributeWithProviderRuntimeExceptionMock(_,_)
         )
                 .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeGetterOnErrorFunctionWithProviderRuntimeException));
         ON_CALL(
                 *this,
-                methodWithProviderRuntimeException(_,_)
+                methodWithProviderRuntimeExceptionMock(_,_)
         )
                 .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeMethodOnErrorFunctionWithProviderRuntimeException));
         ON_CALL(
                 *this,
-                mapParameters(_,_,_)
+                mapParametersMock(_,_,_)
         )
                 .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeMapParametersOnSuccessFct));
 
@@ -859,33 +851,80 @@ public:
     {
         EXPECT_CALL(
                 *this,
-                getLocation(_,_)
+                getLocationMock(_,_)
         )
                 .Times(getLocationCardinality)
                 .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeLocationOnSuccessFct));
         EXPECT_CALL(
                 *this,
-                getListOfStrings(_,_)
+                getListOfStringsMock(_,_)
         )
                 .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeListOfStringsOnSuccessFct));
     }
 
-    MOCK_METHOD2(getLocation,
+    // GoogleMock does not support mocking functions with r-value references as parameters
+    MOCK_METHOD2(getLocationMock,
                  void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,
                       std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>));
-    MOCK_METHOD3(mapParameters,
+
+    void getLocation(
+                std::function<void(const joynr::types::Localisation::GpsLocation&)>&& onSuccess,
+                std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError
+        ) override
+    {
+        getLocationMock(onSuccess, onError);
+    }
+
+    MOCK_METHOD3(mapParametersMock,
                  void(const joynr::types::TestTypes::TStringKeyMap&,
                       std::function<void(const joynr::types::TestTypes::TStringKeyMap&)>,
                       std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)>));
-    MOCK_METHOD2(getListOfStrings,
+
+    void mapParameters(
+                const joynr::types::TestTypes::TStringKeyMap& tStringMapIn,
+                std::function<void(const joynr::types::TestTypes::TStringKeyMap& tStringMapOut)>&& onSuccess,
+                std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)> onError
+        ) override
+    {
+        mapParametersMock(tStringMapIn, onSuccess, onError);
+    }
+
+    MOCK_METHOD2(getListOfStringsMock,
                  void(std::function<void(const std::vector<std::string>& listOfStrings)>,
-                      std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)>));
-    MOCK_METHOD2(getAttributeWithProviderRuntimeException,
+                      std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>));
+
+    void getListOfStrings(
+                std::function<void(const std::vector<std::string>&)>&& onSuccess,
+                std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError
+        ) override
+    {
+        getListOfStringsMock(onSuccess, onError);
+    }
+
+    MOCK_METHOD2(getAttributeWithProviderRuntimeExceptionMock,
                  void(std::function<void(const std::int32_t&)>,
                       std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>));
-    MOCK_METHOD2(methodWithProviderRuntimeException,
+
+    void getAttributeWithProviderRuntimeException(
+                std::function<void(const std::int32_t&)>&& onSuccess,
+                std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError
+        ) override
+    {
+        getAttributeWithProviderRuntimeExceptionMock(onSuccess, onError);
+    }
+
+    MOCK_METHOD2(methodWithProviderRuntimeExceptionMock,
                  void(std::function<void()>,
                       std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)>));
+
+    void methodWithProviderRuntimeException(
+                std::function<void()>&& onSuccess,
+                std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)> onError
+        ) override
+    {
+        methodWithProviderRuntimeExceptionMock(onSuccess, onError);
+    }
+
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
     MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
@@ -900,8 +939,17 @@ private:
 class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
 public:
     MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(std::make_shared<MockGpsProvider>() ) {}
-    MOCK_METHOD2(getLocation, void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,
-                                   std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>));
+    MOCK_METHOD2(getLocationMock, void(std::function<void(const joynr::types::Localisation::GpsLocation&)>,
+                                       std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>));
+    
+    void getLocation(
+                std::function<void(const joynr::types::Localisation::GpsLocation&)>&& onSuccess,
+                std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError
+        ) override
+    {
+        getLocationMock(onSuccess, onError);
+    }
+
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
 };
@@ -1066,31 +1114,6 @@ public:
                 std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
             )
     );
-
-    MOCK_METHOD3(subscribeToDomainRoleEntryChangedBroadcast,
-                 std::string(
-                     joynr::infrastructure::GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters,
-                     std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::DomainRoleEntry,
-                                                                 joynr::infrastructure::DacTypes::ChangeType::Enum>>,
-                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
-    MOCK_METHOD3(subscribeToOwnerAccessControlEntryChangedBroadcast,
-                 std::string(
-                     joynr::infrastructure::GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters,
-                     std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::OwnerAccessControlEntry,
-                                                                 joynr::infrastructure::DacTypes::ChangeType::Enum>>,
-                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
-    MOCK_METHOD3(subscribeToMediatorAccessControlEntryChangedBroadcast,
-                 std::string(
-                     joynr::infrastructure::GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters,
-                     std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::ChangeType::Enum,
-                                                                 joynr::infrastructure::DacTypes::MasterAccessControlEntry>>,
-                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
-    MOCK_METHOD3(subscribeToMasterAccessControlEntryChangedBroadcast,
-                 std::string(
-                     joynr::infrastructure::GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters,
-                     std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::ChangeType::Enum,
-                                                                 joynr::infrastructure::DacTypes::MasterAccessControlEntry>>,
-                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
 
 };
 

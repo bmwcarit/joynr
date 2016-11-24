@@ -49,6 +49,13 @@ static const std::string SINGLE_LEVEL_WILDCARD("+");
 static const std::string MULTI_LEVEL_WILDCARD("*");
 static const std::string MULTICAST_PARTITION_SEPARATOR("/");
 
+/**
+ * @brief Check if the specified file exists and is readable.
+ * @param filePath
+ * @return true if file exists, false otherwise
+ */
+bool fileExists(const std::string& fileName);
+
 std::string createMulticastId(const std::string& providerParticipantId,
                               const std::string& multicastName,
                               const std::vector<std::string>& partitions);
@@ -65,28 +72,6 @@ std::string attributeGetterFromName(const std::string& attributeName);
 
 std::string loadStringFromFile(const std::string& fileName);
 void saveStringToFile(const std::string& fileName, const std::string& strToSave);
-
-template <class T>
-std::vector<T> convertIntListToEnumList(const std::vector<int>& inputList)
-{
-    std::vector<T> ret;
-    ret.reserve(inputList.size());
-    for (const int& i : inputList) {
-        ret.push_back((T)i);
-    }
-    return ret;
-}
-
-template <class T>
-std::vector<int> convertEnumListToIntList(const std::vector<T>& enumList)
-{
-    std::vector<int> enumAsIntList;
-    enumAsIntList.reserve(enumList.size());
-    for (const T& e : enumList) {
-        enumAsIntList.push_back(e);
-    }
-    return enumAsIntList;
-}
 
 /**
  * Create a Uuid for use in Joynr.

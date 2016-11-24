@@ -409,6 +409,22 @@ define(
                             done();
                         });
 
+                        it("augmentTypes is able to deal with error enums as input", function() {
+                            var fixture, expected, result, typeRegistry =
+                                    TypeRegistrySingleton.getInstance();
+                            fixture = {
+                                "_typeName" : "joynr.tests.testTypes.TestEnum",
+                                "name" : "ZERO"
+                            };
+                            expected = TestEnum.ZERO;
+                            result = Typing.augmentTypes(fixture, typeRegistry);
+                            expect(result.name).toBeDefined();
+                            expect(result.name).toBe(expected.name);
+                            expect(result.value).toBeDefined();
+                            expect(result.value).toBe(expected.value);
+                            expect(result).toBe(expected);
+                        });
+
                         it(
                                 "augmentTypes is able to deal with structs containing enum members",
                                 function(done) {

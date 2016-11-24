@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.22.0-SNAPSHOT)
+project(joynr-0.23.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 22)
+set(JOYNR_MINOR_VERSION 23)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -453,23 +453,31 @@ link_directories(
 string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_TOLOWER)
 if(CMAKE_BUILD_TYPE_TOLOWER MATCHES debug)
     set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
+    set(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level evaluated at runtime")
 else()
-    set(JOYNR_MAX_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level")
+    set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
+    set(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level evaluated at runtime")
 endif()
 
-set_property(
-             CACHE
-             JOYNR_MAX_LOG_LEVEL
-             PROPERTY STRINGS
-             FATAL
-             ERROR
-             WARN
-             INFO
-             DEBUG
-             TRACE
-)
+macro(CREATE_LOG_LEVEL_PROPERTY name)
+    set_property(
+                 CACHE
+                 ${name}
+                 PROPERTY STRINGS
+                 FATAL
+                 ERROR
+                 WARN
+                 INFO
+                 DEBUG
+                 TRACE
+    )
+endmacro(CREATE_LOG_LEVEL_PROPERTY)
+
+CREATE_LOG_LEVEL_PROPERTY(JOYNR_MAX_LOG_LEVEL)
+CREATE_LOG_LEVEL_PROPERTY(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL)
 
 add_definitions("-DJOYNR_MAX_LOG_LEVEL_${JOYNR_MAX_LOG_LEVEL}")
+add_definitions("-DJOYNR_DEFAULT_RUNTIME_LOG_LEVEL_${JOYNR_DEFAULT_RUNTIME_LOG_LEVEL}")
 
 ######## DEFAULT COMPILER FLAGS #############
 

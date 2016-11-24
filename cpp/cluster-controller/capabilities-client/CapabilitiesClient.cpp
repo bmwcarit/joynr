@@ -73,7 +73,7 @@ void CapabilitiesClient::add(
                         error.getMessage());
     };
     assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);
+    defaultCapabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, std::move(onError));
 }
 
 void CapabilitiesClient::remove(const std::string& participantId)
@@ -109,7 +109,7 @@ void CapabilitiesClient::lookup(
 {
     std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
             getGlobalCapabilitiesDirectoryProxy(messagingTtl);
-    proxy->lookupAsync(domains, interfaceName, onSuccess, onError);
+    proxy->lookupAsync(domains, interfaceName, std::move(onSuccess), std::move(onError));
 }
 
 void CapabilitiesClient::lookup(
@@ -121,12 +121,13 @@ void CapabilitiesClient::lookup(
     assert(defaultCapabilitiesProxy);
     defaultCapabilitiesProxy->lookupAsync(
             participantId,
-            [onSuccess](const joynr::types::GlobalDiscoveryEntry& capability) {
+            [onSuccess = std::move(onSuccess)](
+                    const joynr::types::GlobalDiscoveryEntry& capability) {
                 std::vector<joynr::types::GlobalDiscoveryEntry> result;
                 result.push_back(capability);
                 onSuccess(result);
             },
-            onError);
+            std::move(onError));
 }
 
 void CapabilitiesClient::touch(
@@ -135,7 +136,8 @@ void CapabilitiesClient::touch(
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
 {
     assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->touchAsync(clusterControllerId, onSuccess, onError);
+    defaultCapabilitiesProxy->touchAsync(
+            clusterControllerId, std::move(onSuccess), std::move(onError));
 }
 
 void CapabilitiesClient::setProxyBuilder(std::unique_ptr<

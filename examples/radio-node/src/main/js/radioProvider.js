@@ -108,6 +108,11 @@ log("domain: " + domain);
 
 var provisioning = require("./provisioning_common.js");
 
+provisioning.persistency = {
+    //clearPersistency : true,
+    location : "./radioLocalStorageProvider"
+};
+
 if (process.env.runtime !== undefined) {
     if (process.env.runtime === "inprocess") {
         provisioning.brokerUri = process.env.brokerUri;
@@ -134,14 +139,15 @@ joynr.load(provisioning).then(function(loadedJoynr) {
         supportsOnChangeSubscriptions : true
     });
 
+    var radioProviderImpl = new MyRadioProvider();
     var radioProvider = joynr.providerBuilder.build(
         RadioProvider,
-        MyRadioProvider.implementation);
-    MyRadioProvider.setProvider(radioProvider);
+        radioProviderImpl);
+    radioProviderImpl.setProvider(radioProvider);
 
     joynr.registration.registerProvider(domain, radioProvider, providerQos).then(function() {
         log("provider registered successfully");
-        runInteractiveConsole(MyRadioProvider.implementation, function() {
+        runInteractiveConsole(radioProviderImpl, function() {
             return joynr.registration.unregisterProvider(domain, radioProvider)
             .finally(function() {
                 joynr.shutdown();

@@ -398,8 +398,10 @@ define(
 
                             // clustercontroller messaging handled by the messageRouter
                             messageRouterSkeleton.registerListener(messageRouter.route);
+                            var ttlUpLiftMs = (provisioning.messaging && provisioning.messaging.TTL_UPLIFT) ?
+                                    provisioning.messaging.TTL_UPLIFT : undefined;
                             dispatcher =
-                                    new Dispatcher(messageRouterStub, new PlatformSecurityManager());
+                                    new Dispatcher(messageRouterStub, new PlatformSecurityManager(), ttlUpLiftMs);
 
                             libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                             libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
@@ -584,6 +586,10 @@ define(
 
                             if (typeRegistry !== undefined) {
                                 typeRegistry.shutdown();
+                            }
+
+                            if (loggingManager !== undefined) {
+                                loggingManager.shutdown();
                             }
 
                             return Promise.all([]/* TODO: insert promises here */).then(function() {

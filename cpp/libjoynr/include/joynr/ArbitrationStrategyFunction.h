@@ -18,6 +18,7 @@
  */
 #ifndef ARBITRATIONSTRATEGYFUNCTION_H
 #define ARBITRATIONSTRATEGYFUNCTION_H
+
 #include <map>
 #include <string>
 #include <vector>
@@ -34,9 +35,10 @@ class CustomParameter;
 class ArbitrationStrategyFunction
 {
 public:
+    virtual ~ArbitrationStrategyFunction() = default;
     virtual std::string select(
             const std::map<std::string, types::CustomParameter> customParameters,
             const std::vector<types::DiscoveryEntry>& discoveryEntries) const = 0;
 };
-} // namnespace joynr
+} // namespace joynr
 #endif // ARBITRATIONSTRATEGYFUNCTION_H

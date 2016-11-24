@@ -221,9 +221,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {
         try {
             using system::RoutingTypes::MqttAddress;
-            MqttAddress address;
-            joynr::serializer::deserializeFromJson(address, capabilitiesDirectoryChannelId);
-            auto globalCapabilitiesDirectoryAddress = std::make_shared<MqttAddress>(address);
+            auto globalCapabilitiesDirectoryAddress = std::make_shared<MqttAddress>();
+            joynr::serializer::deserializeFromJson(
+                    *globalCapabilitiesDirectoryAddress, capabilitiesDirectoryChannelId);
             messageRouter->addProvisionedNextHop(
                     capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
         } catch (const std::invalid_argument& e) {
@@ -232,7 +232,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                             capabilitiesDirectoryChannelId,
                             e.what());
         }
-
     } else {
         auto globalCapabilitiesDirectoryAddress =
                 std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
@@ -260,7 +259,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     /* LibJoynr */
     assert(messageRouter);
-    joynrMessageSender = new JoynrMessageSender(messageRouter);
+    joynrMessageSender = new JoynrMessageSender(messageRouter, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
@@ -388,8 +387,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       * libJoynr side
       *
       */
-    publicationManager =
-            new PublicationManager(singleThreadIOService->getIOService(), joynrMessageSender);
+    publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
+                                                joynrMessageSender,
+                                                messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
@@ -411,7 +411,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             inProcessConnectorFactory, joynrMessagingConnectorFactory);
-    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, std::move(connectorFactory), &cache);
+    proxyFactory = std::make_unique<ProxyFactory>(
+            libjoynrMessagingAddress, std::move(connectorFactory), &cache);
 
     dispatcherList.push_back(joynrDispatcher);
     dispatcherList.push_back(inProcessDispatcher);
@@ -552,7 +553,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     delete inProcessPublicationSender;
     inProcessPublicationSender = nullptr;
     delete joynrMessageSender;
-    delete proxyFactory;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     delete ccDbusMessageRouterAdapter;

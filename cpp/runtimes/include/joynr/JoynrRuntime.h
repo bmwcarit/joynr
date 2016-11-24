@@ -146,7 +146,7 @@ public:
                     "startMessaging was called is not yet supported.");
         }
         ProxyBuilder<TIntfProxy>* builder =
-                new ProxyBuilder<TIntfProxy>(proxyFactory,
+                new ProxyBuilder<TIntfProxy>(*proxyFactory,
                                              requestCallerDirectory,
                                              *discoveryProxy,
                                              domain,
@@ -219,7 +219,7 @@ protected:
     std::unique_ptr<SingleThreadedIOService> singleThreadIOService;
 
     /** @brief Factory for creating proxy instances */
-    ProxyFactory* proxyFactory;
+    std::unique_ptr<ProxyFactory> proxyFactory;
     /** Is forwarded to proxy builder objects. They use it to identify in-process providers **/
     IRequestCallerDirectory* requestCallerDirectory;
     /** @brief Creates and persists participant id */

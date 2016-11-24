@@ -516,6 +516,49 @@ define([
                                 });
 
                         it(
+                                "timeouts after the given discoveryTimeoutMs when capabilityDiscoveryStub throws exceptions",
+                                function(done) {
+                                    var onRejectedSpy = jasmine.createSpy("onRejectedSpy");
+                                    var fakeError = new Error("simulate discovery exception");
+                                    capDiscoverySpy.lookup.and.returnValue(Promise.reject(fakeError));
+                                    discoveryQos.discoveryTimeoutMs = 500;
+                                    discoveryQos.discoveryRetryDelayMs = 30;
+
+                                    arbitrator.startArbitration({
+                                        domains : [domain],
+                                        interfaceName : interfaceName,
+                                        discoveryQos : discoveryQos,
+                                        proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
+                                    }).then(function() {
+                                        fail("startArbitration got resolved unexpectedly");
+                                        return null;
+                                    }).catch(function(error) {
+                                        onRejectedSpy(error);
+                                        return null;
+                                    });
+
+                                    var checkpointMs = discoveryQos.discoveryRetryDelayMs * 5;
+                                    // let checkpoint ms pass
+                                    increaseFakeTime(checkpointMs);
+                                    var waitsForPromise = waitsFor(function() {
+                                        return onRejectedSpy.calls.count() > 0;
+                                    }, "startArbitration to fail", checkpointMs);
+                                    waitsForPromise.then(fail).catch(function() {
+                                        expect(onRejectedSpy).not.toHaveBeenCalled();
+                                        // let discoveryTimeoutMs pass
+                                        increaseFakeTime(discoveryQos.discoveryTimeoutMs - checkpointMs);
+                                        return waitsFor(function() {
+                                            return onRejectedSpy.calls.count() > 0;
+                                        }, "startArbitration to fail", discoveryQos.discoveryRetryDelayMs).then(function() {
+                                            expect(onRejectedSpy).toHaveBeenCalled();
+                                            expect(onRejectedSpy.calls.mostRecent().args[0] instanceof DiscoveryException).toBeTruthy();
+                                            expect(onRejectedSpy.calls.mostRecent().args[0].detailMessage).toMatch(fakeError.message);
+                                            done();
+                                        }).catch(fail);
+                                    });
+                                });
+
+                        it(
                                 "reruns discovery for empty discovery results according to discoveryTimeoutMs and discoveryRetryDelayMs",
                                 function(done) {
                                     //capDiscoverySpy.lookup.and.returnValue(Promise.resolve([]));

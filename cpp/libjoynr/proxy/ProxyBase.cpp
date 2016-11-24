@@ -17,8 +17,10 @@
  * #L%
  */
 #include "joynr/ProxyBase.h"
-#include "joynr/Util.h"
+
 #include <tuple>
+
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -41,10 +43,6 @@ ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
     proxyParticipantId = util::createUuid();
 }
 
-ProxyBase::~ProxyBase()
-{
-}
-
 void ProxyBase::handleArbitrationFinished(const std::string& participantId,
                                           bool useInProcessConnector)
 {
@@ -52,7 +50,7 @@ void ProxyBase::handleArbitrationFinished(const std::string& participantId,
     providerParticipantId = participantId;
 }
 
-std::string ProxyBase::getProxyParticipantId()
+const std::string& ProxyBase::getProxyParticipantId() const
 {
     return this->proxyParticipantId;
 }

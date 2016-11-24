@@ -278,8 +278,8 @@ class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
 {
 public:
     LocalCapabilitiesCallback(
-            std::function<void(const std::vector<types::DiscoveryEntry>&)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+            std::function<void(const std::vector<types::DiscoveryEntry>&)>&& onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)>&& onError);
     void capabilitiesReceived(const std::vector<types::DiscoveryEntry>& capabilities) override;
     void onError(const joynr::exceptions::JoynrRuntimeException&) override;
     ~LocalCapabilitiesCallback() override = default;

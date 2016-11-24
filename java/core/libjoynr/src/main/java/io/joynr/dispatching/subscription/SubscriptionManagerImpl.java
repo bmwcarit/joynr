@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -68,7 +69,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     private ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory;
     private ConcurrentMap<String, Future<String>> subscriptionFutureMap;
     private ConcurrentMap<String, Class<?>> subscriptionTypes;
-    private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes;
+    private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes;
+    private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes;
     private ConcurrentMap<String, PubSubState> subscriptionStates;
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
     private ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures; // These futures will be needed if a
@@ -94,7 +96,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.missedPublicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
         this.subscriptionTypes = Maps.newConcurrentMap();
-        this.subscriptionBroadcastTypes = Maps.newConcurrentMap();
+        this.unicastBroadcastTypes = Maps.newConcurrentMap();
+        this.multicastBroadcastTypes = Maps.newConcurrentMap();
         this.subscriptionFutureMap = Maps.newConcurrentMap();
         this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
     }
@@ -107,7 +110,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                    ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
                                    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
                                    ConcurrentMap<String, Class<?>> subscriptionAttributeTypes,
-                                   ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes,
+                                   ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes,
+                                   ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes,
                                    ConcurrentMap<String, Future<String>> subscriptionFutureMap,
                                    ScheduledExecutorService cleanupScheduler,
                                    Dispatcher dispatcher,
@@ -120,7 +124,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.missedPublicationTimers = missedPublicationTimers;
         this.subscriptionEndFutures = subscriptionEndFutures;
         this.subscriptionTypes = subscriptionAttributeTypes;
-        this.subscriptionBroadcastTypes = subscriptionBroadcastTypes;
+        this.unicastBroadcastTypes = unicastBroadcastTypes;
+        this.multicastBroadcastTypes = multicastBroadcastTypes;
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
         this.subscriptionFutureMap = subscriptionFutureMap;
@@ -214,7 +219,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                  public SubscriptionRequest execute() {
                                      String subscriptionId = request.getSubscriptionId();
                                      logger.debug("Broadcast subscription registered with Id: " + subscriptionId);
-                                     subscriptionBroadcastTypes.put(subscriptionId, request.getOutParameterTypes());
+                                     unicastBroadcastTypes.put(subscriptionId, request.getOutParameterTypes());
                                      broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                                                 request.getBroadcastSubscriptionListener());
                                      return new BroadcastSubscriptionRequest(request.getSubscriptionId(),
@@ -247,8 +252,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                                        Sets.<String> newHashSet());
                                          }
                                          multicastSubscribersDirectory.get(multicastIdPattern).add(subscriptionId);
-                                         subscriptionBroadcastTypes.put(multicastId,
-                                                                        multicastSubscribeInvocation.getOutParameterTypes());
+                                         multicastBroadcastTypes.putIfAbsent(multicastIdPattern,
+                                                                             multicastSubscribeInvocation.getOutParameterTypes());
                                          broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                                                     multicastSubscribeInvocation.getListener());
                                          return new MulticastSubscriptionRequest(multicastId,
@@ -438,8 +443,20 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
-    public Class<?>[] getBroadcastOutParameterTypes(String subscriptionId) {
-        return subscriptionBroadcastTypes.get(subscriptionId);
+    public Class<?>[] getUnicastPublicationOutParameterTypes(String subscriptionId) {
+        return unicastBroadcastTypes.get(subscriptionId);
+    }
+
+    @Override
+    public Class<?>[] getMulticastPublicationOutParameterTypes(String multicastId) {
+        Class<?>[] outParamterTypes = null;
+        for (Map.Entry<Pattern, Class<?>[]> entry : multicastBroadcastTypes.entrySet()) {
+            if (entry.getKey().matcher(multicastId).matches()) {
+                outParamterTypes = entry.getValue();
+                break;
+            }
+        }
+        return outParamterTypes;
     }
 
     private void removeSubscription(String subscriptionId) {
@@ -453,10 +470,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
         subscriptionStates.remove(subscriptionId);
         subscriptionListenerDirectory.remove(subscriptionId);
-        subscriptionBroadcastTypes.remove(subscriptionId);
+        unicastBroadcastTypes.remove(subscriptionId);
         broadcastSubscriptionListenerDirectory.remove(subscriptionId);
-        for (Set<String> subscriptionIds : multicastSubscribersDirectory.values()) {
+        for (Entry<Pattern, Set<String>> entry : multicastSubscribersDirectory.entrySet()) {
+            Set<String> subscriptionIds = entry.getValue();
             subscriptionIds.remove(subscriptionId);
+            if (subscriptionIds.isEmpty()) {
+                multicastBroadcastTypes.remove(entry.getKey());
+            }
         }
         subscriptionTypes.remove(subscriptionId);
     }

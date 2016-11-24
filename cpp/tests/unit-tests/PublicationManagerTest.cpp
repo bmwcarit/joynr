@@ -1398,7 +1398,7 @@ TEST_F(PublicationManagerTest, attribute_provideCallContextWhenPollingAttribute)
 
     CallContextStorage::set(expectedCallContext);
 
-    ON_CALL(*requestCaller, getLocation(_,_)).
+    ON_CALL(*requestCaller, getLocationMock(_,_)).
         WillByDefault(testing::Invoke(this, &PublicationManagerTest::invokeLocationAndSaveCallContext));
 
     publicationManager.add(proxyParticipantId,

@@ -67,8 +67,8 @@ INIT_LOGGER(«interfaceName»RequestInterpreter);
 void «interfaceName»RequestInterpreter::execute(
 		std::shared_ptr<joynr::RequestCaller> requestCaller,
 		Request& request,
-		std::function<void (BaseReply&& reply)> onSuccess,
-		std::function<void (const std::shared_ptr<exceptions::JoynrException>& exception)> onError
+		std::function<void (BaseReply&& reply)>&& onSuccess,
+		std::function<void (const std::shared_ptr<exceptions::JoynrException>& exception)>&& onError
 ) {
 	«IF francaIntf.hasReadAttribute || francaIntf.hasWriteAttribute || !methodsWithoutFireAndForget.empty»
 		// cast generic RequestCaller to «interfaceName»Requestcaller

@@ -40,6 +40,8 @@ define("joynr/exceptions/MethodInvocationException", [
      *
      * @param {Object}
      *            [settings] the settings object for the constructor call
+     * @param {Version} [settings.providerVersion] the version of the provider
+     *            which could not handle the method invocation
      * @param {String}
      *            [settings.detailMessage] message containing details
      *            about the error

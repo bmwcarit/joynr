@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+#include <map>
 #include <boost/type_index.hpp>
 #include <boost/algorithm/string/erase.hpp>
 #include <spdlog/spdlog.h>
@@ -61,6 +62,30 @@ enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
 #define JOYNR_LOG_LEVEL joynr::LogLevel::Trace
 #endif
 
+#ifdef JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_FATAL
+#define JOYNR_DEFAULT_RUNTIME_LOG_LEVEL spdlog::level::critical
+#endif // JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_FATAL
+
+#ifdef JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_ERROR
+#define JOYNR_DEFAULT_RUNTIME_LOG_LEVEL spdlog::level::err
+#endif // JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_ERROR
+
+#ifdef JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_WARN
+#define JOYNR_DEFAULT_RUNTIME_LOG_LEVEL spdlog::level::warn
+#endif // JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_WARN
+
+#ifdef JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_INFO
+#define JOYNR_DEFAULT_RUNTIME_LOG_LEVEL spdlog::level::info
+#endif // JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_INFO
+
+#ifdef JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_DEBUG
+#define JOYNR_DEFAULT_RUNTIME_LOG_LEVEL spdlog::level::debug
+#endif // JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_DEBUG
+
+#ifndef JOYNR_DEFAULT_RUNTIME_LOG_LEVEL
+#define JOYNR_DEFAULT_RUNTIME_LOG_LEVEL spdlog::level::trace
+#endif
+
 #define JOYNR_CONDITIONAL_SPDLOG(level, method, logger, ...)                                       \
     do {                                                                                           \
         joynr::LogLevel logLevel = level;                                                          \
@@ -95,10 +120,41 @@ enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
 
 namespace joynr
 {
+struct LogLevelInitializer
+{
+    LogLevelInitializer()
+    {
+        const char* logLevelEnv = std::getenv("JOYNR_LOG_LEVEL");
+
+        if (logLevelEnv == nullptr) {
+            spdlog::set_level(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL);
+            return;
+        }
+
+        const std::string runtimeLogLevelName(logLevelEnv);
+        const std::map<std::string, spdlog::level::level_enum> logLevels{
+                {"TRACE", spdlog::level::trace},
+                {"DEBUG", spdlog::level::debug},
+                {"INFO", spdlog::level::info},
+                {"WARN", spdlog::level::warn},
+                {"ERROR", spdlog::level::err},
+                {"FATAL", spdlog::level::critical}};
+
+        auto matchingLogLevel = logLevels.find(runtimeLogLevelName);
+
+        if (matchingLogLevel == logLevels.cend()) {
+            spdlog::set_level(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL);
+        } else {
+            spdlog::set_level(matchingLogLevel->second);
+        }
+    }
+};
+
 struct Logger
 {
     Logger(const std::string& prefix) : spdlog()
     {
+        static LogLevelInitializer logLevelInitializer;
         std::vector<spdlog::sink_ptr> sinks;
 
 #ifdef JOYNR_ENABLE_STDOUT_LOGGING
@@ -109,8 +165,7 @@ struct Logger
         sinks.push_back(std::make_shared<joynr::DltSink>());
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
-        spdlog = std::make_shared<spdlog::logger>(prefix, begin(sinks), end(sinks));
-        spdlog->set_level(spdlog::level::trace);
+        spdlog = spdlog::create(prefix, begin(sinks), end(sinks));
         spdlog->set_pattern("%Y-%m-%d %H:%M:%S.%e [thread ID:%t] [%l] %n %v");
     }
 
