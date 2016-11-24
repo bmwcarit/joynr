@@ -74,6 +74,11 @@ typeCollection testTypes {
 	enumeration ErrorEnumBase {
 		BASE_ERROR_TYPECOLLECTION
 	}
+
+	struct DerivedFromStructWithDifferentPackage extends TStruct {
+		String someString
+	}
+
 }
 
 interface TestWithoutVersion {
