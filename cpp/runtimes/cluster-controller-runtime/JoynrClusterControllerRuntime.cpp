@@ -126,6 +126,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           connectorFactory(nullptr),
           settings(std::move(settings)),
           libjoynrSettings(*(this->settings)),
+          clusterControllerSettings(*(this->settings)),
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
           dbusSettings(nullptr),
           ccDbusMessageRouterAdapter(nullptr),
@@ -219,6 +220,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                     singleThreadIOService->getIOService(),
                                                     std::move(addressCalculator));
     messageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
+    messageRouter->loadMulticastReceiverDirectory(
+            clusterControllerSettings.getMulticastReceiverDirectoryPersistenceFilename());
 
     // provision global capabilities directory
     if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {

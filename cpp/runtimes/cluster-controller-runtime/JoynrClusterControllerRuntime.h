@@ -33,6 +33,7 @@
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/RuntimeConfig.h"
+#include "joynr/ClusterControllerSettings.h"
 
 #include "libjoynr/websocket/WebSocketSettings.h"
 
@@ -138,6 +139,7 @@ protected:
     // take ownership, so a pointer is used
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
+    ClusterControllerSettings clusterControllerSettings;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     DbusSettings* dbusSettings;
