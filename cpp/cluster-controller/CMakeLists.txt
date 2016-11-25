@@ -98,6 +98,7 @@ file(
     "messaging/in-process/*.h"
     "messaging/joynr-messaging/*.h"
     "mqtt/*.h"
+    "ClusterControllerSettings.cpp"
 )
 
 set(
