@@ -171,7 +171,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
 
     if (brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
-                                  joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT)) {
+                                  joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT) ||
+        brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
+                                  joynr::system::RoutingTypes::MqttProtocol::Enum::TCP)) {
         JOYNR_LOG_INFO(logger, "MQTT-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
                 brokerUrl.toString(), "");
