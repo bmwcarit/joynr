@@ -93,8 +93,7 @@ define(
                 if (obj === null || obj === undefined) {
                     throw new Error("cannot determine the type of an undefined object");
                 }
-                var results = /function ([$\w]+)\(/.exec(obj.constructor.toString());
-                return (results && results.length > 1) ? results[1] : "";
+                return obj.constructor.name || "";
             };
 
             /**
