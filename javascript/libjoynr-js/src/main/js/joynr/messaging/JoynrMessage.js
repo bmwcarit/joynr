@@ -47,7 +47,7 @@ define(
                 settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE] = "application/json";
                 settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] =
                         settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID]
-                            || (jmBase + "_" + jmIndex);
+                            || (jmBase + "_" + jmIndex++);
                 Object.setPrototypeOf(settings, JoynrMessage.prototype);
                 /*jslint nomen: false*/
                 return settings;
