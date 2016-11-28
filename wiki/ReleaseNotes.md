@@ -1,3 +1,10 @@
+#joynr 0.22.1
+
+##Other changes
+
+* **[JS]** Bugfix: For non-selective broadcast subscriptions the listeners could be called too
+  often if multiple matching listeners were found.
+
 #joynr 0.22.0
 
 ##API relevant changes
