@@ -65,7 +65,7 @@ const std::uint32_t «typeName»::MINOR_VERSION = «minorVersion»;
 
 «typeName»::«typeName»()«IF !getMembersRecursive(type).empty»:«ENDIF»
 	«IF hasExtendsDeclaration(type)»
-		«getExtendedType(type).joynrName»()«IF !getMembers(type).empty»,«ENDIF»
+		«getExtendedType(type).typeName»()«IF !getMembers(type).empty»,«ENDIF»
 	«ENDIF»
 	«FOR member: getMembers(type) SEPARATOR ','»
 		«member.joynrName»(«member.defaultValue»)
@@ -81,7 +81,7 @@ const std::uint32_t «typeName»::MINOR_VERSION = «minorVersion»;
 	):
 		«IF hasExtendsDeclaration(type)»
 			«val extendedType = getExtendedType(type)»
-			«extendedType.joynrName»(
+			«extendedType.typeName»(
 			«FOR member: getMembersRecursive(extendedType) SEPARATOR ','»
 				«member.joynrName»
 			«ENDFOR»
@@ -160,7 +160,7 @@ std::size_t hash_value(const «typeName»& «typeName.toFirstLower»Value)
 	return «typeName.toFirstLower»Value.hashCode();
 }
 
-std::unique_ptr<«getRootType(type).joynrName»> «typeName»::clone() const {
+std::unique_ptr<«getRootType(type).typeName»> «typeName»::clone() const {
 	return std::make_unique<«typeName»>(const_cast<«typeName»&>(*this));
 }
 
