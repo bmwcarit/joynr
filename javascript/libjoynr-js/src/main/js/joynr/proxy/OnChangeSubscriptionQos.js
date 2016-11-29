@@ -103,7 +103,7 @@ define(
                 if (settings && !(settings instanceof OnChangeSubscriptionQos)) {
                     if (settings.minInterval !== undefined) {
                         log
-                                .warn("OnChangeSubscriptionQos has been invoked with deprecated settings member \"minIntervalMs\". "
+                                .warn("OnChangeSubscriptionQos has been invoked with deprecated settings member \"minInterval\". "
                                     + "By 2017-01-01, the min interval can only be specified with member \"minIntervalMs\".");
                         settings.minIntervalMs = settings.minInterval;
                         settings.minInterval = undefined;

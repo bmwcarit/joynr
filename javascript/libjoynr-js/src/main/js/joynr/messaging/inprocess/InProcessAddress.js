@@ -1,7 +1,8 @@
+/*jslint nomen:true */
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +66,28 @@ define("joynr/messaging/inprocess/InProcessAddress", [], function() {
         value : "joynr.system.RoutingTypes.InProcessAddress"
     });
 
+    Object.defineProperty(InProcessAddress.prototype, 'equals', {
+        enumerable : false,
+        configurable : false,
+        writable : false,
+        readable : true,
+        value : function equals(other) {
+            var i;
+            if (this === other) {
+                return true;
+            }
+            if (other === undefined || other === null) {
+                return false;
+            }
+            if (other._typeName === undefined || this._typeName !== other._typeName) {
+                return false;
+            }
+            if (this.getSkeleton() !== other.getSkeleton()) {
+                return false;
+            }
+            return true;
+        }
+    });
     return InProcessAddress;
 
 });

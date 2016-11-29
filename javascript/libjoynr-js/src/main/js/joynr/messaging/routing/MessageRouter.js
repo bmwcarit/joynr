@@ -322,6 +322,21 @@ define(
                             result.push(address);
                         }
                     }
+
+                    function containsAddress(array, address) {
+                        //each address class provides an equals method, e.g. InProcessAddress
+                        var j;
+                        if (array === undefined) {
+                            return false;
+                        }
+                        for (j=0;j<array.length;j++) {
+                            if (array[j].equals(address)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
                     var multicastIdPattern, receivers;
                     for (multicastIdPattern in multicastReceiversRegistry) {
                         if (multicastReceiversRegistry.hasOwnProperty(multicastIdPattern)) {
@@ -330,7 +345,7 @@ define(
                                 if (receivers !== undefined) {
                                     for (i=0;i<receivers.length;i++){
                                         address = routingTable[receivers[i]];
-                                        if (address !== undefined) {
+                                        if (address !== undefined && !containsAddress(result, address)) {
                                             result.push(address);
                                         }
                                     }
