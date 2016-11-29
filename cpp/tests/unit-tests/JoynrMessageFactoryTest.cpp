@@ -38,7 +38,7 @@ class JoynrMessageFactoryTest : public ::testing::Test
 {
 public:
     JoynrMessageFactoryTest()
-            : messageFactory(),
+            : messageFactory(0),
               senderID(),
               receiverID(),
               requestReplyID(),
@@ -299,4 +299,19 @@ TEST_F(JoynrMessageFactoryTest, testSetBestEffortHeader)
     EXPECT_TRUE(message.containsHeaderEffort());
     EXPECT_EQ(MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT),
               message.getHeaderEffort());
+}
+
+TEST_F(JoynrMessageFactoryTest, testTtlUplift)
+{
+    MessagingQos messagingQos;
+    messagingQos.setTtl(0);
+
+    const std::uint64_t ttlUplift = 10000;
+    const std::int64_t tolerance = 10;
+
+    JoynrMessageFactory factoryWithTtlUplift(ttlUplift);
+
+    JoynrMessage message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+
+    EXPECT_GE(std::chrono::duration_cast<std::chrono::milliseconds>(message.getHeaderExpiryDate() - std::chrono::system_clock::now()).count(), ttlUplift - tolerance);
 }

@@ -536,10 +536,13 @@ define(
                             clusterControllerMessagingSkeleton
                                     .registerListener(messageRouter.route);
 
+                            var ttlUpLiftMs = (provisioning.messaging && provisioning.messaging.TTL_UPLIFT) ?
+                                    provisioning.messaging.TTL_UPLIFT : undefined;
                             dispatcher =
                                     new Dispatcher(
                                             clusterControllerMessagingStub,
-                                            new PlatformSecurityManager());
+                                            new PlatformSecurityManager(),
+                                            ttlUpLiftMs);
 
                             libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                             libjoynrMessagingSkeleton.registerListener(dispatcher.receive);

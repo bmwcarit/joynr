@@ -222,7 +222,7 @@ define(
                     dispatcher.sendPublication({
                         from : subscriptionInfo.providerParticipantId,
                         to : subscriptionInfo.proxyParticipantId,
-                        expiryDate : (Date.now() + subscriptionInfo.qos.publicationTtlMs).toString()
+                        expiryDate : (Date.now() + subscriptionInfo.qos.publicationTtlMs)
                     }, subscriptionPublication
                     );
                 }
@@ -492,7 +492,7 @@ define(
                     });
                     dispatcher.sendMulticastPublication({
                         from : providerId,
-                        expiryDate : (Date.now() + SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS).toString()//TODO: what should be the ttl?
+                        expiryDate : (Date.now() + SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS)//TODO: what should be the ttl?
                     }, publication
                     );
                 }

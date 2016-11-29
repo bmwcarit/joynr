@@ -66,8 +66,7 @@ class MqttMessagingSkeletonTest : public ::testing::Test {
 public:
     MqttMessagingSkeletonTest() :
         singleThreadedIOService(),
-        mockMessageRouter(singleThreadedIOService.getIOService()),
-        messageFactory()
+        mockMessageRouter(singleThreadedIOService.getIOService())
     {
         singleThreadedIOService.start();
     }

@@ -26,7 +26,10 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import io.joynr.common.ExpiryDate;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
 import joynr.BroadcastSubscriptionRequest;
@@ -47,6 +50,9 @@ public class JoynrMessageFactory {
 
     private final Set<JoynrMessageProcessor> messageProcessors;
     private ObjectMapper objectMapper;
+    @Inject(optional = true)
+    @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
+    private long ttlUpliftMs = 0;
 
     private static final Logger logger = LoggerFactory.getLogger(JoynrMessageFactory.class);
 
@@ -61,7 +67,8 @@ public class JoynrMessageFactory {
                                        String toParticipantId,
                                        Object payload,
                                        MessagingQos messagingQos) {
-        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()
+                + ttlUpliftMs);
         JoynrMessage message = new JoynrMessage();
         message.setType(joynrMessageType);
         Map<String, String> header = createHeader(fromParticipantId, toParticipantId);

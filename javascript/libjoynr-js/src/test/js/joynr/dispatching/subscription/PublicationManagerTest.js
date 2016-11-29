@@ -420,7 +420,6 @@ define(
                                                             from : providerId,
                                                             to : proxyId,
                                                             expiryDate : (Date.now() + onChangeSubscriptionRequest.qos.publicationTtlMs)
-                                                                    .toString()
                                                         },
                                                         new SubscriptionPublication(
                                                                 {

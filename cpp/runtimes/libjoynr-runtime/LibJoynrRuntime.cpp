@@ -96,7 +96,7 @@ void LibJoynrRuntime::init(
     messageRouter->loadRoutingTable(libjoynrSettings->getMessageRouterPersistenceFilename());
     startLibJoynrMessagingSkeleton(messageRouter);
 
-    joynrMessageSender = new JoynrMessageSender(messageRouter);
+    joynrMessageSender = new JoynrMessageSender(messageRouter, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
@@ -105,8 +105,9 @@ void LibJoynrRuntime::init(
             std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager =
-            new PublicationManager(singleThreadIOService->getIOService(), joynrMessageSender);
+    publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
+                                                joynrMessageSender,
+                                                messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(

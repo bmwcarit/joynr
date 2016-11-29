@@ -259,7 +259,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     /* LibJoynr */
     assert(messageRouter);
-    joynrMessageSender = new JoynrMessageSender(messageRouter);
+    joynrMessageSender = new JoynrMessageSender(messageRouter, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
@@ -363,8 +363,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
             mqttMessageSender = std::make_shared<MqttSender>(messagingSettings);
 
-            mqttMessageSender->registerReceiveQueueStartedCallback(
-                    [&](void) { mqttMessageReceiver->waitForReceiveQueueStarted(); });
+            mqttMessageSender->registerReceiver(mqttMessageReceiver);
         }
 
         messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(
@@ -387,8 +386,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       * libJoynr side
       *
       */
-    publicationManager =
-            new PublicationManager(singleThreadIOService->getIOService(), joynrMessageSender);
+    publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
+                                                joynrMessageSender,
+                                                messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
@@ -638,14 +638,6 @@ void JoynrClusterControllerRuntime::stop(bool deleteChannel)
     }
     stopMessaging();
     singleThreadIOService->stop();
-}
-
-void JoynrClusterControllerRuntime::waitForChannelCreation()
-{
-    if (doHttpMessaging) {
-        httpMessageReceiver->waitForReceiveQueueStarted();
-    }
-    // Nothing to do for MQTT
 }
 
 void JoynrClusterControllerRuntime::deleteChannel()
