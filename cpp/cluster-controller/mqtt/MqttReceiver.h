@@ -59,10 +59,7 @@ public:
       */
     bool tryToDeleteChannel() override;
 
-    /**
-      * Blocks until the ReceiveQue is started.
-      */
-    void waitForReceiveQueueStarted() override;
+    bool isConnected() override;
 
     void startReceiveQueue() override;
 

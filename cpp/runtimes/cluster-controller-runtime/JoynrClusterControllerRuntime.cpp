@@ -363,8 +363,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
             mqttMessageSender = std::make_shared<MqttSender>(messagingSettings);
 
-            mqttMessageSender->registerReceiveQueueStartedCallback(
-                    [&](void) { mqttMessageReceiver->waitForReceiveQueueStarted(); });
+            mqttMessageSender->registerReceiver(mqttMessageReceiver);
         }
 
         messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(
@@ -638,14 +637,6 @@ void JoynrClusterControllerRuntime::stop(bool deleteChannel)
     }
     stopMessaging();
     singleThreadIOService->stop();
-}
-
-void JoynrClusterControllerRuntime::waitForChannelCreation()
-{
-    if (doHttpMessaging) {
-        httpMessageReceiver->waitForReceiveQueueStarted();
-    }
-    // Nothing to do for MQTT
 }
 
 void JoynrClusterControllerRuntime::deleteChannel()

@@ -18,6 +18,8 @@
  */
 #include "MqttReceiver.h"
 
+#include <chrono>
+
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -61,16 +63,6 @@ void MqttReceiver::startReceiveQueue()
     mosquittoSubscriber.start();
 }
 
-void MqttReceiver::waitForReceiveQueueStarted()
-{
-    JOYNR_LOG_DEBUG(logger, "waiting for ReceiveQueue to be started.");
-
-    if (!isChannelCreated) {
-        channelCreatedSemaphore->wait();
-        isChannelCreated = true;
-    }
-}
-
 void MqttReceiver::stopReceiveQueue()
 {
     JOYNR_LOG_DEBUG(logger, "stopReceiveQueue");
@@ -86,6 +78,11 @@ const std::string& MqttReceiver::getGlobalClusterControllerAddress() const
 bool MqttReceiver::tryToDeleteChannel()
 {
     return true;
+}
+
+bool MqttReceiver::isConnected()
+{
+    return channelCreatedSemaphore->waitFor(std::chrono::milliseconds::zero());
 }
 
 void MqttReceiver::registerReceiveCallback(
