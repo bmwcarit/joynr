@@ -1,3 +1,10 @@
+#joynr 0.22.2
+
+##Other changes
+
+* **[C++]** Bugfix: MQTT sender blocks message router thread in case of connection to broker not
+  established.
+
 #joynr 0.22.1
 
 ##Other changes
