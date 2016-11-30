@@ -27,11 +27,12 @@ define(
             "joynr/messaging/util/MulticastWildcardRegexFactory",
             "joynr/system/DiagnosticTags",
             "joynr/system/LoggerFactory",
+            "joynr/messaging/inprocess/InProcessAddress",
             "joynr/messaging/JoynrMessage",
             "joynr/util/Typing",
             "joynr/util/JSONSerializer",
         ],
-        function(Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, JoynrMessage, Typing, JSONSerializer) {
+        function(Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, InProcessAddress, JoynrMessage, Typing, JSONSerializer) {
 
             /**
              * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable}
@@ -499,12 +500,13 @@ define(
                     //1. handle call in local router
                     //1.a store receiver in multicastReceiverRegistry
                     var multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(parameters.multicastId);
+                    var providerAddress = routingTable[parameters.providerParticipantId];
 
                     if (multicastReceiversRegistry[multicastIdPattern] === undefined) {
                         multicastReceiversRegistry[multicastIdPattern] = [];
 
                         //1.b the first receiver for this multicastId -> inform MessagingSkeleton about receiver
-                        var skeleton = messagingSkeletonFactory.getSkeleton(routingTable[parameters.providerParticipantId]);
+                        var skeleton = messagingSkeletonFactory.getSkeleton(providerAddress);
                         if (skeleton !== undefined && skeleton.registerMulticastSubscription !== undefined) {
                             skeleton.registerMulticastSubscription(parameters.multicastId);
                         }
@@ -513,24 +515,20 @@ define(
                     multicastReceiversRegistry[multicastIdPattern].push(parameters.subscriberParticipantId);
 
                     //2. forward call to parent router (if available)
-                    var promise;
-                    if (routingProxy !== undefined) {
-                        promise = routingProxy.addMulticastReceiver(parameters);
-                    } else {
-                        if (parentMessageRouterAddress !== undefined) {
-                            promise = new Promise(function(resolve, reject){
-                                queuedAddMulticastReceiverCalls[queuedAddMulticastReceiverCalls.length] =
-                                {
-                                    parameters : parameters,
-                                    resolve : resolve,
-                                    reject : reject
-                                };
-                            });
-                        } else {
-                            promise = Promise.resolve();
-                        }
+                    if (parentMessageRouterAddress === undefined || providerAddress === undefined || providerAddress instanceof InProcessAddress) {
+                        return Promise.resolve();
                     }
-                    return promise;
+                    if (routingProxy !== undefined) {
+                        return routingProxy.addMulticastReceiver(parameters);
+                    }
+                    return new Promise(function(resolve, reject){
+                        queuedAddMulticastReceiverCalls[queuedAddMulticastReceiverCalls.length] =
+                        {
+                            parameters : parameters,
+                            resolve : resolve,
+                            reject : reject
+                        };
+                    });
                 };
 
                 /**
@@ -552,6 +550,7 @@ define(
                     //1. handle call in local router
                     //1.a remove receiver from multicastReceiverRegistry
                     var multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(parameters.multicastId);
+                    var providerAddress = routingTable[parameters.providerParticipantId];
                     if (multicastReceiversRegistry[multicastIdPattern] !== undefined) {
                         var i, receivers = multicastReceiversRegistry[multicastIdPattern];
                         for (i = 0; i < receivers.length; i++) {
@@ -564,7 +563,7 @@ define(
                             delete multicastReceiversRegistry[multicastIdPattern];
 
                             //1.b no receiver anymore for this multicastId -> inform MessagingSkeleton about removed receiver
-                            var skeleton = messagingSkeletonFactory.getSkeleton(routingTable[parameters.providerParticipantId]);
+                            var skeleton = messagingSkeletonFactory.getSkeleton(providerAddress);
                             if (skeleton !== undefined && skeleton.unregisterMulticastSubscription !== undefined) {
                                 skeleton.unregisterMulticastSubscription(parameters.multicastId);
                             }
@@ -574,24 +573,20 @@ define(
 
 
                     //2. forward call to parent router (if available)
-                    var promise;
-                    if (routingProxy !== undefined) {
-                        promise = routingProxy.removeMulticastReceiver(parameters);
-                    } else {
-                        if (parentMessageRouterAddress !== undefined) {
-                            promise = new Promise(function(resolve, reject){
-                                queuedRemoveMulticastReceiverCalls[queuedRemoveMulticastReceiverCalls.length] =
-                                {
-                                    parameters : parameters,
-                                    resolve : resolve,
-                                    reject : reject
-                                };
-                            });
-                        } else {
-                            promise = Promise.resolve();
-                        }
+                    if (parentMessageRouterAddress === undefined || providerAddress === undefined || providerAddress instanceof InProcessAddress) {
+                        return Promise.resolve();
                     }
-                    return promise;
+                    if (routingProxy !== undefined) {
+                        return routingProxy.removeMulticastReceiver(parameters);
+                    }
+                    return new Promise(function(resolve, reject){
+                        queuedRemoveMulticastReceiverCalls[queuedRemoveMulticastReceiverCalls.length] =
+                        {
+                            parameters : parameters,
+                            resolve : resolve,
+                            reject : reject
+                        };
+                    });
                 };
 
                 /**
