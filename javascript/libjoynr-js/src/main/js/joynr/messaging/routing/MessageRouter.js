@@ -646,25 +646,25 @@ define(
                 this.shutdown = function shutdown() {
                     if (queuedAddNextHopCalls !== undefined) {
                         queuedAddNextHopCalls.forEach(function(call) {
-                            call.reject("Message Router has been shut down");
+                            call.reject(new Error("Message Router has been shut down"));
                         });
                         queuedAddNextHopCalls = [];
                     }
                     if (queuedRemoveNextHopCalls !== undefined) {
                         queuedRemoveNextHopCalls.forEach(function(call) {
-                            call.reject("Message Router has been shut down");
+                            call.reject(new Error("Message Router has been shut down"));
                         });
                         queuedRemoveNextHopCalls = [];
                     }
                     if (queuedAddMulticastReceiverCalls !== undefined) {
                         queuedAddMulticastReceiverCalls.forEach(function(call) {
-                            call.reject("Message Router has been shut down");
+                            call.reject(new Error("Message Router has been shut down"));
                         });
                         queuedAddMulticastReceiverCalls = [];
                     }
                     if (queuedRemoveMulticastReceiverCalls !== undefined) {
                         queuedRemoveMulticastReceiverCalls.forEach(function(call) {
-                            call.reject("Message Router has been shut down");
+                            call.reject(new Error("Message Router has been shut down"));
                         });
                         queuedRemoveMulticastReceiverCalls = [];
                     }
