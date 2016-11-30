@@ -155,8 +155,8 @@ define(
                  *            joynrMessage
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {MessagingQos}
                  *            settings.messagingQos the messaging Qos object for the ttl
                  */
@@ -164,7 +164,7 @@ define(
                     // set headers
                     joynrMessage.creator = securityManager.getCurrentProcessUserId();
                     joynrMessage.from = settings.from;
-                    joynrMessage.to = settings.to;
+                    joynrMessage.to = settings.toDiscoveryEntry.participantId;
                     joynrMessage.expiryDate =
                             upLiftTtl(Date.now() + settings.messagingQos.ttl).toString();
                     var effort = settings.messagingQos.effort;
@@ -234,8 +234,8 @@ define(
                  *            settings
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {MessagingQos}
                  *            settings.messagingQos the messaging Qos object for the ttl
                  * @param {Request}
@@ -257,7 +257,7 @@ define(
                             log.info("calling " + settings.request.methodName + ".", DiagnosticTags
                                     .forRequest({
                                         request : settings.request,
-                                        to : settings.to,
+                                        to : settings.toDiscoveryEntry.participantId,
                                         from : settings.from
                                     }));
 
@@ -272,8 +272,8 @@ define(
                  *            settings
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {MessagingQos}
                  *            settings.messagingQos the messaging Qos object for the ttl
                  * @param {OneWayRequest}
@@ -294,7 +294,7 @@ define(
                             log.info("calling " + settings.request.methodName + ".", DiagnosticTags
                                     .forOneWayRequest({
                                         request : settings.request,
-                                        to : settings.to,
+                                        to : settings.toDiscoveryEntry.participantId,
                                         from : settings.from
                                     }));
 
@@ -320,8 +320,8 @@ define(
                  *            settings
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {MessagingQos}
                  *            settings.messagingQos the messaging Qos object for the ttl
                  * @param {SubscriptionRequest}
@@ -334,7 +334,7 @@ define(
                                 + settings.subscriptionRequest.subscribedToName, DiagnosticTags
                                     .forSubscriptionRequest({
                                         subscriptionRequest : settings.subscriptionRequest,
-                                        to : settings.to,
+                                        to : settings.toDiscoveryEntry.participantId,
                                         from : settings.from
                                     }));
 
@@ -354,8 +354,8 @@ define(
                  *            settings
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {MessagingQos}
                  *            settings.messagingQos the messaging Qos object for the ttl
                  * @param {BroadcastSubscriptionRequest}
@@ -376,22 +376,23 @@ define(
                                     + settings.subscriptionRequest.subscribedToName, DiagnosticTags
                                         .forMulticastSubscriptionRequest({
                                             subscriptionRequest : settings.subscriptionRequest,
-                                            to : settings.to,
+                                            to : settings.toDiscoveryEntry.participantId,
                                             from : settings.from
                                         }));
                                 if (messageRouter !== undefined) {
-                                    messageRouter.addMulticastReceiver({
-                                        multicastId : settings.subscriptionRequest.multicastId,
-                                        subscriberParticipantId : settings.from,
-                                        providerParticipantId : settings.to
-                                    });
+                                    messageRouter
+                                            .addMulticastReceiver({
+                                                multicastId : settings.subscriptionRequest.multicastId,
+                                                subscriberParticipantId : settings.from,
+                                                providerParticipantId : settings.toDiscoveryEntry.participantId
+                                            });
                                 }
                             } else {
                                 log.info("broadcast subscription to "
                                     + settings.subscriptionRequest.subscribedToName, DiagnosticTags
                                         .forBroadcastSubscriptionRequest({
                                             subscriptionRequest : settings.subscriptionRequest,
-                                            to : settings.to,
+                                            to : settings.toDiscoveryEntry.participantId,
                                             from : settings.from
                                         }));
 
@@ -407,8 +408,8 @@ define(
                  *            settings
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {String}
                  *            settings.multicastId of the multicast
                  * @param {SubscriptionStop}
@@ -424,7 +425,7 @@ define(
                                 messageRouter.removeMulticastReceiver({
                                     multicastId : settings.multicastId,
                                     subscriberParticipantId : settings.from,
-                                    providerParticipantId : settings.to
+                                    providerParticipantId : settings.toDiscoveryEntry.participantId
                                 });
                             }
                             return result;
@@ -438,8 +439,8 @@ define(
                  *            settings
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {SubscriptionStop}
                  *            settings.subscriptionStop
                  * @param {MessagingQos}
@@ -452,7 +453,7 @@ define(
                                 + settings.subscriptionStop.subscriptionId, DiagnosticTags
                                     .forSubscriptionStop({
                                         subscriptionId : settings.subscriptionStop.subscriptionId,
-                                        to : settings.to,
+                                        to : settings.toDiscoveryEntry.participantId,
                                         from : settings.from
                                     }));
 

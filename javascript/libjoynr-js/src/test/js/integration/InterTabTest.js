@@ -591,7 +591,7 @@ define([
                                                 });
                                     }).then(function(newRadioProxy) {
                                         expect(newRadioProxy).toBeDefined();
-                                        expect(newRadioProxy.providerParticipantId).toEqual(joynr.participantIdStorage.getParticipantId(domain, radioProvider));
+                                        expect(newRadioProxy.providerDiscoveryEntry.participantId).toEqual(joynr.participantIdStorage.getParticipantId(domain, radioProvider));
                                         radioProxy = newRadioProxy;
                                         return radioProxy.addFavoriteStation({
                                             radioStation : "radioStation"
