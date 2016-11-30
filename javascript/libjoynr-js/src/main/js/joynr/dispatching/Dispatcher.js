@@ -114,7 +114,7 @@ define(
                  */
                 function upLiftExpiryDateInSubscriptionRequest(subscriptionRequest) {
                     subscriptionRequest.qos.expiryDateMs =
-                        upLiftTtl(subscriptionRequest.qos.expiryDateMs);
+                            upLiftTtl(subscriptionRequest.qos.expiryDateMs);
                     return subscriptionRequest;
                 }
 
@@ -708,9 +708,8 @@ define(
                                                 .handleSubscriptionRequest(
                                                         joynrMessage.from,
                                                         joynrMessage.to,
-                                                        upLiftExpiryDateInSubscriptionRequest(
-                                                                new SubscriptionRequest(
-                                                                        parsePayload(joynrMessage))),
+                                                        upLiftExpiryDateInSubscriptionRequest(new SubscriptionRequest(
+                                                                parsePayload(joynrMessage))),
                                                         function(subscriptionReply) {
                                                             sendSubscriptionReply(
                                                                     {
@@ -731,21 +730,23 @@ define(
 
                                 case JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST:
                                     try {
-                                        publicationManager.handleBroadcastSubscriptionRequest(
-                                                joynrMessage.from,
-                                                joynrMessage.to,
-                                                upLiftExpiryDateInSubscriptionRequest(
-                                                        new BroadcastSubscriptionRequest(
+                                        publicationManager
+                                                .handleBroadcastSubscriptionRequest(
+                                                        joynrMessage.from,
+                                                        joynrMessage.to,
+                                                        upLiftExpiryDateInSubscriptionRequest(new BroadcastSubscriptionRequest(
                                                                 parsePayload(joynrMessage))),
-                                                function(subscriptionReply) {
-                                                    sendSubscriptionReply({
-                                                        from : joynrMessage.to,
-                                                        to : joynrMessage.from,
-                                                        expiryDate : joynrMessage.expiryDate,
-                                                        customHeaders : joynrMessage
-                                                                .getCustomHeaders()
-                                                    }, subscriptionReply);
-                                                });
+                                                        function(subscriptionReply) {
+                                                            sendSubscriptionReply(
+                                                                    {
+                                                                        from : joynrMessage.to,
+                                                                        to : joynrMessage.from,
+                                                                        expiryDate : joynrMessage.expiryDate,
+                                                                        customHeaders : joynrMessage
+                                                                                .getCustomHeaders()
+                                                                    },
+                                                                    subscriptionReply);
+                                                        });
                                     } catch (errorInBroadcastSubscriptionRequest) {
                                         // TODO handle error in handling the subscriptionRequest
                                         log.error("error handling broadcastSubscriptionRequest: "
@@ -755,21 +756,23 @@ define(
 
                                 case JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST:
                                     try {
-                                        publicationManager.handleMulticastSubscriptionRequest(
-                                                joynrMessage.from,
-                                                joynrMessage.to,
-                                                upLiftExpiryDateInSubscriptionRequest(
-                                                        new MulticastSubscriptionRequest(
+                                        publicationManager
+                                                .handleMulticastSubscriptionRequest(
+                                                        joynrMessage.from,
+                                                        joynrMessage.to,
+                                                        upLiftExpiryDateInSubscriptionRequest(new MulticastSubscriptionRequest(
                                                                 parsePayload(joynrMessage))),
-                                                function(subscriptionReply) {
-                                                    sendSubscriptionReply({
-                                                        from : joynrMessage.to,
-                                                        to : joynrMessage.from,
-                                                        expiryDate : joynrMessage.expiryDate,
-                                                        customHeaders : joynrMessage
-                                                                .getCustomHeaders()
-                                                    }, subscriptionReply);
-                                                });
+                                                        function(subscriptionReply) {
+                                                            sendSubscriptionReply(
+                                                                    {
+                                                                        from : joynrMessage.to,
+                                                                        to : joynrMessage.from,
+                                                                        expiryDate : joynrMessage.expiryDate,
+                                                                        customHeaders : joynrMessage
+                                                                                .getCustomHeaders()
+                                                                    },
+                                                                    subscriptionReply);
+                                                        });
                                     } catch (errorInMulticastSubscriptionRequest) {
                                         // TODO handle error in handling the subscriptionRequest
                                         log.error("error handling multicastSubscriptionRequest: "
