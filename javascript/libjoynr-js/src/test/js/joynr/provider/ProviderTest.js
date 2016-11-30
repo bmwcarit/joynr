@@ -146,6 +146,15 @@ define(
                                                 this.value = newValue;
                                             }
                                         },
+                                        complexStructMapAttribute : {
+                                            value : {},
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
                                         failingSyncAttribute : {
                                             value : 0,
                                             get : function() {

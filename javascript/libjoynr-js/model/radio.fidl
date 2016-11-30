@@ -69,6 +69,8 @@ interface Radio {
 
 	attribute StringMap stringMapAttribute
 
+	attribute ComplexStructMap complexStructMapAttribute
+
 	attribute Int32 failingSyncAttribute readonly
 
 	attribute Int32 failingAsyncAttribute readonly

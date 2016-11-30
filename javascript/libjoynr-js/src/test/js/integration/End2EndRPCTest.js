@@ -28,6 +28,8 @@ define([
             "joynr/vehicle/radiotypes/ErrorList",
             "joynr/datatypes/exampleTypes/Country",
             "joynr/datatypes/exampleTypes/StringMap",
+            "joynr/datatypes/exampleTypes/ComplexStructMap",
+            "joynr/datatypes/exampleTypes/ComplexStruct",
             "joynr/tests/testTypes/ComplexTestType",
             "joynr/exceptions/SubscriptionException",
             "integration/IntegrationUtils",
@@ -44,6 +46,8 @@ define([
                 ErrorList,
                 Country,
                 StringMap,
+                ComplexStructMap,
+                ComplexStruct,
                 ComplexTestType,
                 SubscriptionException,
                 IntegrationUtils,
@@ -93,6 +97,34 @@ define([
 
                         it("gets the enumArrayAttribute", function(done) {
                             getAttribute("enumArrayAttribute", [Country.GERMANY]).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        it("get/sets the complexStructMapAttribute", function(done) {
+                            var complexStruct = new ComplexStruct ({
+                                num32: 1,
+                                num64: 2,
+                                data: [1,2,3],
+                                str: "string"
+                            });
+
+                            var complexStructMap1 = new ComplexStructMap({
+                                key1: complexStruct
+                            });
+
+                            var complexStructMap2 = new ComplexStructMap({
+                                "key2": complexStruct
+                            });
+
+                            setAttribute("complexStructMapAttribute", complexStructMap1).then(function() {
+                                return getAttribute("complexStructMapAttribute", complexStructMap1);
+                            }).then(function() {
+                                return setAttribute("complexStructMapAttribute", complexStructMap2);
+                            }).then(function() {
+                                return getAttribute("complexStructMapAttribute", complexStructMap2);
+                            }).then(function() {
                                 done();
                                 return null;
                             }).catch(fail);

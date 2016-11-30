@@ -79,9 +79,8 @@ class MapTypeGenerator extends MapTemplate {
 			});
 
 			if (settings !== undefined) {
-				var clone = JSON.parse(JSON.stringify(settings)), settingKey;
-				for (settingKey in clone) {
-					this[settingKey] = clone[settingKey];
+				for (settingKey in settings) {
+					this[settingKey] = settings[settingKey];
 				}
 			}
 

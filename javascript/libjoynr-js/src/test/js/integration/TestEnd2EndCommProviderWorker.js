@@ -38,6 +38,8 @@ importScripts("../joynr/vehicle/radiotypes/RadioStation.js");
 importScripts("../joynr/tests/testTypes/ComplexTestType.js");
 importScripts("../joynr/datatypes/exampleTypes/Country.js");
 importScripts("../joynr/datatypes/exampleTypes/StringMap.js");
+importScripts("../joynr/datatypes/exampleTypes/ComplexStructMap.js");
+importScripts("../joynr/datatypes/exampleTypes/ComplexStruct.js");
 importScripts("../joynr/vehicle/radiotypes/ErrorList.js");
 importScripts("../../classes/lib/bluebird.js");
 
@@ -52,6 +54,7 @@ var numberOfStations = -1;
 var mixedSubscriptions = null;
 var byteBufferAttribute = null;
 var stringMapAttribute = null;
+var complexStructMapAttribute = null;
 var typeDefForStruct = null;
 var typeDefForPrimitive = null;
 var mixedSubscriptionsValue = "interval";
@@ -213,6 +216,14 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 return stringMapAttribute;
             });
 
+            radioProvider.complexStructMapAttribute.registerGetter(function() {
+                return complexStructMapAttribute;
+            });
+
+            radioProvider.complexStructMapAttribute.registerSetter(function(value) {
+                complexStructMapAttribute = value;
+            });
+
             // register operation functions
             radioProvider.addFavoriteStation.registerOperation(function(opArgs) {
                 // retrieve radioStation name for both overloaded version
@@ -264,12 +275,12 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 var enumElement;
                 if (!isCountryEnum(opArgs.enumInput)) {
                     throw new Error("Argument enumInput with value " + opArgs.enumInput + " is not correctly typed " + Country.GERMANY._typeName);
-                } 
+                }
                 for (enumElement in opArgs.enumArrayInput) {
                     if (opArgs.enumArrayInput.hasOwnProperty(enumElement)) {
                         if (!isCountryEnum(opArgs.enumArrayInput[enumElement])) {
                             throw new Error("Argument enumInput with value " + opArgs.enumArrayInput[enumElement] + " is not correctly typed " + Country.GERMANY._typeName);
-                        } 
+                        }
                     }
                 }
             };

@@ -282,6 +282,7 @@ define([
                                     var enumArrayAttribute = [Country.GERMANY];
                                     var byteBufferAttribute = null;
                                     var stringMapAttribute = null;
+                                    var complexStructMapAttribute = null;
                                     var attrProvidedImpl;
                                     var mixedSubscriptions = null;
                                     var numberOfStations = 0;
@@ -382,6 +383,14 @@ define([
 
                                     radioProvider.stringMapAttribute.registerGetter(function(value) {
                                         return stringMapAttribute;
+                                    });
+
+                                    radioProvider.complexStructMapAttribute.registerGetter(function() {
+                                        return complexStructMapAttribute;
+                                    });
+
+                                    radioProvider.complexStructMapAttribute.registerSetter(function(value) {
+                                        complexStructMapAttribute = value;
                                     });
 
                                     radioProvider.failingSyncAttribute.registerGetter(function() {
