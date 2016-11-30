@@ -20,15 +20,33 @@
 define(
         "joynr/proxy/ProxyAttribute",
         [
+            "global/Promise",
             "joynr/util/UtilInternal",
             "joynr/dispatching/types/Request",
             "joynr/messaging/MessagingQos",
             "joynr/util/Typing",
             "joynr/types/TypeRegistrySingleton"
         ],
-        function(Util, Request, MessagingQos, Typing, TypeRegistrySingleton) {
+        function(Promise, Util, Request, MessagingQos, Typing, TypeRegistrySingleton) {
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
+
+            function checkArgument(value) {
+                if (!Util.checkNullUndefined(value)) {
+                    /*jslint nomen: true*/
+                    var Constructor = typeRegistry.getConstructor(value._typeName);
+                    /*jslint nomen: false*/
+
+                    try {
+                        if (Constructor && Constructor.checkMembers) {
+                            Constructor.checkMembers(value, Typing.checkPropertyIfDefined);
+                        }
+                    } catch (error) {
+                        return error;
+                    }
+                }
+            }
+
             /**
              * Constructor of ProxyAttribute object that is used in the generation of proxy objects
              *
@@ -212,20 +230,28 @@ define(
                      *            settings.value the attribute value to set
                      * @returns {Object} returns an A+ promise
                      */
-                    this.set = function set(settings) {
-                        // ensure settings variable holds a valid object and initialize deferred
-                        // object
-                        settings = settings || {};
+                    this.set =
+                            function set(settings) {
+                                // ensure settings variable holds a valid object and initialize deferred
+                                // object
+                                settings = settings || {};
+                                var error = checkArgument(settings.value);
+                                if (error) {
+                                    return Promise.reject(new Error("error setting attribute: "
+                                        + attributeName
+                                        + ": "
+                                        + error.toString()));
+                                }
 
-                        var request = new Request({
-                            methodName : "set" + Util.firstUpper(attributeName),
-                            paramDatatypes : [ attributeType
-                            ],
-                            params : [ settings.value
-                            ]
-                        });
-                        return executeRequest(request, settings);
-                    };
+                                var request = new Request({
+                                    methodName : "set" + Util.firstUpper(attributeName),
+                                    paramDatatypes : [ attributeType
+                                    ],
+                                    params : [ settings.value
+                                    ]
+                                });
+                                return executeRequest(request, settings);
+                            };
                 }
                 if (attributeCaps.match(/NOTIFY/)) {
                     /**
