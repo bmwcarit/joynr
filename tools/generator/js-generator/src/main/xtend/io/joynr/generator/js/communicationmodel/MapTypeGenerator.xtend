@@ -84,18 +84,6 @@ class MapTypeGenerator extends MapTemplate {
 				}
 			}
 
-			Object.defineProperty(this, 'checkMembers', {
-				enumerable: false,
-				value: function checkMembers(check) {
-					var memberKey;
-					for (memberKey in this) {
-						if (this.hasOwnProperty(memberKey)) {
-							check(this[memberKey], «type.valueType.checkPropertyTypeName(false)», memberKey);
-						}
-					}
-				}
-			});
-
 			Object.defineProperty(this, 'put', {
 				enumerable: false,
 				value: function (key, value) {
@@ -117,6 +105,20 @@ class MapTypeGenerator extends MapTemplate {
 				}
 			});
 		};
+
+		Object.defineProperty(«type.joynrName», 'checkMembers', {
+			enumerable: false,
+			value: function checkMembers(instance, check) {
+				var memberKey;
+				for (memberKey in instance) {
+					if (instance.hasOwnProperty(memberKey)) {
+						if (memberKey !== "_typeName") {
+							check(instance[memberKey], «type.valueType.checkPropertyTypeName(false)», memberKey);
+						}
+					}
+				}
+			}
+		});
 
 		/**
 		 * @name «type.joynrName»#MAJOR_VERSION
