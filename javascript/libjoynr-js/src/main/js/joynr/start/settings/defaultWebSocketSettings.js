@@ -17,23 +17,9 @@
  * #L%
  */
 
-(function() {
-    var setupDefaultWebSocketSettings = function(defaultSettings) {
-        defaultSettings.protocol = "ws";
-        defaultSettings.path = "";
-        return defaultSettings;
-    };
-
-    // AMD support
-    if (typeof define === 'function' && define.amd) {
-        define("joynr/start/settings/defaultWebSocketSettings", [], function() {
-            return setupDefaultWebSocketSettings({});
-        });
-    } else {
-        window.joynr = window.joynr || {};
-        window.joynr.start = window.joynr.start || {};
-        window.joynr.start.defaultWebSocketSettings =
-                window.joynr.start.defaultWebSocketSettings || {};
-        setupDefaultWebSocketSettings(window.joynr.start.defaultWebSocketSettings);
-    }
-}());
+define("joynr/start/settings/defaultWebSocketSettings", [], function() {
+    var defaultSettings = {};
+    defaultSettings.protocol = "ws";
+    defaultSettings.path = "";
+    return defaultSettings;
+});
