@@ -38,7 +38,8 @@ define("joynr/start/settings/defaultLibjoynrSettings", [
         },
         lastSeenDateMs : Date.now(),
         expiryDateMs : Util.getMaxLongValue(),
-        publicKeyId : ""
+        publicKeyId : "",
+        isLocal : true
     };
 
     var routingCapability = {
@@ -57,7 +58,8 @@ define("joynr/start/settings/defaultLibjoynrSettings", [
         },
         lastSeenDateMs : Date.now(),
         expiryDateMs : Util.getMaxLongValue(),
-        publicKeyId : ""
+        publicKeyId : "",
+        isLocal : true
     };
 
     defaultSettings.capabilities = [

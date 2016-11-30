@@ -33,7 +33,8 @@ define([
             "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/types/Version",
             "global/Promise",
-            "global/WaitsFor"
+            "global/WaitsFor",
+            "joynr/util/CapabilitiesUtil"
         ],
         function(
                 CapabilityDiscovery,
@@ -48,9 +49,11 @@ define([
                 ChannelAddress,
                 Version,
                 Promise,
-                waitsFor) {
+                waitsFor,
+                CapabilitiesUtil) {
 
-            var domain, interfaceName, discoveryQos, discoveryEntries, globalDiscoveryEntries;
+            var domain, interfaceName, discoveryQos;
+            var discoveryEntries, discoveryEntriesReturned, globalDiscoveryEntries, globalDiscoveryEntriesReturned;
             var capabilityDiscovery, messageRouterSpy, proxyBuilderSpy, address, localCapStoreSpy;
             var globalCapCacheSpy, globalCapDirSpy, capabilityInfo;
             var asyncTimeout = 5000;
@@ -102,12 +105,16 @@ define([
             }
 
             function assertDiscoveryEntryEquals(expected, actual) {
+                expect(actual.providerVersion).toEqual(expected.providerVersion);
                 expect(actual.domain).toEqual(expected.domain);
                 expect(actual.interfaceName).toEqual(expected.interfaceName);
                 expect(actual.participantId).toEqual(expected.participantId);
                 expect(actual.qos).toEqual(expected.qos);
-                expect(actual.address).toEqual(expected.address);
+                expect(actual.lastSeenDateMs).toEqual(expected.lastSeenDateMs);
+                expect(actual.expiryDateMs).toEqual(expected.expiryDateMs);
                 expect(actual.publicKeyId).toEqual(expected.publicKeyId);
+                expect(actual.isLocal).toEqual(expected.isLocal);
+                expect(actual.address).toEqual(expected.address);
             }
 
             function getDiscoveryEntry(domain, interfaceName) {
@@ -138,7 +145,7 @@ define([
                     function() {
 
                         beforeEach(function(done) {
-                            var i;
+                            var i, discoveryEntry;
                             startDateMs = Date.now();
                             domain = "myDomain";
                             interfaceName = "myInterfaceName";
@@ -152,18 +159,24 @@ define([
                             });
 
                             discoveryEntries = [];
+                            discoveryEntriesReturned = [];
                             for (i = 0; i < 12; ++i) {
-                                discoveryEntries.push(getDiscoveryEntry(
+                                discoveryEntry = getDiscoveryEntry(
                                         domain + i.toString(),
-                                        interfaceName + i.toString()));
+                                        interfaceName + i.toString());
+                                discoveryEntries.push(discoveryEntry);
+                                discoveryEntriesReturned.push(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(true, discoveryEntry));
                             }
 
                             globalDiscoveryEntries = [];
+                            globalDiscoveryEntriesReturned = [];
                             for (i = 0; i < 12; ++i) {
-                                globalDiscoveryEntries.push(getGlobalDiscoveryEntry(domain + i.toString(), interfaceName  + i.toString(), new ChannelAddress({
+                                discoveryEntry = getGlobalDiscoveryEntry(domain + i.toString(), interfaceName  + i.toString(), new ChannelAddress({
                                     channelId: "globalCapInfo" + i.toString(),
                                     messagingEndpointUrl: "http://testurl"
-                                })));
+                                }));
+                                globalDiscoveryEntries.push(discoveryEntry);
+                                globalDiscoveryEntriesReturned.push(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, discoveryEntry));
                             }
 
                             localCapStoreSpy =
@@ -491,7 +504,7 @@ define([
                                             [ globalDiscoveryEntries[1]
                                             ],
                                             [],
-                                            [ globalDiscoveryEntries[1]
+                                            [ globalDiscoveryEntriesReturned[1]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "03",
@@ -500,7 +513,7 @@ define([
                                             [],
                                             [ globalDiscoveryEntries[2]
                                             ],
-                                            [ globalDiscoveryEntries[2]
+                                            [ globalDiscoveryEntriesReturned[2]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "04",
@@ -510,7 +523,7 @@ define([
                                             [],
                                             [ globalDiscoveryEntries[3]
                                             ],
-                                            [ discoveryEntries[3]
+                                            [ discoveryEntriesReturned[3]
                                             ]));
                                     promises.push(testDiscoveryResult(
                                             "05",
@@ -521,7 +534,7 @@ define([
                                             ],
                                             [ globalDiscoveryEntries[3]
                                             ],
-                                            [ discoveryEntries[3]
+                                            [ discoveryEntriesReturned[3]
                                             ]));
                                     promises.push(testDiscoveryResult(
                                             "06",
@@ -537,7 +550,7 @@ define([
                                             ],
                                             [],
                                             [],
-                                            [ discoveryEntries[5]
+                                            [ discoveryEntriesReturned[5]
                                             ]));
                                     promises.push(testDiscoveryResult(
                                             "08",
@@ -572,7 +585,7 @@ define([
                                             [],
                                             [ globalDiscoveryEntries[7]
                                             ],
-                                            [ discoveryEntries[7]
+                                            [ discoveryEntriesReturned[7]
                                             ]));
                                     promises.push(testDiscoveryResult(
                                             "12",
@@ -583,7 +596,7 @@ define([
                                             ],
                                             [ globalDiscoveryEntries[7]
                                             ],
-                                            [ discoveryEntries[7]
+                                            [ discoveryEntriesReturned[7]
                                             ]));
                                     promises.push(testDiscoveryResult(
                                             "13",
@@ -599,7 +612,7 @@ define([
                                             [ globalDiscoveryEntries[9]
                                             ],
                                             [],
-                                            [ globalDiscoveryEntries[9]
+                                            [ globalDiscoveryEntriesReturned[9]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "15",
@@ -617,7 +630,7 @@ define([
                                             ],
                                             [ globalDiscoveryEntries[10]
                                             ],
-                                            [ globalDiscoveryEntries[10]
+                                            [ globalDiscoveryEntriesReturned[10]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "17",
@@ -626,7 +639,7 @@ define([
                                             [],
                                             [ globalDiscoveryEntries[10]
                                             ],
-                                            [ globalDiscoveryEntries[10]
+                                            [ globalDiscoveryEntriesReturned[10]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "18",
@@ -636,7 +649,7 @@ define([
                                             ],
                                             [ globalDiscoveryEntries[11]
                                             ],
-                                            [ globalDiscoveryEntries[11]
+                                            [ globalDiscoveryEntriesReturned[11]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "19",
@@ -647,7 +660,7 @@ define([
                                             ],
                                             [ globalDiscoveryEntries[11]
                                             ],
-                                            [ globalDiscoveryEntries[11]
+                                            [ globalDiscoveryEntriesReturned[11]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "20",
@@ -663,7 +676,7 @@ define([
                                             ],
                                             [],
                                             [],
-                                            [ discoveryEntries[1]
+                                            [ discoveryEntriesReturned[1]
                                             ]));
                                     promises.push(testDiscoveryResult(
                                             "22",
@@ -672,7 +685,7 @@ define([
                                             [ globalDiscoveryEntries[1]
                                             ],
                                             [],
-                                            [ globalDiscoveryEntries[1]
+                                            [ globalDiscoveryEntriesReturned[1]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "23",
@@ -681,7 +694,7 @@ define([
                                             [],
                                             [ globalDiscoveryEntries[2]
                                             ],
-                                            [ globalDiscoveryEntries[2]
+                                            [ globalDiscoveryEntriesReturned[2]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "24",
@@ -692,8 +705,8 @@ define([
                                             ],
                                             [],
                                             [
-                                                discoveryEntries[3],
-                                                globalDiscoveryEntries[4]
+                                                discoveryEntriesReturned[3],
+                                                globalDiscoveryEntriesReturned[4]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "25",
@@ -704,8 +717,8 @@ define([
                                             [ globalDiscoveryEntries[4]
                                             ],
                                             [
-                                                discoveryEntries[3],
-                                                globalDiscoveryEntries[4]
+                                                discoveryEntriesReturned[3],
+                                                globalDiscoveryEntriesReturned[4]
                                     ]));
                                     promises.push(testDiscoveryResult(
                                             "26",
@@ -717,8 +730,8 @@ define([
                                             [ globalDiscoveryEntries[3]
                                             ],
                                             [
-                                                discoveryEntries[3],
-                                                globalDiscoveryEntries[1]
+                                                discoveryEntriesReturned[3],
+                                                globalDiscoveryEntriesReturned[1]
                                             ]));
 
                                     Promise.all(promises).then(function() {
@@ -790,11 +803,13 @@ define([
                                     var actualDiscoveryEntry;
                                     var discoveryEntry =
                                             getDiscoveryEntryWithScope(ProviderScope.GLOBAL);
+                                    var expectedDiscoveryEntry = CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address);
                                     capabilityDiscovery.add(discoveryEntry).then(function() {
                                         expect(globalCapDirSpy.add).toHaveBeenCalled();
                                         actualDiscoveryEntry = globalCapDirSpy.add.calls.argsFor(0)[0].globalDiscoveryEntry;
-                                        discoveryEntry.address = JSON.stringify(address);
-                                        assertDiscoveryEntryEquals(discoveryEntry, actualDiscoveryEntry);
+                                        // lastSeenDate is set to Date.now() in CapabilityDiscovery.add
+                                        expectedDiscoveryEntry.lastSeenDateMs = actualDiscoveryEntry.lastSeenDateMs;
+                                        assertDiscoveryEntryEquals(expectedDiscoveryEntry, actualDiscoveryEntry);
 
                                         expect(localCapStoreSpy.add).not.toHaveBeenCalledWith();
                                         done();
@@ -826,6 +841,7 @@ define([
                                     var actualDiscoveryEntry;
                                     var discoveryEntry =
                                             getDiscoveryEntryWithScope(ProviderScope.GLOBAL);
+                                    var expectedDiscoveryEntry = CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address);
                                     globalCapDirSpy =
                                             getSpiedLookupObjWithReturnValue(
                                                     "globalCapDirSpy",
@@ -838,7 +854,9 @@ define([
                                     }).catch(function(error) {
                                         expect(globalCapDirSpy.add).toHaveBeenCalled();
                                         actualDiscoveryEntry = globalCapDirSpy.add.calls.argsFor(0)[0].globalDiscoveryEntry;
-                                        assertDiscoveryEntryEquals(getGlobalDiscoveryEntryWithScope(ProviderScope.GLOBAL), actualDiscoveryEntry);
+                                        // lastSeenDate is set to Date.now() in CapabilityDiscovery.add
+                                        expectedDiscoveryEntry.lastSeenDateMs = actualDiscoveryEntry.lastSeenDateMs;
+                                        assertDiscoveryEntryEquals(expectedDiscoveryEntry, actualDiscoveryEntry);
                                         expect(localCapStoreSpy.add).not.toHaveBeenCalledWith();
                                         expect( Object.prototype.toString
                                                 .call(error === "[object Error]"))
