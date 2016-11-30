@@ -519,6 +519,11 @@ define([
                                         };
                                     });
 
+                                    radioProvider.methodWithComplexMap.registerOperation(function(
+                                            opArgs) {
+                                        return;
+                                    });
+
                                     radioProvider.methodProvidedImpl.registerOperation(function(
                                             opArgs) {
                                         return {

@@ -369,6 +369,11 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 };
             });
 
+            radioProvider.methodWithComplexMap.registerOperation(function(
+                    opArgs) {
+                return;
+            });
+
             radioProvider.methodProvidedImpl.registerOperation(function(opArgs) {
                 return {
                     returnValue : opArgs.arg

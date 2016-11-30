@@ -217,6 +217,7 @@ define(
                                         methodWithByteBuffer : jasmine
                                                 .createSpy("methodWithByteBuffer"),
                                         methodWithTypeDef : jasmine.createSpy("methodWithTypeDef"),
+                                        methodWithComplexMap : jasmine.createSpy("methodWithComplexMap"),
                                         operationWithEnumsAsInputAndOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndOutput"),
                                         operationWithMultipleOutputParameters : jasmine

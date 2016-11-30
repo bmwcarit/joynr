@@ -332,6 +332,17 @@ define([
                             }).catch(fail);
                         });
 
+                        it("can call an operation successfully (Complex map parameter)", function(done) {
+                            callOperation("methodWithComplexMap",
+                                    {
+                                complexStructMap : new ComplexStructMap()
+                                    }
+                            ).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
                         it("can call an operation and get a ProviderRuntimeException (Provider sync, String parameter)", function(done) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                             var catchSpy = jasmine.createSpy("catchSpy");

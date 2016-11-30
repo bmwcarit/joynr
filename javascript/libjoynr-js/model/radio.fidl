@@ -129,6 +129,12 @@ interface Radio {
 		}
 	}
 
+	method  methodWithComplexMap {
+		in {
+			ComplexStructMap complexStructMap
+		}
+	}
+
 	method operationWithEnumsAsInputAndOutput {
 		in {
 			Country enumInput
