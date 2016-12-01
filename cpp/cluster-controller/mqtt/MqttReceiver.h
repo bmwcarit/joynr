@@ -79,14 +79,6 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttReceiver);
 
-    /* This semaphore keeps track of the status of the channel. On creation no resources are
-       available.
-       Once the channel is created, one resource will be released.
-       On Channel deletion, the semaphore tries to acquire a resource again, so that the next cycle
-       ofcreateChannel works as well. */
-    Semaphore* channelCreatedSemaphore;
-    bool isChannelCreated;
-
     std::string channelIdForMqttTopic; // currently channelId is used to subscribe
     std::string globalClusterControllerAddress;
 
@@ -94,6 +86,7 @@ private:
     // Allows for registering multiple receivers for a single channel.
     std::string receiverId;
 
+    std::atomic<bool> channelCreated;
     MosquittoSubscriber mosquittoSubscriber;
 
     ADD_LOGGER(MqttReceiver);
