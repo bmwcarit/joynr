@@ -1,3 +1,12 @@
+#joynr 0.22.3
+
+## API relevant changes
+None.
+
+##Other changes
+
+* **[C++]** Bugfix: Provider and consumers do not crash after reconnect to cluster-controller
+
 #joynr 0.22.2
 
 ##Other changes
