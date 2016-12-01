@@ -81,12 +81,9 @@ private:
 
     /* This semaphore keeps track of the status of the channel. On creation no resources are
        available.
-       Once the channel is created, one resource will be released. WaitForReceiveQueueStarted will
-       try to
-       acquire a resource from this semaphore, and block until it gets one.
+       Once the channel is created, one resource will be released.
        On Channel deletion, the semaphore tries to acquire a resource again, so that the next cycle
-       of
-       createChannel and waitForReceiveQueueStarted works as well. */
+       ofcreateChannel works as well. */
     Semaphore* channelCreatedSemaphore;
     bool isChannelCreated;
 
