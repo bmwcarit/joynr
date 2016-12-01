@@ -800,6 +800,59 @@ TEST_P(End2EndBroadcastTest, publishBroadcastWithInvalidPartitions) {
     );
 }
 
+TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnSameRuntime)
+{
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+    std::shared_ptr<tests::testProxy> testProxy1 = buildProxy();
+    std::shared_ptr<tests::testProxy> testProxy2 = buildProxy();
+
+    const std::vector<std::string> partitions{"partition1", "partition2"};
+
+    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener1 =
+            std::make_shared<MockGpsSubscriptionListener>();
+    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener2 =
+            std::make_shared<MockGpsSubscriptionListener>();
+
+    const int64_t minInterval_ms = 50;
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+
+    auto subscriptionIdFuture1 = testProxy1->subscribeToLocationUpdateBroadcast(
+                mockSubscriptionListener1,
+                subscriptionQos,
+                partitions
+    );
+
+    auto subscriptionIdFuture2 = testProxy2->subscribeToLocationUpdateBroadcast(
+                mockSubscriptionListener2,
+                subscriptionQos,
+                partitions
+    );
+
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->wait(subscribeToBroadcastWait));
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->wait(subscribeToBroadcastWait));
+
+    // Each proxy will receive a message exactly one time
+    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&altSemaphore));
+
+    testProvider->fireLocationUpdate(gpsLocation2, partitions);
+
+    const std::int64_t receiveBroadcastWait = 2000;
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+    EXPECT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+}
+
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         End2EndBroadcastTest,
         testing::Values(
