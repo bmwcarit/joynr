@@ -44,7 +44,8 @@ MosquittoSubscriber::MosquittoSubscriber(const MessagingSettings& settings,
           channelCreatedSemaphore(channelCreatedSemaphore),
           isConnected(false),
           isRunning(false),
-          isChannelAvailable(false),
+          isChannelIdRegistered(false),
+          channelCreatedCallback(channelCreatedCallback),
           onTextMessageReceived(nullptr)
 {
     mqttSettings.reconnectSleepTimeMs = settings.getMqttReconnectSleepTime();
@@ -117,7 +118,7 @@ void MosquittoSubscriber::registerChannelId(const std::string& channelId)
 {
     this->channelId = channelId;
     topic = channelId + "/" + getMqttPrio() + "/" + "#";
-    isChannelAvailable = true;
+    isChannelIdRegistered = true;
 }
 
 void MosquittoSubscriber::registerReceiveCallback(
@@ -159,7 +160,7 @@ void MosquittoSubscriber::on_connect(int rc)
 
 void MosquittoSubscriber::restoreSubscriptions()
 {
-    while (!isChannelAvailable && isRunning) {
+    while (!isChannelIdRegistered && isRunning) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
     try {
@@ -198,7 +199,7 @@ void MosquittoSubscriber::subscribeToTopicInternal(const std::string& topic)
 
 void MosquittoSubscriber::subscribeToTopic(const std::string& topic)
 {
-    while (!isChannelAvailable && isRunning) {
+    while (!isChannelIdRegistered && isRunning) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
     {
@@ -214,7 +215,7 @@ void MosquittoSubscriber::subscribeToTopic(const std::string& topic)
 
 void MosquittoSubscriber::unsubscribeFromTopic(const std::string& topic)
 {
-    if (isChannelAvailable) {
+    if (isChannelIdRegistered) {
         std::lock_guard<std::recursive_mutex> lock(additionalTopicsMutex);
         if (additionalTopics.find(topic) == additionalTopics.end()) {
             JOYNR_LOG_DEBUG(logger, "Unsubscribe called for non existing topic {}", topic);

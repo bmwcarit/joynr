@@ -77,7 +77,8 @@ private:
 
     std::atomic<bool> isConnected;
     std::atomic<bool> isRunning;
-    std::atomic<bool> isChannelAvailable;
+    std::atomic<bool> isChannelIdRegistered;
+    std::function<void()> channelCreatedCallback;
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;
