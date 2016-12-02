@@ -5,6 +5,10 @@ None.
 
 ##Other changes
 
+* **[C++]** fix MQTT connection to broker blocked after first message was sent
+* **[JS]** fix typing issues with maps of structs
+* **[JS]** fix receiving too many multicast publications when provider and proxy are in same
+  libjoynr
 * **[C++]** Bugfix: Provider and consumers do not crash after reconnect to cluster-controller
 
 #joynr 0.22.2
