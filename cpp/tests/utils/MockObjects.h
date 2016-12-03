@@ -654,10 +654,10 @@ public:
     MOCK_CONST_METHOD0(getGlobalClusterControllerAddress, std::string&());
     MOCK_METHOD0(startReceiveQueue, void());
     MOCK_METHOD0(stopReceiveQueue, void());
-    MOCK_METHOD0(waitForReceiveQueueStarted, void());
     MOCK_METHOD0(updateSettings, void());
     MOCK_METHOD0(tryToDeleteChannel, bool());
     MOCK_METHOD1(registerReceiveCallback, void(std::function<void(const std::string&)> onTextMessageReceived));
+    MOCK_METHOD0(isConnected, bool());
 };
 
 class MockMessageSender : public joynr::IMessageSender

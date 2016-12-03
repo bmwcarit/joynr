@@ -31,12 +31,11 @@ INIT_LOGGER(MqttReceiver);
 MqttReceiver::MqttReceiver(const MessagingSettings& settings,
                            const std::string& channelIdForMqttTopic,
                            const std::string& receiverId)
-        : channelCreatedSemaphore(new joynr::Semaphore(0)),
-          isChannelCreated(false),
-          channelIdForMqttTopic(channelIdForMqttTopic),
+        : channelIdForMqttTopic(channelIdForMqttTopic),
           globalClusterControllerAddress(),
           receiverId(receiverId),
-          mosquittoSubscriber(settings, globalClusterControllerAddress, channelCreatedSemaphore)
+          channelCreated(false),
+          mosquittoSubscriber(settings, globalClusterControllerAddress)
 {
     std::string brokerUri =
             "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
@@ -82,7 +81,7 @@ bool MqttReceiver::tryToDeleteChannel()
 
 bool MqttReceiver::isConnected()
 {
-    return channelCreatedSemaphore->waitFor(std::chrono::milliseconds::zero());
+    return mosquittoSubscriber.isSubscribedToChannelTopic();
 }
 
 void MqttReceiver::registerReceiveCallback(

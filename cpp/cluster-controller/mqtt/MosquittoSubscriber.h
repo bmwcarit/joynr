@@ -44,9 +44,7 @@ class MessagingSettings;
 class MosquittoSubscriber : public Thread, MosquittoConnection
 {
 public:
-    explicit MosquittoSubscriber(const MessagingSettings& settings,
-                                 const std::string& channelId,
-                                 Semaphore* channelCreatedSemaphore);
+    explicit MosquittoSubscriber(const MessagingSettings& settings, const std::string& channelId);
 
     ~MosquittoSubscriber() override = default;
 
@@ -58,6 +56,7 @@ public:
 
     void interrupt();
     bool isInterrupted();
+    bool isSubscribedToChannelTopic() const;
 
     /* subscribe to channelId / topic */
     void subscribeToTopic(const std::string& topic);
@@ -70,14 +69,15 @@ private:
 
     MqttSettings mqttSettings;
     std::string channelId;
+    int subscribeChannelMid;
     std::string topic;
     std::unordered_set<std::string> additionalTopics;
     std::recursive_mutex additionalTopicsMutex;
-    Semaphore* channelCreatedSemaphore;
 
     std::atomic<bool> isConnected;
     std::atomic<bool> isRunning;
-    std::atomic<bool> isChannelAvailable;
+    std::atomic<bool> isChannelIdRegistered;
+    std::atomic<bool> subscribedToChannelTopic;
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;
@@ -87,7 +87,7 @@ private:
     void checkServerTime();
 
     void restoreSubscriptions();
-    void subscribeToTopicInternal(const std::string& topic);
+    void subscribeToTopicInternal(const std::string& topic, const bool isChannelTopic = false);
 
     void on_connect(int rc) override;
     void on_subscribe(int mid, int qos_count, const int* granted_qos) override;

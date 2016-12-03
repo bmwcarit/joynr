@@ -86,12 +86,9 @@ private:
 
     /* This semaphore keeps track of the status of the channel. On creation no resources are
        available.
-       Once the channel is created, one resource will be released. WaitForReceiveQueueStarted will
-       try to
-       acquire a resource from this semaphore, and block until it gets one.
+       Once the channel is created, one resource will be released.
        On Channel deletion, the semaphore tries to acquire a resource again, so that the next cycle
-       of
-       createChannel and waitForReceiveQueueStarted works as well. */
+       of createChannel works as well. */
     std::shared_ptr<Semaphore> channelCreatedSemaphore;
     std::string channelId; // currently channelid is used to construct the channelUrl or
                            // channelLocation.
