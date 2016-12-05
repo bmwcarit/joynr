@@ -49,6 +49,10 @@ typeCollection exampleTypes {
 	map StringMap {
 		String to String
 	}
+
+	map ComplexStructMap {
+		String to ComplexStruct
+	}
 }
 
 <** @description : "This interface is purely for testing puposes, to test all the different combinations of arguments passed through joynr" **>

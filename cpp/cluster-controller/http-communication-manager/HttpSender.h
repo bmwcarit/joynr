@@ -56,8 +56,7 @@ public:
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
-    void registerReceiveQueueStartedCallback(
-            std::function<void(void)> waitForReceiveQueueStarted) override;
+    void registerReceiver(std::shared_ptr<IMessageReceiver> receiver) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
