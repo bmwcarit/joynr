@@ -32,19 +32,19 @@ namespace joynr
 INIT_LOGGER(MosquittoSubscriber);
 
 MosquittoSubscriber::MosquittoSubscriber(const MessagingSettings& settings,
-                                         const std::string& channelId,
-                                         joynr::Semaphore* channelCreatedSemaphore)
+                                         const std::string& channelId)
         : joynr::Thread("MosquittoSubscriber"),
           MosquittoConnection(settings),
           mqttSettings(),
           channelId(channelId),
+          subscribeChannelMid(0),
           topic(),
           additionalTopics(),
           additionalTopicsMutex(),
-          channelCreatedSemaphore(channelCreatedSemaphore),
           isConnected(false),
           isRunning(false),
-          isChannelAvailable(false),
+          isChannelIdRegistered(false),
+          subscribedToChannelTopic(false),
           onTextMessageReceived(nullptr)
 {
     mqttSettings.reconnectSleepTimeMs = settings.getMqttReconnectSleepTime();
@@ -58,6 +58,11 @@ void MosquittoSubscriber::interrupt()
 bool MosquittoSubscriber::isInterrupted()
 {
     return !isRunning;
+}
+
+bool MosquittoSubscriber::isSubscribedToChannelTopic() const
+{
+    return subscribedToChannelTopic;
 }
 
 void MosquittoSubscriber::stop()
@@ -77,6 +82,7 @@ void MosquittoSubscriber::run()
 
         if (rc) {
             isConnected = false;
+            subscribedToChannelTopic = false;
             if (rc == MOSQ_ERR_CONN_LOST) {
                 JOYNR_LOG_DEBUG(logger,
                                 "error: connection to broker lost ({}), trying to reconnect...",
@@ -117,7 +123,7 @@ void MosquittoSubscriber::registerChannelId(const std::string& channelId)
 {
     this->channelId = channelId;
     topic = channelId + "/" + getMqttPrio() + "/" + "#";
-    isChannelAvailable = true;
+    isChannelIdRegistered = true;
 }
 
 void MosquittoSubscriber::registerReceiveCallback(
@@ -159,11 +165,11 @@ void MosquittoSubscriber::on_connect(int rc)
 
 void MosquittoSubscriber::restoreSubscriptions()
 {
-    while (!isChannelAvailable && isRunning) {
+    while (!isChannelIdRegistered && isRunning) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
     try {
-        subscribeToTopicInternal(topic);
+        subscribeToTopicInternal(topic, true);
         std::lock_guard<std::recursive_mutex> lock(additionalTopicsMutex);
         for (const std::string& additionalTopic : additionalTopics) {
             subscribeToTopicInternal(additionalTopic);
@@ -173,10 +179,14 @@ void MosquittoSubscriber::restoreSubscriptions()
     }
 }
 
-void MosquittoSubscriber::subscribeToTopicInternal(const std::string& topic)
+void MosquittoSubscriber::subscribeToTopicInternal(const std::string& topic,
+                                                   const bool isChannelTopic)
 {
-    // TODO: Check mid in callback on_subscribe instead of generated mid (NULL)
-    int rc = subscribe(nullptr, topic.c_str(), getMqttQos());
+    int* mid = nullptr;
+    if (isChannelTopic) {
+        mid = &subscribeChannelMid;
+    }
+    int rc = subscribe(mid, topic.c_str(), getMqttQos());
     switch (rc) {
     case (MOSQ_ERR_SUCCESS):
         JOYNR_LOG_DEBUG(logger, "Subscribed to {}", topic);
@@ -198,7 +208,7 @@ void MosquittoSubscriber::subscribeToTopicInternal(const std::string& topic)
 
 void MosquittoSubscriber::subscribeToTopic(const std::string& topic)
 {
-    while (!isChannelAvailable && isRunning) {
+    while (!isChannelIdRegistered && isRunning) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
     {
@@ -214,7 +224,7 @@ void MosquittoSubscriber::subscribeToTopic(const std::string& topic)
 
 void MosquittoSubscriber::unsubscribeFromTopic(const std::string& topic)
 {
-    if (isChannelAvailable) {
+    if (isChannelIdRegistered) {
         std::lock_guard<std::recursive_mutex> lock(additionalTopicsMutex);
         if (additionalTopics.find(topic) == additionalTopics.end()) {
             JOYNR_LOG_DEBUG(logger, "Unsubscribe called for non existing topic {}", topic);
@@ -245,7 +255,9 @@ void MosquittoSubscriber::on_subscribe(int mid, int qos_count, const int* grante
         JOYNR_LOG_DEBUG(logger, "QOS: {} granted {}", i, granted_qos[i]);
     }
 
-    channelCreatedSemaphore->notify();
+    if (mid == subscribeChannelMid) {
+        subscribedToChannelTopic = true;
+    }
 }
 
 void MosquittoSubscriber::on_message(const struct mosquitto_message* message)

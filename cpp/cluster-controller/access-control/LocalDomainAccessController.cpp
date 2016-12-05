@@ -595,7 +595,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     };
 
     globalDomainAccessControllerProxy->getDomainRolesAsync(
-            userId, domainRoleOnSuccess, domainRoleOnError);
+            userId, std::move(domainRoleOnSuccess), std::move(domainRoleOnError));
 
     std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)>
             masterAceOnSuccess =
@@ -618,7 +618,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     };
 
     globalDomainAccessControllerProxy->getMasterAccessControlEntriesAsync(
-            domain, interfaceName, masterAceOnSuccess, masterAceOnError);
+            domain, interfaceName, std::move(masterAceOnSuccess), std::move(masterAceOnError));
 
     // Initialise mediator access control entries from global data
     std::function<void(const std::vector<MasterAccessControlEntry>& mediatorAces)>
@@ -642,7 +642,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     };
 
     globalDomainAccessControllerProxy->getMediatorAccessControlEntriesAsync(
-            domain, interfaceName, mediatorAceOnSuccess, mediatorAceOnError);
+            domain, interfaceName, std::move(mediatorAceOnSuccess), std::move(mediatorAceOnError));
 
     // Initialise owner access control entries from global data
     std::function<void(const std::vector<OwnerAccessControlEntry>& ownerAces)> ownerAceOnSuccess =
@@ -665,7 +665,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     };
 
     globalDomainAccessControllerProxy->getOwnerAccessControlEntriesAsync(
-            domain, interfaceName, ownerAceOnSuccess, ownerAceOnError);
+            domain, interfaceName, std::move(ownerAceOnSuccess), std::move(ownerAceOnError));
 }
 
 // Called when the data for the given domain/interface has been obtained from the GDAC

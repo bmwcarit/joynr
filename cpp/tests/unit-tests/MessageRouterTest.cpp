@@ -286,34 +286,30 @@ TEST_F(MessageRouterTest, restoreRoutingTable) {
     std::remove(routingTablePersistenceFilename.c_str());
 
     auto messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
-    auto addressCalculator = std::make_unique<MqttMulticastAddressCalculator>(
-                std::make_shared<const joynr::system::RoutingTypes::MqttAddress>());
     auto messageRouter = std::make_unique<MessageRouter>(
                 messagingStubFactory,
                 std::make_shared<MulticastMessagingSkeletonDirectory>(),
                 std::unique_ptr<IPlatformSecurityManager>(),
                 singleThreadedIOService.getIOService(),
-                std::move(addressCalculator));
-    std::string participantId = "myParticipantId";
+                nullptr);
+    const std::string participantId = "myParticipantId";
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
 
     // MUST be done BEFORE savePersistence to pass the persistence filename to the publicationManager
     messageRouter->loadRoutingTable(routingTablePersistenceFilename);
     messageRouter->addProvisionedNextHop(participantId, address); // Saves the RoutingTable to the persistence file.
 
-    addressCalculator = std::make_unique<MqttMulticastAddressCalculator>(
-                std::make_shared<const joynr::system::RoutingTypes::MqttAddress>());
     messageRouter = std::make_unique<MessageRouter>(
                 messagingStubFactory,
                 std::make_shared<MulticastMessagingSkeletonDirectory>(),
                 std::unique_ptr<IPlatformSecurityManager>(),
                 singleThreadedIOService.getIOService(),
-                std::move(addressCalculator));
+                nullptr);
 
     messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 
     joynrMessage.setHeaderTo(participantId);
-    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*address))));
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*address)))).Times(1);
     messageRouter->route(joynrMessage);
 }
 

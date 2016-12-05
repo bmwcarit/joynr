@@ -16,29 +16,28 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ARBITRATIONSTRATEGYFUNCTION_H
-#define ARBITRATIONSTRATEGYFUNCTION_H
 
-#include <map>
-#include <string>
-#include <vector>
-
-namespace joynr
-{
-
-namespace types
-{
-class DiscoveryEntry;
-class CustomParameter;
-} // namespace types
-
-class ArbitrationStrategyFunction
-{
-public:
-    virtual ~ArbitrationStrategyFunction() = default;
-    virtual std::string select(
-            const std::map<std::string, types::CustomParameter> customParameters,
-            const std::vector<types::DiscoveryEntry>& discoveryEntries) const = 0;
-};
-} // namespace joynr
-#endif // ARBITRATIONSTRATEGYFUNCTION_H
+define("joynr/system/DefaultLoggerConfiguration", [], function() {
+    return {
+        configuration : {
+            appenders : {
+                appender : [ {
+                    type : "Console",
+                    name : "STDOUT",
+                    PatternLayout : {
+                        pattern : "%m%n"
+                    }
+                }
+                ]
+            },
+            loggers : {
+                root : {
+                    level : "debug",
+                    AppenderRef : {
+                        ref : "STDOUT"
+                    }
+                }
+            }
+        }
+    };
+});

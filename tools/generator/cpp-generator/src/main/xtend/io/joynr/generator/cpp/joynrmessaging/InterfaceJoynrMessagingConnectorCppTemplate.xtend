@@ -150,7 +150,7 @@ bool «className»::usesClusterController() const{
 						future->onError(error);
 					};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(onSuccess, onError);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccess), std::move(onError));
 			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
 			future->get(«attributeName»);
 		}
@@ -160,7 +160,7 @@ bool «className»::usesClusterController() const{
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
-					[future, onSuccess] (const «returnType»& «attributeName») {
+					[future, onSuccess = std::move(onSuccess)] (const «returnType»& «attributeName») {
 						future->onSuccess(«attributeName»);
 						if (onSuccess){
 							onSuccess(«attributeName»);
@@ -168,14 +168,14 @@ bool «className»::usesClusterController() const{
 					};
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-					[future, onError] (const std::shared_ptr<exceptions::JoynrException>& error) {
+					[future, onError = std::move(onError)] (const std::shared_ptr<exceptions::JoynrException>& error) {
 						future->onError(error);
 						if (onError){
 							onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
 						}
 					};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(onSuccessWrapper, onErrorWrapper);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
 
 			return future;
@@ -193,7 +193,7 @@ bool «className»::usesClusterController() const{
 			auto future = std::make_shared<joynr::Future<void>>();
 
 			std::function<void()> onSuccessWrapper =
-					[future, onSuccess] () {
+					[future, onSuccess = std::move(onSuccess)] () {
 						future->onSuccess();
 						if (onSuccess) {
 							onSuccess();
@@ -201,14 +201,14 @@ bool «className»::usesClusterController() const{
 					};
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-				[future, onError] (const std::shared_ptr<exceptions::JoynrException>& error) {
+				[future, onError = std::move(onError)] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 					if (onError) {
 						onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
 					}
 				};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(onSuccessWrapper, onErrorWrapper);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			operationRequest(replyCaller, internalRequestObject);
 			return future;
 		}
@@ -233,7 +233,7 @@ bool «className»::usesClusterController() const{
 						future->onError(error);
 					};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(onSuccess, onError);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccess), std::move(onError));
 			operationRequest(replyCaller, internalRequestObject);
 			future->get();
 		}
@@ -318,7 +318,7 @@ bool «className»::usesClusterController() const{
 					future->onError(error);
 				};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccess, onError);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccess), std::move(onError));
 			operationRequest(replyCaller, internalRequestObject);
 			future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
 		}
@@ -330,7 +330,7 @@ bool «className»::usesClusterController() const{
 			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 			std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
-					[future, onSuccess] («outputTypedConstParamList») {
+					[future, onSuccess = std::move(onSuccess)] («outputTypedConstParamList») {
 						future->onSuccess(«outputUntypedParamList»);
 						if (onSuccess) {
 							onSuccess(«outputUntypedParamList»);
@@ -338,12 +338,12 @@ bool «className»::usesClusterController() const{
 					};
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-					[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const std::shared_ptr<exceptions::JoynrException>& error) {
+					[future, onRuntimeError = std::move(onRuntimeError)«IF method.hasErrorEnum», onApplicationError = std::move(onApplicationError)«ENDIF»] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 				};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccessWrapper, onErrorWrapper);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			operationRequest(replyCaller, internalRequestObject);
 			return future;
 		}
@@ -463,8 +463,8 @@ bool «className»::usesClusterController() const{
 							subscriptionListener,
 							subscriptionQos,
 							*subscriptionRequest,
-							onSuccess,
-							onError);
+							std::move(onSuccess),
+							std::move(onError));
 		«ENDIF»
 		return future;
 	}

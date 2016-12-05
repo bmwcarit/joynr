@@ -45,6 +45,7 @@ public:
     std::unique_ptr<JoynrClusterControllerRuntime> runtime;
     std::shared_ptr<IMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<IMessageReceiver> mockMessageReceiverMqtt;
+    std::shared_ptr<IMessageSender> mockMessageSenderMqtt;
     DiscoveryQos discoveryQos;
     std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder;
     std::unique_ptr<joynr::system::DiscoveryProxy> discoveryProxy;
@@ -60,6 +61,7 @@ public:
         runtime(nullptr),
         mockMessageReceiverHttp(std::make_shared<MockMessageReceiver>()),
         mockMessageReceiverMqtt(std::make_shared<MockMessageReceiver>()),
+        mockMessageSenderMqtt(std::make_shared<MockMessageSender>()),
         discoveryQos(),
         discoveryProxyBuilder(nullptr),
         discoveryProxy(nullptr),
@@ -99,7 +101,8 @@ public:
                 std::move(settings),
                 mockMessageReceiverHttp,
                 nullptr,
-                mockMessageReceiverMqtt);
+                mockMessageReceiverMqtt,
+                mockMessageSenderMqtt);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->registerDiscoveryProvider();
     }

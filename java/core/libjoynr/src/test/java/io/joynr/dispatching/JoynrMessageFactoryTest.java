@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +38,9 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
+
 import io.joynr.common.ExpiryDate;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
@@ -73,27 +76,33 @@ public class JoynrMessageFactoryTest {
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException {
-
         fromParticipantId = "sender";
         toParticipantId = "receiver";
-        Injector injector = Guice.createInjector(new JsonMessageSerializerModule(), new AbstractModule() {
 
-            @Override
-            protected void configure() {
-                requestStaticInjection(Request.class);
-                Multibinder<JoynrMessageProcessor> joynrMessageProcessorMultibinder = Multibinder.newSetBinder(binder(),
-                                                                                                               new TypeLiteral<JoynrMessageProcessor>() {
-                                                                                                               });
-                joynrMessageProcessorMultibinder.addBinding().toInstance(new JoynrMessageProcessor() {
-                    @Override
-                    public JoynrMessage process(JoynrMessage joynrMessage) {
-                        joynrMessage.getHeader().put("test", "test");
-                        return joynrMessage;
-                    }
-                });
-            }
+        Injector injector = Guice.createInjector(new JoynrPropertiesModule(new Properties()),
+                                                 new JsonMessageSerializerModule(),
+                                                 new AbstractModule() {
 
-        });
+                                                     @Override
+                                                     protected void configure() {
+                                                         requestStaticInjection(Request.class);
+                                                         Multibinder<JoynrMessageProcessor> joynrMessageProcessorMultibinder = Multibinder.newSetBinder(binder(),
+                                                                                                                                                        new TypeLiteral<JoynrMessageProcessor>() {
+                                                                                                                                                        });
+                                                         joynrMessageProcessorMultibinder.addBinding()
+                                                                                         .toInstance(new JoynrMessageProcessor() {
+                                                                                             @Override
+                                                                                             public JoynrMessage process(JoynrMessage joynrMessage) {
+                                                                                                 joynrMessage.getHeader()
+                                                                                                             .put("test",
+                                                                                                                  "test");
+                                                                                                 return joynrMessage;
+                                                                                             }
+                                                                                         });
+                                                     }
+
+                                                 });
+
         objectMapper = injector.getInstance(ObjectMapper.class);
 
         payload = "payload";
@@ -293,4 +302,5 @@ public class JoynrMessageFactoryTest {
         assertNotNull(result);
         assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, result.getType());
     }
+
 }

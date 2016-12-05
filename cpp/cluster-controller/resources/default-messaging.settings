@@ -3,6 +3,9 @@
 # 2592000000 = 30 days in milliseconds
 max-ttl-ms=2592000000
 
+# The TTL uplift value is added to all TTLs
+ttl-uplift-ms=0
+
 # When a new provider is registered, an appropriate discovery entry is added
 # to the capabilities directory in order to make the new provider discoverable.
 # If no expiry information is given during provider registration, this setting

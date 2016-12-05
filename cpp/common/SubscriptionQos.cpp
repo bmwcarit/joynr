@@ -65,7 +65,6 @@ const std::int64_t& SubscriptionQos::NO_EXPIRY_DATE()
 SubscriptionQos::SubscriptionQos()
         : expiryDateMs(NO_EXPIRY_DATE()), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
 {
-    setValidityMs(1000);
 }
 
 SubscriptionQos::SubscriptionQos(const std::int64_t& validityMs)

@@ -188,6 +188,12 @@ option(
 )
 message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
 
+if(NOT DEFINED BUILD_SHARED_LIBS)
+    set(BUILD_SHARED_LIBS ON)
+endif()
+
+message(STATUS "option BUILD_SHARED_LIBS=" ${BUILD_SHARED_LIBS})
+
 include(LocateProgram)
 include(AddClangFormat)
 
@@ -455,7 +461,7 @@ if(CMAKE_BUILD_TYPE_TOLOWER MATCHES debug)
     set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
     set(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level evaluated at runtime")
 else()
-    set(JOYNR_MAX_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level")
+    set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
     set(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level evaluated at runtime")
 endif()
 
@@ -745,7 +751,7 @@ export(PACKAGE Joynr)
 # install the export targets for use with the install-tree
 install(
     EXPORT JoynrTargets
-    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
+    DESTINATION "${INSTALL_CMAKE_DIR}"
     FILE "JoynrTargets.cmake"
 )
 
@@ -902,7 +908,7 @@ configure_file(
 # install the JoynrConfig.cmake and JoynrConfigVersion.cmake
 install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfig.cmake.install-tree"
-    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
+    DESTINATION "${INSTALL_CMAKE_DIR}"
     RENAME "JoynrConfig.cmake"
 )
 install(
@@ -913,7 +919,7 @@ install(
         "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
         "CMake/CheckDltImportTargets.cmake"
-    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
+    DESTINATION "${INSTALL_CMAKE_DIR}"
 )
 
 # install the NOTICE-CPP
@@ -922,82 +928,3 @@ install(
     DESTINATION "${CMAKE_INSTALL_DOCDIR}"
 )
 
-# cpack settings
-include(InstallRequiredSystemLibraries)
-
-
-# generic
-
-#
-# RPM specific settings
-#
-set(CPACK_GENERATOR "RPM")
-set(CPACK_STRIP_FILES "ON")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Joynr base package")
-set(CPACK_PACKAGE_NAME "joynr")
-set(CPACK_PACKAGE_VERSION_MAJOR "${JOYNR_MAJOR_VERSION}")
-set(CPACK_PACKAGE_VERSION_MINOR "${JOYNR_MINOR_VERSION}")
-set(CPACK_PACKAGE_VERSION_PATCH "${JOYNR_PATCH_VERSION}")
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
-set(CPACK_PACKAGE_VENDOR "BMW Car IT GmbH (http://www.bmw-carit.de)")
-set(CPACK_PACKAGE_CONTACT "joynr@bmw-carit.de")
-set(CPACK_RPM_PACKAGE_URL "https://github.com/bmwcarit/joynr")
-set(CPACK_RPM_PACKAGE_LICENSE "Apache License, Version 2.0")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README-CPP.txt")
-
-
-if(DEFINED ${BUILD_PACKAGE})
-    message(STATUS "variable BUILD_PACKAGE=" ${BUILD_PACKAGE})
-    if(${BUILD_PACKAGE} STREQUAL "shlib")
-        message(STATUS "Building package for shlib")
-        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-        set(CPACK_RPM_COMPONENT_INSTALL 1)
-        set(CPACK_COMPONENTS_ALL shlib)
-    endif(${BUILD_PACKAGE} STREQUAL "shlib")
-
-    if(${BUILD_PACKAGE} STREQUAL "shlib-debug")
-        message(STATUS "Building package for shlib-debug")
-        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-        set(CPACK_RPM_COMPONENT_INSTALL 1)
-        set(CPACK_COMPONENTS_ALL shlib)
-        set (CPACK_RPM_SPEC_MORE_DEFINE "%debug_package")
-    endif(${BUILD_PACKAGE} STREQUAL "shlib-debug")
-
-    if(${BUILD_PACKAGE} STREQUAL "bin")
-        message(STATUS "Building package for bin")
-        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-        set(CPACK_RPM_COMPONENT_INSTALL 1)
-        set(CPACK_COMPONENTS_ALL bin)
-    endif(${BUILD_PACKAGE} STREQUAL "bin")
-
-    if(${BUILD_PACKAGE} STREQUAL "bin-debug")
-        message(STATUS "Building package for bin-debug")
-        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-        set(CPACK_RPM_COMPONENT_INSTALL 1)
-        set(CPACK_COMPONENTS_ALL bin)
-        set (CPACK_RPM_SPEC_MORE_DEFINE "%debug_package")
-    endif(${BUILD_PACKAGE} STREQUAL "bin-debug")
-
-    if(${BUILD_PACKAGE} STREQUAL "dev")
-        message(STATUS "Building package for dev")
-        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-        set(CPACK_RPM_COMPONENT_INSTALL 1)
-        set(CPACK_COMPONENTS_ALL dev)
-    endif(${BUILD_PACKAGE} STREQUAL "dev")
-
-    if(${BUILD_PACKAGE} STREQUAL "tests")
-        message(STATUS "Building package for tests")
-        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-        set(CPACK_RPM_COMPONENT_INSTALL 1)
-        set(CPACK_COMPONENTS_ALL tests)
-    endif(${BUILD_PACKAGE} STREQUAL "tests")
-
-    if(${BUILD_PACKAGE} STREQUAL "library")
-        message(STATUS "Building package for library")
-        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-        set(CPACK_RPM_COMPONENT_INSTALL 1)
-        set(CPACK_COMPONENTS_ALL library)
-    endif(${BUILD_PACKAGE} STREQUAL "library")
-endif(DEFINED ${BUILD_PACKAGE})
-
-include(CPack)

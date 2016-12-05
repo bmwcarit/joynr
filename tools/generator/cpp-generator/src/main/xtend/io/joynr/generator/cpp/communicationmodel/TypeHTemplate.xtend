@@ -186,9 +186,9 @@ public:
 	 * @return a copy of this object
 	 */
 	 «IF !hasExtendsDeclaration(type)»
-	 std::unique_ptr<«getRootType(type).joynrName»> virtual clone() const;
+	 std::unique_ptr<«getRootType(type).typeName»> virtual clone() const;
 	 «ELSE»
-	 std::unique_ptr<«getRootType(type).joynrName»> clone() const override;
+	 std::unique_ptr<«getRootType(type).typeName»> clone() const override;
 	 «ENDIF»
 
 	// getters
@@ -226,7 +226,7 @@ protected:
 	 * @return true if objects are equal, false otherwise
 	 */
 	«IF hasExtendsDeclaration(type)»
-		bool equals(const «getRootType(type).joynrName»& other) const override
+		bool equals(const «getRootType(type).typeName»& other) const override
 		{
 			«IF getMembers(type).size > 0»
 				const «typeName»& otherDerived = static_cast<const «typeName»&>(other);
@@ -280,7 +280,7 @@ void serialize(Archive& archive, «typeName»& «serializeObjName»)
 «IF getMembers(type).size > 0 || hasExtendsDeclaration(type)»
 	archive(
 			«IF hasExtendsDeclaration(type)»
-			muesli::BaseClass<«getExtendedType(type).joynrName»>(&«serializeObjName»)«IF type.members.size >0 »,«ENDIF»
+			muesli::BaseClass<«getExtendedType(type).typeName»>(&«serializeObjName»)«IF type.members.size >0 »,«ENDIF»
 			«ENDIF»
 			«FOR member: type.members SEPARATOR ','»
 			muesli::make_nvp("«member.joynrName»", «serializeObjName».«member.joynrName»)

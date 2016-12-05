@@ -48,6 +48,7 @@ public:
     virtual ~WebSocketPpClient();
 
     void registerConnectCallback(std::function<void()> callback);
+    void registerReconnectCallback(std::function<void()> callback);
 
     /**
      * @brief Register method called on disconnect
@@ -115,6 +116,7 @@ private:
     std::atomic<bool> isRunning;
     boost::asio::steady_timer reconnectTimer;
     std::atomic<State> state;
+    bool performingInitialConnect;
 
     // store address for reconnect
     system::RoutingTypes::WebSocketAddress address;
@@ -122,6 +124,7 @@ private:
 
     std::function<void()> onConnectionOpenedCallback;
     std::function<void()> onConnectionClosedCallback;
+    std::function<void()> onConnectionReestablishedCallback;
 
     std::shared_ptr<WebSocketPpSender<Client>> sender;
     WebSocketPpReceiver<Client> receiver;

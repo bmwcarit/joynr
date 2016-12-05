@@ -95,7 +95,6 @@ public:
     // Functions used by integration tests
     void startMessaging();
     void stopMessaging();
-    void waitForChannelCreation();
     void deleteChannel();
     void registerRoutingProvider();
     void registerDiscoveryProvider();

@@ -69,7 +69,7 @@ public:
     ReplyCaller(
             std::function<void(const Ts&...)> callbackFct,
             std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> errorFct)
-            : BaseReplyCaller(std::move(errorFct)), callbackFct(callbackFct)
+            : BaseReplyCaller(std::move(errorFct)), callbackFct(std::move(callbackFct))
     {
     }
 
@@ -102,7 +102,7 @@ public:
     ReplyCaller(
             std::function<void()> callbackFct,
             std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> errorFct)
-            : BaseReplyCaller(std::move(errorFct)), callbackFct(callbackFct)
+            : BaseReplyCaller(std::move(errorFct)), callbackFct(std::move(callbackFct))
     {
     }
 

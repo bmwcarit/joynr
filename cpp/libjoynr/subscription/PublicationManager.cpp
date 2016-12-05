@@ -124,6 +124,7 @@ PublicationManager::~PublicationManager()
 
 PublicationManager::PublicationManager(boost::asio::io_service& ioService,
                                        IJoynrMessageSender* messageSender,
+                                       std::uint64_t ttlUplift,
                                        int maxThreads)
         : joynrMessageSender(messageSender),
           publications(),
@@ -143,7 +144,8 @@ PublicationManager::PublicationManager(boost::asio::io_service& ioService,
           queuedBroadcastSubscriptionRequestsMutex(),
           currentScheduledPublications(),
           currentScheduledPublicationsMutex(),
-          broadcastFilterLock()
+          broadcastFilterLock(),
+          ttlUplift(ttlUplift)
 {
 }
 
@@ -246,7 +248,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         const std::shared_ptr<SubscriptionQos> qos = requestInfo->getQos();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationEndDelay = qos->getExpiryDateMs() - now;
+        std::int64_t publicationEndDelay = qos->getExpiryDateMs() + ttlUplift - now;
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
@@ -271,7 +273,8 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         } else {
             JOYNR_LOG_WARN(logger, "publication end is in the past");
             std::int64_t expiryDateMs =
-                    DispatcherUtils::convertTtlToAbsoluteTime(60000).time_since_epoch().count();
+                    DispatcherUtils::convertTtlToAbsoluteTime(60000).time_since_epoch().count() +
+                    ttlUplift;
             sendSubscriptionReply(publicationSender,
                                   requestInfo->getProviderId(),
                                   requestInfo->getProxyId(),
@@ -406,7 +409,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         const std::shared_ptr<SubscriptionQos> qos = requestInfo->getQos();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationEndDelay = qos->getExpiryDateMs() - now;
+        std::int64_t publicationEndDelay = qos->getExpiryDateMs() + ttlUplift - now;
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
@@ -424,7 +427,8 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         } else {
             JOYNR_LOG_WARN(logger, "publication end is in the past");
             std::int64_t expiryDateMs =
-                    DispatcherUtils::convertTtlToAbsoluteTime(60000).time_since_epoch().count();
+                    DispatcherUtils::convertTtlToAbsoluteTime(60000).time_since_epoch().count() +
+                    ttlUplift;
             sendSubscriptionReply(publicationSender,
                                   requestInfo->getProviderId(),
                                   requestInfo->getProxyId(),
@@ -926,7 +930,8 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         dummyRequest.setMethodName(attributeGetter);
 
         CallContextStorage::set(subscriptionRequest->getCallContext());
-        requestInterpreter->execute(requestCaller, dummyRequest, onSuccess, onError);
+        requestInterpreter->execute(
+                requestCaller, dummyRequest, std::move(onSuccess), std::move(onError));
         CallContextStorage::invalidate();
     }
 }

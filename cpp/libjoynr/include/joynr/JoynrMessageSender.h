@@ -71,7 +71,8 @@ class SubscriptionPublication;
 class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender
 {
 public:
-    explicit JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter);
+    JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter,
+                       std::uint64_t ttlUpliftMs = 0);
 
     ~JoynrMessageSender() override = default;
 

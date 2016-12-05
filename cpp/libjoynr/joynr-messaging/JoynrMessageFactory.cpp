@@ -37,8 +37,9 @@ namespace joynr
 
 INIT_LOGGER(JoynrMessageFactory);
 
-JoynrMessageFactory::JoynrMessageFactory()
-        : securityManager(std::make_unique<DummyPlatformSecurityManager>())
+JoynrMessageFactory::JoynrMessageFactory(std::uint64_t ttlUpliftMs)
+        : securityManager(std::make_unique<DummyPlatformSecurityManager>()),
+          ttlUpliftMs(ttlUpliftMs)
 {
 }
 
@@ -167,7 +168,7 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
                                   const MessagingQos& qos,
                                   std::string&& payload) const
 {
-    std::int64_t ttl = qos.getTtl();
+    std::int64_t ttl = qos.getTtl() + ttlUpliftMs;
     msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
     msg.setHeaderFrom(senderParticipantId);
     msg.setHeaderTo(receiverParticipantId);

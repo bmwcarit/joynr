@@ -44,7 +44,7 @@ define(
             IntegrationUtils.log = function log(msg, id) {
                 if (joynr !== undefined) {
                     var logger = joynr.logging.getLogger(id);
-                    logger.log(joynr.logging.getLogLevel(msg.level), msg.message);
+                    logger.log(joynr.logging.getLogLevel(msg.level), [msg.message]);
                 } else {
                     if (queuedLogs[id] === undefined) {
                         queuedLogs[id] = [];

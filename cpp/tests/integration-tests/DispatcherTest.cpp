@@ -133,7 +133,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     // The OUT param Gpslocation is set with gpsLocation1
     EXPECT_CALL(
                 *mockRequestCaller,
-                getLocation(
+                getLocationMock(
                     A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
                     A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>()
                 )
@@ -303,7 +303,7 @@ TEST_F(DispatcherTest, receive_setCallContext) {
 
     EXPECT_CALL(
                 *mockRequestCaller,
-                getLocation(
+                getLocationMock(
                     A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
                     A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>()
                 )

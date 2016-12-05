@@ -483,7 +483,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         )
 
         install(TARGETS g_UnitTests
-            DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+            DESTINATION ${INSTALL_TEST_DIR}
         )
     endif(${BUILD_UNIT_TESTS})
 
@@ -524,7 +524,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         )
 
         install(TARGETS g_IntegrationTests
-            DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+            DESTINATION ${INSTALL_TEST_DIR}
         )
     endif(${BUILD_INTEGRATION_TESTS})
 
@@ -576,7 +576,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         )
 
         install(TARGETS g_SystemIntegrationTests
-            DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+            DESTINATION ${INSTALL_TEST_DIR}
         )
     endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 
@@ -612,7 +612,7 @@ else()
         )
 
     install(TARGETS g_UnitTests
-            DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+            DESTINATION ${INSTALL_TEST_DIR}
         )
     endif(${BUILD_UNIT_TESTS})
 
@@ -648,12 +648,12 @@ else()
         )
 
         install(TARGETS g_SystemIntegrationTests
-            DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+            DESTINATION ${INSTALL_TEST_DIR}
         )
     endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 
 endif(${BUILD_CLUSTER_CONTROLLER})
 
 install(DIRECTORY resources
-        DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+        DESTINATION ${INSTALL_TEST_DIR}
 )

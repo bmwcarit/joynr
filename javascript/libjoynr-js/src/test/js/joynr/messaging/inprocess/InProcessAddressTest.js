@@ -43,6 +43,14 @@ define([ "joynr/messaging/inprocess/InProcessAddress"
             expect(inProcessAddress.getSkeleton()).toEqual(skeleton);
         });
 
+        it("equals", function() {
+            expect(inProcessAddress.equals(new InProcessAddress(1))).toBeFalsy();
+            expect(inProcessAddress.equals(undefined)).toBeFalsy();
+            expect(inProcessAddress.equals(null)).toBeFalsy();
+            expect(inProcessAddress.equals("")).toBeFalsy();
+            expect(inProcessAddress.equals(new InProcessAddress(skeleton))).toBeTruthy();
+        });
+
     });
 
 });

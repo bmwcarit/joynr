@@ -88,6 +88,7 @@ public:
     static const std::string& SETTING_DISCOVERY_MESSAGES_TTL_MS();
     static const std::string& SETTING_SEND_MESSAGE_MAX_TTL();
     static const std::string& SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
+    static const std::string& SETTING_TTL_UPLIFT_MS();
 
     static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
@@ -97,6 +98,7 @@ public:
     static std::int64_t DEFAULT_BROKER_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
     static std::int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
+    static std::uint64_t DEFAULT_TTL_UPLIFT_MS();
     /**
      * @brief DEFAULT_MAXIMUM_TTL_MS
      * @return the default value for maximum message TTL in milliseconds.
@@ -183,6 +185,8 @@ public:
     void setDiscoveryMessagesTtl(std::int64_t ttl_ms);
     std::int64_t getSendMsgMaxTtl() const;
     void setSendMsgMaxTtl(std::int64_t ttl_ms);
+    void setTtlUpliftMs(std::uint64_t ttlUpliftMs);
+    std::uint64_t getTtlUpliftMs() const;
 
     std::chrono::milliseconds getCapabilitiesFreshnessUpdateIntervalMs() const;
 

@@ -1,0 +1,15 @@
+{
+  "name": "joynr-shutdown-test",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "main": "joynr.js",
+  "license": "Apache-2.0",
+  "homepage": "http://joynr.io",
+  "bugs": "https://github.com/bmwcarit/joynr/issues",
+  "main": "joynr.js",
+  "scripts": {
+    "preinstall": "npm install ${project.build.directory}/node-classes"
+  }
+}

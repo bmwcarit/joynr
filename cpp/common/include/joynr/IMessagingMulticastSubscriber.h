@@ -26,10 +26,6 @@
 
 namespace joynr
 {
-namespace exceptions
-{
-class JoynrRuntimeException;
-} // namespace exceptions
 
 class JOYNRCOMMON_EXPORT IMessagingMulticastSubscriber : public IMessaging
 {
