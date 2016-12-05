@@ -52,8 +52,10 @@ private:
 
     void onWebSocketError(const std::string& errorMessage);
     void connect(std::function<void()> runtimeCreatedCallback);
+    void sendInitializationMsg();
 
     std::shared_ptr<WebSocketPpClient> websocket;
+    std::string initializationMsg;
     ADD_LOGGER(LibJoynrWebSocketRuntime);
 
     friend class JoynrRuntime;

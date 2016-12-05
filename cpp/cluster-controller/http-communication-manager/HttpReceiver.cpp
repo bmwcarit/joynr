@@ -111,11 +111,9 @@ void HttpReceiver::startReceiveQueue()
     messageReceiver->start();
 }
 
-void HttpReceiver::waitForReceiveQueueStarted()
+bool HttpReceiver::isConnected()
 {
-    JOYNR_LOG_TRACE(logger, "waiting for ReceiveQueue to be started.");
-    channelCreatedSemaphore->wait();
-    channelCreatedSemaphore->notify();
+    return channelCreatedSemaphore->waitFor(std::chrono::milliseconds::zero());
 }
 
 void HttpReceiver::stopReceiveQueue()

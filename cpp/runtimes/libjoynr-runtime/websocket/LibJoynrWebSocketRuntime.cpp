@@ -63,7 +63,7 @@ void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallb
                     libjoynrMessagingId);
 
     // send initialization message containing libjoynr messaging address
-    std::string initializationMsg = joynr::serializer::serializeToJson(*libjoynrMessagingAddress);
+    initializationMsg = joynr::serializer::serializeToJson(*libjoynrMessagingAddress);
     JOYNR_LOG_TRACE(logger,
                     "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
                     initializationMsg,
@@ -85,20 +85,13 @@ void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallb
 
     auto connectCallback = [
         this,
-        initializationMsg,
         runtimeCreatedCallback = std::move(runtimeCreatedCallback),
         factory,
         libjoynrMessagingAddress,
         ccMessagingAddress
     ]()
     {
-        auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
-            // initialization message will be sent after reconnect
-            JOYNR_LOG_ERROR(logger,
-                            "Sending websocket initialization message failed. Error: {}",
-                            e.getMessage());
-        };
-        websocket->sendTextMessage(initializationMsg, onFailure);
+        sendInitializationMsg();
 
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
                 std::make_unique<joynr::WebSocketMulticastAddressCalculator>(ccMessagingAddress);
@@ -107,8 +100,22 @@ void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallb
         runtimeCreatedCallback();
     };
 
+    auto reconnectCallback = [this]() { sendInitializationMsg(); };
+
     websocket->registerConnectCallback(connectCallback);
+    websocket->registerReconnectCallback(reconnectCallback);
     websocket->connect(*ccMessagingAddress);
+}
+
+void LibJoynrWebSocketRuntime::sendInitializationMsg()
+{
+    auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
+        // initialization message will be sent after reconnect
+        JOYNR_LOG_ERROR(logger,
+                        "Sending websocket initialization message failed. Error: {}",
+                        e.getMessage());
+    };
+    websocket->sendTextMessage(initializationMsg, onFailure);
 }
 
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(

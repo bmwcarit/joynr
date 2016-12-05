@@ -24,6 +24,7 @@ define([
             "joynr/messaging/routing/MessageRouter",
             "joynr/system/RoutingTypes/BrowserAddress",
             "joynr/system/RoutingTypes/ChannelAddress",
+            "joynr/messaging/inprocess/InProcessAddress",
             "joynr/messaging/JoynrMessage",
             "joynr/start/TypeRegistry",
             "global/Promise",
@@ -35,6 +36,7 @@ define([
                 MessageRouter,
                 BrowserAddress,
                 ChannelAddress,
+                InProcessAddress,
                 JoynrMessage,
                 TypeRegistry,
                 Promise,
@@ -403,8 +405,11 @@ define([
                                             incomingAddress,
                                             parentMessageRouterAddress);
 
+                                messageRouter.setToKnown(parameters.providerParticipantId);
                                 routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-                                    "addMulticastReceiver"
+                                    "addNextHop",
+                                    "addMulticastReceiver",
+                                    "removeMulticastReceiver"
                                 ]);
 
                                routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
@@ -430,6 +435,18 @@ define([
                                 expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
 
                                 expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
+
+                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
+                            });
+
+                            it("does not call routing proxy for in process provider", function() {
+                                messageRouter.setRoutingProxy(routingProxySpy);
+
+                                parameters.providerParticipantId = "inProcessParticipant";
+                                messageRouter.addNextHop(parameters.providerParticipantId, new InProcessAddress(undefined));
+                                messageRouter.addMulticastReceiver(parameters);
+
+                                expect(routingProxySpy.addMulticastReceiver).not.toHaveBeenCalled();
 
                                 expect(messageRouter.hasMulticastReceivers()).toBe(true);
                             });
@@ -462,6 +479,8 @@ define([
                                             messageQueueSpy,
                                             incomingAddress,
                                             parentMessageRouterAddress);
+
+                                messageRouter.setToKnown(parameters.providerParticipantId);
 
                                 routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
                                     "addMulticastReceiver",

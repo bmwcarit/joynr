@@ -178,10 +178,9 @@ std::string HttpSender::toUrl(const system::RoutingTypes::ChannelAddress& channe
     return result;
 }
 
-void HttpSender::registerReceiveQueueStartedCallback(
-        std::function<void(void)> waitForReceiveQueueStarted)
+void HttpSender::registerReceiver(std::shared_ptr<IMessageReceiver> receiver)
 {
-    std::ignore = waitForReceiveQueueStarted;
+    std::ignore = receiver;
 }
 
 void HttpSender::handleCurlError(

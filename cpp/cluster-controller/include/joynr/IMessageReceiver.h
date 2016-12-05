@@ -52,9 +52,9 @@ public:
     virtual void startReceiveQueue() = 0;
 
     /**
-      * Blocks until the ReceiveQueue is actually started.
+      * Check if the receiver is connected
       */
-    virtual void waitForReceiveQueueStarted() = 0;
+    virtual bool isConnected() = 0;
 
     /**
       * Stops receiving messages over the specified channel.

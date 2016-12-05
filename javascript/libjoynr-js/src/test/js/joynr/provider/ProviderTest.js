@@ -146,6 +146,15 @@ define(
                                                 this.value = newValue;
                                             }
                                         },
+                                        complexStructMapAttribute : {
+                                            value : {},
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
                                         failingSyncAttribute : {
                                             value : 0,
                                             get : function() {
@@ -208,6 +217,7 @@ define(
                                         methodWithByteBuffer : jasmine
                                                 .createSpy("methodWithByteBuffer"),
                                         methodWithTypeDef : jasmine.createSpy("methodWithTypeDef"),
+                                        methodWithComplexMap : jasmine.createSpy("methodWithComplexMap"),
                                         operationWithEnumsAsInputAndOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndOutput"),
                                         operationWithMultipleOutputParameters : jasmine
