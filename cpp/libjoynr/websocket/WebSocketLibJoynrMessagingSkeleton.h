@@ -43,7 +43,7 @@ public:
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
-    void onTextMessageReceived(const std::string& message);
+    void onMessageReceived(const std::string& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketLibJoynrMessagingSkeleton);

@@ -46,27 +46,6 @@ public:
             const std::string& msg,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) override
     {
-        sendTextMessage(msg, onFailure);
-    }
-
-    void sendTextMessage(
-            const std::string& msg,
-            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-    {
-        JOYNR_LOG_TRACE(logger, "outgoing text message \"{}\"", msg);
-        websocketpp::lib::error_code websocketError;
-        endpoint.send(connectionHandle, msg, websocketpp::frame::opcode::text, websocketError);
-        if (websocketError) {
-            onFailure(exceptions::JoynrDelayMessageException(
-                    "Error sending text message via WebSocketPpBase: " + websocketError.message() +
-                    ", message: " + msg));
-        }
-    }
-
-    void sendBinaryMessage(
-            const std::string& msg,
-            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-    {
         JOYNR_LOG_TRACE(logger, "outgoing binary message of size {}", msg.size());
         websocketpp::lib::error_code websocketError;
         endpoint.send(connectionHandle, msg, websocketpp::frame::opcode::binary, websocketError);

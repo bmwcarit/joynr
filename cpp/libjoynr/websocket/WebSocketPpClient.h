@@ -119,13 +119,13 @@ public:
 
     /**
      * @brief Register method called on message received
-     * @param onTextMessageReceived Callback method with message as parameter
+     * @param onMessageReceived Callback method with message as parameter
      * @note This is needed because of the missing signal / slot mechanism of
      *      Qt. All messages will be received by the runtime.
      */
-    void registerReceiveCallback(std::function<void(const std::string&)> onTextMessageReceived)
+    void registerReceiveCallback(std::function<void(const std::string&)> onMessageReceived)
     {
-        receiver.registerReceiveCallback(onTextMessageReceived);
+        receiver.registerReceiveCallback(onMessageReceived);
     }
 
     void connect(const system::RoutingTypes::WebSocketAddress& address)
@@ -171,20 +171,6 @@ public:
               const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
     {
         sender->send(msg, onFailure);
-    }
-
-    void sendTextMessage(
-            const std::string& msg,
-            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-    {
-        sender->sendTextMessage(msg, onFailure);
-    }
-
-    void sendBinaryMessage(
-            const std::string& msg,
-            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-    {
-        sender->sendTextMessage(msg, onFailure);
     }
 
     std::shared_ptr<IWebSocketSendInterface> getSender() const
