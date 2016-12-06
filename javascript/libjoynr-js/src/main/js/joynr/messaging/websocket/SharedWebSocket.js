@@ -53,7 +53,7 @@ define(
              *            libjoynr
              */
             function initializeConnection(websocket, localAddress) {
-                websocket.send(JSON.stringify(localAddress));
+                websocket.send(JSON.stringify(localAddress), {binary: true});
             }
 
             /**
@@ -67,7 +67,7 @@ define(
                 while (queuedMessages.length) {
                     queued = queuedMessages.shift();
                     try {
-                        websocket.send(WebSocket.marshalJoynrMessage(queued.message));
+                        websocket.send(WebSocket.marshalJoynrMessage(queued.message), {binary: true});
                         queued.resolve();
                         // Error is thrown if the socket is no longer open
                     } catch (e) {
@@ -82,8 +82,7 @@ define(
                 return new Promise(function(resolve, reject){
                     if (websocket.readyState === WebSocket.OPEN) {
                         try {
-                            //websocket.send(JSONSerializer.stringify(joynrMessage));
-                            websocket.send(WebSocket.marshalJoynrMessage(joynrMessage));
+                            websocket.send(WebSocket.marshalJoynrMessage(joynrMessage), {binary: true});
                             resolve();
                             // Error is thrown if the socket is no longer open, so requeue to the front
                         } catch (e) {
