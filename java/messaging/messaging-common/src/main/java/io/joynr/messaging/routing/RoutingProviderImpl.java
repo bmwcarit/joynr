@@ -21,6 +21,7 @@ package io.joynr.messaging.routing;
 
 import javax.inject.Inject;
 
+import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.system.RoutingAbstractProvider;
@@ -116,5 +117,10 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
                                                          String providerParticipantId) {
         messageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         return resolvedDeferred();
+    }
+
+    @Override
+    public Promise<Deferred<String>> getGlobalAddress() {
+        throw new IllegalStateException("not implemented yet");
     }
 }
