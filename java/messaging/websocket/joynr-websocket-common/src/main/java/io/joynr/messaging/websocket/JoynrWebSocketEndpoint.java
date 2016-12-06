@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import io.joynr.messaging.FailureAction;
@@ -26,6 +28,8 @@ import io.joynr.messaging.IMessaging;
 import joynr.system.RoutingTypes.Address;
 
 public interface JoynrWebSocketEndpoint {
+
+    public static final Charset CHARSET = StandardCharsets.UTF_8;
 
     public void start();
 

@@ -1,11 +1,9 @@
 package io.joynr.messaging.websocket.jetty.client;
 
-import java.io.IOException;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +19,9 @@ import java.io.IOException;
  * #L%
  */
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -87,6 +87,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
         if (jettyClient == null) {
             jettyClient = new WebSocketClient();
             jettyClient.getPolicy().setMaxTextMessageSize(maxMessageSize);
+            jettyClient.getPolicy().setMaxBinaryMessageSize(maxMessageSize);
             jettyClient.setMaxIdleTimeout(websocketIdleTimeout);
         }
 
@@ -124,7 +125,9 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
         }
 
         try {
-            sessionFuture.get(30, TimeUnit.SECONDS).getRemote().sendString(serializedAddress);
+            sessionFuture.get(30, TimeUnit.SECONDS)
+                         .getRemote()
+                         .sendBytes(ByteBuffer.wrap(serializedAddress.getBytes(CHARSET)));
         } catch (IOException | ExecutionException | TimeoutException e) {
             throw new JoynrCommunicationException(e.getMessage(), e);
         }
@@ -196,8 +199,8 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
-    public void onWebSocketText(String serializedMessage) {
-        super.onWebSocketText(serializedMessage);
+    public void onWebSocketBinary(byte[] payload, int offset, int len) {
+        String serializedMessage = new String(payload, offset, len, CHARSET);
         logger.trace(this.getClass().getSimpleName() + ": Received TEXT message: " + serializedMessage);
         messageListener.transmit(serializedMessage, new FailureAction() {
 
@@ -228,7 +231,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
 
         try {
             Session session = sessionFuture.get(timeout, unit);
-            session.getRemote().sendString(message, new WriteCallback() {
+            session.getRemote().sendBytes(ByteBuffer.wrap(message.getBytes(CHARSET)), new WriteCallback() {
 
                 @Override
                 public void writeSuccess() {
