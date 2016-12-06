@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <functional>
+#include <tuple>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/placeholders.hpp>
@@ -424,6 +425,16 @@ void MessageRouter::addNextHop(
     addNextHopToParent(participantId, onSuccess);
 
     sendMessages(participantId, inprocessAddress);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::getGlobalAddress(
+        std::function<void(const std::string&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::ignore = onSuccess;
+    std::ignore = onError;
+    throw std::runtime_error("not implemented yet");
 }
 
 // inherited from joynr::system::RoutingProvider

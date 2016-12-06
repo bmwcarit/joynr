@@ -113,6 +113,9 @@ public:
      */
     virtual void route(const JoynrMessage& message, std::uint32_t tryCount = 0);
 
+    void getGlobalAddress(std::function<void(const std::string&)> onSuccess,
+                          std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                                  onError) override;
     void addNextHop(const std::string& participantId,
                     const joynr::system::RoutingTypes::ChannelAddress& channelAddress,
                     std::function<void()> onSuccess,
