@@ -240,7 +240,7 @@ var runInteractiveConsole =
                         });
                         break;
                     case MODES.UNSUBSCRIBE.value:
-                        if (currentStationSubscriptionId !== undefined) {
+                        if (currentStationSubscriptionId !== undefined && currentStationSubscriptionId !== null) {
                             unsubscribeHelper({
                                 subscribeToName: "currentStation",
                                 subscriptionId: currentStationSubscriptionId
@@ -249,7 +249,7 @@ var runInteractiveConsole =
                                 currentStationSubscriptionId = undefined;
                             });
                         }
-                        if (multicastSubscriptionId !== undefined) {
+                        if (multicastSubscriptionId !== undefined && multicastSubscriptionId !== null) {
                             unsubscribeHelper({
                                 subscribeToName: "weakSignal",
                                 subscriptionId: multicastSubscriptionId
@@ -258,7 +258,7 @@ var runInteractiveConsole =
                                 multicastSubscriptionId = undefined;
                             });
                         }
-                        if (multicastPSubscriptionId !== undefined) {
+                        if (multicastPSubscriptionId !== undefined && multicastPSubscriptionId !== null) {
                             unsubscribeHelper({
                                 subscribeToName: "weakSignal",
                                 partitions: [ "GERMANY" ],
