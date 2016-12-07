@@ -67,8 +67,12 @@ public class JoynrMessageFactory {
                                        String toParticipantId,
                                        Object payload,
                                        MessagingQos messagingQos) {
-        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()
-                + ttlUpliftMs);
+        ExpiryDate expiryDate;
+        if (messagingQos.getRoundTripTtl_ms() > (Long.MAX_VALUE - ttlUpliftMs)) {
+            expiryDate = DispatcherUtils.convertTtlToExpirationDate(Long.MAX_VALUE);
+        } else {
+            expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms() + ttlUpliftMs);
+        }
         JoynrMessage message = new JoynrMessage();
         message.setType(joynrMessageType);
         Map<String, String> header = createHeader(fromParticipantId, toParticipantId);

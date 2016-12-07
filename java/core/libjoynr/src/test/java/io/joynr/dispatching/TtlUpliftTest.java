@@ -227,6 +227,38 @@ public class TtlUpliftTest {
         JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
+    @Test
+    public void testTtlUpliftMsWithLargeTtl() {
+        MessagingQos messagingQos = new MessagingQos(Long.MAX_VALUE);
+        JoynrMessage message = joynrMessageFactoryWithTtlUplift.createRequest(fromParticipantId,
+                                                                              toParticipantId,
+                                                                              request,
+                                                                              messagingQos);
+        long expiryDateValue = Long.MAX_VALUE;
+        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+
+        messagingQos = new MessagingQos(Long.MAX_VALUE - TTL_UPLIFT_MS);
+        message = joynrMessageFactoryWithTtlUplift.createRequest(fromParticipantId,
+                                                                 toParticipantId,
+                                                                 request,
+                                                                 messagingQos);
+        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+
+        messagingQos = new MessagingQos(Long.MAX_VALUE - TTL_UPLIFT_MS - System.currentTimeMillis());
+        message = joynrMessageFactoryWithTtlUplift.createRequest(fromParticipantId,
+                                                                 toParticipantId,
+                                                                 request,
+                                                                 messagingQos);
+        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+
+        messagingQos = new MessagingQos(Long.MAX_VALUE - TTL_UPLIFT_MS - System.currentTimeMillis() + 1);
+        message = joynrMessageFactoryWithTtlUplift.createRequest(fromParticipantId,
+                                                                 toParticipantId,
+                                                                 request,
+                                                                 messagingQos);
+        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+    }
+
     private static class MessagingQosMatcher extends ArgumentMatcher<MessagingQos> {
 
         private long expectedPublicationTtlMs;
@@ -413,6 +445,30 @@ public class TtlUpliftTest {
 
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
+    public void testAttributeSubscriptionWitTtlUpliftWithLargeExpiryDate() throws Exception {
+        long validityMs = 300;
+        long publicationTtlMs = 1000;
+
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(0);
+        qos.setExpiryDateMs(Long.MAX_VALUE - SUBSCRIPTION_UPLIFT_MS + 1);
+        qos.setPublicationTtlMs(publicationTtlMs);
+
+        long expectedSubscriptionReplyTtl = qos.getExpiryDateMs() - System.currentTimeMillis();
+        long expectedPublicationTtlMs = publicationTtlMs;
+
+        testAttributeSubscriptionWithTtlUplift(qos, validityMs, expectedSubscriptionReplyTtl, expectedPublicationTtlMs);
+
+        publicationManagerWithTtlUplift.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
+
+        verify(dispatcher, timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                              any(SubscriptionPublication.class),
+                                                                              argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 3000)
     public void testBroadcastSubscriptionWithoutTtlUplift() throws Exception {
         long validityMs = 300;
         long toleranceMs = 50;
@@ -543,4 +599,27 @@ public class TtlUpliftTest {
                                                                               argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
     }
 
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 3000)
+    public void testBroadcastSubscriptionWitTtlUpliftWithLargeExpiryDate() throws Exception {
+        long validityMs = 300;
+        long publicationTtlMs = 1000;
+
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(0);
+        qos.setExpiryDateMs(Long.MAX_VALUE - SUBSCRIPTION_UPLIFT_MS + 1);
+        qos.setPublicationTtlMs(publicationTtlMs);
+
+        long expectedSubscriptionReplyTtl = qos.getExpiryDateMs() - System.currentTimeMillis();
+        long expectedPublicationTtlMs = publicationTtlMs;
+
+        testBroadcastSubscriptionWithTtlUplift(qos, validityMs, expectedSubscriptionReplyTtl, expectedPublicationTtlMs);
+
+        publicationManagerWithTtlUplift.broadcastOccurred(SUBSCRIPTION_ID, null, valueToPublish);
+
+        verify(dispatcher, timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                              any(SubscriptionPublication.class),
+                                                                              argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
+    }
 }
