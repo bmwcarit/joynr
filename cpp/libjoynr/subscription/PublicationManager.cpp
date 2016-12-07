@@ -216,6 +216,29 @@ void PublicationManager::add(const std::string& proxyParticipantId,
     handleAttributeSubscriptionRequest(requestInfo, requestCaller, publicationSender);
 }
 
+void PublicationManager::addSubscriptionCleanupIfNecessary(std::shared_ptr<Publication> publication,
+                                                           std::shared_ptr<SubscriptionQos> qos,
+                                                           std::string& subscriptionId)
+{
+    if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
+        std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   std::chrono::system_clock::now().time_since_epoch()).count();
+        std::int64_t publicationEndDelay;
+        std::chrono::hours tolerance = std::chrono::hours(1);
+        JoynrTimePoint max = DispatcherUtils::getMaxAbsoluteTime() - tolerance;
+        if (qos->getExpiryDateMs() >
+            max.time_since_epoch().count() - static_cast<std::int64_t>(ttlUplift)) {
+            publicationEndDelay = max.time_since_epoch().count() - now;
+        } else {
+            publicationEndDelay = qos->getExpiryDateMs() + ttlUplift - now;
+        }
+        publication->publicationEndRunnableHandle =
+                delayedScheduler->schedule(new PublicationEndRunnable(*this, subscriptionId),
+                                           std::chrono::milliseconds(publicationEndDelay));
+        JOYNR_LOG_DEBUG(logger, "publication will end in {}  ms", publicationEndDelay);
+    }
+}
+
 void PublicationManager::handleAttributeSubscriptionRequest(
         std::shared_ptr<SubscriptionRequestInformation> requestInfo,
         std::shared_ptr<RequestCaller> requestCaller,
@@ -246,18 +269,10 @@ void PublicationManager::handleAttributeSubscriptionRequest(
 
         // Schedule a runnable to remove the publication when it finishes
         const std::shared_ptr<SubscriptionQos> qos = requestInfo->getQos();
-        std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationEndDelay = qos->getExpiryDateMs() + ttlUplift - now;
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
-                publication->publicationEndRunnableHandle = delayedScheduler->schedule(
-                        new PublicationEndRunnable(*this, subscriptionId),
-                        std::chrono::milliseconds(publicationEndDelay));
-                JOYNR_LOG_DEBUG(logger, "publication will end in {}  ms", publicationEndDelay);
-            }
+            addSubscriptionCleanupIfNecessary(publication, qos, subscriptionId);
             {
                 std::lock_guard<std::mutex> currentScheduledLocker(
                         currentScheduledPublicationsMutex);
@@ -407,18 +422,10 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
 
         // Schedule a runnable to remove the publication when it finishes
         const std::shared_ptr<SubscriptionQos> qos = requestInfo->getQos();
-        std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationEndDelay = qos->getExpiryDateMs() + ttlUplift - now;
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
-                publication->publicationEndRunnableHandle = delayedScheduler->schedule(
-                        new PublicationEndRunnable(*this, subscriptionId),
-                        std::chrono::milliseconds(publicationEndDelay));
-                JOYNR_LOG_DEBUG(logger, "publication will end in {}  ms", publicationEndDelay);
-            }
+            addSubscriptionCleanupIfNecessary(publication, qos, subscriptionId);
             sendSubscriptionReply(publicationSender,
                                   requestInfo->getProviderId(),
                                   requestInfo->getProxyId(),

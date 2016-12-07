@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#include <limits>
+
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
@@ -168,7 +170,10 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
                                   const MessagingQos& qos,
                                   std::string&& payload) const
 {
-    std::int64_t ttl = qos.getTtl() + ttlUpliftMs;
+    std::int64_t ttl = qos.getTtl();
+    if (ttl < (std::numeric_limits<std::int64_t>::max() - static_cast<std::int64_t>(ttlUpliftMs))) {
+        ttl += ttlUpliftMs;
+    }
     msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
     msg.setHeaderFrom(senderParticipantId);
     msg.setHeaderTo(receiverParticipantId);

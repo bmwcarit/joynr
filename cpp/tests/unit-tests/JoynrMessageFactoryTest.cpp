@@ -16,7 +16,14 @@
  * limitations under the License.
  * #L%
  */
+#include <chrono>
+#include <climits>
+#include <cstdint>
+#include <cstdlib>
+#include <string>
+
 #include <gtest/gtest.h>
+
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -28,9 +35,6 @@
 #include "joynr/SubscriptionStop.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include <chrono>
-#include <cstdint>
-#include <string>
 
 using namespace joynr;
 
@@ -301,17 +305,91 @@ TEST_F(JoynrMessageFactoryTest, testSetBestEffortHeader)
               message.getHeaderEffort());
 }
 
+TEST_F(JoynrMessageFactoryTest, testDefaultTtlUplift)
+{
+    const std::int64_t ttl = 1000;
+    const std::int64_t tolerance = 10;
+
+    MessagingQos messagingQos;
+    messagingQos.setTtl(ttl);
+
+    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, messagingQos, request);
+
+    EXPECT_LE(std::abs(ttl
+                       - std::chrono::duration_cast<std::chrono::milliseconds>(
+                           message.getHeaderExpiryDate() - std::chrono::system_clock::now())
+                       .count()),
+              tolerance);
+}
+
 TEST_F(JoynrMessageFactoryTest, testTtlUplift)
 {
-    MessagingQos messagingQos;
-    messagingQos.setTtl(0);
-
+    const std::int64_t ttl = 1000;
     const std::uint64_t ttlUplift = 10000;
+    const std::int64_t expectedTtl = ttl + ttlUplift;
     const std::int64_t tolerance = 10;
+
+    MessagingQos messagingQos;
+    messagingQos.setTtl(ttl);
 
     JoynrMessageFactory factoryWithTtlUplift(ttlUplift);
 
     JoynrMessage message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
 
-    EXPECT_GE(std::chrono::duration_cast<std::chrono::milliseconds>(message.getHeaderExpiryDate() - std::chrono::system_clock::now()).count(), ttlUplift - tolerance);
+    std::int64_t diff = expectedTtl
+            - std::chrono::duration_cast<std::chrono::milliseconds>(
+                message.getHeaderExpiryDate() - std::chrono::system_clock::now())
+            .count();
+    EXPECT_LE(std::abs(diff), tolerance);
+}
+
+TEST_F(JoynrMessageFactoryTest, testTtlUpliftWithLargeTtl)
+{
+    const JoynrTimePoint expectedTimePoint = DispatcherUtils::getMaxAbsoluteTime();
+    const std::uint64_t ttlUplift = 10000;
+    JoynrMessageFactory factoryWithTtlUplift(ttlUplift);
+
+    std::int64_t ttl;
+    MessagingQos messagingQos;
+    JoynrMessage message;
+    JoynrTimePoint timePoint;
+
+    ttl = INT64_MAX;
+    messagingQos.setTtl(ttl);
+    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    timePoint = message.getHeaderExpiryDate();
+    EXPECT_EQ(expectedTimePoint, timePoint);
+
+    // TODO uncomment failing tests
+    // after overflow checks in DispatcherUtils.convertTtlToAbsoluteTime are fixed
+
+//    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count();
+//    messagingQos.setTtl(ttl);
+//    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+//    timePoint = message.getHeaderExpiryDate();
+//    EXPECT_EQ(expectedTimePoint, timePoint);
+
+//    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count() - ttlUplift;
+//    messagingQos.setTtl(ttl);
+//    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+//    timePoint = message.getHeaderExpiryDate();
+//    EXPECT_EQ(expectedTimePoint, timePoint);
+
+    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count()
+            - ttlUplift
+            - std::chrono::time_point_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now()).time_since_epoch().count();
+    messagingQos.setTtl(ttl);
+    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    timePoint = message.getHeaderExpiryDate();
+    EXPECT_EQ(expectedTimePoint, timePoint);
+
+//    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count()
+//            - ttlUplift
+//            - std::chrono::time_point_cast<std::chrono::milliseconds>(
+//                std::chrono::system_clock::now()).time_since_epoch().count() + 1;
+//    messagingQos.setTtl(ttl);
+//    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+//    timePoint = message.getHeaderExpiryDate();
+//    EXPECT_EQ(expectedTimePoint, timePoint);
 }
