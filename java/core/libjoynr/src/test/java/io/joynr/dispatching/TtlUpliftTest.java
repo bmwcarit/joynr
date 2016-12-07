@@ -86,6 +86,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class TtlUpliftTest {
     private static final long TTL = 1000;
     private static final long TTL_UPLIFT_MS = 10000;
+    private static final long NO_TTL_UPLIFT = 0;
     private static final long SUBSCRIPTION_UPLIFT_MS = 300;
 
     private static final String PROVIDER_PARTICIPANT_ID = "providerParticipantId";
@@ -140,6 +141,8 @@ public class TtlUpliftTest {
 
                                           @Override
                                           protected void configure() {
+                                              bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS))
+                                                              .toInstance(NO_TTL_UPLIFT);
                                               requestStaticInjection(Request.class);
                                               Multibinder<JoynrMessageProcessor> joynrMessageProcessorMultibinder = Multibinder.newSetBinder(binder(),
                                                                                                                                              new TypeLiteral<JoynrMessageProcessor>() {
