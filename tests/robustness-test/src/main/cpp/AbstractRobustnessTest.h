@@ -39,6 +39,15 @@ using joynr::tests::robustness::TestInterfaceProxy;
 using joynr::exceptions::JoynrRuntimeException;
 using joynr::ProxyBuilder;
 
+template <typename T>
+class MockSubscriptionListenerOneType : public joynr::ISubscriptionListener<T>
+{
+public:
+    MOCK_METHOD1_T(onSubscribed, void(const std::string& subscriptionId));
+    MOCK_METHOD1_T(onReceive, void(const T& value));
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
+};
+
 class AbstractRobustnessTest : public ::testing::Test
 {
 public:
