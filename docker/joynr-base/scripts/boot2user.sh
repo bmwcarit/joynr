@@ -17,9 +17,9 @@ cd /home/$USER
 if [ $# -eq 0 ]; then
         # no commands supplied
         export HOME=/home/$USER
-        exec gosu $DEV_UID /bin/bash
+        exec /tini -g -- gosu $DEV_UID /bin/bash
 else
         # commands supplied
         export HOME=/home/$USER
-        exec gosu $USER /bin/bash -c "source $HOME/.bashrc; $*"
+        exec /tini -g -- gosu $USER /bin/bash -c "source $HOME/.bashrc; $*"
 fi
