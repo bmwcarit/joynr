@@ -109,4 +109,5 @@ RUN cd /tmp \
 	&& chmod 755 /usr/local/bin/gosu
 
 COPY scripts/boot2user.sh /data/scripts/boot2user.sh
-ENTRYPOINT ["/data/scripts/boot2user.sh"]
+
+ENTRYPOINT ["/tini", "-g", "--", "/data/scripts/boot2user.sh"]
