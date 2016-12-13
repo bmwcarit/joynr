@@ -1,5 +1,5 @@
 [messaging]
-broker-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/bounceproxy/
+broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
 
 discovery-directories-domain=io.joynr
 
