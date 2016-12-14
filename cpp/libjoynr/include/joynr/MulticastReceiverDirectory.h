@@ -28,6 +28,7 @@
 #include "joynr/Logger.h"
 #include "joynr/MulticastMatcher.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -49,6 +50,43 @@ public:
 
     bool contains(const std::string& multicastId, const std::string& receiverId);
 
+    template <typename Archive>
+    void load(Archive& archive)
+    {
+        std::unordered_map<std::string, std::unordered_set<std::string>>
+                persistedMulticastReceivers;
+
+        archive(muesli::make_nvp("multicastReceivers", persistedMulticastReceivers));
+
+        {
+            std::lock_guard<std::recursive_mutex> lock(mutex);
+
+            multicastReceivers.clear();
+            for (const auto& multicastReceiverEntry : persistedMulticastReceivers) {
+                multicastReceivers.emplace(MulticastMatcher(multicastReceiverEntry.first),
+                                           multicastReceiverEntry.second);
+            }
+        }
+    }
+
+    template <typename Archive>
+    void save(Archive& archive)
+    {
+        std::unordered_map<std::string, std::unordered_set<std::string>>
+                convertedMulticastReceivers;
+
+        {
+            std::lock_guard<std::recursive_mutex> lock(mutex);
+
+            for (const auto& multicastReceiverEntry : multicastReceivers) {
+                convertedMulticastReceivers.emplace(
+                        multicastReceiverEntry.first.multicastId, multicastReceiverEntry.second);
+            }
+        }
+
+        archive(muesli::make_nvp("multicastReceivers", convertedMulticastReceivers));
+    }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MulticastReceiverDirectory);
     ADD_LOGGER(MulticastReceiverDirectory);
@@ -60,5 +98,7 @@ private:
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::MulticastReceiverDirectory, "joynr.MulticastReceiverDirectory")
 
 #endif // MULTICASTRECEIVERDIRECTORY_H
