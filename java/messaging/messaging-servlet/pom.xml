@@ -24,7 +24,6 @@
 	<packaging>war</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	<url>http://maven.apache.org</url>
 
 	<parent>
 		<groupId>io.joynr.java</groupId>

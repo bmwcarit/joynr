@@ -35,6 +35,7 @@ define([
             "joynr/dispatching/RequestReplyManager",
             "joynr/dispatching/types/Request",
             "joynr/tests/testTypes/TestEnum",
+            "joynr/tests/testTypes/ComplexTestType",
             "joynr/types/TypeRegistrySingleton",
             "global/Promise"
         ],
@@ -53,6 +54,7 @@ define([
                 RequestReplyManager,
                 Request,
                 TestEnum,
+                ComplexTestType,
                 TypeRegistrySingleton,
                 Promise) {
 
@@ -421,6 +423,35 @@ define([
                                 return null;
                             });
                         });
+
+                        it(
+                                "expect correct error reporting after attribute set with invalid value",
+                                function(done) {
+                                    TypeRegistrySingleton.getInstance().getTypeRegisteredPromise("joynr.tests.testTypes.ComplexTestType", 1000).then(function() {
+                                        return null;
+                                    }).catch(fail).then(function(){
+                                        var enumAttribute = new ProxyAttribute(
+                                                {
+                                                    proxyParticipantId : "proxy",
+                                                    providerParticipantId : "provider"
+                                                },
+                                                settings,
+                                                "enumAttribute",
+                                                "joynr.tests.testTypes.ComplexTestType",
+                                        "NOTIFYREADWRITE");
+                                        return enumAttribute.set({
+                                            value : {"_typeName": "joynr.tests.testTypes.ComplexTestType",
+                                                "a": "notANumber"}
+                                        });
+                                    }).then(function() {
+                                        fail("unexpected resolve from setter with invalid value");
+                                        return null;
+                                    }).catch(function(error) {
+                                        expect(error.message).toEqual("error setting attribute: enumAttribute: Error: members.a is not of type Number. Actual type is String");
+                                        done();
+                                        return null;
+                                    });
+                                });
 
                         it(
                                 "set calls through to RequestReplyManager",

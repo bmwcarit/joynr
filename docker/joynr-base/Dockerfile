@@ -91,6 +91,14 @@ ENV INSTALL_DIR /data/install
 ###################################################
 COPY scripts /data/scripts
 
+
+###################################################
+# add Tini - "A tiny but valid init for containers"
+###################################################
+ENV TINI_VERSION v0.13.1
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+
 ###################################################
 # set login user joynr
 ###################################################

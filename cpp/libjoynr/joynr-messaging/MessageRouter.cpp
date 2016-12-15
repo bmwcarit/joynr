@@ -586,9 +586,13 @@ void MessageRouter::addNextHopToParent(
 
 void MessageRouter::loadRoutingTable(std::string fileName)
 {
-    // update reference file
+    // always update reference file
     if (fileName != routingTableFileName) {
         routingTableFileName = std::move(fileName);
+    }
+
+    if (!joynr::util::fileExists(routingTableFileName)) {
+        return;
     }
 
     WriteLocker lock(routingTableLock);

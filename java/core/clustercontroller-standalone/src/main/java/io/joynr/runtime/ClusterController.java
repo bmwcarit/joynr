@@ -1,12 +1,6 @@
 package io.joynr.runtime;
 
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.messaging.AtmosphereMessagingModule;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
-import io.joynr.messaging.websocket.WebsocketModule;
-
-import java.io.IOException; /*
+/*
  * #%L
  * %%
  * Copyright (C) 2011 - 2016 BMW Car IT GmbH
@@ -24,6 +18,14 @@ import java.io.IOException; /*
  * limitations under the License.
  * #L%
  */
+
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.websocket.WebsocketModule;
+
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;

@@ -61,7 +61,7 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
                 queuedMessage.pending = false;
                 LongTimer.clearTimeout(queuedMessage.expiryTimer);
                 delete queuedMessage.expiryTimer;
-                var errMsg = "DISCARDED " + JSONSerializer.stringify(queuedMessage) + ": ttl expired";
+                var errMsg = "DISCARDED " + JSONSerializer.stringify(queuedMessage.message) + ": ttl expired";
                 log.warn(errMsg);
                 queuedMessage.reject(new Error(errMsg));
             }

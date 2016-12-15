@@ -42,8 +42,16 @@ typeCollection exampleTypes {
 		String str
 	}
 
+	struct ExtendedComplexStruct extends ComplexStruct{
+		ComplexStruct structMember
+	}
+
 	map StringMap {
 		String to String
+	}
+
+	map ComplexStructMap {
+		String to ComplexStruct
 	}
 }
 

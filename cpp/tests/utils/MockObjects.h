@@ -654,10 +654,10 @@ public:
     MOCK_CONST_METHOD0(getGlobalClusterControllerAddress, std::string&());
     MOCK_METHOD0(startReceiveQueue, void());
     MOCK_METHOD0(stopReceiveQueue, void());
-    MOCK_METHOD0(waitForReceiveQueueStarted, void());
     MOCK_METHOD0(updateSettings, void());
     MOCK_METHOD0(tryToDeleteChannel, bool());
     MOCK_METHOD1(registerReceiveCallback, void(std::function<void(const std::string&)> onTextMessageReceived));
+    MOCK_METHOD0(isConnected, bool());
 };
 
 class MockMessageSender : public joynr::IMessageSender
@@ -665,7 +665,7 @@ class MockMessageSender : public joynr::IMessageSender
 public:
     MOCK_METHOD3(sendMessage,void(const joynr::system::RoutingTypes::Address&, const joynr::JoynrMessage&, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
     MOCK_METHOD1(init,void(const joynr::MessagingSettings& settings));
-    MOCK_METHOD1(registerReceiveQueueStartedCallback, void(std::function<void(void)> waitForReceiveQueueStarted));
+    MOCK_METHOD1(registerReceiver, void(std::shared_ptr<joynr::IMessageReceiver> receiver));
 };
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {

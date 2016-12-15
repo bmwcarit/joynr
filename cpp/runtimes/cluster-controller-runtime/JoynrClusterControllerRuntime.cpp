@@ -171,7 +171,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
 
     if (brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
-                                  joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT)) {
+                                  joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT) ||
+        brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
+                                  joynr::system::RoutingTypes::MqttProtocol::Enum::TCP)) {
         JOYNR_LOG_INFO(logger, "MQTT-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
                 brokerUrl.toString(), "");
@@ -363,8 +365,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
             mqttMessageSender = std::make_shared<MqttSender>(messagingSettings);
 
-            mqttMessageSender->registerReceiveQueueStartedCallback(
-                    [&](void) { mqttMessageReceiver->waitForReceiveQueueStarted(); });
+            mqttMessageSender->registerReceiver(mqttMessageReceiver);
         }
 
         messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(
@@ -639,14 +640,6 @@ void JoynrClusterControllerRuntime::stop(bool deleteChannel)
     }
     stopMessaging();
     singleThreadIOService->stop();
-}
-
-void JoynrClusterControllerRuntime::waitForChannelCreation()
-{
-    if (doHttpMessaging) {
-        httpMessageReceiver->waitForReceiveQueueStarted();
-    }
-    // Nothing to do for MQTT
 }
 
 void JoynrClusterControllerRuntime::deleteChannel()

@@ -76,7 +76,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     add_library(
         JoynrClusterControllerRuntime
-        SHARED
+        # library type is set via BUILD_SHARED_LIBS
         ${JoynrClusterControllerRuntime_HEADERS}
         ${JoynrClusterControllerRuntime_SOURCES}
     )
@@ -114,11 +114,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
     install(
         TARGETS JoynrClusterControllerRuntime
         EXPORT JoynrTargets
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT library
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         # this will flatten directory hierarchy of header files
-        # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
+        # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     )
 endif(${BUILD_CLUSTER_CONTROLLER})
 
@@ -164,7 +164,7 @@ set(
 
 add_library(
     JoynrWsRuntime
-    SHARED
+    # library type is set via BUILD_SHARED_LIBS
     ${JoynrRuntime_PRIVATE_HEADERS}
     ${JoynrRuntime_SOURCES}
     ${JoynrWsRuntime_PRIVATE_HEADERS}
@@ -205,11 +205,11 @@ set_target_properties(
 install(
     TARGETS JoynrWsRuntime
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT library
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     # this will flatten directory hierarchy of header files
-    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 # so we install header files manually to preserve directory hierarchy
 install(
@@ -242,7 +242,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
     add_library(
         JoynrDbusRuntime
-        SHARED
+        # library type is set via BUILD_SHARED_LIBS
         ${JoynrRuntime_HEADERS}
         ${JoynrRuntime_SOURCES}
         ${JoynrDbusRuntime_PRIVATE_HEADERS}
@@ -282,10 +282,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     install(
         TARGETS JoynrDbusRuntime
         EXPORT JoynrTargets
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         # this will flatten directory hierarchy of header files
-        # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
+        # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     )
     # so we install header files manually to preserve directory hierarchy
     install(
@@ -351,7 +352,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     install(
         TARGETS cluster-controller
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     )
 endif(${BUILD_CLUSTER_CONTROLLER})

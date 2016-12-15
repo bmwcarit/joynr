@@ -19,8 +19,6 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import static org.junit.Assert.assertTrue;
-
 import java.lang.reflect.Method;
 import java.util.Properties;
 
@@ -46,10 +44,9 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JoynrMessageFactoryTtlUpliftTest {
+public class TtlUpliftTest {
     private static final long TTL = 1000;
     private static final long TTL_UPLIFT_MS = 10000;
-    private static final long MAX_ALLOWED_EXPIRY_DATE_DIFF_MS = 500;
     JoynrMessageFactory joynrMessageFactory;
     private String fromParticipantId;
     private String toParticipantId;
@@ -110,15 +107,6 @@ public class JoynrMessageFactoryTtlUpliftTest {
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
     }
 
-    private void assertExpiryDateEquals(long expectedValue, JoynrMessage message) {
-        String headerExpiryString = message.getHeaderValue(JoynrMessage.HEADER_NAME_EXPIRY_DATE);
-        long headerExpiryValue = Long.parseLong(headerExpiryString);
-        long diff = Math.abs(expectedValue - headerExpiryValue);
-        assertTrue("ExpiryDate=" + headerExpiryString + " differs " + diff + "ms (more than "
-                           + MAX_ALLOWED_EXPIRY_DATE_DIFF_MS + "ms) from the expected value=" + expectedValue,
-                   (diff <= MAX_ALLOWED_EXPIRY_DATE_DIFF_MS));
-    }
-
     @Test
     public void testDefaultTtlUpliftMs() {
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
@@ -128,7 +116,7 @@ public class JoynrMessageFactoryTtlUpliftTest {
                                                                  messagingQos);
 
         long expiryDateValue = expiryDate.getValue();
-        assertExpiryDateEquals(expiryDateValue, message);
+        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     @Test
@@ -140,6 +128,6 @@ public class JoynrMessageFactoryTtlUpliftTest {
                                                                               messagingQos);
 
         long expiryDateValue = expiryDate.getValue() + TTL_UPLIFT_MS;
-        assertExpiryDateEquals(expiryDateValue, message);
+        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 }

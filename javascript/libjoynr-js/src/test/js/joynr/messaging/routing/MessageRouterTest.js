@@ -24,6 +24,7 @@ define([
             "joynr/messaging/routing/MessageRouter",
             "joynr/system/RoutingTypes/BrowserAddress",
             "joynr/system/RoutingTypes/ChannelAddress",
+            "joynr/messaging/inprocess/InProcessAddress",
             "joynr/messaging/JoynrMessage",
             "joynr/start/TypeRegistry",
             "global/Promise",
@@ -35,6 +36,7 @@ define([
                 MessageRouter,
                 BrowserAddress,
                 ChannelAddress,
+                InProcessAddress,
                 JoynrMessage,
                 TypeRegistry,
                 Promise,
@@ -403,10 +405,13 @@ define([
                                             incomingAddress,
                                             parentMessageRouterAddress);
 
+                                messageRouter.setToKnown(parameters.providerParticipantId);
                                 routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-                                    "addMulticastReceiver"
+                                    "addNextHop",
+                                    "addMulticastReceiver",
+                                    "removeMulticastReceiver"
                                 ]);
-    
+
                                routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
 
                                expect(messageRouter.hasMulticastReceivers()).toBe(false);
@@ -430,6 +435,18 @@ define([
                                 expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
 
                                 expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
+
+                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
+                            });
+
+                            it("does not call routing proxy for in process provider", function() {
+                                messageRouter.setRoutingProxy(routingProxySpy);
+
+                                parameters.providerParticipantId = "inProcessParticipant";
+                                messageRouter.addNextHop(parameters.providerParticipantId, new InProcessAddress(undefined));
+                                messageRouter.addMulticastReceiver(parameters);
+
+                                expect(routingProxySpy.addMulticastReceiver).not.toHaveBeenCalled();
 
                                 expect(messageRouter.hasMulticastReceivers()).toBe(true);
                             });
@@ -462,6 +479,8 @@ define([
                                             messageQueueSpy,
                                             incomingAddress,
                                             parentMessageRouterAddress);
+
+                                messageRouter.setToKnown(parameters.providerParticipantId);
 
                                 routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
                                     "addMulticastReceiver",
@@ -515,6 +534,7 @@ define([
                         describe("route multicast messages", function() {
                             var parameters;
                             var multicastMessage;
+                            var addressOfSubscriberParticipant;
                             beforeEach(function() {
                                 parameters = {
                                     multicastId : "multicastId- " + uuid(),
@@ -538,7 +558,10 @@ define([
                                 /* add routing table entry for parameters.subscriberParticipantId,
                                  * otherwise messaging stub call can be executed by the message router
                                  */
-                                messageRouter.addNextHop(parameters.subscriberParticipantId, new BrowserAddress());
+                                addressOfSubscriberParticipant = new BrowserAddress({
+                                    windowId : "windowIdOfSubscriberParticipant"
+                                });
+                                messageRouter.addNextHop(parameters.subscriberParticipantId, addressOfSubscriberParticipant);
                             });
 
                             it("never, if message is received from global and NO local receiver", function() {
@@ -568,20 +591,37 @@ define([
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(2);
                             });
 
-                            it("three times, if message is received from global and two local receivers available", function() {
+                            it("twice, if message is received from global and two local receivers available with same receiver address", function() {
                                 messageRouter.addMulticastReceiver(parameters);
                                 var parametersForSndReceiver = {
                                     multicastId : parameters.multicastId,
                                     subscriberParticipantId : "subscriberParticipantId2",
                                     providerParticipantId : "providerParticipantId"
                                 };
+
                                 messageRouter.addMulticastReceiver(parametersForSndReceiver);
-                                messageRouter.addNextHop(parametersForSndReceiver.subscriberParticipantId, new BrowserAddress());
+                                messageRouter.addNextHop(parametersForSndReceiver.subscriberParticipantId, addressOfSubscriberParticipant);
+                                messageRouter.route(multicastMessage);
+                                expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                                expect(messagingStubSpy.transmit.calls.count()).toBe(2);
+                            });
+
+                            it("three times, if message is received from global and two local receivers available with different receiver address", function() {
+                                messageRouter.addMulticastReceiver(parameters);
+                                var parametersForSndReceiver = {
+                                    multicastId : parameters.multicastId,
+                                    subscriberParticipantId : "subscriberParticipantId2",
+                                    providerParticipantId : "providerParticipantId"
+                                };
+
+                                messageRouter.addMulticastReceiver(parametersForSndReceiver);
+                                messageRouter.addNextHop(parametersForSndReceiver.subscriberParticipantId, new BrowserAddress({
+                                    windowId : "windowIdOfNewSubscribeParticipant"
+                                }));
                                 messageRouter.route(multicastMessage);
                                 expect(messagingStubSpy.transmit).toHaveBeenCalled();
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(3);
                             });
-
                         });
 
                         it(
