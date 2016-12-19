@@ -20,7 +20,6 @@ package joynr;
  */
 
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
-import io.joynr.pubsub.SubscriptionQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * the expiry date is reached. If no publications were received for alertAfter
  * interval, publicationMissed will be called.
  */
-public class PeriodicSubscriptionQos extends SubscriptionQos implements HeartbeatSubscriptionInformation {
+public class PeriodicSubscriptionQos extends UnicastSubscriptionQos implements HeartbeatSubscriptionInformation {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(PeriodicSubscriptionQos.class);
 

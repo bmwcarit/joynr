@@ -66,6 +66,7 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionReply;
@@ -304,7 +305,7 @@ public class SubscriptionManagerTest {
             public void onReceive() {
             }
         });
-        SubscriptionQos subscriptionQos = mock(OnChangeSubscriptionQos.class);
+        SubscriptionQos subscriptionQos = mock(MulticastSubscriptionQos.class);
         Object[] args;
         if (subscriptionId == null) {
             args = new Object[] {listener, subscriptionQos, partitions };

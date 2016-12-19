@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
-import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithSingleEnumerationParameterBroadcastAdapter;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 
@@ -44,16 +44,6 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void doNotReceivePublicationsForOtherPartitions() {
-        int minIntervalMs = 0;
-        int maxIntervalMs = 10000;
-        long validityMs = 60000;
-        int alertAfterIntervalMs = 20000;
-        int publicationTtlMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
-                                                                                                         .setMaxIntervalMs(maxIntervalMs)
-                                                                                                         .setValidityMs(validityMs)
-                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
-                                                                                                         .setPublicationTtlMs(publicationTtlMs);
 
         String[] subscribeToPartitions = new String[]{ "partitions0", "partitions1" };
         String[] broadcastPartitions = new String[]{ "otherPartition" };
@@ -82,7 +72,7 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
             };
 
             Future<String> subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithSingleEnumerationParameterBroadcast(adapter,
-                                                                                                                                 subscriptionQos,
+                                                                                                                                 new MulticastSubscriptionQos(),
                                                                                                                                  subscribeToPartitions);
 
             String subscriptionId = subscriptionIdFuture.get();

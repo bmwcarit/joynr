@@ -53,6 +53,10 @@ abstract class InterfaceTemplate {
 		francaIntf.broadcasts.exists[selective]
 	}
 
+	def hasNonSelectiveBroadcast() {
+		francaIntf.broadcasts.exists[!selective]
+	}
+
 	def getBroadcastFilterClassName(FBroadcast broadcast) {
 		getBroadcastFilterClassName(francaIntf, broadcast)
 	}

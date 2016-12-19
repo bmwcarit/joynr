@@ -42,7 +42,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
-import joynr.OnChangeSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
@@ -148,7 +148,7 @@ public class LocalDomainAccessControllerTest {
 
         Method method = GlobalDomainAccessControllerProxy.class.getMethod("subscribeToDomainRoleEntryChangedBroadcast",
                                                                           DomainRoleEntryChangedBroadcastListener.class,
-                                                                          OnChangeSubscriptionQos.class,
+                                                                          MulticastSubscriptionQos.class,
                                                                           String[].class);
         verify(proxyInvocationHandlerMock, times(1)).invoke(any(Object.class), eq(method), any(Object[].class));
     }

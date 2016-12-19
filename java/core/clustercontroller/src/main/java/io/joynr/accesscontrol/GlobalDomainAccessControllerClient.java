@@ -16,7 +16,7 @@ import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
-import joynr.OnChangeSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
@@ -341,7 +341,7 @@ public class GlobalDomainAccessControllerClient {
     }
 
     public void subscribeToDomainRoleEntryChangedBroadcast(LdacDomainRoleEntryChangedBroadcastListener ldacDomainRoleEntryChangedBroadcastListener,
-                                                           OnChangeSubscriptionQos broadcastSubscriptionQos,
+                                                           MulticastSubscriptionQos broadcastSubscriptionQos,
                                                            String... partitions) {
         getProxy(TTL_30_DAYS_IN_MS).subscribeToDomainRoleEntryChangedBroadcast(ldacDomainRoleEntryChangedBroadcastListener,
                                                                                broadcastSubscriptionQos,
@@ -350,7 +350,7 @@ public class GlobalDomainAccessControllerClient {
     }
 
     public Future<String> subscribeToMasterAccessControlEntryChangedBroadcast(LdacMasterAccessControlEntryChangedBroadcastListener ldacMasterAccessControlEntryChangedBroadcastListener,
-                                                                              OnChangeSubscriptionQos broadcastSubscriptionQos,
+                                                                              MulticastSubscriptionQos broadcastSubscriptionQos,
                                                                               String... partitions) {
         return getProxy(TTL_30_DAYS_IN_MS).subscribeToMasterAccessControlEntryChangedBroadcast(ldacMasterAccessControlEntryChangedBroadcastListener,
                                                                                                broadcastSubscriptionQos,
@@ -358,7 +358,7 @@ public class GlobalDomainAccessControllerClient {
     }
 
     public Future<String> subscribeToMediatorAccessControlEntryChangedBroadcast(LdacMediatorAccessControlEntryChangedBroadcastListener ldacMediatorAccessControlEntryChangedBroadcastListener,
-                                                                                OnChangeSubscriptionQos broadcastSubscriptionQos,
+                                                                                MulticastSubscriptionQos broadcastSubscriptionQos,
                                                                                 String... partitions) {
         return getProxy(TTL_30_DAYS_IN_MS).subscribeToMediatorAccessControlEntryChangedBroadcast(ldacMediatorAccessControlEntryChangedBroadcastListener,
                                                                                                  broadcastSubscriptionQos,
@@ -366,7 +366,7 @@ public class GlobalDomainAccessControllerClient {
     }
 
     public Future<String> subscribeToOwnerAccessControlEntryChangedBroadcast(LdacOwnerAccessControlEntryChangedBroadcastListener ldacOwnerAccessControlEntryChangedBroadcastListener,
-                                                                             OnChangeSubscriptionQos broadcastSubscriptionQos,
+                                                                             MulticastSubscriptionQos broadcastSubscriptionQos,
                                                                              String... partitions) {
         return getProxy(TTL_30_DAYS_IN_MS).subscribeToOwnerAccessControlEntryChangedBroadcast(ldacOwnerAccessControlEntryChangedBroadcastListener,
                                                                                               broadcastSubscriptionQos,

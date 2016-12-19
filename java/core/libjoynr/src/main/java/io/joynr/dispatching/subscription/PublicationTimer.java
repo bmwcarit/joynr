@@ -77,7 +77,8 @@ public class PublicationTimer extends PubSubTimerBase {
         SubscriptionQos qos = publicationInformation.getQos();
 
         this.publicationInformation = publicationInformation;
-        this.publicationTtl = qos.getPublicationTtlMs();
+
+        this.publicationTtl = publicationInformation.getQos().getPublicationTtlMs();
 
         boolean hasSubscriptionHeartBeat = qos instanceof HeartbeatSubscriptionInformation;
         boolean isOnChangeSubscription = qos instanceof OnChangeSubscriptionQos;

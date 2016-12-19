@@ -21,7 +21,6 @@ package joynr;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.joynr.pubsub.SubscriptionQos;
 
 /**
  * Class representing the quality of service settings for subscriptions
@@ -35,7 +34,7 @@ import io.joynr.pubsub.SubscriptionQos;
  * <br>
  * minInterval can be used to prevent too many messages being sent.
  */
-public class OnChangeSubscriptionQos extends SubscriptionQos {
+public class OnChangeSubscriptionQos extends UnicastSubscriptionQos {
     private static final Logger logger = LoggerFactory.getLogger(OnChangeSubscriptionQos.class);
 
     private static final long serialVersionUID = 1L;

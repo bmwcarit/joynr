@@ -71,6 +71,7 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
+import joynr.UnicastSubscriptionQos;
 import joynr.exceptions.ProviderRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,8 +142,12 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             return pubState;
         }
 
-        public SubscriptionQos getQos() {
-            return subscriptionRequest.getQos();
+        public UnicastSubscriptionQos getQos() {
+            if (subscriptionRequest.getQos() instanceof UnicastSubscriptionQos) {
+                return (UnicastSubscriptionQos) subscriptionRequest.getQos();
+            } else {
+                throw new IllegalArgumentException("Publication information should only be stored for unicast subscription requests");
+            }
         }
 
         @Override
@@ -744,7 +749,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                     IOException {
         MessagingQos messagingQos = new MessagingQos();
         // TTL uplift will be done in JoynrMessageFactory
-        messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtlMs());
+        messagingQos.setTtl_ms(publicationInformation.getQos().getPublicationTtlMs());
         Set<String> toParticipantIds = new HashSet<>();
         toParticipantIds.add(publicationInformation.proxyParticipantId);
         dispatcher.sendSubscriptionPublication(publicationInformation.providerParticipantId,
