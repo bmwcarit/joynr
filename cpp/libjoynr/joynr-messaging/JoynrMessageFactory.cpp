@@ -64,7 +64,7 @@ JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY);
-    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload), false);
     return msg;
 }
 
@@ -149,7 +149,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionReply(const std::string& sen
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
-    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
+    initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload), false);
     return msg;
 }
 
@@ -168,10 +168,12 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
                                   const std::string& senderParticipantId,
                                   const std::string& receiverParticipantId,
                                   const MessagingQos& qos,
-                                  std::string&& payload) const
+                                  std::string&& payload,
+                                  bool upliftTtl) const
 {
     std::int64_t ttl = qos.getTtl();
-    if (ttl < (std::numeric_limits<std::int64_t>::max() - static_cast<std::int64_t>(ttlUpliftMs))) {
+    if (upliftTtl &&
+        ttl < (std::numeric_limits<std::int64_t>::max() - static_cast<std::int64_t>(ttlUpliftMs))) {
         ttl += ttlUpliftMs;
     }
     msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
