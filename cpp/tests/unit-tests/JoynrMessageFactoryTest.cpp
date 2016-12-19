@@ -17,9 +17,7 @@
  * #L%
  */
 #include <chrono>
-#include <climits>
 #include <cstdint>
-#include <cstdlib>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -29,13 +27,11 @@
 #include "joynr/Reply.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/SubscriptionPublication.h"
-#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
 using namespace joynr;
@@ -52,14 +48,8 @@ public:
               request(),
               oneWayRequest(),
               reply(),
-              subscriptionPublication(),
-              ttl(1000),
-              ttlUplift(10000),
-              upliftedTtl(ttl + ttlUplift),
-              messagingQos(),
-              factoryWithTtlUplift(ttlUplift)
+              subscriptionPublication()
     {
-                  messagingQos.setTtl(ttl);
     }
 
     void SetUp()
@@ -152,8 +142,6 @@ public:
         EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
 
-    void checkMessageExpiryDate(const JoynrMessage& message, const std::int64_t expectedTtl);
-
 protected:
     ADD_LOGGER(JoynrMessageFactoryTest);
     JoynrMessageFactory messageFactory;
@@ -165,12 +153,6 @@ protected:
     OneWayRequest oneWayRequest;
     Reply reply;
     SubscriptionPublication subscriptionPublication;
-
-    const std::int64_t ttl;
-    const std::uint64_t ttlUplift;
-    const std::int64_t upliftedTtl;
-    MessagingQos messagingQos;
-    JoynrMessageFactory factoryWithTtlUplift;
 };
 
 INIT_LOGGER(JoynrMessageFactoryTest);
@@ -319,146 +301,4 @@ TEST_F(JoynrMessageFactoryTest, testSetBestEffortHeader)
     EXPECT_TRUE(message.containsHeaderEffort());
     EXPECT_EQ(MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT),
               message.getHeaderEffort());
-}
-
-void JoynrMessageFactoryTest::checkMessageExpiryDate(const JoynrMessage& message, const std::int64_t expectedTtl) {
-    const std::int64_t tolerance = 10;
-    std::int64_t diff = expectedTtl
-            - std::chrono::duration_cast<std::chrono::milliseconds>(
-                message.getHeaderExpiryDate() - std::chrono::system_clock::now())
-            .count();
-    EXPECT_GE(diff, 0);
-    EXPECT_LE(std::abs(diff), tolerance);
-}
-
-TEST_F(JoynrMessageFactoryTest, testDefaultTtlUplift)
-{
-    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, messagingQos, request);
-
-    checkMessageExpiryDate(message, ttl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift_Request)
-{
-    JoynrMessage message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-
-    checkMessageExpiryDate(message, upliftedTtl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift_Reply_noUplift)
-{
-    JoynrMessage message = factoryWithTtlUplift.createReply(senderID, receiverID, messagingQos, reply);
-
-    checkMessageExpiryDate(message, ttl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift_OneWayRequest)
-{
-    JoynrMessage message = factoryWithTtlUplift.createOneWayRequest(senderID, receiverID, messagingQos, oneWayRequest);
-
-    checkMessageExpiryDate(message, upliftedTtl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift_MulticastPublication)
-{
-    MulticastPublication publication;
-    JoynrMessage message = factoryWithTtlUplift.createMulticastPublication(senderID, messagingQos, publication);
-
-    checkMessageExpiryDate(message, upliftedTtl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift_SubscriptionPublication)
-{
-    JoynrMessage message = factoryWithTtlUplift.createSubscriptionPublication(senderID, receiverID, messagingQos, subscriptionPublication);
-
-    checkMessageExpiryDate(message, upliftedTtl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift_SubscriptionRequest)
-{
-    SubscriptionRequest request;
-    JoynrMessage message = factoryWithTtlUplift.createSubscriptionRequest(senderID, receiverID, messagingQos, request);
-
-    checkMessageExpiryDate(message, upliftedTtl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift_MulticastSubscriptionRequest)
-{
-    MulticastSubscriptionRequest request;
-    JoynrMessage message = factoryWithTtlUplift.createMulticastSubscriptionRequest(senderID, receiverID, messagingQos, request);
-
-    checkMessageExpiryDate(message, upliftedTtl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift_BroadcastSubscriptionRequest)
-{
-    BroadcastSubscriptionRequest request;
-    JoynrMessage message = factoryWithTtlUplift.createBroadcastSubscriptionRequest(senderID, receiverID, messagingQos, request);
-
-    checkMessageExpiryDate(message, upliftedTtl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift_SubscriptionReply_noUplift)
-{
-    SubscriptionReply reply;
-    JoynrMessage message = factoryWithTtlUplift.createSubscriptionReply(senderID, receiverID, messagingQos, reply);
-
-    checkMessageExpiryDate(message, ttl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift_SubscriptionStop)
-{
-    SubscriptionStop subscriptionStop;
-    JoynrMessage message = factoryWithTtlUplift.createSubscriptionStop(senderID, receiverID, messagingQos, subscriptionStop);
-
-    checkMessageExpiryDate(message, upliftedTtl);
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUpliftWithLargeTtl)
-{
-    const JoynrTimePoint expectedTimePoint = DispatcherUtils::getMaxAbsoluteTime();
-
-    std::int64_t ttl;
-    MessagingQos messagingQos;
-    JoynrMessage message;
-    JoynrTimePoint timePoint;
-
-    ttl = INT64_MAX;
-    messagingQos.setTtl(ttl);
-    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-    timePoint = message.getHeaderExpiryDate();
-    EXPECT_EQ(expectedTimePoint, timePoint);
-
-    // TODO uncomment failing tests
-    // after overflow checks in DispatcherUtils.convertTtlToAbsoluteTime are fixed
-
-//    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count();
-//    messagingQos.setTtl(ttl);
-//    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-//    timePoint = message.getHeaderExpiryDate();
-//    EXPECT_EQ(expectedTimePoint, timePoint);
-
-//    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count() - ttlUplift;
-//    messagingQos.setTtl(ttl);
-//    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-//    timePoint = message.getHeaderExpiryDate();
-//    EXPECT_EQ(expectedTimePoint, timePoint);
-
-    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count()
-            - ttlUplift
-            - std::chrono::time_point_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now()).time_since_epoch().count();
-    messagingQos.setTtl(ttl);
-    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-    timePoint = message.getHeaderExpiryDate();
-    EXPECT_EQ(expectedTimePoint, timePoint);
-
-//    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count()
-//            - ttlUplift
-//            - std::chrono::time_point_cast<std::chrono::milliseconds>(
-//                std::chrono::system_clock::now()).time_since_epoch().count() + 1;
-//    messagingQos.setTtl(ttl);
-//    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-//    timePoint = message.getHeaderExpiryDate();
-//    EXPECT_EQ(expectedTimePoint, timePoint);
 }
