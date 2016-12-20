@@ -28,6 +28,7 @@
 #include <vector>
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -132,7 +133,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     // The OUT param Gpslocation is set with gpsLocation1
     EXPECT_CALL(
                 *mockRequestCaller,
-                getLocation(
+                getLocationMock(
                     A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
                     A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>()
                 )
@@ -233,7 +234,7 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
                 reply
     );
 
-    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService());
+    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
     auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
     EXPECT_CALL(mockSubscriptionManager, getSubscriptionCallback(Eq(subscriptionId))).WillOnce(Return(mockSubscriptionCallback));
 
@@ -247,6 +248,39 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
     dispatcher.registerSubscriptionManager(nullptr);
 }
+
+TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
+    MockSubscriptionManager mockSubscriptionManager(
+                singleThreadIOService.getIOService(), mockMessageRouter);
+    dispatcher.registerSubscriptionManager(&mockSubscriptionManager);
+
+    const std::string senderParticipantId("senderParticipantId");
+    const std::string multicastId = joynr::util::createMulticastId(
+        senderParticipantId,
+        "multicastName",
+        { "partition0", "partition1"}
+    );
+
+    joynr::MulticastPublication payload;
+    payload.setMulticastId(multicastId);
+
+    JoynrMessage message = messageFactory.createMulticastPublication(
+                senderParticipantId, qos, payload);
+
+    auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
+
+    EXPECT_CALL(mockSubscriptionManager, getMulticastSubscriptionCallback(multicastId))
+        .Times(1)
+        .WillOnce(Return(mockSubscriptionCallback));
+    EXPECT_CALL(*mockSubscriptionCallback, executePublication(_))
+        .WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
+
+    dispatcher.receive(message);
+
+    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
+    dispatcher.registerSubscriptionManager(nullptr);
+}
+
 
 TEST_F(DispatcherTest, receive_setCallContext) {
     const std::string expectedPrincipal("creatorUserId");
@@ -269,7 +303,7 @@ TEST_F(DispatcherTest, receive_setCallContext) {
 
     EXPECT_CALL(
                 *mockRequestCaller,
-                getLocation(
+                getLocationMock(
                     A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
                     A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>()
                 )

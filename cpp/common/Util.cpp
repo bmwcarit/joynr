@@ -23,6 +23,8 @@
 #include <cctype>
 #include <iterator>
 #include <stdexcept>
+#include <sstream>
+#include <string>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -35,6 +37,12 @@ namespace joynr
 
 namespace util
 {
+
+bool fileExists(const std::string& fileName)
+{
+    std::ifstream fileToTest(fileName);
+    return fileToTest.good();
+}
 
 void saveStringToFile(const std::string& fileName, const std::string& strToSave)
 {
@@ -117,6 +125,46 @@ std::string createUuid()
     static std::mutex uuidMutex;
     std::lock_guard<std::mutex> uuidLock(uuidMutex);
     return boost::uuids::to_string(uuidGenerator());
+}
+
+std::string createMulticastId(const std::string& providerParticipantId,
+                              const std::string& multicastName,
+                              const std::vector<std::string>& partitions)
+{
+    std::stringstream multicastId;
+    multicastId << providerParticipantId << MULTICAST_PARTITION_SEPARATOR << multicastName;
+    for (const auto& partition : partitions) {
+        multicastId << MULTICAST_PARTITION_SEPARATOR << partition;
+    }
+    return multicastId.str();
+}
+
+void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards)
+{
+    static const std::regex patternRegex("^[a-zA-Z0-9]+$");
+    const std::vector<std::string>::const_iterator lastPartition = --partitions.cend();
+    for (auto partition = partitions.cbegin(); partition != partitions.cend(); ++partition) {
+        if (!partition->empty()) {
+            if (allowWildcards) {
+                if (*partition == SINGLE_LEVEL_WILDCARD) {
+                    continue;
+                } else if (*partition == MULTI_LEVEL_WILDCARD) {
+                    if (partition == lastPartition) {
+                        return;
+                    }
+                }
+            }
+            if (std::regex_search(*partition, patternRegex)) {
+                continue;
+            }
+        }
+        throw std::invalid_argument("Partition " + *partition +
+                                    " contains invalid characters.\nMust only contain a-z A-Z 0-9, "
+                                    "or be a single level wildcard (" +
+                                    SINGLE_LEVEL_WILDCARD +
+                                    "),\nor the last partition may be a multi level wildcard (" +
+                                    MULTI_LEVEL_WILDCARD + ").");
+    }
 }
 
 void logSerializedMessage(Logger& logger,

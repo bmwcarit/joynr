@@ -24,6 +24,7 @@ import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -218,4 +219,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         subscriptionManager.registerBroadcastSubscription(fromParticipantId, toDiscoveryEntries, broadcastSubscription);
     }
 
+    @Override
+    public void executeSubscriptionMethod(MulticastSubscribeInvocation multicastSubscription) {
+        subscriptionManager.registerMulticastSubscription(fromParticipantId, toDiscoveryEntries, multicastSubscription);
+    }
 }

@@ -19,8 +19,8 @@ package io.joynr.proxy;
  * #L%
  */
 
-import com.google.common.collect.Sets;
-
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
@@ -33,18 +33,26 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import com.google.common.collect.Sets;
+import io.joynr.Sync;
+import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
+import io.joynr.dispatcher.rpc.annotation.FireAndForget;
+import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
+import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
+import joynr.exceptions.ApplicationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import io.joynr.Sync;
-import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatcher.rpc.annotation.FireAndForget;
-import io.joynr.messaging.MessagingQos;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -164,6 +172,45 @@ public class ProxyInvocationHandlerTest {
         } catch (Throwable t) {
             fail("Wrong exception " + t);
         }
+    }
+
+    private static interface MyBroadcastSubscriptionListener extends BroadcastSubscriptionListener {
+        void onReceive();
+    }
+
+    private static interface MyBroadcastInterface extends JoynrBroadcastSubscriptionInterface {
+        @JoynrMulticast(name = "myMulticast")
+        void subscribeToMyMulticast(MyBroadcastSubscriptionListener broadcastSubscriptionListener,
+                                    SubscriptionQos subscriptionQos,
+                                    String... partitions);
+    }
+
+    @Test
+    public void testPartitionsPassedToMulticastSubscription() throws NoSuchMethodException, ApplicationException {
+        ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
+        when(connectorFactory.create(Mockito.anyString(), Mockito.<ArbitrationResult> any(), Mockito.eq(messagingQos))).thenReturn(connectorInvocationHandler);
+        MyBroadcastSubscriptionListener broadcastSubscriptionListener = mock(MyBroadcastSubscriptionListener.class);
+        SubscriptionQos subscriptionQos = mock(SubscriptionQos.class);
+
+        Method subscribeMethod = MyBroadcastInterface.class.getMethod("subscribeToMyMulticast",
+                                                                      MyBroadcastSubscriptionListener.class,
+                                                                      SubscriptionQos.class,
+                                                                      String[].class);
+        Object[] args = new Object[]{ broadcastSubscriptionListener, subscriptionQos,
+                new String[]{ "one", "two", "three" } };
+
+        ArbitrationResult arbitrationResult = new ArbitrationResult();
+        DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
+        discoveryEntry.setParticipantId("participantId");
+        arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
+        proxyInvocationHandler.createConnector(arbitrationResult);
+        proxyInvocationHandler.invoke(subscribeMethod, args);
+
+        ArgumentCaptor<MulticastSubscribeInvocation> captor = ArgumentCaptor.forClass(MulticastSubscribeInvocation.class);
+        verify(connectorInvocationHandler).executeSubscriptionMethod(captor.capture());
+        MulticastSubscribeInvocation multicastSubscribeInvocation = captor.getValue();
+        assertNotNull(multicastSubscribeInvocation);
+        assertArrayEquals(new String[]{ "one", "two", "three" }, multicastSubscribeInvocation.getPartitions());
     }
 
 }

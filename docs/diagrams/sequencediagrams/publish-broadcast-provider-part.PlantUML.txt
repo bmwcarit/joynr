@@ -3,8 +3,8 @@
 [-> MyRadioProvider : fireNewStationDiscoveredBroadcast
 MyRadioProvider -> RadioAbstractProvider : fireNewStationDiscovered
 RadioAbstractProvider -> AbstractJoynrProvider : fireBroadcast
-AbstractJoynrProvider -> SubscriptionBroadcastListener : broadcastOccurred
-SubscriptionBroadcastListener -> PublicationManager : broadcastOccurred
+AbstractJoynrProvider -> UnicastBroadcastListener : broadcastOccurred
+UnicastBroadcastListener -> PublicationManager : broadcastOccurred
 
 alt timeUntilNextPublication == 0 && not filtered out by filter chain
 	PublicationManager -> JoynrMessageSender : sendSubscriptionPublication

@@ -44,7 +44,7 @@ define(
             IntegrationUtils.log = function log(msg, id) {
                 if (joynr !== undefined) {
                     var logger = joynr.logging.getLogger(id);
-                    logger.log(joynr.logging.getLogLevel(msg.level), msg.message);
+                    logger.log(joynr.logging.getLogLevel(msg.level), [msg.message]);
                 } else {
                     if (queuedLogs[id] === undefined) {
                         queuedLogs[id] = [];
@@ -206,7 +206,7 @@ define(
             };
 
             IntegrationUtils.getProvisioning =
-                    function getProvisioning(provisioning, provisioningSuffix) {
+                    function getProvisioning(provisioning, identifier) {
                         var window = provisioning.window;
                         var parentWindow = provisioning.parentWindow;
 
@@ -216,8 +216,7 @@ define(
 
                         // this form of deep copy is very fast, but object size limited.
                         var provisioningCopy = JSON.parse(JSON.stringify(provisioning));
-                        provisioningCopy.channelId =
-                                provisioning_end2end.proxyChannelId + provisioningSuffix;
+                        provisioningCopy.channelId = identifier;
                         provisioningCopy.window = window;
                         provisioningCopy.parentWindow = parentWindow;
 
@@ -228,14 +227,12 @@ define(
                         return provisioningCopy;
                     };
 
-            // DEPRECATED
-            IntegrationUtils.startLibjoynr = function startLibjoynr() {
-                throw new Error("libjoynr is started on load");
-            };
-
-            IntegrationUtils.buildProxy = function buildProxy(ProxyConstructor) {
+            IntegrationUtils.buildProxy = function buildProxy(ProxyConstructor, domain) {
+                if (domain === undefined) {
+                    throw new Error("specify domain");
+                }
                 return joynr.proxyBuilder.build(ProxyConstructor, {
-                    domain : provisioning_end2end.domain,
+                    domain : domain,
                     messagingQos : IntegrationUtils.messagingQos
                 }).catch(IntegrationUtils.outputPromiseError);
             };

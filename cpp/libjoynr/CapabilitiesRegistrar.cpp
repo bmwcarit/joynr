@@ -30,13 +30,15 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
         std::shared_ptr<ParticipantIdStorage> participantIdStorage,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<MessageRouter> messageRouter,
-        std::int64_t defaultExpiryIntervalMs)
+        std::int64_t defaultExpiryIntervalMs,
+        PublicationManager& publicationManager)
         : dispatcherList(dispatcherList),
           discoveryProxy(discoveryProxy),
           participantIdStorage(participantIdStorage),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
-          defaultExpiryIntervalMs(defaultExpiryIntervalMs)
+          defaultExpiryIntervalMs(defaultExpiryIntervalMs),
+          publicationManager(publicationManager)
 {
 }
 
@@ -59,7 +61,7 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     auto onError = [future](const joynr::exceptions::ProviderRuntimeException& error) {
         future->onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(error));
     };
-    messageRouter->removeNextHop(participantId, onSuccess, onError);
+    messageRouter->removeNextHop(participantId, std::move(onSuccess), std::move(onError));
     try {
         future->get();
     } catch (const exceptions::JoynrRuntimeException& e) {

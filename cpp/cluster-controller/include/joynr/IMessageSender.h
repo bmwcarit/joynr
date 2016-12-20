@@ -19,16 +19,18 @@
 #ifndef IMESSAGESENDER_H
 #define IMESSAGESENDER_H
 
+#include <string>
+#include <memory>
+
 #include "joynr/MessagingSettings.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/exceptions/JoynrException.h"
 
-#include <string>
-#include <memory>
-
 namespace joynr
 {
+
+class IMessageReceiver;
 
 class IMessageSender
 {
@@ -42,8 +44,7 @@ public:
             const JoynrMessage& message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
 
-    virtual void registerReceiveQueueStartedCallback(
-            std::function<void(void)> waitForReceiveQueueStarted) = 0;
+    virtual void registerReceiver(std::shared_ptr<IMessageReceiver>) = 0;
 };
 } // namespace joynr
 

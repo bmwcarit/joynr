@@ -268,6 +268,8 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 	abstract def String getIncludeOf(FType type)
 
+	abstract def String getIncludeForString()
+
 	override getDatatype(FType type){
 		if (type.isTypeDef) {
 			return type
@@ -287,6 +289,10 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		includeSet.addAll(serviceInterface.allPrimitiveTypes.includesFor)
 		if (serviceInterface.hasArray && includeForArray != null){
 			includeSet.add(includeForArray)
+		}
+		if (!serviceInterface.broadcasts.filter[!selective].empty) {
+			includeSet.add(includeForArray)
+			includeSet.add(includeForString)
 		}
 		return includeSet
 	}

@@ -202,7 +202,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 onReceiveSemaphore.release();
-                return (Void) null;
+                return null;
             }
         }).when(gpsListener).onReceive(eq(provider.getComplexTestAttributeSync()));
         int periods = 2;
@@ -231,7 +231,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 onReceiveSemaphore.release();
-                return (Void) null;
+                return null;
             }
         }).when(testEnumListener).onReceive(any(TestEnum.class));
 
@@ -265,7 +265,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 onReceiveSemaphore.release();
-                return (Void) null;
+                return null;
             }
         }).when(testByteBufferListener).onReceive(any(Byte[].class));
 
@@ -298,7 +298,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 onReceiveSemaphore.release();
-                return (Void) null;
+                return null;
             }
         }).when(integersListener).onReceive(any(Integer[].class));
 
@@ -393,7 +393,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 onReceiveSemaphore.release();
-                return (Void) null;
+                return null;
             }
         }).when(integerListener).onReceive(anyInt());
         return integerListener;
@@ -408,7 +408,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 onErrorSemaphore.release();
-                return (Void) null;
+                return null;
             }
         }).when(integerListener).onError(expectation);
         return integerListener;
@@ -637,7 +637,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         Future<String> subscriptionFuture = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         String subscriptionId = subscriptionFuture.get(FUTURE_SUBSCRIPTION_ID_TIMEOUTMS);
-        subscriptionFuture = proxy.subscribeToTestAttribute(integerListener, subscriptionQos, subscriptionId);
+        subscriptionFuture = proxy.subscribeToTestAttribute(subscriptionId, integerListener, subscriptionQos);
         String subscriptionId2 = subscriptionFuture.get(FUTURE_SUBSCRIPTION_ID_TIMEOUTMS);
         assertEquals(subscriptionId, subscriptionId2);
         Thread.sleep(EXPECTED_LATENCY_MS);

@@ -32,7 +32,7 @@ define("joynr/dispatching/types/SubscriptionStop", [
      *            {String}
      */
     function SubscriptionStop(settings) {
-        Util.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
 
         /**
          * @name SubscriptionStop#subscriptionId

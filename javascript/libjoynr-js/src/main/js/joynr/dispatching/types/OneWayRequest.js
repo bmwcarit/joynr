@@ -52,14 +52,6 @@ define("joynr/dispatching/types/OneWayRequest", [
         }
         var i;
 
-        Util.checkProperty(settings, [
-            "joynr.OneWayRequest",
-            "Object"
-        ], "settings");
-        Util.checkProperty(settings.methodName, "String", "settings.methodName");
-        Util.checkPropertyIfDefined(settings.paramDatatypes, "Array", "settings.paramDatatypes");
-        Util.checkPropertyIfDefined(settings.params, "Array", "settings.params");
-
         if (settings.params) {
             for (i = 0; i < settings.params.length; i++) {
                 settings.params[i] = Util.ensureTypedValues(settings.params[i]);
@@ -70,15 +62,17 @@ define("joynr/dispatching/types/OneWayRequest", [
          * @name OneWayRequest#methodName
          * @type String
          */
+        this.methodName = settings.methodName;
         /**
          * @name OneWayRequest#paramDatatypes
          * @type Array
          */
+        this.paramDatatypes = settings.paramDatatypes;
         /**
          * @name OneWayRequest#params
          * @type Array
          */
-        Util.extend(this, defaultSettings, settings);
+        this.params = settings.params;
 
         /**
          * The joynr type name
@@ -86,8 +80,13 @@ define("joynr/dispatching/types/OneWayRequest", [
          * @name OneWayRequest#_typeName
          * @type String
          */
-        Typing.augmentTypeName(this, "joynr");
-
+        Object.defineProperty(this, "_typeName", {
+            value : "joynr.OneWayRequest",
+            readable : true,
+            writable : false,
+            enumerable : true,
+            configurable : false
+        });
         return Object.freeze(this);
     }
 

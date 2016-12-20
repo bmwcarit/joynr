@@ -19,12 +19,12 @@ package io.joynr.proxy;
  * #L%
  */
 
-import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
-import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
-import io.joynr.proxy.invocation.UnsubscribeInvocation;
-
 import java.lang.reflect.Method;
 
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
+import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import joynr.exceptions.ApplicationException;
 
 public interface ConnectorInvocationHandler {
@@ -40,5 +40,7 @@ public interface ConnectorInvocationHandler {
     void executeSubscriptionMethod(UnsubscribeInvocation unsubscribeInvocation);
 
     void executeSubscriptionMethod(AttributeSubscribeInvocation attributeSubscription);
+
+    void executeSubscriptionMethod(MulticastSubscribeInvocation multicastSubscription);
 
 }

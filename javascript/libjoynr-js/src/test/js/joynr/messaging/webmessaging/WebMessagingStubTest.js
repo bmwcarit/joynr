@@ -52,92 +52,18 @@ define([
             done();
         });
 
-        it("throws on missing or wrongly typed arguments in constructur", function(done) {
-            expect(function() {
-                webMessagingStub = new WebMessagingStub(); // settings object is undefined
-            }).toThrow();
-
-            expect(function() {
-                webMessagingStub = new WebMessagingStub({}); // both arguments, window and origin are missing
-            }).toThrow();
-
-            expect(function() {
-                webMessagingStub = new WebMessagingStub({
-                    window : window
-                // origin argument is missing
-                });
-            }).toThrow();
-
-            expect(function() {
-                webMessagingStub = new WebMessagingStub({
-                    origin : origin
-                // window argument is missing
-                });
-            }).toThrow();
-
-            expect(function() {
-                webMessagingStub = new WebMessagingStub({
-                    window : "", // window is of wrong type
-                    origin : origin
-                });
-            }).toThrow();
-
-            expect(function() {
-                webMessagingStub = new WebMessagingStub({
-                    window : {}, // window does not provide the expected functions
-                    origin : origin
-                });
-            }).toThrow();
-
-            expect(function() {
-                webMessagingStub = new WebMessagingStub({ // everything's fine here
-                    window : {
-                        postMessage : function() {}
-                    },
-                    origin : origin
-                // origin is of wrong type
-                });
-            }).not.toThrow();
-
-            expect(function() {
-                webMessagingStub = new WebMessagingStub({ // everything's fine here
-                    window : window,
-                    origin : {}
-                // origin is of wrong type
-                });
-            }).toThrow();
-
-            expect(function() {
-                webMessagingStub = new WebMessagingStub({ // everything's fine here
-                    window : window,
-                    origin : origin
-                });
-            }).not.toThrow();
-            done();
-        });
-
-        it("throws on missing or wrongly typed arguments in transmit", function(done) {
+        it("throws on missing or wrongly typed arguments in transmit", function() {
             expect(function() {
                 webMessagingStub.transmit(undefined);
-            }).toThrow();
-            expect(function() {
-                webMessagingStub.transmit(null);
-            }).toThrow();
-            expect(function() {
-                webMessagingStub.transmit("");
-            }).toThrow();
-            expect(function() {
-                webMessagingStub.transmit({});
             }).toThrow();
             expect(function() {
                 webMessagingStub.transmit({
                     message : joynrMessage
                 });
             }).not.toThrow();
-            done();
         });
 
-        it("calls correctly window.postMessage correctly", function(done) {
+        it("calls window.postMessage correctly", function(done) {
             var param = {
                 message : joynrMessage
             };

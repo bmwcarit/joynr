@@ -255,6 +255,6 @@ protected:
 
 } // namespace joynr
 
-MUESLI_REGISTER_TYPE(joynr::SubscriptionQos, "joynr.SubscriptionQos");
+MUESLI_REGISTER_TYPE(joynr::SubscriptionQos, "joynr.SubscriptionQos")
 
 #endif // SUBSCRIPTIONQOS_H

@@ -35,7 +35,7 @@ define("joynr/proxy/ProxyBuilder", [
     "joynr/messaging/MessagingQos",
     "joynr/types/TypeRegistrySingleton",
     "joynr/types/Version",
-    "joynr/util/Util",
+    "joynr/util/Typing",
     "joynr/system/LoggerFactory"
 ], function(
         Promise,
@@ -53,7 +53,7 @@ define("joynr/proxy/ProxyBuilder", [
         MessagingQos,
         TypeRegistrySingleton,
         Version,
-        Util,
+        Typing,
         LoggerFactory) {
 
     var proxyElementTypes = {
@@ -141,14 +141,14 @@ define("joynr/proxy/ProxyBuilder", [
                     settings.messagingQos = new MessagingQos(settings.messagingQos);
 
                     // check if objects are there and of correct type
-                    Util.checkProperty(settings, "Object", "settings");
-                    Util.checkProperty(settings.domain, "String", "settings.domain");
-                    Util
+                    Typing.checkProperty(settings, "Object", "settings");
+                    Typing.checkProperty(settings.domain, "String", "settings.domain");
+                    Typing
                             .checkProperty(
                                     settings.discoveryQos,
                                     DiscoveryQos,
                                     "settings.discoveryQos");
-                    Util
+                    Typing
                             .checkProperty(
                                     settings.messagingQos,
                                     MessagingQos,

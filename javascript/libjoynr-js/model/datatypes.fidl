@@ -35,8 +35,23 @@ typeCollection exampleTypes {
 		Country source
 	}
 
+	struct ComplexStruct {
+		Int32 num32
+		Int64 num64
+		Int8[] data
+		String str
+	}
+
+	struct ExtendedComplexStruct extends ComplexStruct{
+		ComplexStruct structMember
+	}
+
 	map StringMap {
 		String to String
+	}
+
+	map ComplexStructMap {
+		String to ComplexStruct
 	}
 }
 

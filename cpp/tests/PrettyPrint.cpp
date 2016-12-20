@@ -31,36 +31,41 @@ using namespace joynr;
 
 namespace joynr {
 namespace types {
-    void PrintTo(const joynr::types::TestTypes::TStruct& value, ::std::ostream* os) {
-        *os << joynr::serializer::serializeToJson(value);
-    }
 
-    void PrintTo(const joynr::types::Localisation::GpsLocation& value, ::std::ostream* os) {
-        *os << joynr::serializer::serializeToJson(value);
-    }
+void PrintTo(const joynr::types::TestTypes::TStruct& value, ::std::ostream* os) {
+    *os << joynr::serializer::serializeToJson(value);
+}
 
-    void PrintTo(const joynr::types::Localisation::Trip& value, ::std::ostream* os) {
-        *os << joynr::serializer::serializeToJson(value) << std::endl;
-    }
+void PrintTo(const joynr::types::Localisation::GpsLocation& value, ::std::ostream* os) {
+    *os << joynr::serializer::serializeToJson(value);
 }
-namespace types {
-    void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os) {
-        *os << joynr::serializer::serializeToJson(value) << std::endl;
-    }
+
+void PrintTo(const joynr::types::Localisation::Trip& value, ::std::ostream* os) {
+    *os << joynr::serializer::serializeToJson(value) << std::endl;
 }
+void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os) {
+    *os << joynr::serializer::serializeToJson(value) << std::endl;
+}
+
+} // namespace types
+
 namespace system {
-    void PrintTo(const joynr::system::RoutingTypes::WebSocketAddress& value, ::std::ostream* os) {
-        *os << joynr::serializer::serializeToJson(value) << std::endl;
-    }
+
+void PrintTo(const joynr::system::RoutingTypes::WebSocketAddress& value, ::std::ostream* os) {
+    *os << joynr::serializer::serializeToJson(value) << std::endl;
 }
+
+} // namespace system
+
+void PrintTo(const JoynrMessage& value, ::std::ostream* os)
+{
+    *os << joynr::serializer::serializeToJson(value);
 }
+
+} // namespace joynr
 
 void PrintTo(const StatusCodeEnum& value, ::std::ostream* os)
 {
     *os << StatusCode::toString(value) << std::endl;
 }
 
-void PrintTo(const JoynrMessage& value, ::std::ostream* os)
-{
-    *os << joynr::serializer::serializeToJson(value);
-}

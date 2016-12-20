@@ -18,6 +18,7 @@
  */
 #include "MqttSender.h"
 
+#include "joynr/IMessageReceiver.h"
 #include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/MessagingQosEffort.h"
@@ -28,8 +29,7 @@ namespace joynr
 
 INIT_LOGGER(MqttSender);
 
-MqttSender::MqttSender(const MessagingSettings& settings)
-        : mosquittoPublisher(settings), waitForReceiveQueueStarted(nullptr)
+MqttSender::MqttSender(const MessagingSettings& settings) : mosquittoPublisher(settings), receiver()
 {
     mosquittoPublisher.start();
 }
@@ -46,15 +46,26 @@ void MqttSender::sendMessage(
 {
     JOYNR_LOG_DEBUG(logger, "sendMessage: ...");
 
-    if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destinationAddress) == nullptr) {
+    auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destinationAddress);
+    if (mqttAddress == nullptr) {
         JOYNR_LOG_DEBUG(logger, "Invalid destination address type provided");
         onFailure(exceptions::JoynrRuntimeException("Invalid destination address type provided"));
         return;
     }
 
-    auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress&>(destinationAddress);
-
-    waitForReceiveQueueStarted();
+    if (!receiver->isConnected()) {
+        const std::string msg = "MqttSender is not connected, delaying message";
+        JOYNR_LOG_DEBUG(logger, msg);
+        onFailure(exceptions::JoynrDelayMessageException(std::chrono::seconds(2), msg));
+        return;
+    }
+    std::string topic;
+    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+        topic = message.getHeaderTo();
+    } else {
+        topic = mqttAddress->getTopic() + "/" + mosquittoPublisher.getMqttPrio() + "/" +
+                message.getHeaderTo();
+    }
 
     std::string serializedMessage = joynr::serializer::serializeToJson(message);
 
@@ -70,18 +81,12 @@ void MqttSender::sendMessage(
         qosLevel = 0;
     }
 
-    mosquittoPublisher.publishMessage(mqttAddress.getTopic(),
-                                      message.getHeaderTo(),
-                                      qosLevel,
-                                      onFailure,
-                                      payloadLength,
-                                      payload);
+    mosquittoPublisher.publishMessage(topic, qosLevel, onFailure, payloadLength, payload);
 }
 
-void MqttSender::registerReceiveQueueStartedCallback(
-        std::function<void(void)> waitForReceiveQueueStarted)
+void MqttSender::registerReceiver(std::shared_ptr<IMessageReceiver> receiver)
 {
-    this->waitForReceiveQueueStarted = waitForReceiveQueueStarted;
+    this->receiver = std::move(receiver);
 }
 
 } // namespace joynr

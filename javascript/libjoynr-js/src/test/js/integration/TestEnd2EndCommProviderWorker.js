@@ -22,18 +22,24 @@
 
 // anything that you load here is served through the jsTestDriverServer, if you add an entry you
 // have to make it available through the jsTestDriverIntegrationTests.conf
+
 importScripts("WorkerUtils.js");
 importScripts("../joynr/provisioning/provisioning_root.js");
 importScripts("LocalStorageSimulator.js");
 
 importScripts("../../jar-classes/joynr.js");
 importScripts("../joynr/provisioning/provisioning_cc.js");
+
+var document = { URL: window.joynr.provisioning.brokerUri };
+
 importScripts("provisioning_end2end_common.js");
 importScripts("../joynr/vehicle/RadioProvider.js");
 importScripts("../joynr/vehicle/radiotypes/RadioStation.js");
 importScripts("../joynr/tests/testTypes/ComplexTestType.js");
 importScripts("../joynr/datatypes/exampleTypes/Country.js");
 importScripts("../joynr/datatypes/exampleTypes/StringMap.js");
+importScripts("../joynr/datatypes/exampleTypes/ComplexStructMap.js");
+importScripts("../joynr/datatypes/exampleTypes/ComplexStruct.js");
 importScripts("../joynr/vehicle/radiotypes/ErrorList.js");
 importScripts("../../classes/lib/bluebird.js");
 
@@ -48,9 +54,10 @@ var numberOfStations = -1;
 var mixedSubscriptions = null;
 var byteBufferAttribute = null;
 var stringMapAttribute = null;
+var complexStructMapAttribute = null;
 var typeDefForStruct = null;
 var typeDefForPrimitive = null;
-
+var mixedSubscriptionsValue = "interval";
 var providerDomain;
 var libjoynrAsync;
 
@@ -122,7 +129,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
             });
 
             radioProvider.mixedSubscriptions.registerGetter(function() {
-                return "interval";
+                return mixedSubscriptionsValue;
             });
 
             radioProvider.mixedSubscriptions.registerSetter(function(value) {
@@ -209,6 +216,14 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 return stringMapAttribute;
             });
 
+            radioProvider.complexStructMapAttribute.registerGetter(function() {
+                return complexStructMapAttribute;
+            });
+
+            radioProvider.complexStructMapAttribute.registerSetter(function(value) {
+                complexStructMapAttribute = value;
+            });
+
             // register operation functions
             radioProvider.addFavoriteStation.registerOperation(function(opArgs) {
                 // retrieve radioStation name for both overloaded version
@@ -260,12 +275,12 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 var enumElement;
                 if (!isCountryEnum(opArgs.enumInput)) {
                     throw new Error("Argument enumInput with value " + opArgs.enumInput + " is not correctly typed " + Country.GERMANY._typeName);
-                } 
+                }
                 for (enumElement in opArgs.enumArrayInput) {
                     if (opArgs.enumArrayInput.hasOwnProperty(enumElement)) {
                         if (!isCountryEnum(opArgs.enumArrayInput[enumElement])) {
                             throw new Error("Argument enumInput with value " + opArgs.enumArrayInput[enumElement] + " is not correctly typed " + Country.GERMANY._typeName);
-                        } 
+                        }
                     }
                 }
             };
@@ -354,14 +369,19 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 };
             });
 
+            radioProvider.methodWithComplexMap.registerOperation(function(
+                    opArgs) {
+                return;
+            });
+
             radioProvider.methodProvidedImpl.registerOperation(function(opArgs) {
                 return {
                     returnValue : opArgs.arg
                 };
             });
 
-            radioProvider.triggerBroadcasts.registerOperation(function(opArgs) {
-                var i, outputParams, broadcast;
+            function triggerBroadcastsInternal(opArgs) {
+                var outputParams, broadcast;
                 if (opArgs.broadcastName === "broadcastWithEnum") {
                     //broadcastWithEnum
                     broadcast = radioProvider.broadcastWithEnum;
@@ -387,10 +407,25 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     }));
                     outputParams.setTypeDefPrimitiveOutput(123456);
                 }
-                for (i = 0; i < opArgs.times; i++) {
-                    broadcast.fire(outputParams);
-                }
-            });
+                setTimeout(function(opArgs, broadcast, outputParams) {
+                    var i;
+                    for (i = 0; i < opArgs.times; i++) {
+                        if (opArgs.hierarchicBroadcast && opArgs.partitions !== undefined) {
+                            var j, hierarchicPartitions = [];
+                            broadcast.fire(outputParams, hierarchicPartitions);
+                            for (j=0;j<opArgs.partitions.length;j++) {
+                                hierarchicPartitions.push(opArgs.partitions[j]);
+                                broadcast.fire(outputParams, hierarchicPartitions);
+                            }
+                        } else {
+                            broadcast.fire(outputParams, opArgs.partitions);
+                        }
+                    }
+                },0, opArgs, broadcast, outputParams);
+            }
+
+            radioProvider.triggerBroadcasts.registerOperation(triggerBroadcastsInternal);
+            radioProvider.triggerBroadcastsWithPartitions.registerOperation(triggerBroadcastsInternal);
 
             radioProvider.methodFireAndForgetWithoutParams.registerOperation(function(opArgs) {
                 var broadcast = radioProvider.fireAndForgetCallArrived;
@@ -435,9 +470,11 @@ function startTest() {
         }, valueChangedInterval);
 
         libjoynrAsync.util.LongTimer.setTimeout(function() {
-            radioProvider.mixedSubscriptions.valueChanged("valueChanged1");
+            mixedSubscriptionsValue = "valueChanged1";
+            radioProvider.mixedSubscriptions.valueChanged(mixedSubscriptionsValue);
             libjoynrAsync.util.LongTimer.setTimeout(function() {
-                radioProvider.mixedSubscriptions.valueChanged("valueChanged2");
+                mixedSubscriptionsValue = "valueChanged2";
+                radioProvider.mixedSubscriptions.valueChanged(mixedSubscriptionsValue);
             }, 10);
         }, mixedSubscriptionDelay);
         resolve(libjoynrAsync.participantIdStorage.getParticipantId(

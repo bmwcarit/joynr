@@ -34,6 +34,7 @@ import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
 import io.joynr.messaging.serialize.MessageSerializerFactory;
 import joynr.system.RoutingTypes.Address;
@@ -77,6 +78,11 @@ public class MqttModule extends AbstractModule {
                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
                                                    });
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
+
+        Multibinder<MulticastAddressCalculator> multicastAddressCalculators = Multibinder.newSetBinder(binder(),
+                                                                                                       new TypeLiteral<MulticastAddressCalculator>() {
+                                                                                                       });
+        multicastAddressCalculators.addBinding().to(MqttMulticastAddressCalculator.class);
 
         bind(MqttMessageReplyToAddressCalculator.class).to(DefaultMqttMessageReplyToAddressCalculator.class);
     }

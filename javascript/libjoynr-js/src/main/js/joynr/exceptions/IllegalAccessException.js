@@ -20,8 +20,10 @@
 define("joynr/exceptions/IllegalAccessException", [
     "joynr/types/TypeRegistrySingleton",
     "joynr/util/UtilInternal",
+    "joynr/exceptions/JoynrRuntimeException",
     "joynr/system/LoggerFactory"
-], function(TypeRegistrySingleton, Util, LoggerFactory) {
+], function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
+    var defaultSettings;
 
     /**
      * @classdesc
@@ -50,6 +52,7 @@ define("joynr/exceptions/IllegalAccessException", [
         }
 
         var log = LoggerFactory.getLogger("joynr.exceptions.IllegalAccessException");
+        var joynrRuntimeException = new JoynrRuntimeException(settings);
 
         /**
          * Used for serialization.
@@ -64,7 +67,11 @@ define("joynr/exceptions/IllegalAccessException", [
          * @type String
          */
         this.detailMessage = undefined;
+
+        Util.extend(this, defaultSettings, settings, joynrRuntimeException);
     }
+
+    defaultSettings = {};
 
     TypeRegistrySingleton.getInstance().addType(
             "joynr.exceptions.IllegalAccessException",

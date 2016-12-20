@@ -45,6 +45,23 @@ class Logger;
 namespace util
 {
 
+static const std::string SINGLE_LEVEL_WILDCARD("+");
+static const std::string MULTI_LEVEL_WILDCARD("*");
+static const std::string MULTICAST_PARTITION_SEPARATOR("/");
+
+/**
+ * @brief Check if the specified file exists and is readable.
+ * @param filePath
+ * @return true if file exists, false otherwise
+ */
+bool fileExists(const std::string& fileName);
+
+std::string createMulticastId(const std::string& providerParticipantId,
+                              const std::string& multicastName,
+                              const std::vector<std::string>& partitions);
+
+void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards = false);
+
 /**
   * Splits a byte array representation of multiple JSON objects into
   * a list of byte arrays, each containing a single JSON object.
@@ -53,30 +70,17 @@ std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
 
 std::string attributeGetterFromName(const std::string& attributeName);
 
+/*
+ * Return the content of fileName as a string.
+ * It assumes the file exists and is accessible.
+ */
 std::string loadStringFromFile(const std::string& fileName);
+
+/*
+ * It saves strToSave to the specified fileName.
+ * The file does not need to exists.
+ */
 void saveStringToFile(const std::string& fileName, const std::string& strToSave);
-
-template <class T>
-std::vector<T> convertIntListToEnumList(const std::vector<int>& inputList)
-{
-    std::vector<T> ret;
-    ret.reserve(inputList.size());
-    for (const int& i : inputList) {
-        ret.push_back((T)i);
-    }
-    return ret;
-}
-
-template <class T>
-std::vector<int> convertEnumListToIntList(const std::vector<T>& enumList)
-{
-    std::vector<int> enumAsIntList;
-    enumAsIntList.reserve(enumList.size());
-    for (const T& e : enumList) {
-        enumAsIntList.push_back(e);
-    }
-    return enumAsIntList;
-}
 
 /**
  * Create a Uuid for use in Joynr.

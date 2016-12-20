@@ -44,7 +44,7 @@ public:
  * The provider will change the attribute to a (fireAndForget) method specific value which will be
  *checked in the subscription listener.
  */
-class IltConsumerFireAndForgetMethodTest : public IltAbstractConsumerTest
+class IltConsumerFireAndForgetMethodTest : public IltAbstractConsumerTest<::testing::Test>
 {
 public:
     IltConsumerFireAndForgetMethodTest()

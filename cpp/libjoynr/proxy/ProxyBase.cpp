@@ -17,9 +17,10 @@
  * #L%
  */
 #include "joynr/ProxyBase.h"
-#include "joynr/Util.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include <tuple>
+
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -42,10 +43,6 @@ ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
     proxyParticipantId = util::createUuid();
 }
 
-ProxyBase::~ProxyBase()
-{
-}
-
 void ProxyBase::handleArbitrationFinished(
         const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
         bool useInProcessConnector)
@@ -54,7 +51,7 @@ void ProxyBase::handleArbitrationFinished(
     this->providerDiscoveryEntry = providerDiscoveryEntry;
 }
 
-std::string ProxyBase::getProxyParticipantId()
+const std::string& ProxyBase::getProxyParticipantId() const
 {
     return this->proxyParticipantId;
 }

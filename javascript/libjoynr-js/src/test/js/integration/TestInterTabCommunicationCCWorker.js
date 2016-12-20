@@ -27,6 +27,11 @@ importScripts("LocalStorageSimulator.js");
 
 importScripts("../../jar-classes/joynr.intertab.clustercontroller.js");
 importScripts("../joynr/provisioning/provisioning_cc.js");
+
+var document = {
+    URL : window.joynr.provisioning.brokerUri
+};
+
 importScripts("../../classes/lib/bluebird.js");
 
 var Promise = Promise.Promise;

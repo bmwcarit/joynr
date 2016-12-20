@@ -28,6 +28,7 @@
 #include <boost/optional.hpp>
 
 #include "joynr/SubscriptionPublication.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/SubscriptionRequestInformation.h"
 #include "joynr/BroadcastSubscriptionRequestInformation.h"
 #include "joynr/BroadcastFilterParameters.h"
@@ -39,6 +40,9 @@
 #include "joynr/ReadWriteLock.h"
 #include "joynr/ThreadSafeMap.h"
 #include "joynr/SubscriptionReply.h"
+
+#include "joynr/MessagingQos.h"
+#include "joynr/IJoynrMessageSender.h"
 
 namespace boost
 {
@@ -53,10 +57,11 @@ namespace joynr
 
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
+class MulticastSubscriptionRequest;
 class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
-class SubscriptionBroadcastListener;
+class UnicastBroadcastListener;
 class SubscriptionQos;
 
 namespace exceptions
@@ -76,7 +81,10 @@ class SubscriptionQos;
 class JOYNR_EXPORT PublicationManager
 {
 public:
-    explicit PublicationManager(boost::asio::io_service& ioService, int maxThreads = 1);
+    PublicationManager(boost::asio::io_service& ioService,
+                       IJoynrMessageSender* messageSender,
+                       std::uint64_t ttlUplift = 0,
+                       int maxThreads = 1);
     virtual ~PublicationManager();
     /**
      * @brief Adds the SubscriptionRequest and starts runnable to poll attributes.
@@ -110,6 +118,18 @@ public:
              const std::string& providerParticipantId,
              std::shared_ptr<RequestCaller> requestCaller,
              BroadcastSubscriptionRequest& subscriptionRequest,
+             IPublicationSender* publicationSender);
+
+    /**
+     * @brief Adds MulticastSubscriptionRequest
+     * @param proxyParticipantId
+     * @param providerParticipantId
+     * @param subscriptionRequest
+     * @param publicationSender
+     */
+    void add(const std::string& proxyParticipantId,
+             const std::string& providerParticipantId,
+             MulticastSubscriptionRequest& subscriptionRequest,
              IPublicationSender* publicationSender);
 
     /**
@@ -167,6 +187,21 @@ public:
     template <typename... Ts>
     void broadcastOccurred(const std::string& subscriptionId, const Ts&... values);
 
+    /**
+      * @brief Publishes a multicast broadcast publication message
+      *
+      * This method is virtual so that it can be overridden by a mock object.
+      * @param broadcastName The name of the broadcast
+      * @param providerParticipantId The participantID of the provider
+      * @param partitions list of partitions the broadcast applies to
+      * @param values Broadcast's value
+      */
+    template <typename... Ts>
+    void broadcastOccurred(const std::string& broadcastName,
+                           const std::string& providerParticipantId,
+                           const std::vector<std::string>& partitions,
+                           const Ts&... values);
+
     template <typename BroadcastFilter, typename... Ts>
     void selectiveBroadcastOccurred(const std::string& subscriptionId,
                                     const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
@@ -177,6 +212,9 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
+
+    // Used for multicast publication
+    IJoynrMessageSender* joynrMessageSender;
 
     // A class that groups together the information needed for a publication
     class Publication;
@@ -223,6 +261,8 @@ private:
 
     // Read/write lock for broadcast filters
     mutable ReadWriteLock broadcastFilterLock;
+
+    std::uint64_t ttlUplift;
 
     // PublisherRunnables are used to send publications via a ThreadPool
     class PublisherRunnable;
@@ -339,7 +379,7 @@ private:
 } // namespace joynr
 
 #include "joynr/SubscriptionAttributeListener.h"
-#include "joynr/SubscriptionBroadcastListener.h"
+#include "joynr/UnicastBroadcastListener.h"
 
 namespace joynr
 {
@@ -358,7 +398,7 @@ public:
     IPublicationSender* sender;
     std::shared_ptr<RequestCaller> requestCaller;
     SubscriptionAttributeListener* attributeListener;
-    SubscriptionBroadcastListener* broadcastListener;
+    UnicastBroadcastListener* broadcastListener;
     std::recursive_mutex mutex;
     DelayedScheduler::RunnableHandle publicationEndRunnableHandle;
 
@@ -403,6 +443,21 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
             }
         }
     }
+}
+
+template <typename... Ts>
+void PublicationManager::broadcastOccurred(const std::string& broadcastName,
+                                           const std::string& providerParticipantId,
+                                           const std::vector<std::string>& partitions,
+                                           const Ts&... values)
+{
+    MulticastPublication publication;
+    std::string multicastID =
+            util::createMulticastId(providerParticipantId, broadcastName, partitions);
+    publication.setMulticastId(multicastID);
+    publication.setResponse(values...);
+    MessagingQos mQos;
+    joynrMessageSender->sendMulticast(providerParticipantId, publication, mQos);
 }
 
 template <typename... Ts>

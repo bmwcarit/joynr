@@ -26,19 +26,16 @@
 
 using namespace ::testing;
 
-class IltConsumerFilteredBroadcastSubscriptionTest : public IltAbstractConsumerTest
+class IltConsumerFilteredBroadcastSubscriptionTest : public IltAbstractConsumerTest<::testing::Test>
 {
 public:
     IltConsumerFilteredBroadcastSubscriptionTest()
-            : subscriptionIdFutureTimeout(10000),
-              subscriptionRegisteredTimeout(10000),
-              publicationTimeout(10000)
+            : subscriptionIdFutureTimeout(10000), publicationTimeout(10000)
     {
     }
 
 protected:
     std::uint16_t subscriptionIdFutureTimeout;
-    std::chrono::milliseconds subscriptionRegisteredTimeout;
     std::chrono::milliseconds publicationTimeout;
 };
 
@@ -73,7 +70,6 @@ public:
 
 TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithFiltering)
 {
-    Semaphore subscriptionRegisteredSemaphore;
     Semaphore publicationSemaphore;
     std::vector<std::string> stringArrayOut;
     joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray structWithStringArrayOut;
@@ -87,8 +83,6 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
 
     auto mockBroadcastWithFilteringBroadcastListener =
             std::make_shared<MockBroadcastWithFilteringBroadcastListener>();
-    ON_CALL(*mockBroadcastWithFilteringBroadcastListener, onSubscribed(_))
-            .WillByDefault(ReleaseSemaphore(&subscriptionRegisteredSemaphore));
     EXPECT_CALL(*mockBroadcastWithFilteringBroadcastListener, onError(_)).Times(0).WillRepeatedly(
             ReleaseSemaphore(&publicationSemaphore));
     EXPECT_CALL(*mockBroadcastWithFilteringBroadcastListener,
@@ -169,7 +163,6 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
                                     filterParameters, listener, subscriptionQos)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);
 
-        ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(subscriptionRegisteredTimeout));
         JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithFiltering - subscription registered");
 

@@ -26,6 +26,11 @@ define(
         ],
         function(Util, uuid) {
 
+            var jmBase = uuid();
+            var jmIndex = 0;
+
+            Util.enrichObjectWithSetPrototypeOf();
+
             /**
              * @name JoynrMessage
              * @constructor
@@ -36,68 +41,16 @@ define(
              *            settings.type the message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
              */
             function JoynrMessage(settings) {
-                settings = settings || {};
-
-                Object.defineProperties(this, {
-                    /**
-                     * The joynr type name
-                     *
-                     * @name JoynrMessage#_typeName
-                     * @type String
-                     */
-                    "_typeName" : {
-                        value : "joynr.JoynrMessage",
-                        readable : true,
-                        writable : false,
-                        enumerable : true,
-                        configurable : false
-                    },
-                    /**
-                     * The message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
-                     *
-                     * @name JoynrMessage#type
-                     * @type String
-                     */
-                    "type" : {
-                        value : settings.type,
-                        readable : true,
-                        writable : false,
-                        enumerable : true,
-                        configurable : false
-                    },
-                    /**
-                     * The message header holding additional values
-                     *
-                     * @name JoynrMessage#header
-                     * @type Object
-                     */
-                    "header" : {
-                        value : settings.header || {},
-                        readable : true,
-                        writable : false,
-                        enumerable : true,
-                        configurable : false
-                    },
-                    /**
-                     * The serialized message payload
-                     *
-                     * @name JoynrMessage#payload
-                     * @type String
-                     */
-                    "payload" : {
-                        value : settings.payload || "",
-                        readable : true,
-                        writable : false,
-                        enumerable : true,
-                        configurable : false
-                    }
-                });
-
-                this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE, "application/json");
-
-                if (this[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] === undefined) {
-                    this.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID, uuid());
-                }
+                settings.header = settings.header || {};
+                /*jslint nomen: true*/
+                settings._typeName = "joynr.JoynrMessage";
+                settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE] = "application/json";
+                settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] =
+                        settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID]
+                            || (jmBase + "_" + jmIndex++);
+                Object.setPrototypeOf(settings, JoynrMessage.prototype);
+                /*jslint nomen: false*/
+                return settings;
             }
 
             /**
@@ -132,6 +85,14 @@ define(
              * @static
              * @readonly
              * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST =
+                    "multicastSubscriptionRequest";
+            /**
+             * @static
+             * @readonly
+             * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST
              */
             JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST =
@@ -150,6 +111,13 @@ define(
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
              */
             JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION = "subscriptionPublication";
+            /**
+             * @static
+             * @readonly
+             * @type String
+             * @name JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+             */
+            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST = "multicast";
             /**
              * @static
              * @readonly
@@ -357,6 +325,17 @@ define(
                     });
                 });
             }(headerProperties));
+
+            JoynrMessage.prototype.isReceivedFromGlobal = false;
+
+            Object.defineProperty(JoynrMessage.prototype, "setReceivedFromGlobal", {
+                enumerable : false,
+                configurable : false,
+                writable : false,
+                value : function(receivedFromGlobal) {
+                    this.isReceivedFromGlobal = receivedFromGlobal;
+                }
+            });
 
             return JoynrMessage;
 

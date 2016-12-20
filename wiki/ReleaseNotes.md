@@ -1,6 +1,45 @@
-#joynr 0.22.0
+#joynr 0.22.3
 
 ## API relevant changes
+None.
+
+##Other changes
+
+* **[C++]** fix MQTT connection to broker blocked after first message was sent
+* **[JS]** fix typing issues with maps of structs
+* **[JS]** fix receiving too many multicast publications when provider and proxy are in same
+  libjoynr
+* **[C++]** Bugfix: Provider and consumers do not crash after reconnect to cluster-controller
+
+#joynr 0.22.2
+
+##Other changes
+
+* **[C++]** Bugfix: MQTT sender blocks message router thread in case of connection to broker not
+  established.
+
+#joynr 0.22.1
+
+##Other changes
+
+* **[JS]** Bugfix: For non-selective broadcast subscriptions the listeners could be called too
+  often if multiple matching listeners were found.
+
+#joynr 0.21.4
+This is a minor bug fix release.
+
+## API relevant changes
+None.
+
+##Other changes
+* **[C++]** Fix bug in generated data types if base and derived classes have different
+  package names.
+
+#joynr 0.22.0
+
+##API relevant changes
+* **[Java]** constant PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT has been moved to
+  io.joynr.messaging.MessagingPropertyKeys
 * **[C++]** During a provider call a call context can be queried which provides the creator user id
   field from the joynr message. Please delete the broadcastsubscriptionrequest-persistence-file and
   subscriptionrequest-persistence-file because the file format changed.
@@ -8,9 +47,57 @@
   accepts a success and an error callback as parameters.
 * **[C++]** Introduced async joynr runtime creation. See JoynrRuntime::createRuntimeAsync for more
   information.
+* **[C++]** joynr can now be built with a static and a dynamic log level. The corresponding cmake
+  properties are called JOYNR_MAX_LOG_LEVEL and JOYNR_DEFAULT_RUNTIME_LOG_LEVEL. In order to change
+  the dynamic log level at runtime a environment variable, which is called "JOYNR_LOG_LEVEL", must
+  be exported before any joynr component starts. The runtime log levels are called "TRACE", "DEBUG",
+  "INFO", "WARNING", "ERROR" and "FATAL".
+* Non-selective broadcasts work only with MQTT until further notice.
+  HTTP is currently not supported.
+* Non-selective broadcasts support partitions to control broadcast delivery to subscribers.
+  * **[C++]** On provider side the fire broadcast method has now an optional partitions argument;
+    see [C++ documentation for firing a broadcast](cplusplus.md#firing-a-broadcast). On consumer
+    side the subscribe method has now an optional partitions argument; see [C++ documentation for
+    subscribing to a broadcast](cplusplus.md#subscribing-to-a-%28non-selective%29-broadcast). The
+    subscription ID parameter of the subscribe method for updating an existing subscription moved
+    from the last to the first position in the argument list. In addition, it also has now an
+    optional partitions argument; see [C++ documentation for updating an existing subscription]
+    (cplusplus.md#updating-a-%28non-selective%29-broadcast-subscription).
+  * **[Java]** On provider side the fire broadcast method has now an optional varargs argument to
+    provide partitions; see [Java documentation for firing a broadcast](java.md#firing-a-broadcast).
+    On consumer side the subscribe method has now an optional varargs argument to provide
+    partitions; see [Java documentation for subscribing to a broadcast]
+    (java.md#subscribing-to-a-%28non-selective%29-broadcast). The subscription ID parameter of the
+    subscribe method for updating an existing subscription moved from the last to the first position
+    in the argument list. In addition, it has now an optional varargs argument to provide
+    partitions; see [Java documentation for updating an existing subscription]
+    (java.md#updating-a-%28non-selective%29-broadcast-subscription).
+  * **[JS]** On provider side the fire broadcast method has now an optional partitions argument; see
+    [JavaScript documentation for firing a broadcast](javascript.md#sending-a-broadcast). On
+    consumer side the subscribe method has now an optional partitions entry in the subscription
+    settings object; see [JavaScript documentation for subscribing to a broadcast]
+    (javascript.md#subscribing-to-a-%28non-selective%29-broadcast). The subscription settings object
+    of the subscribe method for updating an existing subscription has also an optional partitions
+    entry; see [JavaScript documentation for updating an existing subscription]
+    (javascript.md#updating-a-%28non-selective%29-broadcast-subscription).
 
-## Other changes
+##Other changes
+* **[JS]** Introduced mqtt messaging layer, allowing javascript runtimes including
+  cluster controller functionality to connect to a mqtt broker.
+* On top of MQTT messaging, joynr uses now a multicast approach to send non-selective broadcast
+  publications instead of sending an unicast message to each subscriber. See the [Multicast Concept
+  Documentation](../docs/multicast.md) for more details. This change breaks the compatibility on the
+  messaging layer to joynr version 0.21.x.
+
+#joynr 0.21.3
+This is a minor bug fix release.
+
+## API relevant changes
 None.
+
+##Other changes
+* **[JS]** Fix bug which prevents successful restore of persisted broadcast subscription
+  requests
 
 #joynr 0.21.2
 This is a minor bug fix release.
@@ -39,6 +126,8 @@ None.
   `@ProviderDomain` annotation. See
   [JEE Documentation / Customising the registration domain](jee.md#provider_domain).
 * **[Java, JS, C++]** Introduce LastSeen arbitration strategy and set it as default arbitration.
+* **[JEE]** Ability to publish multicast messages by injecting the
+  subscription publisher. See [JEE Documentation / Publishing Multicasts](jee.md#publishing_multicasts).
 
 ##Other changes
 * **[Java, C++]** The local capabilities directory will periodically be checked for

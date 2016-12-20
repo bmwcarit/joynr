@@ -18,6 +18,9 @@
  */
 #ifndef INPROCESSMESSAGINGSKELETON_H
 #define INPROCESSMESSAGINGSKELETON_H
+
+#include <functional>
+
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/IMessaging.h"
 
@@ -26,11 +29,15 @@ namespace joynr
 
 class JoynrMessage;
 
-/*
-  * This is a common Interface for InProcessClusterControllerMessagingSkeleton and
-    InProcessLibJoynrMessagingSkeleton.
-  */
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
 
+/**
+ * This is a common Interface for InProcessClusterControllerMessagingSkeleton and
+ * InProcessLibJoynrMessagingSkeleton.
+ */
 class JOYNRCOMMON_EXPORT InProcessMessagingSkeleton : public IMessaging
 {
 public:

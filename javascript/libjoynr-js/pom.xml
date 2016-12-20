@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.22.0-SNAPSHOT</version>
+		<version>0.23.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -39,10 +39,12 @@
 		<bluebird.version>3.1.1</bluebird.version>
 		<log4javascript.version>1.4.10</log4javascript.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
+		<mqtt.version>2.0.1</mqtt.version>
 		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
 		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
+		<joynr.provisioning.brokerUri>tcp://127.0.0.1:9001</joynr.provisioning.brokerUri>
 		<joynr.provisioning.bounceProxyBaseUrl>http://127.0.0.1:8080</joynr.provisioning.bounceProxyBaseUrl>
-		<joynr.provisioning.testTtl>5000</joynr.provisioning.testTtl>
+		<joynr.provisioning.testTtl>10000</joynr.provisioning.testTtl>
 	</properties>
 
 	<dependencies>
@@ -495,6 +497,7 @@
 										<include>require.config.node.js</include>
 										<include>joynr/**</include>
 										<include>global/LocalStorageNode.js</include>
+										<include>global/Mqtt.js</include>
 										<include>global/Promise.js</include>
 										<include>global/WebSocketNode.js</include>
 										<include>global/XMLHttpRequestNode.js</include>
@@ -506,7 +509,7 @@
 									</includes>
 									<excludes>
 										<exclude>joynr/security/PlatformSecurityManager.js</exclude>
-										<exclude>joynr/system/LoggingManager.js</exclude>
+										<exclude>joynr/system/ConsoleAppender.js</exclude>
 									</excludes>
 								</resource>
 								<resource>
@@ -663,6 +666,7 @@
 						<exclude>jsdoc3.conf.json</exclude>
 						<exclude>src/main/resources/libjoynrEndFrag.js</exclude>
 						<exclude>package.json</exclude>
+						<exclude>src/test/resources/node/shutdown/package.json</exclude>
 						<exclude>src/test/resources/spec/support/jasmine.json</exclude>
 					</excludes>
 				</configuration>
@@ -693,6 +697,25 @@
 										</versionRange>
 										<goals>
 											<goal>extract</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											exec-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.3.1,)
+										</versionRange>
+										<goals>
+											<goal>exec</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -857,6 +880,35 @@
 									<goal>exec</goal>
 								</goals>
 							</execution>
+
+							<!-- run nodejs based integration tests -->
+
+							<!-- maven doesn't keep the execution permission of
+								${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh.
+								So we fix it here -->
+							<execution>
+								<configuration>
+									<executable>chmod</executable>
+									<commandlineArgs>+x ${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</commandlineArgs>
+								</configuration>
+								<id>process-integration-tests-nodejs</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<configuration>
+									<executable>${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</executable>
+									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
+								</configuration>
+								<id>run-integration-tests-nodejs</id>
+								<phase>integration-test</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+
 						</executions>
 					</plugin>
 					<!-- run karma -->
@@ -911,6 +963,74 @@
 							<skipKarma>false</skipKarma>
 							<karmaFailureIgnore>false</karmaFailureIgnore>
 						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>create-mqtt-module</id>
+			<activation>
+				<property>
+					<name>!skipMqttModuleCreation</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<!-- configuration options documentation:
+							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
+						<executions>
+							<execution>
+								<id>install browserify</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+										<argument>browserify</argument>
+									</arguments>
+									<workingDirectory>${basedir}</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>install mqtt</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+										<argument>mqtt@${mqtt.version}</argument>
+									</arguments>
+									<workingDirectory>${basedir}</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>browserify mqtt</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<executable>./cmd.js</executable>
+									<arguments>
+										<argument>${basedir}/node_modules/mqtt/mqtt.js</argument>
+										<argument>-s</argument>
+										<argument>mqtt</argument>
+										<argument>-o</argument>
+										<argument>${project.build.directory}/classes/lib/mqtt.js</argument>
+									</arguments>
+									<workingDirectory>${basedir}/node_modules/browserify/bin</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
 					</plugin>
 				</plugins>
 			</build>

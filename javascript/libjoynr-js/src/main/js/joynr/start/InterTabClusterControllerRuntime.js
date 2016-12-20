@@ -39,6 +39,13 @@ define(
             "joynr/messaging/channel/ChannelMessagingSender",
             "joynr/messaging/channel/ChannelMessagingStubFactory",
             "joynr/messaging/channel/ChannelMessagingSkeleton",
+            "joynr/messaging/MessageReplyToAddressCalculator",
+            "joynr/messaging/mqtt/MqttMessagingStubFactory",
+            "joynr/messaging/mqtt/MqttMessagingSkeleton",
+            "joynr/system/RoutingTypes/MqttAddress",
+            "joynr/messaging/mqtt/SharedMqttClient",
+            "joynr/messaging/mqtt/MqttMulticastAddressCalculator",
+            "joynr/messaging/MessagingSkeletonFactory",
             "joynr/messaging/MessagingStubFactory",
             "joynr/messaging/routing/MessageRouter",
             "joynr/messaging/routing/MessageQueue",
@@ -52,6 +59,7 @@ define(
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/messaging/browser/BrowserMessagingStubFactory",
             "joynr/messaging/browser/BrowserMessagingSkeleton",
+            "joynr/system/RoutingTypes/BrowserAddress",
             "joynr/messaging/webmessaging/WebMessagingStub",
             "joynr/messaging/webmessaging/WebMessagingSkeleton",
             "joynr/messaging/channel/LongPollingChannelMessageReceiver",
@@ -95,6 +103,13 @@ define(
                 ChannelMessagingSender,
                 ChannelMessagingStubFactory,
                 ChannelMessagingSkeleton,
+                MessageReplyToAddressCalculator,
+                MqttMessagingStubFactory,
+                MqttMessagingSkeleton,
+                MqttAddress,
+                SharedMqttClient,
+                MqttMulticastAddressCalculator,
+                MessagingSkeletonFactory,
                 MessagingStubFactory,
                 MessageRouter,
                 MessageQueue,
@@ -108,6 +123,7 @@ define(
                 InProcessAddress,
                 BrowserMessagingStubFactory,
                 BrowserMessagingSkeleton,
+                BrowserAddress,
                 WebMessagingStub,
                 WebMessagingSkeleton,
                 LongPollingChannelMessageReceiver,
@@ -158,6 +174,7 @@ define(
                 var typedCapabilities;
                 var channelMessagingSender;
                 var channelMessagingStubFactory;
+                var messagingSkeletonFactory;
                 var messagingStubFactory;
                 var webMessagingStub;
                 var webMessagingSkeleton;
@@ -167,6 +184,7 @@ define(
                 var longPollingMessageReceiver;
                 var libjoynrMessagingSkeleton;
                 var clusterControllerMessagingSkeleton;
+                var mqttMessagingSkeleton;
                 var clusterControllerChannelMessagingSkeleton;
                 var clusterControllerMessagingStub;
                 var dispatcher;
@@ -413,25 +431,60 @@ define(
                                 webMessagingSkeleton : webMessagingSkeleton
                             });
 
+                            var channelMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
+                                //replyToAddress is provided later
+                            });
+
                             channelMessagingStubFactory = new ChannelMessagingStubFactory({
                                 myChannelId : channelId,
-                                channelMessagingSender : channelMessagingSender
+                                channelMessagingSender : channelMessagingSender,
+                                messageReplyToAddressCalculator : channelMessageReplyToAddressCalculator
                             });
+
+                            var mqttAddress = new MqttAddress({
+                                brokerUri : provisioning.brokerUri,
+                                topic : channelId
+                            });
+
+                            var mqttMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
+                                replyToAddress : mqttAddress
+                            });
+
+                            var mqttClient = new SharedMqttClient({
+                                address: mqttAddress,
+                                provisioning : provisioning.mqtt || {}
+                            });
+
+                            messagingSkeletonFactory = new MessagingSkeletonFactory();
+
+                            var messagingStubFactories = {};
+                            /*jslint nomen: true */
+                            messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
+                            messagingStubFactories[BrowserAddress._typeName] = new BrowserMessagingStubFactory({
+                                webMessagingStub : webMessagingStub
+                            });
+                            messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
+                            messagingStubFactories[MqttAddress._typeName] = new MqttMessagingStubFactory({
+                                client : mqttClient,
+                                address : mqttAddress,
+                                messageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
+                            });
+                            /*jslint nomen: false */
+
                             messagingStubFactory = new MessagingStubFactory({
-                                messagingStubFactories : {
-                                    InProcessAddress : new InProcessMessagingStubFactory(),
-                                    BrowserAddress : new BrowserMessagingStubFactory({
-                                        webMessagingStub : webMessagingStub
-                                    }),
-                                    ChannelAddress : channelMessagingStubFactory
-                                }
+                                messagingStubFactories :messagingStubFactories
                             });
+
                             messageRouter = new MessageRouter({
                                 initialRoutingTable : initialRoutingTable,
                                 persistency : persistency,
                                 typeRegistry : typeRegistry,
                                 joynrInstanceId : channelId,
+                                messagingSkeletonFactory : messagingSkeletonFactory,
                                 messagingStubFactory : messagingStubFactory,
+                                multicastAddressCalculator : new MqttMulticastAddressCalculator({
+                                    globalAddress : mqttAddress
+                                }),
                                 messageQueue : new MessageQueue(messageQueueSettings)
                             });
                             browserMessagingSkeleton.registerListener(messageRouter.route);
@@ -450,17 +503,28 @@ define(
                                     });
                             // clusterControllerChannelMessagingSkeleton.registerListener(messageRouter.route);
 
+                            mqttMessagingSkeleton = new MqttMessagingSkeleton({
+                                address: mqttAddress,
+                                client : mqttClient,
+                                messageRouter : messageRouter
+                            });
+
                             longPollingCreatePromise = longPollingMessageReceiver.create(channelId).then(
                                     function(channelUrl) {
                                         var channelAddress = new ChannelAddress({
                                             channelId: channelId,
                                             messagingEndpointUrl: channelUrl
                                         });
-                                        channelMessagingStubFactory.globalAddressReady(channelAddress);
-                                        capabilityDiscovery.globalAddressReady(channelAddress);
+                                        mqttClient.onConnected().then(function() {
+                                            capabilityDiscovery.globalAddressReady(mqttAddress);
+                                            channelMessageReplyToAddressCalculator.setReplyToAddress(channelAddress);
+                                            channelMessagingStubFactory.globalAddressReady(channelAddress);
+                                            return null;
+                                        });
                                         longPollingMessageReceiver
                                                 .start(clusterControllerChannelMessagingSkeleton.receiveMessage);
                                         channelMessagingSender.start();
+                                        return null;
                                     });
 
                             // link up clustercontroller messaging to dispatcher
@@ -472,13 +536,23 @@ define(
                             clusterControllerMessagingSkeleton
                                     .registerListener(messageRouter.route);
 
+                            var ttlUpLiftMs = (provisioning.messaging && provisioning.messaging.TTL_UPLIFT) ?
+                                    provisioning.messaging.TTL_UPLIFT : undefined;
                             dispatcher =
                                     new Dispatcher(
                                             clusterControllerMessagingStub,
-                                            new PlatformSecurityManager());
+                                            new PlatformSecurityManager(),
+                                            ttlUpLiftMs);
 
                             libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                             libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
+
+                            messagingSkeletonFactory.setSkeletons({
+                                InProcessAddress : libjoynrMessagingSkeleton,
+                                BrowserAddress : browserMessagingSkeleton,
+                                ChannelAddress : clusterControllerChannelMessagingSkeleton,
+                                MqttAddress : mqttMessagingSkeleton
+                            });
 
                             requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                             subscriptionManager = new SubscriptionManager(dispatcher);
@@ -488,6 +562,7 @@ define(
                             dispatcher.registerRequestReplyManager(requestReplyManager);
                             dispatcher.registerSubscriptionManager(subscriptionManager);
                             dispatcher.registerPublicationManager(publicationManager);
+                            dispatcher.registerMessageRouter(messageRouter);
 
                             localCapabilitiesStore = new CapabilitiesStore();
                             globalCapabilitiesCache = new CapabilitiesStore(typedCapabilities);
@@ -638,7 +713,9 @@ define(
                                         },
                                         removeNextHop : function(opArgs) {
                                             return messageRouter.removeNextHop(opArgs.participantId);
-                                        }
+                                        },
+                                        addMulticastReceiver : messageRouter.addMulticastReceiver,
+                                        removeMulticastReceiver : messageRouter.removeMulticastReceiver
                                     });
                             registerRoutingProviderPromise =
                                     capabilitiesRegistrar.registerProvider(
@@ -697,6 +774,10 @@ define(
                                 });
                             });
 
+                            if (mqttMessagingSkeleton !== undefined) {
+                                mqttMessagingSkeleton.shutdown();
+                            }
+
                             if (channelMessagingSender !== undefined) {
                                 channelMessagingSender.shutdown();
                             }
@@ -731,6 +812,10 @@ define(
 
                             if (typeRegistry !== undefined) {
                                 typeRegistry.shutdown();
+                            }
+
+                            if (loggingManager !== undefined) {
+                                loggingManager.shutdown();
                             }
 
                             log.debug("joynr cluster controller shut down");

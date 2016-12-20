@@ -22,12 +22,14 @@
 define([
     "global/Promise",
     "joynr/system/RoutingTypes/ChannelAddress",
-    "joynr/messaging/channel/ChannelMessagingStub"
-], function(Promise, ChannelAddress, ChannelMessagingStub) {
+    "joynr/messaging/channel/ChannelMessagingStub",
+    "joynr/messaging/MessageReplyToAddressCalculator"
+], function(Promise, ChannelAddress, ChannelMessagingStub, MessageReplyToAddressCalculator) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() {
         var channelMessagingSender, destinationChannelAddress, myChannelAddress;
         var channelMessagingStub1, channelMessagingStub2, joynrMessage;
+        var messageReplyToAddressCalculator;
         var url = "http://testurl";
 
         beforeEach(function(done) {
@@ -42,18 +44,26 @@ define([
                 channelId : "myChannelId",
                 messagingEndpointUrl : url
             });
+
+            messageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
+                replyToAddress : myChannelAddress
+            });
+
             channelMessagingStub1 = new ChannelMessagingStub({
                 destinationChannelAddress : destinationChannelAddress,
                 myChannelAddress : myChannelAddress,
-                channelMessagingSender : channelMessagingSender
+                channelMessagingSender : channelMessagingSender,
+                messageReplyToAddressCalculator : messageReplyToAddressCalculator
             });
             channelMessagingStub2 = new ChannelMessagingStub({
                 destinationChannelAddress : destinationChannelAddress,
                 myChannelAddress : destinationChannelAddress,
-                channelMessagingSender : channelMessagingSender
+                channelMessagingSender : channelMessagingSender,
+                messageReplyToAddressCalculator : messageReplyToAddressCalculator
             });
             joynrMessage = {
-                key : "joynrMessage"
+                key : "joynrMessage",
+                type : "request"
             };
             done();
         });

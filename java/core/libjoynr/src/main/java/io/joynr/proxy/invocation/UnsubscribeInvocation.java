@@ -19,12 +19,12 @@ package io.joynr.proxy.invocation;
  * #L%
  */
 
+import java.lang.reflect.Method;
+
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;
 
-import java.lang.reflect.Method;
-
-public class UnsubscribeInvocation extends SubscriptionInvocation {
+public class UnsubscribeInvocation extends Invocation<String> {
 
     private final String subscriptionId;
 
@@ -36,7 +36,6 @@ public class UnsubscribeInvocation extends SubscriptionInvocation {
         subscriptionId = (String) args[0];
     }
 
-    @Override
     public String getSubscriptionId() {
         return subscriptionId;
     }

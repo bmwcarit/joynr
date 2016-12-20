@@ -107,7 +107,7 @@ module.exports = function(config) {
 
     // outputDir is already located in 'target'
     junitReporter: {
-      outputDir: 'jstd-test-results',
+      outputDir: 'test-results',
       outputFile: 'TestIntegration.xml',
       suite: '',
       useBrowserName: false,

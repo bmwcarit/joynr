@@ -21,6 +21,8 @@
 
 #include <condition_variable>
 #include <memory>
+#include <mutex>
+#include <unordered_set>
 
 #include "mosquittopp.h"
 
@@ -42,9 +44,7 @@ class MessagingSettings;
 class MosquittoSubscriber : public Thread, MosquittoConnection
 {
 public:
-    explicit MosquittoSubscriber(const MessagingSettings& settings,
-                                 const std::string& channelId,
-                                 Semaphore* channelCreatedSemaphore);
+    explicit MosquittoSubscriber(const MessagingSettings& settings, const std::string& channelId);
 
     ~MosquittoSubscriber() override = default;
 
@@ -56,17 +56,28 @@ public:
 
     void interrupt();
     bool isInterrupted();
+    bool isSubscribedToChannelTopic() const;
+
+    /* subscribe to channelId / topic */
+    void subscribeToTopic(const std::string& topic);
+
+    /* unsubscribe from channelId / topic */
+    void unsubscribeFromTopic(const std::string& topic);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoSubscriber);
 
     MqttSettings mqttSettings;
     std::string channelId;
+    int subscribeChannelMid;
     std::string topic;
-    Semaphore* channelCreatedSemaphore;
+    std::unordered_set<std::string> additionalTopics;
+    std::recursive_mutex additionalTopicsMutex;
 
+    std::atomic<bool> isConnected;
     std::atomic<bool> isRunning;
-    std::atomic<bool> isChannelAvailable;
+    std::atomic<bool> isChannelIdRegistered;
+    std::atomic<bool> subscribedToChannelTopic;
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;
@@ -75,10 +86,8 @@ private:
 
     void checkServerTime();
 
-    /* subscribe to channelId / topic */
-    void subscribeToTopic();
-    /* unsubscribe from channelId / topic */
-    void unsubscribeFromTopic();
+    void restoreSubscriptions();
+    void subscribeToTopicInternal(const std::string& topic, const bool isChannelTopic = false);
 
     void on_connect(int rc) override;
     void on_subscribe(int mid, int qos_count, const int* granted_qos) override;

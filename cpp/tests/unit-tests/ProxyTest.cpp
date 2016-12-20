@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/ConnectorFactory.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/TestWithoutVersionProxy.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
@@ -82,7 +83,7 @@ public:
         );
     }
 
-    tests::Itest* createFixture(bool cacheEnabled) override {
+    tests::testProxy* createFixture(bool cacheEnabled) override {
         EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
         tests::testProxy* proxy = new tests::testProxy(
                     endPointAddress,
@@ -97,7 +98,7 @@ public:
         discoveryEntry.setParticipantId(providerParticipantId);
         discoveryEntry.setIsLocal(true);
         proxy->handleArbitrationFinished(discoveryEntry, useInProcessCommunication);
-        return dynamic_cast<tests::Itest*>(proxy);
+        return proxy;
     }
 
 protected:
@@ -213,6 +214,23 @@ TEST_F(ProxyTest, sync_OperationWithNoArguments) {
 TEST_F(ProxyTest, subscribeToAttribute) {
     testSubscribeToAttribute();
 }
+
+TEST_F(ProxyTest, subscribeToBroadcastWithInvalidPartitionsReturnsError) {
+    tests::testProxy* testProxy = createFixture(false);
+    auto subscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+
+    EXPECT_CALL(*subscriptionListener, onError(A<const exceptions::JoynrRuntimeException&>()));
+
+    std::shared_ptr<Future<std::string>> subscriptionFuture = testProxy->subscribeToLocationBroadcast(
+            subscriptionListener,
+            subscriptionQos,
+            { "invalid / partition" }
+    );
+    std::string subscriptionId;
+    EXPECT_THROW(subscriptionFuture->get(subscriptionId), exceptions::JoynrRuntimeException);
+}
+
 
 TEST_F(ProxyTest, versionIsSetCorrectly) {
     std::uint32_t expectedMajorVersion = 47;

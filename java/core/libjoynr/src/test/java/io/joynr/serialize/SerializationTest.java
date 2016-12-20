@@ -22,6 +22,20 @@ package io.joynr.serialize;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.RejectedExecutionException;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.DiscoveryException;
@@ -40,16 +54,9 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.SubscriptionQos;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.RejectedExecutionException;
-
 import joynr.BroadcastSubscriptionRequest;
 import joynr.JoynrMessage;
+import joynr.MulticastPublication;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.OneWayRequest;
@@ -68,10 +75,10 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testTypes.ComplexTestType2;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.GlobalDiscoveryEntry;
-import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.GpsPosition;
+import joynr.types.ProviderQos;
 import joynr.types.TestTypes.TEnum;
 import joynr.types.TestTypes.TEverythingExtendedStruct;
 import joynr.types.TestTypes.TEverythingMap;
@@ -81,19 +88,11 @@ import joynr.types.TestTypes.TStruct;
 import joynr.types.TestTypes.Vowel;
 import joynr.types.TestTypes.Word;
 import joynr.types.Version;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * This test sends two messages in each direction, containing different TTL values. One with a very high TTL value to
@@ -411,6 +410,28 @@ public class SerializationTest {
     }
 
     @Test
+    public void serializeJoynrMessageWithoutTransientReceivedFromGlobalTest() throws Exception {
+
+        ExpiryDate expirationDate = ExpiryDate.fromRelativeTtl(1000);
+        String payload = "/67589??8zhkbv??????????L??Lkj??jhljvhl??????/??????";
+        JoynrMessage message = new JoynrMessage();
+        String type = "TESTTYPE";
+        message.setType(type);
+        message.setExpirationDate(expirationDate);
+        message.setPayload(payload);
+
+        message.setReceivedFromGlobal(true);
+        Assert.assertTrue(message.isReceivedFromGlobal());
+
+        String writeValueAsString = objectMapper.writeValueAsString(message);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(writeValueAsString, JoynrMessage.class);
+
+        Assert.assertEquals(message, receivedMessage);
+        Assert.assertFalse(receivedMessage.isReceivedFromGlobal());
+    }
+
+    @Test
     public void serialzeAndDeserializeTestGpsLocation() throws JsonGenerationException, JsonMappingException,
                                                        IOException {
         GpsLocation gps1 = new GpsLocation();
@@ -496,6 +517,32 @@ public class SerializationTest {
 
         Assert.assertEquals(broadcastSubscription, receivedbroadcastSubscription);
 
+    }
+
+    @Test
+    public void serializeMulticast() throws JsonGenerationException, JsonMappingException, IOException {
+
+        Object response = new GpsPosition(49.0065, 11.65);
+        String multicastId = "1234";
+        MulticastPublication publication = new MulticastPublication(Arrays.asList(response), multicastId);
+
+        String writeValueAsString = objectMapper.writeValueAsString(publication);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_MULTICAST;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        System.out.println(writeValueAsString);
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        MulticastPublication receivedPublication = objectMapper.readValue(receivedMessage.getPayload(),
+                                                                          MulticastPublication.class);
+        Assert.assertEquals(publication, receivedPublication);
     }
 
     @Test

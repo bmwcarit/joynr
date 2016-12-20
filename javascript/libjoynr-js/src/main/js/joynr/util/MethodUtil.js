@@ -19,82 +19,62 @@
  * #L%
  */
 
-define(
-        "joynr/util/MethodUtil",
-        [ "joynr/util/Typing"
-        ],
-        function(Typing) {
-            var MethodUtil = {};
+define("joynr/util/MethodUtil", [
+    "joynr/util/Typing",
+    "joynr/util/UtilInternal"
+], function(Typing, Util) {
+    var MethodUtil = {};
 
-            MethodUtil.transformParameterMapToArray =
-                    function transformParameterMapToArray(operationArguments, parameter) {
-                        var argument, argumentName, argumentValue, argumentId, argumentType, transformedParameterList =
-                                {
-                                    params : [],
-                                    paramDatatypes : []
-                                };
+    MethodUtil.transformParameterMapToArray =
+            function transformParameterMapToArray(operationArguments, parameters) {
+                var argument, objectType, argumentId, argumentValue, params = [], paramDatatypes =
+                        [];
 
-                        // check if number of parameters in signature matches number of arguments
-                        if (Object.keys(parameter).length !== Object.keys(operationArguments).length) {
-                            throw new Error("signature does not match: wrong number of arguments");
-                        }
+                // check if number of parameters in signature matches number of arguments
+                if (Object.keys(parameters).length !== Object.keys(operationArguments).length) {
+                    throw new Error("signature does not match: wrong number of arguments");
+                }
 
-                        for (argumentId in parameter) {
-                            if (parameter.hasOwnProperty(argumentId)) {
-                                // check if there's a parameter with the given name
-                                argument = parameter[argumentId];
+                for (argumentId = 0; argumentId < parameters.length; argumentId++) {
+                    // check if there's a parameters with the given name
+                    argument = parameters[argumentId];
+                    // retrieve the argument value
+                    argumentValue = operationArguments[argument.name];
+                    // if argument value is not given by the application
+                    if (Util.checkNullUndefined(argumentValue)) {
+                        throw new Error("Cannot call operation with nullable value \""
+                            + argumentValue
+                            + "\" of argument \""
+                            + argument.name
+                            + "\"");
+                    }
+                    // check if the parameter type matches the type of the argument value
+                    /*jslint nomen: true */// allow dangling _ in variable once
+                    objectType =
+                            argumentValue.constructor === Array
+                                    ? "Array"
+                                    : (argumentValue._typeName || typeof argumentValue);
+                    /*jslint nomen: false */
+                    if (argument.javascriptType !== objectType) {
+                        // signature does not match
+                        throw new Error("Signature does not match: type \""
+                            + objectType
+                            + "\" of argument \""
+                            + argument.name
+                            + "\" does not match with expected type \""
+                            + argument.javascriptType
+                            + "\"");
+                    }
 
-                                argumentName = argument.name;
-                                argumentType = argument.type;
+                    paramDatatypes.push(argument.type);
+                    params.push(argumentValue);
+                }
+                return {
+                    paramDatatypes : paramDatatypes,
+                    params : params
+                };
+            };
 
-                                // if there's no parameter with the given name
-                                if (!argumentType) {
-                                    // signature does not match
-                                    throw new Error(
-                                            "signature does not match: type for argument \""
-                                                + argumentName
-                                                + "\" missing");
-                                }
+    return MethodUtil;
 
-                                // retrieve the argument value
-                                argumentValue = operationArguments[argumentName];
-
-                                // if argument value is not given by the application
-                                if (argumentValue === undefined || argumentValue === null) {
-                                    throw new Error("Cannot call operation with nullable value \""
-                                        + argumentValue
-                                        + "\" of argument \""
-                                        + argumentName
-                                        + "\"");
-                                }
-
-                                // check if the parameter type matches the type of the argument value
-                                /*jslint nomen: true */// allow dangling _ in variable once
-                                var objectType =
-                                        argumentValue._typeName
-                                            || Typing.getObjectType(argumentValue);
-                                /*jslint nomen: false */
-                                if (Typing.translateJoynrTypeToJavascriptType(argumentType) !== objectType) {
-                                    // signature does not match
-                                    throw new Error("Signature does not match: type \""
-                                        + objectType
-                                        + "\" of argument \""
-                                        + argumentName
-                                        + "\" does not match with expected type \""
-                                        + Typing.translateJoynrTypeToJavascriptType(argumentType)
-                                        + "\"");
-                                }
-
-                                // we found a matching parameter/argument-pair that has the same name and
-                                // type, let's add it to our qualified operation
-                                // argument object for later use in serialization
-                                transformedParameterList.paramDatatypes.push(argumentType);
-                                transformedParameterList.params.push(argumentValue);
-                            }
-                        }
-                        return transformedParameterList;
-                    };
-
-            return MethodUtil;
-
-        });
+});

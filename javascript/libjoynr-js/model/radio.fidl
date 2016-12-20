@@ -69,6 +69,8 @@ interface Radio {
 
 	attribute StringMap stringMapAttribute
 
+	attribute ComplexStructMap complexStructMapAttribute
+
 	attribute Int32 failingSyncAttribute readonly
 
 	attribute Int32 failingAsyncAttribute readonly
@@ -127,6 +129,12 @@ interface Radio {
 		}
 	}
 
+	method  methodWithComplexMap {
+		in {
+			ComplexStructMap complexStructMap
+		}
+	}
+
 	method operationWithEnumsAsInputAndOutput {
 		in {
 			Country enumInput
@@ -166,6 +174,15 @@ interface Radio {
 		in {
 			String broadcastName
 			UInt32 times
+		}
+	}
+
+	method triggerBroadcastsWithPartitions {
+		in {
+			String broadcastName
+			UInt32 times
+			String[] partitions
+			Boolean hierarchicBroadcast //if set to true, for each partition level a broadcast is fired
 		}
 	}
 

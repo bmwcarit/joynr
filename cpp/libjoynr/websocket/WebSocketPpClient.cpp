@@ -38,6 +38,7 @@ WebSocketPpClient::WebSocketPpClient(const WebSocketSettings& wsSettings,
           isRunning(true),
           reconnectTimer(ioService),
           state(State::Disconnected),
+          performingInitialConnect(true),
           address(),
           reconnectSleepTimeMs(wsSettings.getReconnectSleepTimeMs()),
           sender(nullptr),
@@ -83,6 +84,7 @@ void WebSocketPpClient::connect(system::RoutingTypes::WebSocketAddress address)
 {
     this->address = std::move(address);
 
+    performingInitialConnect = true;
     reconnect();
 }
 
@@ -167,9 +169,19 @@ void WebSocketPpClient::onConnectionOpened(ConnectionHandle hdl)
     sender->setConnectionHandle(connection);
     state = State::Connected;
     JOYNR_LOG_DEBUG(logger, "connection established");
-    if (onConnectionOpenedCallback) {
-        onConnectionOpenedCallback();
+
+    if (performingInitialConnect) {
+        if (onConnectionOpenedCallback) {
+            onConnectionOpenedCallback();
+        }
+    } else {
+        if (onConnectionReestablishedCallback) {
+            onConnectionReestablishedCallback();
+        }
     }
+
+    performingInitialConnect = false;
+
     if (!isRunning) {
         disconnect();
     }
@@ -209,6 +221,11 @@ void WebSocketPpClient::onConnectionFailed(ConnectionHandle hdl)
 void WebSocketPpClient::registerConnectCallback(std::function<void()> callback)
 {
     onConnectionOpenedCallback = std::move(callback);
+}
+
+void WebSocketPpClient::registerReconnectCallback(std::function<void()> callback)
+{
+    onConnectionReestablishedCallback = std::move(callback);
 }
 
 void WebSocketPpClient::registerDisconnectCallback(std::function<void()> callback)

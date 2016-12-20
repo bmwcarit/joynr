@@ -22,9 +22,14 @@
 var log = require("./logging.js").log;
 var prettyLog = require("./logging.js").prettyLog;
 var joynr = require("joynr");
+var LocalStorage = require("node-localstorage").LocalStorage;
+var persistencyLocation = "./radioLocalStorageConsumer";
+var localStorage = new LocalStorage(persistencyLocation);
 var RadioStation;
 var Country;
-var currentStationSubscriptionId;
+var currentStationSubscriptionId = localStorage.getItem("currentStationSubscriptionId");
+var multicastSubscriptionId = localStorage.getItem("multicastSubscriptionId");
+var multicastPSubscriptionId = localStorage.getItem("multicastPSubscriptionId");
 var subscriptionQosOnChange;
 
 var runDemo = function(radioProxy) {
@@ -44,19 +49,19 @@ var runDemo = function(radioProxy) {
             }
         );
     }).catch(function(error) {
-        prettyLog("RPC: radioProxy.addFavoriteStation(radioStation) failed: " + error);
+        prettyLog("RPC: radioProxy.addFavoriteStation(radioStation) failed: " + JSON.stringify(error));
     }).then(function() {
         prettyLog("RPC: radioProxy.addFavoriteStation(radioStation) returned");
         prettyLog("radioProxy.shuffleStations()...");
         return radioProxy.shuffleStations();
     }).catch(function(error) {
-        prettyLog("RPC: radioProxy.shuffleStations() failed: " + error);
+        prettyLog("RPC: radioProxy.shuffleStations() failed: " + JSON.stringify(error));
     }).then(function(value) {
         prettyLog("RPC: radioProxy.shuffleStations() returned");
         prettyLog("ATTRIBUTE GET: currentStation after shuffle...");
         return radioProxy.currentStation.get();
     }).catch(function(error) {
-        prettyLog("ATTRIBUTE GET: currentStation failed: " + error);
+        prettyLog("ATTRIBUTE GET: currentStation failed: " + JSON.stringify(error));
     }).then(function(value) {
         prettyLog("ATTRIBUTE GET: currentStation returned: " + JSON.stringify(value));
     });
@@ -95,9 +100,19 @@ var runInteractiveConsole =
                     description : "subscribe to current station",
                     options : {}
                 },
+                MULTICAST : {
+                    value : "subscribeMulticast",
+                    description : "subscribe to weak signal multicast",
+                    options : {}
+                },
+                MULTICASTP : {
+                    value : "subscribeMulticastP",
+                    description : "subscribe to weak signal multicast with partition \"GERMANY\"",
+                    options : {}
+                },
                 UNSUBSCRIBE : {
                     value : "unsubscribe",
-                    description : "unsubscribe from current station",
+                    description : "unsubscribe from all subscriptions",
                     options : {}
                 },
                 GET_CURRENT_STATION : {
@@ -110,6 +125,52 @@ var runInteractiveConsole =
             var showHelp = require("./console_common.js");
             rl.on('line', function(line) {
                 var input = line.trim().split(' ');
+
+                function subscribeHelper(settings) {
+                    var partitionsString = settings.partitions ? JSON.stringify(settings.partitions) : "";
+                    var onReceiveCallback = function onReceiveCallback(value) {
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.onReceive: "
+                                  + JSON.stringify(value));
+                    };
+
+                    var onErrorCallback = function onErrorCallback(error) {
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.onError: " + error);
+                    };
+
+                    var parameters = {
+                        subscriptionQos : subscriptionQosOnChange,
+                        onReceive : onReceiveCallback,
+                        onError : onErrorCallback,
+                        partitions : settings.partitions
+                    };
+
+                    if (settings.subscriptionId !== undefined) {
+                        parameters.subscriptionId = settings.subscriptionId;
+                    }
+                    return radioProxy[settings.subscribeToName].subscribe(parameters).then(function(subscriptionId) {
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.done. "
+                                  + "Subscription ID: "+ subscriptionId);
+                        return subscriptionId;
+                    }).catch(function(error) {
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.failed: " + JSON.stringify(error));
+                        return error;
+                    });
+                }
+                function unsubscribeHelper(settings) {
+                    var partitionsString = settings.partitions ? JSON.stringify(settings.partitions) : "";
+                    return radioProxy[settings.subscribeToName].unsubscribe({
+                        subscriptionId : settings.subscriptionId
+                    }).then(function() {
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".unsubscribe.done. "
+                                  + "Subscription ID: " + settings.subscriptionId);
+                        return null;
+                    }).catch(function(error) {
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".unsubscribe.fail. "
+                                  + "Subscription ID: " + settings.subscriptionId + " ERROR: " + error
+                        );
+                        return null;
+                    });
+                }
                 switch (input[0]) {
                     case MODES.HELP.value:
                         showHelp(MODES);
@@ -136,7 +197,7 @@ var runInteractiveConsole =
                                 function(error) {
                                     prettyLog("RPC: radioProxy.addFavoriteStation("
                                         + JSON.stringify(newFavoriteStation)
-                                        + ") failed."
+                                        + ") failed: "
                                         + error);
                                     return error;
                                 });
@@ -146,48 +207,65 @@ var runInteractiveConsole =
                             prettyLog("RPC: radioProxy.shuffleStations returned. ");
                             return null;
                         }).catch(function(error) {
-                            prettyLog("RPC: radioProxy.shuffleStations failed: " + error);
+                            prettyLog("RPC: radioProxy.shuffleStations failed: " + JSON.stringify(error));
                             return error;
                        });
                         break;
                     case MODES.SUBSCRIBE.value:
-                        if (currentStationSubscriptionId === undefined) {
-                            var currentStationOnReceiveCallback = function currentStationOnReceiveCallback(value) {
-                                prettyLog("radioProxy.currentStation.subscribe.onReceive",
-                                          JSON.stringify(value));
-                            };
-                            var currentStationOnErrorCallback = function currentStationOnErrorCallback() {
-                                prettyLog("radioProxy.currentStation.subscribe.onPublicationMissed",
-                                          "publication missed");
-                            };
-
-                            radioProxy.currentStation.subscribe({
-                                subscriptionQos : subscriptionQosOnChange,
-                                onReceive : currentStationOnReceiveCallback,
-                                onError : currentStationOnErrorCallback
-                            }).then(function(subscriptionId) {
-                                currentStationSubscriptionId = subscriptionId;
-                                prettyLog("radioProxy.currentStation.subscribe.done",
-                                          "Subscription ID: "+ subscriptionId);
-                                return subscriptionId;
-                            }).catch(function(error) {
-                                prettyLog("radioProxy.currentStation.subscribe.fail", error);
-                                return error;
-                            });
-                        }
+                        subscribeHelper({
+                            subscribeToName : "currentStation",
+                            subscriptionId : currentStationSubscriptionId
+                        }).then(function(suscriptionId) {
+                            currentStationSubscriptionId = suscriptionId;
+                            localStorage.setItem("currentStationSubscriptionId", suscriptionId);
+                        });
+                        break;
+                    case MODES.MULTICAST.value:
+                        subscribeHelper({
+                            subscribeToName : "weakSignal",
+                            subscriptionId : multicastSubscriptionId
+                        }).then(function(suscriptionId) {
+                            multicastSubscriptionId = suscriptionId;
+                            localStorage.setItem("multicastSubscriptionId", suscriptionId);
+                        });
+                        break;
+                    case MODES.MULTICASTP.value:
+                        subscribeHelper({
+                            subscribeToName : "weakSignal",
+                            partitions: [ "GERMANY" ],
+                            subscriptionId : multicastPSubscriptionId
+                        }).then(function(suscriptionId) {
+                            multicastPSubscriptionId = suscriptionId;
+                            localStorage.setItem("multicastPSubscriptionId", suscriptionId);
+                        });
                         break;
                     case MODES.UNSUBSCRIBE.value:
-                        if (currentStationSubscriptionId !== undefined) {
-                            radioProxy.currentStation.unsubscribe({
-                                "subscriptionId" : currentStationSubscriptionId
+                        if (currentStationSubscriptionId !== undefined && currentStationSubscriptionId !== null) {
+                            unsubscribeHelper({
+                                subscribeToName: "currentStation",
+                                subscriptionId: currentStationSubscriptionId
                             }).then(function() {
-                                prettyLog("radioProxy.currentStation.unsubscribe.done",
-                                          "Subscription ID: " + currentStationSubscriptionId);
+                                localStorage.removeItem(currentStationSubscriptionId);
                                 currentStationSubscriptionId = undefined;
-                            }).catch(function(error) {
-                                prettyLog("radioProxy.currentStation.unsubscribe.fail",
-                                          "Subscription ID: " + currentStationSubscriptionId + " ERROR" + error
-                                );
+                            });
+                        }
+                        if (multicastSubscriptionId !== undefined && multicastSubscriptionId !== null) {
+                            unsubscribeHelper({
+                                subscribeToName: "weakSignal",
+                                subscriptionId: multicastSubscriptionId
+                            }).then(function() {
+                                localStorage.removeItem(multicastSubscriptionId);
+                                multicastSubscriptionId = undefined;
+                            });
+                        }
+                        if (multicastPSubscriptionId !== undefined && multicastPSubscriptionId !== null) {
+                            unsubscribeHelper({
+                                subscribeToName: "weakSignal",
+                                partitions: [ "GERMANY" ],
+                                subscriptionId: multicastPSubscriptionId
+                            }).then(function() {
+                                localStorage.removeItem(multicastPSubscriptionId);
+                                multicastPSubscriptionId = undefined;
                             });
                         }
                         break;
@@ -226,8 +304,14 @@ log("domain: " + domain);
 
 var provisioning = require("./provisioning_common.js");
 
+provisioning.persistency = {
+    //clearPersistency : true,
+    location : persistencyLocation
+};
+
 if (process.env.runtime !== undefined) {
     if (process.env.runtime === "inprocess") {
+        provisioning.brokerUri = process.env.brokerUri;
         provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl;
         provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
         joynr.selectRuntime("inprocess");

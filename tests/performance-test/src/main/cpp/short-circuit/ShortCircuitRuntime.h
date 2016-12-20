@@ -111,7 +111,7 @@ public:
     template <class TIntfProxy>
     ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
     {
-        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(proxyFactory.get(),
+        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(*proxyFactory,
                                                                          &requestCallerDirectory,
                                                                          *discoveryProxy,
                                                                          domain,

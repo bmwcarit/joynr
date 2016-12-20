@@ -61,7 +61,7 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 
 namespace joynr
 {
-class SubscriptionBroadcastListener;
+class UnicastBroadcastListener;
 class SubscriptionAttributeListener;
 } // namespace joynr
 
@@ -96,7 +96,7 @@ public:
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
 							const «attribute.typeName»&
-					)> onSuccess,
+					)>&& onSuccess,
 					std::function<void(
 							const std::shared_ptr<exceptions::ProviderRuntimeException>&
 					)> onError
@@ -112,7 +112,7 @@ public:
 			 */
 			virtual void set«attributeName.toFirstUpper»(
 					const «attribute.typeName»& «attributeName»,
-					std::function<void()> onSuccess,
+					std::function<void()>&& onSuccess,
 					std::function<void(
 							const std::shared_ptr<exceptions::ProviderRuntimeException>&
 					)> onError
@@ -145,11 +145,11 @@ public:
 				«ENDIF»
 				«IF !method.fireAndForget»
 					«IF method.outputParameters.empty»
-						std::function<void()> onSuccess,
+						std::function<void()>&& onSuccess,
 					«ELSE»
 						std::function<void(
 								«outputTypedParamList»
-						)> onSuccess,
+						)>&& onSuccess,
 					«ENDIF»
 					std::function<void(
 							const std::shared_ptr<exceptions::JoynrException>&
@@ -177,14 +177,14 @@ public:
 	 * @param broadcastName The name of the broadcast for which a listener should be registered
 	 * @param broadcastListener The listener to be registered
 	 */
-	void registerBroadcastListener(const std::string& broadcastName, joynr::SubscriptionBroadcastListener* broadcastListener) override;
+	void registerBroadcastListener(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener) override;
 
 	/**
 	 * @brief Unregister a broadcast listener
 	 * @param broadcastName The name of the broadcast for which a listener should be unregistered
 	 * @param broadcastListener The listener to be unregistered
 	 */
-	void unregisterBroadcastListener(const std::string& broadcastName, joynr::SubscriptionBroadcastListener* broadcastListener) override;
+	void unregisterBroadcastListener(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener) override;
 
 	/**
 	 * @brief Get the version of the provider instance

@@ -183,10 +183,8 @@ define(
                                                 && that.valueChanged instanceof Function) {
                                                 that.valueChanged(value);
                                             }
-                                        }).then(function() {
-                                    return [];
-                                });
-
+                                            return [];
+                                        });
                             };
 
                     /**

@@ -66,6 +66,7 @@ import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
+import joynr.BroadcastFilterParameters;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OneWayRequest;
 import joynr.PeriodicSubscriptionQos;
@@ -144,7 +145,8 @@ public class ConnectorTest {
 
         @JoynrRpcBroadcast(broadcastName = "testBroadcast")
         abstract Future<String> subscribeToTestBroadcast(TestBroadcastListener subscriptionListener,
-                                                         OnChangeSubscriptionQos subscriptionQos);
+                                                         OnChangeSubscriptionQos subscriptionQos,
+                                                         BroadcastFilterParameters filterParameters);
 
         abstract void unsubscribeFromTestBroadcast(String subscriptionId);
 
@@ -200,9 +202,9 @@ public class ConnectorTest {
             AttributeSubscriptionListener<GpsPosition> listener = new AttributeSubscriptionAdapter<GpsPosition>();
             Object[] args = new Object[]{ listener, subscriptionQos, subscriptionId };
             Method method = LocalisationSubscriptionInterface.class.getDeclaredMethod("subscribeToGPSPosition",
+                                                                                      String.class,
                                                                                       AttributeSubscriptionListener.class,
-                                                                                      SubscriptionQos.class,
-                                                                                      String.class);
+                                                                                      SubscriptionQos.class);
             AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method, args, future);
             connector.executeSubscriptionMethod(attributeSubscription);
             verify(subscriptionManager, times(1)).registerAttributeSubscription(eq(fromParticipantId),
@@ -371,9 +373,10 @@ public class ConnectorTest {
         try {
             Method method = TestBroadcastInterface.class.getDeclaredMethod("subscribeToTestBroadcast",
                                                                            TestBroadcastListener.class,
-                                                                           OnChangeSubscriptionQos.class);
+                                                                           OnChangeSubscriptionQos.class,
+                                                                           BroadcastFilterParameters.class);
             BroadcastSubscribeInvocation invocation = new BroadcastSubscribeInvocation(method, new Object[]{ listener,
-                    subscriptionQos }, null);
+                    subscriptionQos, new BroadcastFilterParameters() }, null);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerBroadcastSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,

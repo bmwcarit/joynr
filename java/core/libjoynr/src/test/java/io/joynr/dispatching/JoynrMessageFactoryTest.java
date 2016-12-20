@@ -22,11 +22,14 @@ package io.joynr.dispatching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,11 +38,16 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
+
 import io.joynr.common.ExpiryDate;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
+import io.joynr.pubsub.SubscriptionQos;
 import joynr.JoynrMessage;
+import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionRequest;
 import joynr.PeriodicSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
@@ -53,6 +61,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class JoynrMessageFactoryTest {
     private static final long TTL = 1000;
+    private static final long MAX_ALLOWED_EXPIRY_DATE_DIFF_MS = 500;
     JoynrMessageFactory joynrMessageFactory;
     private String fromParticipantId;
     private String toParticipantId;
@@ -68,27 +77,33 @@ public class JoynrMessageFactoryTest {
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException {
-
         fromParticipantId = "sender";
         toParticipantId = "receiver";
-        Injector injector = Guice.createInjector(new JsonMessageSerializerModule(), new AbstractModule() {
 
-            @Override
-            protected void configure() {
-                requestStaticInjection(Request.class);
-                Multibinder<JoynrMessageProcessor> joynrMessageProcessorMultibinder = Multibinder.newSetBinder(binder(),
-                                                                                                               new TypeLiteral<JoynrMessageProcessor>() {
-                                                                                                               });
-                joynrMessageProcessorMultibinder.addBinding().toInstance(new JoynrMessageProcessor() {
-                    @Override
-                    public JoynrMessage process(JoynrMessage joynrMessage) {
-                        joynrMessage.getHeader().put("test", "test");
-                        return joynrMessage;
-                    }
-                });
-            }
+        Injector injector = Guice.createInjector(new JoynrPropertiesModule(new Properties()),
+                                                 new JsonMessageSerializerModule(),
+                                                 new AbstractModule() {
 
-        });
+                                                     @Override
+                                                     protected void configure() {
+                                                         requestStaticInjection(Request.class);
+                                                         Multibinder<JoynrMessageProcessor> joynrMessageProcessorMultibinder = Multibinder.newSetBinder(binder(),
+                                                                                                                                                        new TypeLiteral<JoynrMessageProcessor>() {
+                                                                                                                                                        });
+                                                         joynrMessageProcessorMultibinder.addBinding()
+                                                                                         .toInstance(new JoynrMessageProcessor() {
+                                                                                             @Override
+                                                                                             public JoynrMessage process(JoynrMessage joynrMessage) {
+                                                                                                 joynrMessage.getHeader()
+                                                                                                             .put("test",
+                                                                                                                  "test");
+                                                                                                 return joynrMessage;
+                                                                                             }
+                                                                                         });
+                                                     }
+
+                                                 });
+
         objectMapper = injector.getInstance(ObjectMapper.class);
 
         payload = "payload";
@@ -110,6 +125,15 @@ public class JoynrMessageFactoryTest {
         joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
     }
 
+    public static void assertExpiryDateEquals(long expectedValue, JoynrMessage message) {
+        String headerExpiryString = message.getHeaderValue(JoynrMessage.HEADER_NAME_EXPIRY_DATE);
+        long headerExpiryValue = Long.parseLong(headerExpiryString);
+        long diff = Math.abs(expectedValue - headerExpiryValue);
+        assertTrue("ExpiryDate=" + headerExpiryString + " differs " + diff + "ms (more than "
+                           + MAX_ALLOWED_EXPIRY_DATE_DIFF_MS + "ms) from the expected value=" + expectedValue,
+                   (diff <= MAX_ALLOWED_EXPIRY_DATE_DIFF_MS));
+    }
+
     @Test
     public void createRequest() {
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
@@ -121,10 +145,7 @@ public class JoynrMessageFactoryTest {
         assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
         assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
 
-        String expiryDateString = String.valueOf(expiryDate.getValue());
-        String headerExpiry = message.getHeaderValue(JoynrMessage.HEADER_NAME_EXPIRY_DATE);
-        assertEquals(expiryDateString.substring(0, expiryDateString.length() - 4),
-                     headerExpiry.substring(0, headerExpiry.length() - 4));
+        assertExpiryDateEquals(expiryDate.getValue(), message);
         assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
     }
@@ -137,6 +158,8 @@ public class JoynrMessageFactoryTest {
                                                                  toParticipantId,
                                                                  request,
                                                                  customMessagingQos);
+        expiryDate = DispatcherUtils.convertTtlToExpirationDate(customMessagingQos.getRoundTripTtl_ms());
+        assertExpiryDateEquals(expiryDate.getValue(), message);
         assertEquals(String.valueOf(MessagingQosEffort.BEST_EFFORT),
                      message.getHeaderValue(JoynrMessage.HEADER_NAME_EFFORT));
     }
@@ -153,6 +176,7 @@ public class JoynrMessageFactoryTest {
                                                                  request,
                                                                  messagingQos);
         assertEquals(JoynrMessage.MESSAGE_TYPE_REQUEST, message.getType());
+        assertExpiryDateEquals(expiryDate.getValue(), message);
 
         final String expectedCustomHeaderName = JoynrMessage.MESSAGE_CUSTOM_HEADER_PREFIX + headerName;
         assertTrue(message.getHeader().containsKey(expectedCustomHeaderName));
@@ -171,10 +195,7 @@ public class JoynrMessageFactoryTest {
         assertEquals(JoynrMessage.MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
         assertEquals(fromParticipantId, joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
         assertEquals(toParticipantId, joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
-        String expiryDateString = String.valueOf(expiryDate.getValue());
-        String headerExpiryString = joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_EXPIRY_DATE);
-        assertEquals(expiryDateString.substring(0, expiryDateString.length() - 4),
-                     headerExpiryString.substring(0, headerExpiryString.length() - 4));
+        assertExpiryDateEquals(expiryDate.getValue(), joynrMessage);
         assertNotNull(joynrMessage.getPayload());
         assertNotNull(joynrMessage.getCreatorUserId());
     }
@@ -192,6 +213,7 @@ public class JoynrMessageFactoryTest {
                                                                             messagingQos);
         assertNotNull(message);
         assertEquals(JoynrMessage.MESSAGE_TYPE_ONE_WAY, message.getType());
+        assertExpiryDateEquals(expiryDate.getValue(), message);
         final String expectedCustomHeaderName = JoynrMessage.MESSAGE_CUSTOM_HEADER_PREFIX + headerName;
         assertTrue(message.getHeader().containsKey(expectedCustomHeaderName));
         Map<String, String> customHeaders = message.getCustomHeaders();
@@ -209,6 +231,7 @@ public class JoynrMessageFactoryTest {
         assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
         assertEquals(JoynrMessage.CONTENT_TYPE_APPLICATION_JSON,
                      message.getHeaderValue(JoynrMessage.HEADER_NAME_CONTENT_TYPE));
+        assertExpiryDateEquals(expiryDate.getValue(), message);
 
         assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
@@ -219,11 +242,11 @@ public class JoynrMessageFactoryTest {
         JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                              toParticipantId,
                                                                              subscriptionRequest,
-                                                                             messagingQos,
-                                                                             false);
+                                                                             messagingQos);
         assertEquals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
         assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
         assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
+        assertExpiryDateEquals(expiryDate.getValue(), message);
 
         assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
@@ -238,6 +261,7 @@ public class JoynrMessageFactoryTest {
         assertEquals(JoynrMessage.MESSAGE_TYPE_PUBLICATION, message.getType());
         assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
         assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
+        assertExpiryDateEquals(expiryDate.getValue(), message);
 
         assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
@@ -252,4 +276,44 @@ public class JoynrMessageFactoryTest {
         assertNotNull(joynrMessage.getHeader().get("test"));
         assertEquals("test", joynrMessage.getHeader().get("test"));
     }
+
+    @Test
+    public void testCreateMulticastMessage() {
+        String multicastId = "multicastId";
+        MulticastPublication multicastPublication = new MulticastPublication(Collections.emptyList(), multicastId);
+
+        JoynrMessage joynrMessage = joynrMessageFactory.createMulticast(fromParticipantId,
+                                                                        multicastPublication,
+                                                                        messagingQos);
+
+        assertNotNull(joynrMessage);
+        assertExpiryDateEquals(expiryDate.getValue(), joynrMessage);
+        assertEquals(fromParticipantId, joynrMessage.getFrom());
+        assertEquals(multicastId, joynrMessage.getTo());
+        assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
+        assertTrue(joynrMessage.getPayload().contains(MulticastPublication.class.getName()));
+    }
+
+    @Test
+    public void testCreateMulticastSubscriptionRequest() {
+        String multicastId = "multicastId";
+        String subscriptionId = "subscriptionId";
+        String multicastName = "multicastName";
+        SubscriptionQos subscriptionQos = mock(SubscriptionQos.class);
+
+        MulticastSubscriptionRequest multicastSubscriptionRequest = new MulticastSubscriptionRequest(multicastId,
+                                                                                                     subscriptionId,
+                                                                                                     multicastName,
+                                                                                                     subscriptionQos);
+
+        JoynrMessage result = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
+                                                                            toParticipantId,
+                                                                            multicastSubscriptionRequest,
+                                                                            messagingQos);
+
+        assertNotNull(result);
+        assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, result.getType());
+        assertExpiryDateEquals(expiryDate.getValue(), result);
+    }
+
 }

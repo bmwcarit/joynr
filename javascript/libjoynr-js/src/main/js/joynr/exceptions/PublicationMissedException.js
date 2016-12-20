@@ -21,11 +21,12 @@ define(
         "joynr/exceptions/PublicationMissedException",
         [
             "joynr/types/TypeRegistrySingleton",
+            "joynr/util/Typing",
             "joynr/util/UtilInternal",
             "joynr/exceptions/JoynrRuntimeException",
             "joynr/system/LoggerFactory"
         ],
-        function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
+        function(TypeRegistrySingleton, Typing, Util, JoynrRuntimeException, LoggerFactory) {
             var defaultSettings;
 
             /**
@@ -59,7 +60,7 @@ define(
                 var log = LoggerFactory.getLogger("joynr.exceptions.PublicationMissedException");
                 var runtimeException = new JoynrRuntimeException(settings);
 
-                Util.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+                Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
 
                 /**
                  * Used for serialization.

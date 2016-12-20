@@ -18,6 +18,8 @@
  */
 #include "MqttReceiver.h"
 
+#include <chrono>
+
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -29,12 +31,11 @@ INIT_LOGGER(MqttReceiver);
 MqttReceiver::MqttReceiver(const MessagingSettings& settings,
                            const std::string& channelIdForMqttTopic,
                            const std::string& receiverId)
-        : channelCreatedSemaphore(new joynr::Semaphore(0)),
-          isChannelCreated(false),
-          channelIdForMqttTopic(channelIdForMqttTopic),
+        : channelIdForMqttTopic(channelIdForMqttTopic),
           globalClusterControllerAddress(),
           receiverId(receiverId),
-          mosquittoSubscriber(settings, globalClusterControllerAddress, channelCreatedSemaphore)
+          channelCreated(false),
+          mosquittoSubscriber(settings, globalClusterControllerAddress)
 {
     std::string brokerUri =
             "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
@@ -61,16 +62,6 @@ void MqttReceiver::startReceiveQueue()
     mosquittoSubscriber.start();
 }
 
-void MqttReceiver::waitForReceiveQueueStarted()
-{
-    JOYNR_LOG_DEBUG(logger, "waiting for ReceiveQueue to be started.");
-
-    if (!isChannelCreated) {
-        channelCreatedSemaphore->wait();
-        isChannelCreated = true;
-    }
-}
-
 void MqttReceiver::stopReceiveQueue()
 {
     JOYNR_LOG_DEBUG(logger, "stopReceiveQueue");
@@ -88,10 +79,25 @@ bool MqttReceiver::tryToDeleteChannel()
     return true;
 }
 
+bool MqttReceiver::isConnected()
+{
+    return mosquittoSubscriber.isSubscribedToChannelTopic();
+}
+
 void MqttReceiver::registerReceiveCallback(
         std::function<void(const std::string&)> onTextMessageReceived)
 {
     mosquittoSubscriber.registerReceiveCallback(onTextMessageReceived);
+}
+
+void MqttReceiver::subscribeToTopic(const std::string& topic)
+{
+    mosquittoSubscriber.subscribeToTopic(topic);
+}
+
+void MqttReceiver::unsubscribeFromTopic(const std::string& topic)
+{
+    mosquittoSubscriber.unsubscribeFromTopic(topic);
 }
 
 } // namespace joynr

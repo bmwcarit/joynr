@@ -76,6 +76,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.SystemServicesSettings;
@@ -261,6 +262,24 @@ public class ProxyTest {
                                               (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
                                               // eq(toDiscoveryEntries),
                                               Mockito.any(BroadcastSubscribeInvocation.class));
+
+        Mockito.doAnswer(new Answer<Object>() {
+                   @Override
+                   public Object answer(InvocationOnMock invocation) {
+                       Object[] args = invocation.getArguments();
+                       MulticastSubscribeInvocation request = (MulticastSubscribeInvocation) args[2];
+                       if (request.getSubscriptionId() == null) {
+                           request.setSubscriptionId(UUID.randomUUID().toString());
+
+                       }
+                       request.getFuture().resolve(request.getSubscriptionId());
+                       return null;
+                   }
+               })
+               .when(subscriptionManager)
+               .registerMulticastSubscription(any(String.class),
+                                              (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                              Mockito.any(MulticastSubscribeInvocation.class));
 
         discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         messagingQos = new MessagingQos();
@@ -492,13 +511,13 @@ public class ProxyTest {
 
         proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class), subscriptionQos);
 
-        ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
+        ArgumentCaptor<MulticastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(MulticastSubscribeInvocation.class);
 
-        verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
+        verify(subscriptionManager, times(1)).registerMulticastSubscription(eq(fromParticipantId),
                                                                             (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
                                                                             // eq(toDiscoveryEntries),
                                                                             subscriptionRequest.capture());
-        assertEquals("locationUpdate", subscriptionRequest.getValue().getBroadcastName());
+        assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscriptionName());
     }
 
     @SuppressWarnings("unchecked")
@@ -553,14 +572,14 @@ public class ProxyTest {
         Future<String> subscriptionId = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
                                                                                  subscriptionQos);
 
-        ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
+        ArgumentCaptor<MulticastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(MulticastSubscribeInvocation.class);
 
-        verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
+        verify(subscriptionManager, times(1)).registerMulticastSubscription(eq(fromParticipantId),
                                                                             (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
                                                                             // eq(toDiscoveryEntries),
                                                                             subscriptionRequest.capture());
 
-        assertEquals("locationUpdate", subscriptionRequest.getValue().getBroadcastName());
+        assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscriptionName());
 
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId.get(100L));
@@ -585,20 +604,20 @@ public class ProxyTest {
                                                                                .setPublicationTtlMs(publicationTtl_ms);
 
         String subscriptionId = UUID.randomUUID().toString();
-        Future<String> subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
-                                                                                  subscriptionQos,
-                                                                                  subscriptionId);
+        Future<String> subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(subscriptionId,
+                                                                                  mock(LocationUpdateBroadcastListener.class),
+                                                                                  subscriptionQos);
 
-        assertEquals(subscriptionId, subscriptionId2.get());
+        assertEquals(subscriptionId, subscriptionId2.get(500));
 
-        ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
+        ArgumentCaptor<MulticastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(MulticastSubscribeInvocation.class);
 
-        verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
+        verify(subscriptionManager, times(1)).registerMulticastSubscription(eq(fromParticipantId),
                                                                             (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
                                                                             // eq(toDiscoveryEntries),
                                                                             subscriptionRequest.capture());
 
-        assertEquals("locationUpdate", subscriptionRequest.getValue().getBroadcastName());
+        assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscriptionName());
         assertEquals(subscriptionId, subscriptionRequest.getValue().getSubscriptionId());
     }
 
@@ -656,9 +675,9 @@ public class ProxyTest {
         }
         ;
         String subscriptionId = UUID.randomUUID().toString();
-        Future<String> subscriptionId2 = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
-                                                                         subscriptionQos,
-                                                                         subscriptionId);
+        Future<String> subscriptionId2 = proxy.subscribeToGuidanceActive(subscriptionId,
+                                                                         mock(BooleanSubscriptionListener.class),
+                                                                         subscriptionQos);
 
         assertEquals(subscriptionId, subscriptionId2.get());
 

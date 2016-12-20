@@ -69,16 +69,20 @@ define([
                         var radioProvider;
                         var radioProxy;
                         var numberOfStations;
+                        var domain;
                         var provisioningSuffix;
                         var discoveryTimeoutMs;
                         var messagingQos;
+
+                        jasmine.getEnv().defaultTimeoutInterval = 15000; //15 secs default timeout for async tests;
 
                         beforeEach(function(done) {
                             var testProvisioning;
                             var worker;
                             var webWorkerAndLibJoynrStarted = false;
-                            provisioningSuffix = "-" + Date.now();
-                            discoveryTimeoutMs = 4000;
+                            provisioningSuffix = "InterTabTest";
+                            domain = provisioningSuffix + "-" + Date.now();
+                            discoveryTimeoutMs = 2000;
 
                             /*
                              * The parent window is used by libjoynr to postMessages in case of
@@ -117,12 +121,13 @@ define([
                             provisioning.parentWindow = libjoynrParentWindow;
                             provisioning.windowId = "libjoynr_" + libjoynrParentWindow.time;
 
-                            testProvisioning = IntegrationUtils.getProvisioning(provisioning,provisioningSuffix);
+                            testProvisioning = IntegrationUtils.getProvisioning(provisioning,domain);
 
                             IntegrationUtils
                                     .initializeWebWorkerCC(
                                             "TestInterTabCommunicationCCWorker",
-                                            provisioningSuffix)
+                                            provisioningSuffix,
+                                            domain)
                                     .then(
                                         function(newWorkerId) {
                                             libjoynrParentWindow.workerId = newWorkerId;
@@ -256,7 +261,6 @@ define([
                         it(
                                 "Create Radio Provider and register properly",
                                 function(done) {
-                                    var domain = "intertab-test-" + Date.now();
                                     /*
                                      * This test
                                      * - assumes a running cluster controller in a separate web worker
@@ -278,6 +282,7 @@ define([
                                     var enumArrayAttribute = [Country.GERMANY];
                                     var byteBufferAttribute = null;
                                     var stringMapAttribute = null;
+                                    var complexStructMapAttribute = null;
                                     var attrProvidedImpl;
                                     var mixedSubscriptions = null;
                                     var numberOfStations = 0;
@@ -378,6 +383,14 @@ define([
 
                                     radioProvider.stringMapAttribute.registerGetter(function(value) {
                                         return stringMapAttribute;
+                                    });
+
+                                    radioProvider.complexStructMapAttribute.registerGetter(function() {
+                                        return complexStructMapAttribute;
+                                    });
+
+                                    radioProvider.complexStructMapAttribute.registerSetter(function(value) {
+                                        complexStructMapAttribute = value;
                                     });
 
                                     radioProvider.failingSyncAttribute.registerGetter(function() {
@@ -506,11 +519,20 @@ define([
                                         };
                                     });
 
+                                    radioProvider.methodWithComplexMap.registerOperation(function(
+                                            opArgs) {
+                                        return;
+                                    });
+
                                     radioProvider.methodProvidedImpl.registerOperation(function(
                                             opArgs) {
                                         return {
                                             returnValue : opArgs.arg + "response"
                                         };
+                                    });
+
+                                    radioProvider.triggerBroadcastsWithPartitions.registerOperation(function(opArgs) {
+                                        //do nothing;
                                     });
 
                                     radioProvider.triggerBroadcasts.registerOperation(function(opArgs) {
@@ -609,7 +631,6 @@ define([
                         it(
                                 "Create separate joynr instance with provider and arbitrate",
                                 function(done) {
-                                    var domain = "intertab-test-" + Date.now();
                                     /*
                                      * This test
                                      * - assumes a running cluster controller in a separate web
@@ -661,7 +682,7 @@ define([
                         it(
                                 "Create discovery proxy and check if the cc discovery provider works properly",
                                 function(done) {
-                                    var domain = "intertab-test-" + Date.now(), discoveredEntries;
+                                    var discoveredEntries;
                                     /*
                                      * This test
                                      * - assumes a running cluster controller in a separate web
@@ -807,7 +828,6 @@ define([
                         it(
                                 "Create routing proxy and check if the cc routing provider works properly",
                                 function(done) {
-                                    var domain = "intertab-test-" + Date.now(), discoveredEntries;
                                     /*
                                      * This test
                                      * - assumes a running cluster controller in a separate web

@@ -20,11 +20,12 @@
 define(
         "joynr/proxy/OnChangeSubscriptionQos",
         [
+            "joynr/util/Typing",
             "joynr/util/UtilInternal",
             "joynr/proxy/SubscriptionQos",
             "joynr/system/LoggerFactory"
         ],
-        function(Util, SubscriptionQos, LoggerFactory) {
+        function(Typing, Util, SubscriptionQos, LoggerFactory) {
 
             var defaultSettings;
 
@@ -98,16 +99,16 @@ define(
                  * @type String
                  */
                 Util.objectDefineProperty(this, "_typeName", "joynr.OnChangeSubscriptionQos");
-                Util.checkPropertyIfDefined(settings, "Object", "settings");
+                Typing.checkPropertyIfDefined(settings, "Object", "settings");
                 if (settings && !(settings instanceof OnChangeSubscriptionQos)) {
                     if (settings.minInterval !== undefined) {
                         log
-                                .warn("OnChangeSubscriptionQos has been invoked with deprecated settings member \"minIntervalMs\". "
+                                .warn("OnChangeSubscriptionQos has been invoked with deprecated settings member \"minInterval\". "
                                     + "By 2017-01-01, the min interval can only be specified with member \"minIntervalMs\".");
                         settings.minIntervalMs = settings.minInterval;
                         settings.minInterval = undefined;
                     }
-                    Util.checkPropertyIfDefined(
+                    Typing.checkPropertyIfDefined(
                             settings.minIntervalMs,
                             "Number",
                             "settings.minIntervalMs");

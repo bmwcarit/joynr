@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ define("joynr/system/DistributedLoggingAppender", [
      * @param loggingContexts
      */
     function DistributedLoggingAppender(config, loggingContexts) {
-        var flushInterval, flushMaxLogEventsCount, queuedEvents;
+        var flushInterval, flushIntervalId, flushMaxLogEventsCount, queuedEvents;
         var loggingProxy = null;
         var eventsLostCount = 0;
         queuedEvents = [];
@@ -184,14 +184,19 @@ define("joynr/system/DistributedLoggingAppender", [
          */
         this.setProxy = function setProxy(newProxy) {
             loggingProxy = newProxy;
-            setInterval(flush, flushInterval);
+            flushIntervalId = setInterval(flush, flushInterval);
+        };
+
+        this.toString = function toString() {
+            return "DistributedLoggingAppender";
+        };
+
+        this.shutdown = function shutdown() {
+            if (flushIntervalId !== undefined) {
+                clearInterval(flushIntervalId);
+            }
         };
     }
-
-    DistributedLoggingAppender.prototype = new LoggingManager.Appender();
-    // DistributedLoggingAppender.prototype.layout = new LoggingManager.NullLayout();
-    // DistributedLoggingAppender.prototype.threshold =
-    //     LoggingManager.getLogLevel(LoggingManager.LogLevel.DEBUG);
 
     return DistributedLoggingAppender;
 

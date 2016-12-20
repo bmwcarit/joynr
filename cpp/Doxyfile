@@ -1073,7 +1073,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/InProcessPublicationSender.h \
                          libjoynr/include/joynr/InterfaceRegistrar.h \
                          libjoynr/include/joynr/IPlatformSecurityManager.h \
-                         libjoynr/include/joynr/IPublicationInterpreter.h \
                          libjoynr/include/joynr/IPublicationSender.h \
                          libjoynr/include/joynr/IReplyInterpreter.h \
                          libjoynr/include/joynr/IRequestCallerDirectory.h \
@@ -1098,7 +1097,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/ProviderArbitrator.h \
                          libjoynr/include/joynr/ProxyBase.h \
                          libjoynr/include/joynr/ProxyFactory.h \
-                         libjoynr/include/joynr/PublicationInterpreter.h \
                          libjoynr/include/joynr/PublicationManager.h \
                          libjoynr/include/joynr/QosArbitrator.h \
                          libjoynr/include/joynr/ReplyCaller.h \
@@ -1269,8 +1267,8 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/subscription/PublicationManager.cpp \
                          libjoynr/subscription/SubscriptionAttributeListener.cpp \
                          libjoynr/subscription/SubscriptionAttributeListener.h \
-                         libjoynr/subscription/SubscriptionBroadcastListener.cpp \
-                         libjoynr/subscription/SubscriptionBroadcastListener.h \
+                         libjoynr/subscription/UnicastBroadcastListener.cpp \
+                         libjoynr/subscription/UnicastBroadcastListener.h \
                          libjoynr/subscription/SubscriptionInformation.cpp \
                          libjoynr/subscription/SubscriptionManager.cpp \
                          libjoynr/subscription/SubscriptionPublication.cpp \

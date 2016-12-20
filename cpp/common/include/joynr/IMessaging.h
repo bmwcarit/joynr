@@ -34,10 +34,8 @@ class JoynrRuntimeException;
 }
 
 /**
-  * Interface for sending joynr messages in both directions between clustercontroller and libjoynr.
-  *
-  */
-
+ * Interface for sending joynr messages in both directions between clustercontroller and libjoynr.
+ */
 class JOYNRCOMMON_EXPORT IMessaging
 {
 public:
@@ -47,7 +45,6 @@ public:
     virtual void transmit(
             JoynrMessage& message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
-    // const MessagingQos& QoS, const QVariant& payload) = 0;
 };
 
 } // namespace joynr

@@ -37,21 +37,44 @@ import joynr.system.RoutingTypes.WebSocketAddress;
  *
  */
 public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMessagingSkeleton {
-    MessageRouter messageRouter;
-    ObjectMapper objectMapper;
-    JoynrWebSocketEndpoint webSocketEndpoint;
+
+    public final static String WEBSOCKET_IS_MAIN_TRANSPORT = "io.joynr.websocket.is.main.transport";
+
+    private MessageRouter messageRouter;
+    private ObjectMapper objectMapper;
+    private JoynrWebSocketEndpoint webSocketEndpoint;
     private WebSocketEndpointFactory webSocketEndpointFactory;
-    protected WebSocketAddress serverAddress;
+    private WebSocketAddress serverAddress;
+    private boolean mainTransport;
+
+    public static class MainTransportFlagBearer {
+        @Inject(optional = true)
+        @Named(WEBSOCKET_IS_MAIN_TRANSPORT)
+        private Boolean mainTransport;
+
+        public MainTransportFlagBearer() {
+        }
+
+        protected MainTransportFlagBearer(Boolean mainTransport) {
+            this.mainTransport = mainTransport;
+        }
+
+        public boolean isMainTransport() {
+            return Boolean.TRUE.equals(mainTransport);
+        }
+    }
 
     @Inject
     public WebSocketMessagingSkeleton(@Named(WebsocketModule.WEBSOCKET_SERVER_ADDRESS) WebSocketAddress serverAddress,
                                       WebSocketEndpointFactory webSocketEndpointFactory,
                                       MessageRouter messageRouter,
-                                      ObjectMapper objectMapper) {
+                                      ObjectMapper objectMapper,
+                                      MainTransportFlagBearer mainTransportFlagBearer) {
         this.serverAddress = serverAddress;
         this.webSocketEndpointFactory = webSocketEndpointFactory;
         this.messageRouter = messageRouter;
         this.objectMapper = objectMapper;
+        this.mainTransport = mainTransportFlagBearer.isMainTransport();
     }
 
     @Override
@@ -64,6 +87,9 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
         try {
+            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
+                message.setReceivedFromGlobal(true);
+            }
             messageRouter.route(message);
         } catch (Exception exception) {
             failureAction.execute(exception);
@@ -85,5 +111,9 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
         if (webSocketEndpoint != null) {
             webSocketEndpoint.shutdown();
         }
+    }
+
+    private boolean isMainTransport() {
+        return mainTransport;
     }
 }

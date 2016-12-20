@@ -19,8 +19,7 @@
  * #L%
  */
 
-define("joynr/system/WebWorkerMessagingAppender", [ "joynr/system/LoggingManager"
-], function(LoggingManager) {
+define("joynr/system/WebWorkerMessagingAppender", [], function() {
 
     /**
      * A log4javascript Appender that sends a logged message from a WebWorker to the main context to
@@ -60,7 +59,6 @@ define("joynr/system/WebWorkerMessagingAppender", [ "joynr/system/LoggingManager
             message : formattedMessage
         });
     };
-    WebWorkerMessagingAppender.prototype = new LoggingManager.Appender();
 
     return WebWorkerMessagingAppender;
 

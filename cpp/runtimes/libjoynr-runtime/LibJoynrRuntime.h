@@ -46,6 +46,7 @@ class JoynrMessageSender;
 class MessageRouter;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
+class IMulticastAddressCalculator;
 class Settings;
 
 class LibJoynrRuntime : public JoynrRuntime
@@ -74,12 +75,12 @@ protected:
 
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
 
-    virtual void startLibJoynrMessagingSkeleton(
-            const std::shared_ptr<MessageRouter>& messageRouter) = 0;
+    virtual void startLibJoynrMessagingSkeleton(std::shared_ptr<MessageRouter> messageRouter) = 0;
 
     void init(std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
-              std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress);
+              std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress,
+              std::unique_ptr<IMulticastAddressCalculator> addressCalculator);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);

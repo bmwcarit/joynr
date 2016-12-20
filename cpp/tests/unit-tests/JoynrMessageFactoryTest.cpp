@@ -23,6 +23,8 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/OnChangeSubscriptionQos.h"
@@ -36,7 +38,7 @@ class JoynrMessageFactoryTest : public ::testing::Test
 {
 public:
     JoynrMessageFactoryTest()
-            : messageFactory(),
+            : messageFactory(0),
               senderID(),
               receiverID(),
               requestReplyID(),
@@ -122,6 +124,18 @@ public:
         expectedPayloadStream << R"("response":["publication"],)";
         expectedPayloadStream << R"("subscriptionId":")"
                               << subscriptionPublication.getSubscriptionId() << R"("})";
+        std::string expectedPayload = expectedPayloadStream.str();
+        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
+    }
+
+    void checkMulticastPublication(const JoynrMessage& joynrMessage,
+                                   const MulticastPublication& multicastPublication)
+    {
+        std::stringstream expectedPayloadStream;
+        expectedPayloadStream << R"({"_typeName":"joynr.MulticastPublication",)";
+        expectedPayloadStream << R"("response":["publication"],)";
+        expectedPayloadStream << R"("multicastId":")"
+                              << multicastPublication.getMulticastId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
@@ -212,6 +226,18 @@ TEST_F(JoynrMessageFactoryTest, createPublication)
     EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION, joynrMessage.getType());
 }
 
+TEST_F(JoynrMessageFactoryTest, createMulticastPublication)
+{
+    MulticastPublication multicastPublication;
+    multicastPublication.setMulticastId(receiverID);
+    multicastPublication.setResponse("publication");
+    JoynrMessage joynrMessage = messageFactory.createMulticastPublication(
+            senderID, qos, multicastPublication);
+    checkHeaderCreatorFromTo(joynrMessage);
+    checkMulticastPublication(joynrMessage, multicastPublication);
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
+}
+
 TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest)
 {
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
@@ -223,6 +249,20 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest)
             senderID, receiverID, qos, subscriptionRequest);
     checkHeaderCreatorFromTo(joynrMessage);
     EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, joynrMessage.getType());
+}
+
+TEST_F(JoynrMessageFactoryTest, createMulticastSubscriptionRequest)
+{
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    MulticastSubscriptionRequest subscriptionRequest;
+    subscriptionRequest.setSubscriptionId("subscriptionId");
+    subscriptionRequest.setMulticastId("multicastId");
+    subscriptionRequest.setSubscribeToName("attributeName");
+    subscriptionRequest.setQos(subscriptionQos);
+    JoynrMessage joynrMessage = messageFactory.createMulticastSubscriptionRequest(
+            senderID, receiverID, qos, subscriptionRequest);
+    checkHeaderCreatorFromTo(joynrMessage);
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionStop)
@@ -259,4 +299,19 @@ TEST_F(JoynrMessageFactoryTest, testSetBestEffortHeader)
     EXPECT_TRUE(message.containsHeaderEffort());
     EXPECT_EQ(MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT),
               message.getHeaderEffort());
+}
+
+TEST_F(JoynrMessageFactoryTest, testTtlUplift)
+{
+    MessagingQos messagingQos;
+    messagingQos.setTtl(0);
+
+    const std::uint64_t ttlUplift = 10000;
+    const std::int64_t tolerance = 10;
+
+    JoynrMessageFactory factoryWithTtlUplift(ttlUplift);
+
+    JoynrMessage message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+
+    EXPECT_GE(std::chrono::duration_cast<std::chrono::milliseconds>(message.getHeaderExpiryDate() - std::chrono::system_clock::now()).count(), ttlUplift - tolerance);
 }

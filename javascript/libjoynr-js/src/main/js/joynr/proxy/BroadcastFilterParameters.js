@@ -19,9 +19,10 @@
  */
 
 define("joynr/proxy/BroadcastFilterParameters", [
+    "joynr/util/Typing",
     "joynr/util/UtilInternal",
     "joynr/system/LoggerFactory"
-], function(Util, LoggerFactory) {
+], function(Typing, Util, LoggerFactory) {
 
     /**
      * Constructor of BroadcastFilterParameters object used for subscriptions in generated proxy objects
@@ -48,7 +49,7 @@ define("joynr/proxy/BroadcastFilterParameters", [
          * @type String
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
-        Util.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
+        Typing.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
 
         function makeSetterFunction(obj, parameterName) {
             return function(arg) {

@@ -26,10 +26,16 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import io.joynr.common.ExpiryDate;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
+import joynr.BroadcastSubscriptionRequest;
 import joynr.JoynrMessage;
+import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionRequest;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -44,6 +50,9 @@ public class JoynrMessageFactory {
 
     private final Set<JoynrMessageProcessor> messageProcessors;
     private ObjectMapper objectMapper;
+    @Inject(optional = true)
+    @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
+    private long ttlUpliftMs = 0;
 
     private static final Logger logger = LoggerFactory.getLogger(JoynrMessageFactory.class);
 
@@ -58,7 +67,8 @@ public class JoynrMessageFactory {
                                        String toParticipantId,
                                        Object payload,
                                        MessagingQos messagingQos) {
-        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()
+                + ttlUpliftMs);
         JoynrMessage message = new JoynrMessage();
         message.setType(joynrMessageType);
         Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
@@ -118,11 +128,12 @@ public class JoynrMessageFactory {
     public JoynrMessage createSubscriptionRequest(String fromParticipantId,
                                                   String toParticipantId,
                                                   SubscriptionRequest subscriptionRequest,
-                                                  MessagingQos messagingQos,
-                                                  boolean broadcast) {
+                                                  MessagingQos messagingQos) {
         String messageType;
-        if (broadcast) {
+        if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
             messageType = JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
+        } else if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
+            messageType = JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST;
         } else {
             messageType = JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
         }
@@ -148,6 +159,16 @@ public class JoynrMessageFactory {
                              fromParticipantId,
                              toParticipantId,
                              subscriptionStop,
+                             messagingQos);
+    }
+
+    public JoynrMessage createMulticast(String fromParticipantId,
+                                        MulticastPublication multicastPublication,
+                                        MessagingQos messagingQos) {
+        return createMessage(JoynrMessage.MESSAGE_TYPE_MULTICAST,
+                             fromParticipantId,
+                             multicastPublication.getMulticastId(),
+                             multicastPublication,
                              messagingQos);
     }
 
@@ -179,5 +200,4 @@ public class JoynrMessageFactory {
         }
         return serializedPayload;
     }
-
 }

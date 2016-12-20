@@ -94,7 +94,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 					configurable : false,
 					writable : false,
 					enumerable : true,
-					value : "«type.joynrTypeName»"
+					value : «type.joynrName»._typeName
 				});
 				«IF type.base != null»
 
@@ -120,14 +120,6 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 					 * @type «member.jsdocTypeName»
 					 */
 				«ENDFOR»
-				Object.defineProperty(this, 'checkMembers', {
-					enumerable: false,
-					value: function checkMembers(check) {
-						«FOR member : members»
-						check(this.«member.joynrName», «member.checkPropertyTypeName», "members.«member.joynrName»");
-						«ENDFOR»
-					}
-				});
 
 				if (members !== undefined) {
 					«FOR member : members»
@@ -136,6 +128,25 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 				}
 
 			};
+
+			Object.defineProperty(«type.joynrName», "_typeName", {
+				configurable : false,
+				writable : false,
+				enumerable : false,
+				value : "«type.joynrTypeName»"
+			});
+
+			Object.defineProperty(«type.joynrName», 'checkMembers', {
+				enumerable: false,
+				configurable: false,
+				writable: false,
+				readable: true,
+				value: function checkMembers(instance, check) {
+					«FOR member : members»
+					check(instance.«member.joynrName», «member.checkPropertyTypeName», "members.«member.joynrName»");
+					«ENDFOR»
+				}
+			});
 
 			/**
 			 * @name «type.joynrName»#MAJOR_VERSION
@@ -164,6 +175,62 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 				value: «minorVersion»
 			});
 
+			var preparePrototype = function(joynr) {
+				«type.joynrName».prototype = new joynr.JoynrObject();
+				«type.joynrName».prototype.constructor = «type.joynrName»;
+				Object.defineProperty(«type.joynrName».prototype, 'equals', {
+					enumerable: false,
+					configurable: false,
+					writable: false,
+					readable: true,
+					value: function equals(other) {
+						var i;
+						if (this === other) {
+							return true;
+						}
+						if (other === undefined || other === null) {
+							return false;
+						}
+						if (other._typeName === undefined || this._typeName !== other._typeName) {
+							return false;
+						}
+						«FOR member : members»
+							if (this.«member.joynrName» === undefined || this.«member.joynrName» === null) {
+								if (other.«member.joynrName» !== null && other.«member.joynrName» !== undefined) {
+									return false;
+								}
+							«IF isByteBuffer(member.type) || isArray(member)»
+							} else {
+								if (this.«member.joynrName».length !== other.«member.joynrName».length) {
+									return false;
+								}
+								for (i=0;i<this.«member.joynrName».length;i++) {
+									«IF member.type.isCompound || member.type.isEnum»
+									if (!this.«member.joynrName»[i].equals(other.«member.joynrName»[i])){
+										return false;
+									}
+									«ELSE»
+									if (this.«member.joynrName»[i] !== other.«member.joynrName»[i]){
+										return false;
+									}
+									«ENDIF»
+								}
+							}
+							«ELSEIF member.type.isCompound || member.type.isEnum»
+							} else if (!this.«member.joynrName».equals(other.«member.joynrName»)){
+								return false;
+							}
+							«ELSE»
+							} else if (this.«member.joynrName» !== other.«member.joynrName»){
+								return false;
+							}
+							«ENDIF»
+						«ENDFOR»
+						return true;
+					}
+				});
+			};
+
 			var memberTypes = {
 				«FOR member : members SEPARATOR ","»
 				«member.joynrName»: function() { return "«member.joynrTypeName»"; }
@@ -183,8 +250,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 			// AMD support
 			if (typeof define === 'function' && define.amd) {
 				define(«type.defineName»["joynr"], function (joynr) {
-					«type.joynrName».prototype = new joynr.JoynrObject();
-					«type.joynrName».prototype.constructor = «type.joynrName»;
+					preparePrototype(joynr);
 					joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 					return «type.joynrName»;
 				});
@@ -196,20 +262,17 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 					exports.«type.joynrName» = «type.joynrName»;
 				}
 				var joynr = requirejs("joynr");
-				«type.joynrName».prototype = new joynr.JoynrObject();
-				«type.joynrName».prototype.constructor = «type.joynrName»;
+				preparePrototype(joynr);
 
 				joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 			} else {
-				«type.joynrName».prototype = new window.joynr.JoynrObject();
-				«type.joynrName».prototype.constructor = «type.joynrName»;
+				preparePrototype(window.joynr);
 				window.joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 				window.«type.joynrName» = «type.joynrName»;
 			}
 			«ELSE»
 				//we assume a correct order of script loading
-			«type.joynrName».prototype = new window.joynr.JoynrObject();
-			«type.joynrName».prototype.constructor = «type.joynrName»;
+			preparePrototype(window.joynr);
 			window.joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 			window.«type.joynrName» = «type.joynrName»;
 			«ENDIF»

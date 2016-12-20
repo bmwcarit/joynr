@@ -19,8 +19,7 @@
 
 // max value for timeout, see
 // http://stackoverflow.com/questions/3468607/why-does-settimeout-break-for-large-millisecond-delay-values
-define("joynr/util/LongTimer", [ "joynr/util/Util"
-], function(Util) {
+define("joynr/util/LongTimer", [], function() {
 
     /**
      * Implementation for long (>2^31-1 ms) timer functions that only allows timeouts or intervals
@@ -32,9 +31,32 @@ define("joynr/util/LongTimer", [ "joynr/util/Util"
     var LongTimer = {};
 
     LongTimer.maxTime = Math.pow(2, 31) - 1;
+    LongTimer.idPrefix = 'lt';
 
-    var highestTimeoutId = -1;
+    var highestTimeoutId = 0;
     LongTimer.timeoutMap = {};
+
+    function timeoutPortion(timeoutId) {
+        // retrieve timeout object
+        var timeoutObj = LongTimer.timeoutMap[timeoutId];
+
+        // timeout has been cancelled
+        if (timeoutObj === undefined) {
+            return;
+        }
+
+        // if timeout elapsed, remove timeout object and call function
+        if (timeoutObj.remainingTimeout === 0) {
+            delete LongTimer.timeoutMap[timeoutId];
+            timeoutObj.func.apply(this, timeoutObj.args);
+            return;
+        }
+
+        // recalculate remaining timeout and start next portion of timeout
+        var timeToWait = Math.min(LongTimer.maxTime, timeoutObj.remainingTimeout);
+        timeoutObj.remainingTimeout -= timeToWait;
+        timeoutObj.currentTimeout = setTimeout(timeoutPortion, timeToWait, timeoutId);
+    }
 
     /**
      * Implementation for long (>2^31-1 ms) window.setTimeout only allows intervals of 2^31-1 ms
@@ -45,38 +67,18 @@ define("joynr/util/LongTimer", [ "joynr/util/Util"
      *            func
      * @param {Number}
      *            timeout
-     * @returns {Number} timeout identifier
+     * @returns {String|Object} timeout identifier
      * @throws {Error}
      *             if parameters are nullable or not of documented type
      */
     LongTimer.setTimeout = function(func, timeout) {
-        Util.checkProperty(func, "Function", "func");
-        Util.checkProperty(timeout, "Number", "timeout");
-
-        // get next timeout id
-        var timeoutId = ++highestTimeoutId;
-
-        function timeoutPortion() {
-            // retrieve timeout object
-            var timeoutObj = LongTimer.timeoutMap[timeoutId];
-
-            // timeout has been cancelled
-            if (timeoutObj === undefined) {
-                return;
-            }
-
-            // if timeout elapsed, remove timeout object and call function
-            if (timeoutObj.remainingTimeout === 0) {
-                delete LongTimer.timeoutMap[timeoutId];
-                timeoutObj.func.apply(this, timeoutObj.args);
-                return;
-            }
-
-            // recalculate remaining timeout and start next portion of timeout
-            var timeToWait = Math.min(LongTimer.maxTime, timeoutObj.remainingTimeout);
-            timeoutObj.remainingTimeout -= timeToWait;
-            timeoutObj.currentTimeout = setTimeout(timeoutPortion, timeToWait, timeoutId);
+        if (timeout <= LongTimer.maxTime) {
+            return setTimeout.apply(null, arguments);
         }
+
+        // get next timeout id and prefix it to avoid possible collisions in environents
+        // where setTimeout returns a number (e.g. in browsers).
+        var timeoutId = LongTimer.idPrefix + (++highestTimeoutId);
 
         // put timeout object into map
         LongTimer.timeoutMap[timeoutId] = {
@@ -88,11 +90,10 @@ define("joynr/util/LongTimer", [ "joynr/util/Util"
 
         // start timeout
         if (timeout === 0) {
-            setTimeout(timeoutPortion, 0);
+            setTimeout(timeoutPortion, 0, timeoutId);
         } else {
-            timeoutPortion();
+            timeoutPortion(timeoutId);
         }
-
         // return id to
         return timeoutId;
     };
@@ -107,19 +108,17 @@ define("joynr/util/LongTimer", [ "joynr/util/Util"
      *             if parameters are nullable or not of documented type
      */
     LongTimer.clearTimeout = function(timeoutId) {
-        Util.checkProperty(timeoutId, "Number", "timeoutId");
-
         // retrieve timeout object
         var timeoutObj = LongTimer.timeoutMap[timeoutId];
 
-        // timeout has run out or been cancelled already
+        // timeout has run out, been cancelled already or was less than maxTime
         if (timeoutObj === undefined) {
-            return;
+            return clearTimeout(timeoutId);
         }
 
         // stop javascript interval and remove timeout object
         clearTimeout(timeoutObj.currentTimeout);
-        delete LongTimer.timeoutMap[timeoutId];
+        LongTimer.timeoutMap[timeoutId] = undefined;
     };
 
     var highestIntervalId = -1;
@@ -139,9 +138,6 @@ define("joynr/util/LongTimer", [ "joynr/util/Util"
      *             if parameters are nullable or not of documented type
      */
     LongTimer.setInterval = function(func, interval) {
-        Util.checkProperty(func, "Function", "func");
-        Util.checkProperty(interval, "Number", "interval");
-
         // get next interval id
         var intervalId = ++highestIntervalId;
 
@@ -190,7 +186,6 @@ define("joynr/util/LongTimer", [ "joynr/util/Util"
      *             if parameters are nullable or not of documented type
      */
     LongTimer.clearInterval = function(intervalId) {
-        Util.checkProperty(intervalId, "Number", "intervalId");
 
         // retrieve interval object
         var interval = intervalMap[intervalId];

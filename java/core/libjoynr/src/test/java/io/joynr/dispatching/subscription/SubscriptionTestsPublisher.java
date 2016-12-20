@@ -19,12 +19,12 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
-import io.joynr.pubsub.publication.AttributeListener;
-import io.joynr.pubsub.publication.BroadcastListener;
-
 import java.util.HashSet;
 import java.util.Set;
 
+import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastListener;
+import io.joynr.pubsub.publication.MulticastListener;
 import joynr.tests.testSubscriptionPublisherImpl;
 
 public class SubscriptionTestsPublisher extends testSubscriptionPublisherImpl {
@@ -54,6 +54,8 @@ public class SubscriptionTestsPublisher extends testSubscriptionPublisherImpl {
 
     boolean broadcastSubscriptionArrived = false;
 
+    boolean multicastSubscriptionArrived = false;
+
     public void waitForBroadcastSubscription() {
         synchronized (this) {
             while (!broadcastSubscriptionArrived) {
@@ -61,6 +63,28 @@ public class SubscriptionTestsPublisher extends testSubscriptionPublisherImpl {
                     this.wait();
                 } catch (InterruptedException e) {
                 }
+            }
+        }
+    }
+
+    public void waitForMulticastSubscription() {
+        synchronized (this) {
+            while (!multicastSubscriptionArrived) {
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+    }
+
+    @Override
+    public void registerMulticastListener(MulticastListener multicastListener) {
+        super.registerMulticastListener(multicastListener);
+        if (!multicastSubscriptionArrived) {
+            synchronized (this) {
+                multicastSubscriptionArrived = true;
+                this.notify();
             }
         }
     }

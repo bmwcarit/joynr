@@ -113,7 +113,7 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
     auto onError = [](const joynr::exceptions::JoynrRuntimeException& error) {
         JOYNR_LOG_ERROR(logger, "error sending freshness update: {}", error.getMessage());
     };
-    capabilitiesClient->touch(clusterControllerId, nullptr, onError);
+    capabilitiesClient->touch(clusterControllerId, nullptr, std::move(onError));
     scheduleFreshnessUpdate();
 }
 
@@ -276,7 +276,7 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
     if (scope == joynr::types::DiscoveryScope::LOCAL_ONLY) {
         std::vector<types::DiscoveryEntryWithMetaInfo> localCapabilitiesWithMetaInfo =
                 util::convert(true, localCapabilities);
-        callback->capabilitiesReceived(localCapabilitiesWithMetaInfo);
+        callback->capabilitiesReceived(std::move(localCapabilitiesWithMetaInfo));
         return true;
     }
 
@@ -287,11 +287,11 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
         std::vector<types::DiscoveryEntryWithMetaInfo> globalCapabilitiesWithMetaInfo =
                 util::convert(false, globalCapabilities);
         if (!localCapabilities.empty()) {
-            callback->capabilitiesReceived(localCapabilitiesWithMetaInfo);
+            callback->capabilitiesReceived(std::move(localCapabilitiesWithMetaInfo));
             return true;
         }
         if (!globalCapabilities.empty()) {
-            callback->capabilitiesReceived(globalCapabilitiesWithMetaInfo);
+            callback->capabilitiesReceived(std::move(globalCapabilitiesWithMetaInfo));
             return true;
         }
     }
@@ -313,7 +313,7 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
                              std::make_move_iterator(globalCapabilitiesWithMetaInfo.end()));
             std::vector<types::DiscoveryEntryWithMetaInfo> resultVec(
                     resultSet.begin(), resultSet.end());
-            callback->capabilitiesReceived(resultVec);
+            callback->capabilitiesReceived(std::move(resultVec));
             return true;
         }
     }
@@ -323,7 +323,7 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
         if (!globalCapabilities.empty()) {
             std::vector<types::DiscoveryEntryWithMetaInfo> globalCapabilitiesWithMetaInfo =
                     util::convert(false, globalCapabilities);
-            callback->capabilitiesReceived(globalCapabilitiesWithMetaInfo);
+            callback->capabilitiesReceived(std::move(globalCapabilitiesWithMetaInfo));
             return true;
         }
     }
@@ -381,7 +381,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
         };
         this->capabilitiesClient->lookup(
                 participantId,
-                onSuccess,
+                std::move(onSuccess),
                 std::bind(&ILocalCapabilitiesCallback::onError, callback, std::placeholders::_1));
     }
 }
@@ -428,8 +428,11 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
             std::lock_guard<std::mutex> lock(pendingLookupsLock);
             registerPendingLookup(interfaceAddresses, callback);
         }
-        this->capabilitiesClient->lookup(
-                domains, interfaceName, discoveryQos.getDiscoveryTimeout(), onSuccess, onError);
+        this->capabilitiesClient->lookup(domains,
+                                         interfaceName,
+                                         discoveryQos.getDiscoveryTimeout(),
+                                         std::move(onSuccess),
+                                         std::move(onError));
     }
 }
 
@@ -600,7 +603,7 @@ void LocalCapabilitiesDirectory::lookup(
     }
 
     auto localCapabilitiesCallback =
-            std::make_shared<LocalCapabilitiesCallback>(onSuccess, onError);
+            std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
 
     lookup(domains, interfaceName, localCapabilitiesCallback, discoveryQos);
 }
@@ -611,8 +614,9 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto callback = [onSuccess, onError, this, participantId](
-            const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities) {
+    auto callback = [ onSuccess = std::move(onSuccess), onError, this, participantId ](
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities)
+    {
         if (capabilities.size() == 0) {
             joynr::exceptions::ProviderRuntimeException exception(
                     "No capabilities found for participandId \"" + participantId + "\"");
@@ -630,7 +634,8 @@ void LocalCapabilitiesDirectory::lookup(
         onSuccess(capabilities[0]);
     };
 
-    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(callback, onError);
+    auto localCapabilitiesCallback =
+            std::make_shared<LocalCapabilitiesCallback>(std::move(callback), std::move(onError));
     lookup(participantId, localCapabilitiesCallback);
 }
 
@@ -909,27 +914,23 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 }
 
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(
-        std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> onSuccess,
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-        : onSuccess(onSuccess), onErrorCallback(onError)
+        std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)>&& onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)>&& onError)
+        : onSuccess(std::move(onSuccess)), onErrorCallback(std::move(onError))
 {
 }
 
 void LocalCapabilitiesCallback::onError(const exceptions::JoynrRuntimeException& error)
 {
-    if (onErrorCallback) {
-        onErrorCallback(joynr::exceptions::ProviderRuntimeException(
-                "Unable to collect capabilities from global capabilities directory. Error: " +
-                error.getMessage()));
-    }
+    onErrorCallback(joynr::exceptions::ProviderRuntimeException(
+            "Unable to collect capabilities from global capabilities directory. Error: " +
+            error.getMessage()));
 }
 
 void LocalCapabilitiesCallback::capabilitiesReceived(
         const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities)
 {
-    if (onSuccess) {
-        onSuccess(capabilities);
-    }
+    onSuccess(capabilities);
 }
 
 } // namespace joynr

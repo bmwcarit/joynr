@@ -39,6 +39,7 @@ class Reply;
 class MessagingQos;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
+class MulticastSubscriptionRequest;
 class SubscriptionReply;
 class SubscriptionStop;
 class SubscriptionPublication;
@@ -70,7 +71,8 @@ class SubscriptionPublication;
 class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender
 {
 public:
-    explicit JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter);
+    JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter,
+                       std::uint64_t ttlUpliftMs = 0);
 
     ~JoynrMessageSender() override = default;
 
@@ -110,6 +112,12 @@ public:
             const MessagingQos& qos,
             const BroadcastSubscriptionRequest& subscriptionRequest) override;
 
+    void sendMulticastSubscriptionRequest(
+            const std::string& senderParticipantId,
+            const std::string& receiverParticipantId,
+            const MessagingQos& qos,
+            const MulticastSubscriptionRequest& subscriptionRequest) override;
+
     void sendSubscriptionReply(const std::string& senderParticipantId,
                                const std::string& receiverParticipantId,
                                const MessagingQos& qos,
@@ -124,6 +132,10 @@ public:
                                      const std::string& receiverParticipantId,
                                      const MessagingQos& qos,
                                      SubscriptionPublication&& subscriptionPublication) override;
+
+    void sendMulticast(const std::string& fromParticipantId,
+                       const MulticastPublication& multicastPublication,
+                       const MessagingQos& messagingQos) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageSender);

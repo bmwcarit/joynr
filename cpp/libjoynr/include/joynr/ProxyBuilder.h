@@ -65,7 +65,7 @@ public:
      * @param dispatcherAddress The address of the dispatcher
      * @param messageRouter A shared pointer to the message router object
      */
-    ProxyBuilder(ProxyFactory* proxyFactory,
+    ProxyBuilder(ProxyFactory& proxyFactory,
                  IRequestCallerDirectory* requestCallerDirectory,
                  joynr::system::IDiscoverySync& discoveryProxy,
                  const std::string& domain,
@@ -123,7 +123,7 @@ private:
     std::string domain;
     bool cached;
     MessagingQos messagingQos;
-    ProxyFactory* proxyFactory;
+    ProxyFactory& proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
     joynr::system::IDiscoverySync& discoveryProxy;
     Arbitrator* arbitrator;
@@ -136,7 +136,7 @@ private:
 
 template <class T>
 ProxyBuilder<T>::ProxyBuilder(
-        ProxyFactory* proxyFactory,
+        ProxyFactory& proxyFactory,
         IRequestCallerDirectory* requestCallerDirectory,
         joynr::system::IDiscoverySync& discoveryProxy,
         const std::string& domain,
@@ -211,7 +211,7 @@ void ProxyBuilder<T>::buildAsync(
 
         bool useInProcessConnector =
                 requestCallerDirectory->containsRequestCaller(discoverEntry.getParticipantId());
-        std::unique_ptr<T> proxy(proxyFactory->createProxy<T>(domain, messagingQos, cached));
+        std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos, cached));
         proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
 
         messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);

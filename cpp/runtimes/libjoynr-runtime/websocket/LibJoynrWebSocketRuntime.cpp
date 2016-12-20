@@ -22,9 +22,10 @@
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "joynr/Util.h"
-#include "joynr/Semaphore.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/WebSocketMulticastAddressCalculator.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/SingleThreadedIOService.h"
 
 namespace joynr
@@ -35,7 +36,8 @@ INIT_LOGGER(LibJoynrWebSocketRuntime);
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings)
         : LibJoynrRuntime(std::move(settings)),
           wsSettings(*this->settings),
-          websocket(new WebSocketPpClient(wsSettings, singleThreadIOService->getIOService()))
+          websocket(std::make_shared<WebSocketPpClient>(wsSettings,
+                                                        singleThreadIOService->getIOService()))
 {
 }
 
@@ -62,7 +64,7 @@ void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallb
                     libjoynrMessagingId);
 
     // send initialization message containing libjoynr messaging address
-    std::string initializationMsg = joynr::serializer::serializeToJson(*libjoynrMessagingAddress);
+    initializationMsg = joynr::serializer::serializeToJson(*libjoynrMessagingAddress);
     JOYNR_LOG_TRACE(logger,
                     "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
                     initializationMsg,
@@ -84,43 +86,47 @@ void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallb
 
     auto connectCallback = [
         this,
-        initializationMsg,
         runtimeCreatedCallback = std::move(runtimeCreatedCallback),
         factory,
         libjoynrMessagingAddress,
         ccMessagingAddress
     ]()
     {
-        auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
-            // initialization message will be sent after reconnect
-            JOYNR_LOG_ERROR(logger,
-                            "Sending websocket initialization message failed. Error: {}",
-                            e.getMessage());
-        };
-        websocket->sendTextMessage(initializationMsg, onFailure);
+        sendInitializationMsg();
 
-        init(factory, libjoynrMessagingAddress, ccMessagingAddress);
+        std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
+                std::make_unique<joynr::WebSocketMulticastAddressCalculator>(ccMessagingAddress);
+        init(factory, libjoynrMessagingAddress, ccMessagingAddress, std::move(addressCalculator));
 
         runtimeCreatedCallback();
     };
 
+    auto reconnectCallback = [this]() { sendInitializationMsg(); };
+
     websocket->registerConnectCallback(connectCallback);
+    websocket->registerReconnectCallback(reconnectCallback);
     websocket->connect(*ccMessagingAddress);
 }
 
+void LibJoynrWebSocketRuntime::sendInitializationMsg()
+{
+    auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
+        // initialization message will be sent after reconnect
+        JOYNR_LOG_ERROR(logger,
+                        "Sending websocket initialization message failed. Error: {}",
+                        e.getMessage());
+    };
+    websocket->sendTextMessage(initializationMsg, onFailure);
+}
+
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
-        const std::shared_ptr<MessageRouter>& messageRouter)
+        std::shared_ptr<MessageRouter> messageRouter)
 {
     auto wsLibJoynrMessagingSkeleton =
-            std::make_shared<WebSocketLibJoynrMessagingSkeleton>(messageRouter);
+            std::make_shared<WebSocketLibJoynrMessagingSkeleton>(std::move(messageRouter));
     websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](const std::string& msg) {
         wsLibJoynrMessagingSkeleton->onTextMessageReceived(msg);
     });
-}
-
-void LibJoynrWebSocketRuntime::onWebSocketError(const std::string& errorMessage)
-{
-    JOYNR_LOG_ERROR(logger, "WebSocket error occurred: {}", errorMessage);
 }
 
 } // namespace joynr

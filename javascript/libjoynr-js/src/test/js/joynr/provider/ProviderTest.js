@@ -146,6 +146,15 @@ define(
                                                 this.value = newValue;
                                             }
                                         },
+                                        complexStructMapAttribute : {
+                                            value : {},
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
                                         failingSyncAttribute : {
                                             value : 0,
                                             get : function() {
@@ -201,11 +210,15 @@ define(
                                                 .createSpy("methodFireAndForget"),
                                         weakSignal : jasmine.createSpy("weakSignal"),
                                         triggerBroadcasts : jasmine.createSpy("triggerBroadcasts"),
+                                        triggerBroadcastsWithPartitions : jasmine
+                                                .createSpy("triggerBroadcastsWithPartitions"),
                                         methodProvidedImpl : jasmine
                                                 .createSpy("methodProvidedImpl"),
                                         methodWithByteBuffer : jasmine
                                                 .createSpy("methodWithByteBuffer"),
                                         methodWithTypeDef : jasmine.createSpy("methodWithTypeDef"),
+                                        methodWithComplexMap : jasmine
+                                                .createSpy("methodWithComplexMap"),
                                         operationWithEnumsAsInputAndOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndOutput"),
                                         operationWithMultipleOutputParameters : jasmine

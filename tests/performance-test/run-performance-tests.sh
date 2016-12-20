@@ -70,6 +70,8 @@ PROVIDER_PID=""
 # arguments which are passed to the C++ cluster-controller
 ADDITIONAL_CC_ARGS=""
 
+SKIPBYTEARRAYSIZETIMESK=false
+
 function waitUntilJettyStarted {
     started=0
     count=0
@@ -268,6 +270,7 @@ function performJsConsumerTest {
     REPORTFILE_PARAM=$2
     VIACC=$3
     STARTPROVIDER=$4
+    SKIPBYTEARRAYSIZETIMEK=$5
     PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
@@ -292,6 +295,7 @@ function performJsConsumerTest {
                        --performance-test:stringlength=$INPUTDATA_STRINGLENGTH \
                        --performance-test:bytearraylength=$INPUTDATA_BYTEARRAYSIZE \
                        --performance-test:viacc=$VIACC \
+                       --performance-test:skipByteArraySizeTimesK=$SKIPBYTEARRAYSIZETIMEK \
                          startconsumer 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
     else
         export runs=$SINGLECONSUMER_RUNS
@@ -370,7 +374,7 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:d:j:p:r:s:t:x:y:m:z:n:a:" OPTIONS;
+while getopts "c:d:j:k:p:r:s:t:x:y:m:z:n:a:" OPTIONS;
 do
     case $OPTIONS in
         a)
@@ -384,6 +388,9 @@ do
             ;;
         j)
             JETTY_PATH=${OPTARG%/}
+            ;;
+        k)
+            SKIPBYTEARRAYSIZETIMESK=$OPTARG
             ;;
         p)
             PERFORMANCETESTS_BIN_DIR=${OPTARG%/}
@@ -447,6 +454,13 @@ STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer-stdout.txt
 rm -f $STDOUT
 rm -f $REPORTFILE
 
+TESTCASES=('SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY')
+
+if [ ! $SKIPBYTEARRAYSIZETIMESK ]
+then
+    TESTCASES+=('SEND_BYTEARRAY_WITH_SIZE_TIMES_K')
+fi
+
 if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ]
 then
     startCppClusterController
@@ -477,7 +491,7 @@ then
         if [ "$TESTCASE" == "CPP_$mode" ]
         then
             startCppPerformanceTestProvider
-            for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY' 'SEND_BYTEARRAY_WITH_SIZE_TIMES_K'; do
+            for testcase in ${TESTCASES[@]}; do
                 echo "Testcase: $TESTCASE::$testcase" | tee -a $REPORTFILE
                 performCppConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
             done
@@ -502,19 +516,19 @@ then
     if [ "$TESTCASE" == "JS_ASYNC" ]
     then
         echo "Testcase: JS_ASYNC" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE true ON
+        performJsConsumerTest $STDOUT $REPORTFILE true ON $SKIPBYTEARRAYSIZETIMESK
     fi
 
     if [ "$TESTCASE" == "JS_SHORTCIRCUIT" ]
     then
         echo "Testcase: JS_SHORTCIRCUIT" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE false OFF
+        performJsConsumerTest $STDOUT $REPORTFILE false OFF $SKIPBYTEARRAYSIZETIMESK
     fi
 
     if [ "$TESTCASE" == "JS_CONSUMER" ]
     then
         echo "Testcase: JS_CONSUMER for domain $DOMAINNAME" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE true OFF
+        performJsConsumerTest $STDOUT $REPORTFILE true OFF $SKIPBYTEARRAYSIZETIMESK
     fi
 
     if [ "$TESTCASE" == "CPP_PROVIDER" ]
@@ -541,7 +555,7 @@ then
     echo "### Starting performance tests ###"
 
     echo "Testcase: OAP_TO_BACKEND_MOSQ" | tee -a $REPORTFILE
-    performJsConsumerTest $STDOUT $REPORTFILE true OFF
+    performJsConsumerTest $STDOUT $REPORTFILE true OFF $SKIPBYTEARRAYSIZETIMESK
 
     stopAnyProvider
     stopCppClusterController

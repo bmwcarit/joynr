@@ -48,6 +48,9 @@ class InterfaceProviderHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include <string>
+«IF !francaIntf.broadcasts.filter[selective].empty»
+	#include <vector>
+«ENDIF»
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -103,10 +106,10 @@ public:
 		«IF attribute.readable»
 			/**
 			 * @brief Gets «attributeName.toFirstUpper»
-			 * @param onSucess A callback function to be called once the asynchronous computation has
-			 * finished with success. It must expect a request status object as well as the attribute value.
-			 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
-			 * @return the value of the attribute «attributeName.toFirstUpper»
+			 *
+			 «printThreadingDocumentation()»
+			 *
+			 «printCallbackDocumentation("with the attribute value")»
 			 */
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
@@ -118,10 +121,11 @@ public:
 		«IF attribute.writable»
 			/**
 			 * @brief Sets «attributeName.toFirstUpper»
+			 *
+			 «printThreadingDocumentation()»
+			 *
 			 * @param «attributeName» the new value of the attribute
-			 * @param onSuccess A callback function to be called once the asynchronous computation has
-			 * finished with success. It must expect a request status object.
-			 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
+			 «printCallbackDocumentation("")»
 			 */
 			virtual void set«attributeName.toFirstUpper»(
 					const «attribute.typeName»& «attributeName»,
@@ -151,12 +155,13 @@ public:
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		/**
 		 * @brief Implementation of the Franca method «method.joynrName»
+		 *
+		 «printThreadingDocumentation()»
+		 *
 		 «IF method.fireAndForget»
 		 * This is a fire-and-forget method. Callers do not expect any response.
 		 «ELSE»
-		 * @param onSuccess A callback function to be called once the asynchronous computation has
-		 * finished with success. It must expect a request status object as well as the method out parameters.
-		 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
+		 «printCallbackDocumentation("")»
 		 «ENDIF»
 		 */
 		virtual void «method.joynrName»(
@@ -194,11 +199,20 @@ public:
 		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete
 		 * provider to signal an occured event. It is used to implement broadcast
 		 * publications.
-		 * @param «broadcastName» the new broadcast value
+		 «FOR parameter: getOutputParameters(broadcast)»
+		 * @param «parameter.name» the value for the broadcast output parameter «parameter.name»
+		 «ENDFOR»
+		 «IF !broadcast.selective»
+		 * @param partitions optional list of partitions for this broadcast. Broadcast notifications
+		 * are only sent to subscribers for these partitions.
+		 «ENDIF»
 		 */
 		virtual void fire«broadcastName.toFirstUpper»(
 				«IF !broadcast.outputParameters.empty»
-					«broadcast.commaSeperatedTypedConstOutputParameterList»
+					«broadcast.commaSeperatedTypedConstOutputParameterList»«IF !broadcast.selective»,«ENDIF»
+				«ENDIF»
+				«IF !broadcast.selective»
+					const std::vector<std::string>& partitions = std::vector<std::string>()
 				«ENDIF»
 		) = 0;
 
@@ -223,5 +237,21 @@ struct RequestCallerTraits<«packagePrefix»::«interfaceName»Provider>
 } // namespace joynr
 
 #endif // «headerGuard»
+'''
+
+def printThreadingDocumentation()
+'''
+* This method is called by a joynr middleware thread. The provider implementation
+* must not block this thread; it must be released immediately after the method is
+* called. Computations or further blocking calls must be performed asynchronously.
+* Return the result of these computations by calling the onSuccess or onError
+* callbacks asynchronously.
+'''
+
+def printCallbackDocumentation(String onSuccessParameter)
+'''
+* @param onSuccess A callback function to be called «onSuccessParameter» once the asynchronous computation has
+* finished with success. It expects a request status object as parameter.
+* @param onError A callback function to be called once the asynchronous computation fails. It expects an exception.
 '''
 }
