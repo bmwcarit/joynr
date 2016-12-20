@@ -67,8 +67,19 @@ public class JoynrMessageFactory {
                                        String toParticipantId,
                                        Object payload,
                                        MessagingQos messagingQos) {
+        return createMessage(joynrMessageType, fromParticipantId, toParticipantId, payload, messagingQos, true);
+    }
+
+    private JoynrMessage createMessage(String joynrMessageType,
+                                       String fromParticipantId,
+                                       String toParticipantId,
+                                       Object payload,
+                                       MessagingQos messagingQos,
+                                       boolean upliftTtl) {
         ExpiryDate expiryDate;
-        if (messagingQos.getRoundTripTtl_ms() > (Long.MAX_VALUE - ttlUpliftMs)) {
+        if (!upliftTtl) {
+            expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        } else if (messagingQos.getRoundTripTtl_ms() > (Long.MAX_VALUE - ttlUpliftMs)) {
             expiryDate = DispatcherUtils.convertTtlToExpirationDate(Long.MAX_VALUE);
         } else {
             expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms() + ttlUpliftMs);
@@ -115,7 +126,12 @@ public class JoynrMessageFactory {
                                     final String toParticipantId,
                                     Reply reply,
                                     MessagingQos messagingQos) {
-        return createMessage(JoynrMessage.MESSAGE_TYPE_REPLY, fromParticipantId, toParticipantId, reply, messagingQos);
+        return createMessage(JoynrMessage.MESSAGE_TYPE_REPLY,
+                             fromParticipantId,
+                             toParticipantId,
+                             reply,
+                             messagingQos,
+                             false);
     }
 
     public JoynrMessage createSubscriptionReply(final String fromParticipantId,
