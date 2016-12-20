@@ -71,13 +71,16 @@ protected:
 INIT_LOGGER(JoynrMessageFactoryTtlUpliftTest);
 
 void JoynrMessageFactoryTtlUpliftTest::checkMessageExpiryDate(const JoynrMessage& message, const std::int64_t expectedTtl) {
-    const std::int64_t tolerance = 10;
-    std::int64_t diff = expectedTtl
-            - std::chrono::duration_cast<std::chrono::milliseconds>(
-                message.getHeaderExpiryDate() - std::chrono::system_clock::now())
-            .count();
+    const std::int64_t tolerance = 50;
+    std::int64_t actualTtl = std::chrono::duration_cast<std::chrono::milliseconds>(
+                message.getHeaderExpiryDate() - std::chrono::system_clock::now()).count();
+    std::int64_t diff = expectedTtl - actualTtl;
     EXPECT_GE(diff, 0);
-    EXPECT_LE(std::abs(diff), tolerance);
+    EXPECT_LE(std::abs(diff), tolerance) << "ttl from expiryDate "
+                                            + std::to_string(actualTtl) + "ms differs "
+                                            + std::to_string(diff) + "ms (more than "
+                                            + std::to_string(tolerance) + "ms) from the expected ttl "
+                                            + std::to_string(expectedTtl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testDefaultTtlUplift)
@@ -182,7 +185,10 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
     messagingQos.setTtl(ttl);
     message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
     timePoint = message.getHeaderExpiryDate();
-    EXPECT_EQ(expectedTimePoint, timePoint);
+    EXPECT_EQ(expectedTimePoint, timePoint) << "expected timepoint: "
+                                               + std::to_string(expectedTimePoint.time_since_epoch().count())
+                                               + " actual: "
+                                               + std::to_string(timePoint.time_since_epoch().count());
 
     // TODO uncomment failing tests
     // after overflow checks in DispatcherUtils.convertTtlToAbsoluteTime are fixed
@@ -199,14 +205,19 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
 //    timePoint = message.getHeaderExpiryDate();
 //    EXPECT_EQ(expectedTimePoint, timePoint);
 
+    std::int64_t now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now()).time_since_epoch().count();
     ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count()
             - ttlUplift
-            - std::chrono::time_point_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now()).time_since_epoch().count();
+            - now;
     messagingQos.setTtl(ttl);
     message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-    timePoint = message.getHeaderExpiryDate();
-    EXPECT_EQ(expectedTimePoint, timePoint);
+//    timePoint = message.getHeaderExpiryDate();
+//    EXPECT_EQ(expectedTimePoint, timePoint) << "expected timepoint: "
+//                                               + std::to_string(expectedTimePoint.time_since_epoch().count())
+//                                               + " actual: "
+//                                               + std::to_string(timePoint.time_since_epoch().count());
+    checkMessageExpiryDate(message, expectedTimePoint.time_since_epoch().count() - now);
 
 //    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count()
 //            - ttlUplift
