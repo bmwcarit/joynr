@@ -19,7 +19,7 @@ cd javascript/libjoynr-js
 ```
 
 In addition, a mosquitto broker must be running locally supporting web socket connections
-on port 9001. An exemplary mosquitto configuration can be found under
+on port 9001. An example mosquitto configuration can be found under
 javascript/libjoynr-js/src/test/resources/mosquitto-test.conf,
 allowing to start the broker via the follwing command:
 
@@ -104,23 +104,38 @@ Example:
     ...
 ```
 
-The test can be run from command line provided the required modules are installed in the local
-nodejs / npm environment. The required modules can be found in the ```devDependencies``` and
-```dependencies``` sections of the npm configuration file ```src/main/resources/package.json```.
-For the required npm and nodejs version please refer to what is included in the ```joynr-javascript```
-docker container specified in ```docker/joynr-javascript/Dockerfile```.
+### Starting karma from the command line
 
-Example for installation of the required modules:
+The tests can also be run from the command line. First run the tests once via ```mvn install```to
+cause all the required node dependencies to be installed, and then create a symbolic link to the 
+node_modules directory:
 
 ```
 cd <JOYNR_REPO>/javascript/libjoynr-js
-npm install target/node-classes
-ln -s target/node-classes/node_modules node_modules
+mvn install -DskipTests=false
+ln -s node_modules target/node-classes/node_modules
+```
+
+You can then start the tests in karma using ```karma start```. If running system integration tests,
+be sure to start the joynr infrastructure using ```mvn jetty:run``` and mosquitto beforehand.
+
+Start mosquitto:
+
+```
+mosquitto -c src/test/resources/mosquitto-test.conf -v
+```
+
+Start joynr infrastructure:
+
+```
+mvn jetty:run
 ```
 
 Example command line for manual start:
 
-```karma start src/test/karma/karma.<config>.js --single-run=false --debug```
+```
+karma start src/test/karma/karma.<config>.js --single-run=false --debug
+```
 
 If running a browser with visible UI just hit the debug button once the test has run once.
 If using a headless browser (e.g. ```PhantomJS```) please run a browser (e.g. ```Google-Chrome```)
