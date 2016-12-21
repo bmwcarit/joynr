@@ -33,17 +33,13 @@ class IltConsumerBroadcastSubscriptionTest
 public:
     IltConsumerBroadcastSubscriptionTest()
             : validity(60000),
-              subscriptionQos(std::make_shared<joynr::MulticastSubscriptionQos>(validity)),
-              subscriptionIdFutureTimeout(10000),
-              publicationTimeout(10000)
+              subscriptionQos(std::make_shared<joynr::MulticastSubscriptionQos>(validity))
     {
     }
 
 protected:
     int64_t validity;
     std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos;
-    std::uint16_t subscriptionIdFutureTimeout;
-    std::chrono::milliseconds publicationTimeout;
 };
 
 joynr::Logger iltConsumerBroadcastSubscriptionTestLogger("IltConsumerBroadcastSubscriptionTest");
@@ -79,7 +75,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePri
                 "callSubscribeBroadcastWithSinglePrimitiveParameter - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithSinglePrimitiveParameterBroadcast(
                                     listener, subscriptionQos, partitions)
-                ->get(subscriptionIdFutureTimeout, subscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
@@ -88,10 +84,11 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePri
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSinglePrimitiveParameter - fire broadcast");
         testInterfaceProxy->methodToFireBroadcastWithSinglePrimitiveParameter(partitions);
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithSinglePrimitiveParameterBroadcast(
                 subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }
 
@@ -128,7 +125,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
                 "callSubscribeBroadcastWithMultiplePrimitiveParameters - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithMultiplePrimitiveParametersBroadcast(
                                     listener, subscriptionQos, partitions)
-                ->get(subscriptionIdFutureTimeout, subscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
@@ -137,12 +134,13 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultiplePrimitiveParameters - fire broadast");
         testInterfaceProxy->methodToFireBroadcastWithMultiplePrimitiveParameters(partitions);
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         EXPECT_TRUE(IltUtil::cmpDouble(doubleOut, 1.1));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithMultiplePrimitiveParametersBroadcast(
                 subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }
 
@@ -178,19 +176,20 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArr
                        "callSubscribeBroadcastWithSingleArrayParameter - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithSingleArrayParameterBroadcast(
                                     listener, subscriptionQos, partitions)
-                ->get(subscriptionIdFutureTimeout, subscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleArrayParameter - subscription registered");
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleArrayParameter - fire broadcast");
         testInterfaceProxy->methodToFireBroadcastWithSingleArrayParameter(partitions);
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         EXPECT_TRUE(IltUtil::checkStringArray(stringArrayOut));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithSingleArrayParameterBroadcast(
                 subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }
 
@@ -242,7 +241,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
 
         testInterfaceProxy->subscribeToBroadcastWithMultipleArrayParametersBroadcast(
                                     listener, subscriptionQos, partitions)
-                ->get(subscriptionIdFutureTimeout, subscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
@@ -251,13 +250,14 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultipleArrayParameters - fire broadcast");
         testInterfaceProxy->methodToFireBroadcastWithMultipleArrayParameters(partitions);
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         EXPECT_TRUE(IltUtil::checkUInt64Array(uInt64ArrayOut));
         EXPECT_TRUE(IltUtil::checkStructWithStringArrayArray(structWithStringArrayArrayOut));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithMultipleArrayParametersBroadcast(
                 subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }
 
@@ -302,7 +302,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnu
                 "callSubscribeBroadcastWithSingleEnumerationParameter - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithSingleEnumerationParameterBroadcast(
                                     listener, subscriptionQos, partitions)
-                ->get(subscriptionIdFutureTimeout, subscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
@@ -311,10 +311,11 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnu
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleEnumerationParameter - fire broadast");
         testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter(partitions);
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(
                 subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }
 
@@ -339,7 +340,6 @@ TEST_P(IltConsumerBroadcastSubscriptionTest,
 {
     Semaphore publicationSemaphore;
     std::string subscriptionId;
-
     const std::vector<std::string> partitions = GetParam();
 
     auto mockBroadcastWithMultipleEnumerationParametersBroadcastListener =
@@ -366,7 +366,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest,
                 "callSubscribeBroadcastWithMultipleEnumerationParameters - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithMultipleEnumerationParametersBroadcast(
                                     listener, subscriptionQos, partitions)
-                ->get(subscriptionIdFutureTimeout, subscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMulti"
@@ -376,10 +376,11 @@ TEST_P(IltConsumerBroadcastSubscriptionTest,
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultipleEnumerationParameters - fire broadast");
         testInterfaceProxy->methodToFireBroadcastWithMultipleEnumerationParameters(partitions);
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithMultipleEnumerationParametersBroadcast(
                 subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }
 
@@ -423,7 +424,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
                        "callSubscribeBroadcastWithSingleStructParameter - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithSingleStructParameterBroadcast(
                                     listener, subscriptionQos, partitions)
-                ->get(subscriptionIdFutureTimeout, subscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleStructParameter - subscription registered");
@@ -431,12 +432,13 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleStructParameter - fire broadast");
         testInterfaceProxy->methodToFireBroadcastWithSingleStructParameter(partitions);
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         EXPECT_TRUE(IltUtil::checkExtendedStructOfPrimitives(extendedStructOfPrimitivesOut));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithSingleStructParameterBroadcast(
                 subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }
 
@@ -488,7 +490,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
                 "callSubscribeBroadcastWithMultipleStructParameters - register subscription");
         testInterfaceProxy->subscribeToBroadcastWithMultipleStructParametersBroadcast(
                                     listener, subscriptionQos, partitions)
-                ->get(subscriptionIdFutureTimeout, subscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
@@ -497,13 +499,14 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultipleStructParameters - fire broadast");
         testInterfaceProxy->methodToFireBroadcastWithMultipleStructParameters(partitions);
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         EXPECT_TRUE(IltUtil::checkBaseStructWithoutElements(baseStructWithoutElementsOut));
         EXPECT_TRUE(IltUtil::checkExtendedExtendedBaseStruct(extendedExtendedBaseStructOut));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithMultipleStructParametersBroadcast(
                 subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }
 
@@ -528,7 +531,7 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, doNotReceivePublicationsForOtherPar
                         subscriptionQos,
                         subscribeToPartitions);
 
-        subscriptionIdFuture->get(subscriptionIdFutureTimeout, subscriptionId);
+        subscriptionIdFuture->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter(
                 broadcastPartitions);
@@ -540,10 +543,11 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, doNotReceivePublicationsForOtherPar
         testInterfaceProxy->methodToFireBroadcastWithSingleEnumerationParameter(
                 subscribeToPartitions);
 
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(
                 subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }
 
