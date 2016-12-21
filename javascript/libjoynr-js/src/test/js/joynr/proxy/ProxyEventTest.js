@@ -27,7 +27,7 @@ define([
     "joynr/proxy/ProxyEvent",
     "joynr/proxy/DiscoveryQos",
     "joynr/messaging/MessagingQos",
-    "joynr/proxy/OnChangeSubscriptionQos",
+    "joynr/proxy/MulticastSubscriptionQos",
     "global/Promise",
     "global/WaitsFor"
 ], function(
@@ -36,7 +36,7 @@ define([
         ProxyEvent,
         DiscoveryQos,
         MessagingQos,
-        OnChangeSubscriptionQos,
+        MulticastSubscriptionQos,
         Promise, waitsFor) {
 
     var asyncTimeout = 5000;
@@ -45,15 +45,8 @@ define([
 
         var weakSignal, broadcastWithoutFilterParameters;
         var subscriptionId;
-        var subscriptionQos = new OnChangeSubscriptionQos();
+        var subscriptionQos = new MulticastSubscriptionQos();
         var subscriptionManagerSpy;
-
-        var qosSettings = {
-            periodMs : 50,
-            expiryDateMs : 3,
-            alertAfterIntervalMs : 80,
-            publicationTtlMs : 100
-        };
 
         function checkSpy(spy, errorExpected) {
 

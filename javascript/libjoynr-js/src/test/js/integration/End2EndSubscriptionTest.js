@@ -60,6 +60,7 @@ define([
                         var safetyTimeout = 200;
                         var subscriptionQosOnChange;
                         var subscriptionQosInterval;
+                        var subscriptionQosMulticast;
                         var subscriptionQosMixed;
                         var radioProxy;
                         var abstractTest = new End2EndAbstractTest("End2EndSubscriptionTest");
@@ -82,6 +83,10 @@ define([
                                 subscriptionQosMixed = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
                                     minIntervalMs : 100,
                                     maxIntervalMs : 1000
+                                });
+
+                                subscriptionQosMulticast = new joynr.proxy.MulticastSubscriptionQos({
+                                    validityMs : 100000
                                 });
 
                                 radioProxy = settings.radioProxy;
@@ -365,7 +370,7 @@ define([
 
                         it("subscribe to broadcastWithEnum", function(done) {
                             var mySpy;
-                            setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange).then(function(spy) {
+                            setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosMulticast).then(function(spy) {
                                 mySpy = spy;
                                 return callOperation("triggerBroadcasts", {
                                     broadcastName: "broadcastWithEnum",
