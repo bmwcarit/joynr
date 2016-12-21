@@ -1,3 +1,13 @@
+#joynr 0.22.4
+
+## API relevant changes
+None.
+
+##Other changes
+
+* **[C++, JS, Java]** Apply configurable Time To Live (TTL) Uplift to each outgoing message and to
+  the expiry date of subscriptions
+
 #joynr 0.22.3
 
 ## API relevant changes

@@ -150,6 +150,7 @@ requirejs([
     "tests/joynr/dispatching/subscription/PublicationManagerTest",
     "tests/joynr/dispatching/subscription/SubscriptionManagerTest",
     "tests/joynr/dispatching/DispatcherTest",
+    "tests/joynr/dispatching/TtlUpliftTest",
     "tests/joynr/dispatching/RequestReplyManagerTest"
 ], function() {
     console.log("all tests modules loaded");
