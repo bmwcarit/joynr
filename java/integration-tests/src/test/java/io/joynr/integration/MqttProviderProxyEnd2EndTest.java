@@ -51,6 +51,8 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
     private static int mqttBrokerPort;
 
     @BeforeClass
+    // NOTE: when running in Eclipse, it may be necessary to set the system variable -Dpath=path/to/mosquitto
+    // even if mosquitto is on the usual path and can be started without extra path info from the command line.
     public static void startBroker() throws Exception {
         mqttBrokerPort = ServletUtil.findFreePort();
         String path = System.getProperty("path") != null ? System.getProperty("path") : "";
