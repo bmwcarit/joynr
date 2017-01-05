@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ namespace joynr
 class InterfaceAddress;
 class ICapabilitiesClient;
 class LibjoynrSettings;
-class MessageRouter;
+class IMessageRouter;
 
 /**
   * The local capabilities directory is the "first point of call" for accessing
@@ -81,7 +81,7 @@ public:
     LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
-                               MessageRouter& messageRouter,
+                               IMessageRouter& messageRouter,
                                LibjoynrSettings& libJoynrSettings,
                                boost::asio::io_service& ioService,
                                const std::string clusterControllerId);
@@ -242,7 +242,7 @@ private:
     TypedClientMultiCache<std::string, types::DiscoveryEntry> participantId2LocalCapability;
 
     std::vector<types::GlobalDiscoveryEntry> registeredGlobalCapabilities;
-    MessageRouter& messageRouter;
+    IMessageRouter& messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
     LibjoynrSettings& libJoynrSettings; // to retrieve info about persistency

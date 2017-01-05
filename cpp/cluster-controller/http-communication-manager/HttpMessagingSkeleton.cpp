@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@
  */
 #include "HttpMessagingSkeleton.h"
 
-#include "joynr/MessageRouter.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/IMessageRouter.h"
+#include "joynr/JoynrMessage.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
@@ -27,7 +29,7 @@ namespace joynr
 
 INIT_LOGGER(HttpMessagingSkeleton);
 
-HttpMessagingSkeleton::HttpMessagingSkeleton(MessageRouter& messageRouter)
+HttpMessagingSkeleton::HttpMessagingSkeleton(IMessageRouter& messageRouter)
         : messageRouter(messageRouter)
 {
 }

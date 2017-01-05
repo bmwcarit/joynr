@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+
 #ifndef MOCKOBJECTS_H_
 #define MOCKOBJECTS_H_
 
@@ -53,7 +54,7 @@
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/MessageRouter.h"
+#include "joynr/AbstractMessageRouter.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
 
@@ -76,8 +77,6 @@
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
-
-#include "joynr/MessageRouter.h"
 
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ParticipantIdStorage.h"
@@ -319,7 +318,14 @@ public:
   MOCK_METHOD2(test1, void(int a0, int a1));
 };
 
-class MockMessageRouter : public joynr::MessageRouter {
+class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
+public:
+    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
+    MOCK_METHOD1(remove, void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
+    MOCK_METHOD1(contains, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
+};
+
+class MockMessageRouter : public joynr::AbstractMessageRouter {
 public:
     void invokeAddNextHopOnSuccessFct(const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
@@ -337,11 +343,9 @@ public:
     }
 
     MockMessageRouter(boost::asio::io_service& ioService):
-        MessageRouter(std::unique_ptr<joynr::IMessagingStubFactory>(),
-                      std::shared_ptr<joynr::MulticastMessagingSkeletonDirectory>(),
-                      std::unique_ptr<joynr::IPlatformSecurityManager>(),
+        AbstractMessageRouter(std::make_shared<MockMessagingStubFactory>(),
                       ioService,
-                      std::unique_ptr<joynr::IMulticastAddressCalculator>(),
+                      nullptr,
                       0)
     {
         EXPECT_CALL(
@@ -355,21 +359,35 @@ public:
         )
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeRemoveNextHopOnSuccessFct));
     }
+
     MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, std::uint32_t tryCount));
+
+    MOCK_METHOD1(setAccessController, void(std::shared_ptr<joynr::IAccessController> accessController));
+
+    MOCK_METHOD6(registerMulticastReceiver, void(const std::string& multicastId,
+                                                 const std::string& subscriberParticipantId,
+                                                 const std::string& providerParticipantId,
+                                                 std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
+                                                 std::function<void()> onSuccess,
+                                                 std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError));
+
     MOCK_METHOD3(addNextHop, void(
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
             std::function<void()> onSuccess));
+
     MOCK_METHOD3(removeNextHop, void(
             const std::string& participantId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+
     MOCK_METHOD5(addMulticastReceiver, void(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+
     MOCK_METHOD5(removeMulticastReceiver, void(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
@@ -666,13 +684,6 @@ public:
     MOCK_METHOD3(sendMessage,void(const joynr::system::RoutingTypes::Address&, const joynr::JoynrMessage&, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
     MOCK_METHOD1(init,void(const joynr::MessagingSettings& settings));
     MOCK_METHOD1(registerReceiver, void(std::shared_ptr<joynr::IMessageReceiver> receiver));
-};
-
-class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
-public:
-    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
-    MOCK_METHOD1(remove, void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
-    MOCK_METHOD1(contains, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
 };
 
 class MockMessagingStub : public joynr::IMessaging {

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #include "MqttReceiver.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/MessageRouter.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/Util.h"
@@ -41,7 +41,7 @@ std::string MqttMessagingSkeleton::translateMulticastWildcard(std::string topic)
     return topic;
 }
 
-MqttMessagingSkeleton::MqttMessagingSkeleton(MessageRouter& messageRouter,
+MqttMessagingSkeleton::MqttMessagingSkeleton(IMessageRouter& messageRouter,
                                              std::shared_ptr<MqttReceiver> mqttReceiver)
         : messageRouter(messageRouter),
           mqttReceiver(mqttReceiver),

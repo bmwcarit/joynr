@@ -456,6 +456,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
         "unit-tests/serializer/*.cpp"
     )
 
+    file(
+        GLOB g_UnitTests_HEADERS
+        "unit-tests/*.h"
+    )
+
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         list(
             APPEND g_UnitTests_SOURCES
@@ -469,6 +474,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
             $<TARGET_OBJECTS:JoynrTestGenerated>
             ${cluster_controller_test_HEADERS}
             ${cluster_controller_test_SOURCES}
+            ${g_UnitTests_HEADERS}
             ${g_UnitTests_SOURCES}
         )
 

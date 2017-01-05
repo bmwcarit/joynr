@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/SubscriptionException.h"
 #include "joynr/ISubscriptionCallback.h"
-#include "joynr/MessageRouter.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
@@ -76,7 +76,7 @@ SubscriptionManager::~SubscriptionManager()
 INIT_LOGGER(SubscriptionManager);
 
 SubscriptionManager::SubscriptionManager(boost::asio::io_service& ioService,
-                                         std::shared_ptr<MessageRouter> messageRouter)
+                                         std::shared_ptr<IMessageRouter> messageRouter)
         : subscriptions(),
           multicastSubscribers(),
           multicastSubscribersMutex(),
@@ -87,7 +87,7 @@ SubscriptionManager::SubscriptionManager(boost::asio::io_service& ioService,
 }
 
 SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler,
-                                         std::shared_ptr<MessageRouter> messageRouter)
+                                         std::shared_ptr<IMessageRouter> messageRouter)
         : subscriptions(),
           multicastSubscribers(),
           multicastSubscribersMutex(),
