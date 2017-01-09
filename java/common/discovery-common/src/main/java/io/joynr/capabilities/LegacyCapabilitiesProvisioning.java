@@ -24,7 +24,6 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILI
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID;
-import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITYDIRECTORYURL;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.DISCOVERYDIRECTORYURL;
 import static io.joynr.messaging.MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL;
@@ -62,10 +61,6 @@ public class LegacyCapabilitiesProvisioning {
         protected String discoveryDirectoryUrl;
 
         @Inject(optional = true)
-        @Named(CAPABILITYDIRECTORYURL)
-        protected String deprecatedCapabilityDirectoryUrl;
-
-        @Inject(optional = true)
         @Named(DOMAINACCESSCONTROLLERURL)
         protected String domainAccessControllerUrl;
 
@@ -98,7 +93,6 @@ public class LegacyCapabilitiesProvisioning {
 
         // @CHECKSTYLE:OFF
         public LegacyProvisioningPropertiesHolder(String discoveryDirectoryUrl,
-                String deprecatedCapabilityDirectoryUrl,
                 String domainAccessControllerUrl,
                 String channelId,
                 String discoveryDirectoriesDomain,
@@ -108,7 +102,6 @@ public class LegacyCapabilitiesProvisioning {
                 String domainAccessControllerChannelId) {
             // @CHECKSTYLE:ON
             this.discoveryDirectoryUrl = discoveryDirectoryUrl;
-            this.deprecatedCapabilityDirectoryUrl = deprecatedCapabilityDirectoryUrl;
             this.domainAccessControllerUrl = domainAccessControllerUrl;
             this.channelId = channelId;
             this.discoveryDirectoriesDomain = discoveryDirectoriesDomain;
@@ -124,13 +117,11 @@ public class LegacyCapabilitiesProvisioning {
 
     @Inject
     public LegacyCapabilitiesProvisioning(LegacyProvisioningPropertiesHolder properties) {
-        String urlToUse = properties.deprecatedCapabilityDirectoryUrl == null || properties.deprecatedCapabilityDirectoryUrl.isEmpty()
-                ? properties.discoveryDirectoryUrl : properties.deprecatedCapabilityDirectoryUrl;
         createDiscoveryEntryFor(GlobalCapabilitiesDirectory.class,
                                 GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                 properties.capabilitiesDirectoryChannelId,
                                 properties.capabilitiesDirectoryParticipantId,
-                                urlToUse,
+                                properties.discoveryDirectoryUrl,
                                 properties.channelId,
                                 properties.discoveryDirectoriesDomain);
         createDiscoveryEntryFor(GlobalDomainAccessController.class,

@@ -24,7 +24,6 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILI
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID;
-import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITYDIRECTORYURL;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.DISCOVERYDIRECTORYURL;
 import static org.junit.Assert.assertEquals;
@@ -137,7 +136,6 @@ public class StaticCapabilitiesProvisioningTest {
         properties.discoveryDirectoriesDomain = "io.joynr";
         properties.domainAccessControllerChannelId = "acl_channel_id";
         properties.domainAccessControllerParticipantId = "acl_participant_id";
-        properties.deprecatedCapabilityDirectoryUrl = "";
         return properties;
     }
 
@@ -236,7 +234,6 @@ public class StaticCapabilitiesProvisioningTest {
         propertiesHolder.discoveryDirectoriesDomain = "";
         propertiesHolder.channelId = "";
         propertiesHolder.capabilitiesDirectoryChannelId = "";
-        propertiesHolder.deprecatedCapabilityDirectoryUrl = "";
         propertiesHolder.discoveryDirectoryUrl = "";
         propertiesHolder.domainAccessControllerUrl = "";
         return createInjectorForJsonValue(jsonValue, propertiesHolder);
@@ -264,7 +261,6 @@ public class StaticCapabilitiesProvisioningTest {
                                   .toInstance(provisioningProperties.domainAccessControllerChannelId);
                 bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID))
                                   .toInstance(provisioningProperties.domainAccessControllerParticipantId);
-                bind(String.class).annotatedWith(Names.named(CAPABILITYDIRECTORYURL)).toInstance(provisioningProperties.deprecatedCapabilityDirectoryUrl);
                 bind(String.class).annotatedWith(Names.named(CHANNELID)).toInstance(provisioningProperties.channelId);
                 bind(String.class).annotatedWith(Names.named(DISCOVERYDIRECTORYURL)).toInstance(provisioningProperties.discoveryDirectoryUrl);
                 bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL)).toInstance(provisioningProperties.domainAccessControllerUrl);
