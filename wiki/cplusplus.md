@@ -848,7 +848,18 @@ The following Joynr C++ include files are required:
 ```
 
 ### The base class
-The provider class must extend the generated class ```joynr::<Package>::Default<Interface>Provider```  and implement getter and setter methods for each Franca attribute and a method for each method of the Franca interface. In order to send broadcasts the generated code of the super class ```joynr::<Interface>Provider``` can be used.
+The provider class must extend the generated class ```joynr::<Package>::Default<Interface>Provider```
+and implement a method for each method of the Franca interface.
+
+It may override the provided default implementation of getter and setter methods for each Franca
+attribute (where required).
+
+In order to send broadcasts the generated code of the super class ```joynr::<Interface>Provider```
+can be used.
+
+If the value of a notifiable attribute gets changed directly inside the implementation of a method
+or (non-default) setter, the `<Attribute>Changed(<Attribute>)` method needs to be called in order
+to inform subscribers about the value change.
 
 ```cpp
 #include "My<Interface>Provider.h"
