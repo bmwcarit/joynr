@@ -346,7 +346,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
         if (!mqttMessagingIsRunning) {
             mqttMessagingSkeleton = std::make_shared<MqttMessagingSkeleton>(
-                    *messageRouter, std::static_pointer_cast<MqttReceiver>(mqttMessageReceiver));
+                    *messageRouter,
+                    std::static_pointer_cast<MqttReceiver>(mqttMessageReceiver),
+                    messagingSettings.getTtlUpliftMs());
             mqttMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
                 mqttMessagingSkeleton->onTextMessageReceived(msg);
             });

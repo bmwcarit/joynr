@@ -60,6 +60,8 @@ std::string createMulticastId(const std::string& providerParticipantId,
                               const std::string& multicastName,
                               const std::vector<std::string>& partitions);
 
+std::string extractParticipantIdFromMulticastId(const std::string& multicastId);
+
 void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards = false);
 
 /**

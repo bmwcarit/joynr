@@ -139,6 +139,18 @@ std::string createMulticastId(const std::string& providerParticipantId,
     return multicastId.str();
 }
 
+std::string extractParticipantIdFromMulticastId(const std::string& multicastId)
+{
+    auto separatorIt = multicastId.find(MULTICAST_PARTITION_SEPARATOR);
+
+    if (separatorIt == std::string::npos) {
+        throw std::invalid_argument("Cannot extract provider participant Id from multicast Id: " +
+                                    multicastId);
+    }
+
+    return multicastId.substr(0, separatorIt);
+}
+
 void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards)
 {
     static const std::regex patternRegex("^[a-zA-Z0-9]+$");

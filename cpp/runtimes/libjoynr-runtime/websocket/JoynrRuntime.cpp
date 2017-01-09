@@ -39,7 +39,10 @@ JoynrRuntime* JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
         runtimeFuture.onSuccess(std::move(createdRuntime));
     };
 
-    auto onErrorCallback = [](exceptions::JoynrRuntimeException&) {};
+    auto onErrorCallback = [&runtimeFuture](exceptions::JoynrRuntimeException& exception) {
+        runtimeFuture.onError(
+                std::shared_ptr<joynr::exceptions::JoynrException>(exception.clone()));
+    };
 
     createRuntimeAsync(
             std::move(settings), std::move(onSuccessCallback), std::move(onErrorCallback));
