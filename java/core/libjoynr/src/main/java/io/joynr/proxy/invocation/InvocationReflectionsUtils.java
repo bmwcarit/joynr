@@ -20,6 +20,7 @@ package io.joynr.proxy.invocation;
  */
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -32,7 +33,12 @@ public final class InvocationReflectionsUtils {
 
     static Class<?>[] extractOutParameterTypes(SubscriptionListener listener) {
         try {
-            Method onReceiveListenerMethod = ReflectionUtils.findMethod(listener.getClass(), "onReceive");
+            List<Method> onReceiveMethods = ReflectionUtils.findMethodsByName(listener.getClass(), "onReceive");
+            if (onReceiveMethods.size() != 1) {
+                throw new IllegalArgumentException("listener must implement a single onReceive method");
+            }
+
+            Method onReceiveListenerMethod = onReceiveMethods.get(0);
             Class<?>[] outParameterTypes = onReceiveListenerMethod.getParameterTypes();
             return outParameterTypes;
         } catch (NoSuchMethodException e) {
