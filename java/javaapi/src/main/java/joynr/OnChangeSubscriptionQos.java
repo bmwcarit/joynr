@@ -52,59 +52,6 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
     }
 
     /**
-     * @deprecated This constructor will be deleted by 2017-01-01.
-     * Use the fluent interface instead.
-     *
-     * Constructor of OnChangeSubscriptionQos object used for subscriptions on
-     * broadcasts in generated proxy objects
-     *
-     * @param minIntervalMs
-     *            is used to prevent flooding. Publications will be sent
-     *            maintaining this minimum interval provided, even if the value
-     *            changes more often. This prevents the consumer from being
-     *            flooded by updated values. The filtering happens on the
-     *            provider's side, thus also preventing excessive network
-     *            traffic. This value is provided in milliseconds.
-     * @param expiryDateMs
-     *            The expiryDate is the end date of the subscription. This value
-     *            is provided in milliseconds (since 1970-01-01T00:00:00.000).
-     * @param publicationTtlMs
-     *            is the time-to-live for publication messages.
-     *            NOTE minimum and maximum values apply.
-     *
-     * @see #setMinIntervalMs(long)
-     * @see SubscriptionQos#SubscriptionQos(long, long)
-     *           SubscriptionQos.SubscriptionQos(long, long)
-     *           for more information on expiryDate and publicationTtl
-     */
-    @Deprecated
-    public OnChangeSubscriptionQos(long minIntervalMs, long expiryDateMs, long publicationTtlMs) {
-        super(expiryDateMs, publicationTtlMs);
-        setMinIntervalMsInternal(minIntervalMs);
-
-    }
-
-    /**
-     * @deprecated Use getMinIntervalMs instead
-     *
-     * Get the minimum interval in milliseconds.
-     * <br>
-     * Publications will be sent maintaining this minimum interval provided,
-     * even if the value changes more often. This prevents the consumer from
-     * being flooded by updated values. The filtering happens on the provider's
-     * side, thus also preventing excessive network traffic. This value is
-     * provided in milliseconds.
-     *
-     * @return The minInterval in milliseconds. The publisher will keep a minimum
-     *         idle time of minInterval milliseconds between two successive
-     *         notifications.
-     */
-    @Deprecated
-    public long getMinInterval() {
-        return getMinIntervalMs();
-    }
-
-    /**
      * Get the minimum interval in milliseconds.
      * <br>
      * Publications will be sent maintaining this minimum interval provided,
@@ -119,34 +66,6 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      */
     public long getMinIntervalMs() {
         return minIntervalMs;
-    }
-
-    /**
-     * @deprecated Use setMinIntervalMs instead
-     *
-     * Set the minimum interval in milliseconds.
-     * <br>
-     * Publications will be sent maintaining this minimum interval provided,
-     * even if the value changes more often. This prevents the consumer from
-     * being flooded by updated values. The filtering happens on the provider's
-     * side, thus also preventing excessive network traffic. This value is
-     * provided in milliseconds.<br>
-     * <br>
-     * <b>Minimum and Maximum Values</b>
-     * <ul>
-     * <li><b>Minimum</b> minInterval: {@value #MIN_MIN_INTERVAL_MS}. Smaller values will be rounded up.
-     * <li><b>Maximum</b> minInterval: {@value #MAX_MIN_INTERVAL_MS}. Larger values
-     * will be rounded down.
-     * </ul>
-     *
-     * @param minIntervalMs
-     *            The publisher will keep a minimum idle time of minIntervalMs
-     *            between two successive notifications.
-     * @return this (fluent interface).
-     */
-    @Deprecated
-    public OnChangeSubscriptionQos setMinInterval(final long minIntervalMs) {
-        return setMinIntervalMs(minIntervalMs);
     }
 
     /**
