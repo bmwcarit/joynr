@@ -362,9 +362,6 @@ define([
                                     expect(function() {
                                         capabilitiesRegistrar.unregisterProvider(domain, provider);
                                     }).toThrow();
-                                    expect(function() {
-                                        capabilitiesRegistrar.unregisterCapability(domain, provider);
-                                    }).toThrow();
                                     done();
                                 });
 
