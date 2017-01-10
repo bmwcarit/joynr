@@ -28,11 +28,6 @@ std::int64_t& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT_MS()
     return default_timeout;
 }
 
-std::int64_t& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT()
-{
-    return DEFAULT_DISCOVERYTIMEOUT_MS();
-}
-
 DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
 {
     static DiscoveryQos::ArbitrationStrategy default_strategy =
@@ -51,11 +46,6 @@ std::int64_t& DiscoveryQos::DEFAULT_CACHEMAXAGE_MS()
     return DO_NOT_USE_CACHE();
 }
 
-std::int64_t& DiscoveryQos::DEFAULT_CACHEMAXAGE()
-{
-    return DEFAULT_CACHEMAXAGE_MS();
-}
-
 joynr::types::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
 {
     static joynr::types::DiscoveryScope::Enum default_scope =
@@ -67,11 +57,6 @@ std::int64_t& DiscoveryQos::DEFAULT_RETRYINTERVAL_MS()
 {
     static std::int64_t default_retryInterval = 1000;
     return default_retryInterval;
-}
-
-std::int64_t& DiscoveryQos::DEFAULT_RETRYINTERVAL()
-{
-    return DEFAULT_RETRYINTERVAL_MS();
 }
 
 DiscoveryQos::DiscoveryQos()
@@ -109,19 +94,9 @@ void DiscoveryQos::setDiscoveryTimeoutMs(std::int64_t discoveryTimeoutMs)
     }
 }
 
-void DiscoveryQos::setDiscoveryTimeout(std::int64_t discoveryTimeout)
-{
-    setDiscoveryTimeoutMs(discoveryTimeout);
-}
-
 std::int64_t DiscoveryQos::getDiscoveryTimeoutMs() const
 {
     return discoveryTimeoutMs;
-}
-
-std::int64_t DiscoveryQos::getDiscoveryTimeout() const
-{
-    return getDiscoveryTimeoutMs();
 }
 
 DiscoveryQos::ArbitrationStrategy DiscoveryQos::getArbitrationStrategy() const
@@ -150,19 +125,9 @@ std::int64_t DiscoveryQos::getCacheMaxAgeMs() const
     return cacheMaxAgeMs;
 }
 
-std::int64_t DiscoveryQos::getCacheMaxAge() const
-{
-    return getCacheMaxAgeMs();
-}
-
 void DiscoveryQos::setCacheMaxAgeMs(const std::int64_t& cacheMaxAgeMs)
 {
     this->cacheMaxAgeMs = cacheMaxAgeMs;
-}
-
-void DiscoveryQos::setCacheMaxAge(const std::int64_t& cacheMaxAge)
-{
-    setCacheMaxAgeMs(cacheMaxAge);
 }
 
 bool DiscoveryQos::getProviderMustSupportOnChange() const
@@ -196,19 +161,9 @@ std::int64_t DiscoveryQos::getRetryIntervalMs() const
     return this->retryIntervalMs;
 }
 
-std::int64_t DiscoveryQos::getRetryInterval() const
-{
-    return getRetryIntervalMs();
-}
-
 void DiscoveryQos::setRetryIntervalMs(std::int64_t retryIntervalMs)
 {
     this->retryIntervalMs = retryIntervalMs;
-}
-
-void DiscoveryQos::setRetryInterval(std::int64_t retryInterval)
-{
-    setRetryIntervalMs(retryInterval);
 }
 
 } // namespace joynr
