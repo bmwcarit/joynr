@@ -209,6 +209,13 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     createRuntimeMqttWithHttpBackend();
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     auto mockTestProvider = std::make_shared<MockTestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
 
     EXPECT_CALL(
             *mockTestProvider,
@@ -223,7 +230,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider
+                mockTestProvider,
+                providerQos
     );
 
     std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
@@ -255,6 +263,13 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 {
     createRuntimeMqttWithHttpBackend();
     auto mockTestProvider = std::make_shared<MockTestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
 
     std::vector<int> ints;
@@ -266,7 +281,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider
+                mockTestProvider,
+                providerQos
     );
 
     std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
@@ -299,6 +315,13 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     auto mockTestProvider = std::make_shared<MockTestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
 
     EXPECT_CALL(
             *mockTestProvider,
@@ -314,7 +337,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider
+                mockTestProvider,
+                providerQos
     );
 
     std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
@@ -357,6 +381,13 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     auto mockTestProvider = std::make_shared<MockTestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
 
     EXPECT_CALL(
             *mockTestProvider,
@@ -371,7 +402,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider
+                mockTestProvider,
+                providerQos
     );
 
     std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =

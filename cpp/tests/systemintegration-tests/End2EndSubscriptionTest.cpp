@@ -134,7 +134,14 @@ private:
 protected:
     std::shared_ptr<tests::DefaulttestProvider> registerProvider() {
         auto testProvider = std::make_shared<tests::DefaulttestProvider>();
-        providerParticipantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+        types::ProviderQos providerQos;
+        std::chrono::milliseconds millisSinceEpoch =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch());
+        providerQos.setPriority(millisSinceEpoch.count());
+        providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+        providerQos.setSupportsOnChangeSubscriptions(true);
+        providerParticipantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
         //This wait is necessary, because registerProvider is async, and a lookup could occur
         // before the register has finished.

@@ -88,7 +88,14 @@ TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
 
     // Create a provider
     auto mockProvider = std::make_shared<MockGpsProvider>();
-    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     // Build a proxy

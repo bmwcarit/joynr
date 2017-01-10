@@ -594,7 +594,14 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
     // Provider: (runtime1)
 
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -691,7 +698,14 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     // Provider: (runtime1)
 
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -1047,7 +1061,14 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     // MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::Localisation::GpsLocation gpsLocation1;
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished. See Joynr 805 for details
@@ -1097,7 +1118,14 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
 
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     // MockGpsProvider* gpsProvider = new MockGpsProvider();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::seconds(1)); // This wait is necessary, because
                                                           // registerProvider is async, and a lookup
@@ -1184,8 +1212,15 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread)
             mockListener);
 
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
     std::string providerParticipantId =
-            runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+            runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.

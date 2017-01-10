@@ -86,7 +86,14 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 
     auto mockProvider = std::make_shared<MockGpsProvider>();
 
-    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
@@ -115,7 +122,14 @@ TEST_P(End2EndRPCTest, call_void_operation)
 {
     auto mockProvider = std::make_shared<MockTestProvider>();
 
-    runtime->registerProvider<tests::testProvider>(domain, mockProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
@@ -140,7 +154,14 @@ TEST_P(End2EndRPCTest, call_void_operation)
 TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     auto mockProvider = std::make_shared<MockTestProvider>();
-    runtime->registerProvider<tests::testProvider>(domain, mockProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
