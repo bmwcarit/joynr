@@ -56,12 +56,8 @@ define(
              * @param {Object}
              *            [settings] the settings object for the constructor call
              * @param {Number}
-             *            [settings.minInterval] Deprecated parameter. Use settings.minIntervalMs instead
-             * @param {Number}
              *            [settings.minIntervalMs] defines how often an update may
              *            be sent
-             * @param {Number}
-             *            [settings.maxInterval] Deprecated parameter. Use settings.maxIntervalMs instead
              * @param {Number}
              *            [settings.maxIntervalMs=OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS]
              *            defines how long to wait before sending an update even if the value did not change<br/>
@@ -81,13 +77,9 @@ define(
              *              <li>default value: {@link OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS}</li>
              *            </ul>
              * @param {Number}
-             *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
-             * @param {Number}
              *            [settings.expiryDateMs] how long is the subscription valid
              * @param {Number}
              *            [settings.validityMs] The validity of the subscription relative to the current time.
-             * @param {Number}
-             *            [settings.alertAfterInterval] Deprecated parameter. Use settings.alertAfterIntervalMs instead
              * @param {Number}
              *            [settings.alertAfterIntervalMs=OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS]
              *            defines how long to wait for an update before publicationMissed is called<br/>
@@ -98,8 +90,6 @@ define(
              *              <li>maximum value: {@link OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS}</li>
              *              <li>default value: {@link OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS}</li>
              *            </ul>
-             * @param {Number}
-             *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
              * @param {Number}
              *            [settings.publicationTtlMs] time to live for publication
              *            messages
@@ -134,24 +124,10 @@ define(
                         "joynr.OnChangeWithKeepAliveSubscriptionQos");
                 Typing.checkPropertyIfDefined(settings, "Object", "settings");
                 if (settings && !(settings instanceof OnChangeWithKeepAliveSubscriptionQos)) {
-                    if (settings.maxInterval !== undefined) {
-                        log
-                                .warn("OnChangeWithKeepAliveSubscriptionQos has been invoked with deprecated settings member \"maxInterval\". "
-                                    + "By 2017-01-01, the min interval can only be specified with member \"maxIntervalMs\".");
-                        settings.maxIntervalMs = settings.maxInterval;
-                        settings.maxInterval = undefined;
-                    }
                     Typing.checkPropertyIfDefined(
                             settings.maxIntervalMs,
                             "Number",
                             "settings.maxIntervalMs");
-                    if (settings.alertAfterInterval !== undefined) {
-                        log
-                                .warn("OnChangeWithKeepAliveSubscriptionQos has been invoked with deprecated settings member \"alertAfterInterval\". "
-                                    + "By 2017-01-01, the min interval can only be specified with member \"alertAfterIntervalMs\".");
-                        settings.alertAfterIntervalMs = settings.alertAfterInterval;
-                        settings.alertAfterInterval = undefined;
-                    }
                     Typing.checkPropertyIfDefined(
                             settings.alertAfterIntervalMs,
                             "Number",
@@ -245,11 +221,6 @@ define(
              * @readonly
              */
             OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL = 0;
-            /**
-             * @deprecated Use OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL instead. Will be removed by 01/01/2017
-             */
-            OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT =
-                    OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
 
             /**
              * Maximum value for [alertAfterIntervalMs]{@link OnChangeWithKeepAliveSubscriptionQos#alertAfterIntervalMs}.
