@@ -29,31 +29,16 @@ const std::int64_t& SubscriptionQos::DEFAULT_PUBLICATION_TTL_MS()
     return defaultPublicationTtl;
 }
 
-const std::int64_t& SubscriptionQos::DEFAULT_PUBLICATION_TTL()
-{
-    return DEFAULT_PUBLICATION_TTL_MS();
-}
-
 const std::int64_t& SubscriptionQos::MIN_PUBLICATION_TTL_MS()
 {
     static const std::int64_t minPublicationTtl = 100;
     return minPublicationTtl;
 }
 
-const std::int64_t& SubscriptionQos::MIN_PUBLICATION_TTL()
-{
-    return MIN_PUBLICATION_TTL_MS();
-}
-
 const std::int64_t& SubscriptionQos::MAX_PUBLICATION_TTL_MS()
 {
     static const std::int64_t maxPublicationTtl = 2592000000UL;
     return maxPublicationTtl;
-}
-
-const std::int64_t& SubscriptionQos::MAX_PUBLICATION_TTL()
-{
-    return MAX_PUBLICATION_TTL_MS();
 }
 
 const std::int64_t& SubscriptionQos::NO_EXPIRY_DATE()
@@ -78,11 +63,6 @@ std::int64_t SubscriptionQos::getPublicationTtlMs() const
     return publicationTtlMs;
 }
 
-std::int64_t SubscriptionQos::getPublicationTtl() const
-{
-    return getPublicationTtlMs();
-}
-
 void SubscriptionQos::setPublicationTtlMs(const std::int64_t& publicationTtlMs)
 {
     this->publicationTtlMs = publicationTtlMs;
@@ -94,29 +74,14 @@ void SubscriptionQos::setPublicationTtlMs(const std::int64_t& publicationTtlMs)
     }
 }
 
-void SubscriptionQos::setPublicationTtl(const std::int64_t& publicationTtlMs)
-{
-    setPublicationTtlMs(publicationTtlMs);
-}
-
 std::int64_t SubscriptionQos::getExpiryDateMs() const
 {
     return expiryDateMs;
 }
 
-std::int64_t SubscriptionQos::getExpiryDate() const
-{
-    return getExpiryDateMs();
-}
-
 void SubscriptionQos::setExpiryDateMs(const std::int64_t& expiryDateMs)
 {
     this->expiryDateMs = expiryDateMs;
-}
-
-void SubscriptionQos::setExpiryDate(const std::int64_t& expiryDateMs)
-{
-    setExpiryDateMs(expiryDateMs);
 }
 
 void SubscriptionQos::clearExpiryDate()
@@ -133,11 +98,6 @@ void SubscriptionQos::setValidityMs(const std::int64_t& validityMs)
                                    std::chrono::system_clock::now().time_since_epoch()).count();
         setExpiryDateMs(now + validityMs);
     }
-}
-
-void SubscriptionQos::setValidity(const std::int64_t& validityMs)
-{
-    setValidityMs(validityMs);
 }
 
 SubscriptionQos& SubscriptionQos::operator=(const SubscriptionQos& subscriptionQos)

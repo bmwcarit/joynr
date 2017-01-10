@@ -86,14 +86,6 @@ public:
     virtual std::int64_t getMinIntervalMs() const;
 
     /**
-     * @deprecated
-     * @see SubscriptionQos#getMinIntervalMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use getMinIntervalMs "
-                 "instead.")]] virtual std::int64_t
-    getMinInterval() const;
-
-    /**
      * @brief Sets minimum interval in milliseconds
      *
      * The provider will maintain at least a minimum interval idle time in milliseconds
@@ -113,14 +105,6 @@ public:
      */
     virtual void setMinIntervalMs(const std::int64_t& minIntervalMs);
 
-    /**
-     * @deprecated
-     * @see SubscriptionQos#setMinIntervalMs
-     */
-    [[deprecated(
-            "Will be removed by end of the year 2016. Use setMinIntervalMs instead.")]] virtual void
-    setMinInterval(const std::int64_t& minIntervalMs);
-
     /** @brief Assignment operator */
     OnChangeSubscriptionQos& operator=(const OnChangeSubscriptionQos& other);
 
@@ -134,40 +118,16 @@ public:
     static const std::int64_t& DEFAULT_MIN_INTERVAL_MS();
 
     /**
-     * @deprecated
-     * @see SubscriptionQos#DEFAULT_MIN_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_MIN_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    DEFAULT_MIN_INTERVAL();
-
-    /**
      * @brief Returns the minimum value for the minimum interval setting in
      * milliseconds: 50
      */
     static const std::int64_t& MIN_MIN_INTERVAL_MS();
 
     /**
-     * @deprecated
-     * @see SubscriptionQos#MIN_MIN_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MIN_MIN_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    MIN_MIN_INTERVAL();
-
-    /**
      * @brief Returns the maximum value for the minimum interval setting in
      * milliseconds: 2 592 000 000 (30 days)
      */
     static const std::int64_t& MAX_MIN_INTERVAL_MS();
-
-    /**
-     * @deprecated
-     * @see SubscriptionQos#MAX_MIN_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MAX_MIN_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    MAX_MIN_INTERVAL();
 
     template <typename Archive>
     void serialize(Archive& archive)

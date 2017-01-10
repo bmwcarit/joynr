@@ -75,14 +75,6 @@ public:
     std::int64_t getExpiryDateMs() const;
 
     /**
-     * @deprecated
-     * @see SubscriptionQos#getExpiryDateMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use getExpiryDateMs instead.")]] std::
-            int64_t
-            getExpiryDate() const;
-
-    /**
      * @brief Clears the current expiry date and disables it, by setting
      * the value to NO_EXPIRY_DATE.
      */
@@ -104,14 +96,6 @@ public:
     virtual void setExpiryDateMs(const std::int64_t& expiryDateMs);
 
     /**
-     * @deprecated
-     * @see SubscriptionQos#setExpiryDateMs
-     */
-    [[deprecated(
-            "Will be removed by end of the year 2016. Use setExpiryDateMs instead.")]] virtual void
-    setExpiryDate(const std::int64_t& expiryDateMs);
-
-    /**
      * @brief Gets the time to live value for publication messages.
      *
      * Notification messages will be sent with this time-to-live.
@@ -128,14 +112,6 @@ public:
     virtual std::int64_t getPublicationTtlMs() const;
 
     /**
-     * @deprecated
-     * @see SubscriptionQos#getPublicationTtlMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use getPublicationTtlMs "
-                 "instead.")]] virtual std::int64_t
-    getPublicationTtl() const;
-
-    /**
      * @brief Sets the validity of the subscription in milliseconds.
      *
      * The provider will send notifications for the next validity ms.
@@ -149,14 +125,6 @@ public:
      * @see SubscriptionQos#setExpiryDateMs
      */
     virtual void setValidityMs(const std::int64_t& validityMs);
-
-    /**
-     * @deprecated
-     * @see SubscriptionQos#setValidityMs
-     */
-    [[deprecated(
-            "Will be removed by end of the year 2016. Use setValidityMs instead.")]] virtual void
-    setValidity(const std::int64_t& validityMs);
 
     /**
      * @brief Sets the time to live for publication messages in milliseconds
@@ -180,14 +148,6 @@ public:
      */
     virtual void setPublicationTtlMs(const std::int64_t& publicationTtlMs);
 
-    /**
-     * @deprecated
-     * @see SubscriptionQos#setPublicationTtlMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use setPublicationTtlMs "
-                 "instead.")]] virtual void
-    setPublicationTtl(const std::int64_t& publicationTtlMs);
-
     /** @brief Assignment operator */
     SubscriptionQos& operator=(const SubscriptionQos& subscriptionQos);
 
@@ -201,40 +161,16 @@ public:
     static const std::int64_t& DEFAULT_PUBLICATION_TTL_MS();
 
     /**
-     * @deprecated
-     * @see SubscriptionQos#DEFAULT_PUBLICATION_TTL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_PUBLICATION_TTL_MS "
-                 "instead.")]] static const std::int64_t&
-    DEFAULT_PUBLICATION_TTL();
-
-    /**
      * @brief Returns the minimum publication time to live value in milliseconds:
      * 100
      */
     static const std::int64_t& MIN_PUBLICATION_TTL_MS();
 
     /**
-     * @deprecated
-     * @see SubscriptionQos#MIN_PUBLICATION_TTL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MIN_PUBLICATION_TTL_MS "
-                 "instead.")]] static const std::int64_t&
-    MIN_PUBLICATION_TTL();
-
-    /**
      * @brief Returns the maximum publication time to live value in milliseconds:
      * 2 592 000 000 (30 days)
      */
     static const std::int64_t& MAX_PUBLICATION_TTL_MS();
-
-    /**
-     * @deprecated
-     * @see SubscriptionQos#MAX_PUBLICATION_TTL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MAX_PUBLICATION_TTL_MS "
-                 "instead.")]] static const std::int64_t&
-    MAX_PUBLICATION_TTL();
 
     /** @brief Returns the value for no expiry date in milliseconds: 0 */
     static const std::int64_t& NO_EXPIRY_DATE();
