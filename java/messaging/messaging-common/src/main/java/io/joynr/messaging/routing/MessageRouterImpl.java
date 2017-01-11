@@ -169,6 +169,10 @@ public class MessageRouterImpl implements MessageRouter {
                     try {
                         checkExpiry(message);
                         Set<Address> addresses = getAddresses(message);
+                        if (addresses.isEmpty()) {
+                            throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
+                                    + message.getTo());
+                        }
                         for (Address address : addresses) {
                             String messageId = message.getId().substring(UUID_TAIL);
                             logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId,
@@ -187,7 +191,10 @@ public class MessageRouterImpl implements MessageRouter {
                         failureAction.execute(error);
                     }
                 }
-            }, message.getId(), delayMs, TimeUnit.MILLISECONDS);
+            },
+                     message.getId(),
+                     delayMs,
+                     TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException e) {
             logger.error("Execution rejected while scheduling SendSerializedMessageRequest ", e);
             throw new JoynrSendBufferFullException(e);
