@@ -16,7 +16,12 @@
  * limitations under the License.
  * #L%
  */
+#include <chrono>
+#include <cstdint>
+#include <string>
+
 #include <gtest/gtest.h>
+
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -25,12 +30,9 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/MulticastPublication.h"
+#include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include <chrono>
-#include <cstdint>
-#include <string>
 
 using namespace joynr;
 
@@ -299,19 +301,4 @@ TEST_F(JoynrMessageFactoryTest, testSetBestEffortHeader)
     EXPECT_TRUE(message.containsHeaderEffort());
     EXPECT_EQ(MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT),
               message.getHeaderEffort());
-}
-
-TEST_F(JoynrMessageFactoryTest, testTtlUplift)
-{
-    MessagingQos messagingQos;
-    messagingQos.setTtl(0);
-
-    const std::uint64_t ttlUplift = 10000;
-    const std::int64_t tolerance = 10;
-
-    JoynrMessageFactory factoryWithTtlUplift(ttlUplift);
-
-    JoynrMessage message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-
-    EXPECT_GE(std::chrono::duration_cast<std::chrono::milliseconds>(message.getHeaderExpiryDate() - std::chrono::system_clock::now()).count(), ttlUplift - tolerance);
 }

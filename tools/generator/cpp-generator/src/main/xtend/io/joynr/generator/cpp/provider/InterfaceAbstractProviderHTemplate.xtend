@@ -57,7 +57,9 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 
+«IF !francaIntf.broadcasts.filter[selective].isNullOrEmpty»
 // forward declare broadcast filter classes
+«ENDIF»
 «FOR broadcast: francaIntf.broadcasts.filter[selective]»
 	class «getBroadcastFilterClassName(broadcast)»;
 «ENDFOR»

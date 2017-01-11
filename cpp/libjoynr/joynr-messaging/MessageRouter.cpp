@@ -183,24 +183,24 @@ bool MessageRouter::isChildMessageRouter()
     return parentRouter && parentAddress;
 }
 
-std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> MessageRouter::
+std::unordered_set<std::shared_ptr<const system::RoutingTypes::Address>> MessageRouter::
         lookupAddresses(const std::unordered_set<std::string>& participantIds)
 {
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     for (const auto& participantId : participantIds) {
         destAddress = routingTable.lookup(participantId);
         if (destAddress) {
-            addresses.push_front(destAddress);
+            addresses.insert(destAddress);
         }
     }
     return addresses;
 }
 
-std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> MessageRouter::
+std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> MessageRouter::
         getDestinationAddresses(const JoynrMessage& message)
 {
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
         std::string multicastId = message.getHeaderTo();
 
@@ -214,7 +214,7 @@ std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> M
             std::shared_ptr<const joynr::system::RoutingTypes::Address> globalTransport =
                     addressCalculator->compute(message);
             if (globalTransport) {
-                addresses.push_front(globalTransport);
+                addresses.insert(globalTransport);
             }
         }
     } else {
@@ -222,7 +222,7 @@ std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> M
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress =
                 routingTable.lookup(destinationPartId);
         if (destAddress) {
-            addresses.push_front(destAddress);
+            addresses.insert(destAddress);
         }
     }
     return addresses;
@@ -256,8 +256,9 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
                     "Route message with Id {} and payload {}",
                     message.getHeaderMessageId(),
                     message.getPayload());
+
     // search for the destination addresses
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
             getDestinationAddresses(message);
     // if destination address is not known
     if (destAddresses.empty()) {

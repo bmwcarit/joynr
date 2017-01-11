@@ -18,8 +18,8 @@
  */
 #ifndef MESSAGEROUTER_H
 #define MESSAGEROUTER_H
+
 #include <chrono>
-#include <forward_list>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -215,9 +215,9 @@ private:
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
 
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
     getDestinationAddresses(const JoynrMessage& message);
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
 
     void registerMulticastReceiver(

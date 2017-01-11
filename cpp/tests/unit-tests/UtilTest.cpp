@@ -183,3 +183,10 @@ TEST(UtilTest, checkFileExists)
     std::remove(fileToTest.c_str());
     EXPECT_FALSE(util::fileExists(fileToTest));
 }
+
+TEST(UtilTest, extractParticipantIdFromMulticastId)
+{
+    EXPECT_EQ("participantId", util::extractParticipantIdFromMulticastId("participantId/multicastname/partition1/partition2"));
+    EXPECT_EQ("participantId", util::extractParticipantIdFromMulticastId("participantId/"));
+    EXPECT_THROW(util::extractParticipantIdFromMulticastId("participantId"), std::invalid_argument);
+}
