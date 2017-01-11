@@ -159,12 +159,13 @@ public:
      * @param pathToMessagingSettings
      * @return pointer to a JoynrRuntime instance
      */
-    static void createRuntimeAsync(const std::string& pathToLibjoynrSettings,
-                                   std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
-                                           runtimeCreatedCallback,
-                                   std::function<void(exceptions::JoynrRuntimeException& exception)>
-                                           runtimeCreationErrorCallback,
-                                   const std::string& pathToMessagingSettings = "");
+    static void createRuntimeAsync(
+            const std::string& pathToLibjoynrSettings,
+            std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
+                    runtimeCreatedCallback,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)>
+                    runtimeCreationErrorCallback,
+            const std::string& pathToMessagingSettings = "");
 
     /**
      * @brief Create a JoynrRuntime object. The call does not block. A callback
@@ -174,11 +175,12 @@ public:
      * @param runtimeCreationErrorCallback Is called when an error occurs
      * @return pointer to a JoynrRuntime instance
      */
-    static void createRuntimeAsync(std::unique_ptr<Settings> settings,
-                                   std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
-                                           runtimeCreatedCallback,
-                                   std::function<void(exceptions::JoynrRuntimeException& exception)>
-                                           runtimeCreationErrorCallback);
+    static void createRuntimeAsync(
+            std::unique_ptr<Settings> settings,
+            std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
+                    runtimeCreatedCallback,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)>
+                    runtimeCreationErrorCallback);
 
 protected:
     // NOTE: The implementation of the constructor and destructor must be inside this

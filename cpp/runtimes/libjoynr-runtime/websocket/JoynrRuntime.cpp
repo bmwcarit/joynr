@@ -40,7 +40,7 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settin
         runtimeFuture.onSuccess(std::move(createdRuntime));
     };
 
-    auto onErrorCallback = [&runtimeFuture](exceptions::JoynrRuntimeException& exception) {
+    auto onErrorCallback = [&runtimeFuture](const exceptions::JoynrRuntimeException& exception) {
         runtimeFuture.onError(
                 std::shared_ptr<joynr::exceptions::JoynrException>(exception.clone()));
     };
@@ -57,7 +57,7 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settin
 void JoynrRuntime::createRuntimeAsync(
         const std::string& pathToLibjoynrSettings,
         std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)> runtimeCreatedCallback,
-        std::function<void(exceptions::JoynrRuntimeException& exception)>
+        std::function<void(const exceptions::JoynrRuntimeException& exception)>
                 runtimeCreationErrorCallback,
         const std::string& pathToMessagingSettings)
 {
@@ -69,7 +69,7 @@ void JoynrRuntime::createRuntimeAsync(
 void JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
         std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)> runtimeCreatedCallback,
-        std::function<void(exceptions::JoynrRuntimeException& exception)>
+        std::function<void(const exceptions::JoynrRuntimeException& exception)>
                 runtimeCreationErrorCallback)
 {
     std::ignore = runtimeCreationErrorCallback;

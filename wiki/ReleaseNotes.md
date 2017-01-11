@@ -16,6 +16,7 @@
   `registerProvider` API (without `providerQos` parameter) from `JoynrRuntime`
 * **[Java]** Removed deprecated `CAPABILITYDIRECTORYURL` from provisioning
 * **[All]** Removed deprecated `outputHeaderPath` member from AbstractJoynGeneratorMojo
+* **[C++]** createRuntimeAsync error callback exception parameter is now a const reference.
 
 ## Other changes
 None.
