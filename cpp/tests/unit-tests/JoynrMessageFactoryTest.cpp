@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@
 #include "joynr/MulticastPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
 using namespace joynr;
@@ -255,7 +256,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest)
 
 TEST_F(JoynrMessageFactoryTest, createMulticastSubscriptionRequest)
 {
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
     MulticastSubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId("subscriptionId");
     subscriptionRequest.setMulticastId("multicastId");

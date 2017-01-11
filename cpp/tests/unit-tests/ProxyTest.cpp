@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/ConnectorFactory.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/TestWithoutVersionProxy.h"
 #include "AbstractSyncAsyncTest.cpp"
@@ -214,7 +214,7 @@ TEST_F(ProxyTest, subscribeToAttribute) {
 TEST_F(ProxyTest, subscribeToBroadcastWithInvalidPartitionsReturnsError) {
     tests::testProxy* testProxy = createFixture(false);
     auto subscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
 
     EXPECT_CALL(*subscriptionListener, onError(A<const exceptions::JoynrRuntimeException&>()));
 

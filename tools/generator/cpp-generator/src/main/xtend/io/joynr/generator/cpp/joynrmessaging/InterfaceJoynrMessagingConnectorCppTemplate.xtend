@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.joynrmessaging
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,7 @@ internalRequestObject.setParams(
 	#include "joynr/BroadcastSubscriptionRequest.h"
 «ENDIF»
 «IF !francaIntf.broadcasts.filter[!selective].empty»
+	#include "joynr/MulticastSubscriptionQos.h"
 	#include "joynr/MulticastSubscriptionRequest.h"
 «ENDIF»
 
@@ -400,10 +401,11 @@ bool «className»::usesClusterController() const{
 
 	std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				«IF broadcast.selective»
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 					BroadcastSubscriptionRequest& subscriptionRequest
 				«ELSE»
+					std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
 					std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest,
 					const std::vector<std::string>& partitions
 				«ENDIF»

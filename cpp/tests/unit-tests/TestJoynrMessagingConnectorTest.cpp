@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #include <string>
 #include "utils/MockObjects.h"
 #include "joynr/ISubscriptionCallback.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/SingleThreadedIOService.h"
 
 using ::testing::A;
@@ -274,7 +274,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    auto qos = std::make_shared<OnChangeSubscriptionQos>();
+    auto qos = std::make_shared<MulticastSubscriptionQos>();
     connector->subscribeToLocationUpdateWithSpeedBroadcast(mockListener, qos);
 
     // Wait for a subscription message to arrive

@@ -339,10 +339,8 @@ protected:
 
         std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-        std::int64_t minInterval_ms = 50;
-        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                    500000,   // validity_ms
-                    minInterval_ms);  // minInterval_ms
+        auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+        subscriptionQos->setValidityMs(500000);
 
         subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);
 

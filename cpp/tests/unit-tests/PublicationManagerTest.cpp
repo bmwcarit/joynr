@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1260,8 +1260,9 @@ void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(Subsc
     std::string providerId = "ProviderId";
     std::string subscriptionId = "testSubscriptionId";
     subscriptionRequest.setSubscriptionId(subscriptionId);
+
     //SubscriptionQos
-    auto qos = std::make_shared<OnChangeSubscriptionQos>();
+    auto qos = std::make_shared<SubscriptionQos>();
     subscriptionRequest.setQos(qos);
 
     // expected subscription reply
@@ -1279,8 +1280,9 @@ void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(Subsc
     ).Times(1)
     .WillOnce(ReleaseSemaphore(&semaphore));
 
-    JOYNR_LOG_DEBUG(logger, "adding request");
+    JOYNR_LOG_DEBUG(logger, "adding subscription request");
     publicationManager.add(proxyId, providerId, requestCaller, subscriptionRequest, &mockPublicationSender);
+
     // remove subscription before deletion of mockPublicationSender
     publicationManager.removeAllSubscriptions(providerId);
 
@@ -1288,7 +1290,6 @@ void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(Subsc
 }
 
 TEST_F(PublicationManagerTest, attribute_sendSubscriptionReplyOnSuccessfulRegistration) {
-    //SubscriptionRequest
     SubscriptionRequest subscriptionRequest;
     std::string subscribeToName = "testAttribute";
     subscriptionRequest.setSubscribeToName(subscribeToName);
@@ -1297,7 +1298,6 @@ TEST_F(PublicationManagerTest, attribute_sendSubscriptionReplyOnSuccessfulRegist
 }
 
 TEST_F(PublicationManagerTest, broadcast_sendSubscriptionReplyOnSuccessfulRegistration) {
-    //SubscriptionRequest
     BroadcastSubscriptionRequest subscriptionRequest;
     std::string subscribeToName = "testBroadcast";
     subscriptionRequest.setSubscribeToName(subscribeToName);
@@ -1306,7 +1306,6 @@ TEST_F(PublicationManagerTest, broadcast_sendSubscriptionReplyOnSuccessfulRegist
 }
 
 TEST_F(PublicationManagerTest, multicast_sendSubscriptionReplyOnSuccessfulRegistration) {
-    //SubscriptionRequest
     MulticastSubscriptionRequest subscriptionRequest;
     std::string subscribeToName = "testBroadcast";
     subscriptionRequest.setSubscribeToName(subscribeToName);

@@ -245,7 +245,7 @@ private:
 
 // TODO register with actual parent or root base class?
 MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::OnChangeWithKeepAliveSubscriptionQos,
-                                 joynr::SubscriptionQos,
+                                 joynr::OnChangeSubscriptionQos,
                                  "joynr.OnChangeWithKeepAliveSubscriptionQos")
 
 #endif // ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
