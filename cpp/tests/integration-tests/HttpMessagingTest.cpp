@@ -35,7 +35,7 @@ public:
                         messagingSettings.getCapabilitiesDirectoryUrl() + messagingSettings.getCapabilitiesDirectoryChannelId() + "/",
                         messagingSettings.getCapabilitiesDirectoryChannelId());
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
-        messagingStubFactory->registerStubFactory(std::make_shared<HttpMessagingStubFactory>(mockMessageSender, globalClusterControllerAddress));
+        messagingStubFactory->registerStubFactory(std::make_shared<HttpMessagingStubFactory>(mockMessageSender));
     }
 
     ~HttpMessagingTest(){

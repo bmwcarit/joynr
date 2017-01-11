@@ -37,7 +37,7 @@ public:
         auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri,messagingSettings.getCapabilitiesDirectoryChannelId());
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
 
-        messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(mockMessageSender, globalClusterControllerAddress));
+        messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(mockMessageSender));
     }
 
     void WaitXTimes(std::uint64_t x)

@@ -363,8 +363,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     std::chrono::milliseconds(messagingSettings.getSendMsgRetryInterval()));
         }
 
-        messagingStubFactory->registerStubFactory(std::make_shared<HttpMessagingStubFactory>(
-                httpMessageSender, httpSerializedGlobalClusterControllerAddress));
+        messagingStubFactory->registerStubFactory(
+                std::make_shared<HttpMessagingStubFactory>(httpMessageSender));
     }
 
     /**
@@ -396,8 +396,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             mqttMessageSender->registerReceiver(mqttMessageReceiver);
         }
 
-        messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(
-                mqttMessageSender, mqttSerializedGlobalClusterControllerAddress));
+        messagingStubFactory->registerStubFactory(
+                std::make_shared<MqttMessagingStubFactory>(mqttMessageSender));
     }
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION

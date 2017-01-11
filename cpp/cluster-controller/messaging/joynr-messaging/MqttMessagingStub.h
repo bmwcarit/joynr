@@ -38,8 +38,7 @@ class MqttMessagingStub : public IMessaging
 {
 public:
     explicit MqttMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                               const system::RoutingTypes::MqttAddress& destinationAddress,
-                               const std::string& globalClusterControllerAddress);
+                               const system::RoutingTypes::MqttAddress& destinationAddress);
     ~MqttMessagingStub() override = default;
     void transmit(JoynrMessage& message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
@@ -49,7 +48,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingStub);
     std::shared_ptr<IMessageSender> messageSender;
     const system::RoutingTypes::MqttAddress destinationAddress;
-    const std::string globalClusterControllerAddress;
     ADD_LOGGER(MqttMessagingStub);
 };
 
