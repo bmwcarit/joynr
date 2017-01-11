@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,10 +76,6 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
     std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>
             structWithStringArrayArrayOut;
     std::string subscriptionId;
-    int64_t minInterval_ms = 0;
-    int64_t validity = 60000;
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
     auto mockBroadcastWithFilteringBroadcastListener =
             std::make_shared<MockBroadcastWithFilteringBroadcastListener>();
@@ -159,6 +155,12 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
 
         JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithFiltering - register subscription");
+
+        int64_t minInterval_ms = 0;
+        int64_t validity = 60000;
+        int64_t publicationTtl = UnicastSubscriptionQos::DEFAULT_PUBLICATION_TTL_MS();
+        auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(
+                validity, publicationTtl, minInterval_ms);
         testInterfaceProxy->subscribeToBroadcastWithFilteringBroadcast(
                                     filterParameters, listener, subscriptionQos)
                 ->get(subscriptionIdFutureTimeout, subscriptionId);

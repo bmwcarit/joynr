@@ -22,6 +22,11 @@
 namespace joynr
 {
 
+MulticastSubscriptionQos::MulticastSubscriptionQos(const std::int64_t validityMs)
+        : SubscriptionQos(validityMs)
+{
+}
+
 /** @brief Assignment operator */
 MulticastSubscriptionQos& MulticastSubscriptionQos::operator=(
         const MulticastSubscriptionQos& subscriptionQos)
@@ -34,11 +39,6 @@ MulticastSubscriptionQos& MulticastSubscriptionQos::operator=(
 bool MulticastSubscriptionQos::operator==(const MulticastSubscriptionQos& subscriptionQos) const
 {
     return subscriptionQos.getExpiryDateMs() == getExpiryDateMs();
-}
-
-MulticastSubscriptionQos::MulticastSubscriptionQos(const SubscriptionQos& subscriptionQos)
-{
-    setExpiryDateMs(subscriptionQos.getExpiryDateMs());
 }
 
 } // namespace joynr

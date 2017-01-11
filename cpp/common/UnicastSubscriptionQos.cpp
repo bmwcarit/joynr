@@ -50,7 +50,9 @@ UnicastSubscriptionQos::UnicastSubscriptionQos(const UnicastSubscriptionQos& oth
 {
 }
 
-UnicastSubscriptionQos::UnicastSubscriptionQos(std::int64_t publicationTtlMs) : SubscriptionQos()
+UnicastSubscriptionQos::UnicastSubscriptionQos(const std::int64_t validityMs,
+                                               const std::int64_t publicationTtlMs)
+        : SubscriptionQos(validityMs), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
 {
     setPublicationTtlMs(publicationTtlMs);
 }

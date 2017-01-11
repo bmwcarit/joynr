@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -379,6 +379,7 @@ protected:
         std::int64_t minInterval_ms = 50;
         auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                     500000,   // validity_ms
+                    1000,     // publication ttl
                     minInterval_ms);  // minInterval_ms
 
         subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);

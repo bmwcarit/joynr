@@ -42,10 +42,12 @@ OnChangeSubscriptionQos::OnChangeSubscriptionQos() : minIntervalMs(MIN_MIN_INTER
 {
 }
 
-OnChangeSubscriptionQos::OnChangeSubscriptionQos(const std::int64_t& validityMs,
-                                                 const std::int64_t& minIntervalMs)
+OnChangeSubscriptionQos::OnChangeSubscriptionQos(const std::int64_t validityMs,
+                                                 const std::int64_t publicationTtlMs,
+                                                 const std::int64_t minIntervalMs)
+        : UnicastSubscriptionQos(validityMs, publicationTtlMs),
+          minIntervalMs(DEFAULT_MIN_INTERVAL_MS())
 {
-    setValidityMs(validityMs);
     setMinIntervalMs(minIntervalMs);
 }
 

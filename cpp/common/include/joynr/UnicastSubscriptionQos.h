@@ -43,10 +43,12 @@ public:
     UnicastSubscriptionQos();
 
     /**
-     * @brief Constructor with publication TTL
+     * @brief Constructor with full parameter set
+     *
      * @param publicationTtlMs The publication TTL in ms.
+     * @param validityMs Time span in milliseconds during which publications will be sent
      */
-    UnicastSubscriptionQos(std::int64_t publicationTtlMs);
+    UnicastSubscriptionQos(const std::int64_t validityMs, const std::int64_t publicationTtlMs);
 
     /**
      * @brief Copy constructor

@@ -77,7 +77,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
 
 TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     BroadcastSubscriptionRequest request;
-    auto qos = std::make_shared<OnChangeSubscriptionQos>(5000, 2000);
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(5000, 1000, 2000);
     request.setQos(qos);
     BroadcastFilterParameters filterParams;
     filterParams.setFilterParameter("MyFilter", "MyFilterValue");
@@ -778,7 +778,7 @@ TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
 
 TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
 
-    OnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
+    OnChangeWithKeepAliveSubscriptionQos qos(750, 1000, 100, 900, 1050);
 
     std::string jsonQos = joynr::serializer::serializeToJson(qos);
     JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);

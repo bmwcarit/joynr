@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2016 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
  * #L%
  */
 #include "AbstractRobustnessTest.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 
-using joynr::OnChangeSubscriptionQos;
+using joynr::MulticastSubscriptionQos;
 using joynr::OnChangeWithKeepAliveSubscriptionQos;
 
 class RobustnessTestProviderCrash : public AbstractRobustnessTest
@@ -58,7 +58,7 @@ TEST_F(RobustnessTestProviderCrash, subscribeTo_broadcastWithSingleStringParamet
     EXPECT_CALL(*mockListener, onSubscribed(_)).WillRepeatedly(
             DoAll(SaveArg<0>(&subscriptionId), ReleaseSemaphore(&subscriptionRegisteredSemaphore)));
 
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
     subscriptionQos->setValidityMs(600000);
     proxy->subscribeToBroadcastWithSingleStringParameterBroadcast(mockListener, subscriptionQos);
     ASSERT_TRUE(subscriptionRegisteredSemaphore.waitFor(std::chrono::seconds(10)));

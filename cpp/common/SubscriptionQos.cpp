@@ -34,7 +34,7 @@ SubscriptionQos::SubscriptionQos() : expiryDateMs(NO_EXPIRY_DATE())
 {
 }
 
-SubscriptionQos::SubscriptionQos(const std::int64_t& validityMs) : expiryDateMs(NO_EXPIRY_DATE())
+SubscriptionQos::SubscriptionQos(const int64_t validityMs) : expiryDateMs(NO_EXPIRY_DATE())
 {
     setValidityMs(validityMs);
 }

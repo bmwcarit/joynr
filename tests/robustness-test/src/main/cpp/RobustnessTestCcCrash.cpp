@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 
 #include <chrono>
 
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 
 class RobustnessTestCcCrash : public AbstractRobustnessTest
 {
@@ -46,7 +46,7 @@ TEST_F(RobustnessTestCcCrash, call_methodWithStringParametersBeforeCCRestart)
 
 TEST_F(RobustnessTestCcCrash, subscribeToMulticast_WithCCCrash)
 {
-    auto qos = std::make_shared<joynr::OnChangeSubscriptionQos>();
+    auto qos = std::make_shared<joynr::MulticastSubscriptionQos>();
     auto subscriptionListener = std::make_shared<MockSubscriptionListenerOneType<std::string>>();
 
     Semaphore subscriptionRegisteredSemaphore(0);

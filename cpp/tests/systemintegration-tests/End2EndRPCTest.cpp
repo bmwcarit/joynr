@@ -187,6 +187,7 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 800, // validity_ms
+                1000, // publication ttl
                 100, // minInterval_ms
                 200, // maxInterval_ms
                 1000 // alertInterval_ms

@@ -362,6 +362,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     480, // validity
+                    1000, // publication ttl
                     200, // min interval
                     200, // max interval
                     200  // alert after interval
@@ -424,6 +425,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     2000,   // validity
+                    1000, // publication ttl
                     100,   // min interval
                     1000,   // max interval
                     10000  // alert after interval

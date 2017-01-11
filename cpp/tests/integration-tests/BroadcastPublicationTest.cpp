@@ -70,6 +70,7 @@ public:
         request.setSubscriptionId(subscriptionId);
 
         auto qos = std::make_shared<OnChangeSubscriptionQos>(
+                    1000, // publication ttl
                     80, // validity_ms
                     100 // minInterval_ms
         );

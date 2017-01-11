@@ -173,6 +173,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSucces
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
+                1000, // publication ttl
                 minInterval_ms);  // minInterval_ms
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =
@@ -227,6 +228,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
+                1000, // publication ttl
                 minInterval_ms);  // minInterval_ms
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =

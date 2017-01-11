@@ -64,10 +64,11 @@ PeriodicSubscriptionQos::PeriodicSubscriptionQos()
 {
 }
 
-PeriodicSubscriptionQos::PeriodicSubscriptionQos(const std::int64_t& validityMs,
-                                                 const std::int64_t& periodMs,
-                                                 const std::int64_t& alertAfterInterval)
-        : UnicastSubscriptionQos(validityMs),
+PeriodicSubscriptionQos::PeriodicSubscriptionQos(const std::int64_t validityMs,
+                                                 const std::int64_t publicationTtlMs,
+                                                 const std::int64_t periodMs,
+                                                 const std::int64_t alertAfterInterval)
+        : UnicastSubscriptionQos(validityMs, publicationTtlMs),
           periodMs(DEFAULT_PERIOD_MS()),
           alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {

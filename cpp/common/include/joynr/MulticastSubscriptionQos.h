@@ -46,16 +46,17 @@ public:
     MulticastSubscriptionQos() = default;
 
     /**
+     * @brief Constructor with full parameter set.
+     *
+     * @param validityMs Time span in milliseconds during which publications will be sent
+     */
+    explicit MulticastSubscriptionQos(const std::int64_t validityMs);
+
+    /**
      * @brief Copy constructor
      * @param subscriptionQos The MulticastSubscriptionQos object to be copied from.
      */
     MulticastSubscriptionQos(const MulticastSubscriptionQos& subscriptionQos) = default;
-
-    /**
-     * @brief Type convert a SubscriptionQos into a MulticastSubscriptionQos
-     * @param subscriptionQos The MulticastSubscriptionQos object to be copied from.
-     */
-    MulticastSubscriptionQos(const SubscriptionQos& subscriptionQos);
 
     /** @brief Assignment operator */
     MulticastSubscriptionQos& operator=(const MulticastSubscriptionQos& subscriptionQos);

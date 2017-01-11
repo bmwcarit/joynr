@@ -61,13 +61,14 @@ public:
      * will be called if no publications were received.
      *
      * @see SubscriptionQos#setValidityMs
+     * @see UnicastSubscriptionQos#setPublicationTtlMs
      * @see PeriodicSubscriptionQos#setPeriodMs
      * @see PeriodicSubscriptionQos#setAlertAfterIntervalMs
-     * @see SubscriptionQos#setPublicationTtlMs
      */
-    PeriodicSubscriptionQos(const std::int64_t& validityMs,
-                            const std::int64_t& periodMs,
-                            const std::int64_t& alertAfterIntervalMs);
+    PeriodicSubscriptionQos(const std::int64_t validityMs,
+                            const std::int64_t publicationTtlMs,
+                            const std::int64_t periodMs,
+                            const std::int64_t alertAfterIntervalMs);
 
     /**
      * @brief Gets the period in milliseconds

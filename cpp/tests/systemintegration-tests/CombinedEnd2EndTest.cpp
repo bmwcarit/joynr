@@ -627,6 +627,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
 
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(10000, // validity_ms
+                                                                   1000, // publication ttl
                                                                    minInterval_ms,
                                                                    maxInterval_ms,
                                                                    3000); // alertInterval_ms
@@ -733,6 +734,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     std::int64_t minInterval_ms = 500;
     auto subscriptionQos =
             std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
+                                                      1000,            // publication ttl
                                                       minInterval_ms); // minInterval_ms
     auto future = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
@@ -972,6 +974,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
 
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
+                                                                   1000, // publication ttl
                                                                    1000,   // minInterval_ms
                                                                    2000,   // maxInterval_ms
                                                                    3000);  // alertInterval_ms
@@ -1022,6 +1025,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain)
                         ->build());
         auto subscriptionQos =
                 std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
+                                                                       1000, // publication ttl
                                                                        1000,   // minInterval_ms
                                                                        2000,   //  maxInterval_ms
                                                                        3000);  // alertInterval_ms
@@ -1090,6 +1094,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
                     ->build());
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(9000,   // validity_ms
+                                                                   1000, // publication ttl
                                                                    1000,   // minInterval_ms
                                                                    2000,   //  maxInterval_ms
                                                                    10000); // alertInterval_ms
@@ -1185,6 +1190,7 @@ void subscribeToLocation(
 {
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
+                                                                   1000, // publication ttl
                                                                    1000,   // minInterval_ms
                                                                    2000,   //  maxInterval_ms
                                                                    3000);  // alertInterval_ms

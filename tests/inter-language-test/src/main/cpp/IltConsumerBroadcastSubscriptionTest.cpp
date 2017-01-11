@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
+#include <string>
+
 #include "IltAbstractConsumerTest.h"
 #include "joynr/ISubscriptionListener.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/SubscriptionListener.h"
-#include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Semaphore.h"
 
 using namespace ::testing;
@@ -29,11 +32,16 @@ class IltConsumerBroadcastSubscriptionTest
 {
 public:
     IltConsumerBroadcastSubscriptionTest()
-            : subscriptionIdFutureTimeout(10000), publicationTimeout(10000)
+            : validity(60000),
+              subscriptionQos(std::make_shared<joynr::MulticastSubscriptionQos>(validity)),
+              subscriptionIdFutureTimeout(10000),
+              publicationTimeout(10000)
     {
     }
 
 protected:
+    int64_t validity;
+    std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos;
     std::uint16_t subscriptionIdFutureTimeout;
     std::chrono::milliseconds publicationTimeout;
 };
@@ -53,11 +61,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePri
 {
     Semaphore publicationSemaphore;
     std::string subscriptionId;
-    int64_t minInterval_ms = 0;
-    int64_t validity = 60000;
     const std::vector<std::string> partitions = GetParam();
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
     auto mockBroadcastWithSinglePrimitiveParameterBroadcastListener =
             std::make_shared<MockBroadcastWithSinglePrimitiveParameterBroadcastListener>();
@@ -105,11 +109,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
     Semaphore publicationSemaphore;
     double doubleOut;
     std::string subscriptionId;
-    int64_t minInterval_ms = 0;
-    int64_t validity = 60000;
     const std::vector<std::string> partitions = GetParam();
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
     auto mockBroadcastWithMultiplePrimitiveParametersBroadcastListener =
             std::make_shared<MockBroadcastWithMultiplePrimitiveParametersBroadcastListener>();
@@ -160,11 +160,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArr
     Semaphore publicationSemaphore;
     std::string subscriptionId;
     std::vector<std::string> stringArrayOut;
-    int64_t minInterval_ms = 0;
-    int64_t validity = 60000;
     const std::vector<std::string> partitions = GetParam();
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
     auto mockBroadcastWithSingleArrayParameterBroadcastListener =
             std::make_shared<MockBroadcastWithSingleArrayParameterBroadcastListener>();
@@ -222,11 +218,8 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
     std::vector<uint64_t> uInt64ArrayOut;
     std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>
             structWithStringArrayArrayOut;
-    int64_t minInterval_ms = 0;
-    int64_t validity = 60000;
+
     const std::vector<std::string> partitions = GetParam();
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
     auto mockBroadcastWithMultipleArrayParametersBroadcastListener =
             std::make_shared<MockBroadcastWithMultipleArrayParametersBroadcastListener>();
@@ -286,11 +279,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnu
 {
     Semaphore publicationSemaphore;
     std::string subscriptionId;
-    int64_t minInterval_ms = 0;
-    int64_t validity = 60000;
     const std::vector<std::string> partitions = GetParam();
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
     auto mockBroadcastWithSingleEnumerationParameterBroadcastListener =
             std::make_shared<MockBroadcastWithSingleEnumerationParameterBroadcastListener>();
@@ -350,11 +339,8 @@ TEST_P(IltConsumerBroadcastSubscriptionTest,
 {
     Semaphore publicationSemaphore;
     std::string subscriptionId;
-    int64_t minInterval_ms = 0;
-    int64_t validity = 60000;
+
     const std::vector<std::string> partitions = GetParam();
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
     auto mockBroadcastWithMultipleEnumerationParametersBroadcastListener =
             std::make_shared<MockBroadcastWithMultipleEnumerationParametersBroadcastListener>();
@@ -416,11 +402,8 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
     joynr::interlanguagetest::namedTypeCollection2::ExtendedStructOfPrimitives
             extendedStructOfPrimitivesOut;
     std::string subscriptionId;
-    int64_t minInterval_ms = 0;
-    int64_t validity = 60000;
+
     const std::vector<std::string> partitions = GetParam();
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
     auto mockBroadcastWithSingleStructParameterBroadcastListener =
             std::make_shared<MockBroadcastWithSingleStructParameterBroadcastListener>();
@@ -481,11 +464,8 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
     joynr::interlanguagetest::namedTypeCollection2::ExtendedExtendedBaseStruct
             extendedExtendedBaseStructOut;
     std::string subscriptionId;
-    int64_t minInterval_ms = 0;
-    int64_t validity = 60000;
+
     const std::vector<std::string> partitions = GetParam();
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
 
     auto mockBroadcastWithMultipleStructParametersBroadcastListener =
             std::make_shared<MockBroadcastWithMultipleStructParametersBroadcastListener>();
@@ -530,10 +510,7 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
 TEST_F(IltConsumerBroadcastSubscriptionTest, doNotReceivePublicationsForOtherPartitions)
 {
     Semaphore publicationSemaphore;
-    int64_t minInterval_ms = 0;
-    int64_t validity = 60000;
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
+
     auto mockBroadcastWithSingleEnumerationParameter =
             std::make_shared<MockBroadcastWithSingleEnumerationParameterBroadcastListener>();
 

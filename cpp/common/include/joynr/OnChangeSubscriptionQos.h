@@ -67,9 +67,12 @@ public:
      * excessive network traffic.
      *
      * @see SubscriptionQos#setValidityMs
+     * @see UnicastSubscriptionQos#publicationTtlMs
      * @see OnChangeSubscriptionQos#setMinIntervalMs
      */
-    OnChangeSubscriptionQos(const std::int64_t& validityMs, const std::int64_t& minIntervalMs);
+    OnChangeSubscriptionQos(const std::int64_t validityMs,
+                            const std::int64_t publicationTtlMs,
+                            const std::int64_t minIntervalMs);
 
     /**
      * @brief Gets the minimum interval in milliseconds

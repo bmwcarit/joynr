@@ -140,6 +140,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     std::string attributeName = "Location";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
+                1000, // publication ttl
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
@@ -184,6 +185,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     std::string attributeName = "Location";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
+                1000, // publication ttl
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
@@ -240,6 +242,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     std::string attributeName = "testEnum";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
+                1000, // publication ttl
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
@@ -297,6 +300,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     std::string attributeName = "Location";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
+                1000, // publication ttl
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
@@ -327,6 +331,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     std::string subscriptionId = "SubscriptionID";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 800, // validity_ms
+                1000, // publication ttl
                 0 // minInterval_ms
     );
 
@@ -402,6 +407,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 1200, // validity_ms
+                1000, // publication ttl
                 10, // minInterval_ms
                 100, // maxInterval_ms
                 1100 // alertInterval_ms
@@ -449,6 +455,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     std::string attributeName = "Location";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 1200, // validity_ms
+                1000, // publication ttl
                 10, // minInterval_ms
                 500, // maxInterval_ms
                 1100 // alertInterval_ms

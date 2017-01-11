@@ -66,7 +66,7 @@ TEST_F(SubscriptionQosTest, createOnChangeSubscriptionQosWithValidity)
 
     {
         std::int64_t expiryDateLowerBound = nowPlusTimeSpan(validityMs);
-        OnChangeSubscriptionQos onChangeSubscriptionQos(validityMs, minIntervalMs);
+        OnChangeSubscriptionQos onChangeSubscriptionQos(validityMs, publicationTtlMs, minIntervalMs);
         std::int64_t expiryDateUpperBound = nowPlusTimeSpan(validityMs);
         onChangeSubscriptionQos.setPublicationTtlMs(publicationTtlMs);
 
@@ -114,9 +114,14 @@ TEST_F(SubscriptionQosTest, createPeriodicSubscriptionQosWithValidity)
     std::int64_t validityMs = 1000;
     std::int64_t periodMs = 800;
     std::int64_t alertAfterIntervalMs = 3000;
+    std::int64_t publicationTtlMs = 2000;
     {
         std::int64_t expiryDateLowerBound = nowPlusTimeSpan(validityMs);
-        PeriodicSubscriptionQos periodicSubscriptionQos(validityMs, periodMs, alertAfterIntervalMs);
+        PeriodicSubscriptionQos periodicSubscriptionQos(
+                    validityMs,
+                    publicationTtlMs,
+                    periodMs,
+                    alertAfterIntervalMs);
         std::int64_t expiryDateUpperBound = nowPlusTimeSpan(validityMs);
 
         EXPECT_LE(expiryDateLowerBound, periodicSubscriptionQos.getExpiryDateMs());

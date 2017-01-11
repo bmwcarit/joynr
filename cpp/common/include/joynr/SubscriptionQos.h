@@ -55,7 +55,7 @@ public:
      *
      * @see SubscriptionQos#setValidityMs
      */
-    explicit SubscriptionQos(const std::int64_t& validityMs);
+    explicit SubscriptionQos(const std::int64_t validityMs);
 
     /** Destructor */
     virtual ~SubscriptionQos() = default;

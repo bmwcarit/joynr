@@ -61,6 +61,7 @@ TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, maxIntervalMsDefaultValueIsSetP
 TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, maxIntervalMsMinimumValueIsSetProperly)
 {
     std::int64_t validityMs = 100000;
+    std::int64_t publicationTtlMs = 1000;
     std::int64_t alertAfterIntervalMs = 4000;
     std::int64_t tooSmallMaxIntervalMs = OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS() - 1;
     std::int64_t minIntervalMs = tooSmallMaxIntervalMs - 1;
@@ -68,6 +69,7 @@ TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, maxIntervalMsMinimumValueIsSetP
     {
         OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos(
                     validityMs,
+                    publicationTtlMs,
                     minIntervalMs,
                     tooSmallMaxIntervalMs,
                     alertAfterIntervalMs

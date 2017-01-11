@@ -117,6 +117,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     std::string subscribeToName = "locationUpdate";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
+                1000, // publication ttl
                 100 // minInterval_ms
     );
 
@@ -167,6 +168,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     std::string subscribeToName = "locationUpdateWithSpeed";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
+                1000, // publication ttl
                 100 // minInterval_ms
     );
 
