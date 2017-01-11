@@ -1,3 +1,24 @@
+#joynr 0.23.0
+
+## API relevant changes
+
+* **[C++]** Proxy builder returns a std::unique_ptr to the created proxy instead of a raw pointer.
+* **[C++]** Joynr runtime returns a std::unique_ptr to a created proxy builder instead of a raw pointer.
+* **[C++]** Created joynr runtime is returned as a std::unique_ptr.
+* **[All]** Removed deprecated time related APIs from `SubscriptionQos`, `PeriodicSubscriptionQos`,
+  `OnChangeSubscriptionQos`, `OnChangeWithKeepAliveSubscriptionQos`,
+  `HeartbeatSubscriptionInformation`, `DiscoveryQos`
+* **[JS]** Removed deprecated `capabilities` member from runtimes
+* **[JS]** Removed deprecated `registerCapability`, `unregisterCapability` methods from
+  `CapabilitiesRegistrar`
+* **[C++, Java]** Removed deprecated `providerQos` attribute from provider and related
+  `registerProvider` API (without `providerQos` parameter) from `JoynrRuntime`
+* **[Java]** Removed deprecated `CAPABILITYDIRECTORYURL` from provisioning
+* **[All]** Removed deprecated `outputHeaderPath` member from AbstractJoynGeneratorMojo
+
+## Other changes
+None.
+
 #joynr 0.22.4
 
 ## API relevant changes

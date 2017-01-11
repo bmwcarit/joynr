@@ -21,6 +21,7 @@
 #include <cassert>
 #include <cstdint>
 #include <chrono>
+#include <memory>
 #include <functional>
 
 #include <boost/algorithm/string/predicate.hpp>
@@ -125,6 +126,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           connectorFactory(nullptr),
           settings(std::move(settings)),
           libjoynrSettings(*(this->settings)),
+          clusterControllerSettings(*(this->settings)),
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
           dbusSettings(nullptr),
           ccDbusMessageRouterAdapter(nullptr),
@@ -218,6 +220,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                     singleThreadIOService->getIOService(),
                                                     std::move(addressCalculator));
     messageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
+    messageRouter->loadMulticastReceiverDirectory(
+            clusterControllerSettings.getMulticastReceiverDirectoryPersistenceFilename());
 
     // provision global capabilities directory
     if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {
@@ -487,9 +491,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             "fixedParticipantId", messagingSettings.getCapabilitiesDirectoryParticipantId());
 
     std::unique_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
-            capabilitiesProxyBuilder(
+            capabilitiesProxyBuilder =
                     createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                            messagingSettings.getDiscoveryDirectoriesDomain()));
+                            messagingSettings.getDiscoveryDirectoriesDomain());
     capabilitiesProxyBuilder->setDiscoveryQos(discoveryQos);
 
     capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
@@ -608,11 +612,11 @@ void JoynrClusterControllerRuntime::runForever()
     singleThreadIOService->join();
 }
 
-JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(
+std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
         std::unique_ptr<Settings> settings,
         const std::string& discoveryEntriesFile)
 {
-    JoynrClusterControllerRuntime* runtime = new JoynrClusterControllerRuntime(std::move(settings));
+    auto runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(settings));
 
     assert(runtime->localCapabilitiesDirectory);
     runtime->localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);

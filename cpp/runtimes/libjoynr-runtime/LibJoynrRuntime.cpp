@@ -158,15 +158,14 @@ void LibJoynrRuntime::init(
             "fixedParticipantId", routingProviderParticipantId);
     routingProviderDiscoveryQos.setDiscoveryTimeoutMs(50);
 
-    std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder(
-            createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain));
+    std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
+            createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
     auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
                                 ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
-    messageRouter->setParentRouter(std::unique_ptr<system::RoutingProxy>(routingProxy),
-                                   ccMessagingAddress,
-                                   routingProviderParticipantId);
+    messageRouter->setParentRouter(
+            std::move(routingProxy), ccMessagingAddress, routingProviderParticipantId);
 
     // setup discovery
     std::string discoveryProviderParticipantId =
@@ -179,16 +178,15 @@ void LibJoynrRuntime::init(
             "fixedParticipantId", discoveryProviderParticipantId);
     discoveryProviderDiscoveryQos.setDiscoveryTimeoutMs(1000);
 
-    std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder(
-            createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain));
+    std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder =
+            createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
 
-    joynr::system::DiscoveryProxy* proxy =
-            discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
-                    ->setCached(false)
-                    ->setDiscoveryQos(discoveryProviderDiscoveryQos)
-                    ->build();
+    auto proxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
+                         ->setCached(false)
+                         ->setDiscoveryQos(discoveryProviderDiscoveryQos)
+                         ->build();
 
-    discoveryProxy->setDiscoveryProxy(std::unique_ptr<joynr::system::IDiscoverySync>(proxy));
+    discoveryProxy->setDiscoveryProxy(std::move(proxy));
     capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
             dispatcherList,
             *discoveryProxy,

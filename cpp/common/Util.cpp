@@ -49,7 +49,8 @@ void saveStringToFile(const std::string& fileName, const std::string& strToSave)
     std::fstream file;
     file.open(fileName, std::ios::out);
     if (!file.is_open()) {
-        throw std::runtime_error("Could not open file " + fileName + " for writing.");
+        throw std::runtime_error("Could not open file " + fileName + " for writing: " +
+                                 std::strerror(errno));
     }
 
     // save input string to file
@@ -61,7 +62,8 @@ std::string loadStringFromFile(const std::string& fileName)
     // read from file
     std::ifstream inStream(fileName.c_str(), std::ios::in | std::ios::binary);
     if (!inStream.is_open()) {
-        throw std::runtime_error("Could not open file " + fileName + " for reading.");
+        throw std::runtime_error("Could not open file " + fileName + " for reading: " +
+                                 std::strerror(errno));
     }
 
     std::string fileContents;

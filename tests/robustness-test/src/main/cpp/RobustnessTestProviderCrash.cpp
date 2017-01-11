@@ -45,15 +45,6 @@ TEST_F(RobustnessTestProviderCrash, call_methodWithStringParametersBeforeProvide
     callMethodWithStringParametersBeforeCcOrProviderRestart(false, true);
 }
 
-template <typename T>
-class MockSubscriptionListenerOneType : public joynr::ISubscriptionListener<T>
-{
-public:
-    MOCK_METHOD1_T(onSubscribed, void(const std::string& subscriptionId));
-    MOCK_METHOD1_T(onReceive, void(const T& value));
-    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
-};
-
 TEST_F(RobustnessTestProviderCrash, subscribeTo_broadcastWithSingleStringParameter)
 {
     Semaphore subscriptionRegisteredSemaphore(0);

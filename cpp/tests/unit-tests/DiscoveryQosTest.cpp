@@ -22,16 +22,6 @@
 
 #include "joynr/DiscoveryQos.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-TEST(SubscriptionQos, Constants_DeprecatedApi)
-{
-    ASSERT_EQ(joynr::DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT_MS(), joynr::DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT());
-    ASSERT_EQ(joynr::DiscoveryQos::DEFAULT_RETRYINTERVAL_MS(), joynr::DiscoveryQos::DEFAULT_RETRYINTERVAL());
-    ASSERT_EQ(joynr::DiscoveryQos::DEFAULT_CACHEMAXAGE_MS(), joynr::DiscoveryQos::DEFAULT_CACHEMAXAGE());
-}
-#pragma GCC diagnostic pop
-
 TEST(SubscriptionQos, configureDiscoveryQos)
 {
     joynr::DiscoveryQos qos;
@@ -48,43 +38,3 @@ TEST(SubscriptionQos, configureDiscoveryQos)
     ASSERT_EQ(expectedCacheMaxAge, qos.getCacheMaxAgeMs());
     ASSERT_EQ(expectedRetryInterval, qos.getRetryIntervalMs());
 }
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-TEST(SubscriptionQos, configureDiscoveryQos_forwardToNewAPI)
-{
-    joynr::DiscoveryQos qos;
-
-    std::int64_t expectedDiscoveryTimeout = 3;
-    std::int64_t expectedCacheMaxAge = 4;
-    std::int64_t expectedRetryInterval = 5;
-
-    qos.setDiscoveryTimeout(expectedDiscoveryTimeout);
-    qos.setCacheMaxAge(expectedCacheMaxAge);
-    qos.setRetryInterval(expectedRetryInterval);
-
-    ASSERT_EQ(expectedDiscoveryTimeout, qos.getDiscoveryTimeoutMs());
-    ASSERT_EQ(expectedCacheMaxAge, qos.getCacheMaxAgeMs());
-    ASSERT_EQ(expectedRetryInterval, qos.getRetryIntervalMs());
-}
-#pragma GCC diagnostic pop
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-TEST(SubscriptionQos, configureDiscoveryQos_DeprecatedApi)
-{
-    joynr::DiscoveryQos qos;
-
-    std::int64_t expectedDiscoveryTimeout = 3;
-    std::int64_t expectedCacheMaxAge = 4;
-    std::int64_t expectedRetryInterval = 5;
-
-    qos.setDiscoveryTimeout(expectedDiscoveryTimeout);
-    qos.setCacheMaxAge(expectedCacheMaxAge);
-    qos.setRetryInterval(expectedRetryInterval);
-
-    ASSERT_EQ(expectedDiscoveryTimeout, qos.getDiscoveryTimeout());
-    ASSERT_EQ(expectedCacheMaxAge, qos.getCacheMaxAge());
-    ASSERT_EQ(expectedRetryInterval, qos.getRetryInterval());
-}
-#pragma GCC diagnostic pop

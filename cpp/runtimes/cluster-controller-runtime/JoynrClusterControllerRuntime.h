@@ -33,6 +33,7 @@
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/RuntimeConfig.h"
+#include "joynr/ClusterControllerSettings.h"
 
 #include "libjoynr/websocket/WebSocketSettings.h"
 
@@ -80,8 +81,9 @@ public:
                                   std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
                                   std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
 
-    static JoynrClusterControllerRuntime* create(std::unique_ptr<Settings> settings,
-                                                 const std::string& discoveryEntriesFile = "");
+    static std::unique_ptr<JoynrClusterControllerRuntime> create(
+            std::unique_ptr<Settings> settings,
+            const std::string& discoveryEntriesFile = "");
 
     ~JoynrClusterControllerRuntime() override;
 
@@ -137,6 +139,7 @@ protected:
     // take ownership, so a pointer is used
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
+    ClusterControllerSettings clusterControllerSettings;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     DbusSettings* dbusSettings;

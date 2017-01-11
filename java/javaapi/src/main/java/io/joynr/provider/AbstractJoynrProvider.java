@@ -19,28 +19,7 @@ package io.joynr.provider;
  * #L%
  */
 
-import joynr.types.ProviderQos;
-
 public abstract class AbstractJoynrProvider implements JoynrProvider {
-    /**
-     * Provider quality of service settings
-     * @deprecated Will be removed by end of the year 2016. Use external ProviderQos as input for
-     * <code>io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)}</code> instead.
-     */
-    @Deprecated
-    protected ProviderQos providerQos = new ProviderQos();
-
     public AbstractJoynrProvider() {
     }
-
-    /**
-     * @deprecated Will be removed by end of the year 2016. Use external ProviderQos as input for
-     * <code>io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)}</code> instead.
-     * @return provider QoS that applies to this provider instance.
-     */
-    @Deprecated
-    public ProviderQos getProviderQos() {
-        return providerQos;
-    }
-
 }

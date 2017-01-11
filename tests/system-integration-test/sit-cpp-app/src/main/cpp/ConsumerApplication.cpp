@@ -65,11 +65,11 @@ int main(int argc, char* argv[])
             boost::filesystem::system_complete(appFilename).parent_path().string();
     std::string pathToSettings(appDirectory + "/resources/systemintegrationtest-consumer.settings");
 
-    std::unique_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToSettings));
+    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToSettings);
 
     // Create proxy builder
-    std::unique_ptr<ProxyBuilder<test::SystemIntegrationTestProxy>> proxyBuilder(
-            runtime->createProxyBuilder<test::SystemIntegrationTestProxy>(providerDomain));
+    std::unique_ptr<ProxyBuilder<test::SystemIntegrationTestProxy>> proxyBuilder =
+            runtime->createProxyBuilder<test::SystemIntegrationTestProxy>(providerDomain);
 
     // Find the provider with the highest priority set in ProviderQos
     DiscoveryQos discoveryQos;

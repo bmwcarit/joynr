@@ -71,13 +71,11 @@ define([
             expect(runtime.logging).toBeDefined();
             expect(runtime.typeRegistry).toBeDefined();
 
-            expect(runtime.capabilities).toBeUndefined();
             expect(runtime.registration).toBeUndefined();
             expect(runtime.proxyBuilder).toBeUndefined();
 
             startInProcessRuntime().then(function() {
                 expect(runtime.typeRegistry).toBeDefined();
-                expect(runtime.capabilities).toBeDefined();
                 expect(runtime.registration).toBeDefined();
                 expect(runtime.proxyBuilder).toBeDefined();
                 done();

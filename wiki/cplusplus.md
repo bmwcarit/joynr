@@ -116,9 +116,9 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
 
 ```cpp
     // setup providerDomain, pathToMessagingSettings, and optionally pathToMessagingSettings
-    JoynrRuntime* runtime =
+    std::unique_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
-    ProxyBuilder<<Package>::<Interface>Proxy>* proxyBuilder =
+    std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
 
@@ -276,12 +276,12 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
 
     // setup discoveryQos, messagingQos attributes
 
-    ProxyBuilder<<Package>::<Interface>Proxy>* proxyBuilder =
+    std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 
     try {
-        <Package>::<Interface>Proxy* proxy = proxyBuilder
-            ->setMessagingQos(messagingQos) // optional
+        std::unique_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder->setMessagingQos(messagingQos)
+            ->setCached(false) // optional
             ->setDiscoveryQos(discoveryQos) // optional
             ->build();
 
@@ -775,7 +775,7 @@ main(int argc, char** argv)
 
 ```cpp
     // setup pathToLibJoynrSettings, and optionally pathToMessagingSettings
-    JoynrRuntime* runtime =
+    std::unique_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
 ```
 
@@ -848,7 +848,18 @@ The following Joynr C++ include files are required:
 ```
 
 ### The base class
-The provider class must extend the generated class ```joynr::<Package>::Default<Interface>Provider```  and implement getter and setter methods for each Franca attribute and a method for each method of the Franca interface. In order to send broadcasts the generated code of the super class ```joynr::<Interface>Provider``` can be used.
+The provider class must extend the generated class ```joynr::<Package>::Default<Interface>Provider```
+and implement a method for each method of the Franca interface.
+
+It may override the provided default implementation of getter and setter methods for each Franca
+attribute (where required).
+
+In order to send broadcasts the generated code of the super class ```joynr::<Interface>Provider```
+can be used.
+
+If the value of a notifiable attribute gets changed directly inside the implementation of a method
+or (non-default) setter, the `<Attribute>Changed(<Attribute>)` method needs to be called in order
+to inform subscribers about the value change.
 
 ```cpp
 #include "My<Interface>Provider.h"

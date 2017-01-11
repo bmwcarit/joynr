@@ -24,6 +24,8 @@
 
 #include "joynr/MulticastReceiverDirectory.h"
 
+using ::testing::Contains;
+
 class MulticastReceiverDirectoryTest : public testing::Test {
 public:
     MulticastReceiverDirectoryTest() :
@@ -217,3 +219,18 @@ TEST_F(MulticastReceiverDirectoryTest, getReceiversWithWildCards)
     EXPECT_EQ(expectedReceivers, receivers);
 }
 
+TEST_F(MulticastReceiverDirectoryTest, getMulticastIds)
+{
+    const std::string multicastId2("part1/name1/a/b/c");
+    const std::string receiverId2("testReceiverId2");
+
+    EXPECT_TRUE(multicastReceiverDirectory.getMulticastIds().empty());
+
+    multicastReceiverDirectory.registerMulticastReceiver(multicastId, receiverId);
+    multicastReceiverDirectory.registerMulticastReceiver(multicastId2, receiverId2);
+
+    std::vector<std::string> multicastIds = multicastReceiverDirectory.getMulticastIds();
+
+    EXPECT_THAT(multicastIds, Contains(multicastId));
+    EXPECT_THAT(multicastIds, Contains(multicastId2));
+}

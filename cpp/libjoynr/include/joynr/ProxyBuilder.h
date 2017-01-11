@@ -82,7 +82,7 @@ public:
      * is responsible for deletion.
      * @return The proxy object
      */
-    T* build() override;
+    std::unique_ptr<T> build() override;
 
     /**
      * @brief Build the proxy object asynchronously
@@ -172,7 +172,7 @@ ProxyBuilder<T>::~ProxyBuilder()
 }
 
 template <class T>
-T* ProxyBuilder<T>::build()
+std::unique_ptr<T> ProxyBuilder<T>::build()
 {
     Future<std::unique_ptr<T>> proxyFuture;
 
@@ -188,7 +188,7 @@ T* ProxyBuilder<T>::build()
     std::unique_ptr<T> createdProxy;
     proxyFuture.get(createdProxy);
 
-    return createdProxy.release();
+    return createdProxy;
 }
 
 template <class T>

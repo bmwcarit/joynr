@@ -64,7 +64,7 @@ joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
             SystemIntegrationTestProvider,
             SystemIntegrationTestProviderImpl.implementation);
 
-    joynr.capabilities.registerCapability("", domain, systemIntegrationTestProvider, providerQos).then(function() {
+    joynr.registration.registerProvider(domain, systemIntegrationTestProvider, providerQos).then(function() {
         log("provider registered successfully");
     }).catch(function(error) {
         log("error registering provider: " + error.toString());

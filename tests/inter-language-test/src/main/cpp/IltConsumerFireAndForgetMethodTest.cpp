@@ -69,7 +69,7 @@ public:
     void waitForAttributeFireAndForgetPublication();
 
     void subscribeToAttributeFireAndForget(
-            interlanguagetest::TestInterfaceProxy* testInterfaceProxy);
+            interlanguagetest::TestInterfaceProxy& testInterfaceProxy);
 
     void unsubscribeAttributeFireAndForget();
 
@@ -101,7 +101,7 @@ void IltConsumerFireAndForgetMethodTest::waitForAttributeFireAndForgetPublicatio
  * another test.
  */
 void IltConsumerFireAndForgetMethodTest::subscribeToAttributeFireAndForget(
-        interlanguagetest::TestInterfaceProxy* testInterfaceProxy)
+        interlanguagetest::TestInterfaceProxy& testInterfaceProxy)
 {
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
@@ -111,9 +111,9 @@ void IltConsumerFireAndForgetMethodTest::subscribeToAttributeFireAndForget(
     EXPECT_CALL(*mockInt32SubscriptionListener, onReceive(0)).Times(1);
     EXPECT_CALL(*mockInt32SubscriptionListener, onError(_)).Times(0);
     JOYNR_ASSERT_NO_THROW({
-        testInterfaceProxy->setAttributeFireAndForget(0);
-        testInterfaceProxy->subscribeToAttributeFireAndForget(
-                                    mockInt32SubscriptionListener, subscriptionQos)
+        testInterfaceProxy.setAttributeFireAndForget(0);
+        testInterfaceProxy.subscribeToAttributeFireAndForget(
+                                   mockInt32SubscriptionListener, subscriptionQos)
                 ->get(attributeFireAndForgetSubscriptionId);
     });
     JOYNR_LOG_INFO(logger,
@@ -140,7 +140,7 @@ TEST_F(IltConsumerFireAndForgetMethodTest, callMethodFireAndForgetWithoutParamet
 {
     JOYNR_LOG_INFO(
             logger, "callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget");
-    subscribeToAttributeFireAndForget(testInterfaceProxy);
+    subscribeToAttributeFireAndForget(*testInterfaceProxy);
     int32_t expectedValue = 1;
     EXPECT_CALL(*mockInt32SubscriptionListener, onReceive(expectedValue)).Times(1);
     EXPECT_CALL(*mockInt32SubscriptionListener, onError(_)).Times(0);
@@ -157,7 +157,7 @@ TEST_F(IltConsumerFireAndForgetMethodTest, callMethodFireAndForgetWithInputParam
 {
     JOYNR_LOG_INFO(logger,
                    "callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget");
-    subscribeToAttributeFireAndForget(testInterfaceProxy);
+    subscribeToAttributeFireAndForget(*testInterfaceProxy);
     int32_t expectedValue = 4242;
     EXPECT_CALL(*mockInt32SubscriptionListener, onReceive(expectedValue)).Times(1);
     EXPECT_CALL(*mockInt32SubscriptionListener, onError(_)).Times(0);

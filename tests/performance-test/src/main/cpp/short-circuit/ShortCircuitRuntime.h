@@ -108,16 +108,15 @@ public:
     }
 
     template <class TIntfProxy>
-    ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
+    std::unique_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
-        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(*proxyFactory,
-                                                                         &requestCallerDirectory,
-                                                                         *discoveryProxy,
-                                                                         domain,
-                                                                         dispatcherAddress,
-                                                                         messageRouter,
-                                                                         maximumTtlMs);
-        return builder;
+        return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
+                                                          &requestCallerDirectory,
+                                                          *discoveryProxy,
+                                                          domain,
+                                                          dispatcherAddress,
+                                                          messageRouter,
+                                                          maximumTtlMs);
     }
 
 private:

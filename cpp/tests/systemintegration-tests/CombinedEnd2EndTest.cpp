@@ -95,13 +95,13 @@ void CombinedEnd2EndTest::SetUp()
     JOYNR_LOG_DEBUG(logger, "Default websocket settings file: {}", websocketSettingsFile.c_str());
 
     if (systemSettingsFile.empty() && websocketSettingsFile.empty()) {
-        runtime1.reset(JoynrRuntime::createRuntime(
-                "test-resources/libjoynrSystemIntegration1.settings", messagingSettingsFile1));
-        runtime2.reset(JoynrRuntime::createRuntime(
-                "test-resources/libjoynrSystemIntegration2.settings", messagingSettingsFile2));
+        runtime1 = JoynrRuntime::createRuntime(
+                "test-resources/libjoynrSystemIntegration1.settings", messagingSettingsFile1);
+        runtime2 = JoynrRuntime::createRuntime(
+                "test-resources/libjoynrSystemIntegration2.settings", messagingSettingsFile2);
     } else {
-        runtime1.reset(JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile));
-        runtime2.reset(JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile));
+        runtime1 = JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile);
+        runtime2 = JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile);
     }
 }
 
@@ -128,8 +128,8 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
     // consumer for testinterface
     // Testing Lists
     {
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-                runtime2->createProxyBuilder<tests::testProxy>(domainName));
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+                runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -403,8 +403,8 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
     // Testing TTL
     {
         // create a proxy with very short TTL and expect no returning replies.
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-                runtime2->createProxyBuilder<tests::testProxy>(domainName));
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+                runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -422,8 +422,8 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
 
     // TESTING Attribute getter of an array of a nested struct
     {
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-                runtime2->createProxyBuilder<tests::testProxy>(domainName));
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+                runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -454,7 +454,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
     // structs, ...)
     {
         using namespace joynr::types::TestTypes;
-        ProxyBuilder<tests::testProxy>* testProxyBuilder =
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -463,11 +463,11 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
-        std::unique_ptr<tests::testProxy> testProxy(
+        std::unique_ptr<tests::testProxy> testProxy =
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setCached(false)
                         ->setDiscoveryQos(discoveryQos)
-                        ->build());
+                        ->build();
 
         TEverythingMap setValue;
         setValue.insert({TEnum::TLITERALA, TEverythingExtendedStruct()});
@@ -554,7 +554,8 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
 #if 0
     // Testing operation overloading
     {
-        ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
+        std::unique_ptr<ProxyBuilder<tests::TestProxy>> testProxyBuilder =
+                runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HighestPriority);
         discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -593,14 +594,21 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
     // Provider: (runtime1)
 
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime2->createProxyBuilder<tests::testProxy>(domainName));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -658,8 +666,8 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
     // before the register has finished.
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime2->createProxyBuilder<tests::testProxy>(domainName));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -690,14 +698,21 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     // Provider: (runtime1)
 
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime2->createProxyBuilder<tests::testProxy>(domainName));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -940,8 +955,8 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
     // before the register has finished.
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder(
-            runtime2->createProxyBuilder<tests::testProxy>(domainName));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -982,8 +997,8 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain)
     std::string nonexistentDomain(std::string("non-existent-").append(uuid));
 
     // Create a proxy to a non-existent domain
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime2->createProxyBuilder<tests::testProxy>(nonexistentDomain));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(nonexistentDomain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
@@ -1046,14 +1061,21 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     // MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::Localisation::GpsLocation gpsLocation1;
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished. See Joynr 805 for details
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime2->createProxyBuilder<tests::testProxy>(domainName));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -1096,15 +1118,22 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
 
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     // MockGpsProvider* gpsProvider = new MockGpsProvider();
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::seconds(1)); // This wait is necessary, because
                                                           // registerProvider is async, and a lookup
                                                           // could occour before the register has
                                                           // finished.
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime2->createProxyBuilder<tests::testProxy>(domainName));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -1131,8 +1160,8 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
 std::unique_ptr<tests::testProxy> createTestProxy(JoynrRuntime& runtime,
                                                   const std::string& domainName)
 {
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime.createProxyBuilder<tests::testProxy>(domainName));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime.createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -1183,8 +1212,15 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread)
             mockListener);
 
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
     std::string providerParticipantId =
-            runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+            runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -1216,8 +1252,8 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime2->createProxyBuilder<tests::testProxy>(domainName));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
@@ -1257,8 +1293,8 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2550));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime2->createProxyBuilder<tests::testProxy>(domainName));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);

@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
     }
 
     // create the cluster controller runtime
-    JoynrClusterControllerRuntime* clusterControllerRuntime =
+    std::unique_ptr<JoynrClusterControllerRuntime> clusterControllerRuntime =
             JoynrClusterControllerRuntime::create(std::move(settings), discoveryEntriesFile);
 
     // run the cluster controller forever

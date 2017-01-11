@@ -193,18 +193,6 @@ define(
                 });
 
                 /**
-                 * @name InterTabLibjoynrRuntime#capabilities
-                 * @type CapabilitiesRegistrar
-                 * @deprecated capabilities will be removed by 01.01.2017. please use registration instead
-                 */
-                Object.defineProperty(this, "capabilities", {
-                    get : function() {
-                        return capabilitiesRegistrar;
-                    },
-                    enumerable : true
-                });
-
-                /**
                  * @name InterTabLibjoynrRuntime#providerBuilder
                  * @type ProviderBuilder
                  */

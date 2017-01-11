@@ -89,21 +89,6 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          * Registers a provider so that it is publicly available
          *
          * @function
-         * @name CapabilitiesRegistrar#registerCapability
-         * @deprecated registerCapability will be removed by 01.01.2017. Please use registerProvider instead.
-         * NOTE: authToken is now ignored.
-         */
-        this.registerCapability = function registerCapability() {
-            checkIfReady();
-            // remove first argument (authToken) before passing on to registerProvider
-            Array.prototype.shift.apply(arguments);
-            return this.registerProvider.apply(this, arguments);
-        };
-
-        /**
-         * Registers a provider so that it is publicly available
-         *
-         * @function
          * @name CapabilitiesRegistrar#registerProvider
          *
          * @param {String}
@@ -183,21 +168,6 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                         return participantId;
                     });
                 };
-
-        /**
-         * Unregisters a provider so that it is not publicly available anymore
-         *
-         * @function
-         * @name CapabilitiesRegistrar#unregisterCapability
-         * @deprecated unregisterCapability will be removed by 01.01.2017. Please use unregisterProvider instead.
-         * NOTE: authToken is now ignored.
-         */
-        this.unregisterCapability = function unregisterCapability() {
-            checkIfReady();
-            // remove first argument (authToken) before passing on to unregisterProvider
-            Array.prototype.shift.apply(arguments);
-            return this.unregisterProvider.apply(this, arguments);
-        };
 
         /**
          * Unregisters a provider so that it is not publicly available anymore

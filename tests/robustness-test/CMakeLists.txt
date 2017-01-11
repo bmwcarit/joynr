@@ -198,6 +198,10 @@ if(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
     set(JOYNR_SERVER_HTTP_PORT "8080")
 endif(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
 
+if(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
+    set(JOYNR_SERVER_MQTT_PORT "1883")
+endif(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
+
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp-resources/robustness-tests-provider.settings
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/robustness-tests-provider.settings

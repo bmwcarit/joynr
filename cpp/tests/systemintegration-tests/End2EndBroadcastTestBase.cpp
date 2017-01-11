@@ -268,7 +268,14 @@ protected:
 
     std::shared_ptr<MyTestProvider> registerProvider(JoynrClusterControllerRuntime& runtime) {
         auto testProvider = std::make_shared<MyTestProvider>();
-        providerParticipantId = runtime.registerProvider<tests::testProvider>(domainName, testProvider);
+        types::ProviderQos providerQos;
+        std::chrono::milliseconds millisSinceEpoch =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch());
+        providerQos.setPriority(millisSinceEpoch.count());
+        providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+        providerQos.setSupportsOnChangeSubscriptions(true);
+        providerParticipantId = runtime.registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
         // This wait is necessary, because registerProvider is async, and a lookup could occur
         // before the register has finished.
@@ -282,7 +289,7 @@ protected:
     }
 
     std::shared_ptr<tests::testProxy> buildProxy(JoynrClusterControllerRuntime& runtime) {
-        ProxyBuilder<tests::testProxy>* testProxyBuilder
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
                 = runtime.createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -297,7 +304,6 @@ protected:
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
 
-        delete testProxyBuilder;
         return testProxy;
     }
 

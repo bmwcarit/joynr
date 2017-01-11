@@ -42,12 +42,6 @@ public:
     virtual ~IJoynrProvider() = default;
 
     /**
-     * @brief Get the provider quality of service settings
-     * @return the provider quality of service settings
-     */
-    virtual types::ProviderQos getProviderQos() const = 0;
-
-    /**
      * @brief Register an object that will be informed when the value of an attribute changes
      * @param attributeName The name of the attribute for which publications shall be done
      * @param attributeListener The listener object containing the callbacks for publications and

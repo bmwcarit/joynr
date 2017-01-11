@@ -49,7 +49,6 @@ define([
                         var publicationManagerSpy;
                         var participantId;
                         var domain;
-                        var authToken;
                         var participantIdStorageSpy;
                         var discoveryStubSpy;
                         var messageRouterSpy;
@@ -100,7 +99,6 @@ define([
                             localChannelId = "localChannelId";
                             domain = "testdomain";
                             address = "address";
-                            authToken = "authToken";
                             participantId = "myParticipantId";
                             participantIdStorageSpy =
                                     jasmine.createSpyObj(
@@ -317,8 +315,7 @@ define([
                         });
 
                         it("returns the provider participant ID", function(done) {
-                            capabilitiesRegistrar.registerCapability(
-                                    authToken,
+                            capabilitiesRegistrar.registerProvider(
                                     domain,
                                     provider,
                                     providerQos).then(function(result) {
@@ -336,8 +333,7 @@ define([
                                 function(done) {
                                     discoveryStubSpy.add.and.returnValue(Promise.reject(new Error("Some error.")));
 
-                                    capabilitiesRegistrar.registerCapability(
-                                            authToken,
+                                    capabilitiesRegistrar.registerProvider(
                                             domain,
                                             provider,
                                             providerQos).then(function() {
@@ -353,30 +349,10 @@ define([
                                             });
                         });
 
-                        it("passes calls to deprecated registerCapability to registerProvider without authToken", function(done) {
-                            spyOn(capabilitiesRegistrar, "registerProvider").and.callThrough();
-                            capabilitiesRegistrar.registerCapability(
-                                    authToken,
-                                    domain,
-                                    provider,
-                                    providerQos).then(function() {
-                                expect(capabilitiesRegistrar.registerProvider).toHaveBeenCalledWith(domain, provider, providerQos);
-                                done();
-                                return null;
-                            }).catch(fail);
-                        });
-
                         it(
                                 "CapabilitiesRegistrar throws exception when called while shut down",
                                 function(done) {
                                     capabilitiesRegistrar.shutdown();
-                                    expect(function() {
-                                        capabilitiesRegistrar.registerCapability(
-                                                authToken,
-                                                domain,
-                                                provider,
-                                                providerQos);
-                                    }).toThrow();
                                     expect(function() {
                                         capabilitiesRegistrar.registerProvider(
                                                 domain,
@@ -385,9 +361,6 @@ define([
                                     }).toThrow();
                                     expect(function() {
                                         capabilitiesRegistrar.unregisterProvider(domain, provider);
-                                    }).toThrow();
-                                    expect(function() {
-                                        capabilitiesRegistrar.unregisterCapability(domain, provider);
                                     }).toThrow();
                                     done();
                                 });
