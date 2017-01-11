@@ -175,12 +175,12 @@ public class MessageRouterImpl implements MessageRouter {
                         }
                         for (Address address : addresses) {
                             String messageId = message.getId().substring(UUID_TAIL);
-                            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId,
+                            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new Object[]{ messageId,
                                     message.getType(),
                                     message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                                     message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
                                     message.getHeader().toString() });
-                            logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(),
+                            logger.debug(">>>>> body  ID:{}:{}: {}", new Object[]{ messageId, message.getType(),
                                     message.getPayload() });
                             IMessaging messagingStub = messagingStubFactory.create(address);
                             messagingStub.transmit(message, createFailureAction(message, retriesCount));
