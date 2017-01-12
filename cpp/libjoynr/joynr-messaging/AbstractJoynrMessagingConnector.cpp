@@ -33,8 +33,7 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         const std::string& proxyParticipantId,
         const std::string& providerParticipantId,
         const MessagingQos& qosSettings,
-        IClientCache* cache,
-        bool cached)
+        IClientCache* cache)
         : joynrMessageSender(joynrMessageSender),
           subscriptionManager(subscriptionManager),
           domain(domain),
@@ -42,8 +41,7 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
           proxyParticipantId(proxyParticipantId),
           providerParticipantId(providerParticipantId),
           qosSettings(qosSettings),
-          cache(cache),
-          cached(cached)
+          cache(cache)
 {
 }
 

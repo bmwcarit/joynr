@@ -123,9 +123,8 @@ internalRequestObject.setParams(
 		const std::string& proxyParticipantId,
 		const std::string& providerParticipantId,
 		const joynr::MessagingQos &qosSettings,
-		joynr::IClientCache *cache,
-		bool cached)
-	: joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, providerParticipantId, qosSettings, cache, cached)
+		joynr::IClientCache *cache)
+	: joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, providerParticipantId, qosSettings, cache)
 {
 }
 

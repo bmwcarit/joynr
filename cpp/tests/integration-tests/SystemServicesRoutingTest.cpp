@@ -128,7 +128,6 @@ TEST_F(SystemServicesRoutingTest, routingProviderIsAvailable)
     JOYNR_EXPECT_NO_THROW(
         routingProxy = routingProxyBuilder
                 ->setMessagingQos(MessagingQos(5000))
-                ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
                 ->build()
     );
@@ -138,7 +137,6 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 {
     routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
@@ -156,7 +154,6 @@ TEST_F(SystemServicesRoutingTest, addNextHopHttp)
 {
     routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
@@ -187,7 +184,6 @@ TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
 {
     routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
@@ -231,7 +227,6 @@ TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
 {
     routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
@@ -262,7 +257,6 @@ TEST_F(SystemServicesRoutingTest, removeNextHopMqtt)
 {
     routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 

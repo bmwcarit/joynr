@@ -140,7 +140,6 @@ int main(int argc, char* argv[])
     try {
         JOYNR_LOG_DEBUG(logger, "About to call proxyBuilder");
         proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
-                        ->setCached(false)
                         ->setDiscoveryQos(discoveryQos)
                         ->build();
         JOYNR_LOG_DEBUG(logger, "Call to Proxybuilder successfully completed");

@@ -99,7 +99,7 @@ public:
     float floatValue;
     Semaphore semaphore;
 
-    tests::testJoynrMessagingConnector* createConnector(bool cacheEnabled) {
+    tests::testJoynrMessagingConnector* createConnector() {
         return new tests::testJoynrMessagingConnector(
                     mockJoynrMessageSender,
                     mockSubscriptionManager,
@@ -107,12 +107,11 @@ public:
                     proxyParticipantId,
                     providerParticipantId,
                     MessagingQos(),
-                    &mockClientCache,
-                    cacheEnabled);
+                    &mockClientCache);
     }
 
-    tests::Itest* createFixture(bool cacheEnabled) override {
-        return dynamic_cast<tests::Itest*>(createConnector(cacheEnabled));
+    tests::Itest* createFixture() override {
+        return dynamic_cast<tests::Itest*>(createConnector());
     }
 
     void invokeMulticastSubscriptionCallback(const std::string& subscribeToName,
@@ -157,14 +156,6 @@ TEST_F(TestJoynrMessagingConnectorTest, sync_setAttributeNotCached) {
 
 TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeNotCached) {
     testSync_getAttributeNotCached();
-}
-
-TEST_F(TestJoynrMessagingConnectorTest, async_getAttributeCached) {
-    testAsync_getAttributeCached();
-}
-
-TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeCached) {
-    testSync_getAttributeCached();
 }
 
 TEST_F(TestJoynrMessagingConnectorTest, async_getterCallReturnsProviderRuntimeException) {
@@ -252,7 +243,7 @@ TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute) {
 }
 
 TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
-    std::unique_ptr<tests::testJoynrMessagingConnector> connector (createConnector(false));
+    std::unique_ptr<tests::testJoynrMessagingConnector> connector (createConnector());
 
     auto mockListener = std::make_shared<MockGpsFloatSubscriptionListener>();
 

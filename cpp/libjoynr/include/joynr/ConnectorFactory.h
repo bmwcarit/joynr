@@ -46,14 +46,13 @@ public:
                               const std::string& providerParticipantId,
                               const MessagingQos& qosSettings,
                               IClientCache* cache,
-                              bool cached,
                               bool createInProcessConnector)
     {
         if (createInProcessConnector) {
             return inProcessConnectorFactory->create<T>(proxyParticipantId, providerParticipantId);
         } else {
             return joynrMessagingConnectorFactory->create<T>(
-                    domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached);
+                    domain, proxyParticipantId, providerParticipantId, qosSettings, cache);
         }
     }
 

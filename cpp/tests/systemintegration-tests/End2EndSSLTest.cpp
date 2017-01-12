@@ -108,7 +108,6 @@ TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
     std::int64_t qosRoundTripTTL = 40000;
     std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 

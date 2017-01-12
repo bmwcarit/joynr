@@ -200,7 +200,6 @@ int main(int argc, char* argv[])
     // Build a proxy
     std::unique_ptr<vehicle::RadioProxy> proxy =
             proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->build();
 

@@ -184,10 +184,10 @@ public:
         EXPECT_EQ(expectedEnum, actual.getError<T>());
     }
 
-    virtual tests::Itest* createFixture(bool cacheEnabled)=0;
+    virtual tests::Itest* createFixture()=0;
 
     void testAsync_getAttributeNotCached() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
 
@@ -199,7 +199,7 @@ public:
     }
 
     void testSync_setAttributeNotCached() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         EXPECT_CALL(
                     *mockJoynrMessageSender,
@@ -221,7 +221,7 @@ public:
 
 
     void testSync_getAttributeNotCached() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
         setExpectationsForSendRequestCall("getLocation")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
@@ -235,39 +235,8 @@ public:
         delete testFixture;
     }
 
-    void testAsync_getAttributeCached() {
-        asyncTestFixture = createFixture(true);
-
-        MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
-
-        setExpectationsForSendRequestCall("getLocation").Times(0);
-        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(expectedGpsLocation));
-
-        asyncTestFixture->getLocationAsync(
-                [callback] (const types::Localisation::GpsLocation& location) {
-                    callback->onSuccess(location);
-                });
-    }
-
-    void testSync_getAttributeCached() {
-        tests::Itest* testFixture = createFixture(true);
-
-        setExpectationsForSendRequestCall("getLocation").Times(0);
-
-        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(expectedGpsLocation));
-
-        types::Localisation::GpsLocation gpsLocation;
-        try {
-            testFixture->getLocation(gpsLocation);
-        } catch (const exceptions::JoynrException& e) {
-            ADD_FAILURE()<< "getLocation was not successful";
-        }
-        EXPECT_EQ(expectedGpsLocation, gpsLocation);
-        delete testFixture;
-    }
-
     void testAsync_getterCallReturnsProviderRuntimeException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<std::int32_t>* callback = new MockCallback<std::int32_t>();
 
@@ -290,7 +259,7 @@ public:
     }
 
     void testSync_getterCallReturnsProviderRuntimeException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::ProviderRuntimeException expected("getterCallReturnsProviderRuntimeExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -310,7 +279,7 @@ public:
     }
 
     void testAsync_getterCallReturnsMethodInvocationException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<std::int32_t>* callback = new MockCallback<std::int32_t>();
 
@@ -333,7 +302,7 @@ public:
     }
 
     void testSync_getterCallReturnsMethodInvocationException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::MethodInvocationException expected("getterCallReturnsMethodInvocationExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -353,7 +322,7 @@ public:
     }
 
     void testAsync_setterCallReturnsProviderRuntimeException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -378,7 +347,7 @@ public:
     }
 
     void testSync_setterCallReturnsProviderRuntimeException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::ProviderRuntimeException expected("setterCallReturnsProviderRuntimeExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -398,7 +367,7 @@ public:
     }
 
     void testAsync_setterCallReturnsMethodInvocationException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -422,7 +391,7 @@ public:
         delete callback;    }
 
     void testSync_setterCallReturnsMethodInvocationException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::MethodInvocationException expected("setterCallReturnsMethodInvocationExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -442,7 +411,7 @@ public:
     }
 
     void testAsync_methodCallReturnsProviderRuntimeException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -465,7 +434,7 @@ public:
     }
 
     void testSync_methodCallReturnsProviderRuntimeException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::ProviderRuntimeException expected("testSync_methodCallReturnsProviderRuntimeException-ERROR");
         setExpectedExceptionForSendRequestCall(expected);
@@ -483,7 +452,7 @@ public:
     }
 
     void testAsync_methodCallReturnsMethodInvocationException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -506,7 +475,7 @@ public:
     }
 
     void testSync_methodCallReturnsMethodInvocationException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::MethodInvocationException expected("testSync_methodCallReturnsMethodInvocationException-ERROR");
         setExpectedExceptionForSendRequestCall(expected);
@@ -525,7 +494,7 @@ public:
     }
 
     void testAsync_methodCallReturnsErrorEnum() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         using tests::testTypes::ErrorEnumBase;
         auto callback = std::make_shared<MockCallbackWithApplicationError<void, ErrorEnumBase::Enum>>();
@@ -554,7 +523,7 @@ public:
     }
 
     void testSync_methodCallReturnsErrorEnum() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         using tests::testTypes::ErrorEnumBase;
 
@@ -579,7 +548,7 @@ public:
     }
 
     void testAsync_methodCallReturnsExtendedErrorEnum() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
         using tests::test::MethodWithErrorEnumExtendedErrorEnum;
 
         auto callback = std::make_shared<MockCallbackWithApplicationError<void, MethodWithErrorEnumExtendedErrorEnum::Enum>>();
@@ -608,7 +577,7 @@ public:
     }
 
     void testSync_methodCallReturnsExtendedErrorEnum() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         using tests::test::MethodWithErrorEnumExtendedErrorEnum;
         MethodWithErrorEnumExtendedErrorEnum::Enum error = MethodWithErrorEnumExtendedErrorEnum::IMPLICIT_ERROR_TYPECOLLECTION;
@@ -632,7 +601,7 @@ public:
     }
 
     void testAsync_methodCallReturnsInlineErrorEnum() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         using tests::test::MethodWithImplicitErrorEnumErrorEnum;
 
@@ -662,7 +631,7 @@ public:
     }
 
     void testSync_methodCallReturnsInlineErrorEnum() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         using tests::test::MethodWithImplicitErrorEnumErrorEnum;
 
@@ -687,7 +656,7 @@ public:
     }
 
     void testAsync_OperationWithNoArguments() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallbackWithJoynrException<int>* callback = new MockCallbackWithJoynrException<int>();
 
@@ -700,7 +669,7 @@ public:
     }
 
     void testSync_OperationWithNoArguments() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
         setExpectationsForSendRequestCall("methodWithNoInputParameters")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackIntResult));
 

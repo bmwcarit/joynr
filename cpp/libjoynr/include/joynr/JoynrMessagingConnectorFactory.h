@@ -50,8 +50,7 @@ public:
                               const std::string proxyParticipantId,
                               const std::string& providerParticipantId,
                               const MessagingQos& qosSettings,
-                              IClientCache* cache,
-                              bool cached)
+                              IClientCache* cache)
     {
         using Connector = typename JoynrMessagingTraits<T>::Connector;
         return std::make_unique<Connector>(messageSender,
@@ -60,8 +59,7 @@ public:
                                            proxyParticipantId,
                                            providerParticipantId,
                                            qosSettings,
-                                           cache,
-                                           cached);
+                                           cache);
     }
 
 private:

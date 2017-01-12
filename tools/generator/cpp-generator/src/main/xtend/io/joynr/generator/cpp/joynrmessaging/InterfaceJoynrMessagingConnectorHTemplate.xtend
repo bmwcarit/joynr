@@ -143,7 +143,6 @@ public:
 	 * @param providerParticipantId The participant id of the provider
 	 * @param qosSettings The quality of service settings
 	 * @param cache Pointer to the client cache instance
-	 * @param cached True, if entries are cached, false otherwise
 	 */
 	«interfaceName»JoynrMessagingConnector(
 		std::shared_ptr<joynr::IJoynrMessageSender> messageSender,
@@ -152,8 +151,7 @@ public:
 		const std::string& proxyParticipantId,
 		const std::string& providerParticipantId,
 		const joynr::MessagingQos &qosSettings,
-		joynr::IClientCache *cache,
-		bool cached);
+		joynr::IClientCache *cache);
 
 	/**
 	 * @brief Checks whether cluster controller is used

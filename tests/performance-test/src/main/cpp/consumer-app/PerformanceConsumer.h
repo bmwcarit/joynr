@@ -86,7 +86,6 @@ public:
         try {
             // Build a proxy
             echoProxy = proxyBuilder->setMessagingQos(MessagingQos(ttl))
-                                ->setCached(false)
                                 ->setDiscoveryQos(discoveryQos)
                                 ->build();
         } catch (const std::exception& e) {

@@ -45,14 +45,9 @@ public:
 
     // Create a proxy of type T
     template <class T>
-    T* createProxy(const std::string& domain, const MessagingQos& qosSettings, bool cached)
+    T* createProxy(const std::string& domain, const MessagingQos& qosSettings)
     {
-        return new T(messagingEndpointAddress,
-                     connectorFactory.get(),
-                     cache,
-                     domain,
-                     qosSettings,
-                     cached);
+        return new T(messagingEndpointAddress, connectorFactory.get(), cache, domain, qosSettings);
     }
 
 private:

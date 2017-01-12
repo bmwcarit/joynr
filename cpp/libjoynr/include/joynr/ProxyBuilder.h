@@ -96,13 +96,6 @@ public:
                     std::function<void(const exceptions::DiscoveryException&)> onError) override;
 
     /**
-     * @brief Sets whether the object is to be cached
-     * @param cached True, if the object is to be cached, false otherwise
-     * @return The ProxyBuilder object
-     */
-    ProxyBuilder* setCached(const bool cached) override;
-
-    /**
      * @brief Sets the messaging qos settings
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object
@@ -120,7 +113,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
     std::string domain;
-    bool cached;
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
@@ -143,7 +135,6 @@ ProxyBuilder<T>::ProxyBuilder(
         std::shared_ptr<MessageRouter> messageRouter,
         std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
-          cached(false),
           messagingQos(),
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
@@ -208,7 +199,7 @@ void ProxyBuilder<T>::buildAsync(
         }
 
         bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
-        std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos, cached));
+        std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos));
         proxy->handleArbitrationFinished(participantId, useInProcessConnector);
 
         messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
@@ -217,13 +208,6 @@ void ProxyBuilder<T>::buildAsync(
     };
 
     arbitrator->startArbitration(arbitrationSucceeds, onError);
-}
-
-template <class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setCached(const bool cached)
-{
-    this->cached = cached;
-    return this;
 }
 
 template <class T>

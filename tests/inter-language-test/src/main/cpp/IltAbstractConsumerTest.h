@@ -68,7 +68,6 @@ public:
 
         // Build a proxy
         testInterfaceProxy = proxyBuilder->setMessagingQos(joynr::MessagingQos(qosMsgTtl))
-                                     ->setCached(false)
                                      ->setDiscoveryQos(discoveryQos)
                                      ->build();
 

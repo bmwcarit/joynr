@@ -161,7 +161,6 @@ void LibJoynrRuntime::init(
     std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
     auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
-                                ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
     messageRouter->setParentRouter(
@@ -182,7 +181,6 @@ void LibJoynrRuntime::init(
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
 
     auto proxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
-                         ->setCached(false)
                          ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                          ->build();
 
