@@ -24,6 +24,7 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/placeholders.hpp>
 
+#include "joynr/access-control/IAccessController.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/IMessaging.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
@@ -44,7 +45,6 @@
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "cluster-controller/access-control/IAccessController.h"
 
 namespace joynr
 {

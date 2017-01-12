@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@
 #ifndef ACCESSCONTROLLER_H
 #define ACCESSCONTROLLER_H
 
-#include "IAccessController.h"
+#include "joynr/access-control/IAccessController.h"
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
 #include "joynr/Logger.h"

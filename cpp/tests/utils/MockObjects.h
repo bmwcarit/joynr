@@ -36,7 +36,7 @@
 #include "PrettyPrint.h"
 #include "LibJoynrMockObjects.h"
 
-#include "cluster-controller/access-control/IAccessController.h"
+#include "joynr/access-control/IAccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessController.h"
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/tests/testRequestCaller.h"
