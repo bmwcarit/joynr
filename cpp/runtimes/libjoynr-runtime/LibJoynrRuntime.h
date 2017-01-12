@@ -59,12 +59,12 @@ public:
     void unregisterProvider(const std::string& participantId) override;
 
 protected:
-    SubscriptionManager* subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
     InProcessConnectorFactory* inProcessConnectorFactory;
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     std::shared_ptr<IMessaging> joynrMessagingSendStub;
-    JoynrMessageSender* joynrMessageSender;
+    std::shared_ptr<JoynrMessageSender> joynrMessageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
 

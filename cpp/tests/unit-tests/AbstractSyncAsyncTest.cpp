@@ -128,12 +128,11 @@ public:
         endPointAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>("endPointUrl", "endPointAddress");
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
-        mockJoynrMessageSender = new MockJoynrMessageSender();
+        mockJoynrMessageSender = std::make_shared<MockJoynrMessageSender>();
         // asyncGpsFixture must be created after derived objects have run Setup()
     }
 
     void TearDown(){
-        delete mockJoynrMessageSender;
         delete asyncTestFixture;
     }
 
@@ -736,7 +735,7 @@ protected:
     MockDispatcher mockDispatcher;
     MockMessaging mockMessagingStub;
     std::shared_ptr<IReplyCaller> callBack;
-    MockJoynrMessageSender* mockJoynrMessageSender;
+    std::shared_ptr<MockJoynrMessageSender> mockJoynrMessageSender;
     std::string proxyParticipantId;
     std::string providerParticipantId;
     MockClientCache mockClientCache;

@@ -117,8 +117,8 @@ internalRequestObject.setParams(
 «getNamespaceStarter(francaIntf)»
 «val className = interfaceName + "JoynrMessagingConnector"»
 «className»::«className»(
-		joynr::IJoynrMessageSender* joynrMessageSender,
-		joynr::ISubscriptionManager* subscriptionManager,
+		std::shared_ptr<joynr::IJoynrMessageSender> joynrMessageSender,
+		std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
 		const std::string& providerParticipantId,
@@ -265,7 +265,7 @@ bool «className»::usesClusterController() const{
 
 			auto future = std::make_shared<Future<std::string>>();
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnType»>
-			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -418,7 +418,7 @@ bool «className»::usesClusterController() const{
 		auto future = std::make_shared<Future<std::string>>();
 		«IF broadcast.selective»
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 			subscriptionManager->registerSubscription(
 							broadcastName,
 							subscriptionCallback,
@@ -434,27 +434,38 @@ bool «className»::usesClusterController() const{
 			);
 		«ELSE»
 			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager.get());
 			std::function<void()> onSuccess =
-					[this, clonedMessagingQos, subscriptionRequest] () {
+					[joynrMessageSender = joynr::util::as_weak_ptr(joynrMessageSender),
+					proxyParticipantId = proxyParticipantId,
+					providerParticipantId = providerParticipantId,
+					clonedMessagingQos, subscriptionRequest] () {
 						JOYNR_LOG_DEBUG(logger, subscriptionRequest->toString());
-						joynrMessageSender->sendMulticastSubscriptionRequest(
-									proxyParticipantId,
-									providerParticipantId,
-									clonedMessagingQos,
-									*subscriptionRequest
-						);
+						if (auto ptr = joynrMessageSender.lock())
+						{
+							ptr->sendMulticastSubscriptionRequest(
+										proxyParticipantId,
+										providerParticipantId,
+										clonedMessagingQos,
+										*subscriptionRequest
+							);
+						}
 					};
 
 			std::string subscriptionId = subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId();
 			std::function<void(const exceptions::ProviderRuntimeException& error)> onError =
-					[this, subscriptionListener, subscriptionId] (const exceptions::ProviderRuntimeException& error) {
+					[subscriptionListener,
+					subscriptionManager = joynr::util::as_weak_ptr(subscriptionManager),
+					subscriptionId] (const exceptions::ProviderRuntimeException& error) {
 						std::string message = "Could not register subscription to «broadcastName». Error from subscription manager: "
 									+ error.getMessage();
 						JOYNR_LOG_ERROR(logger, message);
 						exceptions::SubscriptionException subscriptionException(message, subscriptionId);
 						subscriptionListener->onError(subscriptionException);
-						subscriptionManager->unregisterSubscription(subscriptionId);
+						if (auto ptr = subscriptionManager.lock())
+						{
+							ptr->unregisterSubscription(subscriptionId);
+						}
 				};
 			subscriptionManager->registerSubscription(
 							broadcastName,

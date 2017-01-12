@@ -53,7 +53,7 @@ public:
     ProxyIntegrationTest() :
         mockInProcessConnectorFactory(new MockInProcessConnectorFactory()),
         mockClientCache(new MockClientCache()),
-        mockJoynrMessageSender(new MockJoynrMessageSender()),
+        mockJoynrMessageSender(std::make_shared<MockJoynrMessageSender>()),
         domain("cppProxyIntegrationTestDomain"),
         messagingQos(),
         endPointAddress(new system::RoutingTypes::ChannelAddress("http://endpoint:8080/bounceproxy", "endPointAddress"))
@@ -63,14 +63,13 @@ public:
     ~ProxyIntegrationTest(){
         delete mockInProcessConnectorFactory;
         delete mockClientCache;
-        delete mockJoynrMessageSender;
     }
 
 protected:
 
     MockInProcessConnectorFactory* mockInProcessConnectorFactory;
     MockClientCache* mockClientCache;
-    MockJoynrMessageSender* mockJoynrMessageSender;
+    std::shared_ptr<MockJoynrMessageSender> mockJoynrMessageSender;
     std::string domain;
     MessagingQos messagingQos;
     std::shared_ptr<joynr::system::RoutingTypes::ChannelAddress> endPointAddress;

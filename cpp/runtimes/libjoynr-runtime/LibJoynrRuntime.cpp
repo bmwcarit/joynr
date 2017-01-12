@@ -65,7 +65,6 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
 LibJoynrRuntime::~LibJoynrRuntime()
 {
     delete inProcessDispatcher;
-    delete joynrMessageSender;
     delete joynrDispatcher;
     delete libjoynrSettings;
     libjoynrSettings = nullptr;
@@ -95,7 +94,8 @@ void LibJoynrRuntime::init(
     messageRouter->loadRoutingTable(libjoynrSettings->getMessageRouterPersistenceFilename());
     startLibJoynrMessagingSkeleton(messageRouter);
 
-    joynrMessageSender = new JoynrMessageSender(messageRouter, messagingSettings.getTtlUpliftMs());
+    joynrMessageSender =
+            std::make_shared<JoynrMessageSender>(messageRouter, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
@@ -105,19 +105,19 @@ void LibJoynrRuntime::init(
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
-                                                joynrMessageSender,
+                                                joynrMessageSender.get(),
                                                 messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
             libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
-    subscriptionManager =
-            new SubscriptionManager(singleThreadIOService->getIOService(), messageRouter);
+    subscriptionManager = std::make_shared<SubscriptionManager>(
+            singleThreadIOService->getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadIOService->getIOService());
 
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
+    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager.get());
     inProcessConnectorFactory = new InProcessConnectorFactory(
-            subscriptionManager,
+            subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender,
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));

@@ -146,8 +146,8 @@ public:
 	 * @param cached True, if entries are cached, false otherwise
 	 */
 	«interfaceName»JoynrMessagingConnector(
-		joynr::IJoynrMessageSender* messageSender,
-		joynr::ISubscriptionManager* subscriptionManager,
+		std::shared_ptr<joynr::IJoynrMessageSender> messageSender,
+		std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
 		const std::string& providerParticipantId,

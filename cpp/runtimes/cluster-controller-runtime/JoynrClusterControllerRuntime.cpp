@@ -265,7 +265,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     /* LibJoynr */
     assert(messageRouter);
-    joynrMessageSender = new JoynrMessageSender(messageRouter, messagingSettings.getTtlUpliftMs());
+    joynrMessageSender =
+            std::make_shared<JoynrMessageSender>(messageRouter, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
@@ -395,21 +396,21 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       *
       */
     publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
-                                                joynrMessageSender,
+                                                joynrMessageSender.get(),
                                                 messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
             libjoynrSettings.getBroadcastSubscriptionRequestPersistenceFilename());
 
-    subscriptionManager =
-            new SubscriptionManager(singleThreadIOService->getIOService(), messageRouter);
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
+    subscriptionManager = std::make_shared<SubscriptionManager>(
+            singleThreadIOService->getIOService(), messageRouter);
+    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager.get());
     auto libjoynrMessagingAddress =
             std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);
     // subscriptionManager = new SubscriptionManager(...)
     inProcessConnectorFactory = new InProcessConnectorFactory(
-            subscriptionManager,
+            subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender,
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
@@ -457,7 +458,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     {
         using joynr::system::DiscoveryInProcessConnector;
         auto discoveryInProcessConnector = std::make_unique<DiscoveryInProcessConnector>(
-                subscriptionManager,
+                subscriptionManager.get(),
                 publicationManager,
                 inProcessPublicationSender,
                 std::make_shared<DummyPlatformSecurityManager>(),
@@ -559,7 +560,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 
     delete inProcessPublicationSender;
     inProcessPublicationSender = nullptr;
-    delete joynrMessageSender;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     delete ccDbusMessageRouterAdapter;

@@ -20,7 +20,7 @@
 * **[C++]** createRuntimeAsync error callback exception parameter is now a const reference.
 
 ## Other changes
-None.
+* **[C++]** fix lifetime issue in JoynrMessagingConnector
 
 #joynr 0.22.4
 

@@ -16,10 +16,14 @@
  * limitations under the License.
  * #L%
  */
+
+#include <string>
+
+#include <gmock/gmock.h>
+
 #include "AbstractSyncAsyncTest.cpp"
 #include "joynr/tests/testJoynrMessagingConnector.h"
 #include "joynr/IReplyCaller.h"
-#include <string>
 #include "utils/MockObjects.h"
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/MulticastSubscriptionQos.h"
@@ -50,7 +54,7 @@ public:
 
     TestJoynrMessagingConnectorTest():
         singleThreadedIOService(),
-        mockSubscriptionManager(singleThreadedIOService.getIOService(), nullptr),
+        mockSubscriptionManager(std::make_shared<MockSubscriptionManager>(singleThreadedIOService.getIOService(), nullptr)),
         gpsLocation(types::Localisation::GpsLocation(
                         9.0,
                         51.0,
@@ -90,7 +94,7 @@ public:
     }
 
     SingleThreadedIOService singleThreadedIOService;
-    MockSubscriptionManager mockSubscriptionManager;
+    std::shared_ptr<MockSubscriptionManager> mockSubscriptionManager;
     joynr::types::Localisation::GpsLocation gpsLocation;
     float floatValue;
     Semaphore semaphore;
@@ -98,7 +102,7 @@ public:
     tests::testJoynrMessagingConnector* createConnector(bool cacheEnabled) {
         return new tests::testJoynrMessagingConnector(
                     mockJoynrMessageSender,
-                    &mockSubscriptionManager,
+                    mockSubscriptionManager,
                     "myDomain",
                     proxyParticipantId,
                     providerParticipantId,
@@ -248,12 +252,12 @@ TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute) {
 }
 
 TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
-    tests::testJoynrMessagingConnector* connector = createConnector(false);
+    std::unique_ptr<tests::testJoynrMessagingConnector> connector (createConnector(false));
 
     auto mockListener = std::make_shared<MockGpsFloatSubscriptionListener>();
 
     EXPECT_CALL(
-        mockSubscriptionManager,
+        *mockSubscriptionManager,
         registerSubscription(
             Eq("locationUpdateWithSpeed"), //subscribeToName
             _, // subscriberParticipantId
@@ -279,4 +283,5 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
+    EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mockSubscriptionManager.get()));
 }

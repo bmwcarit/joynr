@@ -113,9 +113,9 @@ protected:
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
     IDispatcher* ccDispatcher;
-    SubscriptionManager* subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
     IMessaging* joynrMessagingSendSkeleton;
-    JoynrMessageSender* joynrMessageSender;
+    std::shared_ptr<JoynrMessageSender> joynrMessageSender;
 
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     ClientQCache cache;

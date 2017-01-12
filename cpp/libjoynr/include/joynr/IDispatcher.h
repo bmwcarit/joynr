@@ -45,7 +45,8 @@ public:
     virtual void removeRequestCaller(const std::string& participantId) = 0;
     virtual void receive(const JoynrMessage& message) = 0;
 
-    virtual void registerSubscriptionManager(ISubscriptionManager* subscriptionManager) = 0;
+    virtual void registerSubscriptionManager(
+            std::shared_ptr<ISubscriptionManager> subscriptionManager) = 0;
     virtual void registerPublicationManager(PublicationManager* publicationManager) = 0;
 };
 

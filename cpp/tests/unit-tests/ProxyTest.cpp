@@ -53,7 +53,7 @@ public:
     void SetUp() override {
         AbstractSyncAsyncTest::SetUp();
         mockInProcessConnectorFactory = new MockInProcessConnectorFactory();
-        JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, (SubscriptionManager*) nullptr);
+        JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, nullptr);
         mockConnectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     }
 

@@ -64,8 +64,8 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
-        messageSender(mockMessageRouter),
-        dispatcher(&messageSender, singleThreadIOService.getIOService()),
+        messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
+        dispatcher(messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
         singleThreadIOService.start();
@@ -74,7 +74,7 @@ public:
     void SetUp(){
         //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
+        subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadIOService.getIOService(), mockMessageRouter);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
@@ -94,9 +94,9 @@ protected:
     std::string proxyParticipantId;
 
     JoynrMessageFactory messageFactory;
-    JoynrMessageSender messageSender;
+    std::shared_ptr<JoynrMessageSender> messageSender;
     Dispatcher dispatcher;
-    SubscriptionManager * subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
 private:
     DISALLOW_COPY_AND_ASSIGN(BroadcastSubscriptionTest);
 };
@@ -129,7 +129,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -180,7 +180,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback= std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation, double>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

@@ -26,8 +26,8 @@ namespace joynr
 INIT_LOGGER(AbstractJoynrMessagingConnector);
 
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
-        IJoynrMessageSender* joynrMessageSender,
-        ISubscriptionManager* subscriptionManager,
+        std::shared_ptr<IJoynrMessageSender> joynrMessageSender,
+        std::shared_ptr<ISubscriptionManager> subscriptionManager,
         const std::string& domain,
         const std::string& interfaceName,
         const std::string& proxyParticipantId,

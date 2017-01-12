@@ -42,8 +42,8 @@ struct JoynrMessagingTraits;
 class JOYNR_EXPORT JoynrMessagingConnectorFactory
 {
 public:
-    JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender,
-                                   ISubscriptionManager* subscriptionManager);
+    JoynrMessagingConnectorFactory(std::shared_ptr<IJoynrMessageSender> messageSender,
+                                   std::shared_ptr<ISubscriptionManager> subscriptionManager);
 
     template <class T>
     std::unique_ptr<T> create(const std::string& domain,
@@ -65,8 +65,8 @@ public:
     }
 
 private:
-    IJoynrMessageSender* messageSender;
-    ISubscriptionManager* subscriptionManager;
+    std::shared_ptr<IJoynrMessageSender> messageSender;
+    std::shared_ptr<ISubscriptionManager> subscriptionManager;
 };
 
 } // namespace joynr
