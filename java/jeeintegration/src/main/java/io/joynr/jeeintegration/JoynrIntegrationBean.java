@@ -71,6 +71,8 @@ public class JoynrIntegrationBean {
 
     private JoynrRuntime joynrRuntime;
 
+    private boolean deregisterOnShutdown = false;
+
     public JoynrIntegrationBean() {
     }
 
@@ -143,11 +145,13 @@ public class JoynrIntegrationBean {
 
     @PreDestroy
     public void destroy() {
-        for (Object provider : registeredProviders) {
-            try {
-                joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);
-            } catch (Exception e) {
-                LOG.error("Error unregistering provider", e);
+        if (deregisterOnShutdown) {
+            for (Object provider : registeredProviders) {
+                try {
+                    joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);
+                } catch (Exception e) {
+                    LOG.error("Error unregistering provider", e);
+                }
             }
         }
     }
