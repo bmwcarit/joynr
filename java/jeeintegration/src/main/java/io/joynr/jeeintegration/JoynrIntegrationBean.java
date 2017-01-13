@@ -129,17 +129,17 @@ public class JoynrIntegrationBean {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked", "serial" })
-	private Set<ProviderQosFactory> getProviderQosFactories() {
-		Set<Bean<?>> providerQosFactoryBeans = beanManager.getBeans(ProviderQosFactory.class,
-																	new AnnotationLiteral<Any>() {
-																	});
-		Set<ProviderQosFactory> providerQosFactories = new HashSet<>();
-		for (Bean providerQosFactoryBean : providerQosFactoryBeans) {
-			ProviderQosFactory factory = (ProviderQosFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
-			providerQosFactories.add(factory);
-		}
-		return providerQosFactories;
-	}
+    private Set<ProviderQosFactory> getProviderQosFactories() {
+        Set<Bean<?>> providerQosFactoryBeans = beanManager.getBeans(ProviderQosFactory.class,
+                                                                    new AnnotationLiteral<Any>() {
+                                                                    });
+        Set<ProviderQosFactory> providerQosFactories = new HashSet<>();
+        for (Bean providerQosFactoryBean : providerQosFactoryBeans) {
+            ProviderQosFactory factory = (ProviderQosFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
+            providerQosFactories.add(factory);
+        }
+        return providerQosFactories;
+    }
 
     @PreDestroy
     public void destroy() {
