@@ -21,13 +21,7 @@ package io.joynr.pubsub;
 
 public interface HeartbeatSubscriptionInformation {
 
-    @Deprecated
-    public long getHeartbeat();
-
     public long getPeriodMs();
-
-    @Deprecated
-    public long getAlertAfterInterval();
 
     public long getAlertAfterIntervalMs();
 
