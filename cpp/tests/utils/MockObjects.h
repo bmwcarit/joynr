@@ -164,7 +164,10 @@ public:
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
 public:
-    MOCK_METHOD1(add, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilitiesInformationList));
+    MOCK_METHOD3(add, void(const joynr::types::GlobalDiscoveryEntry& entry,
+                           std::function<void()> onSuccess,
+                           std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+
     MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
     MOCK_METHOD3(lookup, std::vector<joynr::types::GlobalDiscoveryEntry>(const std::vector<std::string>& domain, const std::string& interfaceName, const std::int64_t messagingTtl));

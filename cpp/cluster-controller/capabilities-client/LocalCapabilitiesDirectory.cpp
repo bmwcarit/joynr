@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,9 +153,25 @@ void LocalCapabilitiesDirectory::add(const types::DiscoveryEntry& discoveryEntry
         if (std::find(registeredGlobalCapabilities.begin(),
                       registeredGlobalCapabilities.end(),
                       globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {
-            registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
+
+            std::function<void(const exceptions::JoynrException&)> onError =
+                    [&](const exceptions::JoynrException& error) {
+                JOYNR_LOG_ERROR(
+                        logger,
+                        "Error occured during the execution of capabilitiesProxy->add. Error: {}",
+                        error.getMessage());
+            };
+
+            std::function<void()> onSuccess = [this, globalDiscoveryEntry]() {
+                JOYNR_LOG_TRACE(logger,
+                                "Global capability addedd successfully, adding it to list "
+                                "of registered capabilities.");
+                this->registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
+            };
+
+            // Add globally
+            capabilitiesClient->add(globalDiscoveryEntry, onSuccess, onError);
         }
-        this->capabilitiesClient->add(registeredGlobalCapabilities);
     }
 
     updatePersistedFile();
