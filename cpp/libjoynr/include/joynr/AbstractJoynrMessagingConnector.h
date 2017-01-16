@@ -28,7 +28,6 @@
 #include "joynr/Request.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/Logger.h"
-#include "joynr/IClientCache.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/IConnector.h"
 #include "joynr/IReplyCaller.h"
@@ -51,8 +50,7 @@ public:
                                     const std::string& interfaceName,
                                     const std::string& proxyParticipantId,
                                     const std::string& providerParticipantId,
-                                    const MessagingQos& qosSettings,
-                                    IClientCache* cache);
+                                    const MessagingQos& qosSettings);
     bool usesClusterController() const override;
     ~AbstractJoynrMessagingConnector() override = default;
 
@@ -91,7 +89,6 @@ protected:
     std::string proxyParticipantId;
     std::string providerParticipantId;
     MessagingQos qosSettings;
-    IClientCache* cache;
     ADD_LOGGER(AbstractJoynrMessagingConnector);
 
 private:

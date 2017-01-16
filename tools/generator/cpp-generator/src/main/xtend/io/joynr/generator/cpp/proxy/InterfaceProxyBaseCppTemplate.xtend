@@ -50,11 +50,10 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 «className»::«className»(
 		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
-		joynr::IClientCache *cache,
 		const std::string &domain,
 		const joynr::MessagingQos &qosSettings
 ) :
-		joynr::ProxyBase(connectorFactory, cache, domain, qosSettings),
+		joynr::ProxyBase(connectorFactory, domain, qosSettings),
 		messagingAddress(messagingAddress),
 		connector()
 {
@@ -69,7 +68,6 @@ void «className»::handleArbitrationFinished(
 				proxyParticipantId,
 				providerParticipantId,
 				qosSettings,
-				cache,
 				useInProcessConnector
 	);
 

@@ -28,11 +28,9 @@ namespace joynr
 INIT_LOGGER(ProxyBase);
 
 ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
-                     IClientCache* cache,
                      const std::string& domain,
                      const MessagingQos& qosSettings)
         : connectorFactory(connectorFactory),
-          cache(cache),
           domain(domain),
           qosSettings(qosSettings),
           providerParticipantId(""),

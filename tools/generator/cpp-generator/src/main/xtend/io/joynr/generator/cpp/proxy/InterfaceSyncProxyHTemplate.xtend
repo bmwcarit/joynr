@@ -74,14 +74,12 @@ public:
 	 * @brief Parameterized constructor
 	 * @param messagingAddress The address
 	 * @param connectorFactory The connector factory
-	 * @param cache The client cache
 	 * @param domain The provider domain
 	 * @param qosSettings The quality of service settings
 	 */
 	«syncClassName»(
 			std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
-			joynr::IClientCache* cache,
 			const std::string& domain,
 			const joynr::MessagingQos& qosSettings
 	);

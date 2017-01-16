@@ -87,7 +87,6 @@ public:
         tests::testProxy* proxy = new tests::testProxy(
                     endPointAddress,
                     mockConnectorFactory,
-                    &mockClientCache,
                     "myDomain",
                     MessagingQos());
         const bool useInProcessCommunication = false;

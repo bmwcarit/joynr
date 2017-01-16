@@ -29,7 +29,6 @@
 namespace joynr
 {
 
-class IClientCache;
 class ConnectorFactory;
 
 class JOYNR_EXPORT ProxyBase
@@ -37,7 +36,6 @@ class JOYNR_EXPORT ProxyBase
 
 public:
     ProxyBase(ConnectorFactory* connectorFactory,
-              IClientCache* cache,
               const std::string& domain,
               const MessagingQos& qosSettings);
     virtual ~ProxyBase() = default;
@@ -60,7 +58,6 @@ protected:
                                            bool useInProcessConnector);
 
     ConnectorFactory* connectorFactory;
-    IClientCache* cache;
     std::string domain;
     MessagingQos qosSettings;
     std::string providerParticipantId;

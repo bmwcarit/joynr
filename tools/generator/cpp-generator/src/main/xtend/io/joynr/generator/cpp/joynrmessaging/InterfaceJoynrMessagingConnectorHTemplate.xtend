@@ -142,7 +142,6 @@ public:
 	 * @param proxyParticipantId The participant id of the proxy
 	 * @param providerParticipantId The participant id of the provider
 	 * @param qosSettings The quality of service settings
-	 * @param cache Pointer to the client cache instance
 	 */
 	«interfaceName»JoynrMessagingConnector(
 		std::shared_ptr<joynr::IJoynrMessageSender> messageSender,
@@ -150,8 +149,7 @@ public:
 		const std::string& domain,
 		const std::string& proxyParticipantId,
 		const std::string& providerParticipantId,
-		const joynr::MessagingQos &qosSettings,
-		joynr::IClientCache *cache);
+		const joynr::MessagingQos &qosSettings);
 
 	/**
 	 * @brief Checks whether cluster controller is used

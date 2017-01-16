@@ -106,8 +106,7 @@ public:
                     "myDomain",
                     proxyParticipantId,
                     providerParticipantId,
-                    MessagingQos(),
-                    &mockClientCache);
+                    MessagingQos());
     }
 
     tests::Itest* createFixture() override {

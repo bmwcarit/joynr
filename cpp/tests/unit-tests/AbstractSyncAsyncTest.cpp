@@ -117,7 +117,6 @@ public:
         mockJoynrMessageSender(),
         proxyParticipantId(),
         providerParticipantId(),
-        mockClientCache(),
         endPointAddress(),
         asyncTestFixture(nullptr),
         error(nullptr)
@@ -707,7 +706,6 @@ protected:
     std::shared_ptr<MockJoynrMessageSender> mockJoynrMessageSender;
     std::string proxyParticipantId;
     std::string providerParticipantId;
-    MockClientCache mockClientCache;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> endPointAddress;
     tests::Itest* asyncTestFixture;
     std::shared_ptr<exceptions::JoynrException> error;
