@@ -1166,14 +1166,14 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
 }
 
 INSTANTIATE_TEST_CASE_P(
-        Http,
+        DISABLED_Http,
         CombinedEnd2EndTest,
         testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings",
                                         "test-resources/HttpSystemIntegrationTest2.settings")));
 
 INSTANTIATE_TEST_CASE_P(
-        MqttWithHttpBackend,
+        Mqtt,
         CombinedEnd2EndTest,
         testing::Values(std::make_tuple(
-                "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings",
-                "test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings")));
+                "test-resources/MqttSystemIntegrationTest1.settings",
+                "test-resources/MqttSystemIntegrationTest2.settings")));

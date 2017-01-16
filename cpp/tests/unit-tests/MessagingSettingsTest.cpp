@@ -31,7 +31,6 @@ public:
         testSettingsFileNameNonExistent("test-resources/MessagingSettingsTest-nonexistent.settings"),
         testSettingsFileNameHttp("test-resources/HttpMessagingSettingsTest.settings"),
         testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings"),
-        testSettingsFileNameMqttWithHttpBackend("test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"),
         testSettingsFileNameAccessControl("test-resources/MessagingSettingsWithAccessControl.settings")
     {
     }
@@ -41,7 +40,6 @@ protected:
     const std::string testSettingsFileNameNonExistent;
     const std::string testSettingsFileNameHttp;
     const std::string testSettingsFileNameMqtt;
-    const std::string testSettingsFileNameMqttWithHttpBackend;
     const std::string testSettingsFileNameAccessControl;
 };
 
@@ -104,21 +102,6 @@ void checkDiscoveryDirectorySettings(
 
     std::string capabilitiesDirectoryChannelId = messagingSettings.getCapabilitiesDirectoryChannelId();
     EXPECT_EQ(expectedCapabilitiesDirectoryChannelId, capabilitiesDirectoryChannelId);
-}
-
-TEST_F(MessagingSettingsTest, mqttWithHttpBackend) {
-    std::string expectedBrokerUrl("mqtt://custom-broker-host:1883/");
-    std::string expectedBounceProxyUrl("http://custom-bounceproxy-host:8080/bounceproxy/");
-    std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");
-
-    Settings testSettings(testSettingsFileNameMqttWithHttpBackend);
-    EXPECT_TRUE(testSettings.isLoaded());
-    MessagingSettings messagingSettings(testSettings);
-
-    // the file contains different settings for brokerUrl and bounceProxyUrl
-    checkBrokerSettings(messagingSettings, expectedBrokerUrl, expectedBounceProxyUrl);
-
-    checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
 }
 
 TEST_F(MessagingSettingsTest, writeAccessControlToSettings) {

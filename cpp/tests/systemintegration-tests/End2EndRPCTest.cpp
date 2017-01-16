@@ -202,9 +202,9 @@ INSTANTIATE_TEST_CASE_P(Http,
         )
 );
 
-INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+INSTANTIATE_TEST_CASE_P(Mqtt,
         End2EndRPCTest,
         testing::Values(
-            "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+            "test-resources/MqttSystemIntegrationTest1.settings"
         )
 );

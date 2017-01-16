@@ -40,8 +40,8 @@ public:
         runtime2(nullptr),
         testDomain("testDomain")
     {
-        auto settings1 = std::make_unique<Settings>("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings");
-        auto settings2 = std::make_unique<Settings>("test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings");
+        auto settings1 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
+        auto settings2 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest2.settings");
 
         MessagingSettings messagingSettings1(*settings1);
         MessagingSettings messagingSettings2(*settings2);
