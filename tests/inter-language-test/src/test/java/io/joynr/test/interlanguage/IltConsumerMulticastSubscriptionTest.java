@@ -75,8 +75,8 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
                                                                                                                                  new MulticastSubscriptionQos(),
                                                                                                                                  subscribeToPartitions);
 
-            String subscriptionId = subscriptionIdFuture.get();
-            LOG.info(name.getMethodName() + " - subscription successful");
+            String subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
 
             LOG.info(name.getMethodName() + " - Invoking fire method with not matching partitions");
             testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter(broadcastPartitions);

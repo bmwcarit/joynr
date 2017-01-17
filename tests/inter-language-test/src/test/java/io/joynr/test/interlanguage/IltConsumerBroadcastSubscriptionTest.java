@@ -77,40 +77,42 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithSinglePrimitiveParameter() {
-        Future<String> subscriptionId;
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
         boolean result;
 
         LOG.info(name.getMethodName() + "");
 
         try {
-            subscriptionId = testInterfaceProxy.subscribeToBroadcastWithSinglePrimitiveParameterBroadcast(new BroadcastWithSinglePrimitiveParameterBroadcastAdapter() {
-                                                                                                              @Override
-                                                                                                              public void onReceive(String stringOut) {
-                                                                                                                  LOG.info(name.getMethodName()
-                                                                                                                          + " - callback - got broadcast");
-                                                                                                                  if (!stringOut.equals("boom")) {
-                                                                                                                      LOG.info(name.getMethodName()
-                                                                                                                              + " - callback - invalid content");
-                                                                                                                      subscribeBroadcastWithSinglePrimitiveParameterCallbackResult = false;
-                                                                                                                  } else {
-                                                                                                                      LOG.info(name.getMethodName()
-                                                                                                                              + " - callback - content OK");
-                                                                                                                      subscribeBroadcastWithSinglePrimitiveParameterCallbackResult = true;
-                                                                                                                  }
-                                                                                                                  subscribeBroadcastWithSinglePrimitiveParameterCallbackDone = true;
-                                                                                                              }
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithSinglePrimitiveParameterBroadcast(new BroadcastWithSinglePrimitiveParameterBroadcastAdapter() {
+                                                                                                                    @Override
+                                                                                                                    public void onReceive(String stringOut) {
+                                                                                                                        LOG.info(name.getMethodName()
+                                                                                                                                + " - callback - got broadcast");
+                                                                                                                        if (!stringOut.equals("boom")) {
+                                                                                                                            LOG.info(name.getMethodName()
+                                                                                                                                    + " - callback - invalid content");
+                                                                                                                            subscribeBroadcastWithSinglePrimitiveParameterCallbackResult = false;
+                                                                                                                        } else {
+                                                                                                                            LOG.info(name.getMethodName()
+                                                                                                                                    + " - callback - content OK");
+                                                                                                                            subscribeBroadcastWithSinglePrimitiveParameterCallbackResult = true;
+                                                                                                                        }
+                                                                                                                        subscribeBroadcastWithSinglePrimitiveParameterCallbackDone = true;
+                                                                                                                    }
 
-                                                                                                              @Override
-                                                                                                              public void onError(SubscriptionException error) {
-                                                                                                                  LOG.info(name.getMethodName()
-                                                                                                                          + " - callback - error");
-                                                                                                                  subscribeBroadcastWithSinglePrimitiveParameterCallbackResult = false;
-                                                                                                                  subscribeBroadcastWithSinglePrimitiveParameterCallbackDone = true;
-                                                                                                              }
-                                                                                                          },
-                                                                                                          new MulticastSubscriptionQos(),
-                                                                                                          partitions);
-            LOG.info(name.getMethodName() + " - subscription successful");
+                                                                                                                    @Override
+                                                                                                                    public void onError(SubscriptionException error) {
+                                                                                                                        LOG.info(name.getMethodName()
+                                                                                                                                + " - callback - error");
+                                                                                                                        subscribeBroadcastWithSinglePrimitiveParameterCallbackResult = false;
+                                                                                                                        subscribeBroadcastWithSinglePrimitiveParameterCallbackDone = true;
+                                                                                                                    }
+                                                                                                                },
+                                                                                                                new MulticastSubscriptionQos(),
+                                                                                                                partitions);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
@@ -140,7 +142,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithSinglePrimitiveParameterBroadcast(subscriptionId.get());
+                testInterfaceProxy.unsubscribeFromBroadcastWithSinglePrimitiveParameterBroadcast(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on subscribe: " + e.getMessage());
@@ -166,43 +168,45 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithMultiplePrimitiveParameters() {
-        Future<String> subscriptionId;
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
         boolean result;
 
         LOG.info(name.getMethodName() + "");
 
         try {
-            subscriptionId = testInterfaceProxy.subscribeToBroadcastWithMultiplePrimitiveParametersBroadcast(new BroadcastWithMultiplePrimitiveParametersBroadcastAdapter() {
-                                                                                                                 @Override
-                                                                                                                 public void onReceive(Double doubleOut,
-                                                                                                                                       String stringOut) {
-                                                                                                                     LOG.info(name.getMethodName()
-                                                                                                                             + " - callback - got broadcast");
-                                                                                                                     if (!stringOut.equals("boom")
-                                                                                                                             || !IltUtil.cmpDouble(doubleOut,
-                                                                                                                                                   1.1d)) {
-                                                                                                                         LOG.info(name.getMethodName()
-                                                                                                                                 + " - callback - invalid content");
-                                                                                                                         subscribeBroadcastWithMultiplePrimitiveParametersCallbackResult = false;
-                                                                                                                     } else {
-                                                                                                                         LOG.info(name.getMethodName()
-                                                                                                                                 + " - callback - content OK");
-                                                                                                                         subscribeBroadcastWithMultiplePrimitiveParametersCallbackResult = true;
-                                                                                                                     }
-                                                                                                                     subscribeBroadcastWithMultiplePrimitiveParametersCallbackDone = true;
-                                                                                                                 }
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithMultiplePrimitiveParametersBroadcast(new BroadcastWithMultiplePrimitiveParametersBroadcastAdapter() {
+                                                                                                                       @Override
+                                                                                                                       public void onReceive(Double doubleOut,
+                                                                                                                                             String stringOut) {
+                                                                                                                           LOG.info(name.getMethodName()
+                                                                                                                                   + " - callback - got broadcast");
+                                                                                                                           if (!stringOut.equals("boom")
+                                                                                                                                   || !IltUtil.cmpDouble(doubleOut,
+                                                                                                                                                         1.1d)) {
+                                                                                                                               LOG.info(name.getMethodName()
+                                                                                                                                       + " - callback - invalid content");
+                                                                                                                               subscribeBroadcastWithMultiplePrimitiveParametersCallbackResult = false;
+                                                                                                                           } else {
+                                                                                                                               LOG.info(name.getMethodName()
+                                                                                                                                       + " - callback - content OK");
+                                                                                                                               subscribeBroadcastWithMultiplePrimitiveParametersCallbackResult = true;
+                                                                                                                           }
+                                                                                                                           subscribeBroadcastWithMultiplePrimitiveParametersCallbackDone = true;
+                                                                                                                       }
 
-                                                                                                                 @Override
-                                                                                                                 public void onError(SubscriptionException error) {
-                                                                                                                     LOG.info(name.getMethodName()
-                                                                                                                             + " - callback - error");
-                                                                                                                     subscribeBroadcastWithMultiplePrimitiveParametersCallbackResult = false;
-                                                                                                                     subscribeBroadcastWithMultiplePrimitiveParametersCallbackDone = true;
-                                                                                                                 }
-                                                                                                             },
-                                                                                                             new MulticastSubscriptionQos(),
-                                                                                                             partitions);
-            LOG.info(name.getMethodName() + " - subscription successful");
+                                                                                                                       @Override
+                                                                                                                       public void onError(SubscriptionException error) {
+                                                                                                                           LOG.info(name.getMethodName()
+                                                                                                                                   + " - callback - error");
+                                                                                                                           subscribeBroadcastWithMultiplePrimitiveParametersCallbackResult = false;
+                                                                                                                           subscribeBroadcastWithMultiplePrimitiveParametersCallbackDone = true;
+                                                                                                                       }
+                                                                                                                   },
+                                                                                                                   new MulticastSubscriptionQos(),
+                                                                                                                   partitions);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
@@ -231,7 +235,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithMultiplePrimitiveParametersBroadcast(subscriptionId.get());
+                testInterfaceProxy.unsubscribeFromBroadcastWithMultiplePrimitiveParametersBroadcast(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
@@ -257,41 +261,43 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithSingleArrayParameter() {
-        Future<String> subscriptionId;
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
         boolean result;
 
         LOG.info(name.getMethodName() + "");
 
         try {
-            subscriptionId = testInterfaceProxy.subscribeToBroadcastWithSingleArrayParameterBroadcast(new BroadcastWithSingleArrayParameterBroadcastAdapter() {
-                                                                                                          @Override
-                                                                                                          public void onReceive(String[] stringArrayOut) {
-                                                                                                              //
-                                                                                                              LOG.info(name.getMethodName()
-                                                                                                                      + " - callback - got broadcast");
-                                                                                                              if (!IltUtil.checkStringArray(stringArrayOut)) {
-                                                                                                                  LOG.info(name.getMethodName()
-                                                                                                                          + " - callback - invalid content");
-                                                                                                                  subscribeBroadcastWithSingleArrayParameterCallbackResult = false;
-                                                                                                              } else {
-                                                                                                                  LOG.info(name.getMethodName()
-                                                                                                                          + " - callback - content OK");
-                                                                                                                  subscribeBroadcastWithSingleArrayParameterCallbackResult = true;
-                                                                                                              }
-                                                                                                              subscribeBroadcastWithSingleArrayParameterCallbackDone = true;
-                                                                                                          }
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithSingleArrayParameterBroadcast(new BroadcastWithSingleArrayParameterBroadcastAdapter() {
+                                                                                                                @Override
+                                                                                                                public void onReceive(String[] stringArrayOut) {
+                                                                                                                    //
+                                                                                                                    LOG.info(name.getMethodName()
+                                                                                                                            + " - callback - got broadcast");
+                                                                                                                    if (!IltUtil.checkStringArray(stringArrayOut)) {
+                                                                                                                        LOG.info(name.getMethodName()
+                                                                                                                                + " - callback - invalid content");
+                                                                                                                        subscribeBroadcastWithSingleArrayParameterCallbackResult = false;
+                                                                                                                    } else {
+                                                                                                                        LOG.info(name.getMethodName()
+                                                                                                                                + " - callback - content OK");
+                                                                                                                        subscribeBroadcastWithSingleArrayParameterCallbackResult = true;
+                                                                                                                    }
+                                                                                                                    subscribeBroadcastWithSingleArrayParameterCallbackDone = true;
+                                                                                                                }
 
-                                                                                                          @Override
-                                                                                                          public void onError(SubscriptionException error) {
-                                                                                                              LOG.info(name.getMethodName()
-                                                                                                                      + " - callback - error");
-                                                                                                              subscribeBroadcastWithSingleArrayParameterCallbackResult = false;
-                                                                                                              subscribeBroadcastWithSingleArrayParameterCallbackDone = true;
-                                                                                                          }
-                                                                                                      },
-                                                                                                      new MulticastSubscriptionQos(),
-                                                                                                      partitions);
-            LOG.info(name.getMethodName() + " - subscription successful");
+                                                                                                                @Override
+                                                                                                                public void onError(SubscriptionException error) {
+                                                                                                                    LOG.info(name.getMethodName()
+                                                                                                                            + " - callback - error");
+                                                                                                                    subscribeBroadcastWithSingleArrayParameterCallbackResult = false;
+                                                                                                                    subscribeBroadcastWithSingleArrayParameterCallbackDone = true;
+                                                                                                                }
+                                                                                                            },
+                                                                                                            new MulticastSubscriptionQos(),
+                                                                                                            partitions);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
@@ -321,7 +327,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithSingleArrayParameterBroadcast(subscriptionId.get());
+                testInterfaceProxy.unsubscribeFromBroadcastWithSingleArrayParameterBroadcast(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
@@ -347,42 +353,44 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithMultipleArrayParameters() {
-        Future<String> subscriptionId;
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
         boolean result;
 
         LOG.info(name.getMethodName() + "");
 
         try {
-            subscriptionId = testInterfaceProxy.subscribeToBroadcastWithMultipleArrayParametersBroadcast(new BroadcastWithMultipleArrayParametersBroadcastAdapter() {
-                                                                                                             @Override
-                                                                                                             public void onReceive(Long[] uInt64ArrayOut,
-                                                                                                                                   StructWithStringArray[] structWithStringArrayArrayOut) {
-                                                                                                                 LOG.info(name.getMethodName()
-                                                                                                                         + " - callback - got broadcast");
-                                                                                                                 if (!IltUtil.checkUInt64Array(uInt64ArrayOut)
-                                                                                                                         || !IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
-                                                                                                                     LOG.info(name.getMethodName()
-                                                                                                                             + " - callback - invalid content");
-                                                                                                                     subscribeBroadcastWithMultipleArrayParametersCallbackResult = false;
-                                                                                                                 } else {
-                                                                                                                     LOG.info(name.getMethodName()
-                                                                                                                             + " - callback - content OK");
-                                                                                                                     subscribeBroadcastWithMultipleArrayParametersCallbackResult = true;
-                                                                                                                 }
-                                                                                                                 subscribeBroadcastWithMultipleArrayParametersCallbackDone = true;
-                                                                                                             }
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithMultipleArrayParametersBroadcast(new BroadcastWithMultipleArrayParametersBroadcastAdapter() {
+                                                                                                                   @Override
+                                                                                                                   public void onReceive(Long[] uInt64ArrayOut,
+                                                                                                                                         StructWithStringArray[] structWithStringArrayArrayOut) {
+                                                                                                                       LOG.info(name.getMethodName()
+                                                                                                                               + " - callback - got broadcast");
+                                                                                                                       if (!IltUtil.checkUInt64Array(uInt64ArrayOut)
+                                                                                                                               || !IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
+                                                                                                                           LOG.info(name.getMethodName()
+                                                                                                                                   + " - callback - invalid content");
+                                                                                                                           subscribeBroadcastWithMultipleArrayParametersCallbackResult = false;
+                                                                                                                       } else {
+                                                                                                                           LOG.info(name.getMethodName()
+                                                                                                                                   + " - callback - content OK");
+                                                                                                                           subscribeBroadcastWithMultipleArrayParametersCallbackResult = true;
+                                                                                                                       }
+                                                                                                                       subscribeBroadcastWithMultipleArrayParametersCallbackDone = true;
+                                                                                                                   }
 
-                                                                                                             @Override
-                                                                                                             public void onError(SubscriptionException error) {
-                                                                                                                 LOG.info(name.getMethodName()
-                                                                                                                         + " - callback - error");
-                                                                                                                 subscribeBroadcastWithMultipleArrayParametersCallbackResult = false;
-                                                                                                                 subscribeBroadcastWithMultipleArrayParametersCallbackDone = true;
-                                                                                                             }
-                                                                                                         },
-                                                                                                         new MulticastSubscriptionQos(),
-                                                                                                         partitions);
-            LOG.info(name.getMethodName() + " - subscription successful");
+                                                                                                                   @Override
+                                                                                                                   public void onError(SubscriptionException error) {
+                                                                                                                       LOG.info(name.getMethodName()
+                                                                                                                               + " - callback - error");
+                                                                                                                       subscribeBroadcastWithMultipleArrayParametersCallbackResult = false;
+                                                                                                                       subscribeBroadcastWithMultipleArrayParametersCallbackDone = true;
+                                                                                                                   }
+                                                                                                               },
+                                                                                                               new MulticastSubscriptionQos(),
+                                                                                                               partitions);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
@@ -412,7 +420,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleArrayParametersBroadcast(subscriptionId.get());
+                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleArrayParametersBroadcast(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
@@ -438,40 +446,42 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithSingleEnumerationParameter() {
-        Future<String> subscriptionId;
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
         boolean result;
 
         LOG.info(name.getMethodName() + "");
 
         try {
-            subscriptionId = testInterfaceProxy.subscribeToBroadcastWithSingleEnumerationParameterBroadcast(new BroadcastWithSingleEnumerationParameterBroadcastAdapter() {
-                                                                                                                @Override
-                                                                                                                public void onReceive(ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut) {
-                                                                                                                    LOG.info(name.getMethodName()
-                                                                                                                            + " - callback - got broadcast");
-                                                                                                                    if (enumerationOut != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
-                                                                                                                        LOG.info(name.getMethodName()
-                                                                                                                                + " - callback - invalid content");
-                                                                                                                        subscribeBroadcastWithSingleEnumerationParameterCallbackResult = false;
-                                                                                                                    } else {
-                                                                                                                        LOG.info(name.getMethodName()
-                                                                                                                                + " - callback - content OK");
-                                                                                                                        subscribeBroadcastWithSingleEnumerationParameterCallbackResult = true;
-                                                                                                                    }
-                                                                                                                    subscribeBroadcastWithSingleEnumerationParameterCallbackDone = true;
-                                                                                                                }
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithSingleEnumerationParameterBroadcast(new BroadcastWithSingleEnumerationParameterBroadcastAdapter() {
+                                                                                                                      @Override
+                                                                                                                      public void onReceive(ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut) {
+                                                                                                                          LOG.info(name.getMethodName()
+                                                                                                                                  + " - callback - got broadcast");
+                                                                                                                          if (enumerationOut != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
+                                                                                                                              LOG.info(name.getMethodName()
+                                                                                                                                      + " - callback - invalid content");
+                                                                                                                              subscribeBroadcastWithSingleEnumerationParameterCallbackResult = false;
+                                                                                                                          } else {
+                                                                                                                              LOG.info(name.getMethodName()
+                                                                                                                                      + " - callback - content OK");
+                                                                                                                              subscribeBroadcastWithSingleEnumerationParameterCallbackResult = true;
+                                                                                                                          }
+                                                                                                                          subscribeBroadcastWithSingleEnumerationParameterCallbackDone = true;
+                                                                                                                      }
 
-                                                                                                                @Override
-                                                                                                                public void onError(SubscriptionException error) {
-                                                                                                                    LOG.info(name.getMethodName()
-                                                                                                                            + " - callback - error");
-                                                                                                                    subscribeBroadcastWithSingleEnumerationParameterCallbackResult = false;
-                                                                                                                    subscribeBroadcastWithSingleEnumerationParameterCallbackDone = true;
-                                                                                                                }
-                                                                                                            },
-                                                                                                            new MulticastSubscriptionQos(),
-                                                                                                            partitions);
-            LOG.info(name.getMethodName() + " - subscription successful");
+                                                                                                                      @Override
+                                                                                                                      public void onError(SubscriptionException error) {
+                                                                                                                          LOG.info(name.getMethodName()
+                                                                                                                                  + " - callback - error");
+                                                                                                                          subscribeBroadcastWithSingleEnumerationParameterCallbackResult = false;
+                                                                                                                          subscribeBroadcastWithSingleEnumerationParameterCallbackDone = true;
+                                                                                                                      }
+                                                                                                                  },
+                                                                                                                  new MulticastSubscriptionQos(),
+                                                                                                                  partitions);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
@@ -501,7 +511,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(subscriptionId.get());
+                testInterfaceProxy.unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
@@ -527,42 +537,44 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithMultipleEnumerationParameters() {
-        Future<String> subscriptionId;
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
         boolean result;
 
         LOG.info(name.getMethodName() + "");
 
         try {
-            subscriptionId = testInterfaceProxy.subscribeToBroadcastWithMultipleEnumerationParametersBroadcast(new BroadcastWithMultipleEnumerationParametersBroadcastAdapter() {
-                                                                                                                   @Override
-                                                                                                                   public void onReceive(ExtendedEnumerationWithPartlyDefinedValues extendedEnumerationOut,
-                                                                                                                                         Enumeration enumerationOut) {
-                                                                                                                       LOG.info(name.getMethodName()
-                                                                                                                               + " - callback - got broadcast");
-                                                                                                                       if (extendedEnumerationOut != ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES
-                                                                                                                               || enumerationOut != Enumeration.ENUM_0_VALUE_1) {
-                                                                                                                           LOG.info(name.getMethodName()
-                                                                                                                                   + " - callback - invalid content");
-                                                                                                                           subscribeBroadcastWithMultipleEnumerationParametersCallbackResult = false;
-                                                                                                                       } else {
-                                                                                                                           LOG.info(name.getMethodName()
-                                                                                                                                   + " - callback - content OK");
-                                                                                                                           subscribeBroadcastWithMultipleEnumerationParametersCallbackResult = true;
-                                                                                                                       }
-                                                                                                                       subscribeBroadcastWithMultipleEnumerationParametersCallbackDone = true;
-                                                                                                                   }
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithMultipleEnumerationParametersBroadcast(new BroadcastWithMultipleEnumerationParametersBroadcastAdapter() {
+                                                                                                                         @Override
+                                                                                                                         public void onReceive(ExtendedEnumerationWithPartlyDefinedValues extendedEnumerationOut,
+                                                                                                                                               Enumeration enumerationOut) {
+                                                                                                                             LOG.info(name.getMethodName()
+                                                                                                                                     + " - callback - got broadcast");
+                                                                                                                             if (extendedEnumerationOut != ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES
+                                                                                                                                     || enumerationOut != Enumeration.ENUM_0_VALUE_1) {
+                                                                                                                                 LOG.info(name.getMethodName()
+                                                                                                                                         + " - callback - invalid content");
+                                                                                                                                 subscribeBroadcastWithMultipleEnumerationParametersCallbackResult = false;
+                                                                                                                             } else {
+                                                                                                                                 LOG.info(name.getMethodName()
+                                                                                                                                         + " - callback - content OK");
+                                                                                                                                 subscribeBroadcastWithMultipleEnumerationParametersCallbackResult = true;
+                                                                                                                             }
+                                                                                                                             subscribeBroadcastWithMultipleEnumerationParametersCallbackDone = true;
+                                                                                                                         }
 
-                                                                                                                   @Override
-                                                                                                                   public void onError(SubscriptionException error) {
-                                                                                                                       LOG.info(name.getMethodName()
-                                                                                                                               + " - callback - error");
-                                                                                                                       subscribeBroadcastWithMultipleEnumerationParametersCallbackResult = false;
-                                                                                                                       subscribeBroadcastWithMultipleEnumerationParametersCallbackDone = true;
-                                                                                                                   }
-                                                                                                               },
-                                                                                                               new MulticastSubscriptionQos(),
-                                                                                                               partitions);
-            LOG.info(name.getMethodName() + " - subscription successful");
+                                                                                                                         @Override
+                                                                                                                         public void onError(SubscriptionException error) {
+                                                                                                                             LOG.info(name.getMethodName()
+                                                                                                                                     + " - callback - error");
+                                                                                                                             subscribeBroadcastWithMultipleEnumerationParametersCallbackResult = false;
+                                                                                                                             subscribeBroadcastWithMultipleEnumerationParametersCallbackDone = true;
+                                                                                                                         }
+                                                                                                                     },
+                                                                                                                     new MulticastSubscriptionQos(),
+                                                                                                                     partitions);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
@@ -592,7 +604,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleEnumerationParametersBroadcast(subscriptionId.get());
+                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleEnumerationParametersBroadcast(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
@@ -618,40 +630,42 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithSingleStructParameter() {
-        Future<String> subscriptionId;
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
         boolean result;
 
         LOG.info(name.getMethodName() + "");
 
         try {
-            subscriptionId = testInterfaceProxy.subscribeToBroadcastWithSingleStructParameterBroadcast(new BroadcastWithSingleStructParameterBroadcastAdapter() {
-                                                                                                           @Override
-                                                                                                           public void onReceive(ExtendedStructOfPrimitives extendedStructOfPrimitivesOut) {
-                                                                                                               LOG.info(name.getMethodName()
-                                                                                                                       + " - callback - got broadcast");
-                                                                                                               if (!IltUtil.checkExtendedStructOfPrimitives(extendedStructOfPrimitivesOut)) {
-                                                                                                                   LOG.info(name.getMethodName()
-                                                                                                                           + " - callback - invalid content");
-                                                                                                                   subscribeBroadcastWithSingleStructParameterCallbackResult = false;
-                                                                                                               } else {
-                                                                                                                   LOG.info(name.getMethodName()
-                                                                                                                           + " - callback - content OK");
-                                                                                                                   subscribeBroadcastWithSingleStructParameterCallbackResult = true;
-                                                                                                               }
-                                                                                                               subscribeBroadcastWithSingleStructParameterCallbackDone = true;
-                                                                                                           }
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithSingleStructParameterBroadcast(new BroadcastWithSingleStructParameterBroadcastAdapter() {
+                                                                                                                 @Override
+                                                                                                                 public void onReceive(ExtendedStructOfPrimitives extendedStructOfPrimitivesOut) {
+                                                                                                                     LOG.info(name.getMethodName()
+                                                                                                                             + " - callback - got broadcast");
+                                                                                                                     if (!IltUtil.checkExtendedStructOfPrimitives(extendedStructOfPrimitivesOut)) {
+                                                                                                                         LOG.info(name.getMethodName()
+                                                                                                                                 + " - callback - invalid content");
+                                                                                                                         subscribeBroadcastWithSingleStructParameterCallbackResult = false;
+                                                                                                                     } else {
+                                                                                                                         LOG.info(name.getMethodName()
+                                                                                                                                 + " - callback - content OK");
+                                                                                                                         subscribeBroadcastWithSingleStructParameterCallbackResult = true;
+                                                                                                                     }
+                                                                                                                     subscribeBroadcastWithSingleStructParameterCallbackDone = true;
+                                                                                                                 }
 
-                                                                                                           @Override
-                                                                                                           public void onError(SubscriptionException error) {
-                                                                                                               LOG.info(name.getMethodName()
-                                                                                                                       + " - callback - error");
-                                                                                                               subscribeBroadcastWithSingleStructParameterCallbackResult = false;
-                                                                                                               subscribeBroadcastWithSingleStructParameterCallbackDone = true;
-                                                                                                           }
-                                                                                                       },
-                                                                                                       new MulticastSubscriptionQos(),
-                                                                                                       partitions);
-            LOG.info(name.getMethodName() + " - subscription successful");
+                                                                                                                 @Override
+                                                                                                                 public void onError(SubscriptionException error) {
+                                                                                                                     LOG.info(name.getMethodName()
+                                                                                                                             + " - callback - error");
+                                                                                                                     subscribeBroadcastWithSingleStructParameterCallbackResult = false;
+                                                                                                                     subscribeBroadcastWithSingleStructParameterCallbackDone = true;
+                                                                                                                 }
+                                                                                                             },
+                                                                                                             new MulticastSubscriptionQos(),
+                                                                                                             partitions);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
@@ -681,7 +695,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithSingleStructParameterBroadcast(subscriptionId.get());
+                testInterfaceProxy.unsubscribeFromBroadcastWithSingleStructParameterBroadcast(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
@@ -707,42 +721,44 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void callSubscribeBroadcastWithMultipleStructParameters() {
-        Future<String> subscriptionId;
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
         boolean result;
 
         LOG.info(name.getMethodName() + "");
 
         try {
-            subscriptionId = testInterfaceProxy.subscribeToBroadcastWithMultipleStructParametersBroadcast(new BroadcastWithMultipleStructParametersBroadcastAdapter() {
-                                                                                                              @Override
-                                                                                                              public void onReceive(BaseStructWithoutElements baseStructWithoutElementsOut,
-                                                                                                                                    ExtendedExtendedBaseStruct extendedExtendedBaseStructOut) {
-                                                                                                                  LOG.info(name.getMethodName()
-                                                                                                                          + " - callback - got broadcast");
-                                                                                                                  if (!IltUtil.checkBaseStructWithoutElements(baseStructWithoutElementsOut)
-                                                                                                                          || !IltUtil.checkExtendedExtendedBaseStruct(extendedExtendedBaseStructOut)) {
-                                                                                                                      LOG.info(name.getMethodName()
-                                                                                                                              + " - callback - invalid content");
-                                                                                                                      subscribeBroadcastWithMultipleStructParametersCallbackResult = false;
-                                                                                                                  } else {
-                                                                                                                      LOG.info(name.getMethodName()
-                                                                                                                              + " - callback - content OK");
-                                                                                                                      subscribeBroadcastWithMultipleStructParametersCallbackResult = true;
-                                                                                                                  }
-                                                                                                                  subscribeBroadcastWithMultipleStructParametersCallbackDone = true;
-                                                                                                              }
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithMultipleStructParametersBroadcast(new BroadcastWithMultipleStructParametersBroadcastAdapter() {
+                                                                                                                    @Override
+                                                                                                                    public void onReceive(BaseStructWithoutElements baseStructWithoutElementsOut,
+                                                                                                                                          ExtendedExtendedBaseStruct extendedExtendedBaseStructOut) {
+                                                                                                                        LOG.info(name.getMethodName()
+                                                                                                                                + " - callback - got broadcast");
+                                                                                                                        if (!IltUtil.checkBaseStructWithoutElements(baseStructWithoutElementsOut)
+                                                                                                                                || !IltUtil.checkExtendedExtendedBaseStruct(extendedExtendedBaseStructOut)) {
+                                                                                                                            LOG.info(name.getMethodName()
+                                                                                                                                    + " - callback - invalid content");
+                                                                                                                            subscribeBroadcastWithMultipleStructParametersCallbackResult = false;
+                                                                                                                        } else {
+                                                                                                                            LOG.info(name.getMethodName()
+                                                                                                                                    + " - callback - content OK");
+                                                                                                                            subscribeBroadcastWithMultipleStructParametersCallbackResult = true;
+                                                                                                                        }
+                                                                                                                        subscribeBroadcastWithMultipleStructParametersCallbackDone = true;
+                                                                                                                    }
 
-                                                                                                              @Override
-                                                                                                              public void onError(SubscriptionException error) {
-                                                                                                                  LOG.info(name.getMethodName()
-                                                                                                                          + " - callback - error");
-                                                                                                                  subscribeBroadcastWithMultipleStructParametersCallbackResult = false;
-                                                                                                                  subscribeBroadcastWithMultipleStructParametersCallbackDone = true;
-                                                                                                              }
-                                                                                                          },
-                                                                                                          new MulticastSubscriptionQos(),
-                                                                                                          partitions);
-            LOG.info(name.getMethodName() + " - subscription successful");
+                                                                                                                    @Override
+                                                                                                                    public void onError(SubscriptionException error) {
+                                                                                                                        LOG.info(name.getMethodName()
+                                                                                                                                + " - callback - error");
+                                                                                                                        subscribeBroadcastWithMultipleStructParametersCallbackResult = false;
+                                                                                                                        subscribeBroadcastWithMultipleStructParametersCallbackDone = true;
+                                                                                                                    }
+                                                                                                                },
+                                                                                                                new MulticastSubscriptionQos(),
+                                                                                                                partitions);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
@@ -772,7 +788,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleStructParametersBroadcast(subscriptionId.get());
+                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleStructParametersBroadcast(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
