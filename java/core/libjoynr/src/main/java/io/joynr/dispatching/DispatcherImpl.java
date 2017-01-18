@@ -238,7 +238,7 @@ public class DispatcherImpl implements Dispatcher {
 
             @Override
             public void onFailure(JoynrException error) {
-                logger.warn("Error processing request: \r\n {} ; error: {}", request, error);
+                logger.trace("Error processing request: \r\n {} ; error: {}", request, error);
                 Reply reply = new Reply(request.getRequestReplyId(), error);
                 try {
                     sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders);
