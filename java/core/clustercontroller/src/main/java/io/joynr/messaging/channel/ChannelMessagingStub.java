@@ -23,6 +23,9 @@ import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JoynrMessageSerializer;
@@ -32,6 +35,7 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 public class ChannelMessagingStub implements IMessaging {
+    private static final Logger LOG = LoggerFactory.getLogger(ChannelMessagingStub.class);
 
     private ChannelAddress address;
     private JoynrMessageSerializer messageSerializer;
@@ -51,12 +55,14 @@ public class ChannelMessagingStub implements IMessaging {
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
         setReplyTo(message);
+        LOG.debug(">>> OUTGOING >>> {}", message.toLogMessage());
         String serializedMessage = messageSerializer.serialize(message);
         transmit(serializedMessage, failureAction);
     }
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
+        LOG.debug(">>> OUTGOING >>> {}", serializedMessage);
         httpMessageSender.sendMessage(address, serializedMessage, failureAction);
     }
 

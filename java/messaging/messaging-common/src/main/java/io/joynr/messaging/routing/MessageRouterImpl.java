@@ -161,11 +161,11 @@ public class MessageRouterImpl implements MessageRouter {
 
     private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
         try {
-            logger.debug("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
+            logger.trace("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
             schedule(new Runnable() {
                 @Override
                 public void run() {
-                    logger.debug("Starting processing of message {}", message);
+                    logger.trace("Starting processing of message {}", message);
                     try {
                         checkExpiry(message);
                         Set<Address> addresses = getAddresses(message);
@@ -175,12 +175,9 @@ public class MessageRouterImpl implements MessageRouter {
                         }
                         for (Address address : addresses) {
                             String messageId = message.getId().substring(UUID_TAIL);
-                            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new Object[]{ messageId,
-                                    message.getType(),
-                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                            logger.trace(">>>>> SEND  ID:{}:{} header: {}", new Object[]{ messageId, message.getType(),
                                     message.getHeader().toString() });
-                            logger.debug(">>>>> body  ID:{}:{}: {}", new Object[]{ messageId, message.getType(),
+                            logger.trace(">>>>> body  ID:{}:{}: {}", new Object[]{ messageId, message.getType(),
                                     message.getPayload() });
                             IMessaging messagingStub = messagingStubFactory.create(address);
                             messagingStub.transmit(message, createFailureAction(message, retriesCount));

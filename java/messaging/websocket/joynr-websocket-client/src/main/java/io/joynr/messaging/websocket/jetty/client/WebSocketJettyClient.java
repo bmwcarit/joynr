@@ -198,7 +198,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     @Override
     public void onWebSocketText(String serializedMessage) {
         super.onWebSocketText(serializedMessage);
-        logger.debug(this.getClass().getSimpleName() + ": Received TEXT message: " + serializedMessage);
+        logger.trace(this.getClass().getSimpleName() + ": Received TEXT message: " + serializedMessage);
         messageListener.transmit(serializedMessage, new FailureAction() {
 
             @Override
