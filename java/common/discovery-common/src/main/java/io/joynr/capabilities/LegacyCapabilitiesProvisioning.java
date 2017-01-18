@@ -172,7 +172,7 @@ public class LegacyCapabilitiesProvisioning {
             legacyDiscoveryEntries.put(interfaceClass, discoveryEntry);
             legacyAddresses.put(interfaceClass, address);
         } else {
-            logger.debug("Insufficient properties data to create entry for interface {}", interfaceName);
+            logger.trace("Insufficient properties data to create entry for interface {}", interfaceName);
         }
     }
 

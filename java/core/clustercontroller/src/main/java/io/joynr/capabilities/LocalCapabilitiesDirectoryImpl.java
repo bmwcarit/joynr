@@ -149,7 +149,7 @@ TransportReadyListener {
     }
 
     private void setUpPeriodicFreshnessUpdate(final long freshnessUpdateIntervalMs) {
-        logger.debug("Setting up periodic freshness update with interval {}", freshnessUpdateIntervalMs);
+        logger.trace("Setting up periodic freshness update with interval {}", freshnessUpdateIntervalMs);
         Runnable command = new Runnable() {
             @Override
             public void run() {

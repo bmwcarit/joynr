@@ -281,7 +281,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                     String providerParticipantId,
                                                     BroadcastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
-        logger.debug("adding broadcast publication: {}", subscriptionRequest);
+        logger.trace("adding broadcast publication: {}", subscriptionRequest);
 
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
@@ -306,7 +306,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                     String providerParticipantId,
                                                     MulticastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
-        logger.debug("Received multicast subscription request {} for provider with participant ID {}",
+        logger.trace("Received multicast subscription request {} for provider with participant ID {}",
                      subscriptionRequest,
                      providerParticipantId);
         dispatcher.sendSubscriptionReply(providerParticipantId,
@@ -345,7 +345,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             }
 
             addSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
-            logger.debug("publication added: " + subscriptionRequest.toString());
+            logger.trace("publication added: " + subscriptionRequest.toString());
         } catch (SubscriptionException e) {
             sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
         }
@@ -377,7 +377,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
                 @Override
                 public void run() {
-                    logger.debug("Publication with Id {} expired...", subscriptionId);
+                    logger.trace("Publication with Id {} expired...", subscriptionId);
                     removePublication(subscriptionId);
                 }
 
@@ -389,10 +389,10 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private void removePublicationIfItExists(SubscriptionRequest subscriptionRequest) {
         String subscriptionId = subscriptionRequest.getSubscriptionId();
         if (publicationExists(subscriptionId)) {
-            logger.debug("updating publication: {}", subscriptionRequest);
+            logger.trace("updating publication: {}", subscriptionRequest);
             removePublication(subscriptionId);
         } else {
-            logger.debug("adding publication: {}", subscriptionRequest);
+            logger.trace("adding publication: {}", subscriptionRequest);
         }
     }
 
@@ -438,7 +438,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                    subscriptionRequest,
                                    providerDirectory.get(providerParticipantId));
         } else {
-            logger.debug("Adding subscription request for non existing provider to queue.");
+            logger.trace("Adding subscription request for non existing provider to queue.");
             PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                        proxyParticipantId,
                                                                                        subscriptionRequest);
@@ -553,7 +553,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private boolean isExpired(PublicationInformation publicationInformation) {
         SubscriptionQos subscriptionQos = publicationInformation.subscriptionRequest.getQos();
         long subscriptionEndDelay = getSubscriptionEndDelay(subscriptionQos);
-        logger.debug("ExpiryDate - System.currentTimeMillis: " + subscriptionEndDelay);
+        logger.trace("ExpiryDate - System.currentTimeMillis: " + subscriptionEndDelay);
         return (subscriptionEndDelay != SubscriptionQos.NO_EXPIRY_DATE && subscriptionEndDelay <= 0);
     }
 
@@ -597,12 +597,12 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                     sendPublication(publication, publicationInformation);
                 }
 
-                logger.debug("attribute changed for subscription id: {} sending publication if delay > minInterval.",
+                logger.trace("attribute changed for subscription id: {} sending publication if delay > minInterval.",
                              subscriptionId);
             }
 
         } else {
-            logger.error("subscription {} has expired but attributeValueChanged has been called", subscriptionId);
+            logger.trace("subscription {} has expired but attributeValueChanged has been called", subscriptionId);
         }
 
     }
@@ -618,9 +618,9 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                         - publicationInformation.getState().getTimeOfLastPublication()) {
                     sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
                                     publicationInformation);
-                    logger.debug("event occured changed for subscription id: {} sending publication: ", subscriptionId);
+                    logger.trace("event occured changed for subscription id: {} sending publication: ", subscriptionId);
                 } else {
-                    logger.debug("Two subsequent broadcasts of event " + publicationInformation.getSubscribedToName()
+                    logger.trace("Two subsequent broadcasts of event " + publicationInformation.getSubscribedToName()
                             + " occured within minInterval of subscription with id "
                             + publicationInformation.getSubscriptionId()
                             + ". Event will not be sent to the subscribing client.");
@@ -628,7 +628,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             }
 
         } else {
-            logger.error("subscription {} has expired but eventOccurred has been called", subscriptionId);
+            logger.trace("subscription {} has expired but eventOccurred has been called", subscriptionId);
         }
 
     }
@@ -764,7 +764,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                   String multicastName,
                                   String[] partitions,
                                   Object... values) {
-        logger.debug("Multicast occurred for {} / {} / {} / {}",
+        logger.trace("Multicast occurred for {} / {} / {} / {}",
                      providerParticipantId,
                      multicastName,
                      Arrays.toString(partitions),

@@ -38,7 +38,7 @@ public class VersionUtil {
             throw new IllegalStateException("No @JoynrVersion found on " + annotatedClass);
         }
         Version version = new Version(versionAnnotation.major(), versionAnnotation.minor());
-        logger.debug("Created version {} for interface class {}", version, annotatedClass);
+        logger.trace("Created version {} for interface class {}", version, annotatedClass);
         return version;
     }
 

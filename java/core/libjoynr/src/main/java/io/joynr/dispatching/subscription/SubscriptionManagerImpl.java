@@ -148,10 +148,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         subscriptionStates.put(subscriptionId, subState);
 
         long expiryDate = qos.getExpiryDateMs();
-        logger.info("subscription: {} expiryDate: "
-                            + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate
-                                    - System.currentTimeMillis()),
-                    subscriptionId);
+        logger.trace("subscription: {} expiryDate: "
+                             + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate
+                                     - System.currentTimeMillis()),
+                     subscriptionId);
 
         if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
             SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
@@ -173,7 +173,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                  @Override
                                  public SubscriptionRequest execute() {
                                      SubscriptionQos qos = request.getQos();
-                                     logger.debug("Attribute subscription registered with Id: "
+                                     logger.trace("Attribute subscription registered with Id: "
                                              + request.getSubscriptionId());
                                      subscriptionTypes.put(request.getSubscriptionId(),
                                                            request.getAttributeTypeReference());
@@ -187,7 +187,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                          // alerts only if alert after interval > 0
                                          if (heartbeat.getAlertAfterIntervalMs() > 0) {
 
-                                             logger.info("Will notify if updates are missed.");
+                                             logger.trace("Will notify if updates are missed.");
 
                                              missedPublicationTimers.put(request.getSubscriptionId(),
                                                                          new MissedPublicationTimer(qos.getExpiryDateMs(),
@@ -218,7 +218,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                  @Override
                                  public SubscriptionRequest execute() {
                                      String subscriptionId = request.getSubscriptionId();
-                                     logger.debug("Broadcast subscription registered with Id: " + subscriptionId);
+                                     logger.trace("Broadcast subscription registered with Id: " + subscriptionId);
                                      unicastBroadcastTypes.put(subscriptionId, request.getOutParameterTypes());
                                      broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                                                 request.getBroadcastSubscriptionListener());
@@ -245,7 +245,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                      @Override
                                      public SubscriptionRequest execute() {
                                          String subscriptionId = multicastSubscribeInvocation.getSubscriptionId();
-                                         logger.debug("Multicast subscription registered with Id: " + subscriptionId);
+                                         logger.trace("Multicast subscription registered with Id: " + subscriptionId);
                                          Pattern multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
                                          if (!multicastSubscribersDirectory.containsKey(multicastIdPattern)) {
                                              multicastSubscribersDirectory.putIfAbsent(multicastIdPattern,
@@ -300,10 +300,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                        MessagingQos qosSettings) {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
         if (subscriptionState != null) {
-            logger.info("Called unregister / unsubscribe on subscription id= " + subscriptionId);
+            logger.trace("Called unregister / unsubscribe on subscription id= " + subscriptionId);
             removeSubscription(subscriptionId);
         } else {
-            logger.info("Called unregister on a non/no longer existent subscription, used id= " + subscriptionId);
+            logger.trace("Called unregister on a non/no longer existent subscription, used id= " + subscriptionId);
         }
 
         SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
@@ -382,7 +382,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                             subscriptionId);
             }
         } else {
-            logger.debug("Handling subscription reply with error: {}", subscriptionReply.getError());
+            logger.trace("Handling subscription reply with error: {}", subscriptionReply.getError());
             if (subscriptionFutureMap.containsKey(subscriptionId)) {
                 subscriptionFutureMap.remove(subscriptionId).onFailure(subscriptionReply.getError());
             }
@@ -402,9 +402,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public void touchSubscriptionState(final String subscriptionId) {
-        logger.info("Touching subscription state for id=" + subscriptionId);
+        logger.trace("Touching subscription state for id=" + subscriptionId);
         if (!subscriptionStates.containsKey(subscriptionId)) {
-            logger.debug("No subscription state found for id: " + subscriptionId);
+            logger.trace("No subscription state found for id: " + subscriptionId);
             return;
         }
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);

@@ -38,10 +38,10 @@ public class RoutingTableImpl implements RoutingTable {
 
     @Override
     public Address get(String participantId) {
-        logger.debug("lookup participant: {}", participantId);
+        logger.trace("entering get(participantId={})", participantId);
         dumpRoutingTableEntry();
         Address result = hashMap.get(participantId);
-        logger.debug("Returning: {}", result);
+        logger.trace("leaving get(participantId={}) = {}", result);
         return result;
     }
 
@@ -61,16 +61,23 @@ public class RoutingTableImpl implements RoutingTable {
 
     @Override
     public Address put(String participantId, Address address) {
-        logger.debug("adding endpoint address: {} for participant with ID {}", address, participantId);
+        logger.trace("entering put(participantId={}, address={})", participantId, address);
         Address result = hashMap.putIfAbsent(participantId, address);
-        logger.debug("Returning: {}", result);
+        // NOTE: ConcurrentMap cannot contain null values, this means if result is not null the new
+        //       address was not added to the routing table
+        if (result != null) {
+            logger.warn("unable to put(participantId={}, address={}) into routing table,"
+                    + " since the participant ID is already associated with address={}", participantId, address, result);
+        } else {
+            logger.trace("put(participantId={}, address={}) successfully into routing table", participantId, address);
+        }
         return result;
     }
 
     @Override
     public boolean containsKey(String participantId) {
         boolean containsKey = hashMap.containsKey(participantId);
-        logger.debug("checking for participant: {} success: {}", participantId, containsKey);
+        logger.trace("checking for participant: {} success: {}", participantId, containsKey);
         if (!containsKey) {
             dumpRoutingTableEntry();
         }

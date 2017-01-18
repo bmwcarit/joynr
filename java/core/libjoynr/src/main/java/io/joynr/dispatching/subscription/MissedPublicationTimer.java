@@ -59,17 +59,17 @@ public class MissedPublicationTimer extends PubSubTimerBase {
                 long timeSinceLastPublication = System.currentTimeMillis() - state.getTimeOfLastPublication();
                 boolean publicationInTime = timeSinceLastPublication < alertAfterInterval_ms;
                 if (publicationInTime) {
-                    logger.info("Publication in time.");
+                    logger.trace("Publication in time.");
                     delay = alertAfterInterval_ms - timeSinceLastPublication;
                 } else {
-                    logger.info("Missed publication of subscriptionId \"" + subscriptionId + "\"!");
+                    logger.trace("Missed publication of subscriptionId \"" + subscriptionId + "\"!");
                     delay = alertAfterInterval_ms - timeSinceLastExpectedPublication(timeSinceLastPublication);
                     callback.onError(new PublicationMissedException(subscriptionId));
                 }
-                logger.info("Rescheduling MissedPublicationTimer with delay: " + delay);
+                logger.trace("Rescheduling MissedPublicationTimer with delay: " + delay);
                 rescheduleTimer(delay);
             } else {
-                logger.info("Subscription expired. MissedPublicationTimer is not rescheduled.");
+                logger.trace("Subscription expired. MissedPublicationTimer is not rescheduled.");
             }
         }
 

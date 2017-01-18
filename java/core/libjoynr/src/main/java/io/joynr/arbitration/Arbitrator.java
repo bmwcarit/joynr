@@ -162,7 +162,7 @@ public class Arbitrator {
     }
 
     protected void restartArbitration() {
-        logger.info("Restarting Arbitration");
+        logger.trace("Restarting Arbitration");
         long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
         try {
             if (backoff > 0) {
@@ -230,13 +230,13 @@ public class Arbitrator {
             public void onSuccess(DiscoveryEntry[] discoveryEntries) {
                 assert discoveryEntries != null : "Discovery entries may not be null.";
                 if (allDomainsDiscovered(discoveryEntries)) {
-                    logger.debug("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
+                    logger.trace("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
                     Set<DiscoveryEntry> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
 
                     Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
                             .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
 
-                    logger.debug("Selected capabilities: {}", selectedCapabilities);
+                    logger.trace("Selected capabilities: {}", selectedCapabilities);
                     if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
                         Set<String> participantIds = getParticipantIds(selectedCapabilities);
                         arbitrationResult.setParticipantIds(participantIds);
@@ -263,7 +263,7 @@ public class Arbitrator {
             if (!allDomainsDiscovered) {
                 Set<String> missingDomains = new HashSet<>(domains);
                 missingDomains.removeAll(discoveredDomains);
-                logger.debug("All domains must be found. Domains not found: {}", missingDomains);
+                logger.trace("All domains must be found. Domains not found: {}", missingDomains);
             }
 
                 return allDomainsDiscovered;
@@ -276,7 +276,7 @@ public class Arbitrator {
                         participantIds.add(selectedCapability.getParticipantId());
                     }
                 }
-                logger.debug("Resulting participant IDs: {}", participantIds);
+                logger.trace("Resulting participant IDs: {}", participantIds);
                 return participantIds;
             }
 

@@ -92,7 +92,7 @@ public class MessageRouterImpl implements MessageRouter {
     public void addMulticastReceiver(final String multicastId,
                                      String subscriberParticipantId,
                                      String providerParticipantId) {
-        logger.debug("Adding multicast receiver {} for multicast {} on provider {}",
+        logger.trace("Adding multicast receiver {} for multicast {} on provider {}",
                      subscriberParticipantId,
                      multicastId,
                      providerParticipantId);
@@ -130,7 +130,7 @@ public class MessageRouterImpl implements MessageRouter {
         if (messagingSkeleton != null && messagingSkeleton instanceof IMessagingMulticastSubscriber) {
             operation.perform((IMessagingMulticastSubscriber) messagingSkeleton);
         } else {
-            logger.debug("No messaging skeleton found for address {}, not performing multicast subscription.",
+            logger.trace("No messaging skeleton found for address {}, not performing multicast subscription.",
                          providerAddress);
         }
     }
@@ -280,9 +280,9 @@ public class MessageRouterImpl implements MessageRouter {
     }
 
     private long exponentialBackoff(long delayMs, int retries) {
-        logger.debug("TRIES: " + retries);
+        logger.trace("TRIES: " + retries);
         long millis = delayMs + (long) ((2 ^ (retries)) * delayMs * Math.random());
-        logger.debug("MILLIS: " + millis);
+        logger.trace("MILLIS: " + millis);
         return millis;
     }
 

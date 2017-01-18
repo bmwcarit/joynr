@@ -165,7 +165,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
             @Override
             public void onProxyCreationFinished(T result) {
-                logger.debug("proxy created: interface: {} domains: {}", interfaceName, domains);
+                logger.trace("proxy created: interface: {} domains: {}", interfaceName, domains);
             }
 
             @Override

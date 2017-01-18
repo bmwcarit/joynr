@@ -113,10 +113,10 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                 missingDomains.add(domain);
             }
         }
-        logger.debug("Found locally provisioned discovery entries: {}", discoveryEntries);
+        logger.trace("Found locally provisioned discovery entries: {}", discoveryEntries);
         final Future<DiscoveryEntry[]> discoveryEntryFuture = new Future<>();
         if (!missingDomains.isEmpty()) {
-            logger.debug("Did not find entries for the following domains: {}", missingDomains);
+            logger.trace("Did not find entries for the following domains: {}", missingDomains);
             if (discoveryProxy == null) {
                 throw new JoynrRuntimeException("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                         + "local capabilitites directory.");
@@ -132,7 +132,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                 @Override
                 public void onSuccess(DiscoveryEntry[] entries) {
                     assert entries != null : "Entries must not be null.";
-                    logger.debug("Globally found entries for missing domains: {}", entries);
+                    logger.trace("Globally found entries for missing domains: {}", entries);
                     Collections.addAll(discoveryEntries, entries);
                     resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
                 }
