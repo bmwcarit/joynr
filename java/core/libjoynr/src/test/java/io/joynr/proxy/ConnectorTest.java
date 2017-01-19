@@ -19,12 +19,10 @@ package io.joynr.proxy;
  * #L%
  */
 
-import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.times;
@@ -47,6 +45,7 @@ import io.joynr.Async;
 import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.dispatcher.rpc.annotation.FireAndForget;
+import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
@@ -61,6 +60,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.ConnectorTest.TestBroadcastInterface.TestBroadcastListener;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
@@ -148,6 +148,11 @@ public class ConnectorTest {
                                                          OnChangeSubscriptionQos subscriptionQos,
                                                          BroadcastFilterParameters filterParameters);
 
+        @JoynrMulticast(name = "testMulticast")
+        abstract Future<String> subscribeToTestMulticast(TestBroadcastListener subscriptionListener,
+                                                         OnChangeSubscriptionQos subscriptionQos,
+                                                         String... partitions);
+
         abstract void unsubscribeFromTestBroadcast(String subscriptionId);
 
     }
@@ -188,7 +193,6 @@ public class ConnectorTest {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void subscriptionMethodCallWithNoExpiryDate() throws JoynrIllegalStateException {
 
@@ -208,7 +212,7 @@ public class ConnectorTest {
             AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method, args, future);
             connector.executeSubscriptionMethod(attributeSubscription);
             verify(subscriptionManager, times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                                                (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                                eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                                 eq(attributeSubscription));
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
@@ -217,7 +221,6 @@ public class ConnectorTest {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void unsubscriptionMethodCall() throws JoynrIllegalStateException {
 
@@ -232,7 +235,7 @@ public class ConnectorTest {
             UnsubscribeInvocation unsubscribeInvocation = new UnsubscribeInvocation(method, args, future);
             connector.executeSubscriptionMethod(unsubscribeInvocation);
             verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                         (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                                         eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                          eq(subscriptionId),
                                                                          any(MessagingQos.class));
         } catch (Exception e) {
@@ -383,6 +386,30 @@ public class ConnectorTest {
                                                                                 invocation);
         } catch (Exception e) {
             fail("Unexpected exception from broadcast subscribe call: " + e);
+        }
+    }
+
+    @Test
+    public void subscribeToMulticastCallCallsSubscriptionManagerWithCorrectArguments() { // TODO
+        TestBroadcastListener listener = new TestBroadcastInterface.TestBroadcastAdapter();
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
+        String[] partitions = new String[]{ "partition1", "partition2", "partition3" };
+        ConnectorInvocationHandler connector = createConnector();
+        assertNotNull(connector);
+
+        try {
+            Method method = TestBroadcastInterface.class.getDeclaredMethod("subscribeToTestMulticast",
+                                                                           TestBroadcastListener.class,
+                                                                           OnChangeSubscriptionQos.class,
+                                                                           String[].class);
+            MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method, new Object[]{ listener,
+                    subscriptionQos, partitions }, null);
+            connector.executeSubscriptionMethod(invocation);
+            verify(subscriptionManager, times(1)).registerMulticastSubscription(fromParticipantId,
+                                                                                toDiscoveryEntries,
+                                                                                invocation);
+        } catch (Exception e) {
+            fail("Unexpected exception from multicast subscribe call: " + e);
         }
     }
 

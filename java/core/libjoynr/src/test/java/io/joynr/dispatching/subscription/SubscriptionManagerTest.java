@@ -19,12 +19,10 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
-import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -35,7 +33,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,7 +62,6 @@ import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-import joynr.MulticastPublication;
 import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
@@ -212,12 +208,11 @@ public class SubscriptionManagerTest {
                                                              Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void registerBroadcastSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                                JsonGenerationException, JsonMappingException, IOException {
@@ -242,12 +237,11 @@ public class SubscriptionManagerTest {
                                                              Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionWithoutExpiryDate() throws JoynrSendBufferFullException,
                                                        JoynrMessageNotSentException, JsonGenerationException,
@@ -272,7 +266,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionEndFutures, never()).put(Mockito.anyString(), Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
@@ -297,6 +291,7 @@ public class SubscriptionManagerTest {
         testRegisterMulticastSubscription(null, "one", "two", "three");
     }
 
+    @SuppressWarnings("unchecked")
     private void testRegisterMulticastSubscription(String subscriptionId, String ... partitions) throws Exception {
         Method method = TestMulticastSubscriptionInterface.class.getMethod("subscribeToMyMulticast", new Class[0]);
         BroadcastSubscriptionListener listener = spy(new BroadcastSubscriptionListener() {
@@ -306,6 +301,7 @@ public class SubscriptionManagerTest {
             @Override
             public void onSubscribed(String subscriptionId) {
             }
+            @SuppressWarnings("unused")
             public void onReceive() {
             }
         });
@@ -333,9 +329,13 @@ public class SubscriptionManagerTest {
         if (subscriptionId != null) {
             assertEquals(subscriptionId, subscriptionIdSet.iterator().next());
         }
+
+        verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
+                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
+                                                   any(SubscriptionRequest.class),
+                                                   any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void unregisterSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                         JsonGenerationException, JsonMappingException, IOException {
@@ -352,7 +352,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionState).stop();
 
         verify(dispatcher, times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
-                                                          (Set<DiscoveryEntryWithMetaInfo>) argThat(contains(toDiscoveryEntry)),
+                                                          eq(Sets.newHashSet(toDiscoveryEntry)),
                                                           Mockito.eq(new SubscriptionStop(subscriptionId)),
                                                           Mockito.any(MessagingQos.class));
 
@@ -439,8 +439,6 @@ public class SubscriptionManagerTest {
 
     @Test
     public void testHandleMulticastSubscriptionWithWildcardSubscribers() {
-        MulticastPublication multicastPublication = new MulticastPublication(Arrays.asList("one"), "one/two/three");
-
         Pattern subscriberOnePattern = Pattern.compile("one/[^/]+/three");
         String subscriberOneId = "one";
         multicastSubscribersDirectory.putIfAbsent(subscriberOnePattern, Sets.newHashSet(subscriberOneId));
@@ -453,6 +451,7 @@ public class SubscriptionManagerTest {
         String subscriberThreeId = "three";
         multicastSubscribersDirectory.putIfAbsent(subscriberThreePattern, Sets.newHashSet(subscriberThreeId));
 
+        @SuppressWarnings("rawtypes")
         Class[] types = new Class[]{ String.class };
         unicastBroadcastTypes.putIfAbsent(subscriberOneId, types);
         unicastBroadcastTypes.putIfAbsent(subscriberTwoId, types);
