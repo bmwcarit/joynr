@@ -245,7 +245,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -296,7 +295,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -351,7 +349,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -417,7 +414,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 

@@ -18,6 +18,8 @@
 * **[Java]** Removed deprecated `CAPABILITYDIRECTORYURL` from provisioning
 * **[All]** Removed deprecated `outputHeaderPath` member from AbstractJoynGeneratorMojo
 * **[C++]** createRuntimeAsync error callback exception parameter is now a const reference.
+* **[C++]** Removed method `setCached()` from ProxyBuilder
+* **[C++]** Removed protected member `cache` from ProxyBase, ProxyFactory
 
 ## Other changes
 * **[C++]** fix lifetime issue in JoynrMessagingConnector

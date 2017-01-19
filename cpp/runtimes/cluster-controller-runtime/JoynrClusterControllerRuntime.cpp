@@ -111,7 +111,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           joynrMessagingSendSkeleton(nullptr),
           joynrMessageSender(nullptr),
           localCapabilitiesDirectory(nullptr),
-          cache(),
           libJoynrMessagingSkeleton(nullptr),
           httpMessagingSkeleton(nullptr),
           mqttMessagingSkeleton(nullptr),
@@ -419,8 +418,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             inProcessConnectorFactory, joynrMessagingConnectorFactory);
-    proxyFactory = std::make_unique<ProxyFactory>(
-            libjoynrMessagingAddress, std::move(connectorFactory), &cache);
+    proxyFactory =
+            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
 
     dispatcherList.push_back(joynrDispatcher);
     dispatcherList.push_back(inProcessDispatcher);

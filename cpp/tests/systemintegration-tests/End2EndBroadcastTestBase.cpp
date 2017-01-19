@@ -300,7 +300,6 @@ protected:
 
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                                   ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
 

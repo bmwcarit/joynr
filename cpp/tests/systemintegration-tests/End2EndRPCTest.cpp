@@ -105,7 +105,6 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     std::int64_t qosRoundTripTTL = 40000;
     std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
     std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
@@ -141,7 +140,6 @@ TEST_P(End2EndRPCTest, call_void_operation)
     std::int64_t qosRoundTripTTL = 40000;
     std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
     testProxy->voidOperation();
@@ -174,7 +172,6 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     std::int64_t qosRoundTripTTL = 40000;
     std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 

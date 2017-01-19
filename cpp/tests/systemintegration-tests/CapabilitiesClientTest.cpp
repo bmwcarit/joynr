@@ -95,7 +95,6 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
         capabilitiesProxyBuilder
             ->setMessagingQos(MessagingQos(10000)) //TODO magic values.
-            ->setCached(true)
             ->setDiscoveryQos(discoveryQos)
             ->build()
         );

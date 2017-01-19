@@ -122,7 +122,6 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     // Send a message and expect to get a result
     std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
                      ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                     ->setCached(false)
                      ->setDiscoveryQos(discoveryQos)
                      ->build();
     std::uint64_t startTime = DispatcherUtils::nowInMilliseconds();

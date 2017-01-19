@@ -28,7 +28,6 @@
 #include "joynr/Request.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/Logger.h"
-#include "joynr/IClientCache.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/IConnector.h"
 #include "joynr/IReplyCaller.h"
@@ -51,9 +50,7 @@ public:
                                     const std::string& interfaceName,
                                     const std::string& proxyParticipantId,
                                     const std::string& providerParticipantId,
-                                    const MessagingQos& qosSettings,
-                                    IClientCache* cache,
-                                    bool cached);
+                                    const MessagingQos& qosSettings);
     bool usesClusterController() const override;
     ~AbstractJoynrMessagingConnector() override = default;
 
@@ -68,29 +65,11 @@ public:
     void attributeRequest(const std::string& methodName, std::shared_ptr<IReplyCaller> replyCaller)
     {
         std::string attributeID = domain + ":" + interfaceName + ":" + methodName;
-        T* entryValue;
-        if (cached) {
-            boost::any entry = cache->lookUp(attributeID);
-            if (entry.empty()) {
-                JOYNR_LOG_DEBUG(logger, "Cached value for {}  is not valid", methodName);
-            } else if (!(entryValue = boost::any_cast<T>(&entry))) {
-                JOYNR_LOG_DEBUG(
-                        logger, "Cached value for {}  cannot be converted to type T", methodName);
-                assert(false);
-            } else {
-                JOYNR_LOG_DEBUG(logger, "Returning cached value for method {}", methodName);
-                std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
-                        std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
-                typedReplyCaller->returnValue(*entryValue);
-            }
-        } else {
-            Request request;
-            // explicitly set to no parameters
-            request.setParams();
-            request.setMethodName(methodName);
-            sendRequest(request, replyCaller);
-            // TODO the retrieved values are never stored into the cache.
-        }
+        Request request;
+        // explicitly set to no parameters
+        request.setParams();
+        request.setMethodName(methodName);
+        sendRequest(request, replyCaller);
     }
 
     /**
@@ -110,8 +89,6 @@ protected:
     std::string proxyParticipantId;
     std::string providerParticipantId;
     MessagingQos qosSettings;
-    IClientCache* cache;
-    bool cached;
     ADD_LOGGER(AbstractJoynrMessagingConnector);
 
 private:

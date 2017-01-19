@@ -200,7 +200,7 @@ AddClangTidy(JoynrClusterController)
 set_target_properties(
     JoynrClusterController
     PROPERTIES
-    SOVERSION "${JOYNR_VERSION}"
+    SOVERSION "${JOYNR_SOVERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}"
 )

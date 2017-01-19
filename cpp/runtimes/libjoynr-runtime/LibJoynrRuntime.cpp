@@ -126,8 +126,8 @@ void LibJoynrRuntime::init(
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             inProcessConnectorFactory, joynrMessagingConnectorFactory);
-    proxyFactory = std::make_unique<ProxyFactory>(
-            libjoynrMessagingAddress, std::move(connectorFactory), nullptr);
+    proxyFactory =
+            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
@@ -161,7 +161,6 @@ void LibJoynrRuntime::init(
     std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
     auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
-                                ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
     messageRouter->setParentRouter(
@@ -182,7 +181,6 @@ void LibJoynrRuntime::init(
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
 
     auto proxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
-                         ->setCached(false)
                          ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                          ->build();
 
