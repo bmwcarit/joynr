@@ -21,9 +21,6 @@ package io.joynr.messaging;
 
 public final class MessagingPropertyKeys {
     public static final String CHANNELID = "joynr.messaging.channelid"; //NOT USUALLY SET BY THE APPLICATION!
-    @Deprecated
-    // will be removed by 2016-12-31. Please use joynr.messaging.discoverydirectoryurl instead
-    public static final String CAPABILITYDIRECTORYURL = "joynr.messaging.capabilitiesdirectoryurl";
     public static final String DISCOVERYDIRECTORYURL = "joynr.messaging.discoverydirectoryurl";
     public static final String DOMAINACCESSCONTROLLERURL = "joynr.messaging.domainaccesscontrollerurl";
     public static final String BOUNCE_PROXY_URL = "joynr.messaging.bounceproxyurl";

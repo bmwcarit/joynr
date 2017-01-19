@@ -46,7 +46,6 @@ import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.AddressOperation;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -163,20 +162,15 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     /**
      * Registers a provider in the joynr framework
      *
-     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.runtime.JoynrRuntimeImpl#registerProvider(String, Object, ProviderQos)} instead.
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
      * @param provider
      *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     * @param providerQos
+     *            the provider's quality of service settings
      * @return Returns a Future which can be used to check the registration status.
      */
-    @Deprecated
-    @Override
-    public Future<Void> registerProvider(String domain, AbstractJoynrProvider provider) {
-        return capabilitiesRegistrar.registerProvider(domain, provider, provider.getProviderQos());
-    }
-
     @Override
     public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         return capabilitiesRegistrar.registerProvider(domain, provider, providerQos);

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+
 #include "End2EndBroadcastTestBase.cpp"
 
 #include <algorithm>
@@ -29,11 +30,12 @@
 #include <gmock/gmock.h>
 
 #include "JoynrTest.h"
-#include "tests/utils/MockObjects.h"
-#include "joynr/tests/testProxy.h"
+#include "joynr/Future.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Future.h"
+#include "joynr/tests/testProxy.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -68,9 +70,8 @@ protected:
                 .Times(partitionsToTest.size())
                 .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                    500000, // validity_ms
-                    50);    // minInterval_ms
+        auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+        subscriptionQos->setValidityMs(500000);
 
         for(const auto& partitions : partitionsToTest) {
             auto subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(
@@ -122,9 +123,8 @@ protected:
                 .Times(1)
                 .WillOnce(ReleaseSemaphore(&semaphore));
 
-        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                    500000, // validity_ms
-                    50);    // minInterval_ms
+        auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+        subscriptionQos->setValidityMs(500000);
 
         auto subscriptionIdFuture1 = testProxy1->subscribeToLocationUpdateBroadcast(
                         mockSubscriptionListener1,
@@ -169,7 +169,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
         [this](
             tests::testProxy* testProxy,
             std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
-            std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos
+            std::shared_ptr<MulticastSubscriptionQos> subscriptionQos
         ) {
             std::shared_ptr<Future<std::string>> subscriptionIdFuture =
                     testProxy->subscribeToBroadcastWithEnumOutputBroadcast(
@@ -195,7 +195,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
         [this](
             tests::testProxy* testProxy,
             std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
-            std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos
+            std::shared_ptr<MulticastSubscriptionQos> subscriptionQos
         ) {
             std::shared_ptr<Future<std::string>> subscriptionIdFuture =
                     testProxy->subscribeToBroadcastWithByteBufferParameterBroadcast(
@@ -232,10 +232,8 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription) {
 
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-    std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<Future<std::string>> future = testProxy->subscribeToLocationUpdateBroadcast(
         mockSubscriptionListener,
@@ -285,10 +283,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice) {
 
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-    std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<Future<std::string>> future = testProxy->subscribeToLocationUpdateBroadcast(
         mockSubscriptionListener,
@@ -324,11 +320,8 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-    const std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,         // validity_ms
-                minInterval_ms  // minInterval_ms
-    );
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
 
     auto future = testProxy->subscribeToLocationUpdateBroadcast(
                 subscriptionListener,
@@ -350,8 +343,8 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     EXPECT_CALL(*subscriptionListener, onReceive(Eq(gpsLocation3))).Times(0);
     testProvider->fireLocationUpdate(gpsLocation3);
 
-    //ensure to wait for the minInterval_ms before ending
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    //ensure to wait long enough before ending
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
@@ -365,10 +358,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-    std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<Future<std::string>> subscriptionIdFuture =
             testProxy->subscribeToLocationUpdateBroadcast(
@@ -381,24 +372,22 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2))).Times(1);
     testProvider->fireLocationUpdate(gpsLocation2);
 
-    // Waiting between broadcast occurences for at least the minInterval is neccessary because
-    // otherwise the publications could be omitted.
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3))).Times(1);
     testProvider->fireLocationUpdate(gpsLocation3);
 
-    // Waiting between broadcast occurences for at least the minInterval is neccessary because
-    // otherwise the publications could be omitted.
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4)))
             .Times(1)
             .WillOnce(ReleaseSemaphore(&semaphore));
     testProvider->fireLocationUpdate(gpsLocation4);
 
-    //ensure to wait for the minInterval_ms before ending
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    //ensure to wait long enough before ending
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 }
 
 TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
@@ -409,12 +398,8 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-    const std::int64_t minInterval_ms = 50;
-    const std::int64_t validity_ms = 500000;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                validity_ms,
-                minInterval_ms
-            );
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
 
     std::string subscriptionIdFromListener;
     std::string subscriptionIdFromFuture;
@@ -466,10 +451,8 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
 
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-    std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<Future<std::string>> subscriptionIdFuture =
             testProxy->subscribeToLocationUpdateBroadcast(
@@ -515,10 +498,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
 
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-    std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =
             testProxy->subscribeToEmptyBroadcastBroadcast(
@@ -534,19 +515,18 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
-    // Waiting between broadcast occurences for at least the minInterval is neccessary because
-    // otherwise the publications could be omitted.
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     testProvider->fireEmptyBroadcast();
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
-    // Waiting between broadcast occurences for at least the minInterval is neccessary because
-    // otherwise the publications could be omitted.
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     testProvider->fireEmptyBroadcast();
+
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 }
@@ -575,10 +555,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-    std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =
             testProxy->subscribeToLocationUpdateWithSpeedBroadcast(
@@ -595,20 +573,19 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
-    // Waiting between broadcast occurences for at least the minInterval is neccessary because
-    // otherwise the publications could be omitted.
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation3, 200);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
-    // Waiting between broadcast occurences for at least the minInterval is neccessary because
-    // otherwise the publications could be omitted.
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation4, 300);
-//     Wait for a subscription message to arrive
+
+    // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 }
 
@@ -627,8 +604,10 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+    std::int64_t publicationTtl = 50;
+    auto subscriptionQosAttribute = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
+                publicationTtl,
                 minInterval_ms);  // minInterval_ms
 
     // Initial attribute publication on subscription
@@ -637,22 +616,23 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionAttributeResult = testProxy->subscribeToLocation(
                 mockListenerAttribute,
-                subscriptionQos);
+                subscriptionQosAttribute);
     std::string subscriptionId;
     // Wait until the provider sends back a subscriptionReply, i.e. the subscription is
     // established successful
 
     JOYNR_EXPECT_NO_THROW(subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionId));
 
+    auto subscriptionQosBroadcast = std::make_shared<MulticastSubscriptionQos>(500000);
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult = testProxy->subscribeToLocationBroadcast(
                 mockListenerBroadcast,
-                subscriptionQos);
+                subscriptionQosBroadcast);
     // Wait until the provider sends back a subscriptionReply, i.e. the subscription is
     // established successful
     JOYNR_EXPECT_NO_THROW(subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
 
-    //ensure to wait for the minInterval_ms before changing location
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     // Expect initial attribute publication with default value
     EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation2))).Times(1);
@@ -665,8 +645,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     // Emit broadcast
     testProvider->fireLocation(gpsLocation3);
 
-    //ensure to wait for the minInterval_ms before ending
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // Ensure to wait enough before ending
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
@@ -698,10 +678,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
 
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-    std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
 
     auto subscriptionIdFuture1 = testProxy->subscribeToLocationUpdateBroadcast(
                 mockSubscriptionListener1,
@@ -722,21 +700,20 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
     EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
     EXPECT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
 
-    // Waiting between occurences for at least the minInterval is neccessary because
-    // otherwise the publications could be omitted.
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     // fire broadcast for subscriber 1 (should not be received by subscriber 2)
     testProvider->fireLocationUpdate(gpsLocation2, partitions1);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
     EXPECT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
 
-    // Waiting between occurences for at least the minInterval is neccessary because
-    // otherwise the publications could be omitted.
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     // fire broadcast for subscriber 2 (should not be received by subscriber 1)
     testProvider->fireLocationUpdate(gpsLocation2, partitions2);
+
     EXPECT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
     EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
 }
@@ -798,6 +775,57 @@ TEST_P(End2EndBroadcastTest, publishBroadcastWithInvalidPartitions) {
         testProvider->fireLocationUpdate(gpsLocation2, {"partition0", "partition1", "*"}),
         std::invalid_argument
     );
+}
+
+TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnSameRuntime)
+{
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+    std::shared_ptr<tests::testProxy> testProxy1 = buildProxy();
+    std::shared_ptr<tests::testProxy> testProxy2 = buildProxy();
+
+    const std::vector<std::string> partitions{"partition1", "partition2"};
+
+    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener1 =
+            std::make_shared<MockGpsSubscriptionListener>();
+    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener2 =
+            std::make_shared<MockGpsSubscriptionListener>();
+
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
+
+    auto subscriptionIdFuture1 = testProxy1->subscribeToLocationUpdateBroadcast(
+                mockSubscriptionListener1,
+                subscriptionQos,
+                partitions
+    );
+
+    auto subscriptionIdFuture2 = testProxy2->subscribeToLocationUpdateBroadcast(
+                mockSubscriptionListener2,
+                subscriptionQos,
+                partitions
+    );
+
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->wait(subscribeToBroadcastWait));
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->wait(subscribeToBroadcastWait));
+
+    // Each proxy will receive a message exactly one time
+    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&altSemaphore));
+
+    testProvider->fireLocationUpdate(gpsLocation2, partitions);
+
+    const std::int64_t receiveBroadcastWait = 2000;
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+    EXPECT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
 }
 
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,

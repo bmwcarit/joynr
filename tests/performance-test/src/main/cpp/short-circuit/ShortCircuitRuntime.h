@@ -20,6 +20,8 @@
 #ifndef SHORTCIRCUITRUNTIME_H
 #define SHORTCIRCUITRUNTIME_H
 
+#include <memory>
+
 #include "joynr/JoynrRuntime.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/InProcessPublicationSender.h"
@@ -108,29 +110,28 @@ public:
     }
 
     template <class TIntfProxy>
-    ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
+    std::unique_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
-        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(proxyFactory.get(),
-                                                                         &requestCallerDirectory,
-                                                                         *discoveryProxy,
-                                                                         domain,
-                                                                         dispatcherAddress,
-                                                                         messageRouter,
-                                                                         maximumTtlMs);
-        return builder;
+        return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
+                                                          &requestCallerDirectory,
+                                                          *discoveryProxy,
+                                                          domain,
+                                                          dispatcherAddress,
+                                                          messageRouter,
+                                                          maximumTtlMs);
     }
 
 private:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MessageRouter> messageRouter;
     std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy;
-    std::unique_ptr<JoynrMessageSender> joynrMessageSender;
+    std::shared_ptr<JoynrMessageSender> joynrMessageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
     std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     PublicationManager* publicationManager;
-    SubscriptionManager* subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::unique_ptr<InProcessPublicationSender> inProcessPublicationSender;
     InProcessConnectorFactory* inProcessConnectorFactory;
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;

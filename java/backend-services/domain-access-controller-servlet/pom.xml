@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>backend-services</artifactId>
-		<version>0.22.4</version>
+		<version>0.23.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -72,7 +72,7 @@
 		<!--
 			The sources of javassist must be added to the WAR due to its LGPL-2.1 license.
 			It is pulled in as transitive dependency:
-			io.joynr.java.messaging:messaging-servlet:jar:classes:0.22.4:compile
+			io.joynr.java.messaging:messaging-servlet:jar:classes:0.23.0:compile
 			+- org.reflections:reflections:jar:0.9.8:compile
 			|  +- javassist:javassist:jar:3.12.1.GA:compile
 			Please double check the correct version if these dependencies change.

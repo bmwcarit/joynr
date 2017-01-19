@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -278,8 +278,8 @@ class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
 {
 public:
     LocalCapabilitiesCallback(
-            std::function<void(const std::vector<types::DiscoveryEntry>&)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+            std::function<void(const std::vector<types::DiscoveryEntry>&)>&& onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)>&& onError);
     void capabilitiesReceived(const std::vector<types::DiscoveryEntry>& capabilities) override;
     void onError(const joynr::exceptions::JoynrRuntimeException&) override;
     ~LocalCapabilitiesCallback() override = default;

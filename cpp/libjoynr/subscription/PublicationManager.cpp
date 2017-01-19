@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
-#include "joynr/SubscriptionQos.h"
+#include "joynr/UnicastSubscriptionQos.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/exceptions/SubscriptionException.h"
 #include "common/CallContextStorage.h"
@@ -785,7 +785,14 @@ bool PublicationManager::isShuttingDown()
 std::int64_t PublicationManager::getPublicationTtlMs(
         std::shared_ptr<SubscriptionRequest> subscriptionRequest) const
 {
-    return subscriptionRequest->getQos()->getPublicationTtlMs();
+    // Get publication ttl only if subscriptionQos is a UnicastSubscritpionQos
+    auto qos = subscriptionRequest->getQos();
+    if (auto unicastQos = std::dynamic_pointer_cast<UnicastSubscriptionQos>(qos)) {
+        return unicastQos->getPublicationTtlMs();
+    }
+    JOYNR_LOG_WARN(
+            logger, "Attempted to get publication ttl out of an invalid Qos: returing default.");
+    return UnicastSubscriptionQos::DEFAULT_PUBLICATION_TTL_MS();
 }
 
 void PublicationManager::sendPublicationError(
@@ -937,7 +944,8 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         dummyRequest.setMethodName(attributeGetter);
 
         CallContextStorage::set(subscriptionRequest->getCallContext());
-        requestInterpreter->execute(requestCaller, dummyRequest, onSuccess, onError);
+        requestInterpreter->execute(
+                requestCaller, dummyRequest, std::move(onSuccess), std::move(onError));
         CallContextStorage::invalidate();
     }
 }

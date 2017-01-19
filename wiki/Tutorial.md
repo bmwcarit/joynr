@@ -167,7 +167,7 @@ can be stopped by hitting `q`. The provider will be unregistered and the applica
 
 ```c++
 ...
-JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings, pathToMessagingSettings);
+std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings, pathToMessagingSettings);
 // Initialize the quality of service settings
 // Set the priority so that the consumer application always uses the most recently started provider
 std::chrono::milliseconds millisSinceEpoch =
@@ -247,11 +247,11 @@ you added to the interface, and add a print statement so that you can see the re
 int main(int argc, char* argv[])
 {
     ...
-    JoynrRuntime* runtime =
+    std::unique_ptr<JoynrRuntime> runtime =
             JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
-    ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =
+    std::unique_ptr<ProxyBuilder<vehicle::RadioProxy>> proxyBuilder =
             runtime->createProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
@@ -278,10 +278,10 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy
-    vehicle::RadioProxy* proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
-                                         ->setCached(false)
-                                         ->setDiscoveryQos(discoveryQos)
-                                         ->build();
+    std::unique_ptr<vehicle::RadioProxy> proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
+                                                             ->setCached(false)
+                                                             ->setDiscoveryQos(discoveryQos)
+                                                             ->build();
 
     vehicle::RadioStation currentStation;
     try {

@@ -83,13 +83,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     protected Map<String, String> parameter;
 
     /**
-     * Properties output directory for header files
-     * @parameter expression="${joynr.generator.outputHeaderPath}"
-     * @deprecated please use <parameter><outputHeaderPath>the output header path</outputHeaderPath></parameter> instead
-     */
-    protected String outputHeaderPath;
-
-    /**
      * Properties skips the generation, if set to true
      * @parameter expression="${joynr.generator.skip}"
      */
@@ -168,9 +161,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         arguments.setParameter(parameter);
         if (parameter == null) {
             parameter = new HashMap<String, String>();
-        }
-        if (parameter.get("outputHeaderPath") == null) {
-            parameter.put("outputHeaderPath", outputHeaderPath);
         }
         return arguments;
     }

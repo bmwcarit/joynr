@@ -96,7 +96,7 @@ public:
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
 							const «attribute.typeName»&
-					)> onSuccess,
+					)>&& onSuccess,
 					std::function<void(
 							const std::shared_ptr<exceptions::ProviderRuntimeException>&
 					)> onError
@@ -112,7 +112,7 @@ public:
 			 */
 			virtual void set«attributeName.toFirstUpper»(
 					const «attribute.typeName»& «attributeName»,
-					std::function<void()> onSuccess,
+					std::function<void()>&& onSuccess,
 					std::function<void(
 							const std::shared_ptr<exceptions::ProviderRuntimeException>&
 					)> onError
@@ -145,11 +145,11 @@ public:
 				«ENDIF»
 				«IF !method.fireAndForget»
 					«IF method.outputParameters.empty»
-						std::function<void()> onSuccess,
+						std::function<void()>&& onSuccess,
 					«ELSE»
 						std::function<void(
 								«outputTypedParamList»
-						)> onSuccess,
+						)>&& onSuccess,
 					«ENDIF»
 					std::function<void(
 							const std::shared_ptr<exceptions::JoynrException>&

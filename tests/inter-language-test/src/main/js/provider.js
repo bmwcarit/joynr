@@ -25,6 +25,28 @@ var testbase = require("test-base");
 var log = testbase.logging.log;
 var provisioning = testbase.provisioning_common;
 
+provisioning.logging.configuration = {
+    appenders : {
+        appender : [
+            {
+                type : "Console",
+                name : "STDOUT",
+                PatternLayout : {
+                    pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                }
+            }
+        ]
+    },
+    loggers : {
+        root : {
+            level : "debug",
+            AppenderRef : [{
+                    ref : "STDOUT"
+            }]
+        }
+    }
+};
+
 if (process.argv.length !== 3) {
     log("please pass a domain as argument");
     process.exit(0);

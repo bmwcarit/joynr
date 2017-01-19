@@ -61,7 +61,7 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     auto onError = [future](const joynr::exceptions::ProviderRuntimeException& error) {
         future->onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(error));
     };
-    messageRouter->removeNextHop(participantId, onSuccess, onError);
+    messageRouter->removeNextHop(participantId, std::move(onSuccess), std::move(onError));
     try {
         future->get();
     } catch (const exceptions::JoynrRuntimeException& e) {

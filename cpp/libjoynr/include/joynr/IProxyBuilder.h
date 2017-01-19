@@ -49,7 +49,7 @@ public:
      * is responsible for deletion.
      * @return The proxy object
      */
-    virtual T* build() = 0;
+    virtual std::unique_ptr<T> build() = 0;
 
     /**
      * @brief Build the proxy object asynchronously
@@ -61,13 +61,6 @@ public:
      */
     virtual void buildAsync(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
                             std::function<void(const exceptions::DiscoveryException&)> onError) = 0;
-
-    /**
-     * @brief Sets whether the object is to be cached
-     * @param cached True, if the object is to be cached, false otherwise
-     * @return The ProxyBuilder object
-     */
-    virtual IProxyBuilder* setCached(const bool cached) = 0;
 
     /**
      * @brief Sets the messaging qos settings

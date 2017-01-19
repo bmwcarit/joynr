@@ -25,7 +25,6 @@
 
 #include "joynr/Url.h"
 #include "joynr/Util.h"
-#include "joynr/TypedClientMultiCache.h"
 
 namespace joynr
 {

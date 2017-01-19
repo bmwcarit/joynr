@@ -172,12 +172,8 @@ TransportReadyListener {
         final DeferredVoid deferred = new DeferredVoid();
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
-            DiscoveryQos discoveryQos = new DiscoveryQos(30000,
-                                                         ArbitrationStrategy.HighestPriority,
-                                                         DiscoveryQos.NO_MAX_AGE,
-                                                         DiscoveryScope.LOCAL_AND_GLOBAL);
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
-                    || globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(), discoveryQos.getCacheMaxAgeMs()) != null) {
+                    || globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(), DiscoveryQos.NO_MAX_AGE) != null) {
                 // in this case, no further need for global registration is required. Registration completed.
                 deferred.resolve();
                 return new Promise<>(deferred);

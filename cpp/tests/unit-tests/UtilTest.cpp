@@ -169,3 +169,24 @@ TEST(UtilTest, validateValidPartitionsWithWildCardsThrows)
     validatePartitionsAlwaysThrow(doNotAllowWildCard);
     validatePartitionsAlwaysThrow(!doNotAllowWildCard);
 }
+
+TEST(UtilTest, checkFileExists)
+{
+    EXPECT_TRUE(util::fileExists("."));
+    EXPECT_TRUE(util::fileExists(".."));
+    EXPECT_FALSE(util::fileExists(util::createUuid() + "_NOT_EXISTING_FILE"));
+
+    const std::string fileToTest = "TEST_ThisFileIsCreatedAndDeletedAtRuntime.check";
+    EXPECT_FALSE(util::fileExists(fileToTest));
+    util::saveStringToFile(fileToTest, " ");
+    EXPECT_TRUE(util::fileExists(fileToTest));
+    std::remove(fileToTest.c_str());
+    EXPECT_FALSE(util::fileExists(fileToTest));
+}
+
+TEST(UtilTest, extractParticipantIdFromMulticastId)
+{
+    EXPECT_EQ("participantId", util::extractParticipantIdFromMulticastId("participantId/multicastname/partition1/partition2"));
+    EXPECT_EQ("participantId", util::extractParticipantIdFromMulticastId("participantId/"));
+    EXPECT_THROW(util::extractParticipantIdFromMulticastId("participantId"), std::invalid_argument);
+}

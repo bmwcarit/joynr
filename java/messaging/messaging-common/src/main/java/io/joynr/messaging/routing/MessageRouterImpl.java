@@ -169,14 +169,18 @@ public class MessageRouterImpl implements MessageRouter {
                     try {
                         checkExpiry(message);
                         Set<Address> addresses = getAddresses(message);
+                        if (addresses.isEmpty()) {
+                            throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
+                                    + message.getTo());
+                        }
                         for (Address address : addresses) {
                             String messageId = message.getId().substring(UUID_TAIL);
-                            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId,
+                            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new Object[]{ messageId,
                                     message.getType(),
                                     message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                                     message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
                                     message.getHeader().toString() });
-                            logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(),
+                            logger.debug(">>>>> body  ID:{}:{}: {}", new Object[]{ messageId, message.getType(),
                                     message.getPayload() });
                             IMessaging messagingStub = messagingStubFactory.create(address);
                             messagingStub.transmit(message, createFailureAction(message, retriesCount));
@@ -187,7 +191,10 @@ public class MessageRouterImpl implements MessageRouter {
                         failureAction.execute(error);
                     }
                 }
-            }, message.getId(), delayMs, TimeUnit.MILLISECONDS);
+            },
+                     message.getId(),
+                     delayMs,
+                     TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException e) {
             logger.error("Execution rejected while scheduling SendSerializedMessageRequest ", e);
             throw new JoynrSendBufferFullException(e);

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
     auto onError = [](const joynr::exceptions::JoynrRuntimeException& error) {
         JOYNR_LOG_ERROR(logger, "error sending freshness update: {}", error.getMessage());
     };
-    capabilitiesClient->touch(clusterControllerId, nullptr, onError);
+    capabilitiesClient->touch(clusterControllerId, nullptr, std::move(onError));
     scheduleFreshnessUpdate();
 }
 
@@ -153,9 +153,25 @@ void LocalCapabilitiesDirectory::add(const types::DiscoveryEntry& discoveryEntry
         if (std::find(registeredGlobalCapabilities.begin(),
                       registeredGlobalCapabilities.end(),
                       globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {
-            registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
+
+            std::function<void(const exceptions::JoynrException&)> onError =
+                    [&](const exceptions::JoynrException& error) {
+                JOYNR_LOG_ERROR(
+                        logger,
+                        "Error occured during the execution of capabilitiesProxy->add. Error: {}",
+                        error.getMessage());
+            };
+
+            std::function<void()> onSuccess = [this, globalDiscoveryEntry]() {
+                JOYNR_LOG_TRACE(logger,
+                                "Global capability addedd successfully, adding it to list "
+                                "of registered capabilities.");
+                this->registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
+            };
+
+            // Add globally
+            capabilitiesClient->add(globalDiscoveryEntry, onSuccess, onError);
         }
-        this->capabilitiesClient->add(registeredGlobalCapabilities);
     }
 
     updatePersistedFile();
@@ -362,7 +378,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
         };
         this->capabilitiesClient->lookup(
                 participantId,
-                onSuccess,
+                std::move(onSuccess),
                 std::bind(&ILocalCapabilitiesCallback::onError, callback, std::placeholders::_1));
     }
 }
@@ -409,8 +425,11 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
             std::lock_guard<std::mutex> lock(pendingLookupsLock);
             registerPendingLookup(interfaceAddresses, callback);
         }
-        this->capabilitiesClient->lookup(
-                domains, interfaceName, discoveryQos.getDiscoveryTimeout(), onSuccess, onError);
+        this->capabilitiesClient->lookup(domains,
+                                         interfaceName,
+                                         discoveryQos.getDiscoveryTimeout(),
+                                         std::move(onSuccess),
+                                         std::move(onError));
     }
 }
 
@@ -578,7 +597,7 @@ void LocalCapabilitiesDirectory::lookup(
     }
 
     auto localCapabilitiesCallback =
-            std::make_shared<LocalCapabilitiesCallback>(onSuccess, onError);
+            std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
 
     lookup(domains, interfaceName, localCapabilitiesCallback, discoveryQos);
 }
@@ -589,8 +608,9 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const types::DiscoveryEntry&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto callback = [onSuccess, onError, this, participantId](
-            const std::vector<types::DiscoveryEntry>& capabilities) {
+    auto callback = [ onSuccess = std::move(onSuccess), onError, this, participantId ](
+            const std::vector<types::DiscoveryEntry>& capabilities)
+    {
         if (capabilities.size() == 0) {
             joynr::exceptions::ProviderRuntimeException exception(
                     "No capabilities found for participandId \"" + participantId + "\"");
@@ -608,7 +628,8 @@ void LocalCapabilitiesDirectory::lookup(
         onSuccess(capabilities[0]);
     };
 
-    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(callback, onError);
+    auto localCapabilitiesCallback =
+            std::make_shared<LocalCapabilitiesCallback>(std::move(callback), std::move(onError));
     lookup(participantId, localCapabilitiesCallback);
 }
 
@@ -887,27 +908,23 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 }
 
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(
-        std::function<void(const std::vector<types::DiscoveryEntry>&)> onSuccess,
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-        : onSuccess(onSuccess), onErrorCallback(onError)
+        std::function<void(const std::vector<types::DiscoveryEntry>&)>&& onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)>&& onError)
+        : onSuccess(std::move(onSuccess)), onErrorCallback(std::move(onError))
 {
 }
 
 void LocalCapabilitiesCallback::onError(const exceptions::JoynrRuntimeException& error)
 {
-    if (onErrorCallback) {
-        onErrorCallback(joynr::exceptions::ProviderRuntimeException(
-                "Unable to collect capabilities from global capabilities directory. Error: " +
-                error.getMessage()));
-    }
+    onErrorCallback(joynr::exceptions::ProviderRuntimeException(
+            "Unable to collect capabilities from global capabilities directory. Error: " +
+            error.getMessage()));
 }
 
 void LocalCapabilitiesCallback::capabilitiesReceived(
         const std::vector<types::DiscoveryEntry>& capabilities)
 {
-    if (onSuccess) {
-        onSuccess(capabilities);
-    }
+    onSuccess(capabilities);
 }
 
 } // namespace joynr

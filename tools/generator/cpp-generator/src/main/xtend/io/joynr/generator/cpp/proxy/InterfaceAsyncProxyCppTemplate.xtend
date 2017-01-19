@@ -56,14 +56,12 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 «asyncClassName»::«asyncClassName»(
 		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
-		joynr::IClientCache *cache,
 		const std::string &domain,
-		const joynr::MessagingQos &qosSettings,
-		bool cached
+		const joynr::MessagingQos &qosSettings
 ) :
-	joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
-	«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)«IF hasFireAndForgetMethods(francaIntf)»,
-	«interfaceName»FireAndForgetProxy(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)«ENDIF»
+	joynr::ProxyBase(connectorFactory, domain, qosSettings),
+	«className»Base(messagingAddress, connectorFactory, domain, qosSettings)«IF hasFireAndForgetMethods(francaIntf)»,
+	«interfaceName»FireAndForgetProxy(messagingAddress, connectorFactory, domain, qosSettings)«ENDIF»
 {
 }
 
@@ -90,7 +88,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 				return future;
 			}
 			else{
-				return connector->«getAttribute»Async(onSuccess, onError);
+				return connector->«getAttribute»Async(std::move(onSuccess), std::move(onError));
 			}
 		}
 
@@ -114,7 +112,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 				return future;
 			}
 			else{
-				return connector->«setAttribute»Async(«attributeName», onSuccess, onError);
+				return connector->«setAttribute»Async(«attributeName», std::move(onSuccess), std::move(onError));
 			}
 		}
 
@@ -142,7 +140,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 				return future;
 			}
 			else{
-				return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»onSuccess, «IF method.hasErrorEnum»onApplicationError, «ENDIF»onRuntimeError);
+				return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»std::move(onSuccess), «IF method.hasErrorEnum»std::move(onApplicationError), «ENDIF»std::move(onRuntimeError));
 			}
 		}
 	«ENDIF»

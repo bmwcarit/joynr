@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,20 +26,10 @@ const std::int64_t& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL_MS()
     return defaultMinInterval;
 }
 
-const std::int64_t& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL()
-{
-    return DEFAULT_MIN_INTERVAL_MS();
-}
-
 const std::int64_t& OnChangeSubscriptionQos::MIN_MIN_INTERVAL_MS()
 {
     static std::int64_t minMinInterval = 0;
     return minMinInterval;
-}
-
-const std::int64_t& OnChangeSubscriptionQos::MIN_MIN_INTERVAL()
-{
-    return MIN_MIN_INTERVAL_MS();
 }
 
 const std::int64_t& OnChangeSubscriptionQos::MAX_MIN_INTERVAL_MS()
@@ -48,36 +38,28 @@ const std::int64_t& OnChangeSubscriptionQos::MAX_MIN_INTERVAL_MS()
     return maxMinInterval;
 }
 
-const std::int64_t& OnChangeSubscriptionQos::MAX_MIN_INTERVAL()
-{
-    return MAX_MIN_INTERVAL_MS();
-}
-
-OnChangeSubscriptionQos::OnChangeSubscriptionQos()
-        : SubscriptionQos(), minIntervalMs(MIN_MIN_INTERVAL_MS())
+OnChangeSubscriptionQos::OnChangeSubscriptionQos() : minIntervalMs(MIN_MIN_INTERVAL_MS())
 {
 }
 
-OnChangeSubscriptionQos::OnChangeSubscriptionQos(const std::int64_t& validityMs,
-                                                 const std::int64_t& minIntervalMs)
-        : SubscriptionQos(validityMs), minIntervalMs(DEFAULT_MIN_INTERVAL_MS())
+OnChangeSubscriptionQos::OnChangeSubscriptionQos(const std::int64_t validityMs,
+                                                 const std::int64_t publicationTtlMs,
+                                                 const std::int64_t minIntervalMs)
+        : UnicastSubscriptionQos(validityMs, publicationTtlMs),
+          minIntervalMs(DEFAULT_MIN_INTERVAL_MS())
 {
     setMinIntervalMs(minIntervalMs);
 }
 
 OnChangeSubscriptionQos::OnChangeSubscriptionQos(const OnChangeSubscriptionQos& other)
-        : SubscriptionQos(other), minIntervalMs(other.getMinIntervalMs())
+        : UnicastSubscriptionQos::UnicastSubscriptionQos(other),
+          minIntervalMs(other.getMinIntervalMs())
 {
 }
 
 std::int64_t OnChangeSubscriptionQos::getMinIntervalMs() const
 {
     return minIntervalMs;
-}
-
-std::int64_t OnChangeSubscriptionQos::getMinInterval() const
-{
-    return getMinIntervalMs();
 }
 
 void OnChangeSubscriptionQos::setMinIntervalMs(const std::int64_t& minInterval)
@@ -92,11 +74,6 @@ void OnChangeSubscriptionQos::setMinIntervalMs(const std::int64_t& minInterval)
     }
 
     this->minIntervalMs = minInterval;
-}
-
-void OnChangeSubscriptionQos::setMinInterval(const std::int64_t& minIntervalMs)
-{
-    setMinIntervalMs(minIntervalMs);
 }
 
 OnChangeSubscriptionQos& OnChangeSubscriptionQos::operator=(const OnChangeSubscriptionQos& other)

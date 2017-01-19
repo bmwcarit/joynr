@@ -64,7 +64,7 @@ public:
      * @param dispatcherAddress The address of the dispatcher
      * @param messageRouter A shared pointer to the message router object
      */
-    ProxyBuilder(ProxyFactory* proxyFactory,
+    ProxyBuilder(ProxyFactory& proxyFactory,
                  IRequestCallerDirectory* requestCallerDirectory,
                  joynr::system::IDiscoverySync& discoveryProxy,
                  const std::string& domain,
@@ -82,7 +82,7 @@ public:
      * is responsible for deletion.
      * @return The proxy object
      */
-    T* build() override;
+    std::unique_ptr<T> build() override;
 
     /**
      * @brief Build the proxy object asynchronously
@@ -94,13 +94,6 @@ public:
      */
     void buildAsync(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
                     std::function<void(const exceptions::DiscoveryException&)> onError) override;
-
-    /**
-     * @brief Sets whether the object is to be cached
-     * @param cached True, if the object is to be cached, false otherwise
-     * @return The ProxyBuilder object
-     */
-    ProxyBuilder* setCached(const bool cached) override;
 
     /**
      * @brief Sets the messaging qos settings
@@ -120,9 +113,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
     std::string domain;
-    bool cached;
     MessagingQos messagingQos;
-    ProxyFactory* proxyFactory;
+    ProxyFactory& proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
     joynr::system::IDiscoverySync& discoveryProxy;
     Arbitrator* arbitrator;
@@ -135,7 +127,7 @@ private:
 
 template <class T>
 ProxyBuilder<T>::ProxyBuilder(
-        ProxyFactory* proxyFactory,
+        ProxyFactory& proxyFactory,
         IRequestCallerDirectory* requestCallerDirectory,
         joynr::system::IDiscoverySync& discoveryProxy,
         const std::string& domain,
@@ -143,7 +135,6 @@ ProxyBuilder<T>::ProxyBuilder(
         std::shared_ptr<MessageRouter> messageRouter,
         std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
-          cached(false),
           messagingQos(),
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
@@ -172,7 +163,7 @@ ProxyBuilder<T>::~ProxyBuilder()
 }
 
 template <class T>
-T* ProxyBuilder<T>::build()
+std::unique_ptr<T> ProxyBuilder<T>::build()
 {
     Future<std::unique_ptr<T>> proxyFuture;
 
@@ -188,7 +179,7 @@ T* ProxyBuilder<T>::build()
     std::unique_ptr<T> createdProxy;
     proxyFuture.get(createdProxy);
 
-    return createdProxy.release();
+    return createdProxy;
 }
 
 template <class T>
@@ -208,7 +199,7 @@ void ProxyBuilder<T>::buildAsync(
         }
 
         bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
-        std::unique_ptr<T> proxy(proxyFactory->createProxy<T>(domain, messagingQos, cached));
+        std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos));
         proxy->handleArbitrationFinished(participantId, useInProcessConnector);
 
         messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
@@ -217,13 +208,6 @@ void ProxyBuilder<T>::buildAsync(
     };
 
     arbitrator->startArbitration(arbitrationSucceeds, onError);
-}
-
-template <class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setCached(const bool cached)
-{
-    this->cached = cached;
-    return this;
 }
 
 template <class T>

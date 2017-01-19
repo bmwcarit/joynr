@@ -26,13 +26,13 @@
 
 #include "cluster-controller/mqtt/MqttSettings.h"
 
-#include "joynr/ClientQCache.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/RuntimeConfig.h"
+#include "joynr/ClusterControllerSettings.h"
 
 #include "libjoynr/websocket/WebSocketSettings.h"
 
@@ -80,8 +80,9 @@ public:
                                   std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
                                   std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
 
-    static JoynrClusterControllerRuntime* create(std::unique_ptr<Settings> settings,
-                                                 const std::string& discoveryEntriesFile = "");
+    static std::unique_ptr<JoynrClusterControllerRuntime> create(
+            std::unique_ptr<Settings> settings,
+            const std::string& discoveryEntriesFile = "");
 
     ~JoynrClusterControllerRuntime() override;
 
@@ -111,12 +112,11 @@ protected:
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
     IDispatcher* ccDispatcher;
-    SubscriptionManager* subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
     IMessaging* joynrMessagingSendSkeleton;
-    JoynrMessageSender* joynrMessageSender;
+    std::shared_ptr<JoynrMessageSender> joynrMessageSender;
 
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
-    ClientQCache cache;
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
@@ -137,6 +137,7 @@ protected:
     // take ownership, so a pointer is used
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
+    ClusterControllerSettings clusterControllerSettings;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     DbusSettings* dbusSettings;

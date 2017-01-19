@@ -17,8 +17,10 @@
  * #L%
  */
 #include "joynr/ProxyBase.h"
-#include "joynr/Util.h"
+
 #include <tuple>
+
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -26,23 +28,15 @@ namespace joynr
 INIT_LOGGER(ProxyBase);
 
 ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
-                     IClientCache* cache,
                      const std::string& domain,
-                     const MessagingQos& qosSettings,
-                     bool cached)
+                     const MessagingQos& qosSettings)
         : connectorFactory(connectorFactory),
-          cache(cache),
           domain(domain),
           qosSettings(qosSettings),
-          cached(cached),
           providerParticipantId(""),
           proxyParticipantId("")
 {
     proxyParticipantId = util::createUuid();
-}
-
-ProxyBase::~ProxyBase()
-{
 }
 
 void ProxyBase::handleArbitrationFinished(const std::string& participantId,
@@ -52,7 +46,7 @@ void ProxyBase::handleArbitrationFinished(const std::string& participantId,
     providerParticipantId = participantId;
 }
 
-std::string ProxyBase::getProxyParticipantId()
+const std::string& ProxyBase::getProxyParticipantId() const
 {
     return this->proxyParticipantId;
 }

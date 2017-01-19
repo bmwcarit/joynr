@@ -45,6 +45,8 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "cluster-controller/access-control/IAccessController.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -110,6 +112,7 @@ MessageRouter::MessageRouter(
           securityManager(std::move(securityManager)),
           parentResolveMutex(),
           routingTableFileName(),
+          multicastReceveiverDirectoryFilename(),
           messageQueueCleanerTimer(ioService),
           messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000))
 {
@@ -182,24 +185,24 @@ bool MessageRouter::isChildMessageRouter()
     return parentRouter && parentAddress;
 }
 
-std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> MessageRouter::
+std::unordered_set<std::shared_ptr<const system::RoutingTypes::Address>> MessageRouter::
         lookupAddresses(const std::unordered_set<std::string>& participantIds)
 {
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     for (const auto& participantId : participantIds) {
         destAddress = routingTable.lookup(participantId);
         if (destAddress) {
-            addresses.push_front(destAddress);
+            addresses.insert(destAddress);
         }
     }
     return addresses;
 }
 
-std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> MessageRouter::
+std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> MessageRouter::
         getDestinationAddresses(const JoynrMessage& message)
 {
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
         std::string multicastId = message.getHeaderTo();
 
@@ -213,7 +216,7 @@ std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> M
             std::shared_ptr<const joynr::system::RoutingTypes::Address> globalTransport =
                     addressCalculator->compute(message);
             if (globalTransport) {
-                addresses.push_front(globalTransport);
+                addresses.insert(globalTransport);
             }
         }
     } else {
@@ -221,7 +224,7 @@ std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> M
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress =
                 routingTable.lookup(destinationPartId);
         if (destAddress) {
-            addresses.push_front(destAddress);
+            addresses.insert(destAddress);
         }
     }
     return addresses;
@@ -255,8 +258,9 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
                     "Route message with Id {} and payload {}",
                     message.getHeaderMessageId(),
                     message.getPayload());
+
     // search for the destination addresses
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
             getDestinationAddresses(message);
     // if destination address is not known
     if (destAddresses.empty()) {
@@ -437,7 +441,7 @@ void MessageRouter::addNextHop(
             std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(channelAddress);
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess, onError);
+    addNextHopToParent(participantId, std::move(onSuccess), std::move(onError));
 
     sendMessages(participantId, address);
 }
@@ -452,7 +456,7 @@ void MessageRouter::addNextHop(
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(mqttAddress);
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess, onError);
+    addNextHopToParent(participantId, std::move(onSuccess), std::move(onError));
 
     sendMessages(participantId, address);
 }
@@ -468,7 +472,7 @@ void MessageRouter::addNextHop(
             commonApiDbusAddress);
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess, onError);
+    addNextHopToParent(participantId, std::move(onSuccess), std::move(onError));
 
     sendMessages(participantId, address);
 }
@@ -484,7 +488,7 @@ void MessageRouter::addNextHop(
             std::make_shared<const joynr::system::RoutingTypes::BrowserAddress>(browserAddress);
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess, onError);
+    addNextHopToParent(participantId, std::move(onSuccess), std::move(onError));
 
     sendMessages(participantId, address);
 }
@@ -500,7 +504,7 @@ void MessageRouter::addNextHop(
             std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(webSocketAddress);
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess, onError);
+    addNextHopToParent(participantId, std::move(onSuccess), std::move(onError));
 
     sendMessages(participantId, address);
 }
@@ -516,7 +520,7 @@ void MessageRouter::addNextHop(
             webSocketClientAddress);
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess, onError);
+    addNextHopToParent(participantId, std::move(onSuccess), std::move(onError));
 
     sendMessages(participantId, address);
 }
@@ -544,35 +548,40 @@ void MessageRouter::addNextHopToParent(
         if (auto channelAddress =
                     std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(
                             incomingAddress)) {
+            parentRouter->addNextHopAsync(participantId,
+                                          *channelAddress,
+                                          std::move(onSuccess),
+                                          std::move(onErrorWrapper));
+        } else if (auto mqttAddress = std::dynamic_pointer_cast<
+                           const joynr::system::RoutingTypes::MqttAddress>(incomingAddress)) {
             parentRouter->addNextHopAsync(
-                    participantId, *channelAddress, onSuccess, onErrorWrapper);
-        }
-        if (auto mqttAddress =
-                    std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(
-                            incomingAddress)) {
-            parentRouter->addNextHopAsync(participantId, *mqttAddress, onSuccess, onErrorWrapper);
-        }
-        if (auto commonApiDbusAddress = std::dynamic_pointer_cast<
-                    const joynr::system::RoutingTypes::CommonApiDbusAddress>(incomingAddress)) {
-            parentRouter->addNextHopAsync(
-                    participantId, *commonApiDbusAddress, onSuccess, onErrorWrapper);
-        }
-        if (auto browserAddress =
-                    std::dynamic_pointer_cast<const joynr::system::RoutingTypes::BrowserAddress>(
-                            incomingAddress)) {
-            parentRouter->addNextHopAsync(
-                    participantId, *browserAddress, onSuccess, onErrorWrapper);
-        }
-        if (auto webSocketAddress =
-                    std::dynamic_pointer_cast<const joynr::system::RoutingTypes::WebSocketAddress>(
-                            incomingAddress)) {
-            parentRouter->addNextHopAsync(
-                    participantId, *webSocketAddress, onSuccess, onErrorWrapper);
-        }
-        if (auto webSocketClientAddress = std::dynamic_pointer_cast<
-                    const joynr::system::RoutingTypes::WebSocketClientAddress>(incomingAddress)) {
-            parentRouter->addNextHopAsync(
-                    participantId, *webSocketClientAddress, onSuccess, onErrorWrapper);
+                    participantId, *mqttAddress, std::move(onSuccess), std::move(onErrorWrapper));
+        } else if (auto commonApiDbusAddress = std::dynamic_pointer_cast<
+                           const joynr::system::RoutingTypes::CommonApiDbusAddress>(
+                           incomingAddress)) {
+            parentRouter->addNextHopAsync(participantId,
+                                          *commonApiDbusAddress,
+                                          std::move(onSuccess),
+                                          std::move(onErrorWrapper));
+        } else if (auto browserAddress = std::dynamic_pointer_cast<
+                           const joynr::system::RoutingTypes::BrowserAddress>(incomingAddress)) {
+            parentRouter->addNextHopAsync(participantId,
+                                          *browserAddress,
+                                          std::move(onSuccess),
+                                          std::move(onErrorWrapper));
+        } else if (auto webSocketAddress = std::dynamic_pointer_cast<
+                           const joynr::system::RoutingTypes::WebSocketAddress>(incomingAddress)) {
+            parentRouter->addNextHopAsync(participantId,
+                                          *webSocketAddress,
+                                          std::move(onSuccess),
+                                          std::move(onErrorWrapper));
+        } else if (auto webSocketClientAddress = std::dynamic_pointer_cast<
+                           const joynr::system::RoutingTypes::WebSocketClientAddress>(
+                           incomingAddress)) {
+            parentRouter->addNextHopAsync(participantId,
+                                          *webSocketClientAddress,
+                                          std::move(onSuccess),
+                                          std::move(onErrorWrapper));
         }
     } else if (onSuccess) {
         onSuccess();
@@ -581,9 +590,13 @@ void MessageRouter::addNextHopToParent(
 
 void MessageRouter::loadRoutingTable(std::string fileName)
 {
-    // update reference file
+    // always update reference file
     if (fileName != routingTableFileName) {
         routingTableFileName = std::move(fileName);
+    }
+
+    if (!joynr::util::fileExists(routingTableFileName)) {
+        return;
     }
 
     WriteLocker lock(routingTableLock);
@@ -605,6 +618,81 @@ void MessageRouter::saveRoutingTable()
                 routingTableFileName, joynr::serializer::serializeToJson(routingTable));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_INFO(logger, ex.what());
+    }
+}
+
+void MessageRouter::saveMulticastReceiverDirectory() const
+{
+    if (multicastReceveiverDirectoryFilename.empty()) {
+        JOYNR_LOG_INFO(logger, "Did not save multicast receiver directory: No filename specified");
+        return;
+    }
+
+    try {
+        joynr::util::saveStringToFile(
+                multicastReceveiverDirectoryFilename,
+                joynr::serializer::serializeToJson(multicastReceiverDirectory));
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_INFO(logger, ex.what());
+    }
+}
+
+void MessageRouter::loadMulticastReceiverDirectory(std::string filename)
+{
+    multicastReceveiverDirectoryFilename = std::move(filename);
+
+    try {
+        joynr::serializer::deserializeFromJson(
+                multicastReceiverDirectory,
+                joynr::util::loadStringFromFile(multicastReceveiverDirectoryFilename));
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+        return;
+    } catch (const std::invalid_argument& ex) {
+        JOYNR_LOG_ERROR(logger, "Deserialization from JSON failed: {}", ex.what());
+        return;
+    }
+
+    reestablishMulticastSubscriptions();
+}
+
+void MessageRouter::reestablishMulticastSubscriptions()
+{
+    for (const auto& multicastId : multicastReceiverDirectory.getMulticastIds()) {
+        std::string providerParticipantId;
+
+        try {
+            providerParticipantId = util::extractParticipantIdFromMulticastId(multicastId);
+        } catch (std::invalid_argument& ex) {
+            JOYNR_LOG_ERROR(logger,
+                            "Persisted multicast receivers: Invalid multicast ID found {}",
+                            multicastId);
+            continue;
+        }
+
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress =
+                routingTable.lookup(providerParticipantId);
+
+        if (!providerAddress) {
+            JOYNR_LOG_WARN(
+                    logger,
+                    "Persisted multicast receivers: No provider address found for multicast ID {}",
+                    multicastId);
+            continue;
+        }
+
+        std::shared_ptr<IMessagingMulticastSubscriber> multicastSubscriber =
+                multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
+
+        if (!multicastSubscriber) {
+            JOYNR_LOG_WARN(logger,
+                           "Persisted multicast receivers: No multicast subscriber found for "
+                           "multicast ID {}",
+                           multicastId);
+            continue;
+        }
+
+        multicastSubscriber->registerMulticastSubscription(multicastId);
     }
 }
 
@@ -646,7 +734,8 @@ void MessageRouter::removeNextHop(
 
     // remove from parent router
     if (isChildMessageRouter()) {
-        parentRouter->removeNextHopAsync(participantId, onSuccess, onErrorWrapper);
+        parentRouter->removeNextHopAsync(
+                participantId, std::move(onSuccess), std::move(onErrorWrapper));
     } else if (onSuccess) {
         onSuccess();
     }
@@ -676,8 +765,11 @@ void MessageRouter::registerMulticastReceiver(
 {
     if (isChildMessageRouter()) {
         // TODO do not invoke parent message router for InProcessMessagingAddress
-        parentRouter->addMulticastReceiverAsync(
-                multicastId, subscriberParticipantId, providerParticipantId, onSuccess, onError);
+        parentRouter->addMulticastReceiverAsync(multicastId,
+                                                subscriberParticipantId,
+                                                providerParticipantId,
+                                                std::move(onSuccess),
+                                                std::move(onError));
     } else {
         std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
                 multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
@@ -718,6 +810,11 @@ void MessageRouter::addMulticastReceiver(
                         "added multicast receiver={} for multicastId={}",
                         subscriberParticipantId,
                         multicastId);
+
+        if (!isChildMessageRouter()) {
+            saveMulticastReceiverDirectory();
+        }
+
         onSuccess();
     };
     std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
@@ -763,7 +860,8 @@ void MessageRouter::addMulticastReceiver(
                         error.getMessage());
                 onErrorWrapper(exception);
             };
-            parentRouter->resolveNextHopAsync(providerParticipantId, onResolved, onResolveError);
+            parentRouter->resolveNextHopAsync(
+                    providerParticipantId, std::move(onResolved), std::move(onResolveError));
         } else {
             exceptions::ProviderRuntimeException exception(
                     "No routing entry for multicast provider (providerParticipantId=" +
@@ -788,6 +886,10 @@ void MessageRouter::removeMulticastReceiver(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+
+    if (!isChildMessageRouter()) {
+        saveMulticastReceiverDirectory();
+    }
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
@@ -816,8 +918,8 @@ void MessageRouter::removeMulticastReceiver(
         parentRouter->removeMulticastReceiverAsync(multicastId,
                                                    subscriberParticipantId,
                                                    providerParticipantId,
-                                                   onSuccess,
-                                                   onErrorWrapper);
+                                                   std::move(onSuccess),
+                                                   std::move(onErrorWrapper));
     } else {
         std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
                 multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);

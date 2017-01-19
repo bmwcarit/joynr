@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.joynrmessaging
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,7 @@ internalRequestObject.setParams(
 	#include "joynr/BroadcastSubscriptionRequest.h"
 «ENDIF»
 «IF !francaIntf.broadcasts.filter[!selective].empty»
+	#include "joynr/MulticastSubscriptionQos.h"
 	#include "joynr/MulticastSubscriptionRequest.h"
 «ENDIF»
 
@@ -116,15 +117,13 @@ internalRequestObject.setParams(
 «getNamespaceStarter(francaIntf)»
 «val className = interfaceName + "JoynrMessagingConnector"»
 «className»::«className»(
-		joynr::IJoynrMessageSender* joynrMessageSender,
-		joynr::ISubscriptionManager* subscriptionManager,
+		std::shared_ptr<joynr::IJoynrMessageSender> joynrMessageSender,
+		std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
 		const std::string& providerParticipantId,
-		const joynr::MessagingQos &qosSettings,
-		joynr::IClientCache *cache,
-		bool cached)
-	: joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, providerParticipantId, qosSettings, cache, cached)
+		const joynr::MessagingQos &qosSettings)
+	: joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, providerParticipantId, qosSettings)
 {
 }
 
@@ -150,7 +149,7 @@ bool «className»::usesClusterController() const{
 						future->onError(error);
 					};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(onSuccess, onError);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccess), std::move(onError));
 			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
 			future->get(«attributeName»);
 		}
@@ -160,7 +159,7 @@ bool «className»::usesClusterController() const{
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
-					[future, onSuccess] (const «returnType»& «attributeName») {
+					[future, onSuccess = std::move(onSuccess)] (const «returnType»& «attributeName») {
 						future->onSuccess(«attributeName»);
 						if (onSuccess){
 							onSuccess(«attributeName»);
@@ -168,14 +167,14 @@ bool «className»::usesClusterController() const{
 					};
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-					[future, onError] (const std::shared_ptr<exceptions::JoynrException>& error) {
+					[future, onError = std::move(onError)] (const std::shared_ptr<exceptions::JoynrException>& error) {
 						future->onError(error);
 						if (onError){
 							onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
 						}
 					};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(onSuccessWrapper, onErrorWrapper);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
 
 			return future;
@@ -193,7 +192,7 @@ bool «className»::usesClusterController() const{
 			auto future = std::make_shared<joynr::Future<void>>();
 
 			std::function<void()> onSuccessWrapper =
-					[future, onSuccess] () {
+					[future, onSuccess = std::move(onSuccess)] () {
 						future->onSuccess();
 						if (onSuccess) {
 							onSuccess();
@@ -201,14 +200,14 @@ bool «className»::usesClusterController() const{
 					};
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-				[future, onError] (const std::shared_ptr<exceptions::JoynrException>& error) {
+				[future, onError = std::move(onError)] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 					if (onError) {
 						onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
 					}
 				};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(onSuccessWrapper, onErrorWrapper);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			operationRequest(replyCaller, internalRequestObject);
 			return future;
 		}
@@ -233,7 +232,7 @@ bool «className»::usesClusterController() const{
 						future->onError(error);
 					};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(onSuccess, onError);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccess), std::move(onError));
 			operationRequest(replyCaller, internalRequestObject);
 			future->get();
 		}
@@ -264,7 +263,7 @@ bool «className»::usesClusterController() const{
 
 			auto future = std::make_shared<Future<std::string>>();
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnType»>
-			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -318,7 +317,7 @@ bool «className»::usesClusterController() const{
 					future->onError(error);
 				};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccess, onError);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccess), std::move(onError));
 			operationRequest(replyCaller, internalRequestObject);
 			future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
 		}
@@ -330,7 +329,7 @@ bool «className»::usesClusterController() const{
 			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 			std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
-					[future, onSuccess] («outputTypedConstParamList») {
+					[future, onSuccess = std::move(onSuccess)] («outputTypedConstParamList») {
 						future->onSuccess(«outputUntypedParamList»);
 						if (onSuccess) {
 							onSuccess(«outputUntypedParamList»);
@@ -338,12 +337,12 @@ bool «className»::usesClusterController() const{
 					};
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-					[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const std::shared_ptr<exceptions::JoynrException>& error) {
+					[future, onRuntimeError = std::move(onRuntimeError)«IF method.hasErrorEnum», onApplicationError = std::move(onApplicationError)«ENDIF»] (const std::shared_ptr<exceptions::JoynrException>& error) {
 					future->onError(error);
 					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 				};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccessWrapper, onErrorWrapper);
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			operationRequest(replyCaller, internalRequestObject);
 			return future;
 		}
@@ -400,10 +399,11 @@ bool «className»::usesClusterController() const{
 
 	std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				«IF broadcast.selective»
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 					BroadcastSubscriptionRequest& subscriptionRequest
 				«ELSE»
+					std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
 					std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest,
 					const std::vector<std::string>& partitions
 				«ENDIF»
@@ -416,7 +416,7 @@ bool «className»::usesClusterController() const{
 		auto future = std::make_shared<Future<std::string>>();
 		«IF broadcast.selective»
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 			subscriptionManager->registerSubscription(
 							broadcastName,
 							subscriptionCallback,
@@ -432,27 +432,38 @@ bool «className»::usesClusterController() const{
 			);
 		«ELSE»
 			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager.get());
 			std::function<void()> onSuccess =
-					[this, clonedMessagingQos, subscriptionRequest] () {
+					[joynrMessageSender = joynr::util::as_weak_ptr(joynrMessageSender),
+					proxyParticipantId = proxyParticipantId,
+					providerParticipantId = providerParticipantId,
+					clonedMessagingQos, subscriptionRequest] () {
 						JOYNR_LOG_DEBUG(logger, subscriptionRequest->toString());
-						joynrMessageSender->sendMulticastSubscriptionRequest(
-									proxyParticipantId,
-									providerParticipantId,
-									clonedMessagingQos,
-									*subscriptionRequest
-						);
+						if (auto ptr = joynrMessageSender.lock())
+						{
+							ptr->sendMulticastSubscriptionRequest(
+										proxyParticipantId,
+										providerParticipantId,
+										clonedMessagingQos,
+										*subscriptionRequest
+							);
+						}
 					};
 
 			std::string subscriptionId = subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId();
 			std::function<void(const exceptions::ProviderRuntimeException& error)> onError =
-					[this, subscriptionListener, subscriptionId] (const exceptions::ProviderRuntimeException& error) {
+					[subscriptionListener,
+					subscriptionManager = joynr::util::as_weak_ptr(subscriptionManager),
+					subscriptionId] (const exceptions::ProviderRuntimeException& error) {
 						std::string message = "Could not register subscription to «broadcastName». Error from subscription manager: "
 									+ error.getMessage();
 						JOYNR_LOG_ERROR(logger, message);
 						exceptions::SubscriptionException subscriptionException(message, subscriptionId);
 						subscriptionListener->onError(subscriptionException);
-						subscriptionManager->unregisterSubscription(subscriptionId);
+						if (auto ptr = subscriptionManager.lock())
+						{
+							ptr->unregisterSubscription(subscriptionId);
+						}
 				};
 			subscriptionManager->registerSubscription(
 							broadcastName,
@@ -463,8 +474,8 @@ bool «className»::usesClusterController() const{
 							subscriptionListener,
 							subscriptionQos,
 							*subscriptionRequest,
-							onSuccess,
-							onError);
+							std::move(onSuccess),
+							std::move(onError));
 		«ENDIF»
 		return future;
 	}

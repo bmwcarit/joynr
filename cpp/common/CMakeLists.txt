@@ -123,7 +123,7 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 add_library(
     JoynrCommon
-    SHARED
+    # library type is set via BUILD_SHARED_LIBS
     ${JoynrCommon_HEADERS}
     ${JoynrCommon_SOURCES}
 )
@@ -145,7 +145,7 @@ endif(JOYNR_ENABLE_DLT_LOGGING)
 set_target_properties(
     JoynrCommon
     PROPERTIES
-    SOVERSION "${JOYNR_VERSION}"
+    SOVERSION "${JOYNR_SOVERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}"
     COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${JOYNR_INSTALL_FULL_SYSCONFDIR}"
@@ -202,10 +202,11 @@ AddClangTidy(JoynrCommon)
 install(
     TARGETS JoynrCommon
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     # this will flatten directory hierarchy of headder files
-    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 # so we install header files manually to preserve directory hierarchy
 install(

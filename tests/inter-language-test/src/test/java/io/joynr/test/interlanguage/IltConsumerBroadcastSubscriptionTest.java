@@ -19,7 +19,7 @@ package io.joynr.test.interlanguage;
  * #L%
  */
 
-import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 import joynr.interlanguagetest.Enumeration;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultipleArrayParametersBroadcastAdapter;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultipleEnumerationParametersBroadcastAdapter;
@@ -78,16 +78,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithSinglePrimitiveParameter() {
         Future<String> subscriptionId;
-        int minIntervalMs = 0;
-        int maxIntervalMs = 10000;
-        long validityMs = 60000;
-        int alertAfterIntervalMs = 20000;
-        int publicationTtlMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
-                                                                                                         .setMaxIntervalMs(maxIntervalMs)
-                                                                                                         .setValidityMs(validityMs)
-                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
-                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -118,7 +108,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                   subscribeBroadcastWithSinglePrimitiveParameterCallbackDone = true;
                                                                                                               }
                                                                                                           },
-                                                                                                          subscriptionQos,
+                                                                                                          new MulticastSubscriptionQos(),
                                                                                                           partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
@@ -177,16 +167,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithMultiplePrimitiveParameters() {
         Future<String> subscriptionId;
-        int minIntervalMs = 0;
-        int maxIntervalMs = 10000;
-        long validityMs = 60000;
-        int alertAfterIntervalMs = 20000;
-        int publicationTtlMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
-                                                                                                         .setMaxIntervalMs(maxIntervalMs)
-                                                                                                         .setValidityMs(validityMs)
-                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
-                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -220,7 +200,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                      subscribeBroadcastWithMultiplePrimitiveParametersCallbackDone = true;
                                                                                                                  }
                                                                                                              },
-                                                                                                             subscriptionQos,
+                                                                                                             new MulticastSubscriptionQos(),
                                                                                                              partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
@@ -278,16 +258,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithSingleArrayParameter() {
         Future<String> subscriptionId;
-        int minIntervalMs = 0;
-        int maxIntervalMs = 10000;
-        long validityMs = 60000;
-        int alertAfterIntervalMs = 20000;
-        int publicationTtlMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
-                                                                                                         .setMaxIntervalMs(maxIntervalMs)
-                                                                                                         .setValidityMs(validityMs)
-                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
-                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -319,7 +289,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                               subscribeBroadcastWithSingleArrayParameterCallbackDone = true;
                                                                                                           }
                                                                                                       },
-                                                                                                      subscriptionQos,
+                                                                                                      new MulticastSubscriptionQos(),
                                                                                                       partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
@@ -378,16 +348,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithMultipleArrayParameters() {
         Future<String> subscriptionId;
-        int minIntervalMs = 0;
-        int maxIntervalMs = 10000;
-        long validityMs = 60000;
-        int alertAfterIntervalMs = 20000;
-        int publicationTtlMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
-                                                                                                         .setMaxIntervalMs(maxIntervalMs)
-                                                                                                         .setValidityMs(validityMs)
-                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
-                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -420,7 +380,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                  subscribeBroadcastWithMultipleArrayParametersCallbackDone = true;
                                                                                                              }
                                                                                                          },
-                                                                                                         subscriptionQos,
+                                                                                                         new MulticastSubscriptionQos(),
                                                                                                          partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
@@ -479,16 +439,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithSingleEnumerationParameter() {
         Future<String> subscriptionId;
-        int minIntervalMs = 0;
-        int maxIntervalMs = 10000;
-        long validityMs = 60000;
-        int alertAfterIntervalMs = 20000;
-        int publicationTtlMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
-                                                                                                         .setMaxIntervalMs(maxIntervalMs)
-                                                                                                         .setValidityMs(validityMs)
-                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
-                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -519,7 +469,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                     subscribeBroadcastWithSingleEnumerationParameterCallbackDone = true;
                                                                                                                 }
                                                                                                             },
-                                                                                                            subscriptionQos,
+                                                                                                            new MulticastSubscriptionQos(),
                                                                                                             partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
@@ -578,16 +528,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithMultipleEnumerationParameters() {
         Future<String> subscriptionId;
-        int minIntervalMs = 0;
-        int maxIntervalMs = 10000;
-        long validityMs = 60000;
-        int alertAfterIntervalMs = 20000;
-        int publicationTtlMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
-                                                                                                         .setMaxIntervalMs(maxIntervalMs)
-                                                                                                         .setValidityMs(validityMs)
-                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
-                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -620,7 +560,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                        subscribeBroadcastWithMultipleEnumerationParametersCallbackDone = true;
                                                                                                                    }
                                                                                                                },
-                                                                                                               subscriptionQos,
+                                                                                                               new MulticastSubscriptionQos(),
                                                                                                                partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
@@ -679,16 +619,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithSingleStructParameter() {
         Future<String> subscriptionId;
-        int minIntervalMs = 0;
-        int maxIntervalMs = 10000;
-        long validityMs = 60000;
-        int alertAfterIntervalM = 20000;
-        int publicationTtlMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
-                                                                                                         .setMaxIntervalMs(maxIntervalMs)
-                                                                                                         .setValidityMs(validityMs)
-                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalM)
-                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -719,7 +649,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                subscribeBroadcastWithSingleStructParameterCallbackDone = true;
                                                                                                            }
                                                                                                        },
-                                                                                                       subscriptionQos,
+                                                                                                       new MulticastSubscriptionQos(),
                                                                                                        partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");
@@ -778,16 +708,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     @Test
     public void callSubscribeBroadcastWithMultipleStructParameters() {
         Future<String> subscriptionId;
-        int minIntervalMs = 0;
-        int maxIntervalMs = 10000;
-        long validityMs = 60000;
-        int alertAfterIntervalMs = 20000;
-        int publicationTtlMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
-                                                                                                         .setMaxIntervalMs(maxIntervalMs)
-                                                                                                         .setValidityMs(validityMs)
-                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
-                                                                                                         .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
         LOG.info(name.getMethodName() + "");
@@ -820,7 +740,7 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                                                                                                                   subscribeBroadcastWithMultipleStructParametersCallbackDone = true;
                                                                                                               }
                                                                                                           },
-                                                                                                          subscriptionQos,
+                                                                                                          new MulticastSubscriptionQos(),
                                                                                                           partitions);
             LOG.info(name.getMethodName() + " - subscription successful");
             LOG.info(name.getMethodName() + " - Waiting one second");

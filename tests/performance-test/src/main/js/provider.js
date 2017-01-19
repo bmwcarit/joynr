@@ -51,7 +51,7 @@ joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
             EchoProvider,
             EchoProviderImpl.implementation);
 
-    joynr.capabilities.registerCapability("", domain, echoProvider, providerQos).then(function() {
+    joynr.registration.registerProvider(domain, echoProvider, providerQos).then(function() {
         log("provider registered successfully");
     }).catch(function(error) {
         log("error registering provider: " + error.toString());

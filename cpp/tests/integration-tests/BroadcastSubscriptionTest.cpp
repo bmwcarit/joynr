@@ -56,7 +56,6 @@ public:
     BroadcastSubscriptionTest() :
         singleThreadIOService(),
         mockMessageRouter(new MockMessageRouter(singleThreadIOService.getIOService())),
-        mockRequestCaller(new MockTestRequestCaller()),
         mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
@@ -65,8 +64,8 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
-        messageSender(mockMessageRouter),
-        dispatcher(&messageSender, singleThreadIOService.getIOService()),
+        messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
+        dispatcher(messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
         singleThreadIOService.start();
@@ -75,7 +74,7 @@ public:
     void SetUp(){
         //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
+        subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadIOService.getIOService(), mockMessageRouter);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
@@ -83,7 +82,6 @@ public:
 protected:
     SingleThreadedIOService singleThreadIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListenerOne;
     std::shared_ptr<MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double> > mockSubscriptionListenerTwo;
 
@@ -96,9 +94,9 @@ protected:
     std::string proxyParticipantId;
 
     JoynrMessageFactory messageFactory;
-    JoynrMessageSender messageSender;
+    std::shared_ptr<JoynrMessageSender> messageSender;
     Dispatcher dispatcher;
-    SubscriptionManager * subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
 private:
     DISALLOW_COPY_AND_ASSIGN(BroadcastSubscriptionTest);
 };
@@ -119,6 +117,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     std::string subscribeToName = "locationUpdate";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
+                1000, // publication ttl
                 100 // minInterval_ms
     );
 
@@ -130,7 +129,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -169,6 +168,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     std::string subscribeToName = "locationUpdateWithSpeed";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
+                1000, // publication ttl
                 100 // minInterval_ms
     );
 
@@ -180,7 +180,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback= std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation, double>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

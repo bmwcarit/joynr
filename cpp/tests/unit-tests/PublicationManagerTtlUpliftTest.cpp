@@ -79,7 +79,11 @@ public:
         toleranceMs(50)
     {
         singleThreadedIOService.start();
-        onChangeSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>(0, minInterval_ms);
+        onChangeSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
+                        0,
+                        publicationTtlMs,
+                        minInterval_ms
+                    );
         onChangeSubscriptionQos->setPublicationTtlMs(publicationTtlMs);
     }
 

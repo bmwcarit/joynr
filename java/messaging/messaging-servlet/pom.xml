@@ -24,12 +24,11 @@
 	<packaging>war</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	<url>http://maven.apache.org</url>
 
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>messaging</artifactId>
-		<version>0.22.4</version>
+		<version>0.23.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 

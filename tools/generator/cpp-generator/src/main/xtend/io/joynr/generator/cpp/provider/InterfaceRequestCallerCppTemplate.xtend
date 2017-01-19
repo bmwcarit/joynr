@@ -70,7 +70,7 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 		void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
 				std::function<void(
 						const «returnType»& «attributeName»
-				)> onSuccess,
+				)>&& onSuccess,
 				std::function<void(
 						const std::shared_ptr<exceptions::ProviderRuntimeException>&
 				)> onError
@@ -80,7 +80,7 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 				onError(std::make_shared<exceptions::ProviderRuntimeException>(error));
 			};
 			try {
-				provider->get«attributeName.toFirstUpper»(onSuccess, onErrorWrapper);
+				provider->get«attributeName.toFirstUpper»(std::move(onSuccess), std::move(onErrorWrapper));
 			} catch (const exceptions::ProviderRuntimeException& e) {
 				onError(std::make_shared<exceptions::ProviderRuntimeException>(e));
 			} catch (const exceptions::JoynrException& e) {
@@ -93,7 +93,7 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 	«IF attribute.writable»
 		void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
 				const «returnType»& «attributeName»,
-				std::function<void()> onSuccess,
+				std::function<void()>&& onSuccess,
 				std::function<void(
 						const std::shared_ptr<exceptions::ProviderRuntimeException>&
 				)> onError
@@ -103,7 +103,7 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 				onError(std::make_shared<exceptions::ProviderRuntimeException>(error));
 			};
 			try {
-				provider->set«attributeName.toFirstUpper»(«attributeName», onSuccess, onErrorWrapper);
+				provider->set«attributeName.toFirstUpper»(«attributeName», std::move(onSuccess), std::move(onErrorWrapper));
 			} catch (const exceptions::ProviderRuntimeException& e) {
 				std::string message = "Could not perform «interfaceName»RequestCaller::set«attributeName.toFirstUpper», caught exception: " +
 									e.getTypeName() + ":" + e.getMessage();
@@ -132,11 +132,11 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 			«ENDIF»
 			«IF !method.fireAndForget»
 				«IF method.outputParameters.empty»
-					std::function<void()> onSuccess,
+					std::function<void()>&& onSuccess,
 				«ELSE»
 					std::function<void(
 							«outputTypedParamList»
-					)> onSuccess,
+					)>&& onSuccess,
 				«ENDIF»
 				std::function<void(
 						const std::shared_ptr<exceptions::JoynrException>&
@@ -163,8 +163,8 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 			provider->«methodName»(
 					«IF !method.inputParameters.empty»«inputUntypedParamList»«IF !method.fireAndForget»,«ENDIF»«ENDIF»
 					«IF !method.fireAndForget»
-						onSuccess,
-						onErrorWrapper
+						std::move(onSuccess),
+						std::move(onErrorWrapper)
 					«ENDIF»
 			);
 		// ApplicationExceptions should not be created by the application itself to ensure

@@ -49,8 +49,8 @@ public:
     virtual void execute(
             std::shared_ptr<RequestCaller> requestCaller,
             Request& request,
-            std::function<void(BaseReply&& outParams)> onSuccess,
-            std::function<void(const std::shared_ptr<exceptions::JoynrException>& exception)>
+            std::function<void(BaseReply&& outParams)>&& onSuccess,
+            std::function<void(const std::shared_ptr<exceptions::JoynrException>& exception)>&&
                     onError) = 0;
 
     /**

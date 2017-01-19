@@ -18,8 +18,8 @@
  */
 #ifndef MESSAGEROUTER_H
 #define MESSAGEROUTER_H
+
 #include <chrono>
-#include <forward_list>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -53,7 +53,6 @@ namespace joynr
 
 class IAccessController;
 class IMessaging;
-class IMessagingMulticastSubscriber;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
 class MulticastMessagingSkeletonDirectory;
@@ -184,6 +183,9 @@ public:
     void saveRoutingTable();
     void loadRoutingTable(std::string fileName);
 
+    void saveMulticastReceiverDirectory() const;
+    void loadMulticastReceiverDirectory(std::string filename);
+
     friend class MessageRunnable;
     friend class ConsumerPermissionCallback;
 
@@ -208,13 +210,14 @@ private:
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     mutable std::mutex parentResolveMutex;
     std::string routingTableFileName;
+    std::string multicastReceveiverDirectoryFilename;
 
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
 
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
     getDestinationAddresses(const JoynrMessage& message);
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
 
     void registerMulticastReceiver(
@@ -251,6 +254,7 @@ private:
 
     void activateMessageCleanerTimer();
     void onMessageCleanerTimerExpired(const boost::system::error_code& errorCode);
+    void reestablishMulticastSubscriptions();
 };
 
 /**

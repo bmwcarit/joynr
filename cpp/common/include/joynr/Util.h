@@ -28,6 +28,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <memory>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
@@ -49,9 +50,18 @@ static const std::string SINGLE_LEVEL_WILDCARD("+");
 static const std::string MULTI_LEVEL_WILDCARD("*");
 static const std::string MULTICAST_PARTITION_SEPARATOR("/");
 
+/**
+ * @brief Check if the specified file exists and is readable.
+ * @param filePath
+ * @return true if file exists, false otherwise
+ */
+bool fileExists(const std::string& fileName);
+
 std::string createMulticastId(const std::string& providerParticipantId,
                               const std::string& multicastName,
                               const std::vector<std::string>& partitions);
+
+std::string extractParticipantIdFromMulticastId(const std::string& multicastId);
 
 void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards = false);
 
@@ -63,7 +73,16 @@ std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
 
 std::string attributeGetterFromName(const std::string& attributeName);
 
+/*
+ * Return the content of fileName as a string.
+ * It assumes the file exists and is accessible.
+ */
 std::string loadStringFromFile(const std::string& fileName);
+
+/*
+ * It saves strToSave to the specified fileName.
+ * The file does not need to exists.
+ */
 void saveStringToFile(const std::string& fileName, const std::string& strToSave);
 
 /**
@@ -190,6 +209,12 @@ std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePo
  * Converts a std::chrono::system_clock::time_point to a printable string
  */
 std::string toDateString(const std::chrono::system_clock::time_point& timePoint);
+
+template <typename T>
+auto as_weak_ptr(std::shared_ptr<T> ptr)
+{
+    return std::weak_ptr<T>(ptr);
+}
 
 } // namespace util
 

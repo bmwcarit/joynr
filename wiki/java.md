@@ -1248,10 +1248,19 @@ import joynr.<Package>.<Interface>AbstractProvider;
 ```
 
 ### The base class
-The provider class must extend the generated class ```<Interface>AbstractProvider``` (or
-Default<Interface>Provider) and implement getter methods for each Franca attribute and a method for
-each method of the Franca interface. In order to send broadcasts the generated code of the super
-class ```<Interface>AbstractProvider``` can be used.
+The provider class must either extend the generated class `Default<Interface>Provider` or
+alternatively at least its super class ```<Interface>AbstractProvider```.
+
+In the latter case it must as well implement getter and / or setter methods itself for each Franca
+attribute (where required). The class `Default<Interface>Provider` already includes default
+implementations of getter and setter methods (where required).
+
+In both cases it must implement a method for each method of the Franca interface. In order to send
+broadcasts the generated code of the super class ```<Interface>AbstractProvider``` can be used.
+
+If the value of a notifiable attribute gets changed directly inside the implementation of a method
+or (non-default) setter, the `<Attribute>Changed(<Attribute>)` method needs to be called in order
+to inform subscribers about the value change.
 
 ```java
 package myPackage;

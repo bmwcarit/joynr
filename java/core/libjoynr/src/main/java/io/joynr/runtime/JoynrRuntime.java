@@ -21,7 +21,6 @@ package io.joynr.runtime;
 
 import java.util.Set;
 
-import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import joynr.types.ProviderQos;
@@ -31,21 +30,6 @@ import joynr.types.ProviderQos;
  *
  */
 public interface JoynrRuntime {
-
-    /**
-     * Registers a provider in the joynr framework
-     *
-     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.runtime.JoynrRuntime#registerProvider(String, Object, ProviderQos)} instead.
-     * @param domain
-     *            The domain the provider should be registered for. Has to be identical at the client to be able to find
-     *            the provider.
-     * @param provider
-     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
-     * @return Returns a Future which can be used to check the registration status.
-     */
-    @Deprecated
-    Future<Void> registerProvider(String domain, AbstractJoynrProvider provider);
-
     /**
      * Registers a provider in the joynr framework
      *

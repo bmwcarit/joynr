@@ -1,3 +1,29 @@
+#joynr 0.23.0
+
+## API relevant changes
+
+* **[JEE]** Providers are no longer deregistered automatically when the application is shutdown.
+* **[C++]** Proxy builder returns a std::unique_ptr to the created proxy instead of a raw pointer.
+* **[C++]** Joynr runtime returns a std::unique_ptr to a created proxy builder instead of a raw pointer.
+* **[C++]** Created joynr runtime is returned as a std::unique_ptr.
+* **[All]** Introduce MulticastSubscriptionQos for non selective broadcasts.
+* **[All]** Removed deprecated time related APIs from `SubscriptionQos`, `PeriodicSubscriptionQos`,
+  `OnChangeSubscriptionQos`, `OnChangeWithKeepAliveSubscriptionQos`,
+  `HeartbeatSubscriptionInformation`, `DiscoveryQos`
+* **[JS]** Removed deprecated `capabilities` member from runtimes
+* **[JS]** Removed deprecated `registerCapability`, `unregisterCapability` methods from
+  `CapabilitiesRegistrar`
+* **[C++, Java]** Removed deprecated `providerQos` attribute from provider and related
+  `registerProvider` API (without `providerQos` parameter) from `JoynrRuntime`
+* **[Java]** Removed deprecated `CAPABILITYDIRECTORYURL` from provisioning
+* **[All]** Removed deprecated `outputHeaderPath` member from AbstractJoynGeneratorMojo
+* **[C++]** createRuntimeAsync error callback exception parameter is now a const reference.
+* **[C++]** Removed method `setCached()` from ProxyBuilder
+* **[C++]** Removed protected member `cache` from ProxyBase, ProxyFactory
+
+## Other changes
+* **[C++]** fix lifetime issue in JoynrMessagingConnector
+
 #joynr 0.22.4
 
 ## API relevant changes

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -334,7 +334,7 @@ const int LocalCapabilitiesDirectoryTest::TIMEOUT(2000);
 
 TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient)
 {
-    EXPECT_CALL(*capabilitiesClient, add(An<const std::vector<types::GlobalDiscoveryEntry>&>()))
+    EXPECT_CALL(*capabilitiesClient, add(An<const types::GlobalDiscoveryEntry&>(),_,_))
             .Times(1);
     joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry entry(providerVersion,
@@ -357,7 +357,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
                            const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>>(),
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(1);
     joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry entry(providerVersion,
                                        DOMAIN_1_NAME,
@@ -381,7 +381,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient)
                                                     discoveryEntries)>>(),
                        A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
     joynr::types::Version providerVersion(47, 11);
@@ -561,10 +561,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries)
 TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIfTheyAreMerged)
 {
 
-    std::vector<types::GlobalDiscoveryEntry> firstDiscoveryEntryList;
-    std::vector<types::GlobalDiscoveryEntry> secondDiscoveryEntryList;
     types::ProviderQos qos;
     joynr::types::Version providerVersion(47, 11);
+
     types::GlobalDiscoveryEntry globalDiscoveryEntryInfo1(providerVersion,
                                                           DOMAIN_1_NAME,
                                                           INTERFACE_1_NAME,
@@ -574,22 +573,21 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                                                           expiryDateMs,
                                                           PUBLIC_KEY_ID,
                                                           LOCAL_ADDRESS);
-    firstDiscoveryEntryList.push_back(globalDiscoveryEntryInfo1);
-    secondDiscoveryEntryList.push_back(globalDiscoveryEntryInfo1);
-    secondDiscoveryEntryList.push_back(types::GlobalDiscoveryEntry(providerVersion,
-                                                                   DOMAIN_2_NAME,
-                                                                   INTERFACE_1_NAME,
-                                                                   dummyParticipantId2,
-                                                                   qos,
-                                                                   lastSeenDateMs,
-                                                                   expiryDateMs,
-                                                                   PUBLIC_KEY_ID,
-                                                                   LOCAL_ADDRESS));
+
+    types::GlobalDiscoveryEntry globalDiscoveryEntryInfo2(providerVersion,
+                                                          DOMAIN_2_NAME,
+                                                          INTERFACE_1_NAME,
+                                                          dummyParticipantId2,
+                                                          qos,
+                                                          lastSeenDateMs,
+                                                          expiryDateMs,
+                                                          PUBLIC_KEY_ID,
+                                                          LOCAL_ADDRESS);
 
     {
         InSequence inSequence;
-        EXPECT_CALL(*capabilitiesClient, add(firstDiscoveryEntryList)).Times(1);
-        EXPECT_CALL(*capabilitiesClient, add(secondDiscoveryEntryList)).Times(1);
+        EXPECT_CALL(*capabilitiesClient, add(globalDiscoveryEntryInfo1,_,_)).Times(1);
+        EXPECT_CALL(*capabilitiesClient, add(globalDiscoveryEntryInfo2,_,_)).Times(1);
     }
 
     joynr::types::DiscoveryEntry entry(providerVersion,
@@ -612,12 +610,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
     localCapabilitiesDirectory->add(entry2);
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoesNotDuplicate)
+TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilitiesMultipleTimesDoesNotDuplicate)
 {
     types::ProviderQos qos;
     int exceptionCounter = 0;
-    // simulate capabilities client lost connection to the directory
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(3).WillRepeatedly(
+    // simulate capabilities client cannot connect to global directory
+    EXPECT_CALL(*capabilitiesClient, add(_, _, _)).Times(3).WillRepeatedly(
             InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
 
     joynr::types::Version providerVersion(47, 11);
@@ -636,6 +634,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
             exceptionCounter++;
         }
     }
+
     EXPECT_EQ(3, exceptionCounter);
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
     std::vector<types::DiscoveryEntry> capabilities = callback->getResults(100);
@@ -692,7 +691,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
     discoveryQos.setCacheMaxAge(5000);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
 
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
     joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry entry(providerVersion,
                                        DOMAIN_1_NAME,
@@ -736,7 +735,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
@@ -782,7 +781,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
     localCapabilitiesDirectory->add(entry);
     // localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
@@ -842,7 +841,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             DoAll(AcquireSemaphore(&semaphore),
@@ -946,7 +945,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
 
@@ -1014,7 +1013,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
@@ -1047,7 +1046,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
@@ -1115,7 +1114,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
@@ -1147,7 +1146,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsLocalEntries_
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
@@ -1236,7 +1235,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
     discoveryQos.setCacheMaxAge(5000);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
 
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
     joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry entry(providerVersion,
                                        DOMAIN_1_NAME,
@@ -1288,7 +1287,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
     discoveryQos.setCacheMaxAge(5000);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
 
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(1);
     joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry entry(providerVersion,
                                        DOMAIN_1_NAME,
@@ -1319,7 +1318,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     discoveryQos.setCacheMaxAge(100);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
 
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(1);
     joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry entry(providerVersion,
                                        DOMAIN_1_NAME,
@@ -1369,7 +1368,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
 
     // JoynrTimeOutException timeoutException;
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(1);
     joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry entry(providerVersion,
                                        DOMAIN_1_NAME,
@@ -1588,7 +1587,7 @@ TEST_P(LocalCapabilitiesDirectoryPurgeTest, purgeTimedOutEntries)
     discoveryQos.setCacheMaxAge(5000);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
 
-    EXPECT_CALL(*capabilitiesClient, add(_))
+    EXPECT_CALL(*capabilitiesClient, add(_,_,_))
             .Times(GetParam() == joynr::types::ProviderScope::LOCAL ? 0 : 1);
     joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry entry(providerVersion,

@@ -22,11 +22,11 @@
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "joynr/Util.h"
-#include "joynr/Semaphore.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "joynr/serializer/Serializer.h"
-#include "joynr/SingleThreadedIOService.h"
 #include "joynr/WebSocketMulticastAddressCalculator.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/SingleThreadedIOService.h"
 
 namespace joynr
 {
@@ -36,7 +36,8 @@ INIT_LOGGER(LibJoynrWebSocketRuntime);
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings)
         : LibJoynrRuntime(std::move(settings)),
           wsSettings(*this->settings),
-          websocket(new WebSocketPpClient(wsSettings, singleThreadIOService->getIOService()))
+          websocket(std::make_shared<WebSocketPpClient>(wsSettings,
+                                                        singleThreadIOService->getIOService()))
 {
 }
 
@@ -119,18 +120,13 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
 }
 
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
-        const std::shared_ptr<MessageRouter>& messageRouter)
+        std::shared_ptr<MessageRouter> messageRouter)
 {
     auto wsLibJoynrMessagingSkeleton =
-            std::make_shared<WebSocketLibJoynrMessagingSkeleton>(messageRouter);
+            std::make_shared<WebSocketLibJoynrMessagingSkeleton>(std::move(messageRouter));
     websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](const std::string& msg) {
         wsLibJoynrMessagingSkeleton->onTextMessageReceived(msg);
     });
-}
-
-void LibJoynrWebSocketRuntime::onWebSocketError(const std::string& errorMessage)
-{
-    JOYNR_LOG_ERROR(logger, "WebSocket error occurred: {}", errorMessage);
 }
 
 } // namespace joynr

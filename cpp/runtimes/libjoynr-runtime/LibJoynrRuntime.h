@@ -59,12 +59,12 @@ public:
     void unregisterProvider(const std::string& participantId) override;
 
 protected:
-    SubscriptionManager* subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
     InProcessConnectorFactory* inProcessConnectorFactory;
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     std::shared_ptr<IMessaging> joynrMessagingSendStub;
-    JoynrMessageSender* joynrMessageSender;
+    std::shared_ptr<JoynrMessageSender> joynrMessageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
 
@@ -75,8 +75,7 @@ protected:
 
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
 
-    virtual void startLibJoynrMessagingSkeleton(
-            const std::shared_ptr<MessageRouter>& messageRouter) = 0;
+    virtual void startLibJoynrMessagingSkeleton(std::shared_ptr<MessageRouter> messageRouter) = 0;
 
     void init(std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,

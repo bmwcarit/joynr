@@ -84,8 +84,8 @@ public:
 	 */
 	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
 				 Request& request,
-				 std::function<void (BaseReply&& reply)> onSuccess,
-				 std::function<void (const std::shared_ptr<exceptions::JoynrException>& exception)> onError) override;
+				 std::function<void (BaseReply&& reply)>&& onSuccess,
+				 std::function<void (const std::shared_ptr<exceptions::JoynrException>& exception)>&& onError) override;
 
 	/**
 	 * @brief Implements IRequestInterpreter.execute().

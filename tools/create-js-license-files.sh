@@ -36,7 +36,7 @@ function removeVersion
 while [ "$1" != "" ]; do
     case $1 in
         --joynrsourcedir )       shift
-                                 JOYNR_SOURCE_DIR=$1
+                                 JOYNR_SOURCE_DIR=${1%/}/
                                  ;;
         --version )              shift
                                  VERSION=$1
@@ -44,9 +44,17 @@ while [ "$1" != "" ]; do
         --setup )                shift
                                  SETUP=ON
                                  ;;
+        * )                      usage
+                                 exit 1
     esac
     shift
 done
+
+if [ "$JOYNR_SOURCE_DIR" == "" ] || [ "$VERSION" == "" ]
+then
+    usage
+    exit 1
+fi
 
 if [ "$SETUP" == "ON" ]
 then

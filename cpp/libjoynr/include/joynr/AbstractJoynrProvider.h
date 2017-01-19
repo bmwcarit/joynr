@@ -53,17 +53,6 @@ public:
 
     // --- Interface to be implemented by Providers ---
 
-    /**
-     * @deprecated
-     * @see JoynrRuntime#registerProvider
-     *
-     * @brief Get the provider quality of service settings
-     * @return the provider quality of service settings
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use JoynrRuntime::registerProvider "
-                 "instead.")]] types::ProviderQos
-    getProviderQos() const override;
-
     // --- Support for listening to onChange events ---
 
     /**
@@ -169,15 +158,6 @@ protected:
             listener->broadcastOccurred(broadcastName, partitions, values...);
         }
     }
-
-    /**
-     * @deprecated
-     * @see JoynrRuntime#registerProvider
-     *
-     * @brief The provider quality settings
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use JoynrRuntime::registerProvider "
-                 "instead.")]] types::ProviderQos providerQos;
 
     /**
      * @brief Returns a call context object including meta information (such as calling

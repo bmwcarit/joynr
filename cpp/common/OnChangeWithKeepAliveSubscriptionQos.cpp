@@ -35,11 +35,6 @@ const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL_MS()
     return maxMaxInterval;
 }
 
-const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL()
-{
-    return MAX_MAX_INTERVAL_MS();
-}
-
 const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::DEFAULT_MAX_INTERVAL_MS()
 {
     static std::int64_t defaultMaxInterval = 60000UL;
@@ -52,19 +47,9 @@ const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_ALERT_AFTER_INTERV
     return maxAlertAfterInterval;
 }
 
-const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
-{
-    return MAX_ALERT_AFTER_INTERVAL_MS();
-}
-
 const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL_MS()
 {
     return NO_ALERT_AFTER_INTERVAL();
-}
-
-const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
-{
-    return DEFAULT_ALERT_AFTER_INTERVAL_MS();
 }
 
 const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
@@ -81,11 +66,12 @@ OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos()
 }
 
 OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
-        const std::int64_t& validityMs,
-        const std::int64_t& minIntervalMs,
-        const std::int64_t& maxIntervalMs,
-        const std::int64_t& alertAfterInterval)
-        : OnChangeSubscriptionQos(validityMs, minIntervalMs),
+        const std::int64_t validityMs,
+        const std::int64_t publicationTtlMs,
+        const std::int64_t minIntervalMs,
+        const std::int64_t maxIntervalMs,
+        const std::int64_t alertAfterInterval)
+        : OnChangeSubscriptionQos(validityMs, publicationTtlMs, minIntervalMs),
           maxIntervalMs(DEFAULT_MAX_INTERVAL_MS()),
           alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {
@@ -146,19 +132,9 @@ void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(const std::int64_t& 
     }
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setMaxInterval(const std::int64_t& maxIntervalMs)
-{
-    setMaxIntervalMs(maxIntervalMs);
-}
-
 std::int64_t OnChangeWithKeepAliveSubscriptionQos::getMaxIntervalMs() const
 {
     return this->maxIntervalMs;
-}
-
-std::int64_t OnChangeWithKeepAliveSubscriptionQos::getMaxInterval() const
-{
-    return getMaxIntervalMs();
 }
 
 void OnChangeWithKeepAliveSubscriptionQos::setMinIntervalMs(const std::int64_t& minIntervalMs)
@@ -166,11 +142,6 @@ void OnChangeWithKeepAliveSubscriptionQos::setMinIntervalMs(const std::int64_t& 
     OnChangeSubscriptionQos::setMinIntervalMs(minIntervalMs);
     // corrects the maxinterval if minIntervalMs changes
     setMaxIntervalMs(this->maxIntervalMs);
-}
-
-void OnChangeWithKeepAliveSubscriptionQos::setMinInterval(const std::int64_t& minIntervalMs)
-{
-    setMinIntervalMs(minIntervalMs);
 }
 
 void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterIntervalMs(
@@ -199,20 +170,9 @@ void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterIntervalMs(
     this->alertAfterIntervalMs = alertAfterIntervalMs;
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterInterval(
-        const std::int64_t& alertAfterIntervalMs)
-{
-    setAlertAfterIntervalMs(alertAfterIntervalMs);
-}
-
 std::int64_t OnChangeWithKeepAliveSubscriptionQos::getAlertAfterIntervalMs() const
 {
     return alertAfterIntervalMs;
-}
-
-std::int64_t OnChangeWithKeepAliveSubscriptionQos::getAlertAfterInterval() const
-{
-    return getAlertAfterIntervalMs();
 }
 
 void OnChangeWithKeepAliveSubscriptionQos::clearAlertAfterInterval()
