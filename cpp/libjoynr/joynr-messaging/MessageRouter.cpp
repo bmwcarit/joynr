@@ -45,6 +45,8 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "cluster-controller/access-control/IAccessController.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -110,6 +112,7 @@ MessageRouter::MessageRouter(
           securityManager(std::move(securityManager)),
           parentResolveMutex(),
           routingTableFileName(),
+          multicastReceveiverDirectoryFilename(),
           messageQueueCleanerTimer(ioService),
           messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000))
 {
@@ -618,6 +621,81 @@ void MessageRouter::saveRoutingTable()
     }
 }
 
+void MessageRouter::saveMulticastReceiverDirectory() const
+{
+    if (multicastReceveiverDirectoryFilename.empty()) {
+        JOYNR_LOG_INFO(logger, "Did not save multicast receiver directory: No filename specified");
+        return;
+    }
+
+    try {
+        joynr::util::saveStringToFile(
+                multicastReceveiverDirectoryFilename,
+                joynr::serializer::serializeToJson(multicastReceiverDirectory));
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_INFO(logger, ex.what());
+    }
+}
+
+void MessageRouter::loadMulticastReceiverDirectory(std::string filename)
+{
+    multicastReceveiverDirectoryFilename = std::move(filename);
+
+    try {
+        joynr::serializer::deserializeFromJson(
+                multicastReceiverDirectory,
+                joynr::util::loadStringFromFile(multicastReceveiverDirectoryFilename));
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+        return;
+    } catch (const std::invalid_argument& ex) {
+        JOYNR_LOG_ERROR(logger, "Deserialization from JSON failed: {}", ex.what());
+        return;
+    }
+
+    reestablishMulticastSubscriptions();
+}
+
+void MessageRouter::reestablishMulticastSubscriptions()
+{
+    for (const auto& multicastId : multicastReceiverDirectory.getMulticastIds()) {
+        std::string providerParticipantId;
+
+        try {
+            providerParticipantId = util::extractParticipantIdFromMulticastId(multicastId);
+        } catch (std::invalid_argument& ex) {
+            JOYNR_LOG_ERROR(logger,
+                            "Persisted multicast receivers: Invalid multicast ID found {}",
+                            multicastId);
+            continue;
+        }
+
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress =
+                routingTable.lookup(providerParticipantId);
+
+        if (!providerAddress) {
+            JOYNR_LOG_WARN(
+                    logger,
+                    "Persisted multicast receivers: No provider address found for multicast ID {}",
+                    multicastId);
+            continue;
+        }
+
+        std::shared_ptr<IMessagingMulticastSubscriber> multicastSubscriber =
+                multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
+
+        if (!multicastSubscriber) {
+            JOYNR_LOG_WARN(logger,
+                           "Persisted multicast receivers: No multicast subscriber found for "
+                           "multicast ID {}",
+                           multicastId);
+            continue;
+        }
+
+        multicastSubscriber->registerMulticastSubscription(multicastId);
+    }
+}
+
 void MessageRouter::addToRoutingTable(
         std::string participantId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
@@ -732,6 +810,11 @@ void MessageRouter::addMulticastReceiver(
                         "added multicast receiver={} for multicastId={}",
                         subscriberParticipantId,
                         multicastId);
+
+        if (!isChildMessageRouter()) {
+            saveMulticastReceiverDirectory();
+        }
+
         onSuccess();
     };
     std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
@@ -803,6 +886,10 @@ void MessageRouter::removeMulticastReceiver(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+
+    if (!isChildMessageRouter()) {
+        saveMulticastReceiverDirectory();
+    }
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {

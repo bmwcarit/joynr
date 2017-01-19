@@ -28,7 +28,7 @@ import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-import joynr.OnChangeSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 
 public class MulticastSubscribeInvocation extends SubscriptionInvocation {
 
@@ -62,8 +62,8 @@ public class MulticastSubscribeInvocation extends SubscriptionInvocation {
     }
 
     @Override
-    public OnChangeSubscriptionQos getQos() {
-        return (OnChangeSubscriptionQos) super.getQos();
+    public MulticastSubscriptionQos getQos() {
+        return (MulticastSubscriptionQos) super.getQos();
     }
 
     public BroadcastSubscriptionListener getListener() {

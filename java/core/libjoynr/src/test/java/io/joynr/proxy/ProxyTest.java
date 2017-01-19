@@ -80,6 +80,7 @@ import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.SystemServicesSettings;
+import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
@@ -502,12 +503,8 @@ public class ProxyTest {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
         String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
-        long publicationTtl_ms = 5000;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
-                                                                               .setExpiryDateMs(expiryDate)
-                                                                               .setPublicationTtlMs(publicationTtl_ms);
+        MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos().setExpiryDateMs(expiryDate);
 
         proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class), subscriptionQos);
 
@@ -562,12 +559,8 @@ public class ProxyTest {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
         String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
-        long publicationTtl_ms = 5000;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
-                                                                               .setExpiryDateMs(expiryDate)
-                                                                               .setPublicationTtlMs(publicationTtl_ms);
+        MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos().setExpiryDateMs(expiryDate);
 
         Future<String> subscriptionId = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
                                                                                  subscriptionQos);
@@ -596,12 +589,8 @@ public class ProxyTest {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
         String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
-        long publicationTtl_ms = 5000;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
-                                                                               .setExpiryDateMs(expiryDate)
-                                                                               .setPublicationTtlMs(publicationTtl_ms);
+        MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos().setExpiryDateMs(expiryDate);
 
         String subscriptionId = UUID.randomUUID().toString();
         Future<String> subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(subscriptionId,

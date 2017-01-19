@@ -86,7 +86,8 @@ bool InProcessDispatcher::containsRequestCaller(const std::string& participantId
     return requestCallerDirectory.contains(participantId);
 }
 
-void InProcessDispatcher::registerSubscriptionManager(ISubscriptionManager* subscriptionManager)
+void InProcessDispatcher::registerSubscriptionManager(
+        std::shared_ptr<ISubscriptionManager> subscriptionManager)
 {
     this->subscriptionManager = subscriptionManager;
 }

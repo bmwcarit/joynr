@@ -43,6 +43,7 @@ define("libjoynr-deps", [
     "joynr/messaging/MessagingQos",
     "joynr/proxy/PeriodicSubscriptionQos",
     "joynr/proxy/OnChangeSubscriptionQos",
+    "joynr/proxy/MulticastSubscriptionQos",
     "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
     "joynr/proxy/BroadcastFilterParameters",
     "joynr/types/ArbitrationStrategyCollection",

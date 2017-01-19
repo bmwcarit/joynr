@@ -22,7 +22,6 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/IClientCache.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
@@ -45,8 +44,6 @@ public:
     std::unique_ptr<T> create(const std::string& domain,
                               const std::string proxyParticipantId,
                               const MessagingQos& qosSettings,
-                              IClientCache* cache,
-                              bool cached,
                               bool createInProcessConnector,
                               const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
     {
@@ -55,7 +52,7 @@ public:
                     proxyParticipantId, providerDiscoveryEntry.getParticipantId());
         } else {
             return joynrMessagingConnectorFactory->create<T>(
-                    domain, proxyParticipantId, qosSettings, cache, cached, providerDiscoveryEntry);
+                    domain, proxyParticipantId, qosSettings, providerDiscoveryEntry);
         }
     }
 

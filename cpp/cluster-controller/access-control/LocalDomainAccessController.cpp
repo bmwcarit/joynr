@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@
 
 #include "LocalDomainAccessController.h"
 
-#include <cassert>
 #include <atomic>
+#include <cassert>
 #include <tuple>
 #include <regex>
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 
 namespace joynr
 {
@@ -36,13 +36,9 @@ using namespace infrastructure::DacTypes;
 
 INIT_LOGGER(LocalDomainAccessController);
 
-std::chrono::milliseconds LocalDomainAccessController::broadcastMinInterval =
-        std::chrono::seconds(1);
 // 10 years
 std::chrono::milliseconds LocalDomainAccessController::broadcastSubscriptionValidity =
         std::chrono::hours(24) * 365 * 10;
-std::chrono::milliseconds LocalDomainAccessController::broadcastPublicationTtl =
-        std::chrono::seconds(5);
 
 //--- Declarations of nested classes -------------------------------------------
 
@@ -757,16 +753,14 @@ std::string LocalDomainAccessController::sanitizeForPartition(const std::string&
 std::shared_ptr<Future<std::string>> LocalDomainAccessController::subscribeForDreChange(
         const std::string& userId)
 {
-    auto broadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
-    broadcastSubscriptionQos->setMinIntervalMs(broadcastMinInterval.count());
-    broadcastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
-    broadcastSubscriptionQos->setPublicationTtlMs(broadcastPublicationTtl.count());
+    auto multicastSubscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    multicastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
     std::vector<std::string> partitions = {sanitizeForPartition(userId)};
 
     return globalDomainAccessControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
             std::static_pointer_cast<ISubscriptionListener<ChangeType::Enum, DomainRoleEntry>>(
                     domainRoleEntryChangedBroadcastListener),
-            broadcastSubscriptionQos,
+            multicastSubscriptionQos,
             partitions);
 }
 
@@ -774,11 +768,8 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
         const std::string& domain,
         const std::string& interfaceName)
 {
-    auto broadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
-
-    broadcastSubscriptionQos->setMinIntervalMs(broadcastMinInterval.count());
-    broadcastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
-    broadcastSubscriptionQos->setPublicationTtlMs(broadcastPublicationTtl.count());
+    auto multicastSubscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    multicastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
 
     AceSubscription subscriptionIds;
 
@@ -790,7 +781,7 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
                     std::static_pointer_cast<
                             ISubscriptionListener<ChangeType::Enum, MasterAccessControlEntry>>(
                             masterAccessControlEntryChangedBroadcastListener),
-                    broadcastSubscriptionQos,
+                    multicastSubscriptionQos,
                     partitions);
 
     subscriptionIds.mediatorAceSubscriptionIdFuture =
@@ -800,7 +791,7 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
                                     ISubscriptionListener<ChangeType::Enum,
                                                           MasterAccessControlEntry>>(
                                     mediatorAccessControlEntryChangedBroadcastListener),
-                            broadcastSubscriptionQos,
+                            multicastSubscriptionQos,
                             partitions);
 
     subscriptionIds.ownerAceSubscriptionIdFuture =
@@ -808,7 +799,7 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
                     std::static_pointer_cast<
                             ISubscriptionListener<ChangeType::Enum, OwnerAccessControlEntry>>(
                             ownerAccessControlEntryChangedBroadcastListener),
-                    broadcastSubscriptionQos,
+                    multicastSubscriptionQos,
                     partitions);
 
     return subscriptionIds;

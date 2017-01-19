@@ -60,26 +60,6 @@ public:
      * @param domain The domain to register the provider on. Has to be
      * identical at the client to be able to find the provider.
      * @param provider The provider instance to register.
-     * @return The globally unique participant ID of the provider. It is assigned by the joynr
-     * communication framework.
-     */
-    template <class TIntfProvider>
-    std::string registerProvider(const std::string& domain, std::shared_ptr<TIntfProvider> provider)
-    {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
-        joynr::types::ProviderQos providerQos = provider->getProviderQos();
-#pragma GCC diagnostic pop
-        return registerProvider<TIntfProvider>(domain, provider, providerQos);
-    }
-
-    /**
-     * @brief Registers a provider with the joynr communication framework.
-     * @tparam TIntfProvider The interface class of the provider to register. The corresponding
-     * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
-     * @param domain The domain to register the provider on. Has to be
-     * identical at the client to be able to find the provider.
-     * @param provider The provider instance to register.
      * @param providerQos The qos associated with the registered provider.
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
@@ -134,26 +114,23 @@ public:
      * parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProxy".
      * @param domain The domain to connect this proxy to.
      * @return Pointer to the proxybuilder<T> instance
-     * @return A proxy builder object that can be used to create proxies. The caller takes
-     * ownership of the returned object and must take care to clean up resources properly.
+     * @return A proxy builder object that can be used to create proxies.
      */
     template <class TIntfProxy>
-    ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
+    std::unique_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
         if (!proxyFactory) {
             throw exceptions::JoynrRuntimeException(
                     "Exception in JoynrRuntime: Creating a proxy before "
                     "startMessaging was called is not yet supported.");
         }
-        ProxyBuilder<TIntfProxy>* builder =
-                new ProxyBuilder<TIntfProxy>(*proxyFactory,
-                                             requestCallerDirectory,
-                                             *discoveryProxy,
-                                             domain,
-                                             dispatcherAddress,
-                                             messageRouter,
-                                             messagingSettings.getMaximumTtlMs());
-        return builder;
+        return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
+                                                          requestCallerDirectory,
+                                                          *discoveryProxy,
+                                                          domain,
+                                                          dispatcherAddress,
+                                                          messageRouter,
+                                                          messagingSettings.getMaximumTtlMs());
     }
 
     /**
@@ -162,15 +139,16 @@ public:
      * @param pathToMessagingSettings
      * @return pointer to a JoynrRuntime instance
      */
-    static JoynrRuntime* createRuntime(const std::string& pathToLibjoynrSettings,
-                                       const std::string& pathToMessagingSettings = "");
+    static std::unique_ptr<JoynrRuntime> createRuntime(
+            const std::string& pathToLibjoynrSettings,
+            const std::string& pathToMessagingSettings = "");
 
     /**
      * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param settings settings object
      * @return pointer to a JoynrRuntime instance
      */
-    static JoynrRuntime* createRuntime(std::unique_ptr<Settings> settings);
+    static std::unique_ptr<JoynrRuntime> createRuntime(std::unique_ptr<Settings> settings);
 
     /**
      * @brief Create a JoynrRuntime object. The call does not block. A callback
@@ -181,12 +159,13 @@ public:
      * @param pathToMessagingSettings
      * @return pointer to a JoynrRuntime instance
      */
-    static void createRuntimeAsync(const std::string& pathToLibjoynrSettings,
-                                   std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
-                                           runtimeCreatedCallback,
-                                   std::function<void(exceptions::JoynrRuntimeException& exception)>
-                                           runtimeCreationErrorCallback,
-                                   const std::string& pathToMessagingSettings = "");
+    static void createRuntimeAsync(
+            const std::string& pathToLibjoynrSettings,
+            std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
+                    runtimeCreatedCallback,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)>
+                    runtimeCreationErrorCallback,
+            const std::string& pathToMessagingSettings = "");
 
     /**
      * @brief Create a JoynrRuntime object. The call does not block. A callback
@@ -196,11 +175,12 @@ public:
      * @param runtimeCreationErrorCallback Is called when an error occurs
      * @return pointer to a JoynrRuntime instance
      */
-    static void createRuntimeAsync(std::unique_ptr<Settings> settings,
-                                   std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
-                                           runtimeCreatedCallback,
-                                   std::function<void(exceptions::JoynrRuntimeException& exception)>
-                                           runtimeCreationErrorCallback);
+    static void createRuntimeAsync(
+            std::unique_ptr<Settings> settings,
+            std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
+                    runtimeCreatedCallback,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)>
+                    runtimeCreationErrorCallback);
 
 protected:
     // NOTE: The implementation of the constructor and destructor must be inside this

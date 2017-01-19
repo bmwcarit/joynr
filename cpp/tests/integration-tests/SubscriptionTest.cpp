@@ -74,8 +74,8 @@ public:
         proxyParticipantId("proxyParticipantId"),
         requestReplyId("requestReplyId"),
         messageFactory(),
-        messageSender(std::make_unique<JoynrMessageSender>(mockMessageRouter)),
-        dispatcher(messageSender.get(), singleThreadedIOService.getIOService()),
+        messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
+        dispatcher(messageSender, singleThreadedIOService.getIOService()),
         subscriptionManager(nullptr),
         provider(new MockTestProvider),
         requestCaller(new joynr::tests::testRequestCaller(provider))
@@ -85,7 +85,7 @@ public:
 
     void SetUp(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
-        subscriptionManager = new SubscriptionManager(singleThreadedIOService.getIOService(), mockMessageRouter);
+        subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadedIOService.getIOService(), mockMessageRouter);
         publicationManager = new PublicationManager(singleThreadedIOService.getIOService(), messageSender.get());
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
@@ -111,9 +111,9 @@ protected:
     std::string requestReplyId;
 
     JoynrMessageFactory messageFactory;
-    std::unique_ptr<JoynrMessageSender> messageSender;
+    std::shared_ptr<JoynrMessageSender> messageSender;
     Dispatcher dispatcher;
-    SubscriptionManager * subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::shared_ptr<MockTestProvider> provider;
     PublicationManager* publicationManager;
     std::shared_ptr<joynr::tests::testRequestCaller> requestCaller;
@@ -140,6 +140,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     std::string attributeName = "Location";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
+                1000, // publication ttl
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
@@ -184,6 +185,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     std::string attributeName = "Location";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
+                1000, // publication ttl
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
@@ -197,7 +199,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -240,6 +242,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     std::string attributeName = "testEnum";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
+                1000, // publication ttl
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
@@ -252,7 +255,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     subscriptionPublication.setResponse(tests::testTypes::TestEnum::ZERO);
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -297,6 +300,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     std::string attributeName = "Location";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 500, // validity_ms
+                1000, // publication ttl
                 1000, // minInterval_ms
                 2000, // maxInterval_ms
                 1000 // alertInterval_ms
@@ -327,6 +331,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     std::string subscriptionId = "SubscriptionID";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 800, // validity_ms
+                1000, // publication ttl
                 0 // minInterval_ms
     );
 
@@ -402,6 +407,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 1200, // validity_ms
+                1000, // publication ttl
                 10, // minInterval_ms
                 100, // maxInterval_ms
                 1100 // alertInterval_ms
@@ -449,6 +455,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     std::string attributeName = "Location";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 1200, // validity_ms
+                1000, // publication ttl
                 10, // minInterval_ms
                 500, // maxInterval_ms
                 1100 // alertInterval_ms

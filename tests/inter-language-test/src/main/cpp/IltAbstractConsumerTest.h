@@ -19,6 +19,7 @@
 #ifndef ILTABSTRACTCONSUMERTEST_H
 #define ILTABSTRACTCONSUMERTEST_H
 #include <cstdlib>
+#include <memory>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -67,7 +68,6 @@ public:
 
         // Build a proxy
         testInterfaceProxy = proxyBuilder->setMessagingQos(joynr::MessagingQos(qosMsgTtl))
-                                     ->setCached(false)
                                      ->setDiscoveryQos(discoveryQos)
                                      ->build();
 
@@ -78,18 +78,9 @@ public:
 
     static void TearDownTestCase()
     {
-        if (testInterfaceProxy) {
-            delete testInterfaceProxy;
-            testInterfaceProxy = nullptr;
-        }
-        if (proxyBuilder) {
-            delete proxyBuilder;
-            proxyBuilder = nullptr;
-        }
-        if (runtime) {
-            delete runtime;
-            runtime = nullptr;
-        }
+        testInterfaceProxy.reset();
+        proxyBuilder.reset();
+        runtime.reset();
     }
 
 protected:
@@ -104,9 +95,10 @@ protected:
         }
     }
 
-    static joynr::interlanguagetest::TestInterfaceProxy* testInterfaceProxy;
-    static joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>* proxyBuilder;
-    static joynr::JoynrRuntime* runtime;
+    static std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy> testInterfaceProxy;
+    static std::unique_ptr<joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>>
+            proxyBuilder;
+    static std::unique_ptr<joynr::JoynrRuntime> runtime;
     static std::string providerDomain;
     static std::string programName;
 
@@ -125,15 +117,15 @@ template <typename T>
 INIT_LOGGER(IltAbstractConsumerTest<T>);
 
 template <typename T>
-joynr::interlanguagetest::TestInterfaceProxy* IltAbstractConsumerTest<T>::testInterfaceProxy =
-        nullptr;
+std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy>
+        IltAbstractConsumerTest<T>::testInterfaceProxy;
 
 template <typename T>
-ProxyBuilder<interlanguagetest::TestInterfaceProxy>* IltAbstractConsumerTest<T>::proxyBuilder =
-        nullptr;
+std::unique_ptr<ProxyBuilder<interlanguagetest::TestInterfaceProxy>>
+        IltAbstractConsumerTest<T>::proxyBuilder;
 
 template <typename T>
-JoynrRuntime* IltAbstractConsumerTest<T>::runtime = nullptr;
+std::unique_ptr<JoynrRuntime> IltAbstractConsumerTest<T>::runtime;
 
 template <typename T>
 std::string IltAbstractConsumerTest<T>::providerDomain = "joynr-inter-language-test-domain";

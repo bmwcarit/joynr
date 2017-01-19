@@ -28,13 +28,6 @@ import io.joynr.runtime.JoynrRuntime;
 import joynr.types.ProviderQos;
 
 public class TestRuntime implements JoynrRuntime {
-
-    @Deprecated
-    @Override
-    public Future<Void> registerProvider(String domain, AbstractJoynrProvider provider) {
-        return null;
-    }
-
     @Override
     public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         return null;

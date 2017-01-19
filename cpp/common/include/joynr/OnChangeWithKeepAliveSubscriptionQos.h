@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,15 +73,16 @@ public:
      * will be called if no publications were received.
      *
      * @see SubscriptionQos#setValidityMs
+     * @see UnicastSubscriptionQos#setPublicationTtlMs
      * @see OnChangeSubscriptionQos#setMinIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterIntervalMs
-     * @see SubscriptionQos#setPublicationTtlMs
      */
-    OnChangeWithKeepAliveSubscriptionQos(const std::int64_t& validityMs,
-                                         const std::int64_t& minIntervalMs,
-                                         const std::int64_t& maxIntervalMs,
-                                         const std::int64_t& alertAfterIntervalMs);
+    OnChangeWithKeepAliveSubscriptionQos(const std::int64_t validityMs,
+                                         const std::int64_t publicationTtlMs,
+                                         const std::int64_t minIntervalMs,
+                                         const std::int64_t maxIntervalMs,
+                                         const std::int64_t alertAfterIntervalMs);
 
     /**
      * @brief Sets minimum interval in milliseconds
@@ -97,14 +98,6 @@ public:
     void setMinIntervalMs(const std::int64_t& minIntervalMs) override;
 
     /**
-     * @deprecated
-     * @see OnChangeWithKeepAliveSubscriptionQos#setMinIntervalMs
-     */
-    [[deprecated(
-            "Will be removed by end of the year 2016. Use setMinIntervalMs instead.")]] virtual void
-    setMinInterval(const std::int64_t& minIntervalMs) override;
-
-    /**
      * @brief Gets the maximum interval in milliseconds
      *
      * The provider will send notifications every maximum interval in milliseconds,
@@ -117,14 +110,6 @@ public:
      *            The publisher will send a notification at least every maxInterval ms.
      */
     virtual std::int64_t getMaxIntervalMs() const;
-
-    /**
-     * @deprecated
-     * @see OnChangeWithKeepAliveSubscriptionQos#getMaxIntervalMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use getMaxIntervalMs "
-                 "instead.")]] virtual std::int64_t
-    getMaxInterval() const;
 
     /**
      * @brief Sets maximum interval in milliseconds
@@ -149,14 +134,6 @@ public:
     virtual void setMaxIntervalMs(const std::int64_t& maxIntervalMs);
 
     /**
-     * @deprecated
-     * @see OnChangeWithKeepAliveSubscriptionQos#setMaxIntervalMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use setMaxIntervalMs "
-                 "instead.")]] virtual void
-    setMaxInterval(const std::int64_t& maxIntervalMs);
-
-    /**
      * @brief Gets the alertAfter interval in milliseconds
      *
      * If no notification was received within the last alertAfter interval, a
@@ -166,14 +143,6 @@ public:
      * publicationMissed will be called if no publications were received)
      */
     virtual std::int64_t getAlertAfterIntervalMs() const;
-
-    /**
-     * @deprecated
-     * @see OnChangeWithKeepAliveSubscriptionQos#getAlertAfterIntervalMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use getAlertAfterIntervalMs "
-                 "instead.")]] virtual std::int64_t
-    getAlertAfterInterval() const;
 
     /**
      * @brief Sets the alertAfter interval in milliseconds
@@ -195,14 +164,6 @@ public:
      * publicationMissed will be called if no publications were received.
      */
     virtual void setAlertAfterIntervalMs(const std::int64_t& alertAfterIntervalMs);
-
-    /**
-     * @deprecated
-     * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterIntervalMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use setAlertAfterIntervalMs "
-                 "instead.")]] virtual void
-    setAlertAfterInterval(const std::int64_t& alertAfterIntervalMs);
 
     /**
      * @brief Resets alert after interval
@@ -240,40 +201,16 @@ public:
     static const std::int64_t& DEFAULT_MAX_INTERVAL_MS();
 
     /**
-     * @deprecated
-     * @see OnChangeWithKeepAliveSubscriptionQos#MAX_MAX_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MAX_MAX_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    MAX_MAX_INTERVAL();
-
-    /**
      * @brief Returns the maximum value for the alertAfter interval in
      * milliseconds: 2 592 000 000 (30 days)
      */
     static const std::int64_t& MAX_ALERT_AFTER_INTERVAL_MS();
 
     /**
-     * @deprecated
-     * @see OnChangeWithKeepAliveSubscriptionQos#MAX_ALERT_AFTER_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MAX_ALERT_AFTER_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    MAX_ALERT_AFTER_INTERVAL();
-
-    /**
      * @brief Returns the default value for the alertAfter interval in
      * milliseconds: 0 (NO_ALERT_AFTER_INTERVAL)
      */
     static const std::int64_t& DEFAULT_ALERT_AFTER_INTERVAL_MS();
-
-    /**
-     * @deprecated
-     * @see OnChangeWithKeepAliveSubscriptionQos#DEFAULT_ALERT_AFTER_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_ALERT_AFTER_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    DEFAULT_ALERT_AFTER_INTERVAL();
 
     /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
     static const std::int64_t& NO_ALERT_AFTER_INTERVAL();
@@ -309,7 +246,7 @@ private:
 
 // TODO register with actual parent or root base class?
 MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::OnChangeWithKeepAliveSubscriptionQos,
-                                 joynr::SubscriptionQos,
+                                 joynr::OnChangeSubscriptionQos,
                                  "joynr.OnChangeWithKeepAliveSubscriptionQos")
 
 #endif // ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H

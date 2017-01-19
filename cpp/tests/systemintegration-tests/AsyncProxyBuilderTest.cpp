@@ -72,7 +72,8 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
 
     runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>(domain);
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     Semaphore onSuccessCalledSemaphore;
 
@@ -86,7 +87,6 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
     };
 
     testProxyBuilder->setMessagingQos(MessagingQos(50000))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->buildAsync(onSuccess, onFailure);
 
@@ -95,7 +95,8 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
 
 TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
 {
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>("unknownDomain");
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>("unknownDomain");
 
     Semaphore onErrorCalledSemaphore;
 
@@ -108,7 +109,6 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
     };
 
     testProxyBuilder->setMessagingQos(MessagingQos(50000))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->buildAsync(onSuccess, onFailure);
 

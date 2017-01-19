@@ -92,7 +92,7 @@ var consumerBase = {
                 EchoProvider,
                 EchoProviderImpl.implementation);
 
-        joynr.capabilities.registerCapability("", options.domain, echoProvider, providerQos).then(function() {
+        joynr.registration.registerProvider(options.domain, echoProvider, providerQos).then(function() {
             log("provider registered successfully");
         }).catch(function(error) {
             log("error registering provider: " + error.toString());

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@
 #include "joynr/IMessageReceiver.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessaging.h"
-#include "joynr/IClientCache.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/MessagingQos.h"
@@ -101,6 +100,7 @@
 
 #include "joynr/MulticastPublication.h"
 #include "joynr/MessagingQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 
 #include "joynr/OneWayRequest.h"
 #include "joynr/SubscriptionStop.h"
@@ -156,14 +156,17 @@ public:
     MOCK_METHOD1_T(setCached, joynr::IProxyBuilder<T>*(const bool cached));
     MOCK_METHOD1_T(setMessagingQos, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
     MOCK_METHOD1_T(setDiscoveryQos, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
-    MOCK_METHOD0_T(build, T*());
+    MOCK_METHOD0_T(build, std::unique_ptr<T>());
     MOCK_METHOD2_T(buildAsync, void(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
                                     std::function<void(const joynr::exceptions::DiscoveryException&)>));
 };
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
 public:
-    MOCK_METHOD1(add, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilitiesInformationList));
+    MOCK_METHOD3(add, void(const joynr::types::GlobalDiscoveryEntry& entry,
+                           std::function<void()> onSuccess,
+                           std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+
     MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
     MOCK_METHOD3(lookup, std::vector<joynr::types::GlobalDiscoveryEntry>(const std::vector<std::string>& domain, const std::string& interfaceName, const std::int64_t messagingTtl));
@@ -303,7 +306,7 @@ public:
     MOCK_METHOD2(addRequestCaller, void(const std::string& participantId, std::shared_ptr<joynr::RequestCaller> requestCaller));
     MOCK_METHOD1(removeRequestCaller, void(const std::string& participantId));
     MOCK_METHOD1(receive, void(const joynr::JoynrMessage& message));
-    MOCK_METHOD1(registerSubscriptionManager, void(joynr::ISubscriptionManager* subscriptionManager));
+    MOCK_METHOD1(registerSubscriptionManager, void(std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager));
     MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
 };
 
@@ -545,12 +548,6 @@ public:
     }
 };
 
-class MockClientCache : public joynr::IClientCache {
-public:
-   MOCK_METHOD1(lookUp, boost::any(const std::string& attributeId));
-   MOCK_METHOD2(insert, void(std::string attributeId, boost::any value));
-};
-
 class MockDiscovery : public joynr::system::IDiscovery {
 public:
     MOCK_METHOD1(
@@ -691,37 +688,27 @@ public:
         RoutingProxy(
                 std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
-                nullptr,
                 "domain",
-                joynr::MessagingQos(),
-                false),
+                joynr::MessagingQos()),
         ProxyBase(
                 nullptr,
-                nullptr,
                 "domain",
-                joynr::MessagingQos(),
-                false),
+                joynr::MessagingQos()),
         RoutingProxyBase(
                 std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
-                nullptr,
                 "domain",
-                joynr::MessagingQos(),
-                false),
+                joynr::MessagingQos()),
         RoutingSyncProxy(
                 std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
-                nullptr,
                 "domain",
-                joynr::MessagingQos(),
-                false),
+                joynr::MessagingQos()),
         RoutingAsyncProxy(
                 std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
-                nullptr,
                 "domain",
-                joynr::MessagingQos(),
-                false)
+                joynr::MessagingQos())
     { }
 
     MOCK_METHOD3(resolveNextHopAsync,
@@ -1034,37 +1021,27 @@ public:
         GlobalDomainAccessControllerProxy(
                 std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
-                nullptr,
-                "domain",
-                joynr::MessagingQos(),
-                false),
+                  "domain",
+                joynr::MessagingQos()),
         ProxyBase(
                 nullptr,
-                nullptr,
                 "domain",
-                joynr::MessagingQos(),
-                false),
+                joynr::MessagingQos()),
         GlobalDomainAccessControllerProxyBase(
                 std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
-                nullptr,
                 "domain",
-                joynr::MessagingQos(),
-                false),
+                joynr::MessagingQos()),
         GlobalDomainAccessControllerSyncProxy(
                 std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
-                nullptr,
                 "domain",
-                joynr::MessagingQos(),
-                false),
+                joynr::MessagingQos()),
         GlobalDomainAccessControllerAsyncProxy(
                 std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
-                nullptr,
                 "domain",
-                joynr::MessagingQos(),
-                false)
+                joynr::MessagingQos())
     {
     }
 

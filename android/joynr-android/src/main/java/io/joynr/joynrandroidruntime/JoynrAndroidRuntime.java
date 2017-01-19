@@ -19,7 +19,6 @@ package io.joynr.joynrandroidruntime;
  * #L%
  */
 
-import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
@@ -75,31 +74,6 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
             return null;
         }
         return runtime;
-    }
-
-    /**
-     * Registers an Android provider in the joynr framework
-     *
-     * @deprecated Will be removed by end of the year 2016. Use
-     *      {@link io.joynr.joynrandroidruntime.JoynrAndroidRuntime#registerProvider(String, Object, ProviderQos)}
-     *      instead.
-     * @param domain
-     *            The domain the provider should be registered for. Has to be identical at the client to be able to find
-     *            the provider.
-     * @param provider
-     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
-     * @return Returns a Future which can be used to check the registration status.
-     */
-    @Deprecated
-    @Override
-    public Future<Void> registerProvider(String domain, AbstractJoynrProvider provider) {
-        // this will block until the runtime is created successfully
-        // TODO since the caller expects the register call to be async, we need to check if
-        // this will not block to long
-        JoynrRuntime runtime = getJoynrRuntime();
-
-        // registration of providers is asynchronously
-        return runtime.registerProvider(domain, provider, provider.getProviderQos());
     }
 
     @Override

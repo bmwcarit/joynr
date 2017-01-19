@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 #include <cstdint>
 
-#include "joynr/SubscriptionQos.h"
+#include "joynr/UnicastSubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -41,7 +41,7 @@ namespace joynr
  * called.
  * minInterval can be used to prevent too many messages being sent.
  */
-class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public SubscriptionQos
+class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public UnicastSubscriptionQos
 {
 
 public:
@@ -67,10 +67,12 @@ public:
      * excessive network traffic.
      *
      * @see SubscriptionQos#setValidityMs
+     * @see UnicastSubscriptionQos#publicationTtlMs
      * @see OnChangeSubscriptionQos#setMinIntervalMs
-     * @see SubscriptionQos#setPublicationTtlMs
      */
-    OnChangeSubscriptionQos(const std::int64_t& validityMs, const std::int64_t& minIntervalMs);
+    OnChangeSubscriptionQos(const std::int64_t validityMs,
+                            const std::int64_t publicationTtlMs,
+                            const std::int64_t minIntervalMs);
 
     /**
      * @brief Gets the minimum interval in milliseconds
@@ -84,14 +86,6 @@ public:
      * @return Minimum interval in milliseconds
      */
     virtual std::int64_t getMinIntervalMs() const;
-
-    /**
-     * @deprecated
-     * @see SubscriptionQos#getMinIntervalMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use getMinIntervalMs "
-                 "instead.")]] virtual std::int64_t
-    getMinInterval() const;
 
     /**
      * @brief Sets minimum interval in milliseconds
@@ -113,14 +107,6 @@ public:
      */
     virtual void setMinIntervalMs(const std::int64_t& minIntervalMs);
 
-    /**
-     * @deprecated
-     * @see SubscriptionQos#setMinIntervalMs
-     */
-    [[deprecated(
-            "Will be removed by end of the year 2016. Use setMinIntervalMs instead.")]] virtual void
-    setMinInterval(const std::int64_t& minIntervalMs);
-
     /** @brief Assignment operator */
     OnChangeSubscriptionQos& operator=(const OnChangeSubscriptionQos& other);
 
@@ -134,26 +120,10 @@ public:
     static const std::int64_t& DEFAULT_MIN_INTERVAL_MS();
 
     /**
-     * @deprecated
-     * @see SubscriptionQos#DEFAULT_MIN_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_MIN_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    DEFAULT_MIN_INTERVAL();
-
-    /**
      * @brief Returns the minimum value for the minimum interval setting in
      * milliseconds: 50
      */
     static const std::int64_t& MIN_MIN_INTERVAL_MS();
-
-    /**
-     * @deprecated
-     * @see SubscriptionQos#MIN_MIN_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MIN_MIN_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    MIN_MIN_INTERVAL();
 
     /**
      * @brief Returns the maximum value for the minimum interval setting in
@@ -161,18 +131,10 @@ public:
      */
     static const std::int64_t& MAX_MIN_INTERVAL_MS();
 
-    /**
-     * @deprecated
-     * @see SubscriptionQos#MAX_MIN_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MAX_MIN_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    MAX_MIN_INTERVAL();
-
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<SubscriptionQos>(this), MUESLI_NVP(minIntervalMs));
+        archive(muesli::BaseClass<UnicastSubscriptionQos>(this), MUESLI_NVP(minIntervalMs));
     }
 
 protected:
@@ -191,7 +153,7 @@ protected:
 } // namespace joynr
 
 MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::OnChangeSubscriptionQos,
-                                 joynr::SubscriptionQos,
+                                 joynr::UnicastSubscriptionQos,
                                  "joynr.OnChangeSubscriptionQos")
 
 #endif // ONCHANGESUBSCRIPTIONQOS_H

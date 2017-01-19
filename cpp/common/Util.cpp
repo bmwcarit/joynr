@@ -49,7 +49,8 @@ void saveStringToFile(const std::string& fileName, const std::string& strToSave)
     std::fstream file;
     file.open(fileName, std::ios::out);
     if (!file.is_open()) {
-        throw std::runtime_error("Could not open file " + fileName + " for writing.");
+        throw std::runtime_error("Could not open file " + fileName + " for writing: " +
+                                 std::strerror(errno));
     }
 
     // save input string to file
@@ -61,7 +62,8 @@ std::string loadStringFromFile(const std::string& fileName)
     // read from file
     std::ifstream inStream(fileName.c_str(), std::ios::in | std::ios::binary);
     if (!inStream.is_open()) {
-        throw std::runtime_error("Could not open file " + fileName + " for reading.");
+        throw std::runtime_error("Could not open file " + fileName + " for reading: " +
+                                 std::strerror(errno));
     }
 
     std::string fileContents;
@@ -137,6 +139,18 @@ std::string createMulticastId(const std::string& providerParticipantId,
         multicastId << MULTICAST_PARTITION_SEPARATOR << partition;
     }
     return multicastId.str();
+}
+
+std::string extractParticipantIdFromMulticastId(const std::string& multicastId)
+{
+    auto separatorIt = multicastId.find(MULTICAST_PARTITION_SEPARATOR);
+
+    if (separatorIt == std::string::npos) {
+        throw std::invalid_argument("Cannot extract provider participant Id from multicast Id: " +
+                                    multicastId);
+    }
+
+    return multicastId.substr(0, separatorIt);
 }
 
 void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards)

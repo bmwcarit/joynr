@@ -93,8 +93,7 @@ public:
 
     void SetUp(){
         participantId = util::createUuid();
-        routingProxyBuilder.reset(
-                    runtime->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain));
+        routingProxyBuilder = runtime->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
     }
 
     void TearDown(){
@@ -127,21 +126,19 @@ private:
 TEST_F(SystemServicesRoutingTest, routingProviderIsAvailable)
 {
     JOYNR_EXPECT_NO_THROW(
-        routingProxy.reset(routingProxyBuilder
+        routingProxy = routingProxyBuilder
                 ->setMessagingQos(MessagingQos(5000))
-                ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
-                ->build())
+                ->build()
     );
 }
 
 TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 {
-    routingProxy.reset(routingProxyBuilder
+    routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     bool isResolvable = false;
     try {
@@ -155,11 +152,10 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 
 TEST_F(SystemServicesRoutingTest, addNextHopHttp)
 {
-    routingProxy.reset(routingProxyBuilder
+    routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A", "SystemServicesRoutingTest.endPointUrl");
     bool isResolvable = false;
@@ -186,11 +182,10 @@ TEST_F(SystemServicesRoutingTest, addNextHopHttp)
 
 TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
 {
-    routingProxy.reset(routingProxyBuilder
+    routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A", "SystemServicesRoutingTest.endPointUrl");
     bool isResolvable = false;
@@ -230,11 +225,10 @@ TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
 
 TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
 {
-    routingProxy.reset(routingProxyBuilder
+    routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     joynr::system::RoutingTypes::MqttAddress address("brokerUri", "SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
@@ -261,11 +255,10 @@ TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
 
 TEST_F(SystemServicesRoutingTest, removeNextHopMqtt)
 {
-    routingProxy.reset(routingProxyBuilder
+    routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     joynr::system::RoutingTypes::MqttAddress address("brokerUri", "SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;

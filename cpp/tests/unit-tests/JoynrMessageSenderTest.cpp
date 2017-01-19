@@ -168,8 +168,9 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
 TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     std::int64_t period = 2000;
     std::int64_t validity = 100000;
+    std::int64_t publicationTtl = 1000;
     std::int64_t alert = 4000;
-    auto qos = std::make_shared<PeriodicSubscriptionQos>(validity, period, alert);
+    auto qos = std::make_shared<PeriodicSubscriptionQos>(validity, publicationTtl, period, alert);
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId("subscriptionId");
@@ -194,7 +195,8 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
 TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     std::int64_t minInterval = 2000;
     std::int64_t validity = 100000;
-    auto qos = std::make_shared<OnChangeSubscriptionQos>(validity, minInterval);
+    std::int64_t publicationTtl = 1000;
+    auto qos = std::make_shared<OnChangeSubscriptionQos>(validity, publicationTtl, minInterval);
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filter;
@@ -253,7 +255,7 @@ TEST_F(JoynrMessageSenderTest, sendMulticastSubscriptionRequest) {
     const std::string senderParticipantId("senderParticipantId");
     const std::string receiverParticipantId("receiverParticipantId");
     MessagingQos messagingQos(1, MessagingQosEffort::Enum::BEST_EFFORT);
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(5, 7);
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
 
     MulticastSubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscribeToName("subscribeToName");

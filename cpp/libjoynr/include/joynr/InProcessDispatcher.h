@@ -63,7 +63,8 @@ public:
 
     void receive(const JoynrMessage& message) override;
 
-    void registerSubscriptionManager(ISubscriptionManager* subscriptionManager) override;
+    void registerSubscriptionManager(
+            std::shared_ptr<ISubscriptionManager> subscriptionManager) override;
 
     void registerPublicationManager(PublicationManager* publicationManager) override;
 
@@ -76,7 +77,7 @@ private:
     RequestCallerDirectory requestCallerDirectory;
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;
-    ISubscriptionManager* subscriptionManager;
+    std::shared_ptr<ISubscriptionManager> subscriptionManager;
     ADD_LOGGER(InProcessDispatcher);
 };
 

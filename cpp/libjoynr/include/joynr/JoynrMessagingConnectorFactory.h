@@ -31,7 +31,6 @@ namespace joynr
 class IJoynrMessageSender;
 class ISubscriptionManager;
 class MessagingQos;
-class IClientCache;
 
 namespace types
 {
@@ -47,15 +46,13 @@ struct JoynrMessagingTraits;
 class JOYNR_EXPORT JoynrMessagingConnectorFactory
 {
 public:
-    JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender,
-                                   ISubscriptionManager* subscriptionManager);
+    JoynrMessagingConnectorFactory(std::shared_ptr<IJoynrMessageSender> messageSender,
+                                   std::shared_ptr<ISubscriptionManager> subscriptionManager);
 
     template <class T>
     std::unique_ptr<T> create(const std::string& domain,
                               const std::string proxyParticipantId,
                               const MessagingQos& qosSettings,
-                              IClientCache* cache,
-                              bool cached,
                               const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
     {
         using Connector = typename JoynrMessagingTraits<T>::Connector;
@@ -64,14 +61,12 @@ public:
                                            domain,
                                            proxyParticipantId,
                                            qosSettings,
-                                           cache,
-                                           cached,
                                            providerDiscoveryEntry);
     }
 
 private:
-    IJoynrMessageSender* messageSender;
-    ISubscriptionManager* subscriptionManager;
+    std::shared_ptr<IJoynrMessageSender> messageSender;
+    std::shared_ptr<ISubscriptionManager> subscriptionManager;
 };
 
 } // namespace joynr

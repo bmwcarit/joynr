@@ -48,7 +48,7 @@ function log(line, msg) {
 function showCurrentStationInHtml(radioStation) {
     $("input#txtCurrentStationName").val(radioStation.name);
     $("input#txtCurrentStationTrafficService").val(radioStation.trafficService);
-    $("input#txtCurrentStationCountry").val(radioStation.country);
+    $("input#txtCurrentStationCountry").val(radioStation.country.name);
 }
 
 function enableSubscriptionButtons(enable) {

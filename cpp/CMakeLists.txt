@@ -5,13 +5,18 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.23.0-SNAPSHOT)
+project(joynr-0.24.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 23)
+set(JOYNR_MINOR_VERSION 24)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
+)
+
+set(
+    JOYNR_SOVERSION
+    ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}
 )
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -650,14 +655,14 @@ endif(JOYNR_ENABLE_DLT_LOGGING)
 
 ### Add muesli ############################################################
 if (USE_PLATFORM_MUESLI)
-    find_package(muesli 0.1.4 REQUIRED CONFIG)
+    find_package(muesli 0.2.0 REQUIRED CONFIG)
 else(USE_PLATFORM_MUESLI)
     message(STATUS "############ Download: muesli ############")
 
     AddExternalProject(
         muesli
         GIT_REPOSITORY https://github.com/bmwcarit/muesli
-        GIT_TAG 0.1.4
+        GIT_TAG 0.2.0
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""

@@ -274,7 +274,7 @@ define(
                                                     PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1,
                                                     200).alertAfterIntervalMs).toEqual(
                                             PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
-                                    //wrong expiryDate
+                                    //wrong expiryDateMs
                                     expect(testValues(60, -2, true, -4, 100, 200).expiryDateMs)
                                             .toEqual(SubscriptionQos.MIN_EXPIRY_MS);
                                     testValues(60, 62, true, 10, 100, 200);
@@ -372,23 +372,6 @@ define(
                                                     OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL);
                                     done();
                                 });
-
-                        it("create deprecated subscriptionQos objects", function(done) {
-                            var deprecatedQos = new OnChangeWithKeepAliveSubscriptionQos({
-                                minInterval : 0,
-                                maxInterval : 50,
-                                expiryDate : 1000,
-                                alertAfterInterval : 200,
-                                publicationTtl : 100
-
-                            });
-                            expect(deprecatedQos.expiryDateMs).toEqual(1000);
-                            expect(deprecatedQos.publicationTtlMs).toEqual(100);
-                            expect(deprecatedQos.alertAfterIntervalMs).toEqual(200);
-                            expect(deprecatedQos.minIntervalMs).toEqual(0);
-                            expect(deprecatedQos.maxIntervalMs).toEqual(50);
-                            done();
-                        });
 
                         it(
                                 "subscription qos accepts validity instead of expiry date as constructor member",

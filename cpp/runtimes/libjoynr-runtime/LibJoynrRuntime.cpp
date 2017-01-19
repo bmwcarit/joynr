@@ -65,7 +65,6 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
 LibJoynrRuntime::~LibJoynrRuntime()
 {
     delete inProcessDispatcher;
-    delete joynrMessageSender;
     delete joynrDispatcher;
     delete libjoynrSettings;
     libjoynrSettings = nullptr;
@@ -95,7 +94,8 @@ void LibJoynrRuntime::init(
     messageRouter->loadRoutingTable(libjoynrSettings->getMessageRouterPersistenceFilename());
     startLibJoynrMessagingSkeleton(messageRouter);
 
-    joynrMessageSender = new JoynrMessageSender(messageRouter, messagingSettings.getTtlUpliftMs());
+    joynrMessageSender =
+            std::make_shared<JoynrMessageSender>(messageRouter, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
@@ -105,19 +105,19 @@ void LibJoynrRuntime::init(
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
-                                                joynrMessageSender,
+                                                joynrMessageSender.get(),
                                                 messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
             libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
-    subscriptionManager =
-            new SubscriptionManager(singleThreadIOService->getIOService(), messageRouter);
+    subscriptionManager = std::make_shared<SubscriptionManager>(
+            singleThreadIOService->getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadIOService->getIOService());
 
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
+    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager.get());
     inProcessConnectorFactory = new InProcessConnectorFactory(
-            subscriptionManager,
+            subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender,
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
@@ -126,8 +126,8 @@ void LibJoynrRuntime::init(
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             inProcessConnectorFactory, joynrMessagingConnectorFactory);
-    proxyFactory = std::make_unique<ProxyFactory>(
-            libjoynrMessagingAddress, std::move(connectorFactory), nullptr);
+    proxyFactory =
+            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
@@ -158,15 +158,13 @@ void LibJoynrRuntime::init(
             "fixedParticipantId", routingProviderParticipantId);
     routingProviderDiscoveryQos.setDiscoveryTimeoutMs(50);
 
-    std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder(
-            createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain));
+    std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
+            createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
     auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
-                                ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
-    messageRouter->setParentRouter(std::unique_ptr<system::RoutingProxy>(routingProxy),
-                                   ccMessagingAddress,
-                                   routingProviderParticipantId);
+    messageRouter->setParentRouter(
+            std::move(routingProxy), ccMessagingAddress, routingProviderParticipantId);
 
     // setup discovery
     std::string discoveryProviderParticipantId =
@@ -179,16 +177,14 @@ void LibJoynrRuntime::init(
             "fixedParticipantId", discoveryProviderParticipantId);
     discoveryProviderDiscoveryQos.setDiscoveryTimeoutMs(1000);
 
-    std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder(
-            createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain));
+    std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder =
+            createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
 
-    joynr::system::DiscoveryProxy* proxy =
-            discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
-                    ->setCached(false)
-                    ->setDiscoveryQos(discoveryProviderDiscoveryQos)
-                    ->build();
+    auto proxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
+                         ->setDiscoveryQos(discoveryProviderDiscoveryQos)
+                         ->build();
 
-    discoveryProxy->setDiscoveryProxy(std::unique_ptr<joynr::system::IDiscoverySync>(proxy));
+    discoveryProxy->setDiscoveryProxy(std::move(proxy));
     capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
             dispatcherList,
             *discoveryProxy,

@@ -89,7 +89,8 @@ protected:
     void registerProvider(JoynrClusterControllerRuntime& runtime)
     {
         auto testProvider = std::make_shared<tests::DefaulttestProvider>();
-        runtime.registerProvider<tests::testProvider>(testDomain, testProvider);
+        joynr::types::ProviderQos providerQos;
+        runtime.registerProvider<tests::testProvider>(testDomain, testProvider, providerQos);
     }
 
     std::unique_ptr<JoynrClusterControllerRuntime> runtime1;
@@ -111,16 +112,14 @@ public:
     LocalDiscoveryTestTestProxy(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
         joynr::ConnectorFactory* connectorFactory,
-        joynr::IClientCache* cache,
         const std::string& domain,
-        const joynr::MessagingQos& qosSettings,
-        bool cached) :
-            joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
-            testProxyBase(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
-            testFireAndForgetProxy(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
-            testSyncProxy(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
-            testAsyncProxy(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
-            testProxy(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
+        const joynr::MessagingQos& qosSettings) :
+            joynr::ProxyBase(connectorFactory, domain, qosSettings),
+            testProxyBase(messagingAddress, connectorFactory, domain, qosSettings),
+            testFireAndForgetProxy(messagingAddress, connectorFactory, domain, qosSettings),
+            testSyncProxy(messagingAddress, connectorFactory, domain, qosSettings),
+            testAsyncProxy(messagingAddress, connectorFactory, domain, qosSettings),
+            testProxy(messagingAddress, connectorFactory, domain, qosSettings)
     {
 
     }
@@ -137,7 +136,6 @@ TEST_F(LocalDiscoveryTest, testLocalLookup) {
 
     std::unique_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
        ->setMessagingQos(messagingQos)
-       ->setCached(false)
        ->setDiscoveryQos(discoveryQos)
        ->build());
 
@@ -153,7 +151,6 @@ TEST_F(LocalDiscoveryTest, testGloballLookup) {
 
     std::unique_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
        ->setMessagingQos(messagingQos)
-       ->setCached(false)
        ->setDiscoveryQos(discoveryQos)
        ->build());
 

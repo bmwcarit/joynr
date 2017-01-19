@@ -39,6 +39,7 @@ define(
             "joynr/util/UtilInternal",
             "joynr/util/JSONSerializer",
             "joynr/util/Typing",
+            "joynr/proxy/SubscriptionQos",
             "joynr/system/LoggerFactory"
         ],
         function(
@@ -61,6 +62,7 @@ define(
                 Util,
                 JSONSerializer,
                 Typing,
+                SubscriptionQos,
                 LoggerFactory) {
 
             /**
@@ -113,8 +115,11 @@ define(
                  *          with TTL_UPLIFT added as time delta
                  */
                 function upLiftExpiryDateInSubscriptionRequest(subscriptionRequest) {
-                    subscriptionRequest.qos.expiryDateMs =
-                            upLiftTtl(subscriptionRequest.qos.expiryDateMs);
+                    // if expiryDateMs == SubscriptionQos.NO_EXPIRY_DATE (=0), expiryDateMs must not be changed
+                    if (subscriptionRequest.qos.expiryDateMs !== SubscriptionQos.NO_EXPIRY_DATE) {
+                        subscriptionRequest.qos.expiryDateMs =
+                                upLiftTtl(subscriptionRequest.qos.expiryDateMs);
+                    }
                     return subscriptionRequest;
                 }
 

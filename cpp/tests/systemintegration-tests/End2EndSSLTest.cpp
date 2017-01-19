@@ -88,21 +88,28 @@ TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
 
     // Create a provider
     auto mockProvider = std::make_shared<MockGpsProvider>();
-    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     // Build a proxy
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
+    std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+            runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
+    std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     // Call the provider and wait for a result
     std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
@@ -112,5 +119,4 @@ TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
     int actualValue;
     gpsFuture->get(actualValue);
     EXPECT_EQ(expectedValue, actualValue);
-    delete gpsProxyBuilder;
 }

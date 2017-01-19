@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 #include <cstdint>
 
-#include "joynr/SubscriptionQos.h"
+#include "joynr/UnicastSubscriptionQos.h"
 #include "joynr/Logger.h"
 
 namespace joynr
@@ -38,7 +38,7 @@ namespace joynr
  * will automatically expire after the expiry date is reached. If no publications
  * were received for alertAfter interval, publicationMissed will be called.
  */
-class JOYNRCOMMON_EXPORT PeriodicSubscriptionQos : public SubscriptionQos
+class JOYNRCOMMON_EXPORT PeriodicSubscriptionQos : public UnicastSubscriptionQos
 {
 public:
     /** @brief Default constructor */
@@ -61,13 +61,14 @@ public:
      * will be called if no publications were received.
      *
      * @see SubscriptionQos#setValidityMs
+     * @see UnicastSubscriptionQos#setPublicationTtlMs
      * @see PeriodicSubscriptionQos#setPeriodMs
      * @see PeriodicSubscriptionQos#setAlertAfterIntervalMs
-     * @see SubscriptionQos#setPublicationTtlMs
      */
-    PeriodicSubscriptionQos(const std::int64_t& validityMs,
-                            const std::int64_t& periodMs,
-                            const std::int64_t& alertAfterIntervalMs);
+    PeriodicSubscriptionQos(const std::int64_t validityMs,
+                            const std::int64_t publicationTtlMs,
+                            const std::int64_t periodMs,
+                            const std::int64_t alertAfterIntervalMs);
 
     /**
      * @brief Gets the period in milliseconds
@@ -78,15 +79,6 @@ public:
      *            notification every period ms.
      */
     virtual std::int64_t getPeriodMs() const;
-
-    /**
-     * @deprecated
-     * @see PeriodicSubscriptionQos#getPeriodMs
-     */
-    [[deprecated(
-            "Will be removed by end of the year 2016. Use getPeriodMs instead.")]] virtual std::
-            int64_t
-            getPeriod() const;
 
     /**
      * @brief Sets the period in milliseconds
@@ -109,13 +101,6 @@ public:
     virtual void setPeriodMs(const std::int64_t& periodMs);
 
     /**
-     * @deprecated
-     * @see PeriodicSubscriptionQos#setPeriodMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use setPeriodMs instead.")]] virtual void
-    setPeriod(const std::int64_t& periodMs);
-
-    /**
      * @brief Gets the alertAfter interval in milliseconds
      *
      * If no notification was received within the last alertAfter interval,
@@ -125,14 +110,6 @@ public:
      * will be called if no publications were received).
      */
     virtual std::int64_t getAlertAfterIntervalMs() const;
-
-    /**
-     * @deprecated
-     * @see PeriodicSubscriptionQos#getAlertAfterIntervalMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use getAlertAfterIntervalMs "
-                 "instead.")]] virtual std::int64_t
-    getAlertAfterInterval() const;
 
     /**
      * @brief Sets the alertAfter interval in milliseconds
@@ -156,14 +133,6 @@ public:
     virtual void setAlertAfterIntervalMs(const std::int64_t& alertAfterIntervalMs);
 
     /**
-     * @deprecated
-     * @see PeriodicSubscriptionQos#setAlertAfterIntervalMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use setAlertAfterIntervalMs "
-                 "instead.")]] virtual void
-    setAlertAfterInterval(const std::int64_t& alertAfterIntervalMs);
-
-    /**
      * @brief Resets alert after interval
      *
      * Resets the alertAfterInterval and disables the alert by setting its value to
@@ -184,26 +153,10 @@ public:
     static const std::int64_t& MIN_PERIOD_MS();
 
     /**
-     * @deprecated
-     * @see PeriodicSubscriptionQos#MIN_PERIOD_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MIN_PERIOD_MS "
-                 "instead.")]] static const std::int64_t&
-    MIN_PERIOD();
-
-    /**
      * @brief Returns the maximum value for the period in milliseconds:
      * 2 592 000 000 (30 days)
      */
     static const std::int64_t& MAX_PERIOD_MS();
-
-    /**
-     * @deprecated
-     * @see PeriodicSubscriptionQos#MAX_PERIOD_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MAX_PERIOD_MS "
-                 "instead.")]] static const std::int64_t&
-    MAX_PERIOD();
 
     /**
      * @brief Returns the default value for the period in milliseconds:
@@ -218,26 +171,10 @@ public:
     static const std::int64_t& MAX_ALERT_AFTER_INTERVAL_MS();
 
     /**
-     * @deprecated
-     * @see PeriodicSubscriptionQos#MAX_ALERT_AFTER_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use MAX_ALERT_AFTER_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    MAX_ALERT_AFTER_INTERVAL();
-
-    /**
      * @brief Returns the default value for the alertAfter interval in
      * milliseconds: 0 (NO_ALERT_AFTER_INTERVAL)
      */
     static const std::int64_t& DEFAULT_ALERT_AFTER_INTERVAL_MS();
-
-    /**
-     * @deprecated
-     * @see PeriodicSubscriptionQos#DEFAULT_ALERT_AFTER_INTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_ALERT_AFTER_INTERVAL_MS "
-                 "instead.")]] static const std::int64_t&
-    DEFAULT_ALERT_AFTER_INTERVAL();
 
     /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
     static const std::int64_t& NO_ALERT_AFTER_INTERVAL();
@@ -245,7 +182,7 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<SubscriptionQos>(this),
+        archive(muesli::BaseClass<UnicastSubscriptionQos>(this),
                 MUESLI_NVP(periodMs),
                 MUESLI_NVP(alertAfterIntervalMs));
     }
@@ -271,7 +208,7 @@ private:
 } // namespace joynr
 
 MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::PeriodicSubscriptionQos,
-                                 joynr::SubscriptionQos,
+                                 joynr::UnicastSubscriptionQos,
                                  "joynr.PeriodicSubscriptionQos")
 
 #endif // PERIODICSUBSCRIPTIONQOS_H

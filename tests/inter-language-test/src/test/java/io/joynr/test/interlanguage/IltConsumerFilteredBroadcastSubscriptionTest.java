@@ -50,7 +50,8 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
     @SuppressWarnings("checkstyle:methodlength")
     @Test
     public void callSubscribeBroadcastWithFiltering() {
-        Future<String> subscriptionId;
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
         long validityMs = 60000;
@@ -115,50 +116,51 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             }
             filterParameters.setStructWithStringArrayArrayOfInterest(json);
 
-            subscriptionId = testInterfaceProxy.subscribeToBroadcastWithFilteringBroadcast(new BroadcastWithFilteringBroadcastAdapter() {
-                                                                                               @Override
-                                                                                               public void onReceive(String stringOut,
-                                                                                                                     String[] stringArrayOut,
-                                                                                                                     ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut,
-                                                                                                                     StructWithStringArray structWithStringArrayOut,
-                                                                                                                     StructWithStringArray[] structWithStringArrayArrayOut) {
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithFilteringBroadcast(new BroadcastWithFilteringBroadcastAdapter() {
+                                                                                                     @Override
+                                                                                                     public void onReceive(String stringOut,
+                                                                                                                           String[] stringArrayOut,
+                                                                                                                           ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut,
+                                                                                                                           StructWithStringArray structWithStringArrayOut,
+                                                                                                                           StructWithStringArray[] structWithStringArrayArrayOut) {
 
-                                                                                                   LOG.info(name.getMethodName()
-                                                                                                           + " - callback - got broadcast");
+                                                                                                         LOG.info(name.getMethodName()
+                                                                                                                 + " - callback - got broadcast");
 
-                                                                                                   if (!IltUtil.checkStringArray(stringArrayOut)) {
-                                                                                                       subscribeBroadcastWithFilteringCallbackResult = false;
-                                                                                                   } else if (enumerationOut != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
-                                                                                                       LOG.info(name.getMethodName()
-                                                                                                               + " - callback - invalid content");
-                                                                                                       subscribeBroadcastWithFilteringCallbackResult = false;
-                                                                                                   } else if (!IltUtil.checkStructWithStringArray(structWithStringArrayOut)) {
-                                                                                                       LOG.info(name.getMethodName()
-                                                                                                               + " - callback - invalid content");
-                                                                                                       subscribeBroadcastWithFilteringCallbackResult = false;
-                                                                                                   } else if (!IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
-                                                                                                       LOG.info(name.getMethodName()
-                                                                                                               + " - callback - invalid content");
-                                                                                                       subscribeBroadcastWithFilteringCallbackResult = false;
-                                                                                                   } else {
-                                                                                                       LOG.info(name.getMethodName()
-                                                                                                               + " - callback - content OK");
-                                                                                                       subscribeBroadcastWithFilteringCallbackResult = true;
-                                                                                                   }
-                                                                                                   subscribeBroadcastWithFilteringCallbackDone = true;
-                                                                                               }
+                                                                                                         if (!IltUtil.checkStringArray(stringArrayOut)) {
+                                                                                                             subscribeBroadcastWithFilteringCallbackResult = false;
+                                                                                                         } else if (enumerationOut != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
+                                                                                                             LOG.info(name.getMethodName()
+                                                                                                                     + " - callback - invalid content");
+                                                                                                             subscribeBroadcastWithFilteringCallbackResult = false;
+                                                                                                         } else if (!IltUtil.checkStructWithStringArray(structWithStringArrayOut)) {
+                                                                                                             LOG.info(name.getMethodName()
+                                                                                                                     + " - callback - invalid content");
+                                                                                                             subscribeBroadcastWithFilteringCallbackResult = false;
+                                                                                                         } else if (!IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
+                                                                                                             LOG.info(name.getMethodName()
+                                                                                                                     + " - callback - invalid content");
+                                                                                                             subscribeBroadcastWithFilteringCallbackResult = false;
+                                                                                                         } else {
+                                                                                                             LOG.info(name.getMethodName()
+                                                                                                                     + " - callback - content OK");
+                                                                                                             subscribeBroadcastWithFilteringCallbackResult = true;
+                                                                                                         }
+                                                                                                         subscribeBroadcastWithFilteringCallbackDone = true;
+                                                                                                     }
 
-                                                                                               @Override
-                                                                                               public void onError(SubscriptionException error) {
-                                                                                                   LOG.info(name.getMethodName()
-                                                                                                           + " - callback - error");
-                                                                                                   subscribeBroadcastWithFilteringCallbackResult = false;
-                                                                                                   subscribeBroadcastWithFilteringCallbackDone = true;
-                                                                                               }
-                                                                                           },
-                                                                                           subscriptionQos,
-                                                                                           filterParameters);
-            LOG.info(name.getMethodName() + " - subscription successful");
+                                                                                                     @Override
+                                                                                                     public void onError(SubscriptionException error) {
+                                                                                                         LOG.info(name.getMethodName()
+                                                                                                                 + " - callback - error");
+                                                                                                         subscribeBroadcastWithFilteringCallbackResult = false;
+                                                                                                         subscribeBroadcastWithFilteringCallbackDone = true;
+                                                                                                     }
+                                                                                                 },
+                                                                                                 subscriptionQos,
+                                                                                                 filterParameters);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
             LOG.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
             LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
@@ -220,7 +222,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
 
             // try to unsubscribe
             try {
-                testInterfaceProxy.unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId.get());
+                testInterfaceProxy.unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());

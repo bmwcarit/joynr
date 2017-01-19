@@ -110,7 +110,8 @@ private:
                  const std::string& senderParticipantId,
                  const std::string& receiverParticipantId,
                  const MessagingQos& qos,
-                 std::string&& payload) const;
+                 std::string&& payload,
+                 bool upliftTtl = true) const;
 
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     std::uint64_t ttlUpliftMs;

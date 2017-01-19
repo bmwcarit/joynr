@@ -30,6 +30,7 @@
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
 #include "joynr/Future.h"
@@ -167,10 +168,10 @@ int main(int argc, char* argv[])
     // Initialise the JOYn runtime
     std::string pathToMessagingSettings(dir + "/resources/radio-app-consumer.settings");
 
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
-    ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =
+    std::unique_ptr<ProxyBuilder<vehicle::RadioProxy>> proxyBuilder =
             runtime->createProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
@@ -197,10 +198,10 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy
-    vehicle::RadioProxy* proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
-                                         ->setCached(false)
-                                         ->setDiscoveryQos(discoveryQos)
-                                         ->build();
+    std::unique_ptr<vehicle::RadioProxy> proxy =
+            proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build();
 
     vehicle::RadioStation currentStation;
     try {
@@ -254,17 +255,14 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <broadcast>EventOccurred method of the <interface>Provider class whenever
     //       the <broadcast> should be triggered.
-    auto weakSignalBroadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
-    // The provider will maintain at least a minimum interval idle time in milliseconds between
-    // successive notifications, even if on-change notifications are enabled and the value changes
-    // more often. This prevents the consumer from being flooded by updated values. The filtering
-    // happens on the provider's side, thus also preventing excessive network traffic.
-    weakSignalBroadcastSubscriptionQos->setMinIntervalMs(1 * 1000);
+    auto weakSignalBroadcastSubscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
     // setValidityMs will set the end date to current time millis + validity
     weakSignalBroadcastSubscriptionQos->setValidityMs(60 * 1000);
+
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
             new WeakSignalBroadcastListener());
     std::shared_ptr<Future<std::string>> weakSignalBroadcastSubscriptionIdFuture =
@@ -392,8 +390,5 @@ int main(int argc, char* argv[])
                         e.getMessage());
     }
 
-    delete proxy;
-    delete proxyBuilder;
-    delete runtime;
     return 0;
 }

@@ -60,10 +60,11 @@ public:
     ~CapabilitiesClient() override = default;
 
     /*
-       Add a capabilities record to the directory containing a list of capabilities and the
-       channelId of the provider(the client's channelId)
+       Add a capabilities record to the directory
       */
-    void add(const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList) override;
+    void add(const types::GlobalDiscoveryEntry& entry,
+             std::function<void()> onSuccess,
+             std::function<void(const exceptions::JoynrRuntimeException& error)> onError) override;
 
     /*
       Remove previously created capabilities directory entries.
