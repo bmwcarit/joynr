@@ -232,6 +232,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantIds, attributeSubscription);
+        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy participantId: {}, provider participantId: {}",
+                     attributeSubscription.getSubscriptionId(),
+                     attributeSubscription.getSubscriptionName(),
+                     attributeSubscription.getQos(),
+                     fromParticipantId,
+                     toParticipantIds);
     }
 
     @Override
@@ -242,6 +248,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         subscriptionManager.registerBroadcastSubscription(fromParticipantId, toParticipantIds, broadcastSubscription);
+        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider participantId: {}",
+                     broadcastSubscription.getSubscriptionId(),
+                     broadcastSubscription.getBroadcastName(),
+                     broadcastSubscription.getQos(),
+                     fromParticipantId,
+                     toParticipantIds);
     }
 
     @Override

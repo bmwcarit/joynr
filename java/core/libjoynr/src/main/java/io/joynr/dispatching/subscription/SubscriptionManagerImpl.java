@@ -262,6 +262,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                                  multicastSubscribeInvocation.getQos());
                                      }
                                  });
+            logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider participantId: {}",
+                         multicastSubscribeInvocation.getSubscriptionId(),
+                         multicastId,
+                         multicastSubscribeInvocation.getSubscriptionName(),
+                         multicastSubscribeInvocation.getQos(),
+                         fromParticipantId,
+                         toParticipantId);
         }
     }
 
@@ -324,6 +331,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             if (!receive.isAccessible()) {
                 receive.setAccessible(true);
             }
+
+            logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, broadcastValue: {}",
+                         subscriptionId,
+                         broadcastValues);
             receive.invoke(broadcastSubscriptionListener, broadcastValues);
 
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -336,6 +347,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         for (Map.Entry<Pattern, Set<String>> entry : multicastSubscribersDirectory.entrySet()) {
             if (entry.getKey().matcher(multicastId).matches()) {
                 for (String subscriptionId : entry.getValue()) {
+                    logger.trace("SUBSCRIPTION notify listener: subscriptionId: {}, multicastId: {}, broadcastValue: {}",
+                                 subscriptionId,
+                                 multicastId,
+                                 publicizedValues);
                     handleBroadcastPublication(subscriptionId, publicizedValues);
                 }
             }
@@ -349,6 +364,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         if (listener == null) {
             logger.error("No subscription listener found for incoming publication!");
         } else {
+            logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, attributeValue: {}",
+                         subscriptionId,
+                         attributeValue);
             listener.onReceive(attributeValue);
         }
     }
@@ -360,6 +378,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         if (listener == null) {
             logger.error("No subscription listener found for incoming publication!");
         } else {
+            logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, error: {}", subscriptionId, error);
             listener.onError(error);
         }
     }
