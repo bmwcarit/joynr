@@ -95,7 +95,7 @@ public class MyRadioProvider extends RadioAbstractProvider {
             }
         }, DELAY_MS, TimeUnit.MILLISECONDS);
 
-        // Promise is returned immediately. Deferred is resolved later 
+        // Promise is returned immediately. Deferred is resolved later
         return new Promise<DeferredVoid>(deferred);
     }
 
@@ -126,7 +126,7 @@ public class MyRadioProvider extends RadioAbstractProvider {
             }
         }, DELAY_MS, TimeUnit.MILLISECONDS);
 
-        // Promise is returned immediately. Deferred is resolved later 
+        // Promise is returned immediately. Deferred is resolved later
         return new Promise<AddFavoriteStationDeferred>(deferred);
     }
 
