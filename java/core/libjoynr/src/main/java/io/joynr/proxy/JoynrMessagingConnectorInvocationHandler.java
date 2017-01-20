@@ -110,6 +110,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         Request request = new Request(method.getName(), paramsWithoutCallback, paramDatatypesWithoutCallback);
         String requestReplyId = request.getRequestReplyId();
+        logger.debug("REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy participantId: {}, provider participantId: {}",
+                     requestReplyId,
+                     method.getName(),
+                     paramsWithoutCallback,
+                     fromParticipantId,
+                     toParticipantIds);
 
         RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(requestReplyId,
                                                                                                    callback,
@@ -149,6 +155,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         Request request = new Request(method.getName(), args, method.getParameterTypes());
         Reply reply;
         String requestReplyId = request.getRequestReplyId();
+        logger.debug("REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy participantId: {}, provider participantId: {}",
+                     requestReplyId,
+                     method.getName(),
+                     args,
+                     fromParticipantId,
+                     toParticipantIds);
         SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
                                                                                       toParticipantIds,
                                                                                       requestReplyId,
