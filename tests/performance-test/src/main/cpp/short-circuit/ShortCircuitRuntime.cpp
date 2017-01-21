@@ -35,6 +35,7 @@
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
+#include "cluster-controller/include/joynr/CcMessageRouter.h"
 
 namespace joynr
 {
@@ -53,10 +54,11 @@ ShortCircuitRuntime::ShortCircuitRuntime()
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
             std::make_unique<MqttMulticastAddressCalculator>(nullptr);
 
-    messageRouter = std::make_shared<MessageRouter>(std::move(messagingStubFactory),
-                                                    libjoynrMessagingAddress,
-                                                    singleThreadedIOService.getIOService(),
-                                                    std::move(addressCalculator));
+    messageRouter = std::make_shared<CcMessageRouter>(std::move(messagingStubFactory),
+                                                      nullptr,
+                                                      nullptr,
+                                                      singleThreadedIOService.getIOService(),
+                                                      std::move(addressCalculator));
 
     joynrMessageSender = std::make_unique<JoynrMessageSender>(messageRouter);
     joynrDispatcher =
