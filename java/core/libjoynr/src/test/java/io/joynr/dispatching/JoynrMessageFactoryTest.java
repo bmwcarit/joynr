@@ -186,7 +186,7 @@ public class JoynrMessageFactoryTest {
         final String expectedCustomHeaderName = JoynrMessage.MESSAGE_CUSTOM_HEADER_PREFIX + headerName;
         assertTrue(message.getHeader().containsKey(expectedCustomHeaderName));
         Map<String, String> customHeaders = message.getCustomHeaders();
-        assertTrue(customHeaders.size() == 1);
+        assertTrue(customHeaders.size() == 2);
         assertTrue(customHeaders.containsKey(headerName));
     }
 
