@@ -96,7 +96,10 @@
 #include "joynr/types/Version.h"
 #include "joynr/exceptions/JoynrException.h"
 
-#include "libjoynr/websocket/WebSocketPpClient.h"
+#include "libjoynr/websocket/IWebSocketPpClient.h"
+#include "joynr/IWebSocketSendInterface.h"
+#include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/MulticastPublication.h"
 #include "joynr/MessagingQos.h"
@@ -1153,27 +1156,42 @@ public:
     MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
 };
 
-class MockWebSocketClient : public joynr::WebSocketPpClient
+class MockWebSocketClient : public joynr::IWebSocketPpClient
 {
 public:
 
     MockWebSocketClient(joynr::WebSocketSettings wsSettings, boost::asio::io_service& ioService)
-        : WebSocketPpClient(wsSettings, ioService) {}
+    {}
     MOCK_METHOD0(dtorCalled, void());
     ~MockWebSocketClient() override
     {
         dtorCalled();
     }
 
+    MOCK_METHOD1(registerConnectCallback, void(std::function<void()>));
+    MOCK_METHOD1(registerReconnectCallback, void(std::function<void()>));
+    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(const std::string&)>));
+
     void registerDisconnectCallback(std::function<void()> callback) override
     {
         onConnectionClosedCallback = callback;
-        WebSocketPpClient::registerConnectCallback(callback);
     }
 
-    void signalDisconnect() {
+    void signalDisconnect()
+    {
         onConnectionClosedCallback();
     }
+
+    MOCK_METHOD1(connect, void(const joynr::system::RoutingTypes::WebSocketAddress&));
+    MOCK_METHOD0(close, void());
+
+    MOCK_CONST_METHOD0(isConnected, bool());
+
+    MOCK_METHOD2(sendTextMessage, void(
+            const std::string&,
+            const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
+
+    MOCK_CONST_METHOD0(getSender, std::shared_ptr<joynr::IWebSocketSendInterface>());
 
 private:
     std::function<void()> onConnectionClosedCallback;

@@ -29,6 +29,7 @@
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 
+#include "libjoynr/websocket/WebSocketPpClient.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 

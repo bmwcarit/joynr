@@ -32,6 +32,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/io_service.hpp>
 
+#include "IWebSocketPpClient.h"
 #include "joynr/Logger.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketProtocol.h"
@@ -42,7 +43,7 @@
 namespace joynr
 {
 
-class WebSocketPpClient
+class WebSocketPpClient : public IWebSocketPpClient
 {
 public:
     using ConnectionHandle = websocketpp::connection_hdl;
@@ -126,7 +127,7 @@ public:
         receiver.registerReceiveCallback(onTextMessageReceived);
     }
 
-    void connect(system::RoutingTypes::WebSocketAddress address)
+    void connect(const system::RoutingTypes::WebSocketAddress& address)
     {
         this->address = std::move(address);
 
@@ -185,7 +186,7 @@ public:
         sender->sendTextMessage(msg, onFailure);
     }
 
-    std::shared_ptr<WebSocketPpSender<Client>> getSender() const
+    std::shared_ptr<IWebSocketSendInterface> getSender() const
     {
         return sender;
     }
