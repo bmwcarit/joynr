@@ -36,8 +36,9 @@ INIT_LOGGER(LibJoynrWebSocketRuntime);
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings)
         : LibJoynrRuntime(std::move(settings)),
           wsSettings(*this->settings),
-          websocket(std::make_shared<WebSocketPpClient>(wsSettings,
-                                                        singleThreadIOService->getIOService()))
+          websocket(std::make_shared<WebSocketPpClient<websocketpp::config::asio_client>>(
+                  wsSettings,
+                  singleThreadIOService->getIOService()))
 {
 }
 

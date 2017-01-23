@@ -43,12 +43,13 @@
 namespace joynr
 {
 
+template <typename Config>
 class WebSocketPpClient : public IWebSocketPpClient
 {
 public:
     using ConnectionHandle = websocketpp::connection_hdl;
-    using Config = websocketpp::config::asio_client;
     using Client = websocketpp::client<Config>;
+    using ConnectionPtr = typename Client::connection_ptr;
 
     WebSocketPpClient(const WebSocketSettings& wsSettings, boost::asio::io_service& ioService)
             : endpoint(),
@@ -215,7 +216,7 @@ private:
         JOYNR_LOG_DEBUG(logger, "Connecting to websocket server {}", uri.str());
 
         websocketpp::lib::error_code websocketError;
-        Client::connection_ptr connectionPtr = endpoint.get_connection(uri.str(), websocketError);
+        ConnectionPtr connectionPtr = endpoint.get_connection(uri.str(), websocketError);
 
         if (websocketError) {
             JOYNR_LOG_ERROR(logger,
@@ -305,7 +306,7 @@ private:
         if (!isRunning) {
             JOYNR_LOG_DEBUG(logger, "connection closed");
         } else {
-            Client::connection_ptr con = endpoint.get_con_from_hdl(hdl);
+            ConnectionPtr con = endpoint.get_con_from_hdl(hdl);
             JOYNR_LOG_ERROR(logger,
                             "websocket connection failed - error: {}. Trying to reconnect...",
                             con->get_ec().message());
@@ -333,6 +334,9 @@ private:
 
     ADD_LOGGER(WebSocketPpClient);
 };
+
+template <typename Config>
+INIT_LOGGER(WebSocketPpClient<Config>);
 
 } // namespace joynr
 
