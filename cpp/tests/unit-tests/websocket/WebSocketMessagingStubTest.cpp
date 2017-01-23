@@ -154,7 +154,7 @@ protected:
     WebSocketServer server;
     joynr::system::RoutingTypes::WebSocketAddress serverAddress;
     joynr::SingleThreadedIOService singleThreadedIOService;
-    std::shared_ptr<joynr::WebSocketPpClient> webSocket;
+    std::shared_ptr<joynr::IWebSocketPpClient> webSocket;
 };
 
 INIT_LOGGER(WebSocketMessagingStubTest);

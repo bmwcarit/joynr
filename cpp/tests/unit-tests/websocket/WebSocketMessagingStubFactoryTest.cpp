@@ -29,7 +29,6 @@
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 
-#include "libjoynr/websocket/WebSocketPpClient.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 
@@ -165,7 +164,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     WebSocketSettings wsSettings(settings);
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
-    std::shared_ptr<WebSocketPpClient> websocket = std::make_shared<MockWebSocketClient>(wsSettings,
+    std::shared_ptr<IWebSocketPpClient> websocket = std::make_shared<MockWebSocketClient>(wsSettings,
             singleThreadedIOService.getIOService());
 
     websocket->registerDisconnectCallback([](){});

@@ -31,7 +31,7 @@
 
 namespace joynr
 {
-class WebSocketPpClient;
+class IWebSocketPpClient;
 class WebSocketLibJoynrMessagingSkeleton;
 
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime
@@ -50,7 +50,7 @@ private:
     void sendInitializationMsg();
 
     WebSocketSettings wsSettings;
-    std::shared_ptr<WebSocketPpClient> websocket;
+    std::shared_ptr<IWebSocketPpClient> websocket;
     std::string initializationMsg;
     ADD_LOGGER(LibJoynrWebSocketRuntime);
 
