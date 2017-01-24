@@ -61,7 +61,7 @@ public class ChildMessageRouter extends MessageRouterImpl {
     private RoutingProxy parentRouter;
     private Address incomingAddress;
     private Set<String> deferredParentHopsParticipantIds = new HashSet<>();
-    private Map<String, DeferrableRegistration> deferredMulticastRegististrations = new HashMap<>();
+    private Map<String, DeferrableRegistration> deferredMulticastRegistrations = new HashMap<>();
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -150,9 +150,9 @@ public class ChildMessageRouter extends MessageRouterImpl {
         if (parentRouter != null) {
             registerWithParent.register();
         } else {
-            synchronized (deferredMulticastRegististrations) {
-                deferredMulticastRegististrations.put(multicastId + subscriberParticipantId + providerParticipantId,
-                                                      registerWithParent);
+            synchronized (deferredMulticastRegistrations) {
+                deferredMulticastRegistrations.put(multicastId + subscriberParticipantId + providerParticipantId,
+                                                   registerWithParent);
             }
         }
     }
@@ -161,8 +161,8 @@ public class ChildMessageRouter extends MessageRouterImpl {
     public void removeMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId) {
         super.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         if (parentRouter == null) {
-            synchronized (deferredMulticastRegististrations) {
-                deferredMulticastRegististrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
+            synchronized (deferredMulticastRegistrations) {
+                deferredMulticastRegistrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
             }
         }
     }
@@ -179,8 +179,8 @@ public class ChildMessageRouter extends MessageRouterImpl {
         for (String participantIds : deferredParentHopsParticipantIds) {
             addNextHopToParent(participantIds);
         }
-        synchronized (deferredMulticastRegististrations) {
-            for (DeferrableRegistration registerWithParent : deferredMulticastRegististrations.values()) {
+        synchronized (deferredMulticastRegistrations) {
+            for (DeferrableRegistration registerWithParent : deferredMulticastRegistrations.values()) {
                 registerWithParent.register();
             }
         }
