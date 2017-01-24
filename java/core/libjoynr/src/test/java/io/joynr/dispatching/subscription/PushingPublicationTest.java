@@ -107,7 +107,8 @@ public class PushingPublicationTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        cleanupScheduler);
+                                                        cleanupScheduler,
+                                                        Mockito.mock(SubscriptionRequestStorage.class));
         subscriptionId = "subscriptionId";
         proxyId = "proxyId";
         providerId = "providerId";

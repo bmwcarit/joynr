@@ -38,7 +38,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.SetMultimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -80,7 +80,7 @@ import org.slf4j.LoggerFactory;
 public class PublicationManagerImpl implements PublicationManager, DirectoryListener<ProviderContainer> {
     private static final Logger logger = LoggerFactory.getLogger(PublicationManagerImpl.class);
     // Map ProviderId -> SubscriptionRequest
-    private final Multimap<String, PublicationInformation> queuedSubscriptionRequests;
+    private final SetMultimap<String, PublicationInformation> queuedSubscriptionRequests;
     // Map SubscriptionId -> SubscriptionRequest
     private final ConcurrentMap<String, PublicationInformation> subscriptionId2PublicationInformation;
     // Map SubscriptionId -> PublicationTimer
@@ -102,6 +102,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
     private long ttlUpliftMs = 0;
+    private SubscriptionRequestStorage subscriptionRequestStorage;
 
     static class PublicationInformation {
         private String providerParticipantId;
@@ -180,11 +181,13 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter,
                                   Dispatcher dispatcher,
                                   ProviderDirectory providerDirectory,
-                                  @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
+                                  @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
+                                  SubscriptionRequestStorage subscriptionRequestStorage) {
         super();
         this.dispatcher = dispatcher;
         this.providerDirectory = providerDirectory;
         this.cleanupScheduler = cleanupScheduler;
+        this.subscriptionRequestStorage = subscriptionRequestStorage;
         this.queuedSubscriptionRequests = HashMultimap.create();
         this.subscriptionId2PublicationInformation = Maps.newConcurrentMap();
         this.publicationTimers = Maps.newConcurrentMap();
@@ -194,7 +197,28 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         this.multicastListeners = Maps.newConcurrentMap();
         this.attributePollInterpreter = attributePollInterpreter;
         providerDirectory.addListener(this);
+        queueSavedSubscriptionRequests();
+    }
 
+    private void queueSavedSubscriptionRequests() {
+
+        SetMultimap<String, PersistedSubscriptionRequest> persistedSubscriptionRequests = subscriptionRequestStorage.getSavedSubscriptionRequests();
+        if (persistedSubscriptionRequests == null || persistedSubscriptionRequests.isEmpty()) {
+            return;
+        }
+
+        try {
+            for (String providerId : persistedSubscriptionRequests.keySet()) {
+                for (PersistedSubscriptionRequest persistedSubscriptionRequest : persistedSubscriptionRequests.get(providerId)) {
+                    addSubscriptionRequest(persistedSubscriptionRequest.getProxyParticipantId(),
+                                           providerId,
+                                           persistedSubscriptionRequest.getSubscriptonRequest());
+                    subscriptionRequestStorage.removeSubscriptionRequest(providerId, persistedSubscriptionRequest);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("unable to queue saved subscription requests: " + e.getMessage());
+        }
     }
 
     private void handleSubscriptionRequest(PublicationInformation publicationInformation,
@@ -432,6 +456,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     public void addSubscriptionRequest(String proxyParticipantId,
                                        String providerParticipantId,
                                        SubscriptionRequest subscriptionRequest) {
+
+        subscriptionRequestStorage.persistSubscriptionRequest(proxyParticipantId,
+                                                              providerParticipantId,
+                                                              subscriptionRequest);
+
         if (providerDirectory.contains(providerParticipantId)) {
             addSubscriptionRequest(proxyParticipantId,
                                    providerParticipantId,

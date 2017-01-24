@@ -8,5 +8,6 @@ src/main/generated*
 capabilitiesdump
 joynr.properties
 joynr_capabilitiesdirectory.properties
+joynr_persistedSubscriptionRequests
 joynr_participantIds.properties
 /logs

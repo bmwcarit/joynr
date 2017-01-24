@@ -122,7 +122,8 @@ public class PublicationTimersTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            providerDirectory,
-                                                                           cleanupScheduler);
+                                                                           cleanupScheduler,
+                                                                           Mockito.mock(SubscriptionRequestStorage.class));
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
         when(providerDirectory.contains(eq(providerId))).thenReturn(true);
