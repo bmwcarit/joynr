@@ -429,17 +429,17 @@ define(
                                 messageReplyToAddressCalculator : channelMessageReplyToAddressCalculator
                             });
 
-                            var mqttAddress = new MqttAddress({
+                            var globalClusterControllerAddress = new MqttAddress({
                                 brokerUri : provisioning.brokerUri,
                                 topic : channelId
                             });
 
                             var mqttMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
-                                replyToAddress : mqttAddress
+                                replyToAddress : globalClusterControllerAddress
                             });
 
                             var mqttClient = new SharedMqttClient({
-                                address: mqttAddress,
+                                address: globalClusterControllerAddress,
                                 provisioning : provisioning.mqtt || {}
                             });
 
@@ -454,7 +454,7 @@ define(
                             messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
                             messagingStubFactories[MqttAddress._typeName] = new MqttMessagingStubFactory({
                                 client : mqttClient,
-                                address : mqttAddress,
+                                address : globalClusterControllerAddress,
                                 messageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
                             });
                             /*jslint nomen: false */
@@ -471,7 +471,7 @@ define(
                                 messagingSkeletonFactory : messagingSkeletonFactory,
                                 messagingStubFactory : messagingStubFactory,
                                 multicastAddressCalculator : new MqttMulticastAddressCalculator({
-                                    globalAddress : mqttAddress
+                                    globalAddress : globalClusterControllerAddress
                                 }),
                                 messageQueue : new MessageQueue(messageQueueSettings)
                             });
@@ -492,7 +492,7 @@ define(
                             // clusterControllerChannelMessagingSkeleton.registerListener(messageRouter.route);
 
                             mqttMessagingSkeleton = new MqttMessagingSkeleton({
-                                address: mqttAddress,
+                                address: globalClusterControllerAddress,
                                 client : mqttClient,
                                 messageRouter : messageRouter
                             });
@@ -504,7 +504,7 @@ define(
                                             messagingEndpointUrl: channelUrl
                                         });
                                         mqttClient.onConnected().then(function() {
-                                            capabilityDiscovery.globalAddressReady(mqttAddress);
+                                            capabilityDiscovery.globalAddressReady(globalClusterControllerAddress);
                                             channelMessageReplyToAddressCalculator.setReplyToAddress(channelAddress);
                                             channelMessagingStubFactory.globalAddressReady(channelAddress);
                                             return null;
