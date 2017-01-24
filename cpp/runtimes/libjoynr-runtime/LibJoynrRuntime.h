@@ -43,6 +43,7 @@ namespace joynr
 
 class IMessageRouter;
 class IMessaging;
+class LibJoynrMessageRouter;
 class JoynrMessageSender;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
@@ -59,6 +60,8 @@ public:
     void unregisterProvider(const std::string& participantId) override;
 
 protected:
+    std::shared_ptr<IMessageRouter> getMessageRouter() final;
+
     SubscriptionManager* subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
     InProcessConnectorFactory* inProcessConnectorFactory;
@@ -85,6 +88,7 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
+    std::shared_ptr<LibJoynrMessageRouter> libJoynrMessageRouter;
 };
 
 } // namespace joynr

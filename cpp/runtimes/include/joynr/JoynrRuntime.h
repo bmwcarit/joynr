@@ -151,7 +151,7 @@ public:
                                              *discoveryProxy,
                                              domain,
                                              dispatcherAddress,
-                                             messageRouter,
+                                             getMessageRouter(),
                                              messagingSettings.getMaximumTtlMs());
         return builder;
     }
@@ -216,6 +216,9 @@ protected:
     static std::unique_ptr<Settings> createSettings(const std::string& pathToLibjoynrSettings,
                                                     const std::string& pathToMessagingSettings);
 
+    /** @brief Return an IMessageRouter instance */
+    virtual std::shared_ptr<IMessageRouter> getMessageRouter() = 0;
+
     std::unique_ptr<SingleThreadedIOService> singleThreadIOService;
 
     /** @brief Factory for creating proxy instances */
@@ -234,8 +237,6 @@ protected:
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    /** @brief MessageRouter instance */
-    std::shared_ptr<IMessageRouter> messageRouter;
     /** @brief Wrapper for discovery proxies */
     std::unique_ptr<LocalDiscoveryAggregator> discoveryProxy;
     /**

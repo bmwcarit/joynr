@@ -32,7 +32,6 @@ JoynrRuntime::JoynrRuntime(Settings& settings)
           messagingSettings(settings),
           systemServicesSettings(settings),
           dispatcherAddress(nullptr),
-          messageRouter(nullptr),
           discoveryProxy(nullptr),
           publicationManager(nullptr)
 {

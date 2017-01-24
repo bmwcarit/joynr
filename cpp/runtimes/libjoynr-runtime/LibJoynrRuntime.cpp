@@ -87,14 +87,11 @@ void LibJoynrRuntime::init(
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
     // create message router
-    auto libJoynrMessageRouter =
+    libJoynrMessageRouter =
             std::make_shared<LibJoynrMessageRouter>(libjoynrMessagingAddress,
                                                     std::move(messagingStubFactory),
                                                     singleThreadIOService->getIOService(),
                                                     std::move(addressCalculator));
-
-    // set MessageRouter in JoynrRuntime
-    messageRouter = libJoynrMessageRouter;
 
     libJoynrMessageRouter->loadRoutingTable(
             libjoynrSettings->getMessageRouterPersistenceFilename());
@@ -203,6 +200,11 @@ void LibJoynrRuntime::init(
             libJoynrMessageRouter,
             messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
             *publicationManager);
+}
+
+std::shared_ptr<IMessageRouter> LibJoynrRuntime::getMessageRouter()
+{
+    return libJoynrMessageRouter;
 }
 
 void LibJoynrRuntime::unregisterProvider(const std::string& participantId)

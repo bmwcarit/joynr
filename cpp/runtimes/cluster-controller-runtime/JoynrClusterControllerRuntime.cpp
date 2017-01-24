@@ -227,9 +227,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                         singleThreadIOService->getIOService(),
                                                         std::move(addressCalculator));
 
-    // set messageRouter in JoynrRuntime
-    messageRouter = ccMessageRouter;
-
     ccMessageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
 
     // provision global capabilities directory
@@ -508,13 +505,16 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
 #ifdef JOYNR_ENABLE_ACCESS_CONTROL
     // Do this after local capabilities directory and message router have been initialized.
-    enableAccessController(messagingSettings, ccMessageRouter);
+    enableAccessController(messagingSettings);
 #endif // JOYNR_ENABLE_ACCESS_CONTROL
 }
 
-void JoynrClusterControllerRuntime::enableAccessController(
-        MessagingSettings& messagingSettings,
-        std::shared_ptr<IMessageRouter> messageRouter)
+std::shared_ptr<IMessageRouter> JoynrClusterControllerRuntime::getMessageRouter()
+{
+    return ccMessageRouter;
+}
+
+void JoynrClusterControllerRuntime::enableAccessController(MessagingSettings& messagingSettings)
 {
     if (!messagingSettings.enableAccessController()) {
         return;
@@ -564,7 +564,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
     auto accessController = std::make_shared<joynr::AccessController>(
             *localCapabilitiesDirectory, *localDomainAccessController);
 
-    messageRouter->setAccessController(accessController);
+    ccMessageRouter->setAccessController(accessController);
 }
 
 void JoynrClusterControllerRuntime::registerRoutingProvider()

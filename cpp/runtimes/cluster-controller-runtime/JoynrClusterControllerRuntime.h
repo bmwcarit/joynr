@@ -110,6 +110,8 @@ protected:
     void initializeAllDependencies();
     void importPersistedLocalCapabilitiesDirectory();
 
+    std::shared_ptr<IMessageRouter> getMessageRouter() final;
+
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
     IDispatcher* ccDispatcher;
@@ -161,8 +163,7 @@ private:
 
     std::shared_ptr<CcMessageRouter> ccMessageRouter;
 
-    void enableAccessController(MessagingSettings& messagingSettings,
-                                std::shared_ptr<IMessageRouter> messageRouter);
+    void enableAccessController(MessagingSettings& messagingSettings);
     friend class ::JoynrClusterControllerRuntimeTest;
 };
 
