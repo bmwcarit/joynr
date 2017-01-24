@@ -266,13 +266,6 @@ void LibJoynrMessageRouter::removeNextHop(
             participantId, std::move(onSuccess), std::move(onErrorWrapper));
 }
 
-void LibJoynrMessageRouter::setAccessController(std::shared_ptr<IAccessController> accessController)
-{
-    // Child MessageRouter is not supposed to set a IAccessController
-    std::ignore = accessController;
-    return;
-}
-
 void LibJoynrMessageRouter::addMulticastReceiver(
         const std::string& multicastId,
         const std::string& subscriberParticipantId,

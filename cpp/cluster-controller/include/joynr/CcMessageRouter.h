@@ -92,8 +92,6 @@ public:
     /*
      * Implement methods from IMessageRouter
      */
-    void setAccessController(std::shared_ptr<IAccessController> accessController) final;
-
     void route(const JoynrMessage& message, std::uint32_t tryCount = 0) final;
 
     void addNextHop(
@@ -153,7 +151,6 @@ public:
     /*
      * Implement both IMessageRouter and RoutingAbstractProvider
      */
-
     void removeMulticastReceiver(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
@@ -168,13 +165,15 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
+    /*
+     * Public methods specific to CcMessageRouter
+     */
+    void setAccessController(std::shared_ptr<IAccessController> accessController);
+
     friend class MessageRunnable;
     friend class ConsumerPermissionCallback;
 
 private:
-    /*
-     * Public methods specific to CcMessageRouter
-     */
     void registerMulticastReceiver(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,

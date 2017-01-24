@@ -47,8 +47,6 @@ class JoynrRuntimeException;
 class JOYNR_EXPORT IMessageRouter
 {
 public:
-    virtual void setAccessController(std::shared_ptr<IAccessController> accessController) = 0;
-
     virtual void route(const JoynrMessage& message, std::uint32_t tryCount = 0) = 0;
 
     virtual void addNextHop(

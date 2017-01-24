@@ -85,8 +85,6 @@ public:
     /*
      * Implement methods from IMessageRouter
      */
-    void setAccessController(std::shared_ptr<IAccessController> accessController) final;
-
     void route(const JoynrMessage& message, std::uint32_t tryCount = 0) final;
 
     void addNextHop(

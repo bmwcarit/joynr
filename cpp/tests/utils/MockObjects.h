@@ -362,8 +362,6 @@ public:
 
     MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, std::uint32_t tryCount));
 
-    MOCK_METHOD1(setAccessController, void(std::shared_ptr<joynr::IAccessController> accessController));
-
     MOCK_METHOD6(registerMulticastReceiver, void(const std::string& multicastId,
                                                  const std::string& subscriberParticipantId,
                                                  const std::string& providerParticipantId,
