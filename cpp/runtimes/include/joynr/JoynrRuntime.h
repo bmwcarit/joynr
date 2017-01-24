@@ -196,6 +196,11 @@ protected:
     static std::unique_ptr<Settings> createSettings(const std::string& pathToLibjoynrSettings,
                                                     const std::string& pathToMessagingSettings);
 
+    bool checkAndLogCryptoFileExistence(const std::string& caPemFile,
+                                        const std::string& certPemFile,
+                                        const std::string& privateKeyPemFile,
+                                        Logger& logger);
+
     std::unique_ptr<SingleThreadedIOService> singleThreadIOService;
 
     /** @brief Factory for creating proxy instances */

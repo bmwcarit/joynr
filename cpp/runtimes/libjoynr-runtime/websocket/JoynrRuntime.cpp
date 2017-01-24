@@ -85,20 +85,24 @@ void JoynrRuntime::createRuntimeAsync(
         }
     };
 
-    std::shared_ptr<LibJoynrWebSocketRuntime> runtime(
-            new LibJoynrWebSocketRuntime(std::move(settings)), ConfigurableDeleter());
+    try {
+        std::shared_ptr<LibJoynrWebSocketRuntime> runtime(
+                new LibJoynrWebSocketRuntime(std::move(settings)), ConfigurableDeleter());
 
-    auto runtimeCreatedCallbackWrapper =
-            [ runtime, runtimeCreatedCallback = std::move(runtimeCreatedCallback) ]()
-    {
-        // Workaround. Can't move an unique_ptr into the lambda
-        std::unique_ptr<LibJoynrWebSocketRuntime> createdRuntime(runtime.get());
-        std::get_deleter<ConfigurableDeleter>(runtime)->enabled = false;
+        auto runtimeCreatedCallbackWrapper =
+                [ runtime, runtimeCreatedCallback = std::move(runtimeCreatedCallback) ]()
+        {
+            // Workaround. Can't move an unique_ptr into the lambda
+            std::unique_ptr<LibJoynrWebSocketRuntime> createdRuntime(runtime.get());
+            std::get_deleter<ConfigurableDeleter>(runtime)->enabled = false;
 
-        runtimeCreatedCallback(std::move(createdRuntime));
-    };
+            runtimeCreatedCallback(std::move(createdRuntime));
+        };
 
-    runtime->connect(std::move(runtimeCreatedCallbackWrapper));
+        runtime->connect(std::move(runtimeCreatedCallbackWrapper));
+    } catch (const exceptions::JoynrRuntimeException& exception) {
+        runtimeCreationErrorCallback(exception);
+    }
 }
 
 std::unique_ptr<Settings> JoynrRuntime::createSettings(const std::string& pathToLibjoynrSettings,

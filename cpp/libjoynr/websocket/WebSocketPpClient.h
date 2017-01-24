@@ -195,6 +195,9 @@ public:
 protected:
     enum class State { Disconnected, Disconnecting, Connecting, Connected };
 
+    Client endpoint;
+    ADD_LOGGER(WebSocketPpClient);
+
 private:
     void reconnect(
             const boost::system::error_code& reconnectTimerError = boost::system::error_code())
@@ -211,7 +214,10 @@ private:
                             reconnectTimerError.message());
         }
         bool secure = address.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS;
-        assert(!secure && "SSL is not yet supported");
+
+        assert((!secure && std::is_same<Config, websocketpp::config::asio_client>::value) ||
+               (secure && std::is_same<Config, websocketpp::config::asio_tls_client>::value));
+
         websocketpp::uri uri(secure, address.getHost(), address.getPort(), address.getPath());
         JOYNR_LOG_DEBUG(logger, "Connecting to websocket server {}", uri.str());
 
@@ -314,7 +320,6 @@ private:
         }
     }
 
-    Client endpoint;
     ConnectionHandle connection;
     std::atomic<bool> isRunning;
     boost::asio::steady_timer reconnectTimer;
@@ -331,8 +336,6 @@ private:
 
     std::shared_ptr<WebSocketPpSender<Client>> sender;
     WebSocketPpReceiver<Client> receiver;
-
-    ADD_LOGGER(WebSocketPpClient);
 };
 
 template <typename Config>

@@ -33,6 +33,7 @@ namespace joynr
 {
 class IWebSocketPpClient;
 class WebSocketLibJoynrMessagingSkeleton;
+class IWebSocketPpClient;
 
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime
 {
@@ -48,6 +49,7 @@ private:
 
     void connect(std::function<void()> runtimeCreatedCallback);
     void sendInitializationMsg();
+    void createWebsocketClient();
 
     WebSocketSettings wsSettings;
     std::shared_ptr<IWebSocketPpClient> websocket;
