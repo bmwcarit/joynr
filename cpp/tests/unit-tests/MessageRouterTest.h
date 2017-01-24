@@ -59,7 +59,12 @@ public:
         multicastMessagingSkeletonDirectory(std::make_shared<MulticastMessagingSkeletonDirectory>()),
         brokerURL("mqtt://globalTransport.example.com"),
         mqttTopic(""),
-        localTransport(std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>()),
+        localTransport(std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(
+                         joynr::system::RoutingTypes::WebSocketProtocol::Enum::WS,
+                         "host",
+                         4242,
+                         "path")
+                       ),
         globalTransport(std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerURL, mqttTopic))
     {
         singleThreadedIOService.start();
@@ -93,9 +98,6 @@ protected:
                     std::move(messageQueueForMessageRouter)
                 );
 
-        libJoynrMessageRouter->setParentRouter(std::make_unique<MockRoutingProxy>(),
-                                            std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(),
-                                            std::string("parentParticipantId"));
         return std::move(libJoynrMessageRouter);
     }
 
@@ -130,6 +132,7 @@ protected:
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
     std::string brokerURL;
     std::string mqttTopic;
+
     std::shared_ptr<const joynr::system::RoutingTypes::WebSocketAddress> localTransport;
     std::shared_ptr<const joynr::system::RoutingTypes::MqttAddress> globalTransport;
 
