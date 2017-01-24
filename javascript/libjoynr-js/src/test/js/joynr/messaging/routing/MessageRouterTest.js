@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ define([
                         var messagingStubSpy, messagingSkeletonSpy, messagingStubFactorySpy, messagingSkeletonFactorySpy;
                         var messageQueueSpy, messageRouter, routingProxySpy, parentMessageRouterAddress, incomingAddress;
                         var multicastAddressCalculatorSpy;
+                        var testGlobalClusterControllerAddress;
 
                         var createMessageRouter =
                                 function(
@@ -176,6 +177,20 @@ define([
                             typeRegistry = new TypeRegistry();
                             typeRegistry.addType("joynr.system.RoutingTypes.ChannelAddress", ChannelAddress);
                             typeRegistry.addType("joynr.system.RoutingTypes.BrowserAddress", BrowserAddress);
+
+                            testGlobalClusterControllerAddress = "testGlobalAddress";
+                            routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
+                               "addNextHop",
+                               "removeNextHop",
+                               "resolveNextHop",
+                               "addMulticastReceiver",
+                               "removeMulticastReceiver"
+                               ]);
+                            routingProxySpy.globalAddress = {
+                                get : null
+                            };
+                            spyOn(routingProxySpy.globalAddress, "get").and.returnValue(Promise.resolve(testGlobalClusterControllerAddress));
+
                             done();
                         });
 
@@ -388,6 +403,16 @@ define([
                                     }).catch(fail);
                                 });
 
+                        it("queries global address from routing provider", function(done) {
+                            messageRouter.setRoutingProxy(routingProxySpy)
+                            .then(function() {
+                                expect(routingProxySpy.globalAddress.get).toHaveBeenCalled();
+                                done();
+                            }).catch(function(error) {
+                                done.fail(error);
+                            });
+                        });
+
 
                         describe("addMulticastReceiver", function() {
                             var parameters;
@@ -406,11 +431,6 @@ define([
                                             parentMessageRouterAddress);
 
                                 messageRouter.setToKnown(parameters.providerParticipantId);
-                                routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-                                    "addNextHop",
-                                    "addMulticastReceiver",
-                                    "removeMulticastReceiver"
-                                ]);
 
                                routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
 
@@ -481,11 +501,6 @@ define([
                                             parentMessageRouterAddress);
 
                                 messageRouter.setToKnown(parameters.providerParticipantId);
-
-                                routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-                                    "addMulticastReceiver",
-                                    "removeMulticastReceiver"
-                                ]);
 
                                 routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
                                 routingProxySpy.removeMulticastReceiver.and.returnValue(Promise.resolve());
@@ -687,11 +702,6 @@ define([
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
-                                    routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-                                        "removeNextHop",
-                                        "addNextHop",
-                                        "resolveNextHop"
-                                    ]);
                                     routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
                                     var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
@@ -721,9 +731,6 @@ define([
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
-                                    routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-                                        "resolveNextHop"
-                                    ]);
                                     routingProxySpy.resolveNextHop.and.returnValue(Promise.resolve({ resolved: true }));
                                     messageRouter.setRoutingProxy(routingProxySpy);
 
@@ -749,11 +756,6 @@ define([
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
-                                    routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-                                        "removeNextHop",
-                                        "addNextHop",
-                                        "resolveNextHop"
-                                    ]);
 
                                     var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
@@ -790,11 +792,6 @@ define([
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
-                                    routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-                                        "removeNextHop",
-                                        "addNextHop",
-                                        "resolveNextHop"
-                                    ]);
 
                                     var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
@@ -829,11 +826,6 @@ define([
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
-                                    routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-                                        "removeNextHop",
-                                        "addNextHop",
-                                        "resolveNextHop"
-                                    ]);
 
                                     var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
@@ -872,11 +864,6 @@ define([
                                                     messageQueueSpy,
                                                     incomingAddress,
                                                     parentMessageRouterAddress);
-                                    routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-                                        "removeNextHop",
-                                        "addNextHop",
-                                        "resolveNextHop"
-                                    ]);
                                     routingProxySpy.resolveNextHop.and.returnValue(Promise.resolve({
                                         resolved:true
                                     }));

@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ define(
             "joynr/dispatching/subscription/PublicationManager",
             "joynr/dispatching/subscription/SubscriptionManager",
             "joynr/dispatching/Dispatcher",
+            "joynr/exceptions/JoynrException",
             "joynr/security/PlatformSecurityManager",
             "joynr/messaging/webmessaging/WebMessagingStub",
             "joynr/messaging/webmessaging/WebMessagingSkeleton",
@@ -82,6 +83,7 @@ define(
                 PublicationManager,
                 SubscriptionManager,
                 Dispatcher,
+                JoynrException,
                 PlatformSecurityManager,
                 WebMessagingStub,
                 WebMessagingSkeleton,
@@ -503,11 +505,13 @@ define(
                                         discoveryScope : DiscoveryScope.LOCAL_ONLY
                                     }),
                                     staticArbitration : true
+                                }).catch(function(error) {
+                                    throw new Error("Failed to create routing proxy: "
+                                            + error
+                                            + (error instanceof JoynrException ? " " + error.detailMessage : ""));
                                 }).then(function(newRoutingProxy) {
                                     messageRouter.setRoutingProxy(newRoutingProxy);
                                     return newRoutingProxy;
-                                }).catch(function(error) {
-                                    throw new Error("Failed to create routing proxy: " + error);
                                 });
 
                             // when everything's ready we can trigger the app

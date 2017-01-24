@@ -31,6 +31,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/dispatching/subscription/PublicationManager",
     "joynr/dispatching/subscription/SubscriptionManager",
     "joynr/dispatching/Dispatcher",
+    "joynr/exceptions/JoynrException",
     "joynr/security/PlatformSecurityManager",
     "joynr/messaging/websocket/SharedWebSocket",
     "joynr/messaging/websocket/WebSocketMessagingSkeleton",
@@ -81,6 +82,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         PublicationManager,
         SubscriptionManager,
         Dispatcher,
+        JoynrException,
         PlatformSecurityManager,
         SharedWebSocket,
         WebSocketMessagingSkeleton,
@@ -473,11 +475,13 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                                 discoveryScope : DiscoveryScope.LOCAL_ONLY
                             }),
                             staticArbitration : true
+                        }).catch(function(error) {
+                            throw new Error("Failed to create routing proxy: "
+                                    + error
+                                    + (error instanceof JoynrException ? " " + error.detailMessage : ""));
                         }).then(function(newRoutingProxy) {
                             messageRouter.setRoutingProxy(newRoutingProxy);
                             return newRoutingProxy;
-                        }).catch(function(error) {
-                            throw new Error("Failed to create routing proxy: " + error);
                         });
 
                     // when everything's ready we can trigger the app

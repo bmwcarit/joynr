@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,19 @@ define(
             "joynr/system/LoggerFactory",
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/messaging/JoynrMessage",
+            "joynr/exceptions/JoynrException",
             "joynr/util/Typing",
             "joynr/util/JSONSerializer",
         ],
-        function(Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, InProcessAddress, JoynrMessage, Typing, JSONSerializer) {
+        function(Promise,
+                MulticastWildcardRegexFactory,
+                DiagnosticTags,
+                LoggerFactory,
+                InProcessAddress,
+                JoynrMessage,
+                JoynrException,
+                Typing,
+                JSONSerializer) {
 
             /**
              * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable}
@@ -83,6 +92,7 @@ define(
                 var multicastAddressCalculator = settings.multicastAddressCalculator;
                 var messagingSkeletonFactory = settings.messagingSkeletonFactory;
                 var multicastReceiversRegistry = {};
+                var globalClusterControllerAddress;
 
                 // if (settings.routingTable === undefined) {
                 // throw new Error("routing table is undefined");
@@ -103,6 +113,10 @@ define(
 
                 function isReady() {
                     return started;
+                }
+
+                function setGlobalClusterControllerAddress(newAddress) {
+                    globalClusterControllerAddress = newAddress;
                 }
 
                 /**
@@ -198,6 +212,15 @@ define(
                         function setRoutingProxy(newRoutingProxy) {
                             var hop, participantId, errorFct, receiver, queuedCall;
 
+                            routingProxy = newRoutingProxy;
+
+                            var globalAddressPromise = routingProxy.globalAddress.get().then(function(globalAddress) {
+                                setGlobalClusterControllerAddress(globalAddress);
+                            }).catch(function(error) {
+                                throw new Error("Failed to get globalAddress from parent router: " + error
+                                        + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                            });
+
                             errorFct = function(error) {
                                 if (!isReady()) {
                                     //in this case, the error is expected, e.g. during shut down
@@ -208,7 +231,6 @@ define(
                                 throw new Error(error);
                             };
 
-                            routingProxy = newRoutingProxy;
                             if (routingProxy !== undefined) {
                                 if (routingProxy.proxyParticipantId !== undefined) {
                                     that.addNextHopToParentRoutingTable(
@@ -250,6 +272,7 @@ define(
                             queuedRemoveNextHopCalls = undefined;
                             queuedAddMulticastReceiverCalls = undefined;
                             queuedRemoveMulticastReceiverCalls = undefined;
+                            return globalAddressPromise;
                         };
 
                 /*
