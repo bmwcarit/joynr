@@ -171,14 +171,6 @@ void AbstractMessageRouter::sendMessages(
     }
 }
 
-void AbstractMessageRouter::sendMessage(
-        const JoynrMessage& message,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
-        std::uint32_t tryCount)
-{
-    scheduleMessage(message, destAddress, tryCount);
-}
-
 void AbstractMessageRouter::scheduleMessage(
         const JoynrMessage& message,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,

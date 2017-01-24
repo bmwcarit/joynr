@@ -163,7 +163,7 @@ void CcMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
         }
 
         // If this point is reached, the message can be sent without delay
-        sendMessage(message, destAddress, tryCount);
+        scheduleMessage(message, destAddress, tryCount);
     }
 }
 
@@ -422,7 +422,7 @@ void ConsumerPermissionCallback::hasConsumerPermission(bool hasPermission)
 {
     if (hasPermission) {
         try {
-            owningMessageRouter.sendMessage(message, destination);
+            owningMessageRouter.scheduleMessage(message, destination);
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Message with Id {} could not be sent. Error: {}",

@@ -101,10 +101,6 @@ protected:
     std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
 
-    void sendMessage(const JoynrMessage& message,
-                     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
-                     std::uint32_t tryCount = 0);
-
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
@@ -113,7 +109,7 @@ protected:
 
     void scheduleMessage(const JoynrMessage& message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
-                         std::uint32_t tryCount,
+                         std::uint32_t tryCount = 0,
                          std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 
     void activateMessageCleanerTimer();

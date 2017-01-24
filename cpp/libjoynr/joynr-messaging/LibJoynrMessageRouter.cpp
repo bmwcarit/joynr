@@ -156,7 +156,7 @@ void LibJoynrMessageRouter::route(const JoynrMessage& message, std::uint32_t try
 
     // If this point is reached, the message can be sent without delay
     for (std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress : destAddresses) {
-        sendMessage(message, destAddress, tryCount);
+        scheduleMessage(message, destAddress, tryCount);
     }
 }
 
