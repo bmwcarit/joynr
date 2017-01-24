@@ -66,25 +66,19 @@ class WebSocketAddress;
  * @class WebSocketCcMessagingSkeleton
  * @brief Messaging skeleton for the cluster controller
  */
-class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT WebSocketCcMessagingSkeleton : public IMessaging
+template <typename Config>
+class WebSocketCcMessagingSkeleton : public IMessaging
 {
-    using Config = websocketpp::config::asio;
-    using MessagePtr = Config::message_type::ptr;
-    using Server = websocketpp::server<Config>;
-    using ConnectionHandle = websocketpp::connection_hdl;
-
 public:
     /**
      * @brief Constructor
      * @param messageRouter Router
      * @param messagingStubFactory Factory
-     * @param serverAddress Address of the server
      */
     WebSocketCcMessagingSkeleton(
             boost::asio::io_service& ioService,
             std::shared_ptr<MessageRouter> messageRouter,
-            std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
-            const system::RoutingTypes::WebSocketAddress& serverAddress)
+            std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory)
             : endpoint(),
               receiver(),
               clients(),
@@ -117,14 +111,6 @@ public:
 
         receiver.registerReceiveCallback(
                 [this](const std::string& msg) { onTextMessageReceived(msg); });
-
-        try {
-            endpoint.set_reuse_addr(true);
-            endpoint.listen(serverAddress.getPort());
-            endpoint.start_accept();
-        } catch (const std::exception& e) {
-            JOYNR_LOG_ERROR(logger, "WebSocket server could not be started: \"{}\"", e.what());
-        }
     }
 
     /**
@@ -149,6 +135,25 @@ public:
             messageRouter->route(message);
         } catch (exceptions::JoynrRuntimeException& e) {
             onFailure(e);
+        }
+    }
+
+protected:
+    using MessagePtr = typename Config::message_type::ptr;
+    using Server = websocketpp::server<Config>;
+    using ConnectionHandle = websocketpp::connection_hdl;
+
+    ADD_LOGGER(WebSocketCcMessagingSkeleton);
+    Server endpoint;
+
+    void startAccept(std::uint16_t port)
+    {
+        try {
+            endpoint.set_reuse_addr(true);
+            endpoint.listen(port);
+            endpoint.start_accept();
+        } catch (const std::exception& e) {
+            JOYNR_LOG_FATAL(logger, "WebSocket server could not be started: \"{}\"", e.what());
         }
     }
 
@@ -181,7 +186,7 @@ private:
 
                 messagingStubFactory->addClient(clientAddress, sender);
 
-                Server::connection_ptr connection = endpoint.get_con_from_hdl(hdl);
+                typename Server::connection_ptr connection = endpoint.get_con_from_hdl(hdl);
                 using namespace std::placeholders;
                 connection->set_message_handler(std::bind(
                         &WebSocketPpReceiver<Server>::onMessageReceived, &receiver, _1, _2));
@@ -250,7 +255,6 @@ private:
                 message, "{\"_typeName\":\"joynr.system.RoutingTypes.WebSocketClientAddress\"");
     }
 
-    Server endpoint;
     WebSocketPpReceiver<Server> receiver;
     /*! List of client connections */
     std::map<ConnectionHandle,
@@ -262,9 +266,11 @@ private:
     /*! Factory to build outgoing messaging stubs */
     std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
 
-    ADD_LOGGER(WebSocketCcMessagingSkeleton);
     DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
 };
+
+template <typename Config>
+INIT_LOGGER(WebSocketCcMessagingSkeleton<Config>);
 
 } // namespace joynr
 #endif // WEBSOCKETCCMESSAGINGSKELETON_H

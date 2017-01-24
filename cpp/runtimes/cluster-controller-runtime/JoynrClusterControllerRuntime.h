@@ -56,7 +56,6 @@ class InProcessConnectorFactory;
 class JoynrMessagingConnectorFactory;
 class IDispatcher;
 class InProcessPublicationSender;
-class WebSocketCcMessagingSkeleton;
 class InProcessMessagingSkeleton;
 class HttpMessagingSkeleton;
 class MqttMessagingSkeleton;
@@ -144,7 +143,7 @@ protected:
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
-    std::shared_ptr<WebSocketCcMessagingSkeleton> wsCcMessagingSkeleton;
+    std::shared_ptr<IMessaging> wsCcMessagingSkeleton;
     bool httpMessagingIsRunning;
     bool mqttMessagingIsRunning;
     bool doMqttMessaging;

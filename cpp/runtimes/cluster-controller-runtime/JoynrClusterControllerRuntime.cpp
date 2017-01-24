@@ -26,7 +26,8 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <mosquittopp.h>
-#include "websocket/WebSocketCcMessagingSkeleton.h"
+#include "websocket/WebSocketCcMessagingSkeletonTLS.h"
+#include "websocket/WebSocketCcMessagingSkeletonNonTLS.h"
 
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
 #include "cluster-controller/http-communication-manager/HttpMessagingSkeleton.h"
@@ -255,11 +256,11 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     });
     system::RoutingTypes::WebSocketAddress wsAddress =
             wsSettings.createClusterControllerMessagingAddress();
-    wsCcMessagingSkeleton =
-            std::make_shared<WebSocketCcMessagingSkeleton>(singleThreadIOService->getIOService(),
-                                                           messageRouter,
-                                                           wsMessagingStubFactory,
-                                                           wsAddress);
+    wsCcMessagingSkeleton = std::make_shared<WebSocketCcMessagingSkeletonNonTLS>(
+            singleThreadIOService->getIOService(),
+            messageRouter,
+            wsMessagingStubFactory,
+            wsAddress);
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
     /* LibJoynr */
