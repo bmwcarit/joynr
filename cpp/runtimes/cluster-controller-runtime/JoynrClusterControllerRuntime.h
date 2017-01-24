@@ -64,6 +64,7 @@ class IPlatformSecurityManager;
 class Settings;
 class JoynrMessageSender;
 class IMessaging;
+class WebSocketMessagingStubFactory;
 
 namespace infrastructure
 {
@@ -144,14 +145,18 @@ protected:
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
     std::shared_ptr<IMessaging> wsCcMessagingSkeleton;
+    std::shared_ptr<IMessaging> wsTLSCcMessagingSkeleton;
     bool httpMessagingIsRunning;
     bool mqttMessagingIsRunning;
     bool doMqttMessaging;
     bool doHttpMessaging;
+    std::shared_ptr<WebSocketMessagingStubFactory> wsMessagingStubFactory;
 
     ADD_LOGGER(JoynrClusterControllerRuntime);
 
 private:
+    void createWsCCMessagingSkeletons();
+
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
     MqttSettings mqttSettings;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
