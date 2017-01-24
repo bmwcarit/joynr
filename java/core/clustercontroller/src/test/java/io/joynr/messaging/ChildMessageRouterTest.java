@@ -82,6 +82,7 @@ public class ChildMessageRouterTest {
         message = new JoynrMessage();
         message.setExpirationDate(ExpiryDate.fromRelativeTtl(10000));
         message.setTo(unknownParticipantId);
+        message.setLocalMessage(true);
 
         messageRouter = new ChildMessageRouter(routingTable,
                                                incomingAddress,
@@ -97,7 +98,6 @@ public class ChildMessageRouterTest {
         when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
         when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
         when(parentAddress.getChannelId()).thenReturn("MessageRouterImplTestChannel");
-
     }
 
     @Test

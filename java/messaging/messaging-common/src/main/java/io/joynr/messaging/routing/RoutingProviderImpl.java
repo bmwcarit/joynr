@@ -52,7 +52,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
      * @param messageRouter handles the logic for the RoutingProvider
      */
     @Inject
-    public RoutingProviderImpl(MessageRouter messageRouter, GlobalAddressProvider globalAddressProvider) {
+    public RoutingProviderImpl(final MessageRouter messageRouter, GlobalAddressProvider globalAddressProvider) {
         this.messageRouter = messageRouter;
         this.globalAddressProvider = globalAddressProvider;
 

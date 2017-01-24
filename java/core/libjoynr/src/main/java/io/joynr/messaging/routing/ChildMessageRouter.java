@@ -62,6 +62,7 @@ public class ChildMessageRouter extends MessageRouterImpl {
     private Address incomingAddress;
     private Set<String> deferredParentHopsParticipantIds = new HashSet<>();
     private Map<String, DeferrableRegistration> deferredMulticastRegistrations = new HashMap<>();
+    private String replyToAddress;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -82,6 +83,12 @@ public class ChildMessageRouter extends MessageRouterImpl {
               addressManager,
               multicastReceiverRegistry);
         this.incomingAddress = incomingAddress;
+        this.replyToAddress = null;
+    }
+
+    @Override
+    protected String getReplyToAddress() {
+        return replyToAddress;
     }
 
     @Override
@@ -185,6 +192,9 @@ public class ChildMessageRouter extends MessageRouterImpl {
             }
         }
         deferredParentHopsParticipantIds.clear();
+
+        String globalAddress = parentRouter.getGlobalAddress();
+        replyToAddress = globalAddress;
     }
 
     /**

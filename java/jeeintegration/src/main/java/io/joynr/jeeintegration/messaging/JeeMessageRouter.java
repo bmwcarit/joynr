@@ -51,6 +51,7 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.MessageRouterIm
 
     private static final Logger LOG = LoggerFactory.getLogger(JeeMessageRouter.class);
     private ScheduledExecutorService scheduler;
+    private String replyToAddress;
 
     @Inject
     public JeeMessageRouter(RoutingTable routingTable,
@@ -81,5 +82,14 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.MessageRouterIm
     protected void schedule(Runnable runnable, String messageId, long delay, TimeUnit timeUnit) {
         LOG.trace("Scheduling {} on {} with delay {} {}", new Object[]{ runnable, scheduler, delay, timeUnit });
         scheduler.schedule(runnable, delay, timeUnit);
+    }
+
+    @Override
+    protected String getReplyToAddress() {
+        return replyToAddress;
+    }
+    
+    protected void setReplyToAddress(String replyToAddress) {
+        this.replyToAddress = replyToAddress;
     }
 }
