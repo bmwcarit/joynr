@@ -128,6 +128,7 @@ requirejs([
     "tests/joynr/proxy/SubscriptionQosTest",
     "tests/joynr/proxy/ProxyBuilderTest",
     //"tests/joynr/start/InProcessRuntimeTest",
+    "tests/joynr/util/CapabilitiesUtilTest",
     "tests/joynr/util/InProcessStubAndSkeletonTest",
     "tests/joynr/util/UtilTest",
     "tests/joynr/util/JSONSerializerTest",
@@ -145,11 +146,13 @@ requirejs([
     "tests/joynr/dispatching/types/SubscriptionPublicationTest",
     "tests/joynr/dispatching/types/RequestTest",
     "tests/joynr/dispatching/types/SubscriptionRequestTest",
+    "tests/joynr/dispatching/types/MulticastRequestTest",
     "tests/joynr/dispatching/types/ReplyTest",
     "tests/joynr/dispatching/subscription/SubscriptionUtilTest",
     "tests/joynr/dispatching/subscription/PublicationManagerTest",
     "tests/joynr/dispatching/subscription/SubscriptionManagerTest",
     "tests/joynr/dispatching/DispatcherTest",
+    "tests/joynr/dispatching/TtlUpliftTest",
     "tests/joynr/dispatching/RequestReplyManagerTest"
 ], function() {
     console.log("all tests modules loaded");

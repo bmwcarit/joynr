@@ -54,7 +54,7 @@ public:
     // ownership of messageSender is not passed to dispatcher, so dispatcher is not responsible for
     // deleting it.
     // Todo: should be changed to a std::shared_ptr or reference.
-    Dispatcher(JoynrMessageSender* messageSender,
+    Dispatcher(std::shared_ptr<JoynrMessageSender> messageSender,
                boost::asio::io_service& ioService,
                int maxThreads = 1);
 
@@ -73,7 +73,8 @@ public:
 
     void receive(const JoynrMessage& message) override;
 
-    void registerSubscriptionManager(ISubscriptionManager* subscriptionManager) override;
+    void registerSubscriptionManager(
+            std::shared_ptr<ISubscriptionManager> subscriptionManager) override;
 
     void registerPublicationManager(PublicationManager* publicationManager) override;
 
@@ -91,11 +92,11 @@ private:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Dispatcher);
-    JoynrMessageSender* messageSender;
+    std::shared_ptr<JoynrMessageSender> messageSender;
     RequestCallerDirectory requestCallerDirectory;
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;
-    ISubscriptionManager* subscriptionManager;
+    std::shared_ptr<ISubscriptionManager> subscriptionManager;
     ThreadPool handleReceivedMessageThreadPool;
     ADD_LOGGER(Dispatcher);
     std::mutex subscriptionHandlingMutex;

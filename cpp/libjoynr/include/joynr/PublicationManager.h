@@ -346,6 +346,10 @@ private:
                               std::shared_ptr<SubscriptionRequest> subscriptionRequest,
                               std::shared_ptr<exceptions::JoynrRuntimeException> exception);
 
+    void addSubscriptionCleanupIfNecessary(std::shared_ptr<Publication> publication,
+                                           std::shared_ptr<SubscriptionQos> qos,
+                                           std::string& subscriptionId);
+
     void handleAttributeSubscriptionRequest(
             std::shared_ptr<SubscriptionRequestInformation> requestInfo,
             std::shared_ptr<RequestCaller> requestCaller,

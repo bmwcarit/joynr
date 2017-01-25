@@ -83,6 +83,17 @@ std::unordered_set<std::string> MulticastReceiverDirectory::getReceivers(
     return foundReceivers;
 }
 
+std::vector<std::string> MulticastReceiverDirectory::getMulticastIds() const
+{
+    std::vector<std::string> multicastIds;
+
+    for (const auto& multicastReceiver : multicastReceivers) {
+        multicastIds.push_back(multicastReceiver.first.multicastId);
+    }
+
+    return multicastIds;
+}
+
 bool MulticastReceiverDirectory::contains(const std::string& multicastId)
 {
     std::lock_guard<std::recursive_mutex> lock(mutex);

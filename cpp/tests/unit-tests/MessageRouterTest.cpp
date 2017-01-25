@@ -40,6 +40,7 @@
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/Util.h"
 
 using ::testing::InvokeArgument;
 using ::testing::Pointee;
@@ -216,3 +217,4 @@ TYPED_TEST(MessageRouterTest, restoreRoutingTable) {
                 create(Pointee(Eq(*address)))).Times(1);
     this->messageRouter->route(this->joynrMessage);
 }
+

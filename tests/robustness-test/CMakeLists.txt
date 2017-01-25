@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(robustness-tests-0.23.0-SNAPSHOT)
+project(robustness-tests-0.24.0-SNAPSHOT)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -23,7 +23,7 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.23.0 REQUIRED)
+find_package(Joynr 0.24.0 REQUIRED)
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
@@ -197,6 +197,10 @@ endif(NOT DEFINED JOYNR_SERVER_HOST)
 if(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
     set(JOYNR_SERVER_HTTP_PORT "8080")
 endif(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
+
+if(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
+    set(JOYNR_SERVER_MQTT_PORT "1883")
+endif(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp-resources/robustness-tests-provider.settings

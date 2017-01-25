@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,7 +268,14 @@ protected:
 
     std::shared_ptr<MyTestProvider> registerProvider(JoynrClusterControllerRuntime& runtime) {
         auto testProvider = std::make_shared<MyTestProvider>();
-        providerParticipantId = runtime.registerProvider<tests::testProvider>(domainName, testProvider);
+        types::ProviderQos providerQos;
+        std::chrono::milliseconds millisSinceEpoch =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch());
+        providerQos.setPriority(millisSinceEpoch.count());
+        providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+        providerQos.setSupportsOnChangeSubscriptions(true);
+        providerParticipantId = runtime.registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
         // This wait is necessary, because registerProvider is async, and a lookup could occur
         // before the register has finished.
@@ -282,7 +289,7 @@ protected:
     }
 
     std::shared_ptr<tests::testProxy> buildProxy(JoynrClusterControllerRuntime& runtime) {
-        ProxyBuilder<tests::testProxy>* testProxyBuilder
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
                 = runtime.createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -293,11 +300,9 @@ protected:
 
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                                   ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
 
-        delete testProxyBuilder;
         return testProxy;
     }
 
@@ -333,10 +338,8 @@ protected:
 
         std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-        std::int64_t minInterval_ms = 50;
-        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                    500000,   // validity_ms
-                    minInterval_ms);  // minInterval_ms
+        auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+        subscriptionQos->setValidityMs(500000);
 
         subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);
 
@@ -375,6 +378,7 @@ protected:
         std::int64_t minInterval_ms = 50;
         auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                     500000,   // validity_ms
+                    1000,     // publication ttl
                     minInterval_ms);  // minInterval_ms
 
         subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);

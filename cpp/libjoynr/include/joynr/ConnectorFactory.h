@@ -22,10 +22,10 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/IClientCache.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 #include <string>
 
@@ -43,17 +43,16 @@ public:
     template <class T>
     std::unique_ptr<T> create(const std::string& domain,
                               const std::string proxyParticipantId,
-                              const std::string& providerParticipantId,
                               const MessagingQos& qosSettings,
-                              IClientCache* cache,
-                              bool cached,
-                              bool createInProcessConnector)
+                              bool createInProcessConnector,
+                              const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
     {
         if (createInProcessConnector) {
-            return inProcessConnectorFactory->create<T>(proxyParticipantId, providerParticipantId);
+            return inProcessConnectorFactory->create<T>(
+                    proxyParticipantId, providerDiscoveryEntry.getParticipantId());
         } else {
             return joynrMessagingConnectorFactory->create<T>(
-                    domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached);
+                    domain, proxyParticipantId, qosSettings, providerDiscoveryEntry);
         }
     }
 

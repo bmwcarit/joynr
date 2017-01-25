@@ -51,6 +51,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.SubscriptionException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
@@ -70,6 +71,7 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
+import joynr.UnicastSubscriptionQos;
 import joynr.exceptions.ProviderRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +98,10 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private ScheduledExecutorService cleanupScheduler;
     private Dispatcher dispatcher;
     private ProviderDirectory providerDirectory;
+
+    @Inject(optional = true)
+    @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
+    private long ttlUpliftMs = 0;
 
     static class PublicationInformation {
         private String providerParticipantId;
@@ -136,8 +142,12 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             return pubState;
         }
 
-        public SubscriptionQos getQos() {
-            return subscriptionRequest.getQos();
+        public UnicastSubscriptionQos getQos() {
+            if (subscriptionRequest.getQos() instanceof UnicastSubscriptionQos) {
+                return (UnicastSubscriptionQos) subscriptionRequest.getQos();
+            } else {
+                throw new IllegalArgumentException("Publication information should only be stored for unicast subscription requests");
+            }
         }
 
         @Override
@@ -236,6 +246,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
             messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
         } else {
+            // TTL uplift will be done in JoynrMessageFactory
             messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
         }
         return messagingQos;
@@ -270,7 +281,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                     String providerParticipantId,
                                                     BroadcastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
-        logger.debug("adding broadcast publication: {}", subscriptionRequest);
+        logger.trace("adding broadcast publication: {}", subscriptionRequest);
 
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
@@ -295,7 +306,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                     String providerParticipantId,
                                                     MulticastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
-        logger.debug("Received multicast subscription request {} for provider with participant ID {}",
+        logger.trace("Received multicast subscription request {} for provider with participant ID {}",
                      subscriptionRequest,
                      providerParticipantId);
         dispatcher.sendSubscriptionReply(providerParticipantId,
@@ -334,7 +345,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             }
 
             addSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
-            logger.debug("publication added: " + subscriptionRequest.toString());
+            logger.trace("publication added: " + subscriptionRequest.toString());
         } catch (SubscriptionException e) {
             sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
         }
@@ -348,6 +359,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
             messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
         } else {
+            // TTL uplift will be done in JoynrMessageFactory
             messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
         }
 
@@ -365,7 +377,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
                 @Override
                 public void run() {
-                    logger.debug("Publication with Id {} expired...", subscriptionId);
+                    logger.trace("Publication with Id {} expired...", subscriptionId);
                     removePublication(subscriptionId);
                 }
 
@@ -377,19 +389,32 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private void removePublicationIfItExists(SubscriptionRequest subscriptionRequest) {
         String subscriptionId = subscriptionRequest.getSubscriptionId();
         if (publicationExists(subscriptionId)) {
-            logger.debug("updating publication: {}", subscriptionRequest);
+            logger.trace("updating publication: {}", subscriptionRequest);
             removePublication(subscriptionId);
         } else {
-            logger.debug("adding publication: {}", subscriptionRequest);
+            logger.trace("adding publication: {}", subscriptionRequest);
         }
     }
 
     private long validateAndGetSubscriptionEndDelay(SubscriptionRequest subscriptionRequest) {
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
-        long subscriptionEndDelay = subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE ? SubscriptionQos.NO_EXPIRY_DATE
-                : subscriptionQos.getExpiryDateMs() - System.currentTimeMillis();
+        long subscriptionEndDelay = getSubscriptionEndDelay(subscriptionQos);
         if (subscriptionEndDelay < 0) {
             throw new SubscriptionException(subscriptionRequest.getSubscriptionId(), "Subscription expired.");
+        }
+        return subscriptionEndDelay;
+    }
+
+    private long getSubscriptionEndDelay(SubscriptionQos subscriptionQos) {
+        long subscriptionEndDelay;
+        if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
+            subscriptionEndDelay = SubscriptionQos.NO_EXPIRY_DATE;
+        } else {
+            if (subscriptionQos.getExpiryDateMs() > (Long.MAX_VALUE - ttlUpliftMs)) {
+                subscriptionEndDelay = Long.MAX_VALUE - System.currentTimeMillis();
+            } else {
+                subscriptionEndDelay = subscriptionQos.getExpiryDateMs() + ttlUpliftMs - System.currentTimeMillis();
+            }
         }
         return subscriptionEndDelay;
     }
@@ -413,7 +438,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                    subscriptionRequest,
                                    providerDirectory.get(providerParticipantId));
         } else {
-            logger.debug("Adding subscription request for non existing provider to queue.");
+            logger.trace("Adding subscription request for non existing provider to queue.");
             PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                        proxyParticipantId,
                                                                                        subscriptionRequest);
@@ -526,9 +551,10 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     }
 
     private boolean isExpired(PublicationInformation publicationInformation) {
-        long expiryDate = publicationInformation.subscriptionRequest.getQos().getExpiryDateMs();
-        logger.debug("ExpiryDate - System.currentTimeMillis: " + (expiryDate - System.currentTimeMillis()));
-        return (expiryDate != SubscriptionQos.NO_EXPIRY_DATE && expiryDate <= System.currentTimeMillis());
+        SubscriptionQos subscriptionQos = publicationInformation.subscriptionRequest.getQos();
+        long subscriptionEndDelay = getSubscriptionEndDelay(subscriptionQos);
+        logger.trace("ExpiryDate - System.currentTimeMillis: " + subscriptionEndDelay);
+        return (subscriptionEndDelay != SubscriptionQos.NO_EXPIRY_DATE && subscriptionEndDelay <= 0);
     }
 
     /**
@@ -571,12 +597,12 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                     sendPublication(publication, publicationInformation);
                 }
 
-                logger.debug("attribute changed for subscription id: {} sending publication if delay > minInterval.",
+                logger.trace("attribute changed for subscription id: {} sending publication if delay > minInterval.",
                              subscriptionId);
             }
 
         } else {
-            logger.error("subscription {} has expired but attributeValueChanged has been called", subscriptionId);
+            logger.trace("subscription {} has expired but attributeValueChanged has been called", subscriptionId);
         }
 
     }
@@ -592,9 +618,9 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                         - publicationInformation.getState().getTimeOfLastPublication()) {
                     sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
                                     publicationInformation);
-                    logger.debug("event occured changed for subscription id: {} sending publication: ", subscriptionId);
+                    logger.trace("event occured changed for subscription id: {} sending publication: ", subscriptionId);
                 } else {
-                    logger.debug("Two subsequent broadcasts of event " + publicationInformation.getSubscribedToName()
+                    logger.trace("Two subsequent broadcasts of event " + publicationInformation.getSubscribedToName()
                             + " occured within minInterval of subscription with id "
                             + publicationInformation.getSubscriptionId()
                             + ". Event will not be sent to the subscribing client.");
@@ -602,7 +628,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             }
 
         } else {
-            logger.error("subscription {} has expired but eventOccurred has been called", subscriptionId);
+            logger.trace("subscription {} has expired but eventOccurred has been called", subscriptionId);
         }
 
     }
@@ -722,7 +748,8 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                     JsonMappingException,
                                                     IOException {
         MessagingQos messagingQos = new MessagingQos();
-        messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtlMs());
+        // TTL uplift will be done in JoynrMessageFactory
+        messagingQos.setTtl_ms(publicationInformation.getQos().getPublicationTtlMs());
         Set<String> toParticipantIds = new HashSet<>();
         toParticipantIds.add(publicationInformation.proxyParticipantId);
         dispatcher.sendSubscriptionPublication(publicationInformation.providerParticipantId,
@@ -737,7 +764,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                   String multicastName,
                                   String[] partitions,
                                   Object... values) {
-        logger.debug("Multicast occurred for {} / {} / {} / {}",
+        logger.trace("Multicast occurred for {} / {} / {} / {}",
                      providerParticipantId,
                      multicastName,
                      Arrays.toString(partitions),

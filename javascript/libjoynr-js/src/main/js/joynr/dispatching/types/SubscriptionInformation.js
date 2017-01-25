@@ -53,6 +53,23 @@ define("joynr/dispatching/types/SubscriptionInformation", [
             }
         }
 
+        /*
+         * the following members may contain native timer objects, which cannot
+         * be serialized via JSON.stringify(), hence they must be excluded
+         */
+        Object.defineProperty(this, 'endDateTimeout', {
+            enumerable : false,
+            configurable : false,
+            writable : true,
+            value : undefined
+        });
+        Object.defineProperty(this, 'subscriptionInterval', {
+            enumerable : false,
+            configurable : false,
+            writable : true,
+            value : undefined
+        });
+
         /**
          * The joynr type name
          *

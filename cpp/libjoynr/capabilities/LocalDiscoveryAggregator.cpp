@@ -33,6 +33,7 @@
 #include "joynr/types/Version.h"
 #include "joynr/system/IRouting.h"
 #include "joynr/system/IDiscovery.h"
+#include "joynr/CapabilityUtils.h"
 
 namespace joynr
 {
@@ -51,7 +52,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             joynr::system::IRouting::MAJOR_VERSION, joynr::system::IRouting::MINOR_VERSION);
     joynr::types::Version discoveryProviderVersion(
             joynr::system::IDiscovery::MAJOR_VERSION, joynr::system::IDiscovery::MINOR_VERSION);
-    joynr::types::DiscoveryEntry routingProviderDiscoveryEntry(
+    joynr::types::DiscoveryEntryWithMetaInfo routingProviderDiscoveryEntry(
             routingProviderVersion,
             systemServicesSettings.getDomain(),
             joynr::system::IRouting::INTERFACE_NAME(),
@@ -59,10 +60,11 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             joynr::types::ProviderQos(),
             lastSeenDateMs,
             expiryDateMs,
-            defaultPublicKeyId);
+            defaultPublicKeyId,
+            true);
     provisionedDiscoveryEntries.insert(std::make_pair(
             routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
-    joynr::types::DiscoveryEntry discoveryProviderDiscoveryEntry(
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryProviderDiscoveryEntry(
             discoveryProviderVersion,
             systemServicesSettings.getDomain(),
             joynr::system::IDiscovery::INTERFACE_NAME(),
@@ -70,7 +72,8 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             joynr::types::ProviderQos(),
             lastSeenDateMs,
             expiryDateMs,
-            defaultPublicKeyId);
+            defaultPublicKeyId,
+            true);
     provisionedDiscoveryEntries.insert(std::make_pair(
             discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
 
@@ -84,7 +87,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
                 infrastructure::IGlobalCapabilitiesDirectory::MINOR_VERSION);
         provisionedDiscoveryEntries.insert(std::make_pair(
                 messagingSettings.getCapabilitiesDirectoryParticipantId(),
-                types::DiscoveryEntry(
+                types::DiscoveryEntryWithMetaInfo(
                         capabilityProviderVersion,
                         messagingSettings.getDiscoveryDirectoriesDomain(),
                         infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
@@ -92,7 +95,8 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
                         capabilityProviderQos,
                         lastSeenDateMs,
                         expiryDateMs,
-                        defaultPublicKeyId)));
+                        defaultPublicKeyId,
+                        false)));
     }
 }
 
@@ -115,7 +119,7 @@ void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discovery
 }
 
 // inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>& result,
+void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result,
                                       const std::vector<std::string>& domains,
                                       const std::string& interfaceName,
                                       const joynr::types::DiscoveryQos& discoveryQos)
@@ -129,7 +133,7 @@ void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>&
 }
 
 // inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
+void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntryWithMetaInfo& result,
                                       const std::string& participantId)
 {
     auto entry = provisionedDiscoveryEntries.find(participantId);

@@ -49,7 +49,7 @@ namespace joynr
 
 INIT_LOGGER(Dispatcher);
 
-Dispatcher::Dispatcher(JoynrMessageSender* messageSender,
+Dispatcher::Dispatcher(std::shared_ptr<JoynrMessageSender> messageSender,
                        boost::asio::io_service& ioService,
                        int maxThreads)
         : messageSender(messageSender),
@@ -67,9 +67,7 @@ Dispatcher::~Dispatcher()
     JOYNR_LOG_DEBUG(logger, "Destructing Dispatcher");
     handleReceivedMessageThreadPool.shutdown();
     delete publicationManager;
-    delete subscriptionManager;
     publicationManager = nullptr;
-    subscriptionManager = nullptr;
     JOYNR_LOG_DEBUG(logger, "Destructing finished");
 }
 
@@ -83,7 +81,7 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
     if (publicationManager != nullptr) {
         // publication manager queues received subscription requests, that are
         // received before the corresponding request caller is added
-        publicationManager->restore(participantId, requestCaller, messageSender);
+        publicationManager->restore(participantId, requestCaller, messageSender.get());
     } else {
         JOYNR_LOG_DEBUG(logger, "No publication manager available!");
     }
@@ -292,7 +290,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
                                     message.getHeaderTo(),
                                     caller,
                                     subscriptionRequest,
-                                    messageSender);
+                                    messageSender.get());
         }
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
@@ -321,8 +319,10 @@ void Dispatcher::handleMulticastSubscriptionRequestReceived(const JoynrMessage& 
                 jsonSubscriptionRequest,
                 e.what());
     }
-    publicationManager->add(
-            message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest, messageSender);
+    publicationManager->add(message.getHeaderFrom(),
+                            message.getHeaderTo(),
+                            subscriptionRequest,
+                            messageSender.get());
 }
 
 void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message)
@@ -355,7 +355,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
                                     message.getHeaderTo(),
                                     caller,
                                     subscriptionRequest,
-                                    messageSender);
+                                    messageSender.get());
         }
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(
@@ -488,7 +488,8 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     }
 }
 
-void Dispatcher::registerSubscriptionManager(ISubscriptionManager* subscriptionManager)
+void Dispatcher::registerSubscriptionManager(
+        std::shared_ptr<ISubscriptionManager> subscriptionManager)
 {
     this->subscriptionManager = subscriptionManager;
 }

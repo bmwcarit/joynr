@@ -44,8 +44,9 @@ class FixedParticipantArbitrationStrategyFunction : public ArbitrationStrategyFu
 public:
     ~FixedParticipantArbitrationStrategyFunction() = default;
     FixedParticipantArbitrationStrategyFunction() = default;
-    std::string select(const std::map<std::string, types::CustomParameter> customParameters,
-                       const std::vector<types::DiscoveryEntry>& discoveryEntries) const final;
+    types::DiscoveryEntryWithMetaInfo select(
+            const std::map<std::string, types::CustomParameter> customParameters,
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const final;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrationStrategyFunction);

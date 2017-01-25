@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.23.0-SNAPSHOT</version>
+		<version>0.24.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -989,9 +989,9 @@
 									<executable>npm</executable>
 									<arguments>
 										<argument>install</argument>
+										<argument>--prefix=${project.build.directory}/node-classes</argument>
 										<argument>browserify</argument>
 									</arguments>
-									<workingDirectory>${basedir}</workingDirectory>
 								</configuration>
 								<goals>
 									<goal>exec</goal>
@@ -1005,8 +1005,8 @@
 									<arguments>
 										<argument>install</argument>
 										<argument>mqtt@${mqtt.version}</argument>
+										<argument>--prefix=${project.build.directory}/node-classes</argument>
 									</arguments>
-									<workingDirectory>${basedir}</workingDirectory>
 								</configuration>
 								<goals>
 									<goal>exec</goal>
@@ -1018,13 +1018,13 @@
 								<configuration>
 									<executable>./cmd.js</executable>
 									<arguments>
-										<argument>${basedir}/node_modules/mqtt/mqtt.js</argument>
+										<argument>${project.build.directory}/node-classes/node_modules/mqtt/mqtt.js</argument>
 										<argument>-s</argument>
 										<argument>mqtt</argument>
 										<argument>-o</argument>
 										<argument>${project.build.directory}/classes/lib/mqtt.js</argument>
 									</arguments>
-									<workingDirectory>${basedir}/node_modules/browserify/bin</workingDirectory>
+									<workingDirectory>${project.build.directory}/node-classes/node_modules/browserify/bin</workingDirectory>
 								</configuration>
 								<goals>
 									<goal>exec</goal>

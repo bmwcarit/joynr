@@ -31,7 +31,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/Version.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
 
@@ -69,7 +69,8 @@ public:
      *  Arbitrate until successful or until a timeout occurs
      */
     void startArbitration(
-            std::function<void(const std::string& participantId)> onSuccess,
+            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry)>
+                    onSuccess,
             std::function<void(const exceptions::DiscoveryException& exception)> onError);
 
 private:
@@ -81,7 +82,7 @@ private:
     virtual void attemptArbitration();
 
     virtual void receiveCapabilitiesLookupResults(
-            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+            const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
 
     joynr::system::IDiscoverySync& discoveryProxy;
     DiscoveryQos discoveryQos;
@@ -92,7 +93,8 @@ private:
     std::unordered_set<joynr::types::Version> discoveredIncompatibleVersions;
     exceptions::DiscoveryException arbitrationError;
     std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction;
-    std::function<void(const std::string& participantId)> onSuccessCallback;
+    std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry)>
+            onSuccessCallback;
     std::function<void(const exceptions::DiscoveryException& exception)> onErrorCallback;
 
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);

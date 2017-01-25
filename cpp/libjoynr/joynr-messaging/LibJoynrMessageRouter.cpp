@@ -109,7 +109,7 @@ void LibJoynrMessageRouter::route(const JoynrMessage& message, std::uint32_t try
                     message.getHeaderMessageId(),
                     message.getPayload());
     // search for the destination addresses
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
             getDestinationAddresses(message);
 
     // if destination address is not known

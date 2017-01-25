@@ -310,4 +310,3 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForInProcessProvider_calls
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
-

@@ -51,6 +51,8 @@ import joynr.JoynrMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,12 +99,12 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
      */
 
     @Override
-    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, MessagingQos messagingQos) {
+    public void sendRequest(final String fromParticipantId, final DiscoveryEntryWithMetaInfo toDiscoveryEntry, Request request, MessagingQos messagingQos) {
 
         logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
 
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
-                                                                 toParticipantId,
+                                                                 toDiscoveryEntry.getParticipantId(),
                                                                  request,
                                                                  messagingQos);
 
@@ -111,7 +113,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
     @Override
     public Object sendSyncRequest(String fromParticipantId,
-                                  String toParticipantId,
+                                  DiscoveryEntryWithMetaInfo toDiscoveryEntry,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
                                   MessagingQos messagingQos) {
@@ -125,7 +127,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         // the synchronizedReplyCaller will call notify on the responsePayloadContainer when a message arrives
         synchronizedReplyCaller.setResponseContainer(responsePayloadContainer);
 
-        sendRequest(fromParticipantId, toParticipantId, request, messagingQos);
+        sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos);
 
         long entryTime = System.currentTimeMillis();
 
@@ -164,11 +166,11 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     }
 
     @Override
-    public void sendOneWayRequest(String fromParticipantId, Set<String> toParticipantIds, OneWayRequest oneWayRequest,
+    public void sendOneWayRequest(String fromParticipantId, Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries, OneWayRequest oneWayRequest,
                                   MessagingQos messagingQos) {
-        for (String toParticipantId : toParticipantIds) {
+        for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
             JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
-                                                                           toParticipantId,
+                                                                           toDiscoveryEntry.getParticipantId(),
                                                                            oneWayRequest,
                                                                            messagingQos);
             messageRouter.route(message);
@@ -233,7 +235,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     }
 
     private void handleRequest(ProviderCallback<Reply> replyCallback, RequestCaller requestCaller, Request request) {
-        logger.debug("executing request {}", request.getRequestReplyId());
+        logger.trace("executing request {}", request.getRequestReplyId());
         requestInterpreter.execute(replyCallback, requestCaller, request);
     }
 

@@ -1,13 +1,5 @@
 package io.joynr.arbitration;
 
-import java.util.Collection;
-import java.util.Map;
-
-import javax.annotation.CheckForNull;
-
-import joynr.types.CustomParameter;
-import joynr.types.DiscoveryEntry;
-
 /*
  * #%L
  * %%
@@ -26,6 +18,16 @@ import joynr.types.DiscoveryEntry;
  * limitations under the License.
  * #L%
  */
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.CheckForNull;
+
+import joynr.types.CustomParameter;
+import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 /**
  * Provide an implementation of this class as part of the
@@ -51,7 +53,8 @@ public abstract class ArbitrationStrategyFunction {
      * arbitration result. A value of <code>null</code> or an empty collection
      * are used to indicate that there was no match.
      */
-    abstract Collection<DiscoveryEntry> select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities);
+    protected abstract Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                              Collection<DiscoveryEntryWithMetaInfo> capabilities);
 
     @CheckForNull
     protected CustomParameter findQosParameter(DiscoveryEntry discoveryEntry, String parameterName) {

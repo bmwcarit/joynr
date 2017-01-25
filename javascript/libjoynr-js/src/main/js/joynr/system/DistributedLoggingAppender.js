@@ -116,7 +116,7 @@ define("joynr/system/DistributedLoggingAppender", [
             if (loggingProxy !== null) {
                 from = getDiagnosticTag(loggingEvent, "from");
                 if (from === loggingProxy.proxyParticipantId
-                    || from === loggingProxy.providerParticipantId) {
+                    || from === loggingProxy.providerDiscoveryEntry.participantId) {
                     return true;
                 }
             }

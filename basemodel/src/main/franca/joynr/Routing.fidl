@@ -82,6 +82,9 @@ typeCollection RoutingTypes {
 
 	<** @description: MQTT protocol type **>
 	enumeration MqttProtocol  {
+		<** @description: TCP (non-secure) **>
+		TCP
+
 		<** @description: MQTT (non-secure) **>
 		MQTT
 

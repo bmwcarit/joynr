@@ -376,3 +376,31 @@ TEST_F(CcMessageRouterTest, addMulticastReceiver_NonChildRouter_succeedsIfSkelet
         });
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
+
+TEST_F(CcMessageRouterTest, loadNonExistingMulticastDirectoryPersistenceFile) {
+    EXPECT_NO_THROW(messageRouter->loadMulticastReceiverDirectory("not-existing.persist"));
+}
+
+TEST_F(CcMessageRouterTest, persistMulticastReceiverDirectory) {
+    const std::string providerParticipantId("providerParticipantId");
+    const std::string subscriberParticipantId("subscriberParticipantId");
+    const std::string multicastId = util::createMulticastId(providerParticipantId, "multicastName", {});
+
+    auto providerAddress = std::make_shared<system::RoutingTypes::MqttAddress>();
+    auto multicastSubscriber = std::make_shared<MockMessagingMulticastSubscriber>();
+
+    const std::string persistencyFilename = "multicast-receiver-directory-test.persist";
+    std::remove(persistencyFilename.c_str());
+    // Load method stores the filename which will later be used to save the multicast receiver directory.
+    messageRouter->loadMulticastReceiverDirectory(persistencyFilename);
+
+    multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(multicastSubscriber);
+    messageRouter->addNextHop(providerParticipantId, providerAddress);
+    messageRouter->addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId, []() {}, nullptr);
+
+    messageRouter = createMessageRouter();
+    messageRouter->addNextHop(providerParticipantId, providerAddress);
+
+    EXPECT_CALL(*multicastSubscriber, registerMulticastSubscription(multicastId)).Times(1);
+    messageRouter->loadMulticastReceiverDirectory(persistencyFilename);
+}

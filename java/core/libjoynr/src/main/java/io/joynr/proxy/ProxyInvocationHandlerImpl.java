@@ -128,7 +128,9 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         });
     }
 
-    private Object executeMethodWithCaller(Method method, Object[] args, ConnectorCaller connectorCaller) throws ApplicationException {
+    private Object executeMethodWithCaller(Method method,
+                                           Object[] args,
+                                           ConnectorCaller connectorCaller) throws ApplicationException {
         try {
             if (waitForConnectorFinished()) {
                 if (connector == null) {
@@ -431,9 +433,16 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     @Override
     @CheckForNull
     public Object invoke(@Nonnull Method method, Object[] args) throws ApplicationException {
+        logger.trace("calling proxy.{}({}) on domain: {} and interface {}, proxy participant ID: {}",
+                     method.getName(),
+                     args,
+                     domains,
+                     interfaceName,
+                     proxyParticipantId);
         Class<?> methodInterfaceClass = method.getDeclaringClass();
         try {
-            if (JoynrSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass) || JoynrBroadcastSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
+            if (JoynrSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)
+                    || JoynrBroadcastSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
                 return executeSubscriptionMethod(method, args);
             } else if (methodInterfaceClass.getAnnotation(FireAndForget.class) != null) {
                 return executeOneWayMethod(method, args);

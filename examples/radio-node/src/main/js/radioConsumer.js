@@ -129,12 +129,12 @@ var runInteractiveConsole =
                 function subscribeHelper(settings) {
                     var partitionsString = settings.partitions ? JSON.stringify(settings.partitions) : "";
                     var onReceiveCallback = function onReceiveCallback(value) {
-                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.onReceive",
-                                  JSON.stringify(value));
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.onReceive: "
+                                  + JSON.stringify(value));
                     };
 
                     var onErrorCallback = function onErrorCallback(error) {
-                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.onError", error);
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.onError: " + error);
                     };
 
                     var parameters = {
@@ -143,13 +143,13 @@ var runInteractiveConsole =
                         onError : onErrorCallback,
                         partitions : settings.partitions
                     };
-                    
+
                     if (settings.subscriptionId !== undefined) {
                         parameters.subscriptionId = settings.subscriptionId;
                     }
                     return radioProxy[settings.subscribeToName].subscribe(parameters).then(function(subscriptionId) {
-                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.done",
-                                  "Subscription ID: "+ subscriptionId);
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.done. "
+                                  + "Subscription ID: "+ subscriptionId);
                         return subscriptionId;
                     }).catch(function(error) {
                         prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".subscribe.failed: " + JSON.stringify(error));
@@ -161,12 +161,12 @@ var runInteractiveConsole =
                     return radioProxy[settings.subscribeToName].unsubscribe({
                         subscriptionId : settings.subscriptionId
                     }).then(function() {
-                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".unsubscribe.done",
-                                  "Subscription ID: " + settings.subscriptionId);
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".unsubscribe.done. "
+                                  + "Subscription ID: " + settings.subscriptionId);
                         return null;
                     }).catch(function(error) {
-                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".unsubscribe.fail",
-                                  "Subscription ID: " + settings.subscriptionId + " ERROR: " + error
+                        prettyLog("radioProxy." + settings.subscribeToName + partitionsString + ".unsubscribe.fail. "
+                                  + "Subscription ID: " + settings.subscriptionId + " ERROR: " + error
                         );
                         return null;
                     });
@@ -197,7 +197,7 @@ var runInteractiveConsole =
                                 function(error) {
                                     prettyLog("RPC: radioProxy.addFavoriteStation("
                                         + JSON.stringify(newFavoriteStation)
-                                        + ") failed."
+                                        + ") failed: "
                                         + error);
                                     return error;
                                 });
@@ -240,7 +240,7 @@ var runInteractiveConsole =
                         });
                         break;
                     case MODES.UNSUBSCRIBE.value:
-                        if (currentStationSubscriptionId !== undefined) {
+                        if (currentStationSubscriptionId !== undefined && currentStationSubscriptionId !== null) {
                             unsubscribeHelper({
                                 subscribeToName: "currentStation",
                                 subscriptionId: currentStationSubscriptionId
@@ -249,7 +249,7 @@ var runInteractiveConsole =
                                 currentStationSubscriptionId = undefined;
                             });
                         }
-                        if (multicastSubscriptionId !== undefined) {
+                        if (multicastSubscriptionId !== undefined && multicastSubscriptionId !== null) {
                             unsubscribeHelper({
                                 subscribeToName: "weakSignal",
                                 subscriptionId: multicastSubscriptionId
@@ -258,7 +258,7 @@ var runInteractiveConsole =
                                 multicastSubscriptionId = undefined;
                             });
                         }
-                        if (multicastPSubscriptionId !== undefined) {
+                        if (multicastPSubscriptionId !== undefined && multicastPSubscriptionId !== null) {
                             unsubscribeHelper({
                                 subscribeToName: "weakSignal",
                                 partitions: [ "GERMANY" ],

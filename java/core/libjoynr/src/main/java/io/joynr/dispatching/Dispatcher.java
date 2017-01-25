@@ -28,15 +28,16 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public interface Dispatcher extends MessageArrivedListener {
     public void sendSubscriptionRequest(String fromParticipantId,
-                                        Set<String> toParticipantId,
+                                        Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos qosSettings);
 
     public void sendSubscriptionStop(String fromParticipantId,
-                                     Set<String> toParticipantId,
+                                     Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                      SubscriptionStop subscriptionStop,
                                      MessagingQos qosSettings);
 

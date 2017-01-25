@@ -117,7 +117,7 @@ define(
 
                     // return promise to caller
                     return settings.dependencies.requestReplyManager.sendRequest({
-                        to : parent.providerParticipantId,
+                        toDiscoveryEntry : parent.providerDiscoveryEntry,
                         from : parent.proxyParticipantId,
                         messagingQos : messagingQos,
                         request : request
@@ -151,7 +151,7 @@ define(
                     // return promise to caller
                     return settings.dependencies.subscriptionManager.registerSubscription({
                         proxyId : parent.proxyParticipantId,
-                        providerId : parent.providerParticipantId,
+                        providerDiscoveryEntry : parent.providerDiscoveryEntry,
                         attributeName : attributeName,
                         attributeType : attributeType,
                         qos : requestSettings.subscriptionQos,

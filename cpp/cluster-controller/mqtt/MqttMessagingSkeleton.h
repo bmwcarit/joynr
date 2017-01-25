@@ -51,7 +51,8 @@ public:
     static std::string translateMulticastWildcard(std::string multicastId);
 
     MqttMessagingSkeleton(IMessageRouter& messageRouter,
-                          std::shared_ptr<MqttReceiver> mqttReceiver);
+                          std::shared_ptr<MqttReceiver> mqttReceiver,
+                          std::uint64_t ttlUplift = 0);
 
     ~MqttMessagingSkeleton() override = default;
 
@@ -70,6 +71,9 @@ private:
 
     IMessageRouter& messageRouter;
     std::shared_ptr<MqttReceiver> mqttReceiver;
+
+    std::uint64_t ttlUplift;
+
     std::unordered_map<std::string, std::uint64_t> multicastSubscriptionCount;
     std::mutex multicastSubscriptionCountMutex;
 };

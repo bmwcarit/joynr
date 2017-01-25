@@ -23,8 +23,8 @@ namespace joynr
 {
 
 JoynrMessagingConnectorFactory::JoynrMessagingConnectorFactory(
-        IJoynrMessageSender* messageSender,
-        ISubscriptionManager* subscriptionManager)
+        std::shared_ptr<IJoynrMessageSender> messageSender,
+        std::shared_ptr<ISubscriptionManager> subscriptionManager)
         : messageSender(messageSender), subscriptionManager(subscriptionManager)
 {
 }

@@ -33,7 +33,7 @@ function log(line, msg) {
 function showCurrentStationInHtml(radioStation) {
     $("input#txtCurrentStationName").val(radioStation.name);
     $("input#txtCurrentStationTrafficService").val(radioStation.trafficService);
-    $("input#txtCurrentStationCountry").val(radioStation.country);
+    $("input#txtCurrentStationCountry").val(radioStation.country.name);
 }
 
 function showFavoriteStationsInHtml(radioStations) {
@@ -45,7 +45,7 @@ function showFavoriteStationsInHtml(radioStations) {
         }
         stationsString += "Name: " + radioStations[i].name;
         stationsString += " | TrafficService: " + radioStations[i].trafficService;
-        stationsString += " | Country: " + radioStations[i].country;
+        stationsString += " | Country: " + radioStations[i].country.name;
     }
     $("textarea#txtFavoriteStations").val(stationsString);
 }

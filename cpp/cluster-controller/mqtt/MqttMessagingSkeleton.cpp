@@ -19,6 +19,7 @@
 #include "MqttMessagingSkeleton.h"
 
 #include "MqttReceiver.h"
+#include "joynr/DispatcherUtils.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/IMessageRouter.h"
@@ -42,9 +43,11 @@ std::string MqttMessagingSkeleton::translateMulticastWildcard(std::string topic)
 }
 
 MqttMessagingSkeleton::MqttMessagingSkeleton(IMessageRouter& messageRouter,
-                                             std::shared_ptr<MqttReceiver> mqttReceiver)
+                                             std::shared_ptr<MqttReceiver> mqttReceiver,
+                                             uint64_t ttlUplift)
         : messageRouter(messageRouter),
           mqttReceiver(mqttReceiver),
+          ttlUplift(ttlUplift),
           multicastSubscriptionCount(),
           multicastSubscriptionCountMutex()
 {
@@ -134,6 +137,17 @@ void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
             return;
         }
         JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
+
+        const JoynrTimePoint maxAbsoluteTime = DispatcherUtils::getMaxAbsoluteTime();
+        JoynrTimePoint msgExpiryDate = msg.getHeaderExpiryDate();
+        std::int64_t maxDiff = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                       maxAbsoluteTime - msgExpiryDate).count();
+        if (static_cast<std::int64_t>(ttlUplift) > maxDiff) {
+            msg.setHeaderExpiryDate(maxAbsoluteTime);
+        } else {
+            JoynrTimePoint newExpiryDate = msgExpiryDate + std::chrono::milliseconds(ttlUplift);
+            msg.setHeaderExpiryDate(newExpiryDate);
+        }
 
         auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_ERROR(logger,

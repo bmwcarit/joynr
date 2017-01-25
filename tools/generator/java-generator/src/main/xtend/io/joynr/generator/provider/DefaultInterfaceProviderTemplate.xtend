@@ -82,9 +82,6 @@ public class «className» extends «abstractProviderName» {
 	«ENDFOR»
 
 	public «className»() {
-		// default uses a priority that is the current time,
-		// causing arbitration to the last started instance
-		providerQos.setPriority(System.currentTimeMillis());
 	}
 
 	«FOR attribute : getAttributes(francaIntf)»

@@ -32,7 +32,7 @@ namespace joynr
 
 namespace types
 {
-class DiscoveryEntry;
+class DiscoveryEntryWithMetaInfo;
 class CustomParameter;
 } // namespace types
 
@@ -46,8 +46,9 @@ class QosArbitrationStrategyFunction : public ArbitrationStrategyFunction
 public:
     ~QosArbitrationStrategyFunction() = default;
     QosArbitrationStrategyFunction() = default;
-    std::string select(const std::map<std::string, types::CustomParameter> customParameters,
-                       const std::vector<types::DiscoveryEntry>& discoveryEntries) const final;
+    types::DiscoveryEntryWithMetaInfo select(
+            const std::map<std::string, types::CustomParameter> customParameters,
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const final;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(QosArbitrationStrategyFunction);

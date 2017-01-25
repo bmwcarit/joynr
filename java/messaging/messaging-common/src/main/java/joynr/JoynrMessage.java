@@ -223,21 +223,8 @@ public class JoynrMessage implements JoynrType {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("type=");
         stringBuilder.append(type);
-        stringBuilder.append("\r\nfrom=");
-        stringBuilder.append(header.get(HEADER_NAME_FROM_PARTICIPANT_ID));
-        stringBuilder.append("\r\nto=");
-        stringBuilder.append(header.get(HEADER_NAME_TO_PARTICIPANT_ID));
-        stringBuilder.append("\r\nheader=");
+        stringBuilder.append(", header=");
         stringBuilder.append(header);
-        stringBuilder.append("\r\npayload=");
-        if (payload == null) {
-            stringBuilder.append("null");
-        } else if (payload.length() < 1000) {
-            stringBuilder.append(payload);
-        } else {
-            stringBuilder.append(payload.substring(0, 999) + "...");
-        }
-        stringBuilder.append("\r\n");
         return stringBuilder.toString();
     }
 

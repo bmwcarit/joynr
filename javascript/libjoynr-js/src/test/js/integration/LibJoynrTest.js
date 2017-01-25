@@ -111,8 +111,6 @@ define([
             testMutability(joynr, "typeRegistry");
             testMutability(joynr.typeRegistry, "addType");
             testMutability(joynr.typeRegistry, "getConstructor");
-            testMutability(joynr, "capabilities");
-            testMutability(joynr.capabilities, "registerCapability");
             testMutability(joynr.registration, "registerProvider");
             // testMutability(joynr, "proxyBuilder");
             testMutability(joynr.proxyBuilder, "build");
@@ -151,6 +149,7 @@ define([
                     testMutability(radioProxy.weakSignal, "subscribe");
                     testMutability(radioProxy.weakSignal, "unsubscribe");
                     done();
+                    return null;
                 });
             });
         });

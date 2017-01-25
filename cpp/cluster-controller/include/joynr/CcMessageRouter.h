@@ -169,11 +169,14 @@ public:
      * Public methods specific to CcMessageRouter
      */
     void setAccessController(std::shared_ptr<IAccessController> accessController);
+    void saveMulticastReceiverDirectory() const;
+    void loadMulticastReceiverDirectory(std::string filename);
 
     friend class MessageRunnable;
     friend class ConsumerPermissionCallback;
 
 private:
+    void reestablishMulticastSubscriptions();
     void registerMulticastReceiver(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
@@ -188,6 +191,7 @@ private:
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     std::shared_ptr<IAccessController> accessController;
+    std::string multicastReceveiverDirectoryFilename;
 };
 
 } // namespace joynr

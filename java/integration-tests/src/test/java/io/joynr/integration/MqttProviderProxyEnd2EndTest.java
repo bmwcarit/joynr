@@ -37,7 +37,7 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.servlet.ServletUtil;
-import joynr.OnChangeSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
 import org.junit.AfterClass;
@@ -51,6 +51,8 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
     private static int mqttBrokerPort;
 
     @BeforeClass
+    // NOTE: when running in Eclipse, it may be necessary to set the system variable -Dpath=path/to/mosquitto
+    // even if mosquitto is on the usual path and can be started without extra path info from the command line.
     public static void startBroker() throws Exception {
         mqttBrokerPort = ServletUtil.findFreePort();
         String path = System.getProperty("path") != null ? System.getProperty("path") : "";
@@ -79,7 +81,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         return application.getRuntime();
     }
 
-    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT * 1000)
     public void testSimpleMulticast() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
         testProxy proxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
@@ -91,7 +93,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos());
+        }, new MulticastSubscriptionQos());
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -110,13 +112,13 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
             public void onReceive() {
                 errors.add("On receive called on listener with no partitions.");
             }
-        }, new OnChangeSubscriptionQos());
+        }, new MulticastSubscriptionQos());
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos(), "one", "two", "three");
+        }, new MulticastSubscriptionQos(), "one", "two", "three");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -141,13 +143,13 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos(), "one", "*");
+        }, new MulticastSubscriptionQos(), "one", "*");
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
                 errors.add("Received multicast on partition which wasn't published to: four/five/six");
             }
-        }, new OnChangeSubscriptionQos(), "four", "five", "six");
+        }, new MulticastSubscriptionQos(), "four", "five", "six");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -176,7 +178,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos(), "one", "+", "three");
+        }, new MulticastSubscriptionQos(), "one", "+", "three");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -205,7 +207,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos(), "one", "+");
+        }, new MulticastSubscriptionQos(), "one", "+");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);

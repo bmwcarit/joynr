@@ -8,7 +8,6 @@
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
   "bugs": "https://github.com/bmwcarit/joynr/issues",
-  "main": "joynr.js",
   "scripts": {
     "preinstall": "npm install ${project.build.directory}/node-classes"
   }

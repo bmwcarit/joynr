@@ -50,6 +50,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
+        logger.debug("<<< INCOMING <<< {}", message.toLogMessage());
         final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
         try {
             if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {

@@ -28,6 +28,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <memory>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
@@ -59,6 +60,8 @@ bool fileExists(const std::string& fileName);
 std::string createMulticastId(const std::string& providerParticipantId,
                               const std::string& multicastName,
                               const std::vector<std::string>& partitions);
+
+std::string extractParticipantIdFromMulticastId(const std::string& multicastId);
 
 void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards = false);
 
@@ -206,6 +209,12 @@ std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePo
  * Converts a std::chrono::system_clock::time_point to a printable string
  */
 std::string toDateString(const std::chrono::system_clock::time_point& timePoint);
+
+template <typename T>
+auto as_weak_ptr(std::shared_ptr<T> ptr)
+{
+    return std::weak_ptr<T>(ptr);
+}
 
 } // namespace util
 

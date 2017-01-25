@@ -90,24 +90,24 @@ void AbstractMessageRouter::addProvisionedNextHop(
     addToRoutingTable(participantId, address);
 }
 
-std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
+std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
 AbstractMessageRouter::lookupAddresses(const std::unordered_set<std::string>& participantIds)
 {
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     for (const auto& participantId : participantIds) {
         destAddress = routingTable.lookup(participantId);
         if (destAddress) {
-            addresses.push_front(destAddress);
+            addresses.insert(destAddress);
         }
     }
     return addresses;
 }
 
-std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
+std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
 AbstractMessageRouter::getDestinationAddresses(const JoynrMessage& message)
 {
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
         std::string multicastId = message.getHeaderTo();
 
@@ -121,7 +121,7 @@ AbstractMessageRouter::getDestinationAddresses(const JoynrMessage& message)
             std::shared_ptr<const joynr::system::RoutingTypes::Address> globalTransport =
                     addressCalculator->compute(message);
             if (globalTransport) {
-                addresses.push_front(globalTransport);
+                addresses.insert(globalTransport);
             }
         }
     } else {
@@ -129,7 +129,7 @@ AbstractMessageRouter::getDestinationAddresses(const JoynrMessage& message)
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress =
                 routingTable.lookup(destinationPartId);
         if (destAddress) {
-            addresses.push_front(destAddress);
+            addresses.insert(destAddress);
         }
     }
     return addresses;

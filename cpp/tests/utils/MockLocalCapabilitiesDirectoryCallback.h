@@ -30,16 +30,16 @@ public:
     MockLocalCapabilitiesDirectoryCallback();
 
     void capabilitiesReceived(
-            const std::vector<joynr::types::DiscoveryEntry>& capabilities) override;
+            const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& capabilities) override;
     void onError(const joynr::exceptions::JoynrRuntimeException&) override;
 
-    std::vector<joynr::types::DiscoveryEntry> getResults(int timeout);
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> getResults(int timeout);
     void clearResults();
 
     virtual ~MockLocalCapabilitiesDirectoryCallback();
 
 private:
-    std::vector<joynr::types::DiscoveryEntry> results;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> results;
     joynr::Semaphore semaphore;
 };
 

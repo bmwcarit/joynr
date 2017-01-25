@@ -115,7 +115,7 @@ define([
                 done();
                 return null;
             }).catch(fail);
-        }, 60000);
+        }, 120000);
 
         it("supports all datatypes as operation arguments", function(done) {
             var i;

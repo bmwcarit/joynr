@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+
 #include "joynr/SubscriptionQos.h"
 #include <limits>
 #include <chrono>
@@ -23,80 +24,19 @@
 namespace joynr
 {
 
-const std::int64_t& SubscriptionQos::DEFAULT_PUBLICATION_TTL_MS()
-{
-    static const std::int64_t defaultPublicationTtl = 10000;
-    return defaultPublicationTtl;
-}
-
-const std::int64_t& SubscriptionQos::DEFAULT_PUBLICATION_TTL()
-{
-    return DEFAULT_PUBLICATION_TTL_MS();
-}
-
-const std::int64_t& SubscriptionQos::MIN_PUBLICATION_TTL_MS()
-{
-    static const std::int64_t minPublicationTtl = 100;
-    return minPublicationTtl;
-}
-
-const std::int64_t& SubscriptionQos::MIN_PUBLICATION_TTL()
-{
-    return MIN_PUBLICATION_TTL_MS();
-}
-
-const std::int64_t& SubscriptionQos::MAX_PUBLICATION_TTL_MS()
-{
-    static const std::int64_t maxPublicationTtl = 2592000000UL;
-    return maxPublicationTtl;
-}
-
-const std::int64_t& SubscriptionQos::MAX_PUBLICATION_TTL()
-{
-    return MAX_PUBLICATION_TTL_MS();
-}
-
 const std::int64_t& SubscriptionQos::NO_EXPIRY_DATE()
 {
     static std::int64_t noExpiryDate = 0;
     return noExpiryDate;
 }
 
-SubscriptionQos::SubscriptionQos()
-        : expiryDateMs(NO_EXPIRY_DATE()), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
+SubscriptionQos::SubscriptionQos() : expiryDateMs(NO_EXPIRY_DATE())
 {
 }
 
-SubscriptionQos::SubscriptionQos(const std::int64_t& validityMs)
-        : expiryDateMs(NO_EXPIRY_DATE()), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
+SubscriptionQos::SubscriptionQos(const int64_t validityMs) : expiryDateMs(NO_EXPIRY_DATE())
 {
     setValidityMs(validityMs);
-}
-
-std::int64_t SubscriptionQos::getPublicationTtlMs() const
-{
-    return publicationTtlMs;
-}
-
-std::int64_t SubscriptionQos::getPublicationTtl() const
-{
-    return getPublicationTtlMs();
-}
-
-void SubscriptionQos::setPublicationTtlMs(const std::int64_t& publicationTtlMs)
-{
-    this->publicationTtlMs = publicationTtlMs;
-    if (this->publicationTtlMs > MAX_PUBLICATION_TTL_MS()) {
-        this->publicationTtlMs = MAX_PUBLICATION_TTL_MS();
-    }
-    if (this->publicationTtlMs < MIN_PUBLICATION_TTL_MS()) {
-        this->publicationTtlMs = MIN_PUBLICATION_TTL_MS();
-    }
-}
-
-void SubscriptionQos::setPublicationTtl(const std::int64_t& publicationTtlMs)
-{
-    setPublicationTtlMs(publicationTtlMs);
 }
 
 std::int64_t SubscriptionQos::getExpiryDateMs() const
@@ -104,19 +44,9 @@ std::int64_t SubscriptionQos::getExpiryDateMs() const
     return expiryDateMs;
 }
 
-std::int64_t SubscriptionQos::getExpiryDate() const
-{
-    return getExpiryDateMs();
-}
-
 void SubscriptionQos::setExpiryDateMs(const std::int64_t& expiryDateMs)
 {
     this->expiryDateMs = expiryDateMs;
-}
-
-void SubscriptionQos::setExpiryDate(const std::int64_t& expiryDateMs)
-{
-    setExpiryDateMs(expiryDateMs);
 }
 
 void SubscriptionQos::clearExpiryDate()
@@ -135,22 +65,15 @@ void SubscriptionQos::setValidityMs(const std::int64_t& validityMs)
     }
 }
 
-void SubscriptionQos::setValidity(const std::int64_t& validityMs)
-{
-    setValidityMs(validityMs);
-}
-
 SubscriptionQos& SubscriptionQos::operator=(const SubscriptionQos& subscriptionQos)
 {
     expiryDateMs = subscriptionQos.getExpiryDateMs();
-    publicationTtlMs = subscriptionQos.getPublicationTtlMs();
     return *this;
 }
 
 bool SubscriptionQos::operator==(const SubscriptionQos& subscriptionQos) const
 {
-    return getExpiryDateMs() == subscriptionQos.getExpiryDateMs() &&
-           publicationTtlMs == subscriptionQos.getPublicationTtlMs();
+    return getExpiryDateMs() == subscriptionQos.getExpiryDateMs();
 }
 
 } // namespace joynr

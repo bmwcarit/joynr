@@ -6,7 +6,7 @@ function usage
 }
 
 repository=
-version=
+version=latest
 command=$1
 additionaltags=latest
 shift

@@ -21,7 +21,6 @@
 #define MESSAGEROUTER_H
 
 #include <chrono>
-#include <forward_list>
 #include <memory>
 #include <string>
 #include <unordered_set>
@@ -95,10 +94,10 @@ protected:
             int maxThreads = 1,
             std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
     getDestinationAddresses(const JoynrMessage& message);
 
-    std::forward_list<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
+    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
 
     void sendMessages(const std::string& destinationPartId,

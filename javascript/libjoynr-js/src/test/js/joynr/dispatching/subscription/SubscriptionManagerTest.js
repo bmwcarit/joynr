@@ -40,7 +40,11 @@ define([
             "Date",
             "global/WaitsFor",
             "joynr/tests/testTypes/TestEnum",
-            "joynr/types/TypeRegistrySingleton"
+            "joynr/types/TypeRegistrySingleton",
+            "joynr/types/DiscoveryEntryWithMetaInfo",
+            "joynr/types/Version",
+            "joynr/types/ProviderQos",
+            "joynr/util/UtilInternal"
         ],
         function(
                 SubscriptionManager,
@@ -62,7 +66,11 @@ define([
                 Date,
                 waitsFor,
                 TestEnum,
-                TypeRegistrySingleton) {
+                TypeRegistrySingleton,
+                DiscoveryEntryWithMetaInfo,
+                Version,
+                ProviderQos,
+                Util) {
 
             describe(
                     "libjoynr-js.joynr.dispatching.subscription.SubscriptionManager",
@@ -76,11 +84,23 @@ define([
                         var dispatcherSpy;
                         var dispatcherSpyOnError;
                         var storedSubscriptionId;
+                        var providerDiscoveryEntry;
 
                         /**
                          * Called before each test.
                          */
                         beforeEach(function(done) {
+                            providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
+                                providerVersion : new Version({majorVersion : 0, minorVersion : 23}),
+                                domain : "testProviderDomain",
+                                interfaceName : "interfaceName",
+                                participantId : "providerParticipantId",
+                                qos : new ProviderQos({}),
+                                lastSeenDateMs : Date.now(),
+                                expiryDateMs : Date.now() + 60000,
+                                publicKeyId : "publicKeyId",
+                                isLocal : true
+                            });
                             dispatcherSpy = jasmine.createSpyObj("DispatcherSpy", [
                                 "sendSubscriptionRequest",
                                 "sendBroadcastSubscriptionRequest",
@@ -182,12 +202,16 @@ define([
                                     var ttl = 250;
                                     var parameters = {
                                         proxyId : "subscriber",
-                                        providerId : "provider",
+                                        providerDiscoveryEntry : providerDiscoveryEntry,
                                         broadcastName : "broadcastName",
                                         subscriptionQos : new OnChangeSubscriptionQos({
                                             expiryDateMs : Date.now() + ttl
                                         })
                                     };
+                                    var expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+                                    expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
+                                    expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
+                                    expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
 
                                     dispatcherSpy.sendBroadcastSubscriptionRequest.calls.reset();
                                     var spySubscribePromise =
@@ -213,8 +237,8 @@ define([
                                                 dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].messagingQos.ttl)
                                                 .toEqual(ttl);
                                         expect(
-                                                dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].to)
-                                                .toEqual(parameters.providerId);
+                                                dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].toDiscoveryEntry)
+                                                .toEqual(expectedDiscoveryEntry);
                                         expect(
                                                 dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].from)
                                                 .toEqual(parameters.proxyId);
@@ -236,7 +260,7 @@ define([
                             //log.debug("registering subscription");
                             subscriptionManager.registerSubscription({
                                 proxyId : "subscriber",
-                                providerId : "provider",
+                                providerDiscoveryEntry : providerDiscoveryEntry,
                                 attributeName : "testAttribute",
                                 attributeType : "String",
                                 qos : new OnChangeWithKeepAliveSubscriptionQos({
@@ -276,7 +300,7 @@ define([
                                     var ttl = 250;
                                     var subscriptionSettings = {
                                         proxyId : "subscriber",
-                                        providerId : "provider",
+                                        providerDiscoveryEntry : providerDiscoveryEntry,
                                         attributeName : "testAttribute",
                                         attributeType : "String",
                                         qos : new OnChangeWithKeepAliveSubscriptionQos({
@@ -368,7 +392,7 @@ define([
                             // register the subscription and call the resolve method when ready
                             subscriptionManager.registerSubscription({
                                 proxyId : "subscriber",
-                                providerId : "provider",
+                                providerDiscoveryEntry : providerDiscoveryEntry,
                                 messagingQos : new MessagingQos(),
                                 attributeName : "testAttribute",
                                 attributeType : "String",
@@ -422,7 +446,7 @@ define([
                             /*jslint nomen: true */
                             subscriptionManager.registerSubscription({
                                 proxyId : "subscriber",
-                                providerId : "provider",
+                                providerDiscoveryEntry : providerDiscoveryEntry,
                                 attributeName : "testAttribute",
                                 attributeType : TestEnum.ZERO._typeName,
                                 qos : new OnChangeSubscriptionQos({
@@ -476,7 +500,7 @@ define([
                             /*jslint nomen: true */
                             subscriptionManager.registerBroadcastSubscription({
                                 proxyId : "subscriber",
-                                providerId : "provider",
+                                providerDiscoveryEntry : providerDiscoveryEntry,
                                 broadcastName : "broadcastName",
                                 broadcastParameter : [
                                      {
@@ -516,7 +540,7 @@ define([
                             var onErrorSpy = jasmine.createSpy('onErrorSpy');
                             return {
                                 proxyId : "proxy",
-                                providerId : "provider",
+                                providerDiscoveryEntry : providerDiscoveryEntry,
                                 broadcastName : parameters.broadcastName,
                                 broadcastParameter : [
                                      {
@@ -614,11 +638,15 @@ define([
                                     var publicationMissedSpy =
                                             jasmine.createSpy('publicationMissedSpy');
                                     var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
+                                    var expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+                                    expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
+                                    expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
+                                    expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
 
                                     //log.debug("registering subscription");
                                     subscriptionManager.registerSubscription({
                                         proxyId : "subscriber",
-                                        providerId : "provider",
+                                        providerDiscoveryEntry : providerDiscoveryEntry,
                                         attributeName : "testAttribute",
                                         attributeType : "String",
                                         qos : new OnChangeWithKeepAliveSubscriptionQos({
@@ -650,7 +678,7 @@ define([
                                         expect(dispatcherSpy.sendSubscriptionStop)
                                                 .toHaveBeenCalledWith({
                                                     from : "subscriber",
-                                                    to : "provider",
+                                                    toDiscoveryEntry : expectedDiscoveryEntry,
                                                     subscriptionStop : subscriptionStop,
                                                     messagingQos : unsubscrMsgQos
                                                 });
@@ -668,6 +696,51 @@ define([
                                         fail();
                                     });
                                     increaseFakeTime(1);
+                                });
+
+                        it(
+                                "sends out MulticastSubscriptionStop",
+                                function(done) {
+                                    var request = createDummyBroadcastSubscriptionRequest({
+                                        broadcastName : "broadcastName",
+                                        selective : false
+                                    });
+                                    var expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+                                    expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
+                                    expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
+                                    expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
+
+                                    subscriptionManager.registerBroadcastSubscription(request)
+                                    .then(function(subscriptionId) {
+                                        expect(dispatcherSpy.sendBroadcastSubscriptionRequest).toHaveBeenCalled();
+
+                                        var multicastId = dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].subscriptionRequest.multicastId;
+                                        expect(multicastId).toBeDefined();
+                                        expect(multicastId).not.toEqual(null);
+
+                                        var unsubscrMsgQos = new MessagingQos();
+                                        subscriptionManager.unregisterSubscription({
+                                            subscriptionId : subscriptionId,
+                                            messagingQos : unsubscrMsgQos
+                                        });
+
+                                        var subscriptionStop = new SubscriptionStop({
+                                            subscriptionId : subscriptionId
+                                        });
+
+                                        expect(dispatcherSpy.sendMulticastSubscriptionStop)
+                                                .toHaveBeenCalledWith({
+                                                    from : request.proxyId,
+                                                    toDiscoveryEntry : expectedDiscoveryEntry,
+                                                    messagingQos : unsubscrMsgQos,
+                                                    multicastId: multicastId,
+                                                    subscriptionStop : subscriptionStop
+                                                });
+                                        done();
+                                        return null;
+                                    }).catch(function(error) {
+                                        fail("caught error: " + error);
+                                    });
                                 });
 
                         it(
@@ -689,10 +762,15 @@ define([
                                     jasmine.createSpy('publicationReceivedSpy');
                             var publicationErrorSpy = jasmine.createSpy('publicationErrorSpy');
                             var publicationSubscribedSpy = jasmine.createSpy('publicationSubscribedSpy');
+                            dispatcherSpy.sendSubscriptionRequest.calls.reset();
+                            var expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+                            expectedDiscoveryEntry.providerVersion = new Version(providerDiscoveryEntry.providerVersion);
+                            expectedDiscoveryEntry.qos = new ProviderQos(providerDiscoveryEntry.qos);
+                            expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
 
                             subscriptionManager.registerSubscription({
                                 proxyId : "subscriber",
-                                providerId : "provider",
+                                providerDiscoveryEntry : providerDiscoveryEntry,
                                 attributeName : "testAttribute",
                                 attributeType : "String",
                                 qos : new OnChangeSubscriptionQos(),
@@ -710,6 +788,9 @@ define([
                                 expect(publicationErrorSpy).not.toHaveBeenCalled();
                                 expect(publicationSubscribedSpy).toHaveBeenCalled();
                                 expect(publicationSubscribedSpy.calls.argsFor(0)[0]).toEqual(storedSubscriptionId);
+                                expect(dispatcherSpy.sendSubscriptionRequest).toHaveBeenCalled();
+                                expect(dispatcherSpy.sendSubscriptionRequest.calls.argsFor(0)[0].toDiscoveryEntry)
+                                        .toEqual(expectedDiscoveryEntry);
                                 done();
                                 return null;
                             }).catch(fail);
@@ -725,7 +806,7 @@ define([
 
                             subscriptionManager.registerBroadcastSubscription({
                                 proxyId : "subscriber",
-                                providerId : "provider",
+                                providerDiscoveryEntry : providerDiscoveryEntry,
                                 broadcastName : "broadcastName",
                                 qos : new OnChangeSubscriptionQos(),
                                 onReceive : publicationReceivedSpy,
@@ -757,7 +838,7 @@ define([
 
                             subscriptionManagerOnError.registerSubscription({
                                 proxyId : "subscriber",
-                                providerId : "provider",
+                                providerDiscoveryEntry : providerDiscoveryEntry,
                                 attributeName : "testAttribute",
                                 attributeType : "String",
                                 qos : new OnChangeSubscriptionQos(),
@@ -794,7 +875,7 @@ define([
 
                             subscriptionManagerOnError.registerBroadcastSubscription({
                                 proxyId : "subscriber",
-                                providerId : "provider",
+                                providerDiscoveryEntry : providerDiscoveryEntry,
                                 broadcastName : "broadcastName",
                                 qos : new OnChangeSubscriptionQos(),
                                 onReceive : publicationReceivedSpy,

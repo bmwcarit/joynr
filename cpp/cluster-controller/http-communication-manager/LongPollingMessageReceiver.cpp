@@ -211,7 +211,18 @@ void LongPollingMessageReceiver::checkServerTime()
                         "CheckServerTime: reply received [statusCode={}] [body={}]",
                         timeCheckResult.getStatusCode(),
                         timeCheckResult.getBody());
-        std::uint64_t serverTime = boost::lexical_cast<std::uint64_t>(timeCheckResult.getBody());
+
+        std::uint64_t serverTime;
+
+        try {
+            serverTime = boost::lexical_cast<std::uint64_t>(timeCheckResult.getBody());
+        } catch (const boost::bad_lexical_cast& exception) {
+            JOYNR_LOG_ERROR(logger,
+                            ": Failed to cast received server time [statusCode={}] [body={}]",
+                            timeCheckResult.getStatusCode(),
+                            timeCheckResult.getBody());
+            return;
+        }
 
         auto minMaxTime = std::minmax(serverTime, localTime);
         std::uint64_t diff = minMaxTime.second - minMaxTime.first;

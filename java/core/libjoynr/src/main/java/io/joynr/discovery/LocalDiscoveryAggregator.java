@@ -44,6 +44,7 @@ import joynr.system.DiscoveryProxy;
 import joynr.system.Routing;
 import joynr.system.RoutingProvider;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.DiscoveryQos;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -53,7 +54,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     private static final Logger logger = LoggerFactory.getLogger(LocalDiscoveryAggregator.class);
 
     private static final long NO_EXPIRY = Long.MAX_VALUE;
-    private HashMap<String, DiscoveryEntry> provisionedDiscoveryEntries = new HashMap<>();
+    private HashMap<String, DiscoveryEntryWithMetaInfo> provisionedDiscoveryEntries = new HashMap<>();
     private DiscoveryProxy discoveryProxy;
 
     @Inject
@@ -65,24 +66,26 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         String defaultPublicKeyId = "";
         provisionedDiscoveryEntries.put(systemServicesDomain
                 + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
-                                        new DiscoveryEntry(getVersionFromAnnotation(DiscoveryProvider.class),
+                                        new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(DiscoveryProvider.class),
                                                            systemServicesDomain,
                                                            ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                                            discoveryProviderParticipantId,
                                                            providerQos,
                                                            System.currentTimeMillis(),
                                                            NO_EXPIRY,
-                                                           defaultPublicKeyId));
+                                                           defaultPublicKeyId,
+                                                           false));
         // provision routing provider to prevent lookup via discovery proxy during startup.
         provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME,
-                                        new DiscoveryEntry(getVersionFromAnnotation(RoutingProvider.class),
+                                        new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(RoutingProvider.class),
                                                            systemServicesDomain,
                                                            Routing.INTERFACE_NAME,
                                                            routingProviderParticipantId,
                                                            providerQos,
                                                            System.currentTimeMillis(),
                                                            NO_EXPIRY,
-                                                           defaultPublicKeyId));
+                                                           defaultPublicKeyId,
+                                                           true));
     }
 
     public void setDiscoveryProxy(DiscoveryProxy discoveryProxy) {
@@ -99,29 +102,29 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     }
 
     @Override
-    public Future<DiscoveryEntry[]> lookup(final Callback<DiscoveryEntry[]> callback,
+    public Future<DiscoveryEntryWithMetaInfo[]> lookup(final Callback<DiscoveryEntryWithMetaInfo[]> callback,
                                            String[] domains,
                                            String interfaceName,
                                            DiscoveryQos discoveryQos) {
-        final Set<DiscoveryEntry> discoveryEntries = new HashSet<>();
+        final Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet<>();
         Set<String> missingDomains = new HashSet<>();
         for (String domain : domains) {
             if (provisionedDiscoveryEntries.containsKey(domain + interfaceName)) {
-                DiscoveryEntry discoveryEntry = provisionedDiscoveryEntries.get(domain + interfaceName);
+                DiscoveryEntryWithMetaInfo discoveryEntry = provisionedDiscoveryEntries.get(domain + interfaceName);
                 discoveryEntries.add(discoveryEntry);
             } else {
                 missingDomains.add(domain);
             }
         }
-        logger.debug("Found locally provisioned discovery entries: {}", discoveryEntries);
-        final Future<DiscoveryEntry[]> discoveryEntryFuture = new Future<>();
+        logger.trace("Found locally provisioned discovery entries: {}", discoveryEntries);
+        final Future<DiscoveryEntryWithMetaInfo[]> discoveryEntryFuture = new Future<>();
         if (!missingDomains.isEmpty()) {
-            logger.debug("Did not find entries for the following domains: {}", missingDomains);
+            logger.trace("Did not find entries for the following domains: {}", missingDomains);
             if (discoveryProxy == null) {
                 throw new JoynrRuntimeException("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                         + "local capabilitites directory.");
             }
-            Callback<DiscoveryEntry[]> newCallback = new Callback<DiscoveryEntry[]>() {
+            Callback<DiscoveryEntryWithMetaInfo[]> newCallback = new Callback<DiscoveryEntryWithMetaInfo[]>() {
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
@@ -130,9 +133,9 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                 }
 
                 @Override
-                public void onSuccess(DiscoveryEntry[] entries) {
+                public void onSuccess(DiscoveryEntryWithMetaInfo[] entries) {
                     assert entries != null : "Entries must not be null.";
-                    logger.debug("Globally found entries for missing domains: {}", entries);
+                    logger.trace("Globally found entries for missing domains: {}", entries);
                     Collections.addAll(discoveryEntries, entries);
                     resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
                 }
@@ -146,17 +149,17 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         return discoveryEntryFuture;
     }
 
-    private void resolveDiscoveryEntriesFutureWithEntries(Future<DiscoveryEntry[]> future,
-                                                          Set<DiscoveryEntry> discoveryEntries,
-                                                          Callback<DiscoveryEntry[]> callback) {
-        DiscoveryEntry[] discoveryEntriesArray = new DiscoveryEntry[discoveryEntries.size()];
+    private void resolveDiscoveryEntriesFutureWithEntries(Future<DiscoveryEntryWithMetaInfo[]> future,
+                                                          Set<DiscoveryEntryWithMetaInfo> discoveryEntries,
+                                                          Callback<DiscoveryEntryWithMetaInfo[]> callback) {
+        DiscoveryEntryWithMetaInfo[] discoveryEntriesArray = new DiscoveryEntryWithMetaInfo[discoveryEntries.size()];
         discoveryEntries.toArray(discoveryEntriesArray);
         future.resolve((Object) discoveryEntriesArray);
         callback.resolve((Object) discoveryEntriesArray);
     }
 
     @Override
-    public Future<DiscoveryEntry> lookup(Callback<DiscoveryEntry> callback, String participantId) {
+    public Future<DiscoveryEntryWithMetaInfo> lookup(Callback<DiscoveryEntryWithMetaInfo> callback, String participantId) {
 
         if (discoveryProxy == null) {
             throw new JoynrRuntimeException("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "

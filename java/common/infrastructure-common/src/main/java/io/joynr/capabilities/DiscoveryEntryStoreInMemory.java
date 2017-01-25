@@ -60,7 +60,7 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
 
     @Inject
     public DiscoveryEntryStoreInMemory(CapabilitiesProvisioning staticProvisioning) {
-        logger.debug("creating CapabilitiesStore {} with static provisioning", this);
+        logger.trace("creating CapabilitiesStore {} with static provisioning", this);
         //add(staticProvisioning.getCapabilityEntries());
     }
 

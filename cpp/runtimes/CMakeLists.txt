@@ -103,7 +103,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     set_target_properties(
         JoynrClusterControllerRuntime
         PROPERTIES
-        SOVERSION "${JOYNR_VERSION}"
+        SOVERSION "${JOYNR_SOVERSION}"
         VERSION "${JOYNR_VERSION}"
         PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
     )
@@ -204,7 +204,7 @@ GenerateJoynrExports(
 set_target_properties(
     JoynrWsRuntime
     PROPERTIES
-    SOVERSION "${JOYNR_VERSION}"
+    SOVERSION "${JOYNR_SOVERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
 )
@@ -281,7 +281,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set_target_properties(
         JoynrDbusRuntime
         PROPERTIES
-        SOVERSION "${JOYNR_VERSION}"
+        SOVERSION "${JOYNR_SOVERSION}"
         VERSION "${JOYNR_VERSION}"
         PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
     )

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,20 +28,10 @@ const std::int64_t& PeriodicSubscriptionQos::MIN_PERIOD_MS()
     return minPeriod;
 }
 
-const std::int64_t& PeriodicSubscriptionQos::MIN_PERIOD()
-{
-    return MIN_PERIOD_MS();
-}
-
 const std::int64_t& PeriodicSubscriptionQos::MAX_PERIOD_MS()
 {
     static std::int64_t maxPeriod = 2592000000UL;
     return maxPeriod;
-}
-
-const std::int64_t& PeriodicSubscriptionQos::MAX_PERIOD()
-{
-    return MAX_PERIOD_MS();
 }
 
 const std::int64_t& PeriodicSubscriptionQos::DEFAULT_PERIOD_MS()
@@ -56,19 +46,9 @@ const std::int64_t& PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL_MS()
     return maxAlertAfterInterval;
 }
 
-const std::int64_t& PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
-{
-    return MAX_ALERT_AFTER_INTERVAL_MS();
-}
-
 const std::int64_t& PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL_MS()
 {
     return NO_ALERT_AFTER_INTERVAL();
-}
-
-const std::int64_t& PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
-{
-    return DEFAULT_ALERT_AFTER_INTERVAL_MS();
 }
 
 const std::int64_t& PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
@@ -78,16 +58,17 @@ const std::int64_t& PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
 }
 
 PeriodicSubscriptionQos::PeriodicSubscriptionQos()
-        : SubscriptionQos(),
+        : UnicastSubscriptionQos(),
           periodMs(DEFAULT_PERIOD_MS()),
           alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {
 }
 
-PeriodicSubscriptionQos::PeriodicSubscriptionQos(const std::int64_t& validityMs,
-                                                 const std::int64_t& periodMs,
-                                                 const std::int64_t& alertAfterInterval)
-        : SubscriptionQos(validityMs),
+PeriodicSubscriptionQos::PeriodicSubscriptionQos(const std::int64_t validityMs,
+                                                 const std::int64_t publicationTtlMs,
+                                                 const std::int64_t periodMs,
+                                                 const std::int64_t alertAfterInterval)
+        : UnicastSubscriptionQos(validityMs, publicationTtlMs),
           periodMs(DEFAULT_PERIOD_MS()),
           alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {
@@ -96,7 +77,7 @@ PeriodicSubscriptionQos::PeriodicSubscriptionQos(const std::int64_t& validityMs,
 }
 
 PeriodicSubscriptionQos::PeriodicSubscriptionQos(const PeriodicSubscriptionQos& other)
-        : SubscriptionQos(other),
+        : UnicastSubscriptionQos(other),
           periodMs(other.getPeriodMs()),
           alertAfterIntervalMs(other.getAlertAfterIntervalMs())
 {
@@ -135,19 +116,9 @@ void PeriodicSubscriptionQos::setPeriodMs(const std::int64_t& periodMs)
     }
 }
 
-void PeriodicSubscriptionQos::setPeriod(const std::int64_t& periodMs)
-{
-    setPeriodMs(periodMs);
-}
-
 std::int64_t PeriodicSubscriptionQos::getPeriodMs() const
 {
     return this->periodMs;
-}
-
-std::int64_t PeriodicSubscriptionQos::getPeriod() const
-{
-    return getPeriodMs();
 }
 
 void PeriodicSubscriptionQos::setAlertAfterIntervalMs(const std::int64_t& alertAfterIntervalMs)
@@ -174,19 +145,9 @@ void PeriodicSubscriptionQos::setAlertAfterIntervalMs(const std::int64_t& alertA
     this->alertAfterIntervalMs = alertAfterIntervalMs;
 }
 
-void PeriodicSubscriptionQos::setAlertAfterInterval(const std::int64_t& alertAfterIntervalMs)
-{
-    setAlertAfterIntervalMs(alertAfterIntervalMs);
-}
-
 std::int64_t PeriodicSubscriptionQos::getAlertAfterIntervalMs() const
 {
     return alertAfterIntervalMs;
-}
-
-std::int64_t PeriodicSubscriptionQos::getAlertAfterInterval() const
-{
-    return getAlertAfterIntervalMs();
 }
 
 void PeriodicSubscriptionQos::clearAlertAfterInterval()

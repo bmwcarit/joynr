@@ -23,9 +23,9 @@
 
 INIT_LOGGER(AbstractRobustnessTest);
 
-TestInterfaceProxy* AbstractRobustnessTest::proxy = nullptr;
-ProxyBuilder<TestInterfaceProxy>* AbstractRobustnessTest::proxyBuilder = nullptr;
-JoynrRuntime* AbstractRobustnessTest::runtime = nullptr;
+std::unique_ptr<TestInterfaceProxy> AbstractRobustnessTest::proxy;
+std::unique_ptr<ProxyBuilder<TestInterfaceProxy>> AbstractRobustnessTest::proxyBuilder;
+std::unique_ptr<JoynrRuntime> AbstractRobustnessTest::runtime;
 std::string AbstractRobustnessTest::providerDomain = "joynr-robustness-test-domain";
 
 int main(int argc, char** argv)

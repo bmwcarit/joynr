@@ -52,8 +52,7 @@ public:
 
     ProxyIntegrationTest() :
         mockInProcessConnectorFactory(new MockInProcessConnectorFactory()),
-        mockClientCache(new MockClientCache()),
-        mockJoynrMessageSender(new MockJoynrMessageSender()),
+        mockJoynrMessageSender(std::make_shared<MockJoynrMessageSender>()),
         domain("cppProxyIntegrationTestDomain"),
         messagingQos(),
         endPointAddress(new system::RoutingTypes::ChannelAddress("http://endpoint:8080/bounceproxy", "endPointAddress"))
@@ -62,15 +61,12 @@ public:
 
     ~ProxyIntegrationTest(){
         delete mockInProcessConnectorFactory;
-        delete mockClientCache;
-        delete mockJoynrMessageSender;
     }
 
 protected:
 
     MockInProcessConnectorFactory* mockInProcessConnectorFactory;
-    MockClientCache* mockClientCache;
-    MockJoynrMessageSender* mockJoynrMessageSender;
+    std::shared_ptr<MockJoynrMessageSender> mockJoynrMessageSender;
     std::string domain;
     MessagingQos messagingQos;
     std::shared_ptr<joynr::system::RoutingTypes::ChannelAddress> endPointAddress;
@@ -88,6 +84,6 @@ TEST_F(ProxyIntegrationTest, proxyInitialisation)
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, nullptr);
     ConnectorFactory* connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, mockClientCache, domain, messagingQos, false);
+    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, domain, messagingQos);
     ASSERT_TRUE(proxy != nullptr);
 }

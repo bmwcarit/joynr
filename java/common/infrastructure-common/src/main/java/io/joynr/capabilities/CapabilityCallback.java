@@ -19,7 +19,7 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 import javax.annotation.CheckForNull;
 
@@ -28,9 +28,8 @@ import javax.annotation.CheckForNull;
  * lookup.
  * 
  */
-
 public interface CapabilityCallback {
-    void processCapabilityReceived(@CheckForNull DiscoveryEntry capability);
+    void processCapabilityReceived(@CheckForNull DiscoveryEntryWithMetaInfo capability);
 
     void onError(Throwable e);
 }

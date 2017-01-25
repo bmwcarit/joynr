@@ -31,6 +31,7 @@ define("joynr/util/LongTimer", [], function() {
     var LongTimer = {};
 
     LongTimer.maxTime = Math.pow(2, 31) - 1;
+    LongTimer.idPrefix = 'lt';
 
     var highestTimeoutId = 0;
     LongTimer.timeoutMap = {};
@@ -66,37 +67,33 @@ define("joynr/util/LongTimer", [], function() {
      *            func
      * @param {Number}
      *            timeout
-     * @returns {Number} timeout identifier
+     * @returns {String|Object} timeout identifier
      * @throws {Error}
      *             if parameters are nullable or not of documented type
      */
     LongTimer.setTimeout = function(func, timeout) {
-        // get next timeout id
-        var timeoutId = ++highestTimeoutId;
-
         if (timeout <= LongTimer.maxTime) {
-            // put timeout object into map
-            LongTimer.timeoutMap[timeoutId] = {
-                currentTimeout : setTimeout.apply(null, arguments)
-            };
-        } else {
-
-            // put timeout object into map
-            LongTimer.timeoutMap[timeoutId] = {
-                func : func,
-                remainingTimeout : timeout,
-                args : Array.prototype.slice.call(arguments, 2)
-            // get the arbitrary arguments
-            };
-
-            // start timeout
-            if (timeout === 0) {
-                setTimeout(timeoutPortion, 0, timeoutId);
-            } else {
-                timeoutPortion(timeoutId);
-            }
+            return setTimeout.apply(null, arguments);
         }
 
+        // get next timeout id and prefix it to avoid possible collisions in environents
+        // where setTimeout returns a number (e.g. in browsers).
+        var timeoutId = LongTimer.idPrefix + (++highestTimeoutId);
+
+        // put timeout object into map
+        LongTimer.timeoutMap[timeoutId] = {
+            func : func,
+            remainingTimeout : timeout,
+            args : Array.prototype.slice.call(arguments, 2)
+        // get the arbitrary arguments
+        };
+
+        // start timeout
+        if (timeout === 0) {
+            setTimeout(timeoutPortion, 0, timeoutId);
+        } else {
+            timeoutPortion(timeoutId);
+        }
         // return id to
         return timeoutId;
     };
@@ -114,9 +111,9 @@ define("joynr/util/LongTimer", [], function() {
         // retrieve timeout object
         var timeoutObj = LongTimer.timeoutMap[timeoutId];
 
-        // timeout has run out or been cancelled already
+        // timeout has run out, been cancelled already or was less than maxTime
         if (timeoutObj === undefined) {
-            return;
+            return clearTimeout(timeoutId);
         }
 
         // stop javascript interval and remove timeout object

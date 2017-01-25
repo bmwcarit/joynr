@@ -46,7 +46,6 @@ public class LegacyCapabilitiesProvisioningTest {
     @Test
     public void testMqttAddressGeneratedCorrectly() {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder propertiesHolder = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder("tcp://localhost:1883",
-                                                                                                                                                                   null,
                                                                                                                                                                    "tcp://localhost:1883",
                                                                                                                                                                    "channel_id",
                                                                                                                                                                    "discovery_domain",
