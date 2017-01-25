@@ -151,7 +151,7 @@ AddClangTidy(Joynr)
 set_target_properties(
     Joynr
     PROPERTIES
-    SOVERSION "${JOYNR_VERSION}"
+    SOVERSION "${JOYNR_SOVERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}"
 )

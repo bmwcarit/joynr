@@ -84,8 +84,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             inProcessConnectorFactory, joynrMessagingConnectorFactory);
-    proxyFactory = std::make_unique<ProxyFactory>(
-            libjoynrMessagingAddress, std::move(connectorFactory), nullptr);
+    proxyFactory =
+            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
 
     std::string persistenceFilename = "dummy.txt";
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);

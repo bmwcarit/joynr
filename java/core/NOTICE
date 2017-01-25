@@ -83,6 +83,7 @@ This project has dependencies to:
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
+  Objenesis under MIT License
   Reflections under WTFPL
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0

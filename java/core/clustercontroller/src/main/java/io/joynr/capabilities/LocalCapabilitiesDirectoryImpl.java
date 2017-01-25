@@ -59,6 +59,7 @@ import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
 
@@ -268,19 +269,19 @@ TransportReadyListener {
                        final CapabilitiesCallback capabilitiesCallback) {
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
         Set<DiscoveryEntry> localDiscoveryEntries = getLocalEntriesIfRequired(discoveryScope, domains, interfaceName);
-        Set<DiscoveryEntry> globalDiscoveryEntries = getGloballyCachedEntriesIfRequired(discoveryScope, domains, interfaceName, discoveryQos.getCacheMaxAgeMs());
+        Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries = getGloballyCachedEntriesIfRequired(discoveryScope, domains, interfaceName, discoveryQos.getCacheMaxAgeMs());
         switch (discoveryScope) {
         case LOCAL_ONLY:
-            capabilitiesCallback.processCapabilitiesReceived(localDiscoveryEntries);
+            capabilitiesCallback.processCapabilitiesReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries));
             break;
         case LOCAL_THEN_GLOBAL:
-            handleLocalThenGlobal(domains, interfaceName, discoveryQos, capabilitiesCallback, localDiscoveryEntries, globalDiscoveryEntries);
+            handleLocalThenGlobal(domains, interfaceName, discoveryQos, capabilitiesCallback, CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries), globalDiscoveryEntries);
             break;
         case GLOBAL_ONLY:
             handleGlobalOnly(domains, interfaceName, discoveryQos, capabilitiesCallback, globalDiscoveryEntries);
             break;
         case LOCAL_AND_GLOBAL:
-            handleLocalAndGlobal(domains, interfaceName, discoveryQos, capabilitiesCallback, localDiscoveryEntries, globalDiscoveryEntries);
+            handleLocalAndGlobal(domains, interfaceName, discoveryQos, capabilitiesCallback, CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries), globalDiscoveryEntries);
             break;
         default:
             throw new IllegalStateException("Unknown or illegal DiscoveryScope value: " + discoveryScope);
@@ -291,10 +292,10 @@ TransportReadyListener {
                                        String interfaceName,
                                        DiscoveryQos discoveryQos,
                                        CapabilitiesCallback capabilitiesCallback,
-                                       Set<DiscoveryEntry> localDiscoveryEntries,
-                                       Set<DiscoveryEntry> globalDiscoveryEntries) {
+                                       Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
+                                       Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
         Set<String> domainsForGlobalLookup = new HashSet<>();
-        Set<DiscoveryEntry> matchedDiscoveryEntries = new HashSet<>();
+        Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries = new HashSet<>();
         for (String domainToMatch : domains) {
             boolean domainMatched = addEntriesForDomain(localDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
             domainMatched = domainMatched || addEntriesForDomain(globalDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
@@ -313,10 +314,10 @@ TransportReadyListener {
                                       String interfaceName,
                                       DiscoveryQos discoveryQos,
                                       CapabilitiesCallback capabilitiesCallback,
-                                      Set<DiscoveryEntry> localDiscoveryEntries,
-                                      Set<DiscoveryEntry> globalDiscoveryEntries) {
+                                      Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
+                                      Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
         Set<String> domainsForGlobalLookup = new HashSet<>();
-        Set<DiscoveryEntry> matchedDiscoveryEntries = new HashSet<>();
+        Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries = new HashSet<>();
         for (String domainToMatch : domains) {
             addEntriesForDomain(localDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
             if (!addEntriesForDomain(globalDiscoveryEntries, matchedDiscoveryEntries, domainToMatch)) {
@@ -334,7 +335,7 @@ TransportReadyListener {
                                   String interfaceName,
                                   DiscoveryQos discoveryQos,
                                   CapabilitiesCallback capabilitiesCallback,
-                                  Set<DiscoveryEntry> globalDiscoveryEntries) {
+                                  Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
         Set<String> domainsForGlobalLookup = Sets.newHashSet(domains);
         for (DiscoveryEntry discoveryEntry : globalDiscoveryEntries) {
             domainsForGlobalLookup.remove(discoveryEntry.getDomain());
@@ -350,7 +351,7 @@ TransportReadyListener {
                                             DiscoveryQos discoveryQos,
                                             CapabilitiesCallback capabilitiesCallback,
                                             Set<String> domainsForGlobalLookup,
-                                            Set<DiscoveryEntry> matchedDiscoveryEntries) {
+                                            Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries) {
         if (domainsForGlobalLookup.isEmpty()) {
             capabilitiesCallback.processCapabilitiesReceived(matchedDiscoveryEntries);
         } else {
@@ -362,9 +363,9 @@ TransportReadyListener {
         }
     }
 
-    private boolean addEntriesForDomain(Collection<DiscoveryEntry> discoveryEntries, Collection<DiscoveryEntry> addTo, String domain) {
+    private boolean addEntriesForDomain(Collection<DiscoveryEntryWithMetaInfo> discoveryEntries, Collection<DiscoveryEntryWithMetaInfo> addTo, String domain) {
         boolean domainMatched = false;
-        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
             if (discoveryEntry.getDomain().equals(domain)) {
                 addTo.add(discoveryEntry);
                 domainMatched = true;
@@ -373,11 +374,11 @@ TransportReadyListener {
         return domainMatched;
     }
 
-    private Set<DiscoveryEntry> getGloballyCachedEntriesIfRequired(DiscoveryScope discoveryScope,
+    private Set<DiscoveryEntryWithMetaInfo> getGloballyCachedEntriesIfRequired(DiscoveryScope discoveryScope,
                                                                    String[] domains,
                                                                    String interfaceName, long cacheMaxAge) {
         if (INCLUDE_GLOBAL_SCOPES.contains(discoveryScope)) {
-            return new HashSet<DiscoveryEntry>(globalDiscoveryEntryCache.lookup(domains, interfaceName, cacheMaxAge));
+            return CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(false, globalDiscoveryEntryCache.lookup(domains, interfaceName, cacheMaxAge));
         }
         return null;
     }
@@ -401,12 +402,16 @@ TransportReadyListener {
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
         switch (discoveryScope) {
         case LOCAL_ONLY:
-            capabilityCallback.processCapabilityReceived(localDiscoveryEntry);
+            if (localDiscoveryEntry != null) {
+                capabilityCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true, localDiscoveryEntry));
+            } else {
+                capabilityCallback.processCapabilityReceived(null);
+            }
             break;
         case LOCAL_THEN_GLOBAL:
         case LOCAL_AND_GLOBAL:
             if (localDiscoveryEntry != null) {
-                capabilityCallback.processCapabilityReceived(localDiscoveryEntry);
+                capabilityCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true, localDiscoveryEntry));
             } else {
                 asyncGetGlobalCapabilitity(participantId, discoveryQos, capabilityCallback);
             }
@@ -421,12 +426,12 @@ TransportReadyListener {
 
     @Override
     @CheckForNull
-    public DiscoveryEntry lookup(String participantId, DiscoveryQos discoveryQos) {
-        final Future<DiscoveryEntry> lookupFuture = new Future<>();
+    public DiscoveryEntryWithMetaInfo lookup(String participantId, DiscoveryQos discoveryQos) {
+        final Future<DiscoveryEntryWithMetaInfo> lookupFuture = new Future<>();
         lookup(participantId, discoveryQos, new CapabilityCallback() {
 
             @Override
-            public void processCapabilityReceived(DiscoveryEntry capability) {
+            public void processCapabilityReceived(DiscoveryEntryWithMetaInfo capability) {
                 lookupFuture.onSuccess(capability);
             }
 
@@ -435,7 +440,7 @@ TransportReadyListener {
                 lookupFuture.onFailure(new JoynrRuntimeException(e));
             }
         });
-        DiscoveryEntry retrievedCapabilitiyEntry = null;
+        DiscoveryEntryWithMetaInfo retrievedCapabilitiyEntry = null;
 
         try {
             retrievedCapabilitiyEntry = lookupFuture.get();
@@ -466,7 +471,7 @@ TransportReadyListener {
                                                                                  discoveryQos.getCacheMaxAgeMs());
 
         if (cachedGlobalCapability != null) {
-            capabilitiesCallback.processCapabilityReceived(cachedGlobalCapability);
+            capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, cachedGlobalCapability));
         } else {
             globalCapabilitiesDirectoryClient.lookup(new Callback<GlobalDiscoveryEntry>() {
 
@@ -475,7 +480,7 @@ TransportReadyListener {
                     if (newGlobalDiscoveryEntry != null) {
                         registerIncomingEndpoints(Lists.newArrayList(newGlobalDiscoveryEntry));
                         globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
-                        capabilitiesCallback.processCapabilityReceived(newGlobalDiscoveryEntry);
+                        capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, newGlobalDiscoveryEntry));
                     } else {
                         capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
                     }
@@ -496,11 +501,11 @@ TransportReadyListener {
      */
     private void asyncGetGlobalCapabilitities(final String[] domains,
                                               final String interfaceName,
-                                              Collection<DiscoveryEntry> localDiscoveryEntries2,
+                                              Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries2,
                                               long discoveryTimeout,
                                               final CapabilitiesCallback capabilitiesCallback) {
 
-        final Collection<DiscoveryEntry> localDiscoveryEntries = localDiscoveryEntries2 == null ? new LinkedList<DiscoveryEntry>()
+        final Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries = localDiscoveryEntries2 == null ? new LinkedList<DiscoveryEntryWithMetaInfo>()
                 : localDiscoveryEntries2;
 
         globalCapabilitiesDirectoryClient.lookup(new Callback<List<GlobalDiscoveryEntry>>() {
@@ -510,9 +515,9 @@ TransportReadyListener {
                 if (globalDiscoverEntries != null) {
                     registerIncomingEndpoints(globalDiscoverEntries);
                     globalDiscoveryEntryCache.add(globalDiscoverEntries);
-                    Collection<DiscoveryEntry> allDisoveryEntries = new ArrayList<DiscoveryEntry>(globalDiscoverEntries.size()
+                    Collection<DiscoveryEntryWithMetaInfo> allDisoveryEntries = new ArrayList<DiscoveryEntryWithMetaInfo>(globalDiscoverEntries.size()
                             + localDiscoveryEntries.size());
-                    allDisoveryEntries.addAll(globalDiscoverEntries);
+                    allDisoveryEntries.addAll(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoList(false, globalDiscoverEntries));
                     allDisoveryEntries.addAll(localDiscoveryEntries);
                     capabilitiesCallback.processCapabilitiesReceived(allDisoveryEntries);
                 } else {
@@ -580,11 +585,11 @@ TransportReadyListener {
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
-            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntry> capabilities) {
+            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntryWithMetaInfo> capabilities) {
                 if (capabilities == null) {
                     deferred.reject(new ProviderRuntimeException("Received capablities collection was null"));
                 } else {
-                    deferred.resolve(capabilities.toArray(new DiscoveryEntry[capabilities.size()]));
+                    deferred.resolve(capabilities.toArray(new DiscoveryEntryWithMetaInfo[capabilities.size()]));
                 }
             }
 
@@ -605,7 +610,7 @@ TransportReadyListener {
     @Override
     public Promise<Lookup2Deferred> lookup(String participantId) {
         Lookup2Deferred deferred = new Lookup2Deferred();
-        DiscoveryEntry discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
+        DiscoveryEntryWithMetaInfo discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
         deferred.resolve(discoveryEntry);
         return new Promise<>(deferred);
     }

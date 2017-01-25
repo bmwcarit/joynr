@@ -22,7 +22,6 @@ package io.joynr.arbitration;
 import static java.lang.String.format;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -43,6 +42,7 @@ import io.joynr.proxy.Callback;
 import joynr.exceptions.ApplicationException;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -219,7 +219,7 @@ public class Arbitrator {
         return reason;
     }
 
-    private class DiscoveryCallback extends Callback<DiscoveryEntry[]> {
+    private class DiscoveryCallback extends Callback<DiscoveryEntryWithMetaInfo[]> {
 
             @Override
             public void onFailure(JoynrRuntimeException error) {
@@ -227,19 +227,18 @@ public class Arbitrator {
             }
 
             @Override
-            public void onSuccess(DiscoveryEntry[] discoveryEntries) {
+            public void onSuccess(DiscoveryEntryWithMetaInfo[] discoveryEntries) {
                 assert discoveryEntries != null : "Discovery entries may not be null.";
                 if (allDomainsDiscovered(discoveryEntries)) {
                     logger.trace("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
-                    Set<DiscoveryEntry> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
+                    Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
 
-                    Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
+                    Set<DiscoveryEntryWithMetaInfo> selectedCapabilities = arbitrationStrategyFunction
                             .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
 
                     logger.trace("Selected capabilities: {}", selectedCapabilities);
                     if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
-                        Set<String> participantIds = getParticipantIds(selectedCapabilities);
-                        arbitrationResult.setParticipantIds(participantIds);
+                        arbitrationResult.setDiscoveryEntries(selectedCapabilities);
                         arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
                     } else {
                         arbitrationFailed();
@@ -269,24 +268,13 @@ public class Arbitrator {
                 return allDomainsDiscovered;
             }
 
-            private Set<String> getParticipantIds(Collection<DiscoveryEntry> selectedCapabilities) {
-                Set<String> participantIds = new HashSet<>();
-                for (DiscoveryEntry selectedCapability : selectedCapabilities) {
-                    if (selectedCapability != null) {
-                        participantIds.add(selectedCapability.getParticipantId());
-                    }
-                }
-                logger.trace("Resulting participant IDs: {}", participantIds);
-                return participantIds;
-            }
-
-        private Set<DiscoveryEntry> filterDiscoveryEntries(DiscoveryEntry[] discoveryEntries) {
-            Set<DiscoveryEntry> discoveryEntriesSet;
+        private Set<DiscoveryEntryWithMetaInfo> filterDiscoveryEntries(DiscoveryEntryWithMetaInfo[] discoveryEntries) {
+            Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet;
             // If onChange subscriptions are required ignore
             // providers that do not support them
             if (discoveryQos.getProviderMustSupportOnChange()) {
                 discoveryEntriesSet = new HashSet<>(discoveryEntries.length);
-                for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+                for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
                     ProviderQos providerQos = discoveryEntry.getQos();
                     if (providerQos.getSupportsOnChangeSubscriptions()) {
                         discoveryEntriesSet.add(discoveryEntry);

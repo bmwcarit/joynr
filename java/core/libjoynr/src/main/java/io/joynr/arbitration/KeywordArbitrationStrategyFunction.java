@@ -1,7 +1,5 @@
 package io.joynr.arbitration;
 
-import java.util.Arrays;
-
 /*
  * #%L
  * %%
@@ -23,18 +21,22 @@ import java.util.Arrays;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import joynr.types.CustomParameter;
-import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public class KeywordArbitrationStrategyFunction extends ArbitrationStrategyFunction {
 
     @Override
-    public Collection<DiscoveryEntry> select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities) {
+    public Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                  Collection<DiscoveryEntryWithMetaInfo> capabilities) {
         String requestedKeyword = parameters.get(ArbitrationConstants.KEYWORD_PARAMETER);
-        DiscoveryEntry capabilityWithKeyword = null;
+        DiscoveryEntryWithMetaInfo capabilityWithKeyword = null;
 
-        for (DiscoveryEntry discoveryEntry : capabilities) {
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             // Search for a matching keyword parameter
             CustomParameter keywordParameter = findQosParameter(discoveryEntry, ArbitrationConstants.KEYWORD_PARAMETER);
             if (keywordParameter != null) {
@@ -46,6 +48,6 @@ public class KeywordArbitrationStrategyFunction extends ArbitrationStrategyFunct
             }
         }
 
-        return capabilityWithKeyword == null ? null : Arrays.asList(capabilityWithKeyword);
+        return capabilityWithKeyword == null ? null : Sets.newHashSet(capabilityWithKeyword);
     }
 }

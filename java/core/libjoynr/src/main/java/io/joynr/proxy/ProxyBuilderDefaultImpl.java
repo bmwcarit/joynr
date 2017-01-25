@@ -209,10 +209,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
             @Override
             public void onSuccess(ArbitrationResult arbitrationResult) {
-                logger.debug("DISCOVERY proxy created for provider participantId: {}, domain: {}, interface: {}",
-                             arbitrationResult.getParticipantIds(),
-                             domains,
-                             interfaceName);
+                logger.debug("DISCOVERY proxy created for:{}", arbitrationResult.getDiscoveryEntries());
                 proxyInvocationHandler.createConnector(arbitrationResult);
                 messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
                 callback.onProxyCreationFinished(proxy);

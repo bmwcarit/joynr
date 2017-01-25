@@ -297,10 +297,13 @@ file(
     "gen/*.h"
 )
 
-add_library(JoynrTestGenerated OBJECT
+add_library(JoynrTestGenerated SHARED
     ${JoynrTest_GENSOURCES}
     ${JoynrTest_GENHEADERS}
 )
+
+# add needed dependencies by linking to target joynr
+target_link_libraries(JoynrTestGenerated Joynr)
 
 if(NOT USE_PLATFORM_SPDLOG)
     add_dependencies(JoynrTestGenerated spdlog)
@@ -316,18 +319,6 @@ target_include_directories(
     SYSTEM PUBLIC
     ${JoynrTest_SYSTEM_INCLUDE_DIRECTORIES}
 )
-
-#
-# Manually handle muesli dependency of JoynrTestGenerated
-#
-# 1. make sure needed libraries required by muesli are being built
-#    before this target
-add_dependencies(JoynrTestGenerated muesli::muesli)
-
-# 2. As cmake OBJECT library do not support linking we need to manually set
-# the INCLUDE_DIRECTORIES from muesli.
-get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
-target_include_directories(JoynrTestGenerated SYSTEM PUBLIC "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>")
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
@@ -451,7 +442,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_UNIT_TESTS})
         AddTest(
             g_UnitTests
-            $<TARGET_OBJECTS:JoynrTestGenerated>
             ${cluster_controller_test_HEADERS}
             ${cluster_controller_test_SOURCES}
             ${g_UnitTests_SOURCES}
@@ -459,6 +449,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_UnitTests
+            JoynrTestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -492,7 +483,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_INTEGRATION_TESTS})
         AddTest(
            g_IntegrationTests
-           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${cluster_controller_test_HEADERS}
            ${cluster_controller_test_SOURCES}
            ${g_IntegrationTests_SOURCES}
@@ -500,6 +490,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_IntegrationTests
+            JoynrTestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -532,7 +523,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         AddTest(
            g_SystemIntegrationTests
-           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${cluster_controller_test_HEADERS}
            ${cluster_controller_test_SOURCES}
            ${g_SystemIntegrationTests_SOURCES}
@@ -540,6 +530,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_SystemIntegrationTests
+            JoynrTestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -580,7 +571,6 @@ else()
     if(${BUILD_UNIT_TESTS})
         AddTest(
             g_UnitTests
-            $<TARGET_OBJECTS:JoynrTestGenerated>
             ${libjoynr_test_HEADERS}
             ${libjoynr_test_SOURCES}
             ${g_UnitTests_SOURCES}
@@ -588,6 +578,7 @@ else()
 
     target_link_libraries(
             g_UnitTests
+            JoynrTestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
         )
 
@@ -616,7 +607,6 @@ else()
     if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         AddTest(
            g_SystemIntegrationTests
-           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${libjoynr_test_HEADERS}
            ${libjoynr_test_SOURCES}
            ${g_SystemIntegrationTests_SOURCES}
@@ -624,6 +614,7 @@ else()
 
         target_link_libraries(
             g_SystemIntegrationTests
+            JoynrTestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
         )
 

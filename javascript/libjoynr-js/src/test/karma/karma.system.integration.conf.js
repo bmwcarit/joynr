@@ -51,6 +51,7 @@ module.exports = function(config) {
             {pattern: 'test-classes/joynr/provisioning/*.js', included: false},
             {pattern: 'test-classes/joynr/vehicle/*.js', included: false},
             {pattern: 'test-classes/joynr/vehicle/radiotypes/*.js', included: false},
+            {pattern: 'test-classes/joynr/tests/*.js', included: false},
             {pattern: 'test-classes/joynr/tests/testTypes/*.js', included: false},
             {pattern: 'test-classes/joynr/types/TestTypes/*.js', included: false},
             {pattern: 'test-classes/joynr/datatypes/*.js', included: false},
@@ -65,6 +66,7 @@ module.exports = function(config) {
             {pattern: 'test-classes/integration/WorkerUtils.js', included: false},
 
             {pattern: 'test-classes/integration/LibJoynrTest.js', included: false},
+            {pattern: 'test-classes/integration/LocalDiscoveryTest.js', included: false},
             {pattern: 'test-classes/integration/End2EndAbstractTest.js', included: false},
             {pattern: 'test-classes/integration/End2EndDatatypesTest.js', included: false},
             {pattern: 'test-classes/integration/End2EndRPCTest.js', included: false},

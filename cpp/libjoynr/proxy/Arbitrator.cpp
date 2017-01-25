@@ -59,7 +59,7 @@ Arbitrator::Arbitrator(
 }
 
 void Arbitrator::startArbitration(
-        std::function<void(const std::string& participantId)> onSuccess,
+        std::function<void(const types::DiscoveryEntryWithMetaInfo& discoveryEntry)> onSuccess,
         std::function<void(const exceptions::DiscoveryException& exception)> onError)
 {
     onSuccessCallback = onSuccess;
@@ -112,11 +112,11 @@ void Arbitrator::startArbitration(
 
 void Arbitrator::attemptArbitration()
 {
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     try {
         if (discoveryQos.getArbitrationStrategy() ==
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
-            types::DiscoveryEntry fixedParticipantResult;
+            types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
             discoveryProxy.lookup(fixedParticipantResult,
                                   discoveryQos.getCustomParameter("fixedParticipantId").getValue());
             result.push_back(fixedParticipantResult);
@@ -135,9 +135,8 @@ void Arbitrator::attemptArbitration()
 }
 
 void Arbitrator::receiveCapabilitiesLookupResults(
-        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries)
 {
-    std::string res;
     discoveredIncompatibleVersions.clear();
 
     // Check for empty results
@@ -148,11 +147,11 @@ void Arbitrator::receiveCapabilitiesLookupResults(
         return;
     }
 
-    std::vector<joynr::types::DiscoveryEntry> preFilteredDiscoveryEntries;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> preFilteredDiscoveryEntries;
     joynr::types::Version providerVersion;
     std::size_t providersWithoutSupportOnChange = 0;
     std::size_t providersWithIncompatibleVersion = 0;
-    for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
+    for (const joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
         providerVersion = discoveryEntry.getProviderVersion();
@@ -193,13 +192,15 @@ void Arbitrator::receiveCapabilitiesLookupResults(
         }
         return;
     } else {
+        types::DiscoveryEntryWithMetaInfo res;
+
         try {
             res = arbitrationStrategyFunction->select(
                     discoveryQos.getCustomParameters(), preFilteredDiscoveryEntries);
         } catch (const exceptions::DiscoveryException& e) {
             arbitrationError = e;
         }
-        if (!res.empty()) {
+        if (!res.getParticipantId().empty()) {
             onSuccessCallback(res);
             arbitrationFinished = true;
         }

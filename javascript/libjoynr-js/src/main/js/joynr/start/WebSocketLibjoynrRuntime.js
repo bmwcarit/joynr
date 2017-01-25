@@ -25,7 +25,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/capabilities/arbitration/Arbitrator",
     "joynr/provider/ProviderBuilder",
     "joynr/proxy/ProxyBuilder",
-    "joynr/types/GlobalDiscoveryEntry",
     "joynr/capabilities/CapabilitiesRegistrar",
     "joynr/capabilities/ParticipantIdStorage",
     "joynr/dispatching/RequestReplyManager",
@@ -56,6 +55,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/types/TypeRegistrySingleton",
     "joynr/types/DiscoveryScope",
     "joynr/types/DiscoveryEntry",
+    "joynr/types/DiscoveryEntryWithMetaInfo",
     "joynr/util/UtilInternal",
     "joynr/util/CapabilitiesUtil",
     "joynr/util/Typing",
@@ -75,7 +75,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         Arbitrator,
         ProviderBuilder,
         ProxyBuilder,
-        GlobalDiscoveryEntry,
         CapabilitiesRegistrar,
         ParticipantIdStorage,
         RequestReplyManager,
@@ -106,6 +105,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         TypeRegistrySingleton,
         DiscoveryScope,
         DiscoveryEntry,
+        DiscoveryEntryWithMetaInfo,
         Util,
         CapabilitiesUtil,
         Typing,
@@ -315,7 +315,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     typedCapabilities = [];
                     for (i = 0; i < untypedCapabilities.length; i++) {
-                        var capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
+                        var capability = new DiscoveryEntryWithMetaInfo(untypedCapabilities[i]);
                         initialRoutingTable[capability.participantId] = ccAddress;
                         typedCapabilities.push(capability);
                     }
@@ -414,7 +414,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                         loggingManager : loggingManager
                     }));
 
-                    arbitrator = new Arbitrator(discovery, CapabilitiesUtil.toDiscoveryEntries(typedCapabilities));
+                    arbitrator = new Arbitrator(discovery, typedCapabilities);
 
                     providerBuilder = Object.freeze(new ProviderBuilder());
 

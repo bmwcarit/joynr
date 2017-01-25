@@ -52,7 +52,6 @@ public:
 
     ProxyIntegrationTest() :
         mockInProcessConnectorFactory(new MockInProcessConnectorFactory()),
-        mockClientCache(new MockClientCache()),
         mockJoynrMessageSender(std::make_shared<MockJoynrMessageSender>()),
         domain("cppProxyIntegrationTestDomain"),
         messagingQos(),
@@ -62,13 +61,11 @@ public:
 
     ~ProxyIntegrationTest(){
         delete mockInProcessConnectorFactory;
-        delete mockClientCache;
     }
 
 protected:
 
     MockInProcessConnectorFactory* mockInProcessConnectorFactory;
-    MockClientCache* mockClientCache;
     std::shared_ptr<MockJoynrMessageSender> mockJoynrMessageSender;
     std::string domain;
     MessagingQos messagingQos;
@@ -87,6 +84,6 @@ TEST_F(ProxyIntegrationTest, proxyInitialisation)
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, nullptr);
     ConnectorFactory* connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, mockClientCache, domain, messagingQos, false);
+    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, domain, messagingQos);
     ASSERT_TRUE(proxy != nullptr);
 }

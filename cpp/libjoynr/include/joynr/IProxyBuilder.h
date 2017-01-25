@@ -63,13 +63,6 @@ public:
                             std::function<void(const exceptions::DiscoveryException&)> onError) = 0;
 
     /**
-     * @brief Sets whether the object is to be cached
-     * @param cached True, if the object is to be cached, false otherwise
-     * @return The ProxyBuilder object
-     */
-    virtual IProxyBuilder* setCached(const bool cached) = 0;
-
-    /**
      * @brief Sets the messaging qos settings
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object

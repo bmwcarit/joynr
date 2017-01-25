@@ -31,7 +31,11 @@ namespace joynr
 class IJoynrMessageSender;
 class ISubscriptionManager;
 class MessagingQos;
-class IClientCache;
+
+namespace types
+{
+class DiscoveryEntryWithMetaInfo;
+} // namespace types
 
 // traits class which is specialized for every Interface
 // this links Interface with the respective Connector
@@ -48,20 +52,16 @@ public:
     template <class T>
     std::unique_ptr<T> create(const std::string& domain,
                               const std::string proxyParticipantId,
-                              const std::string& providerParticipantId,
                               const MessagingQos& qosSettings,
-                              IClientCache* cache,
-                              bool cached)
+                              const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
     {
         using Connector = typename JoynrMessagingTraits<T>::Connector;
         return std::make_unique<Connector>(messageSender,
                                            subscriptionManager,
                                            domain,
                                            proxyParticipantId,
-                                           providerParticipantId,
                                            qosSettings,
-                                           cache,
-                                           cached);
+                                           providerDiscoveryEntry);
     }
 
 private:

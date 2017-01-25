@@ -62,6 +62,8 @@ define("joynr/proxy/ProxyEvent", [
      * @constructor
      * @name ProxyEvent
      * @param {Object}
+     *            parent is the proxy object that contains this attribute
+     * @param {Object}
      *            settings the settings for this broadcast proxy
      * @param {String}
      *            settings.fromParticipantId of the proxy itself
@@ -141,7 +143,7 @@ define("joynr/proxy/ProxyEvent", [
                     return settings.dependencies.subscriptionManager
                             .registerBroadcastSubscription({
                                 proxyId : parent.proxyParticipantId,
-                                providerId : parent.providerParticipantId,
+                                providerDiscoveryEntry : parent.providerDiscoveryEntry,
                                 broadcastName : settings.broadcastName,
                                 broadcastParameter : settings.broadcastParameter,
                                 subscriptionQos : subscribeParameters.subscriptionQos,

@@ -37,6 +37,7 @@
 #include "joynr/Future.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/IProxyBuilder.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
@@ -96,13 +97,6 @@ public:
                     std::function<void(const exceptions::DiscoveryException&)> onError) override;
 
     /**
-     * @brief Sets whether the object is to be cached
-     * @param cached True, if the object is to be cached, false otherwise
-     * @return The ProxyBuilder object
-     */
-    ProxyBuilder* setCached(const bool cached) override;
-
-    /**
      * @brief Sets the messaging qos settings
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object
@@ -120,7 +114,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
     std::string domain;
-    bool cached;
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
@@ -143,7 +136,6 @@ ProxyBuilder<T>::ProxyBuilder(
         std::shared_ptr<MessageRouter> messageRouter,
         std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
-          cached(false),
           messagingQos(),
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
@@ -200,16 +192,18 @@ void ProxyBuilder<T>::buildAsync(
     arbitrator = ArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
-    auto arbitrationSucceeds = [this, onSuccess, onError](const std::string& participantId) {
-        if (participantId.empty()) {
+    auto arbitrationSucceeds =
+            [this, onSuccess, onError](const types::DiscoveryEntryWithMetaInfo& discoverEntry) {
+        if (discoverEntry.getParticipantId().empty()) {
             onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
                                                    "arbitrator but ParticipantId is empty"));
             return;
         }
 
-        bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
-        std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos, cached));
-        proxy->handleArbitrationFinished(participantId, useInProcessConnector);
+        bool useInProcessConnector =
+                requestCallerDirectory->containsRequestCaller(discoverEntry.getParticipantId());
+        std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos));
+        proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
 
         messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
 
@@ -217,13 +211,6 @@ void ProxyBuilder<T>::buildAsync(
     };
 
     arbitrator->startArbitration(arbitrationSucceeds, onError);
-}
-
-template <class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setCached(const bool cached)
-{
-    this->cached = cached;
-    return this;
 }
 
 template <class T>

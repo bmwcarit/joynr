@@ -44,6 +44,9 @@ define(
             "joynr/dispatching/types/SubscriptionPublication",
             "joynr/tests/testTypes/TestEnum",
             "joynr/types/TypeRegistrySingleton",
+            "joynr/types/DiscoveryEntryWithMetaInfo",
+            "joynr/types/Version",
+            "joynr/types/ProviderQos",
             "uuid"
         ],
         function(
@@ -69,10 +72,14 @@ define(
                 SubscriptionPublication,
                 TestEnum,
                 TypeRegistrySingleton,
+                DiscoveryEntryWithMetaInfo,
+                Version,
+                ProviderQos,
                 uuid) {
 
             var providerId = "providerId";
             var proxyId = "proxyId";
+            var toDiscoveryEntry;
 
             describe(
                     "libjoynr-js.joynr.dispatching.Dispatcher",
@@ -87,6 +94,17 @@ define(
                          * Called before each test.
                          */
                         beforeEach(function(done) {
+                            toDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
+                                providerVersion : new Version({majorVersion : 0, minorVersion : 23}),
+                                domain : "testProviderDomain",
+                                interfaceName : "interfaceName",
+                                participantId : providerId,
+                                qos : new ProviderQos(),
+                                lastSeenDateMs : Date.now(),
+                                expiryDateMs : Date.now() + 60000,
+                                publicKeyId : "publicKeyId",
+                                isLocal : true
+                            });
                             requestReplyManager = jasmine.createSpyObj("RequestReplyManager", [
                                 "handleOneWayRequest",
                                 "handleRequest",
@@ -403,7 +421,7 @@ define(
                             var messagingQos = new MessagingQos();
                             dispatcher.sendBroadcastSubscriptionRequest({
                                 from : "from",
-                                to : "to",
+                                toDiscoveryEntry : toDiscoveryEntry,
                                 messagingQos : messagingQos,
                                 subscriptionRequest : request
                             });
@@ -451,7 +469,7 @@ define(
                                     messagingQos.putCustomMessageHeader(headerKey, headerValue);
                                     dispatcher.sendRequest({
                                         from : "from",
-                                        to : "to",
+                                        toDiscoveryEntry : toDiscoveryEntry,
                                         messagingQos : messagingQos,
                                         request : request
                                     });
@@ -476,7 +494,7 @@ define(
                                     messagingQos.effort = MessagingQosEffort.BEST_EFFORT;
                                     dispatcher.sendRequest({
                                         from : "from",
-                                        to : "to",
+                                        toDiscoveryEntry : toDiscoveryEntry,
                                         messagingQos : messagingQos,
                                         request : request
                                     });
@@ -502,7 +520,7 @@ define(
                                     messagingQos.putCustomMessageHeader(headerKey, headerValue);
                                     dispatcher.sendOneWayRequest({
                                         from : "from",
-                                        to : "to",
+                                        toDiscoveryEntry : toDiscoveryEntry,
                                         messagingQos : messagingQos,
                                         request : request
                                     });
@@ -529,7 +547,7 @@ define(
                                     messagingQos.putCustomMessageHeader(headerKey, headerValue);
                                     dispatcher.sendRequest({
                                         from : "from",
-                                        to : "to",
+                                        toDiscoveryEntry : toDiscoveryEntry,
                                         messagingQos : messagingQos,
                                         request : request
                                     });

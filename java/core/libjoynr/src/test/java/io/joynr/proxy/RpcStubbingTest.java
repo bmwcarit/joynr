@@ -84,6 +84,7 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.Address;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 
@@ -148,13 +149,13 @@ public class RpcStubbingTest {
     // private String interfaceName;
     private String fromParticipantId;
     private String toParticipantId;
+    private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private final MessagingQos messagingQos = new MessagingQos(DEFAULT_TTL);
 
     private Injector injector;
 
     private JoynrMessagingConnectorInvocationHandler connector;
 
-    @SuppressWarnings("unchecked")
     @Before
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF", justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
@@ -172,6 +173,8 @@ public class RpcStubbingTest {
 
         fromParticipantId = UUID.randomUUID().toString();
         toParticipantId = UUID.randomUUID().toString();
+        toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        toDiscoveryEntry.setParticipantId(toParticipantId);
 
         // required to inject static members of JoynMessagingConnectorFactory
         injector = Guice.createInjector(new JoynrPropertiesModule(PropertyLoader.loadProperties("defaultMessaging.properties")),
@@ -198,7 +201,7 @@ public class RpcStubbingTest {
         final RequestCallerFactory requestCallerFactory = injector.getInstance(RequestCallerFactory.class);
 
         when(requestReplyManager.sendSyncRequest(eq(fromParticipantId),
-                                                 eq(toParticipantId),
+                                                 eq(toDiscoveryEntry),
                                                  any(Request.class),
                                                  any(SynchronizedReplyCaller.class),
                                                  eq(messagingQos))).thenAnswer(new Answer<Reply>() {
@@ -236,12 +239,11 @@ public class RpcStubbingTest {
                                                                                                            replyCallerDirectory,
                                                                                                            subscriptionManager);
         connector = joynrMessagingConnectorFactory.create(fromParticipantId,
-                                                          Sets.newHashSet(toParticipantId),
+                                                          Sets.newHashSet(toDiscoveryEntry),
                                                           messagingQos);
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testWithoutArguments() throws IOException, JoynrRuntimeException, SecurityException,
                                       InstantiationException, IllegalAccessException, NoSuchMethodException,
@@ -255,7 +257,7 @@ public class RpcStubbingTest {
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(requestReplyManager).sendSyncRequest(eq(fromParticipantId),
-                                                    eq(toParticipantId),
+                                                    eq(toDiscoveryEntry),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
                                                     eq(messagingQos));
@@ -265,7 +267,6 @@ public class RpcStubbingTest {
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testWithArguments() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
                                    InstantiationException, IllegalAccessException, NoSuchMethodException {
@@ -281,7 +282,7 @@ public class RpcStubbingTest {
         assertNull(response);
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(requestReplyManager).sendSyncRequest(eq(fromParticipantId),
-                                                    eq(toParticipantId),
+                                                    eq(toDiscoveryEntry),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
                                                     eq(messagingQos));
@@ -293,7 +294,6 @@ public class RpcStubbingTest {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testWithReturn() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
                                 InstantiationException, IllegalAccessException, NoSuchMethodException {
@@ -303,7 +303,7 @@ public class RpcStubbingTest {
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(requestReplyManager).sendSyncRequest(eq(fromParticipantId),
-                                                    eq(toParticipantId),
+                                                    eq(toDiscoveryEntry),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
                                                     eq(messagingQos));
@@ -314,7 +314,6 @@ public class RpcStubbingTest {
         assertEquals(gpsValue, response);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testWithListReturn() throws IOException, JoynrRuntimeException, ApplicationException,
                                     SecurityException, InstantiationException, IllegalAccessException,
@@ -325,7 +324,7 @@ public class RpcStubbingTest {
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(requestReplyManager).sendSyncRequest(eq(fromParticipantId),
-                                                    eq(toParticipantId),
+                                                    eq(toDiscoveryEntry),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
                                                     eq(messagingQos));

@@ -14,6 +14,11 @@ set(
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
 )
 
+set(
+    JOYNR_SOVERSION
+    ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}
+)
+
 if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "setting default value 'Debug' for CMAKE_BUILD_TYPE")
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)

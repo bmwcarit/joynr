@@ -47,6 +47,8 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,18 +83,18 @@ public class DispatcherImpl implements Dispatcher {
 
     @Override
     public void sendSubscriptionRequest(String fromParticipantId,
-                                        Set<String> toParticipantIds,
+                                        Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos messagingQos) {
-        for (String toParticipantId : toParticipantIds) {
+        for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                                 toParticipantId,
+                                                                                 toDiscoveryEntry.getParticipantId(),
                                                                                  subscriptionRequest,
                                                                                  messagingQos);
 
             if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
                 String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
-                messageRouter.addMulticastReceiver(multicastId, fromParticipantId, toParticipantId);
+                messageRouter.addMulticastReceiver(multicastId, fromParticipantId, toDiscoveryEntry.getParticipantId());
             }
             messageRouter.route(message);
         }
@@ -100,12 +102,12 @@ public class DispatcherImpl implements Dispatcher {
 
     @Override
     public void sendSubscriptionStop(String fromParticipantId,
-                                     Set<String> toParticipantIds,
+                                     Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                      SubscriptionStop subscriptionStop,
                                      MessagingQos messagingQos) {
-        for (String toParticipantId : toParticipantIds) {
+        for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
-                                                                              toParticipantId,
+                                                                              toDiscoveryEntry.getParticipantId(),
                                                                               subscriptionStop,
                                                                               messagingQos);
             messageRouter.route(message);
@@ -238,7 +240,10 @@ public class DispatcherImpl implements Dispatcher {
 
             @Override
             public void onFailure(JoynrException error) {
-                logger.trace("Error processing request: \r\n {} ; error: {}", request, error);
+                // do not log ApplicationExceptions as errors: these are not a sign of a system error
+                if (error instanceof JoynrRuntimeException) {
+                    logger.error("Error processing request: {}", request, error);
+                }
                 Reply reply = new Reply(request.getRequestReplyId(), error);
                 try {
                     sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders);

@@ -58,6 +58,8 @@ import joynr.MulticastSubscriptionRequest;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,10 +166,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public void registerAttributeSubscription(String fromParticipantId,
-                                              Set<String> toParticipantIds,
+                                              Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                               final AttributeSubscribeInvocation request) {
         registerSubscription(fromParticipantId,
-                             toParticipantIds,
+                             toDiscoveryEntries,
                              request,
                              new RegisterDataAndCreateSubscriptionRequest() {
                                  @Override
@@ -209,10 +211,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public void registerBroadcastSubscription(String fromParticipantId,
-                                              Set<String> toParticipantIds,
+                                              Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                               final BroadcastSubscribeInvocation request) {
         registerSubscription(fromParticipantId,
-                             toParticipantIds,
+                             toDiscoveryEntries,
                              request,
                              new RegisterDataAndCreateSubscriptionRequest() {
                                  @Override
@@ -232,14 +234,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public void registerMulticastSubscription(String fromParticipantId,
-                                              Set<String> toParticipantIds,
+                                              Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                               final MulticastSubscribeInvocation multicastSubscribeInvocation) {
-        for (String toParticipantId : toParticipantIds) {
-            final String multicastId = MulticastIdUtil.createMulticastId(toParticipantId,
+        for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
+            final String multicastId = MulticastIdUtil.createMulticastId(toDiscoveryEntry.getParticipantId(),
                                                                          multicastSubscribeInvocation.getSubscriptionName(),
                                                                          multicastSubscribeInvocation.getPartitions());
             registerSubscription(fromParticipantId,
-                                 toParticipantIds,
+                                 toDiscoveryEntries,
                                  multicastSubscribeInvocation,
                                  new RegisterDataAndCreateSubscriptionRequest() {
                                      @Override
@@ -262,13 +264,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                                  multicastSubscribeInvocation.getQos());
                                      }
                                  });
-            logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider participantId: {}",
+            logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider: {}",
                          multicastSubscribeInvocation.getSubscriptionId(),
                          multicastId,
                          multicastSubscribeInvocation.getSubscriptionName(),
                          multicastSubscribeInvocation.getQos(),
                          fromParticipantId,
-                         toParticipantId);
+                         toDiscoveryEntry);
         }
     }
 
@@ -277,7 +279,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     private void registerSubscription(String fromParticipantId,
-                                      Set<String> toParticipantIds,
+                                      Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                       SubscriptionInvocation subscriptionInvocation,
                                       RegisterDataAndCreateSubscriptionRequest registerDataAndCreateSubscriptionRequest) {
         if (!subscriptionInvocation.hasSubscriptionId()) {
@@ -297,12 +299,12 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
         }
 
-        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, subscriptionRequest, messagingQos);
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toDiscoveryEntries, subscriptionRequest, messagingQos);
     }
 
     @Override
     public void unregisterSubscription(String fromParticipantId,
-                                       Set<String> toParticipantIds,
+                                       Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                        String subscriptionId,
                                        MessagingQos qosSettings) {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
@@ -316,7 +318,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
 
         dispatcher.sendSubscriptionStop(fromParticipantId,
-                                        toParticipantIds,
+                                        toDiscoveryEntries,
                                         subscriptionStop,
                                         new MessagingQos(qosSettings));
     }

@@ -70,6 +70,8 @@ import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.MethodInvocationException;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,8 +91,10 @@ public class RequestReplyManagerTest {
     private ProviderDirectory providerDirectory;
     private String testSenderParticipantId;
     private String testOneWayRecipientParticipantId;
-    private Set<String> testOneWayRecipientParticipantIds;
+    private DiscoveryEntryWithMetaInfo testOneWayRecipientDiscoveryEntry;
+    private Set<DiscoveryEntryWithMetaInfo> testOneWayRecipientDiscoveryEntries;
     private String testMessageResponderParticipantId;
+    private DiscoveryEntryWithMetaInfo testMessageResponderDiscoveryEntry;
     private String testResponderUnregisteredParticipantId;
 
     private final String payload1 = "testPayload 1";
@@ -115,8 +119,12 @@ public class RequestReplyManagerTest {
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException, JsonGenerationException, IOException {
         testOneWayRecipientParticipantId = "testOneWayRecipientParticipantId";
-        testOneWayRecipientParticipantIds = Sets.newHashSet(testOneWayRecipientParticipantId);
+        testOneWayRecipientDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        testOneWayRecipientDiscoveryEntry.setParticipantId(testOneWayRecipientParticipantId);
+        testOneWayRecipientDiscoveryEntries = Sets.newHashSet(testOneWayRecipientDiscoveryEntry);
         testMessageResponderParticipantId = "testMessageResponderParticipantId";
+        testMessageResponderDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        testMessageResponderDiscoveryEntry.setParticipantId(testMessageResponderParticipantId);
         testSenderParticipantId = "testSenderParticipantId";
         testResponderUnregisteredParticipantId = "testResponderUnregisteredParticipantId";
 
@@ -189,7 +197,7 @@ public class RequestReplyManagerTest {
     @Test
     public void oneWayMessagesAreSentToTheCommunicationManager() throws Exception {
         requestReplyManager.sendOneWayRequest(testSenderParticipantId,
-                                              testOneWayRecipientParticipantIds,
+                                              testOneWayRecipientDiscoveryEntries,
                                               oneWay1,
                                               new MessagingQos(TIME_TO_LIVE));
 
@@ -206,7 +214,7 @@ public class RequestReplyManagerTest {
     @Test
     public void requestMessagesSentToTheCommunicationManager() throws Exception {
         requestReplyManager.sendRequest(testSenderParticipantId,
-                                        testMessageResponderParticipantId,
+                                        testMessageResponderDiscoveryEntry,
                                         request1,
                                         new MessagingQos(TIME_TO_LIVE));
 

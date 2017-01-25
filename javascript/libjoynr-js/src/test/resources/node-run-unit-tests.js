@@ -128,6 +128,7 @@ requirejs([
     "tests/joynr/proxy/SubscriptionQosTest",
     "tests/joynr/proxy/ProxyBuilderTest",
     //"tests/joynr/start/InProcessRuntimeTest",
+    "tests/joynr/util/CapabilitiesUtilTest",
     "tests/joynr/util/InProcessStubAndSkeletonTest",
     "tests/joynr/util/UtilTest",
     "tests/joynr/util/JSONSerializerTest",

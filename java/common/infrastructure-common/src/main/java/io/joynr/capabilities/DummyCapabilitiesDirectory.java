@@ -40,11 +40,12 @@ import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirectory {
     private static final Logger logger = LoggerFactory.getLogger(DummyCapabilitiesDirectory.class);
     private static final DummyCapabilitiesDirectory instance = new DummyCapabilitiesDirectory();
-    private ArrayList<DiscoveryEntry> registeredCapabilities = Lists.newArrayList();
+    private ArrayList<DiscoveryEntryWithMetaInfo> registeredCapabilities = Lists.newArrayList();
 
     @Inject
     @Named("joynr.messaging.channelId")
@@ -57,7 +58,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     @Override
     public Promise<DeferredVoid> add(DiscoveryEntry discoveryEntry) {
         DeferredVoid deferred = new DeferredVoid();
-        registeredCapabilities.add(discoveryEntry);
+        registeredCapabilities.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true, discoveryEntry));
         notifyCapabilityAdded(discoveryEntry);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -68,9 +69,9 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
-            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntry> capabilities) {
+            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntryWithMetaInfo> capabilities) {
                 if (capabilities != null) {
-                    deferred.resolve(capabilities.toArray(new DiscoveryEntry[0]));
+                    deferred.resolve(capabilities.toArray(new DiscoveryEntryWithMetaInfo[0]));
                 } else {
                     deferred.reject(new ProviderRuntimeException("Received capabilities list was null"));
                 }
@@ -93,7 +94,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     @Override
     public Promise<Lookup2Deferred> lookup(String participantId) {
         Lookup2Deferred deferred = new Lookup2Deferred();
-        DiscoveryEntry discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
+        DiscoveryEntryWithMetaInfo discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
         deferred.resolve(discoveryEntry);
         return new Promise<Lookup2Deferred>(deferred);
     }
@@ -118,9 +119,9 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
                        DiscoveryQos discoveryQos,
                        CapabilitiesCallback capabilitiesCallback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilities async");
-        ArrayList<DiscoveryEntry> foundCapabilities = Lists.newArrayList();
+        ArrayList<DiscoveryEntryWithMetaInfo> foundCapabilities = Lists.newArrayList();
         for (String domain : domains) {
-            for (DiscoveryEntry ce : registeredCapabilities) {
+            for (DiscoveryEntryWithMetaInfo ce : registeredCapabilities) {
                 if (ce.getDomain().equals(domain) && ce.getInterfaceName().equals(interfaceName)) {
                     foundCapabilities.add(ce);
                 }
@@ -137,10 +138,10 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
 
     @Override
     @CheckForNull
-    public DiscoveryEntry lookup(String participantId, DiscoveryQos discoveryQos) {
+    public DiscoveryEntryWithMetaInfo lookup(String participantId, DiscoveryQos discoveryQos) {
         logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");
-        DiscoveryEntry retrievedDiscoveryEntry = null;
-        for (DiscoveryEntry entry : registeredCapabilities) {
+        DiscoveryEntryWithMetaInfo retrievedDiscoveryEntry = null;
+        for (DiscoveryEntryWithMetaInfo entry : registeredCapabilities) {
             if (entry.getParticipantId().equals(participantId)) {
                 retrievedDiscoveryEntry = entry;
                 break;

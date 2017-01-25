@@ -92,10 +92,7 @@ int main(int argc, char* argv[])
 
     // Build a proxy to communicate with the provider
     std::unique_ptr<test::SystemIntegrationTestProxy> proxy(
-            proxyBuilder->setMessagingQos(MessagingQos())
-                    ->setDiscoveryQos(discoveryQos)
-                    ->setCached(false)
-                    ->build());
+            proxyBuilder->setMessagingQos(MessagingQos())->setDiscoveryQos(discoveryQos)->build());
 
     bool success = true;
 

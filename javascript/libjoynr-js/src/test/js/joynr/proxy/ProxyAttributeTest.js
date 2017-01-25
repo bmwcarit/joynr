@@ -37,7 +37,10 @@ define([
             "joynr/tests/testTypes/TestEnum",
             "joynr/tests/testTypes/ComplexTestType",
             "joynr/types/TypeRegistrySingleton",
-            "global/Promise"
+            "global/Promise",
+            "joynr/types/DiscoveryEntryWithMetaInfo",
+            "joynr/types/Version",
+            "joynr/types/ProviderQos"
         ],
         function(
                 ProxyAttribute,
@@ -56,7 +59,10 @@ define([
                 TestEnum,
                 ComplexTestType,
                 TypeRegistrySingleton,
-                Promise) {
+                Promise,
+                DiscoveryEntryWithMetaInfo,
+                Version,
+                ProviderQos) {
 
             var asyncTimeout = 5000;
 
@@ -85,6 +91,7 @@ define([
                         var subscriptionManagerSpy;
                         var proxyParticipantId;
                         var providerParticipantId;
+                        var providerDiscoveryEntry;
 
                         function RadioStation(name, station, source) {
                             if (!(this instanceof RadioStation)) {
@@ -138,9 +145,20 @@ define([
 
                             proxyParticipantId = "proxyParticipantId";
                             providerParticipantId = "providerParticipantId";
+                            providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
+                                providerVersion : new Version({majorVersion : 0, minorVersion : 23}),
+                                domain : "testProviderDomain",
+                                interfaceName : "interfaceName",
+                                participantId : providerParticipantId,
+                                qos : new ProviderQos(),
+                                lastSeenDateMs : Date.now(),
+                                expiryDateMs : Date.now() + 60000,
+                                publicKeyId : "publicKeyId",
+                                isLocal : true
+                            });
                             var proxy = {
                                 proxyParticipantId : proxyParticipantId,
-                                providerParticipantId : providerParticipantId
+                                providerDiscoveryEntry : providerDiscoveryEntry
                             };
 
                             isOn =
@@ -371,7 +389,7 @@ define([
                                             requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
                                         expect(requestReplyManagerSpy.sendRequest)
                                             .toHaveBeenCalledWith({
-                                                to : providerParticipantId,
+                                                toDiscoveryEntry : providerDiscoveryEntry,
                                                 from : proxyParticipantId,
                                                 messagingQos : messagingQos,
                                                 request : new Request({
@@ -404,7 +422,7 @@ define([
                             var fixture = new ProxyAttribute(
                                     {
                                         proxyParticipantId : "proxy",
-                                        providerParticipantId : "provider"
+                                        providerDiscoveryEntry : providerDiscoveryEntry
                                     },
                                     settings,
                                     "attributeOfTypeTestEnum",
@@ -465,7 +483,7 @@ define([
                                                 requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
                                         expect(requestReplyManagerSpy.sendRequest)
                                                 .toHaveBeenCalledWith({
-                                                    to : providerParticipantId,
+                                                    toDiscoveryEntry : providerDiscoveryEntry,
                                                     from : proxyParticipantId,
                                                     messagingQos : messagingQos,
                                                     request : new Request({
@@ -506,7 +524,7 @@ define([
                             expect(subscriptionManagerSpy.registerSubscription)
                                     .toHaveBeenCalledWith({
                                         proxyId : proxyParticipantId,
-                                        providerId : providerParticipantId,
+                                        providerDiscoveryEntry : providerDiscoveryEntry,
                                         attributeName : "isOn",
                                         attributeType : "Boolean",
                                         qos : subscriptionQos,

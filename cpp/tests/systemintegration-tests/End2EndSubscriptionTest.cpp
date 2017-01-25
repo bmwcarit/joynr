@@ -161,7 +161,6 @@ protected:
 
         std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
                 ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
         return std::move(testProxy);

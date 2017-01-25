@@ -16,29 +16,23 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ARBITRATIONSTRATEGYFUNCTION_H
-#define ARBITRATIONSTRATEGYFUNCTION_H
 
-#include <map>
-#include <string>
 #include <vector>
 
 namespace joynr
 {
-
 namespace types
 {
+class DiscoveryEntry;
 class DiscoveryEntryWithMetaInfo;
-class CustomParameter;
-} // namespace types
+}
 
-class ArbitrationStrategyFunction
+namespace util
 {
-public:
-    virtual ~ArbitrationStrategyFunction() = default;
-    virtual types::DiscoveryEntryWithMetaInfo select(
-            const std::map<std::string, types::CustomParameter> customParameters,
-            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const = 0;
-};
+types::DiscoveryEntryWithMetaInfo convert(bool isLocal, const types::DiscoveryEntry& entry);
+std::vector<types::DiscoveryEntryWithMetaInfo> convert(
+        bool isLocal,
+        const std::vector<types::DiscoveryEntry>& entries);
+} // namespace util
+
 } // namespace joynr
-#endif // ARBITRATIONSTRATEGYFUNCTION_H

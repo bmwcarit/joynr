@@ -61,7 +61,7 @@ public class ConnectorFactory {
                                              final MessagingQos qosSettings) {
         messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress);
         return joynrMessagingConnectorFactory.create(fromParticipantId,
-                                                     arbitrationResult.getParticipantIds(),
+                                                     arbitrationResult.getDiscoveryEntries(),
                                                      qosSettings);
 
     }

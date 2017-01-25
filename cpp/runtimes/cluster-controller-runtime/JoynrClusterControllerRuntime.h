@@ -26,7 +26,6 @@
 
 #include "cluster-controller/mqtt/MqttSettings.h"
 
-#include "joynr/ClientQCache.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
@@ -118,7 +117,6 @@ protected:
     std::shared_ptr<JoynrMessageSender> joynrMessageSender;
 
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
-    ClientQCache cache;
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
