@@ -111,7 +111,7 @@ public class ChildMessageRouter extends MessageRouterImpl {
     }
 
     private void addNextHopToParent(String participantId) {
-        logger.debug("Adding next hop with participant id " + participantId + " to parent router");
+        logger.trace("Adding next hop with participant id " + participantId + " to parent router");
         if (incomingAddress instanceof ChannelAddress) {
             parentRouter.addNextHop(participantId, (ChannelAddress) incomingAddress);
         } else if (incomingAddress instanceof CommonApiDbusAddress) {

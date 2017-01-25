@@ -171,43 +171,43 @@ public class DispatcherImpl implements Dispatcher {
         try {
             if (JoynrMessage.MESSAGE_TYPE_REPLY.equals(type)) {
                 Reply reply = objectMapper.readValue(message.getPayload(), Reply.class);
-                logger.debug("Parsed reply from message payload :" + message.getPayload());
+                logger.trace("Parsed reply from message payload :" + message.getPayload());
                 handle(reply);
             } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(type)) {
                 SubscriptionReply subscriptionReply = objectMapper.readValue(message.getPayload(),
                                                                              SubscriptionReply.class);
-                logger.debug("Parsed subscription reply from message payload :" + message.getPayload());
+                logger.trace("Parsed subscription reply from message payload :" + message.getPayload());
                 handle(subscriptionReply);
             } else if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
                 final Request request = objectMapper.readValue(message.getPayload(), Request.class);
                 request.setCreatorUserId(message.getCreatorUserId());
-                logger.debug("Parsed request from message payload :" + message.getPayload());
+                logger.trace("Parsed request from message payload :" + message.getPayload());
                 handle(request, message.getFrom(), message.getTo(), expiryDate, customHeaders);
             } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
                 OneWayRequest oneWayRequest = objectMapper.readValue(message.getPayload(), OneWayRequest.class);
                 oneWayRequest.setCreatorUserId(message.getCreatorUserId());
-                logger.debug("Parsed one way request from message payload :" + message.getPayload());
+                logger.trace("Parsed one way request from message payload :" + message.getPayload());
                 handle(oneWayRequest, message.getTo(), expiryDate);
             } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
                     || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)
                     || JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST.equals(type)) {
                 SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
                                                                                  SubscriptionRequest.class);
-                logger.debug("Parsed subscription request from message payload :" + message.getPayload());
+                logger.trace("Parsed subscription request from message payload :" + message.getPayload());
                 handle(subscriptionRequest, message.getFrom(), message.getTo());
             } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
                 SubscriptionStop subscriptionStop = objectMapper.readValue(message.getPayload(), SubscriptionStop.class);
-                logger.debug("Parsed subscription stop from message payload :" + message.getPayload());
+                logger.trace("Parsed subscription stop from message payload :" + message.getPayload());
                 handle(subscriptionStop);
             } else if (JoynrMessage.MESSAGE_TYPE_PUBLICATION.equals(type)) {
                 SubscriptionPublication publication = objectMapper.readValue(message.getPayload(),
                                                                              SubscriptionPublication.class);
-                logger.debug("Parsed publication from message payload :" + message.getPayload());
+                logger.trace("Parsed publication from message payload :" + message.getPayload());
                 handle(publication);
             } else if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(type)) {
                 MulticastPublication multicastPublication = objectMapper.readValue(message.getPayload(),
                                                                                    MulticastPublication.class);
-                logger.debug("Parsed multicast publication from message payload: {}", message.getPayload());
+                logger.trace("Parsed multicast publication from message payload: {}", message.getPayload());
                 handle(multicastPublication);
             }
         } catch (IOException e) {

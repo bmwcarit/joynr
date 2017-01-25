@@ -42,7 +42,7 @@ public class JoynrMessageScope implements Scope {
 
     @Override
     public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped) {
-        logger.debug("Called with {} and {}", key, unscoped);
+        logger.trace("Called with {} and {}", key, unscoped);
         return new Provider<T>() {
             @Override
             public T get() {
@@ -75,7 +75,7 @@ public class JoynrMessageScope implements Scope {
         if (entries.get() != null) {
             throw new IllegalStateException("Scope " + JoynrMessageScope.class.getSimpleName() + " is already active.");
         }
-        logger.debug("Activating {} scope", JoynrMessageScope.class.getSimpleName());
+        logger.trace("Activating {} scope", JoynrMessageScope.class.getSimpleName());
         entries.set(new HashMap<Key<?>, Object>());
     }
 
@@ -88,7 +88,7 @@ public class JoynrMessageScope implements Scope {
             throw new IllegalStateException("Scope " + JoynrMessageScope.class.getSimpleName()
                     + " is not currently active. Can't deactivate.");
         }
-        logger.debug("Deactivating {} scope", JoynrMessageScope.class.getSimpleName());
+        logger.trace("Deactivating {} scope", JoynrMessageScope.class.getSimpleName());
         entries.remove();
     }
 

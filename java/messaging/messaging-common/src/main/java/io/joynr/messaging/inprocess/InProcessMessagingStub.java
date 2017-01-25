@@ -1,7 +1,5 @@
 package io.joynr.messaging.inprocess;
 
-import io.joynr.messaging.FailureAction;
-
 /*
  * #%L
  * %%
@@ -21,13 +19,17 @@ import io.joynr.messaging.FailureAction;
  * #L%
  */
 
-import io.joynr.messaging.IMessaging;
-
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessaging;
 import joynr.JoynrMessage;
 
 public class InProcessMessagingStub implements IMessaging {
+    private static final Logger LOG = LoggerFactory.getLogger(InProcessMessagingStub.class);
 
     private final InProcessMessagingSkeleton skeleton;
 
@@ -38,11 +40,13 @@ public class InProcessMessagingStub implements IMessaging {
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
+        LOG.trace(">>> OUTGOING >>> {}", message.toLogMessage());
         skeleton.transmit(message, failureAction);
     }
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
+        LOG.trace(">>> OUTGOING >>> {}", serializedMessage);
         throw new IllegalStateException("InProcess messaging should not send serialized messages");
     }
 

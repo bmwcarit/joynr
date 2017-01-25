@@ -64,6 +64,10 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
         Object[] response = null;
         try {
             if (payload.getError() != null) {
+                logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                             method.getName(),
+                             payload.getError(),
+                             requestReplyId);
                 // Callback must be called first before releasing the future
                 errorCallback(payload.getError());
 
@@ -72,6 +76,10 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
                 }
             } else {
                 response = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
+                logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: {}",
+                             requestReplyId,
+                             method.getName(),
+                             response);
                 // Callback must be called first before releasing the future
                 if (callback != null) {
                     callback.resolve(response);

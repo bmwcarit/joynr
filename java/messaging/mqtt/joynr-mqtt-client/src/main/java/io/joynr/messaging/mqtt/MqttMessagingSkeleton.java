@@ -22,6 +22,9 @@ package io.joynr.messaging.mqtt;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -42,6 +45,7 @@ import joynr.system.RoutingTypes.RoutingTypesUtil;
  */
 public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMulticastSubscriber {
 
+    private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
     private MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
     private JoynrMessageSerializer messageSerializer;
@@ -112,6 +116,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
+        LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
         try {
             if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 message.setReceivedFromGlobal(true);

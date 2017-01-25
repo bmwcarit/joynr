@@ -113,7 +113,7 @@ public class Arbitrator {
      * Called by the proxy builder to start the arbitration process.
      */
     public void startArbitration() {
-        logger.debug("start arbitration for domain: {}, interface: {}", domains, interfaceName);
+        logger.debug("DISCOVERY lookup for domain: {}, interface: {}", domains, interfaceName);
         localDiscoveryAggregator.lookup(new DiscoveryCallback(), domains.toArray(new String[domains.size()]), interfaceName,
                                         new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                                                                      discoveryQos.getDiscoveryTimeoutMs(),
@@ -162,7 +162,7 @@ public class Arbitrator {
     }
 
     protected void restartArbitration() {
-        logger.info("Restarting Arbitration");
+        logger.trace("Restarting Arbitration");
         long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
         try {
             if (backoff > 0) {
@@ -230,13 +230,13 @@ public class Arbitrator {
             public void onSuccess(DiscoveryEntryWithMetaInfo[] discoveryEntries) {
                 assert discoveryEntries != null : "Discovery entries may not be null.";
                 if (allDomainsDiscovered(discoveryEntries)) {
-                    logger.debug("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
+                    logger.trace("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
                     Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
 
                     Set<DiscoveryEntryWithMetaInfo> selectedCapabilities = arbitrationStrategyFunction
                             .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
 
-                    logger.debug("Selected capabilities: {}", selectedCapabilities);
+                    logger.trace("Selected capabilities: {}", selectedCapabilities);
                     if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
                         arbitrationResult.setDiscoveryEntries(selectedCapabilities);
                         arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
@@ -262,7 +262,7 @@ public class Arbitrator {
             if (!allDomainsDiscovered) {
                 Set<String> missingDomains = new HashSet<>(domains);
                 missingDomains.removeAll(discoveredDomains);
-                logger.debug("All domains must be found. Domains not found: {}", missingDomains);
+                logger.trace("All domains must be found. Domains not found: {}", missingDomains);
             }
 
                 return allDomainsDiscovered;

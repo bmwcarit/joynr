@@ -111,6 +111,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         Request request = new Request(method.getName(), paramsWithoutCallback, paramDatatypesWithoutCallback);
         String requestReplyId = request.getRequestReplyId();
+        logger.debug("REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy participantId: {}, provider discovery entries: {}",
+                     requestReplyId,
+                     method.getName(),
+                     paramsWithoutCallback,
+                     fromParticipantId,
+                     toDiscoveryEntries);
 
         RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(requestReplyId,
                                                                                                    callback,
@@ -150,6 +156,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         Request request = new Request(method.getName(), args, method.getParameterTypes());
         Reply reply;
         String requestReplyId = request.getRequestReplyId();
+        logger.debug("REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy participantId: {}, provider discovery entries: {}",
+                     requestReplyId,
+                     method.getName(),
+                     args,
+                     fromParticipantId,
+                     toDiscoveryEntries);
         SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
                                                                                       requestReplyId,
                                                                                       request);
@@ -164,10 +176,23 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             if (method.getReturnType().equals(void.class)) {
                 return null;
             }
-            return RpcUtils.reconstructReturnedObject(method, methodMetaInformation, reply.getResponse());
+            Object response = RpcUtils.reconstructReturnedObject(method, methodMetaInformation, reply.getResponse());
+            logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: {}",
+                         requestReplyId,
+                         method.getName(),
+                         response);
+            return response;
         } else if (reply.getError() instanceof ApplicationException) {
+            logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                         requestReplyId,
+                         method.getName(),
+                         reply.getError());
             throw (ApplicationException) reply.getError();
         } else {
+            logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                         requestReplyId,
+                         method.getName(),
+                         reply.getError());
             throw (JoynrRuntimeException) reply.getError();
         }
 
@@ -207,6 +232,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         subscriptionManager.registerAttributeSubscription(fromParticipantId, toDiscoveryEntries, attributeSubscription);
+        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy participantId: {}, provider: {}",
+                     attributeSubscription.getSubscriptionId(),
+                     attributeSubscription.getSubscriptionName(),
+                     attributeSubscription.getQos(),
+                     fromParticipantId,
+                     toDiscoveryEntries);
     }
 
     @Override
@@ -217,6 +248,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         subscriptionManager.registerBroadcastSubscription(fromParticipantId, toDiscoveryEntries, broadcastSubscription);
+        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider: {}",
+                     broadcastSubscription.getSubscriptionId(),
+                     broadcastSubscription.getBroadcastName(),
+                     broadcastSubscription.getQos(),
+                     fromParticipantId,
+                     toDiscoveryEntries);
     }
 
     @Override

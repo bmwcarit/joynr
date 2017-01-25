@@ -40,7 +40,7 @@ public class ResourceContentProvider {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     public String readFromFileOrResourceOrUrl(String provisionedCapabilitiesJsonFilename) {
-        logger.debug("Attempting to read statically provisioned capabilities from JSON in file/resource/URL: {}",
+        logger.trace("Attempting to read statically provisioned capabilities from JSON in file/resource/URL: {}",
                      provisionedCapabilitiesJsonFilename);
         IOException ioException = null;
         String result = null;

@@ -235,7 +235,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     }
 
     private void handleRequest(ProviderCallback<Reply> replyCallback, RequestCaller requestCaller, Request request) {
-        logger.debug("executing request {}", request.getRequestReplyId());
+        logger.trace("executing request {}", request.getRequestReplyId());
         requestInterpreter.execute(replyCallback, requestCaller, request);
     }
 

@@ -150,10 +150,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         subscriptionStates.put(subscriptionId, subState);
 
         long expiryDate = qos.getExpiryDateMs();
-        logger.info("subscription: {} expiryDate: "
-                            + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate
-                                    - System.currentTimeMillis()),
-                    subscriptionId);
+        logger.trace("subscription: {} expiryDate: "
+                             + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate
+                                     - System.currentTimeMillis()),
+                     subscriptionId);
 
         if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
             SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
@@ -175,7 +175,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                  @Override
                                  public SubscriptionRequest execute() {
                                      SubscriptionQos qos = request.getQos();
-                                     logger.debug("Attribute subscription registered with Id: "
+                                     logger.trace("Attribute subscription registered with Id: "
                                              + request.getSubscriptionId());
                                      subscriptionTypes.put(request.getSubscriptionId(),
                                                            request.getAttributeTypeReference());
@@ -189,7 +189,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                          // alerts only if alert after interval > 0
                                          if (heartbeat.getAlertAfterIntervalMs() > 0) {
 
-                                             logger.info("Will notify if updates are missed.");
+                                             logger.trace("Will notify if updates are missed.");
 
                                              missedPublicationTimers.put(request.getSubscriptionId(),
                                                                          new MissedPublicationTimer(qos.getExpiryDateMs(),
@@ -220,7 +220,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                  @Override
                                  public SubscriptionRequest execute() {
                                      String subscriptionId = request.getSubscriptionId();
-                                     logger.debug("Broadcast subscription registered with Id: " + subscriptionId);
+                                     logger.trace("Broadcast subscription registered with Id: " + subscriptionId);
                                      unicastBroadcastTypes.put(subscriptionId, request.getOutParameterTypes());
                                      broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                                                 request.getBroadcastSubscriptionListener());
@@ -247,7 +247,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                      @Override
                                      public SubscriptionRequest execute() {
                                          String subscriptionId = multicastSubscribeInvocation.getSubscriptionId();
-                                         logger.debug("Multicast subscription registered with Id: " + subscriptionId);
+                                         logger.trace("Multicast subscription registered with Id: " + subscriptionId);
                                          Pattern multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
                                          if (!multicastSubscribersDirectory.containsKey(multicastIdPattern)) {
                                              multicastSubscribersDirectory.putIfAbsent(multicastIdPattern,
@@ -264,6 +264,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                                  multicastSubscribeInvocation.getQos());
                                      }
                                  });
+            logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider: {}",
+                         multicastSubscribeInvocation.getSubscriptionId(),
+                         multicastId,
+                         multicastSubscribeInvocation.getSubscriptionName(),
+                         multicastSubscribeInvocation.getQos(),
+                         fromParticipantId,
+                         toDiscoveryEntry);
         }
     }
 
@@ -302,10 +309,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                        MessagingQos qosSettings) {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
         if (subscriptionState != null) {
-            logger.info("Called unregister / unsubscribe on subscription id= " + subscriptionId);
+            logger.trace("Called unregister / unsubscribe on subscription id= " + subscriptionId);
             removeSubscription(subscriptionId);
         } else {
-            logger.info("Called unregister on a non/no longer existent subscription, used id= " + subscriptionId);
+            logger.trace("Called unregister on a non/no longer existent subscription, used id= " + subscriptionId);
         }
 
         SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
@@ -326,6 +333,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             if (!receive.isAccessible()) {
                 receive.setAccessible(true);
             }
+
+            logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, broadcastValue: {}",
+                         subscriptionId,
+                         broadcastValues);
             receive.invoke(broadcastSubscriptionListener, broadcastValues);
 
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -338,6 +349,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         for (Map.Entry<Pattern, Set<String>> entry : multicastSubscribersDirectory.entrySet()) {
             if (entry.getKey().matcher(multicastId).matches()) {
                 for (String subscriptionId : entry.getValue()) {
+                    logger.trace("SUBSCRIPTION notify listener: subscriptionId: {}, multicastId: {}, broadcastValue: {}",
+                                 subscriptionId,
+                                 multicastId,
+                                 publicizedValues);
                     handleBroadcastPublication(subscriptionId, publicizedValues);
                 }
             }
@@ -351,6 +366,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         if (listener == null) {
             logger.error("No subscription listener found for incoming publication!");
         } else {
+            logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, attributeValue: {}",
+                         subscriptionId,
+                         attributeValue);
             listener.onReceive(attributeValue);
         }
     }
@@ -362,6 +380,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         if (listener == null) {
             logger.error("No subscription listener found for incoming publication!");
         } else {
+            logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, error: {}", subscriptionId, error);
             listener.onError(error);
         }
     }
@@ -384,7 +403,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                             subscriptionId);
             }
         } else {
-            logger.debug("Handling subscription reply with error: {}", subscriptionReply.getError());
+            logger.trace("Handling subscription reply with error: {}", subscriptionReply.getError());
             if (subscriptionFutureMap.containsKey(subscriptionId)) {
                 subscriptionFutureMap.remove(subscriptionId).onFailure(subscriptionReply.getError());
             }
@@ -404,9 +423,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public void touchSubscriptionState(final String subscriptionId) {
-        logger.info("Touching subscription state for id=" + subscriptionId);
+        logger.trace("Touching subscription state for id=" + subscriptionId);
         if (!subscriptionStates.containsKey(subscriptionId)) {
-            logger.debug("No subscription state found for id: " + subscriptionId);
+            logger.trace("No subscription state found for id: " + subscriptionId);
             return;
         }
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
