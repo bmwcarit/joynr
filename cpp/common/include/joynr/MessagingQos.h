@@ -40,9 +40,31 @@ public:
      * @brief Base constructor
      * @param ttl The time to live in milliseconds
      * @param effort The effort to expend during message delivery
+     * @param encrypt Specifies, whether messages will be sent encrypted
      */
-    explicit MessagingQos(std::uint64_t ttl = 60000,
-                          MessagingQosEffort::Enum effort = MessagingQosEffort::Enum::NORMAL);
+    explicit MessagingQos(std::uint64_t ttl = default_ttl,
+                          MessagingQosEffort::Enum effort = MessagingQosEffort::Enum::NORMAL,
+                          bool encrypt = false);
+
+    /**
+     * @brief Base constructor
+     * @param effort The effort to expend during message delivery
+     * @param encrypt Specifies, whether messages will be sent encrypted
+     */
+    explicit MessagingQos(MessagingQosEffort::Enum effort, bool encrypt = false);
+
+    /**
+     * @brief Base constructor
+     * @param ttl The time to live in milliseconds
+     * @param encrypt Specifies, whether messages will be sent encrypted
+     */
+    explicit MessagingQos(std::uint64_t ttl, bool encrypt);
+
+    /*
+     * Adding a constructor with just 'encrypt' is not possible since it results
+     * ambiguous constructors.
+     */
+
     /** @brief Copy constructor */
     MessagingQos(const MessagingQos& other) = default;
 
@@ -79,6 +101,18 @@ public:
     void setEffort(const MessagingQosEffort::Enum effort);
 
     /**
+     * @brief Gets the encrypt flag
+     * @return whether messages will be sent encrypted
+     */
+    bool getEncrypt() const;
+
+    /**
+     * @brief Sets the encrypt flag
+     * @param encrypt specifies, whether messages will be sent encrypted
+     */
+    void setEncrypt(bool encrypt);
+
+    /**
      * @brief Puts a header value for the given header key, replacing an existing value
      * if necessary.
      * @param key the header key for which to put the value.
@@ -105,11 +139,17 @@ public:
     bool operator==(const MessagingQos& other) const;
 
 private:
+    /** @brief The default time to live in milliseconds */
+    const static std::uint64_t default_ttl = 60000;
+
     /** @brief The time to live in milliseconds */
     std::uint64_t ttl;
 
     /** @brief The effort to expend during message delivery */
     MessagingQosEffort::Enum effort;
+
+    /** @brief Specifies, whether messages will be sent encrypted */
+    bool encrypt;
 
     /** @brief The map of custom message headers */
     std::unordered_map<std::string, std::string> messageHeaders;
