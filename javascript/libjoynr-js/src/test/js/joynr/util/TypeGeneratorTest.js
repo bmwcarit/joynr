@@ -21,7 +21,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/Util/TestTypeGenerator", [
+define([
     "joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion",
     "joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion",
     "joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion",
