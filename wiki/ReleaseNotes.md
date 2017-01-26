@@ -1,3 +1,10 @@
+#joynr 0.24.0
+
+## API relevant changes
+
+* **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
+  existing MessagingQos APIs remain working
+
 #joynr 0.23.0
 
 ## API relevant changes
