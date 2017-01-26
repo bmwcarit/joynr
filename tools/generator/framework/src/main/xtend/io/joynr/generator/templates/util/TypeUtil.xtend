@@ -475,7 +475,9 @@ class TypeUtil {
 	}
 
 	def filterComplex(Iterable<? extends Object> iterable, boolean includeTypeDefs) {
-		iterable.filter(typeof(FType)).filter[type | (type.typeDef && includeTypeDefs) || type.compound || type.enum || type.map]
+		iterable.filter(typeof(FType)).filter[type | (type.typeDef && includeTypeDefs)
+			|| (!type.typeDef && (type.compound || type.enum || type.map))
+		]
 	}
 
 	def boolean isPartOfTypeCollection(FType datatype) {
