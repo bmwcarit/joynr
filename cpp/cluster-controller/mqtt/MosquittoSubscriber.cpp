@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@
 
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/MessageRouter.h"
 #include "joynr/MessagingSettings.h"
 
 namespace joynr

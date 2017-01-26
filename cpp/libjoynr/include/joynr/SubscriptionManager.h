@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ class io_service;
 namespace joynr
 {
 class ISubscriptionCallback;
+class IMessageRouter;
 class DelayedScheduler;
-class MessageRouter;
 class MulticastSubscriptionRequest;
 class SubscriptionQos;
 class SubscriptionRequest;
@@ -77,8 +77,8 @@ public:
     ~SubscriptionManager() override;
 
     SubscriptionManager(boost::asio::io_service& ioService,
-                        std::shared_ptr<MessageRouter> messageRouter);
-    SubscriptionManager(DelayedScheduler* scheduler, std::shared_ptr<MessageRouter> messageRouter);
+                        std::shared_ptr<IMessageRouter> messageRouter);
+    SubscriptionManager(DelayedScheduler* scheduler, std::shared_ptr<IMessageRouter> messageRouter);
 
     /**
      * @brief Subscribe to an attribute or broadcast. Modifies the subscription request to include
@@ -193,7 +193,7 @@ private:
     MulticastReceiverDirectory multicastSubscribers;
     std::recursive_mutex multicastSubscribersMutex;
 
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
 
     DelayedScheduler* missedPublicationScheduler;
     ADD_LOGGER(SubscriptionManager);

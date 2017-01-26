@@ -169,6 +169,16 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         "${JOYNR_BINARY_DIR}/Release/test-resources/testclient.pem"
         @ONLY
     )
+    configure_file(
+        "resources/MessagingSettingsWithAccessControl.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MessagingSettingsWithAccessControl.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MessagingSettingsWithAccessControl.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MessagingSettingsWithAccessControl.settings"
+        @ONLY
+    )
 else()
     configure_file(
         "resources/integrationtest.settings"
@@ -238,6 +248,11 @@ else()
     configure_file(
         "resources/testclient.pem"
         "${JOYNR_BINARY_DIR}/test-resources/testclient.pem"
+        @ONLY
+    )
+    configure_file(
+        "resources/MessagingSettingsWithAccessControl.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MessagingSettingsWithAccessControl.settings"
         @ONLY
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
@@ -432,6 +447,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
         "unit-tests/serializer/*.cpp"
     )
 
+    file(
+        GLOB g_UnitTests_HEADERS
+        "unit-tests/*.h"
+    )
+
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         list(
             APPEND g_UnitTests_SOURCES
@@ -444,6 +464,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
             g_UnitTests
             ${cluster_controller_test_HEADERS}
             ${cluster_controller_test_SOURCES}
+            ${g_UnitTests_HEADERS}
             ${g_UnitTests_SOURCES}
         )
 

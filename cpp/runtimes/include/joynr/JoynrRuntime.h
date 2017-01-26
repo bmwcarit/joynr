@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ public:
                                                           *discoveryProxy,
                                                           domain,
                                                           dispatcherAddress,
-                                                          messageRouter,
+                                                          getMessageRouter(),
                                                           messagingSettings.getMaximumTtlMs());
     }
 
@@ -196,6 +196,9 @@ protected:
     static std::unique_ptr<Settings> createSettings(const std::string& pathToLibjoynrSettings,
                                                     const std::string& pathToMessagingSettings);
 
+    /** @brief Return an IMessageRouter instance */
+    virtual std::shared_ptr<IMessageRouter> getMessageRouter() = 0;
+
     std::unique_ptr<SingleThreadedIOService> singleThreadIOService;
 
     /** @brief Factory for creating proxy instances */
@@ -214,8 +217,6 @@ protected:
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    /** @brief MessageRouter instance */
-    std::shared_ptr<MessageRouter> messageRouter;
     /** @brief Wrapper for discovery proxies */
     std::unique_ptr<LocalDiscoveryAggregator> discoveryProxy;
     /**

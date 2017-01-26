@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@
 #include <string>
 #include <functional>
 
+#include "joynr/IMessageRouter.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/ProxyFactory.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/Arbitrator.h"
 #include "joynr/ArbitratorFactory.h"
-#include "joynr/MessageRouter.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/Future.h"
@@ -70,7 +70,7 @@ public:
                  joynr::system::IDiscoverySync& discoveryProxy,
                  const std::string& domain,
                  std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
-                 std::shared_ptr<MessageRouter> messageRouter,
+                 std::shared_ptr<IMessageRouter> messageRouter,
                  std::uint64_t messagingMaximumTtlMs);
 
     /** Destructor */
@@ -121,7 +121,7 @@ private:
     Arbitrator* arbitrator;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
     DiscoveryQos discoveryQos;
 };
@@ -133,7 +133,7 @@ ProxyBuilder<T>::ProxyBuilder(
         joynr::system::IDiscoverySync& discoveryProxy,
         const std::string& domain,
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
-        std::shared_ptr<MessageRouter> messageRouter,
+        std::shared_ptr<IMessageRouter> messageRouter,
         std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
           messagingQos(),

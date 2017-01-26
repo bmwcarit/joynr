@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Util.h"
-#include "joynr/MessageRouter.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/IWebSocketSendInterface.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketPpSender.h"
@@ -39,7 +39,7 @@ INIT_LOGGER(WebSocketCcMessagingSkeleton);
 
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
         boost::asio::io_service& ioService,
-        std::shared_ptr<MessageRouter> messageRouter,
+        std::shared_ptr<IMessageRouter> messageRouter,
         std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
         const system::RoutingTypes::WebSocketAddress& serverAddress)
         : endpoint(),

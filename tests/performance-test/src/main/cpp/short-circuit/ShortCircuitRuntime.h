@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "joynr/JoynrRuntime.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/types/ProviderQos.h"
@@ -124,7 +125,7 @@ public:
 
 private:
     SingleThreadedIOService singleThreadedIOService;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
     std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy;
     std::shared_ptr<JoynrMessageSender> joynrMessageSender;
     IDispatcher* joynrDispatcher;
