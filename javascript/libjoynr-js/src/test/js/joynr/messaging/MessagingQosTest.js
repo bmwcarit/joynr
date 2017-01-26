@@ -33,6 +33,22 @@ define([
                 ttl : 60000,
                 effort : MessagingQosEffort.BEST_EFFORT
             })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                encrypt : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                effort : MessagingQosEffort.BEST_EFFORT,
+                encrypt : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                effort : MessagingQosEffort.BEST_EFFORT,
+                encrypt : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                encrypt : true
+            })).toBeDefined();
         });
 
         it("is of correct type", function() {
@@ -53,6 +69,7 @@ define([
             expect(new MessagingQos()).toEqual(new MessagingQos({
                 ttl : MessagingQos.DEFAULT_TTL
             }));
+            expect(new MessagingQos().encrypt).toEqual(false);
         });
 
         function testTtlValues(ttl) {
@@ -88,6 +105,18 @@ define([
             testEffortValues(MessagingQosEffort.BEST_EFFORT, MessagingQosEffort.BEST_EFFORT);
             testEffortValues(null, MessagingQosEffort.NORMAL);
             testEffortValues("not an enum value", MessagingQosEffort.NORMAL);
+        });
+
+        function testEncryptValues(encrypt) {
+            var messagingQos = new MessagingQos({
+                encrypt : encrypt
+            });
+            expect(messagingQos.encrypt).toBe(encrypt);
+        }
+
+        it("constructs with correct encrypt values", function() {
+            testEncryptValues(false);
+            testEncryptValues(true);
         });
 
         var runsWithCustomHeaders = [

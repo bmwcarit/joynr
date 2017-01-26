@@ -30,7 +30,8 @@ define(
             var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
             var defaultSettings = {
                 ttl : 60000,
-                customHeaders : {}
+                customHeaders : {},
+                encrypt : false
             };
 
             /**
@@ -40,6 +41,7 @@ define(
              *
              * @param {Object} [settings] the settings object for the constructor call
              * @param {Number} [settings.ttl] Roundtrip timeout for rpc requests, if missing default value is 60 seconds
+             * @param {Boolean} [settings.encrypt] Specifies whether messages will be sent encrypted
              * @param {MessagingQosEffort} [settings.effort] effort to expend on ensuring message delivery
              *
              * @returns {MessagingQos} a messaging Qos Object
@@ -91,6 +93,18 @@ define(
                  * @type MessagingQosEffort
                  */
                 this.effort = settings.effort;
+
+                /**
+                 * encrypt
+                 *
+                 * @name MessagingQos#encrypt
+                 * @type Boolean
+                 */
+                this.encrypt = settings.encrypt;
+
+                if (settings.encrypt !== true && settings.encrypt !== false) {
+                    throw new Error("encrypt may only contain a boolean");
+                }
 
                 /**
                  *
@@ -146,6 +160,15 @@ define(
              * @readonly
              */
             MessagingQos.DEFAULT_TTL = defaultSettings.ttl;
+
+            /**
+             * @name MessagingQos.DEFAULT_ENCRYPT
+             * @type Boolean
+             * @default false
+             * @static
+             * @readonly
+             */
+            MessagingQos.DEFAULT_ENCRYPT = defaultSettings.encrypt;
 
             return MessagingQos;
 
