@@ -76,7 +76,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     file(
         GLOB JoynrClusterControllerRuntime_SOURCES
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "*.cpp"
+        "JoynrRuntime.cpp"
         "cluster-controller-runtime/*.cpp"
         "cluster-controller-runtime/websocket/*.cpp"
     )
@@ -363,6 +363,29 @@ if(${BUILD_CLUSTER_CONTROLLER})
         cluster-controller
         PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
     )
+
+    if(JOYNR_ENABLE_DLT_LOGGING)
+        set(
+          JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID
+          "JOCC"
+          CACHE
+          STRING
+          "DLT application id for cluster-controller"
+        )
+        set(
+          JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION
+          "joynr cluster controller"
+          CACHE
+          STRING
+          "DLT application description for cluster-controller"
+        )
+        target_compile_definitions(
+            cluster-controller
+            PRIVATE
+            JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID=${JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID}
+            JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION=${JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION}
+        )
+    endif()
 
     install(
         TARGETS cluster-controller

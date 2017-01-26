@@ -20,6 +20,8 @@
 
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
+#define JOYNR_STRINGIFY(s) JOYNR_STRINGIFY_INTERNAL(s)
+#define JOYNR_STRINGIFY_INTERNAL(s) #s
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
 #include "cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -59,7 +61,8 @@ int main(int argc, char* argv[])
 {
 #ifdef JOYNR_ENABLE_DLT_LOGGING
     // Register app at the dlt-daemon for logging
-    DLT_REGISTER_APP("JOCC", "joynr cluster controller");
+    DLT_REGISTER_APP(JOYNR_STRINGIFY(JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID),
+                     JOYNR_STRINGIFY(JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION));
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
     // init a logger
