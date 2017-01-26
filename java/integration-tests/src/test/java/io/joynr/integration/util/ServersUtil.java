@@ -125,15 +125,15 @@ public class ServersUtil {
         String channelId = "discoverydirectory_channelid";
         String participantId = "capabilitiesdirectory_participantid";
         GlobalDiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
-                                                                             "io.joynr",
-                                                                             GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                             participantId,
-                                                                             new ProviderQos(),
-                                                                             System.currentTimeMillis(),
-                                                                             Long.MAX_VALUE,
-                                                                             "",
-                                                                             new ChannelAddress(directoriesUrl,
-                                                                                                channelId));
+                                                                                      "io.joynr",
+                                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                                      participantId,
+                                                                                      new ProviderQos(),
+                                                                                      System.currentTimeMillis(),
+                                                                                      Long.MAX_VALUE,
+                                                                                      "",
+                                                                                      new ChannelAddress(directoriesUrl,
+                                                                                                         channelId));
         String accessParticipantId = "domainaccesscontroller_participantid";
         GlobalDiscoveryEntry accessControlEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
                                                                                           "io.joynr",

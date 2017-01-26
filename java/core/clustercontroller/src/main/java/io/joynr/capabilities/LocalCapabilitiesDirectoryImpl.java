@@ -65,7 +65,7 @@ import joynr.types.ProviderScope;
 
 @Singleton
 public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory implements
-TransportReadyListener {
+        TransportReadyListener {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
@@ -136,15 +136,16 @@ TransportReadyListener {
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
         this.globalDiscoveryEntryCache.add(capabilitiesProvisioning.getDiscoveryEntries());
-        expiredDiscoveryEntryCacheCleaner.scheduleCleanUpForCaches(
-            new ExpiredDiscoveryEntryCacheCleaner.CleanupAction() {
-                @Override
-                public void cleanup(Set<DiscoveryEntry> expiredDiscoveryEntries) {
-                    for (DiscoveryEntry discoveryEntry : expiredDiscoveryEntries) {
-                        remove(discoveryEntry);
-                    }
-                }
-            }, globalDiscoveryEntryCache, localDiscoveryEntryStore);
+        expiredDiscoveryEntryCacheCleaner.scheduleCleanUpForCaches(new ExpiredDiscoveryEntryCacheCleaner.CleanupAction() {
+                                                                       @Override
+                                                                       public void cleanup(Set<DiscoveryEntry> expiredDiscoveryEntries) {
+                                                                           for (DiscoveryEntry discoveryEntry : expiredDiscoveryEntries) {
+                                                                               remove(discoveryEntry);
+                                                                           }
+                                                                       }
+                                                                   },
+                                                                   globalDiscoveryEntryCache,
+                                                                   localDiscoveryEntryStore);
         this.freshnessUpdateScheduler = freshnessUpdateScheduler;
         setUpPeriodicFreshnessUpdate(freshnessUpdateIntervalMs);
     }
@@ -162,7 +163,10 @@ TransportReadyListener {
                 }
             }
         };
-        freshnessUpdateScheduler.scheduleAtFixedRate(command, freshnessUpdateIntervalMs, freshnessUpdateIntervalMs, TimeUnit.MILLISECONDS);
+        freshnessUpdateScheduler.scheduleAtFixedRate(command,
+                                                     freshnessUpdateIntervalMs,
+                                                     freshnessUpdateIntervalMs,
+                                                     TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -269,19 +273,33 @@ TransportReadyListener {
                        final CapabilitiesCallback capabilitiesCallback) {
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
         Set<DiscoveryEntry> localDiscoveryEntries = getLocalEntriesIfRequired(discoveryScope, domains, interfaceName);
-        Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries = getGloballyCachedEntriesIfRequired(discoveryScope, domains, interfaceName, discoveryQos.getCacheMaxAgeMs());
+        Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries = getGloballyCachedEntriesIfRequired(discoveryScope,
+                                                                                                    domains,
+                                                                                                    interfaceName,
+                                                                                                    discoveryQos.getCacheMaxAgeMs());
         switch (discoveryScope) {
         case LOCAL_ONLY:
-            capabilitiesCallback.processCapabilitiesReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries));
+            capabilitiesCallback.processCapabilitiesReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
+                                                                                                                    localDiscoveryEntries));
             break;
         case LOCAL_THEN_GLOBAL:
-            handleLocalThenGlobal(domains, interfaceName, discoveryQos, capabilitiesCallback, CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries), globalDiscoveryEntries);
+            handleLocalThenGlobal(domains,
+                                  interfaceName,
+                                  discoveryQos,
+                                  capabilitiesCallback,
+                                  CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries),
+                                  globalDiscoveryEntries);
             break;
         case GLOBAL_ONLY:
             handleGlobalOnly(domains, interfaceName, discoveryQos, capabilitiesCallback, globalDiscoveryEntries);
             break;
         case LOCAL_AND_GLOBAL:
-            handleLocalAndGlobal(domains, interfaceName, discoveryQos, capabilitiesCallback, CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries), globalDiscoveryEntries);
+            handleLocalAndGlobal(domains,
+                                 interfaceName,
+                                 discoveryQos,
+                                 capabilitiesCallback,
+                                 CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries),
+                                 globalDiscoveryEntries);
             break;
         default:
             throw new IllegalStateException("Unknown or illegal DiscoveryScope value: " + discoveryScope);
@@ -298,7 +316,8 @@ TransportReadyListener {
         Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries = new HashSet<>();
         for (String domainToMatch : domains) {
             boolean domainMatched = addEntriesForDomain(localDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
-            domainMatched = domainMatched || addEntriesForDomain(globalDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
+            domainMatched = domainMatched
+                    || addEntriesForDomain(globalDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
             if (!domainMatched) {
                 domainsForGlobalLookup.add(domainToMatch);
             }
@@ -363,7 +382,9 @@ TransportReadyListener {
         }
     }
 
-    private boolean addEntriesForDomain(Collection<DiscoveryEntryWithMetaInfo> discoveryEntries, Collection<DiscoveryEntryWithMetaInfo> addTo, String domain) {
+    private boolean addEntriesForDomain(Collection<DiscoveryEntryWithMetaInfo> discoveryEntries,
+                                        Collection<DiscoveryEntryWithMetaInfo> addTo,
+                                        String domain) {
         boolean domainMatched = false;
         for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
             if (discoveryEntry.getDomain().equals(domain)) {
@@ -375,15 +396,21 @@ TransportReadyListener {
     }
 
     private Set<DiscoveryEntryWithMetaInfo> getGloballyCachedEntriesIfRequired(DiscoveryScope discoveryScope,
-                                                                   String[] domains,
-                                                                   String interfaceName, long cacheMaxAge) {
+                                                                               String[] domains,
+                                                                               String interfaceName,
+                                                                               long cacheMaxAge) {
         if (INCLUDE_GLOBAL_SCOPES.contains(discoveryScope)) {
-            return CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(false, globalDiscoveryEntryCache.lookup(domains, interfaceName, cacheMaxAge));
+            return CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(false,
+                                                                          globalDiscoveryEntryCache.lookup(domains,
+                                                                                                           interfaceName,
+                                                                                                           cacheMaxAge));
         }
         return null;
     }
 
-    private Set<DiscoveryEntry> getLocalEntriesIfRequired(DiscoveryScope discoveryScope, String[] domains, String interfaceName) {
+    private Set<DiscoveryEntry> getLocalEntriesIfRequired(DiscoveryScope discoveryScope,
+                                                          String[] domains,
+                                                          String interfaceName) {
         if (INCLUDE_LOCAL_SCOPES.contains(discoveryScope)) {
             return new HashSet<DiscoveryEntry>(localDiscoveryEntryStore.lookup(domains, interfaceName));
         }
@@ -403,7 +430,8 @@ TransportReadyListener {
         switch (discoveryScope) {
         case LOCAL_ONLY:
             if (localDiscoveryEntry != null) {
-                capabilityCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true, localDiscoveryEntry));
+                capabilityCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                 localDiscoveryEntry));
             } else {
                 capabilityCallback.processCapabilityReceived(null);
             }
@@ -411,7 +439,8 @@ TransportReadyListener {
         case LOCAL_THEN_GLOBAL:
         case LOCAL_AND_GLOBAL:
             if (localDiscoveryEntry != null) {
-                capabilityCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true, localDiscoveryEntry));
+                capabilityCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                 localDiscoveryEntry));
             } else {
                 asyncGetGlobalCapabilitity(participantId, discoveryQos, capabilityCallback);
             }
@@ -471,7 +500,8 @@ TransportReadyListener {
                                                                                  discoveryQos.getCacheMaxAgeMs());
 
         if (cachedGlobalCapability != null) {
-            capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, cachedGlobalCapability));
+            capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                               cachedGlobalCapability));
         } else {
             globalCapabilitiesDirectoryClient.lookup(new Callback<GlobalDiscoveryEntry>() {
 
@@ -480,7 +510,8 @@ TransportReadyListener {
                     if (newGlobalDiscoveryEntry != null) {
                         registerIncomingEndpoints(Lists.newArrayList(newGlobalDiscoveryEntry));
                         globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
-                        capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, newGlobalDiscoveryEntry));
+                        capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                           newGlobalDiscoveryEntry));
                     } else {
                         capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
                     }
@@ -491,7 +522,9 @@ TransportReadyListener {
                     capabilitiesCallback.onError(exception);
 
                 }
-            }, participantId, discoveryQos.getDiscoveryTimeoutMs());
+            },
+                                                     participantId,
+                                                     discoveryQos.getDiscoveryTimeoutMs());
         }
 
     }
@@ -517,7 +550,8 @@ TransportReadyListener {
                     globalDiscoveryEntryCache.add(globalDiscoverEntries);
                     Collection<DiscoveryEntryWithMetaInfo> allDisoveryEntries = new ArrayList<DiscoveryEntryWithMetaInfo>(globalDiscoverEntries.size()
                             + localDiscoveryEntries.size());
-                    allDisoveryEntries.addAll(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoList(false, globalDiscoverEntries));
+                    allDisoveryEntries.addAll(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoList(false,
+                                                                                                      globalDiscoverEntries));
                     allDisoveryEntries.addAll(localDiscoveryEntries);
                     capabilitiesCallback.processCapabilitiesReceived(allDisoveryEntries);
                 } else {
@@ -569,8 +603,9 @@ TransportReadyListener {
                         }
 
                     };
-                    globalCapabilitiesDirectoryClient.remove(callback, Lists.newArrayList(Collections2.transform(discoveryEntries,
-                                                                                                                 transfomerFct)));
+                    globalCapabilitiesDirectoryClient.remove(callback,
+                                                             Lists.newArrayList(Collections2.transform(discoveryEntries,
+                                                                                                       transfomerFct)));
                 } catch (DiscoveryException e) {
                     logger.debug("error removing discovery entries", e);
                 }
@@ -579,9 +614,7 @@ TransportReadyListener {
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(String[] domains,
-                                           String interfaceName,
-                                           joynr.types.DiscoveryQos discoveryQos) {
+    public Promise<Lookup1Deferred> lookup(String[] domains, String interfaceName, joynr.types.DiscoveryQos discoveryQos) {
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override

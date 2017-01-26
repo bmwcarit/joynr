@@ -368,8 +368,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                         publicKeyId,
                                                         channelAddressSerialized);
 
-        Mockito.doAnswer(createAddAnswerWithError()).when(globalCapabilitiesClient).add(any(Callback.class),
-                                                                                        eq(globalDiscoveryEntry));
+        Mockito.doAnswer(createAddAnswerWithError())
+               .when(globalCapabilitiesClient)
+               .add(any(Callback.class), eq(globalDiscoveryEntry));
 
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
         promise.then(new PromiseListener() {
@@ -851,16 +852,14 @@ public class LocalCapabilitiesDirectoryTest {
             entries.add(entry);
         }
 
-        when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
-                                                  eq(interfaceName),
-                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
+        when(globalDiscoveryEntryCacheMock.lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
 
         localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos, capabilitiesCallback);
 
         verify(globalCapabilitiesClient, times(0)).lookup(any(Callback.class),
-                                                argThat(Matchers.arrayContainingInAnyOrder(domains)),
-                                                eq(interfaceName),
-                                                eq(discoveryQos.getDiscoveryTimeoutMs()));
+                                                          argThat(Matchers.arrayContainingInAnyOrder(domains)),
+                                                          eq(interfaceName),
+                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
     }
 
     @SuppressWarnings("unchecked")

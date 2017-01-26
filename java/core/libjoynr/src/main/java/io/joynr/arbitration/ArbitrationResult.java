@@ -27,7 +27,7 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 public class ArbitrationResult {
     private Set<DiscoveryEntryWithMetaInfo> discoveryEntries;
 
-    public ArbitrationResult(final DiscoveryEntryWithMetaInfo ... discoveryEntries) {
+    public ArbitrationResult(final DiscoveryEntryWithMetaInfo... discoveryEntries) {
         this.discoveryEntries = new HashSet<>();
         if (discoveryEntries != null && discoveryEntries.length > 0) {
             for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {

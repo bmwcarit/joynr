@@ -235,8 +235,8 @@ public class RemoteBounceProxyFacadeTest {
                 return null;
             }
         };
-        Mockito.doAnswer(answerForHttpResponse).when(handler).handle(any(HttpRequest.class),
-                                                                     any(HttpResponse.class),
-                                                                     any(HttpContext.class));
+        Mockito.doAnswer(answerForHttpResponse)
+               .when(handler)
+               .handle(any(HttpRequest.class), any(HttpResponse.class), any(HttpContext.class));
     }
 }

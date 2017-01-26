@@ -183,8 +183,8 @@ public class RequestReplyManagerTest {
         Map<String, String> requestHeader = Maps.newHashMap();
         requestHeader.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, testSenderParticipantId);
         requestHeader.put(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID, testResponderUnregisteredParticipantId);
-        requestHeader.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(System.currentTimeMillis()
-                + TIME_TO_LIVE));
+        requestHeader.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE,
+                          String.valueOf(System.currentTimeMillis() + TIME_TO_LIVE));
         requestHeader.put(JoynrMessage.HEADER_NAME_CONTENT_TYPE, JoynrMessage.CONTENT_TYPE_APPLICATION_JSON);
     }
 

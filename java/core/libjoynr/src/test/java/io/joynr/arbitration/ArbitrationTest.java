@@ -653,14 +653,14 @@ public class ArbitrationTest {
     public void testIncompatibleVersionsReported() {
         Version incompatibleVersion = new Version(100, 100);
         final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Lists.newArrayList(new DiscoveryEntryWithMetaInfo(incompatibleVersion,
-                                                                                            domain,
-                                                                                            interfaceName,
-                                                                                            "first-participant",
-                                                                                            new ProviderQos(),
-                                                                                            System.currentTimeMillis(),
-                                                                                            NO_EXPIRY,
-                                                                                            "public-key-1",
-                                                                                            true));
+                                                                                                                          domain,
+                                                                                                                          interfaceName,
+                                                                                                                          "first-participant",
+                                                                                                                          new ProviderQos(),
+                                                                                                                          System.currentTimeMillis(),
+                                                                                                                          NO_EXPIRY,
+                                                                                                                          "public-key-1",
+                                                                                                                          true));
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
         when(arbitrationStrategyFunction.select(Mockito.<Map<String, String>> any(),
                                                 Mockito.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>());
@@ -675,8 +675,8 @@ public class ArbitrationTest {
                 return new HashSet<>();
             }
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
-                                                   Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
-                                                   Mockito.<Map<String, Set<Version>>> any());
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
+                                                    Mockito.<Map<String, Set<Version>>> any());
         DiscoveryQos discoveryQos = new DiscoveryQos(10L, arbitrationStrategyFunction, 0L);
         reset(localDiscoveryAggregator);
         doAnswer(new Answer<Object>() {
@@ -713,25 +713,25 @@ public class ArbitrationTest {
         final String domain1 = "domain1";
         final String domain2 = "domain2";
         final DiscoveryEntryWithMetaInfo discoveryEntry1 = new DiscoveryEntryWithMetaInfo(incompatibleVersion,
-                                                                                            domain1,
-                                                                                            interfaceName,
-                                                                                            "participant1",
-                                                                                            new ProviderQos(),
-                                                                                            System.currentTimeMillis(),
-                                                                                            NO_EXPIRY,
-                                                                                            "public-key-1",
-                                                                                            true);
+                                                                                          domain1,
+                                                                                          interfaceName,
+                                                                                          "participant1",
+                                                                                          new ProviderQos(),
+                                                                                          System.currentTimeMillis(),
+                                                                                          NO_EXPIRY,
+                                                                                          "public-key-1",
+                                                                                          true);
         final DiscoveryEntryWithMetaInfo discoveryEntry2 = new DiscoveryEntryWithMetaInfo(incompatibleVersion,
-                              domain2,
-                              interfaceName,
-                              "participant2",
-                              new ProviderQos(),
-                              System.currentTimeMillis(),
-                              NO_EXPIRY,
-                              "public-key-2",
-                              true);
+                                                                                          domain2,
+                                                                                          interfaceName,
+                                                                                          "participant2",
+                                                                                          new ProviderQos(),
+                                                                                          System.currentTimeMillis(),
+                                                                                          NO_EXPIRY,
+                                                                                          "public-key-2",
+                                                                                          true);
         final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Lists.newArrayList(discoveryEntry1,
-                                                                               discoveryEntry2);
+                                                                                           discoveryEntry2);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
         when(arbitrationStrategyFunction.select(Mockito.<Map<String, String>> any(),
@@ -748,8 +748,8 @@ public class ArbitrationTest {
                 return new HashSet<>();
             }
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
-                                                   Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
-                                                   Mockito.<Map<String, Set<Version>>> any());
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
+                                                    Mockito.<Map<String, Set<Version>>> any());
         DiscoveryQos discoveryQos = new DiscoveryQos(10L, arbitrationStrategyFunction, 0L);
         reset(localDiscoveryAggregator);
         doAnswer(new Answer<Object>() {
@@ -776,8 +776,10 @@ public class ArbitrationTest {
         Set<Version> discoveredVersions = Sets.newHashSet(incompatibleVersion);
         ArgumentCaptor<MultiDomainNoCompatibleProviderFoundException> noCompatibleProviderFoundExceptionCaptor = ArgumentCaptor.forClass(MultiDomainNoCompatibleProviderFoundException.class);
         verify(arbitrationCallback).onError(noCompatibleProviderFoundExceptionCaptor.capture());
-        assertEquals(discoveredVersions, noCompatibleProviderFoundExceptionCaptor.getValue().getDiscoveredVersionsForDomain(domain2));
-        assertEquals(discoveredVersions, noCompatibleProviderFoundExceptionCaptor.getValue().getDiscoveredVersionsForDomain(domain1));
+        assertEquals(discoveredVersions,
+                     noCompatibleProviderFoundExceptionCaptor.getValue().getDiscoveredVersionsForDomain(domain2));
+        assertEquals(discoveredVersions,
+                     noCompatibleProviderFoundExceptionCaptor.getValue().getDiscoveredVersionsForDomain(domain1));
 
     }
 }

@@ -62,8 +62,8 @@ public class DiscoveryEntryVersionFilter {
      * @return the filtered discovery entry set.
      */
     public Set<DiscoveryEntryWithMetaInfo> filter(Version callerVersion,
-                                      Set<DiscoveryEntryWithMetaInfo> discoveryEntries,
-                                      Map<String, Set<Version>> discoveredVersions) {
+                                                  Set<DiscoveryEntryWithMetaInfo> discoveryEntries,
+                                                  Map<String, Set<Version>> discoveredVersions) {
         if (callerVersion == null || discoveryEntries == null) {
             throw new IllegalArgumentException(String.format("Neither callerVersion (%s) nor discoveryEntries (%s) can be null.",
                                                              callerVersion,

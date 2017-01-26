@@ -292,15 +292,17 @@ public class SubscriptionManagerTest {
     }
 
     @SuppressWarnings("unchecked")
-    private void testRegisterMulticastSubscription(String subscriptionId, String ... partitions) throws Exception {
+    private void testRegisterMulticastSubscription(String subscriptionId, String... partitions) throws Exception {
         Method method = TestMulticastSubscriptionInterface.class.getMethod("subscribeToMyMulticast", new Class[0]);
         BroadcastSubscriptionListener listener = spy(new BroadcastSubscriptionListener() {
             @Override
             public void onError(SubscriptionException error) {
             }
+
             @Override
             public void onSubscribed(String subscriptionId) {
             }
+
             @SuppressWarnings("unused")
             public void onReceive() {
             }
@@ -308,9 +310,9 @@ public class SubscriptionManagerTest {
         SubscriptionQos subscriptionQos = mock(MulticastSubscriptionQos.class);
         Object[] args;
         if (subscriptionId == null) {
-            args = new Object[] {listener, subscriptionQos, partitions };
+            args = new Object[]{ listener, subscriptionQos, partitions };
         } else {
-            args = new Object[] { subscriptionId, listener, subscriptionQos, partitions };
+            args = new Object[]{ subscriptionId, listener, subscriptionQos, partitions };
         }
         String multicastId = MulticastIdUtil.createMulticastId(toParticipantId, "myMulticast", partitions);
         Set<String> subscriptionIdSet = new HashSet<>();
@@ -322,7 +324,9 @@ public class SubscriptionManagerTest {
 
         DiscoveryEntryWithMetaInfo toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);
-        subscriptionManager.registerMulticastSubscription(fromParticipantId, Sets.newHashSet(toDiscoveryEntry), invocation);
+        subscriptionManager.registerMulticastSubscription(fromParticipantId,
+                                                          Sets.newHashSet(toDiscoveryEntry),
+                                                          invocation);
 
         verify(multicastSubscribersDirectory).put(any(Pattern.class), anySet());
         assertEquals(1, subscriptionIdSet.size());

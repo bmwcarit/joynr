@@ -888,12 +888,12 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         try {
             future.get();
             fail("Should throw ApplicationException");
-        } catch (JoynrRuntimeException|InterruptedException e) {
+        } catch (JoynrRuntimeException | InterruptedException e) {
             fail(e.toString());
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationExceptionErrorEnumBase).onFailure((ErrorEnumBase)(expected.getError()));
+        verify(callbackWithApplicationExceptionErrorEnumBase).onFailure((ErrorEnumBase) (expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -955,12 +955,12 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         try {
             future.get();
             fail("Should throw ApplicationException");
-        } catch (JoynrRuntimeException|InterruptedException e) {
+        } catch (JoynrRuntimeException | InterruptedException e) {
             fail(e.toString());
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum).onFailure((MethodWithErrorEnumExtendedErrorEnum)(expected.getError()));
+        verify(callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum).onFailure((MethodWithErrorEnumExtendedErrorEnum) (expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -989,12 +989,12 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         try {
             future.get();
             fail("Should throw ApplicationException");
-        } catch (JoynrRuntimeException|InterruptedException e) {
+        } catch (JoynrRuntimeException | InterruptedException e) {
             fail(e.toString());
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum).onFailure((MethodWithImplicitErrorEnumErrorEnum)(expected.getError()));
+        verify(callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum).onFailure((MethodWithImplicitErrorEnumErrorEnum) (expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

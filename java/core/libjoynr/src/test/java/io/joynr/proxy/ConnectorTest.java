@@ -354,9 +354,8 @@ public class ConnectorTest {
             Method method = TestSubscriptionInterface.class.getDeclaredMethod("subscribeToTestAttribute",
                                                                               AttributeSubscriptionListener.class,
                                                                               SubscriptionQos.class);
-            AttributeSubscribeInvocation invocation = new AttributeSubscribeInvocation(method,
-                                                                                       new Object[]{listener, subscriptionQos},
-                                                                                       null);
+            AttributeSubscribeInvocation invocation = new AttributeSubscribeInvocation(method, new Object[]{ listener,
+                    subscriptionQos }, null);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerAttributeSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,

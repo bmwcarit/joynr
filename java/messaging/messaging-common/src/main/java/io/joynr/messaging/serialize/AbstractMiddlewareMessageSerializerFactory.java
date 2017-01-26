@@ -29,7 +29,7 @@ abstract public class AbstractMiddlewareMessageSerializerFactory<A extends Addre
 
     private Map<A, JoynrMessageSerializer> serializerMap = new HashMap<>();
 
-    protected abstract  JoynrMessageSerializer createInternal(A address);
+    protected abstract JoynrMessageSerializer createInternal(A address);
 
     public JoynrMessageSerializer create(A address) {
         if (!serializerMap.containsKey(address)) {

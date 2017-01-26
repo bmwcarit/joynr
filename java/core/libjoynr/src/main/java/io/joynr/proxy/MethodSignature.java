@@ -29,7 +29,9 @@ public class MethodSignature {
     private String methodName;
     private String[] parameterTypeNames;
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP2", justification = "parameterTypeName is not modified by external code.")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+                                                      value = "EI_EXPOSE_REP2",
+                                                      justification = "parameterTypeName is not modified by external code.")
     public MethodSignature(RequestCaller requestCaller, String methodName, String[] parameterTypeNames) {
         this.requestCaller = requestCaller;
         this.methodName = methodName;

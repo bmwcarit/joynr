@@ -101,8 +101,7 @@ public class SubscriptionTestsPublisher extends testSubscriptionPublisherImpl {
     }
 
     @Override
-    public void registerAttributeListener(String attributeName,
-                                          AttributeListener attributeListener) {
+    public void registerAttributeListener(String attributeName, AttributeListener attributeListener) {
         super.registerAttributeListener(attributeName, attributeListener);
         synchronized (this) {
             if (!attributeSubscriptionArrived.contains(attributeName)) {
@@ -113,8 +112,7 @@ public class SubscriptionTestsPublisher extends testSubscriptionPublisherImpl {
     }
 
     @Override
-    public void unregisterAttributeListener(String attributeName,
-                                            AttributeListener attributeListener) {
+    public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
         super.unregisterAttributeListener(attributeName, attributeListener);
         synchronized (this) {
             if (attributeSubscriptionArrived.contains(attributeName)) {

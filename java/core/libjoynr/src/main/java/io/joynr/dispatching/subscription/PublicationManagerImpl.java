@@ -771,11 +771,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     @Override
     public void sendSubscriptionPublication(SubscriptionPublication publication,
                                             PublicationInformation publicationInformation)
-                                                    throws JoynrSendBufferFullException,
-                                                    JoynrMessageNotSentException,
-                                                    JsonGenerationException,
-                                                    JsonMappingException,
-                                                    IOException {
+                                                                                          throws JoynrSendBufferFullException,
+                                                                                          JoynrMessageNotSentException,
+                                                                                          JsonGenerationException,
+                                                                                          JsonMappingException,
+                                                                                          IOException {
         MessagingQos messagingQos = new MessagingQos();
         // TTL uplift will be done in JoynrMessageFactory
         messagingQos.setTtl_ms(publicationInformation.getQos().getPublicationTtlMs());

@@ -128,9 +128,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         });
     }
 
-    private Object executeMethodWithCaller(Method method,
-                                           Object[] args,
-                                           ConnectorCaller connectorCaller) throws ApplicationException {
+    private Object executeMethodWithCaller(Method method, Object[] args, ConnectorCaller connectorCaller)
+                                                                                                         throws ApplicationException {
         try {
             if (waitForConnectorFinished()) {
                 if (connector == null) {

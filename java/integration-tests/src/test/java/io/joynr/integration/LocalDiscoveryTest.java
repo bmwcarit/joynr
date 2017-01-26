@@ -204,7 +204,8 @@ public class LocalDiscoveryTest {
                                                 System.currentTimeMillis(),
                                                 System.currentTimeMillis() + 100000,
                                                 "publicKeyId"));
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, discoveryEntries);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
+                                                                                                                              discoveryEntries);
 
         when(localDiscoveryEntryStoreMock.lookup(any(String[].class), eq(interfaceName))).thenReturn(discoveryEntries);
 
@@ -218,6 +219,7 @@ public class LocalDiscoveryTest {
             public void onProxyCreationFinished(testProxy result) {
                 future.onSuccess(null);
             }
+
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 future.onFailure(error);
@@ -226,7 +228,9 @@ public class LocalDiscoveryTest {
 
         try {
             future.get(5000);
-            verify(joynrMessagingConnectorFactoryMock).create(anyString(), eq(discoveryEntriesWithMetaInfo), any(MessagingQos.class));
+            verify(joynrMessagingConnectorFactoryMock).create(anyString(),
+                                                              eq(discoveryEntriesWithMetaInfo),
+                                                              any(MessagingQos.class));
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
@@ -245,7 +249,8 @@ public class LocalDiscoveryTest {
                                                 System.currentTimeMillis(),
                                                 System.currentTimeMillis() + 100000,
                                                 "publicKeyId"));
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(false, discoveryEntries);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(false,
+                                                                                                                              discoveryEntries);
 
         when(globalDiscoveryEntryCacheMock.lookup(any(String[].class), eq(interfaceName), anyLong())).thenReturn(discoveryEntries);
 
@@ -259,6 +264,7 @@ public class LocalDiscoveryTest {
             public void onProxyCreationFinished(testProxy result) {
                 future.onSuccess(null);
             }
+
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 future.onFailure(error);
@@ -267,7 +273,9 @@ public class LocalDiscoveryTest {
 
         try {
             future.get(5000);
-            verify(joynrMessagingConnectorFactoryMock).create(anyString(), eq(discoveryEntriesWithMetaInfo), any(MessagingQos.class));
+            verify(joynrMessagingConnectorFactoryMock).create(anyString(),
+                                                              eq(discoveryEntriesWithMetaInfo),
+                                                              any(MessagingQos.class));
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
@@ -289,8 +297,10 @@ public class LocalDiscoveryTest {
                                                            System.currentTimeMillis() + 100000,
                                                            "publicKeyId");
         discoveryEntries.add(discoveryEntry);
-        globalDiscoveryEntries.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, new MqttAddress()));
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(false, discoveryEntries);
+        globalDiscoveryEntries.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
+                                                                                       new MqttAddress()));
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(false,
+                                                                                                                              discoveryEntries);
 
         when(globalDiscoveryEntryCacheMock.lookup(any(String[].class), eq(interfaceName), anyLong())).thenReturn(new HashSet<DiscoveryEntry>());
         Mockito.doAnswer(new Answer<List<GlobalDiscoveryEntry>>() {
@@ -303,7 +313,9 @@ public class LocalDiscoveryTest {
                 ((Callback) arguments[0]).resolve((Object) globalDiscoveryEntries);
                 return null;
             }
-        }).when(globalCapabilitiesDirectoryClientMock).lookup(any(Callback.class), any(String[].class), eq(interfaceName), anyLong());
+        })
+               .when(globalCapabilitiesDirectoryClientMock)
+               .lookup(any(Callback.class), any(String[].class), eq(interfaceName), anyLong());
 
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomain, testProxy.class);
         final Future<Void> future = new Future<Void>();
@@ -315,6 +327,7 @@ public class LocalDiscoveryTest {
             public void onProxyCreationFinished(testProxy result) {
                 future.onSuccess(null);
             }
+
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 future.onFailure(error);
@@ -323,7 +336,9 @@ public class LocalDiscoveryTest {
 
         try {
             future.get(5000);
-            verify(joynrMessagingConnectorFactoryMock).create(anyString(), eq(discoveryEntriesWithMetaInfo), any(MessagingQos.class));
+            verify(joynrMessagingConnectorFactoryMock).create(anyString(),
+                                                              eq(discoveryEntriesWithMetaInfo),
+                                                              any(MessagingQos.class));
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
@@ -350,28 +365,31 @@ public class LocalDiscoveryTest {
                                                            System.currentTimeMillis() + 100000,
                                                            "publicKeyId");
         DiscoveryEntry cachedDiscoveryEntry = new DiscoveryEntry(VersionUtil.getVersionFromAnnotation(testProxy.class),
-                                                           testDomain,
-                                                           interfaceName,
-                                                           "participantIdCached",
-                                                           new ProviderQos(),
-                                                           System.currentTimeMillis(),
-                                                           System.currentTimeMillis() + 100000,
-                                                           "publicKeyId");
+                                                                 testDomain,
+                                                                 interfaceName,
+                                                                 "participantIdCached",
+                                                                 new ProviderQos(),
+                                                                 System.currentTimeMillis(),
+                                                                 System.currentTimeMillis() + 100000,
+                                                                 "publicKeyId");
         GlobalDiscoveryEntry remoteDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(new DiscoveryEntry(VersionUtil.getVersionFromAnnotation(testProxy.class),
-                                                           remoteDomain,
-                                                           interfaceName,
-                                                           "participantIdRemote",
-                                                           new ProviderQos(),
-                                                           System.currentTimeMillis(),
-                                                           System.currentTimeMillis() + 100000,
-                                                           "publicKeyId"),
-                                                           new MqttAddress());
+                                                                                                                           remoteDomain,
+                                                                                                                           interfaceName,
+                                                                                                                           "participantIdRemote",
+                                                                                                                           new ProviderQos(),
+                                                                                                                           System.currentTimeMillis(),
+                                                                                                                           System.currentTimeMillis() + 100000,
+                                                                                                                           "publicKeyId"),
+                                                                                                        new MqttAddress());
         localDiscoveryEntries.add(discoveryEntry);
         cachedDiscoveryEntries.add(cachedDiscoveryEntry);
         remoteDiscoveryEntries.add(remoteDiscoveryEntry);
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries);
-        discoveryEntriesWithMetaInfo.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, cachedDiscoveryEntry));
-        discoveryEntriesWithMetaInfo.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, remoteDiscoveryEntry));
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
+                                                                                                                              localDiscoveryEntries);
+        discoveryEntriesWithMetaInfo.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                             cachedDiscoveryEntry));
+        discoveryEntriesWithMetaInfo.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                             remoteDiscoveryEntry));
 
         when(localDiscoveryEntryStoreMock.lookup(any(String[].class), eq(interfaceName))).thenReturn(localDiscoveryEntries);
         when(globalDiscoveryEntryCacheMock.lookup(any(String[].class), eq(interfaceName), anyLong())).thenReturn(cachedDiscoveryEntries);
@@ -385,7 +403,9 @@ public class LocalDiscoveryTest {
                 ((Callback) arguments[0]).resolve((Object) remoteDiscoveryEntries);
                 return null;
             }
-        }).when(globalCapabilitiesDirectoryClientMock).lookup(any(Callback.class), any(String[].class), eq(interfaceName), anyLong());
+        })
+               .when(globalCapabilitiesDirectoryClientMock)
+               .lookup(any(Callback.class), any(String[].class), eq(interfaceName), anyLong());
 
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomains, testProxy.class);
         final Future<Void> future = new Future<Void>();
@@ -396,13 +416,17 @@ public class LocalDiscoveryTest {
                 return Sets.newHashSet(capabilities);
             }
         };
-        DiscoveryQos discoveryQos = new DiscoveryQos(30000, arbitrationStrategyFunction, 0, DiscoveryScope.LOCAL_AND_GLOBAL);
+        DiscoveryQos discoveryQos = new DiscoveryQos(30000,
+                                                     arbitrationStrategyFunction,
+                                                     0,
+                                                     DiscoveryScope.LOCAL_AND_GLOBAL);
 
         proxyBuilder.setDiscoveryQos(discoveryQos).build(new ProxyCreatedCallback<testProxy>() {
             @Override
             public void onProxyCreationFinished(testProxy result) {
                 future.onSuccess(null);
             }
+
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 future.onFailure(error);
@@ -411,7 +435,9 @@ public class LocalDiscoveryTest {
 
         try {
             future.get(5000);
-            verify(joynrMessagingConnectorFactoryMock).create(anyString(), eq(discoveryEntriesWithMetaInfo), any(MessagingQos.class));
+            verify(joynrMessagingConnectorFactoryMock).create(anyString(),
+                                                              eq(discoveryEntriesWithMetaInfo),
+                                                              any(MessagingQos.class));
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }

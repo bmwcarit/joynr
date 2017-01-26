@@ -48,8 +48,7 @@ public class JoynrMessageScope implements Scope {
             public T get() {
                 Map<Key<?>, Object> scopeObject = entries.get();
                 if (scopeObject == null) {
-                    throw new IllegalStateException("Scope " + JoynrMessageScope.class.getSimpleName()
-                            + " not active.");
+                    throw new IllegalStateException("Scope " + JoynrMessageScope.class.getSimpleName() + " not active.");
                 }
                 logger.trace("Get called on scoped provider for {}", key);
                 @SuppressWarnings("unchecked")

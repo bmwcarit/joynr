@@ -114,11 +114,13 @@ public class Arbitrator {
      */
     public void startArbitration() {
         logger.debug("DISCOVERY lookup for domain: {}, interface: {}", domains, interfaceName);
-        localDiscoveryAggregator.lookup(new DiscoveryCallback(), domains.toArray(new String[domains.size()]), interfaceName,
+        localDiscoveryAggregator.lookup(new DiscoveryCallback(),
+                                        domains.toArray(new String[domains.size()]),
+                                        interfaceName,
                                         new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                                                                      discoveryQos.getDiscoveryTimeoutMs(),
                                                                      joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
-                                                                                                        .name()),
+                                                                                                                    .name()),
                                                                      discoveryQos.getProviderMustSupportOnChange()));
     }
 
@@ -185,8 +187,8 @@ public class Arbitrator {
             if (exception != null) {
                 reason = exception;
             } else if (discoveredVersions == null || discoveredVersions.isEmpty()) {
-                reason = new DiscoveryException("Unable to find provider in time: interface: "
-                        + interfaceName + " domains: " + domains);
+                reason = new DiscoveryException("Unable to find provider in time: interface: " + interfaceName
+                        + " domains: " + domains);
             } else {
                 reason = noCompatibleProviderFound(discoveredVersions);
             }
@@ -221,36 +223,36 @@ public class Arbitrator {
 
     private class DiscoveryCallback extends Callback<DiscoveryEntryWithMetaInfo[]> {
 
-            @Override
-            public void onFailure(JoynrRuntimeException error) {
-                Arbitrator.this.onError(error);
-            }
+        @Override
+        public void onFailure(JoynrRuntimeException error) {
+            Arbitrator.this.onError(error);
+        }
 
-            @Override
-            public void onSuccess(DiscoveryEntryWithMetaInfo[] discoveryEntries) {
-                assert discoveryEntries != null : "Discovery entries may not be null.";
-                if (allDomainsDiscovered(discoveryEntries)) {
-                    logger.trace("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
-                    Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
+        @Override
+        public void onSuccess(DiscoveryEntryWithMetaInfo[] discoveryEntries) {
+            assert discoveryEntries != null : "Discovery entries may not be null.";
+            if (allDomainsDiscovered(discoveryEntries)) {
+                logger.trace("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
+                Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
 
-                    Set<DiscoveryEntryWithMetaInfo> selectedCapabilities = arbitrationStrategyFunction
-                            .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
+                Set<DiscoveryEntryWithMetaInfo> selectedCapabilities = arbitrationStrategyFunction.select(discoveryQos.getCustomParameters(),
+                                                                                                          discoveryEntriesSet);
 
-                    logger.trace("Selected capabilities: {}", selectedCapabilities);
-                    if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
-                        arbitrationResult.setDiscoveryEntries(selectedCapabilities);
-                        arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
-                    } else {
-                        arbitrationFailed();
-                    }
+                logger.trace("Selected capabilities: {}", selectedCapabilities);
+                if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
+                    arbitrationResult.setDiscoveryEntries(selectedCapabilities);
+                    arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
                 } else {
-                    if (isArbitrationInTime()) {
-                        restartArbitration();
-                    } else {
-                        arbitrationFailed();
-                    }
+                    arbitrationFailed();
+                }
+            } else {
+                if (isArbitrationInTime()) {
+                    restartArbitration();
+                } else {
+                    arbitrationFailed();
                 }
             }
+        }
 
         private boolean allDomainsDiscovered(DiscoveryEntry[] discoveryEntries) {
             Set<String> discoveredDomains = new HashSet<>();
@@ -265,8 +267,8 @@ public class Arbitrator {
                 logger.trace("All domains must be found. Domains not found: {}", missingDomains);
             }
 
-                return allDomainsDiscovered;
-            }
+            return allDomainsDiscovered;
+        }
 
         private Set<DiscoveryEntryWithMetaInfo> filterDiscoveryEntries(DiscoveryEntryWithMetaInfo[] discoveryEntries) {
             Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet;
@@ -283,11 +285,14 @@ public class Arbitrator {
             } else {
                 discoveryEntriesSet = Sets.newHashSet(discoveryEntries);
             }
-            discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion, discoveryEntriesSet, discoveredVersions);
+            discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion,
+                                                                     discoveryEntriesSet,
+                                                                     discoveredVersions);
             if (discoveryEntriesSet.isEmpty()) {
-                logger.debug(
-                          format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
-                                                       interfaceName, interfaceVersion, Arrays.toString(discoveryEntries)));
+                logger.debug(format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
+                                    interfaceName,
+                                    interfaceVersion,
+                                    Arrays.toString(discoveryEntries)));
             }
             return discoveryEntriesSet;
         }

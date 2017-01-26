@@ -63,8 +63,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
     private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>>();
-    private ConcurrentHashMap<String, ConcurrentLinkedQueue<OneWayCallable>> oneWayRequestQueue =
-            new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, ConcurrentLinkedQueue<OneWayCallable>> oneWayRequestQueue = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Request, ProviderCallback<Reply>> replyCallbacks = new ConcurrentHashMap<Request, ProviderCallback<Reply>>();
 
     private ReplyCallerDirectory replyCallerDirectory;
@@ -99,7 +98,10 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
      */
 
     @Override
-    public void sendRequest(final String fromParticipantId, final DiscoveryEntryWithMetaInfo toDiscoveryEntry, Request request, MessagingQos messagingQos) {
+    public void sendRequest(final String fromParticipantId,
+                            final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                            Request request,
+                            MessagingQos messagingQos) {
 
         logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
 
@@ -134,16 +136,17 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         // saving all calling threads so that they can be interrupted at shutdown
         outstandingRequestThreads.add(Thread.currentThread());
         synchronized (responsePayloadContainer) {
-            while (running && responsePayloadContainer.isEmpty() && entryTime + messagingQos.getRoundTripTtl_ms() > System.currentTimeMillis()) {
+            while (running && responsePayloadContainer.isEmpty()
+                    && entryTime + messagingQos.getRoundTripTtl_ms() > System.currentTimeMillis()) {
                 try {
                     responsePayloadContainer.wait(messagingQos.getRoundTripTtl_ms());
                 } catch (InterruptedException e) {
                     if (running) {
                         throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
-                        + " interrupted.");
+                                + " interrupted.");
                     }
                     throw new JoynrShutdownException("Request: " + request.getRequestReplyId()
-                    + " interrupted by shutdown");
+                            + " interrupted by shutdown");
 
                 }
             }
@@ -152,7 +155,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
         if (responsePayloadContainer.isEmpty()) {
             throw new JoynrCommunicationException("Request: " + request.getRequestReplyId()
-            + " failed. The response didn't arrive in time");
+                    + " failed. The response didn't arrive in time");
         }
 
         Object response = responsePayloadContainer.get(0);
@@ -166,7 +169,9 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     }
 
     @Override
-    public void sendOneWayRequest(String fromParticipantId, Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries, OneWayRequest oneWayRequest,
+    public void sendOneWayRequest(String fromParticipantId,
+                                  Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
+                                  OneWayRequest oneWayRequest,
                                   MessagingQos messagingQos) {
         for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
             JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
@@ -206,11 +211,14 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         Callable<Void> requestHandler = new Callable<Void>() {
             @Override
             public Void call() {
-                requestInterpreter.invokeMethod(providerDirectory.get(providerParticipantId).getRequestCaller(), request);
+                requestInterpreter.invokeMethod(providerDirectory.get(providerParticipantId).getRequestCaller(),
+                                                request);
                 return null;
             }
         };
-        OneWayCallable oneWayCallable = new OneWayCallable(requestHandler, ExpiryDate.fromAbsolute(expiryDate), String.valueOf(request));
+        OneWayCallable oneWayCallable = new OneWayCallable(requestHandler,
+                                                           ExpiryDate.fromAbsolute(expiryDate),
+                                                           String.valueOf(request));
         if (providerDirectory.contains(providerParticipantId)) {
             oneWayCallable.call();
         } else {
@@ -269,8 +277,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
             ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> newRequestList = new ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>();
             requestQueue.putIfAbsent(providerParticipantId, newRequestList);
         }
-        final ContentWithExpiryDate<Request> requestItem = new ContentWithExpiryDate<Request>(request,
-                expiryDate);
+        final ContentWithExpiryDate<Request> requestItem = new ContentWithExpiryDate<Request>(request, expiryDate);
         requestQueue.get(providerParticipantId).add(requestItem);
         replyCallbacks.put(request, replyCallback);
         cleanupScheduler.schedule(new Runnable() {

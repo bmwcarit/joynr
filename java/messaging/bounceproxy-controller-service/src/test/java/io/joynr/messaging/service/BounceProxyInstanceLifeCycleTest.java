@@ -85,7 +85,7 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
         given() //
-               .queryParam("url4cc", "http://testurl/url4cc")
+        .queryParam("url4cc", "http://testurl/url4cc")
                .and()
                .queryParam("url4bpc", "http://testurl/url4bpc")
                //
@@ -107,7 +107,7 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
         given() //
-               .queryParam("url4cc", "http://testurl/url4cc")
+        .queryParam("url4cc", "http://testurl/url4cc")
                //
                .and()
                //
@@ -131,7 +131,7 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
         given() //
-               .when()
+        .when()
                //
                .contentType(ContentType.JSON)
                //
@@ -155,7 +155,7 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
         given() //
-               .when()
+        .when()
                //
                .contentType(ContentType.JSON)
                //
@@ -193,7 +193,7 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
         given() //
-               .when()
+        .when()
                //
                .contentType(ContentType.JSON)
                //
@@ -214,7 +214,7 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
         given(). //
-               when()
+        when()
                .contentType(ContentType.JSON)
                .body("{ \"activeLongPolls\" : 5, \"assignedChannels\" : 3 }")
                .post(serverUrl + "0.0/performance");

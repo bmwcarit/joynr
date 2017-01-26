@@ -491,7 +491,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         try {
             removeResult = cache.remove(aceKey);
         } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
-            logger.error("remove " +  cacheId + " failed.", e);
+            logger.error("remove " + cacheId + " failed.", e);
         }
 
         return removeResult;

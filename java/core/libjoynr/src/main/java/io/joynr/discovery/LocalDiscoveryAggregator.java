@@ -65,27 +65,27 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         providerQos.setScope(ProviderScope.LOCAL);
         String defaultPublicKeyId = "";
         provisionedDiscoveryEntries.put(systemServicesDomain
-                + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
+                                                + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                         new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(DiscoveryProvider.class),
-                                                           systemServicesDomain,
-                                                           ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
-                                                           discoveryProviderParticipantId,
-                                                           providerQos,
-                                                           System.currentTimeMillis(),
-                                                           NO_EXPIRY,
-                                                           defaultPublicKeyId,
-                                                           false));
+                                                                       systemServicesDomain,
+                                                                       ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
+                                                                       discoveryProviderParticipantId,
+                                                                       providerQos,
+                                                                       System.currentTimeMillis(),
+                                                                       NO_EXPIRY,
+                                                                       defaultPublicKeyId,
+                                                                       false));
         // provision routing provider to prevent lookup via discovery proxy during startup.
         provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME,
                                         new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(RoutingProvider.class),
-                                                           systemServicesDomain,
-                                                           Routing.INTERFACE_NAME,
-                                                           routingProviderParticipantId,
-                                                           providerQos,
-                                                           System.currentTimeMillis(),
-                                                           NO_EXPIRY,
-                                                           defaultPublicKeyId,
-                                                           true));
+                                                                       systemServicesDomain,
+                                                                       Routing.INTERFACE_NAME,
+                                                                       routingProviderParticipantId,
+                                                                       providerQos,
+                                                                       System.currentTimeMillis(),
+                                                                       NO_EXPIRY,
+                                                                       defaultPublicKeyId,
+                                                                       true));
     }
 
     public void setDiscoveryProxy(DiscoveryProxy discoveryProxy) {
@@ -103,9 +103,9 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     @Override
     public Future<DiscoveryEntryWithMetaInfo[]> lookup(final Callback<DiscoveryEntryWithMetaInfo[]> callback,
-                                           String[] domains,
-                                           String interfaceName,
-                                           DiscoveryQos discoveryQos) {
+                                                       String[] domains,
+                                                       String interfaceName,
+                                                       DiscoveryQos discoveryQos) {
         final Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet<>();
         Set<String> missingDomains = new HashSet<>();
         for (String domain : domains) {

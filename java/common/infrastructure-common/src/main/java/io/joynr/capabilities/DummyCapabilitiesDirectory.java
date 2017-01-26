@@ -83,10 +83,10 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
             }
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
-        lookup(domains, interfaceName, new DiscoveryQos(30000,
-                                                        ArbitrationStrategy.NotSet,
-                                                        discoveryQos.getCacheMaxAge(),
-                                                        discoveryScope), callback);
+        lookup(domains,
+               interfaceName,
+               new DiscoveryQos(30000, ArbitrationStrategy.NotSet, discoveryQos.getCacheMaxAge(), discoveryScope),
+               callback);
 
         return new Promise<Lookup1Deferred>(deferred);
     }

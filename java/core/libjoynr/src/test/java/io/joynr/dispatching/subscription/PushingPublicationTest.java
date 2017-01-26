@@ -144,8 +144,9 @@ public class PushingPublicationTest {
         Deferred<Integer> testAttributeDeferred = new Deferred<Integer>();
         testAttributeDeferred.resolve(testAttribute);
         Promise<Deferred<Integer>> testAttributePromise = new Promise<Deferred<Integer>>(testAttributeDeferred);
-        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
-                                                                                      any(Method.class));
+        Mockito.doReturn(testAttributePromise)
+               .when(attributePollInterpreter)
+               .execute(any(ProviderContainer.class), any(Method.class));
 
         doAnswer(new Answer<Object>() {
             @Override

@@ -99,8 +99,9 @@ public class PublicationTimersTest {
         Deferred<String> testAttributeDeferred = new Deferred<String>();
         testAttributeDeferred.resolve("testAttributeValue");
         Promise<Deferred<String>> testAttributePromise = new Promise<Deferred<String>>(testAttributeDeferred);
-        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
-                                                                                      any(Method.class));
+        Mockito.doReturn(testAttributePromise)
+               .when(attributePollInterpreter)
+               .execute(any(ProviderContainer.class), any(Method.class));
     }
 
     @SuppressWarnings("unchecked")

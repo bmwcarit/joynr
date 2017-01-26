@@ -105,7 +105,8 @@ public class HttpCommunicationManagerTest {
     private String bounceProxyUrlString;
 
     @Before
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "correct use of RestAssured API")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+                                                      justification = "correct use of RestAssured API")
     public void setUp() throws Exception {
 
         RestAssured.port = port;
@@ -167,8 +168,12 @@ public class HttpCommunicationManagerTest {
 
         // post to the channel to see if it exists
 
-        onrequest(1000).with().body(message).expect().statusCode(201).when().post("channels/" + testChannelId
-                + "/message/");
+        onrequest(1000).with()
+                       .body(message)
+                       .expect()
+                       .statusCode(201)
+                       .when()
+                       .post("channels/" + testChannelId + "/message/");
 
         longpollingMessageReceiver.shutdown(true);
 

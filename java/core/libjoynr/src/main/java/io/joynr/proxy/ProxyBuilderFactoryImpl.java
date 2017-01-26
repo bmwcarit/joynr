@@ -61,11 +61,11 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
     @Override
     public <T> ProxyBuilder<T> get(Set<String> domains, Class<T> interfaceClass) {
         return new ProxyBuilderDefaultImpl<>(localDiscoveryAggregator,
-                domains,
-                interfaceClass,
-                proxyInvocationHandlerFactory,
-                messageRouter,
-                maxMessagingTtl,
-                libjoynrMessagingAddress);
+                                             domains,
+                                             interfaceClass,
+                                             proxyInvocationHandlerFactory,
+                                             messageRouter,
+                                             maxMessagingTtl,
+                                             libjoynrMessagingAddress);
     }
 }

@@ -213,9 +213,9 @@ public class JoynrMessageFactoryTest {
         myCustomHeaders.put(headerName, headerValue);
         messagingQos.getCustomMessageHeaders().putAll(myCustomHeaders);
         JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
-                                                                            toParticipantId,
-                                                                            request,
-                                                                            messagingQos);
+                                                                       toParticipantId,
+                                                                       request,
+                                                                       messagingQos);
         assertNotNull(message);
         assertEquals(JoynrMessage.MESSAGE_TYPE_ONE_WAY, message.getType());
         assertExpiryDateEquals(expiryDate.getValue(), message);

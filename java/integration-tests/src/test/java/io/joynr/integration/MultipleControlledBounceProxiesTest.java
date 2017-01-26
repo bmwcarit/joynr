@@ -62,7 +62,7 @@ public class MultipleControlledBounceProxiesTest {
         JsonPath listBps = given().get("bounceproxies").getBody().jsonPath();
         /* @formatter:on */
         assertThat(listBps, allOf( //
-                                  anyOf(containsBounceProxy("X.Y", "ALIVE"), containsBounceProxy("X.Y", "ACTIVE")), //
+        anyOf(containsBounceProxy("X.Y", "ALIVE"), containsBounceProxy("X.Y", "ACTIVE")), //
                                   anyOf(containsBounceProxy("A.B", "ALIVE"), containsBounceProxy("A.B", "ACTIVE"))));
 
         // create channel on bounce proxy
