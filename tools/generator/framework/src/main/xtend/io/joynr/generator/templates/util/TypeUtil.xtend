@@ -387,6 +387,9 @@ class TypeUtil {
 		if (type instanceof FMapType){
 			return true;
 		}
+		if (type instanceof FTypeDef){
+			return isMap(type.actualType)
+		}
 		return false
 	}
 
@@ -402,6 +405,9 @@ class TypeUtil {
 		}
 		if (type instanceof FEnumerationType){
 			return true
+		}
+		if (type instanceof FTypeDef){
+			return isEnum(type.actualType)
 		}
 		return false
 	}

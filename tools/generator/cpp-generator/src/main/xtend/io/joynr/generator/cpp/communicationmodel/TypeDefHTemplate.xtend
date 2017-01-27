@@ -70,7 +70,11 @@ class TypeDefHTemplate implements TypeDefTemplate{
 '''
 
 private def getTypeDefinition(FTypeDef type)'''
-typedef «type.actualType.typeName» «type.joynrName»;
+«IF isEnum(type)»
+	typedef «type.actualType.typeName.substring(0, type.actualType.typeName.length-6)» «type.joynrName»;
+«ELSE»
+	typedef «type.actualType.typeName» «type.joynrName»;
+«ENDIF»
 '''
 
 }

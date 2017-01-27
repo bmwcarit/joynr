@@ -134,6 +134,7 @@ requirejs([
     "tests/joynr/util/JSONSerializerTest",
     "tests/joynr/util/TypingTest",
     "tests/joynr/util/LongTimerTest",
+    "tests/joynr/util/TypeGeneratorTest",
     "tests/joynr/capabilities/discovery/DiscoveryQosTest",
     "tests/joynr/capabilities/discovery/CapabilityDiscoveryTest",
     "tests/joynr/capabilities/CapabilityInformationTest",

@@ -1,3 +1,10 @@
+#joynr 0.23.1
+
+## API relevant changes
+
+## Other changes
+* **[C++, Java, JS]** Fix bugs in code generation for typedef.
+
 #joynr 0.23.0
 
 ## API relevant changes
