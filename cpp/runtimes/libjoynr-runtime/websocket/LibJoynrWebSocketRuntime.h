@@ -43,11 +43,11 @@ public:
 
 protected:
     void startLibJoynrMessagingSkeleton(std::shared_ptr<MessageRouter> messageRouter) override;
+    void connect(std::function<void()> runtimeCreatedCallback);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);
 
-    void connect(std::function<void()> runtimeCreatedCallback);
     void sendInitializationMsg();
     void createWebsocketClient();
 
