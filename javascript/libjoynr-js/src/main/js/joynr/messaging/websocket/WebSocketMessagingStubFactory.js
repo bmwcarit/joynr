@@ -48,12 +48,6 @@ define("joynr/messaging/websocket/WebSocketMessagingStubFactory", [
          * @function
          */
         this.build = function build(address) {
-            if (addresses[address] === undefined) {
-                addresses[address] = new WebSocketMessagingStub({
-                    address : address
-                });
-            }
-
             return addresses[address];
         };
     };
