@@ -87,6 +87,14 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${JoynrClusterControllerRuntime_HEADERS}
         ${JoynrClusterControllerRuntime_SOURCES}
     )
+
+    if(ENABLE_ACCESS_CONTROL)
+        target_compile_definitions(
+            JoynrClusterControllerRuntime
+            PRIVATE
+            JOYNR_ENABLE_ACCESS_CONTROL)
+    endif(ENABLE_ACCESS_CONTROL)
+
     target_include_directories(JoynrClusterControllerRuntime SYSTEM PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
 
     target_include_directories(
@@ -335,13 +343,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${cluster-controller_HEADERS}
         ${cluster-controller_SOURCES}
     )
-
-    if(ENABLE_ACCESS_CONTROL)
-        target_compile_definitions(
-            cluster-controller
-            PRIVATE
-            JOYNR_ENABLE_ACCESS_CONTROL)
-    endif(ENABLE_ACCESS_CONTROL)
 
     AddClangFormat(cluster-controller)
 
