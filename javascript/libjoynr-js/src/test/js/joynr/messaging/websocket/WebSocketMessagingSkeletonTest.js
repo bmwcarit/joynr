@@ -1,7 +1,9 @@
+/*global Buffer: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,11 +76,16 @@ define([
             data = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
             });
-            event.data = JSON.stringify(data);
             multicastEvent = new MessageEvent();
-            multicastEvent.data = JSON.stringify(new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
-            }));
+            if (typeof Buffer === "function") {
+                // node environment
+                event.data = Buffer.from(JSON.stringify(data));
+                multicastEvent.data = Buffer.from(JSON.stringify(new JoynrMessage({
+                    type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+                })));
+            } else {
+                done.fail("error in beforeEach: Buffer not supported");
+            }
             done();
         });
 
