@@ -54,60 +54,84 @@ Arbitrator::Arbitrator(
           arbitrationError("Arbitration could not be finished in time."),
           arbitrationStrategyFunction(std::move(arbitrationStrategyFunction)),
           participantId(""),
-          arbitrationFinished(false)
+          arbitrationFinished(false),
+          arbitrationRunning(false),
+          keepArbitrationRunning(false),
+          arbitrationThread()
 {
+}
+
+Arbitrator::~Arbitrator()
+{
+    keepArbitrationRunning = false;
+
+    if (arbitrationThread.joinable()) {
+        arbitrationThread.join();
+    }
 }
 
 void Arbitrator::startArbitration(
         std::function<void(const std::string& participantId)> onSuccess,
         std::function<void(const exceptions::DiscoveryException& exception)> onError)
 {
+    if (arbitrationRunning) {
+        return;
+    }
+
+    arbitrationRunning = true;
+    keepArbitrationRunning = true;
+
     onSuccessCallback = onSuccess;
     onErrorCallback = onError;
 
-    Semaphore semaphore;
-    arbitrationFinished = false;
+    arbitrationThread = std::thread([this]() {
+        Semaphore semaphore;
+        arbitrationFinished = false;
 
-    // Arbitrate until successful or timed out
-    auto start = std::chrono::system_clock::now();
+        // Arbitrate until successful or timed out
+        auto start = std::chrono::system_clock::now();
 
-    while (true) {
-        attemptArbitration();
+        while (keepArbitrationRunning) {
+            attemptArbitration();
 
-        if (arbitrationFinished) {
-            return;
+            if (arbitrationFinished) {
+                return;
+            }
+
+            // If there are no suitable providers, retry the arbitration after the retry interval
+            // elapsed
+            auto now = std::chrono::system_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+
+            if (discoveryQos.getDiscoveryTimeoutMs() <= duration.count()) {
+                // discovery timeout reached
+                break;
+            } else if (discoveryQos.getDiscoveryTimeoutMs() - duration.count() <=
+                       discoveryQos.getRetryIntervalMs()) {
+                /*
+                 * no retry possible -> wait until discoveryTimeout is reached and inform caller
+                 * about
+                 * cancelled arbitration
+                 */
+                semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() -
+                                                            duration.count()));
+                break;
+            } else {
+                // wait for retry interval and attempt a new arbitration
+                semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryIntervalMs()));
+            }
         }
 
-        // If there are no suitable providers, retry the arbitration after the retry interval
-        // elapsed
-        auto now = std::chrono::system_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
-
-        if (discoveryQos.getDiscoveryTimeoutMs() <= duration.count()) {
-            // discovery timeout reached
-            break;
-        } else if (discoveryQos.getDiscoveryTimeoutMs() - duration.count() <=
-                   discoveryQos.getRetryIntervalMs()) {
-            /*
-             * no retry possible -> wait until discoveryTimeout is reached and inform caller about
-             * cancelled arbitration
-             */
-            semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() -
-                                                        duration.count()));
-            break;
+        // If this point is reached the arbitration timed out
+        if (!discoveredIncompatibleVersions.empty()) {
+            onErrorCallback(
+                    exceptions::NoCompatibleProviderFoundException(discoveredIncompatibleVersions));
         } else {
-            // wait for retry interval and attempt a new arbitration
-            semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryIntervalMs()));
+            onErrorCallback(arbitrationError);
         }
-    }
 
-    // If this point is reached the arbitration timed out
-    if (!discoveredIncompatibleVersions.empty()) {
-        onErrorCallback(
-                exceptions::NoCompatibleProviderFoundException(discoveredIncompatibleVersions));
-    } else {
-        onErrorCallback(arbitrationError);
-    }
+        arbitrationRunning = false;
+    });
 }
 
 void Arbitrator::attemptArbitration()

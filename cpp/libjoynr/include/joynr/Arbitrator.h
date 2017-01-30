@@ -23,6 +23,8 @@
 #include <unordered_set>
 #include <vector>
 #include <functional>
+#include <atomic>
+#include <thread>
 
 #include "joynr/ArbitrationStrategyFunction.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -50,7 +52,7 @@ class JOYNR_EXPORT Arbitrator
 {
 
 public:
-    virtual ~Arbitrator() = default;
+    virtual ~Arbitrator();
 
     /*
      *  Creates a new Arbitrator object which blocks the arbitration finished
@@ -98,6 +100,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);
     std::string participantId;
     bool arbitrationFinished;
+    std::atomic<bool> arbitrationRunning;
+    std::atomic<bool> keepArbitrationRunning;
+    std::thread arbitrationThread;
     ADD_LOGGER(Arbitrator);
 };
 
