@@ -31,7 +31,6 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
     set(TEST_FILES
         "integrationtest.settings"
         "websocket-cc-tls.settings"
-        "websocket-cc-non-tls.settings"
         "websocket-libjoynr-tls.settings"
         "websocket-libjoynr-non-tls.settings"
         "HttpSystemIntegrationTest1.settings"
