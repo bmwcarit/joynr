@@ -41,6 +41,7 @@ namespace joynr
 {
 
 class SingleThreadedIOService;
+
 /**
  * @brief Class representing the central Joynr Api object,
  * used to register / unregister providers and create proxy builders
@@ -151,36 +152,34 @@ public:
     static std::unique_ptr<JoynrRuntime> createRuntime(std::unique_ptr<Settings> settings);
 
     /**
-     * @brief Create a JoynrRuntime object. The call does not block. A callback
+     * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
      * will be called when the runtime creation finished.
      * @param pathToLibjoynrSettings Path to lib joynr setting files
-     * @param runtimeCreatedCallback Is called when the runtime is available
-     * @param runtimeCreationErrorCallback Is called when an error occurs
+     * @param onSuccess Is called when the runtime is available for use
+     * @param onError Is called when an error occurs
      * @param pathToMessagingSettings
-     * @return pointer to a JoynrRuntime instance
+     * @return unique_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * onSuccess is called
      */
-    static void createRuntimeAsync(
+    static std::unique_ptr<JoynrRuntime> createRuntimeAsync(
             const std::string& pathToLibjoynrSettings,
-            std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
-                    runtimeCreatedCallback,
-            std::function<void(const exceptions::JoynrRuntimeException& exception)>
-                    runtimeCreationErrorCallback,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
             const std::string& pathToMessagingSettings = "");
 
     /**
-     * @brief Create a JoynrRuntime object. The call does not block. A callback
+     * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
      * will be called when the runtime creation finished.
      * @param settings settings object
-     * @param runtimeCreatedCallback Is called when the runtime is available
-     * @param runtimeCreationErrorCallback Is called when an error occurs
-     * @return pointer to a JoynrRuntime instance
+     * @param onSuccess Is called when the runtime is available for use
+     * @param onError Is called when an error occurs
+     * @return unique_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * onSuccess is called
      */
-    static void createRuntimeAsync(
+    static std::unique_ptr<JoynrRuntime> createRuntimeAsync(
             std::unique_ptr<Settings> settings,
-            std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
-                    runtimeCreatedCallback,
-            std::function<void(const exceptions::JoynrRuntimeException& exception)>
-                    runtimeCreationErrorCallback);
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError);
 
 protected:
     // NOTE: The implementation of the constructor and destructor must be inside this

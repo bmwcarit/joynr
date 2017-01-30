@@ -1,6 +1,8 @@
 #joynr 0.23.1
 
 ## API relevant changes
+* **[C++]** createRuntimeAsync returns runtime directly instead of via a callback;
+  the runtime must not be used until the onSuccess callback is called
 
 ## Other changes
 * **[C++, Java, JS]** Fix bugs in code generation for typedef.
