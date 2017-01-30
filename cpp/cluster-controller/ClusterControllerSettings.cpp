@@ -28,6 +28,7 @@ INIT_LOGGER(ClusterControllerSettings);
 
 ClusterControllerSettings::ClusterControllerSettings(Settings& settings) : settings(settings)
 {
+    settings.fillEmptySettingsWithDefaults(DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME());
     checkSettings();
 }
 
@@ -47,10 +48,28 @@ const std::string& ClusterControllerSettings::
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_WS_TLS_PORT()
+{
+    static const std::string value("cluster-controller/ws-tls-port");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_WS_PORT()
+{
+    static const std::string value("cluster-controller/ws-port");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::
         DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()
 {
     static const std::string value("MulticastReceiverDirectory.persist");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME()
+{
+    static const std::string value("default-clustercontroller.settings");
     return value;
 }
 
@@ -65,13 +84,54 @@ void ClusterControllerSettings::setMulticastReceiverDirectoryPersistenceFilename
     settings.set(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(), filename);
 }
 
+bool ClusterControllerSettings::isWsTLSPortSet() const
+{
+    return settings.contains(SETTING_WS_TLS_PORT());
+}
+
+std::uint16_t ClusterControllerSettings::getWsTLSPort() const
+{
+    return settings.get<std::uint16_t>(SETTING_WS_TLS_PORT());
+}
+
+void ClusterControllerSettings::setWsTLSPort(std::uint16_t port)
+{
+    settings.set(SETTING_WS_TLS_PORT(), port);
+}
+
+bool ClusterControllerSettings::isWsPortSet() const
+{
+    return settings.contains(SETTING_WS_PORT());
+}
+
+std::uint16_t ClusterControllerSettings::getWsPort() const
+{
+    return settings.get<std::uint16_t>(SETTING_WS_PORT());
+}
+
+void ClusterControllerSettings::setWsPort(std::uint16_t port)
+{
+    settings.set(SETTING_WS_PORT(), port);
+}
+
 void ClusterControllerSettings::printSettings() const
 {
-    JOYNR_LOG_DEBUG(
-            logger,
-            "SETTING: {}  = {}",
-            SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(),
-            settings.get<std::string>(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(),
+                    getMulticastReceiverDirectoryPersistenceFilename());
+
+    if (isWsTLSPortSet()) {
+        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_WS_TLS_PORT(), getWsTLSPort());
+    } else {
+        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_WS_TLS_PORT());
+    }
+
+    if (isWsPortSet()) {
+        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_WS_PORT(), getWsPort());
+    } else {
+        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_WS_PORT());
+    }
 }
 
 } // namespace joynr

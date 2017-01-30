@@ -1,0 +1,3 @@
+[cluster-controller]
+ws-tls-port=4243
+ws-port=4242
