@@ -20,6 +20,7 @@
 #ifndef IACCESSCONTROLLER_H
 #define IACCESSCONTROLLER_H
 
+#include "joynr/JoynrCommonExport.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
 
 #include <memory>
@@ -33,7 +34,7 @@ class JoynrMessage;
 /**
  * Interface for objects that control access to providers
  */
-class IAccessController
+class JOYNRCOMMON_EXPORT IAccessController
 {
 public:
     /**

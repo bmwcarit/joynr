@@ -27,7 +27,7 @@
 
 #include "joynr/IMessageRouter.h"
 
-#include "joynr/JoynrExport.h"
+#include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/Directory.h"
@@ -68,10 +68,9 @@ class RoutingProxy;
 } // namespace system
 
 /**
-  * The AbstractMessageRouter provides comm
+  * Common implementation of functionalities of a message router object.
   */
-
-class JOYNR_EXPORT AbstractMessageRouter : public joynr::IMessageRouter
+class JOYNRCOMMON_EXPORT AbstractMessageRouter : public joynr::IMessageRouter
 {
 public:
     virtual ~AbstractMessageRouter();
@@ -137,7 +136,7 @@ private:
 /**
  * Class to send message
  */
-class MessageRunnable : public Runnable, public ObjectWithDecayTime
+class JOYNRCOMMON_EXPORT MessageRunnable : public Runnable, public ObjectWithDecayTime
 {
 public:
     MessageRunnable(const JoynrMessage& message,
