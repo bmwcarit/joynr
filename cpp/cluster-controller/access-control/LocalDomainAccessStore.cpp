@@ -40,7 +40,7 @@ LocalDomainAccessStore::LocalDomainAccessStore(bool clearDatabaseOnStartup)
 
 std::vector<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const std::string& userId)
 {
-    JOYNR_LOG_DEBUG(logger, "execute: entering getDomainRoleEntries with userId {}", userId);
+    JOYNR_LOG_TRACE(logger, "execute: entering getDomainRoleEntries with userId {}", userId);
 
     std::vector<DomainRoleEntry> domainRoles;
     boost::optional<DomainRoleEntry> masterDre = getDomainRole(userId, Role::MASTER);
@@ -66,7 +66,7 @@ boost::optional<DomainRoleEntry> LocalDomainAccessStore::getDomainRole(const std
 
 bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntry)
 {
-    JOYNR_LOG_DEBUG(
+    JOYNR_LOG_TRACE(
             logger, "execute: entering updateDomainRoleEntry with uId {}", updatedEntry.getUid());
 
     return insertOrReplace(domainRoleTable, updatedEntry);
@@ -74,7 +74,7 @@ bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntr
 
 bool LocalDomainAccessStore::removeDomainRole(const std::string& userId, Role::Enum role)
 {
-    JOYNR_LOG_DEBUG(logger, "execute: entering removeDomainRoleEntry with uId {}", userId);
+    JOYNR_LOG_TRACE(logger, "execute: entering removeDomainRoleEntry with uId {}", userId);
     return removeFromTable(domainRoleTable, userId, role);
 }
 
@@ -103,7 +103,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCon
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterAccessControlEntries(
         const std::string& userId)
 {
-    JOYNR_LOG_DEBUG(
+    JOYNR_LOG_TRACE(
             logger, "execute: entering getEditableMasterAccessControlEntry with uId {}", userId);
 
     return getEditableAccessControlEntries(masterTable, userId, Role::MASTER);
@@ -121,7 +121,7 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAcces
 bool LocalDomainAccessStore::updateMasterAccessControlEntry(
         const MasterAccessControlEntry& updatedMasterAce)
 {
-    JOYNR_LOG_DEBUG(
+    JOYNR_LOG_TRACE(
             logger, "execute: entering updateMasterAce with uId {}", updatedMasterAce.getUid());
 
     return insertOrReplace(masterTable, updatedMasterAce);
@@ -160,7 +160,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
         getEditableMediatorAccessControlEntries(const std::string& userId)
 {
-    JOYNR_LOG_DEBUG(logger, "execute: entering getEditableMediatorAces with uId {}", userId);
+    JOYNR_LOG_TRACE(logger, "execute: entering getEditableMediatorAces with uId {}", userId);
 
     // Get all the Mediator ACEs for the domains where the user is master
     return getEditableAccessControlEntries(mediatorTable, userId, Role::MASTER);
@@ -178,7 +178,7 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAcc
 bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
         const MasterAccessControlEntry& updatedMediatorAce)
 {
-    JOYNR_LOG_DEBUG(
+    JOYNR_LOG_TRACE(
             logger, "execute: entering updateMediatorAce with uId {}", updatedMediatorAce.getUid());
 
     bool updateSuccess = false;
@@ -205,7 +205,7 @@ bool LocalDomainAccessStore::removeMediatorAccessControlEntry(const std::string&
                                                               const std::string& interfaceName,
                                                               const std::string& operation)
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "execute: entering removeMediatorAce with userId: {}, domain: {}, "
                     "interfaceName: {}, operation: {}",
                     userId,
@@ -240,7 +240,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAccessControlEntries(
         const std::string& userId)
 {
-    JOYNR_LOG_DEBUG(logger, "execute: entering getEditableOwnerAces with uId {}", userId);
+    JOYNR_LOG_TRACE(logger, "execute: entering getEditableOwnerAces with uId {}", userId);
 
     // Get all the Owner ACEs for the domains owned by the user
     return getEditableAccessControlEntries(ownerTable, userId, Role::OWNER);
@@ -258,7 +258,7 @@ boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessC
 bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
         const OwnerAccessControlEntry& updatedOwnerAce)
 {
-    JOYNR_LOG_DEBUG(
+    JOYNR_LOG_TRACE(
             logger, "execute: entering updateOwnerAce with uId {}", updatedOwnerAce.getUid());
 
     bool updateSuccess = false;
@@ -289,7 +289,7 @@ bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const std::string& us
                                                            const std::string& interfaceName,
                                                            const std::string& operation)
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "execute: entering removeOwnerAce with userId: {}, domain: {}, interface: {}, "
                     "operation: {}",
                     userId,
@@ -311,7 +311,7 @@ bool LocalDomainAccessStore::onlyWildcardOperations(const std::string& userId,
 
 void LocalDomainAccessStore::reset()
 {
-    JOYNR_LOG_DEBUG(logger, "execute: entering reset store");
+    JOYNR_LOG_TRACE(logger, "execute: entering reset store");
 
     masterTable.clear();
     mediatorTable.clear();

@@ -44,7 +44,7 @@ void MqttSender::sendMessage(
         const JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    JOYNR_LOG_DEBUG(logger, "sendMessage: ...");
+    JOYNR_LOG_TRACE(logger, "sendMessage: ...");
 
     auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destinationAddress);
     if (mqttAddress == nullptr) {
