@@ -346,7 +346,10 @@ joynr.load(provisioning).then(function(loadedJoynr) {
         runDemo(radioProxy);
         runInteractiveConsole(radioProxy, function() {
             log("exiting...");
-            process.exit(0);
+            joynr.shutdown().then(function() {
+                log("shutdown completed...");
+                process.exit(0);
+            });
         });
         return radioProxy;
     }).catch(function(error) {
