@@ -92,9 +92,9 @@ void WebSocketPpClient::reconnect(const boost::system::error_code& reconnectTime
 {
     if (reconnectTimerError == boost::asio::error::operation_aborted) {
         // Assume WebSocketPp.close() has been called
-        JOYNR_LOG_DEBUG(logger,
-                        "reconnect aborted after shutdown, error code from reconnect timer: {}",
-                        reconnectTimerError.message());
+        JOYNR_LOG_INFO(logger,
+                       "reconnect aborted after shutdown, error code from reconnect timer: {}",
+                       reconnectTimerError.message());
         return;
     } else if (reconnectTimerError) {
         JOYNR_LOG_ERROR(logger,
@@ -104,7 +104,7 @@ void WebSocketPpClient::reconnect(const boost::system::error_code& reconnectTime
     bool secure = address.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS;
     assert(!secure && "SSL is not yet supported");
     websocketpp::uri uri(secure, address.getHost(), address.getPort(), address.getPath());
-    JOYNR_LOG_DEBUG(logger, "Connecting to websocket server {}", uri.str());
+    JOYNR_LOG_INFO(logger, "Connecting to websocket server {}", uri.str());
 
     websocketpp::lib::error_code websocketError;
     Client::connection_ptr connectionPtr = endpoint.get_connection(uri.str(), websocketError);
@@ -168,7 +168,7 @@ void WebSocketPpClient::onConnectionOpened(ConnectionHandle hdl)
     connection = hdl;
     sender->setConnectionHandle(connection);
     state = State::Connected;
-    JOYNR_LOG_DEBUG(logger, "connection established");
+    JOYNR_LOG_INFO(logger, "connection established");
 
     if (performingInitialConnect) {
         if (onConnectionOpenedCallback) {
@@ -193,12 +193,12 @@ void WebSocketPpClient::onConnectionClosed(ConnectionHandle hdl)
     state = State::Disconnected;
     sender->resetConnectionHandle();
     if (!isRunning) {
-        JOYNR_LOG_DEBUG(logger, "connection closed");
+        JOYNR_LOG_INFO(logger, "connection closed");
         if (onConnectionClosedCallback) {
             onConnectionClosedCallback();
         }
     } else {
-        JOYNR_LOG_DEBUG(logger, "connection closed unexpectedly. Trying to reconnect...");
+        JOYNR_LOG_WARN(logger, "connection closed unexpectedly. Trying to reconnect...");
         delayedReconnect();
     }
 }
@@ -208,7 +208,7 @@ void WebSocketPpClient::onConnectionFailed(ConnectionHandle hdl)
     state = State::Disconnected;
     sender->resetConnectionHandle();
     if (!isRunning) {
-        JOYNR_LOG_DEBUG(logger, "connection closed");
+        JOYNR_LOG_INFO(logger, "connection closed");
     } else {
         Client::connection_ptr con = endpoint.get_con_from_hdl(hdl);
         JOYNR_LOG_ERROR(logger,

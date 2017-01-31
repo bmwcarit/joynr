@@ -254,7 +254,7 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "Route message with Id {} and payload {}",
                     message.getHeaderMessageId(),
                     message.getPayload());
@@ -271,7 +271,7 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
 
         // save the message for later delivery
         messageQueue->queueMessage(message);
-        JOYNR_LOG_DEBUG(logger, "message queued: {}", message.getPayload());
+        JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
 
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {
@@ -282,7 +282,7 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
                 std::function<void(const bool&)> onSuccess =
                         [this, destinationPartId](const bool& resolved) {
                     if (resolved) {
-                        JOYNR_LOG_INFO(logger,
+                        JOYNR_LOG_DEBUG(logger,
                                        "Got destination address for participant {}",
                                        destinationPartId);
                         // save next hop in the routing table
@@ -617,14 +617,14 @@ void MessageRouter::saveRoutingTable()
         joynr::util::saveStringToFile(
                 routingTableFileName, joynr::serializer::serializeToJson(routingTable));
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_INFO(logger, ex.what());
+        JOYNR_LOG_WARN(logger, ex.what());
     }
 }
 
 void MessageRouter::saveMulticastReceiverDirectory() const
 {
     if (multicastReceveiverDirectoryFilename.empty()) {
-        JOYNR_LOG_INFO(logger, "Did not save multicast receiver directory: No filename specified");
+        JOYNR_LOG_WARN(logger, "Did not save multicast receiver directory: No filename specified");
         return;
     }
 
@@ -633,7 +633,7 @@ void MessageRouter::saveMulticastReceiverDirectory() const
                 multicastReceveiverDirectoryFilename,
                 joynr::serializer::serializeToJson(multicastReceiverDirectory));
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_INFO(logger, ex.what());
+        JOYNR_LOG_WARN(logger, ex.what());
     }
 }
 
