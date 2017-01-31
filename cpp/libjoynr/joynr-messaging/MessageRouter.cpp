@@ -283,8 +283,8 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
                         [this, destinationPartId](const bool& resolved) {
                     if (resolved) {
                         JOYNR_LOG_DEBUG(logger,
-                                       "Got destination address for participant {}",
-                                       destinationPartId);
+                                        "Got destination address for participant {}",
+                                        destinationPartId);
                         // save next hop in the routing table
                         this->addProvisionedNextHop(destinationPartId, this->parentAddress);
                         this->removeRunningParentResolvers(destinationPartId);

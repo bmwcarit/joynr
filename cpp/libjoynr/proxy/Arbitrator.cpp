@@ -22,6 +22,8 @@
 #include <vector>
 #include <chrono>
 
+#include <boost/algorithm/string/join.hpp>
+
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/NoCompatibleProviderFoundException.h"
 #include "joynr/Logger.h"
@@ -87,6 +89,12 @@ void Arbitrator::startArbitration(
     arbitrationThread = std::thread([this]() {
         Semaphore semaphore;
         arbitrationFinished = false;
+
+        std::string serializedDomainsList = boost::algorithm::join(domains, ", ");
+        JOYNR_LOG_DEBUG(logger,
+                        "DISCOVERY lookup for domain: {}, interface: [{}]",
+                        serializedDomainsList,
+                        interfaceName);
 
         // Arbitrate until successful or timed out
         auto start = std::chrono::system_clock::now();
