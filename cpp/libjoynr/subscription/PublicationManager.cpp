@@ -93,7 +93,7 @@ private:
 
 PublicationManager::~PublicationManager()
 {
-    JOYNR_LOG_DEBUG(logger, "Destructor, saving subscriptionsMap...");
+    JOYNR_LOG_TRACE(logger, "Destructor, saving subscriptionsMap...");
 
     saveAttributeSubscriptionRequestsMap();
     saveBroadcastSubscriptionRequestsMap();
@@ -105,11 +105,11 @@ PublicationManager::~PublicationManager()
         shuttingDown = true;
     }
 
-    JOYNR_LOG_DEBUG(logger, "Destructor, shutting down for thread pool and scheduler ...");
+    JOYNR_LOG_TRACE(logger, "Destructor, shutting down for thread pool and scheduler ...");
     delayedScheduler->shutdown();
 
     // Remove all publications
-    JOYNR_LOG_DEBUG(logger, "Destructor: removing publications");
+    JOYNR_LOG_TRACE(logger, "Destructor: removing publications");
 
     while (subscriptionId2SubscriptionRequest.size() > 0) {
         auto subscriptionRequest = subscriptionId2SubscriptionRequest.begin();
@@ -451,7 +451,7 @@ void PublicationManager::add(const std::string& proxyParticipantId,
                              const std::string& providerParticipantId,
                              BroadcastSubscriptionRequest& subscriptionRequest)
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "Added broadcast subscription for non existing provider (adding "
                     "subscriptionRequest to queue).");
     auto requestInfo = std::make_shared<BroadcastSubscriptionRequestInformation>(
@@ -530,7 +530,7 @@ void PublicationManager::restore(const std::string& providerId,
                                  std::shared_ptr<RequestCaller> requestCaller,
                                  IPublicationSender* publicationSender)
 {
-    JOYNR_LOG_DEBUG(logger, "restore: entering ...");
+    JOYNR_LOG_TRACE(logger, "restore: entering ...");
 
     {
         std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
@@ -577,7 +577,7 @@ void PublicationManager::restore(const std::string& providerId,
 
 void PublicationManager::loadSavedAttributeSubscriptionRequestsMap(const std::string& fileName)
 {
-    JOYNR_LOG_DEBUG(logger, "Loading stored AttributeSubscriptionrequests.");
+    JOYNR_LOG_TRACE(logger, "Loading stored AttributeSubscriptionrequests.");
 
     // update reference file
     if (fileName != subscriptionRequestStorageFileName) {
@@ -592,7 +592,7 @@ void PublicationManager::loadSavedAttributeSubscriptionRequestsMap(const std::st
 
 void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap(const std::string& fileName)
 {
-    JOYNR_LOG_DEBUG(logger, "Loading stored BroadcastSubscriptionrequests.");
+    JOYNR_LOG_TRACE(logger, "Loading stored BroadcastSubscriptionrequests.");
 
     // update reference file
     if (fileName != broadcastSubscriptionRequestStorageFileName) {
@@ -608,7 +608,7 @@ void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap(const std::st
 // This function assumes that subscriptionList is a copy that is exclusively used by this function
 void PublicationManager::saveBroadcastSubscriptionRequestsMap()
 {
-    JOYNR_LOG_DEBUG(logger, "Saving active broadcastSubscriptionRequests to file.");
+    JOYNR_LOG_TRACE(logger, "Saving active broadcastSubscriptionRequests to file.");
 
     saveSubscriptionRequestsMap(subscriptionId2BroadcastSubscriptionRequest,
                                 broadcastSubscriptionRequestStorageFileName);
@@ -616,7 +616,7 @@ void PublicationManager::saveBroadcastSubscriptionRequestsMap()
 
 void PublicationManager::saveAttributeSubscriptionRequestsMap()
 {
-    JOYNR_LOG_DEBUG(logger, "Saving active attribute subscriptionRequests to file.");
+    JOYNR_LOG_TRACE(logger, "Saving active attribute subscriptionRequests to file.");
 
     saveSubscriptionRequestsMap(
             subscriptionId2SubscriptionRequest, subscriptionRequestStorageFileName);
@@ -627,7 +627,7 @@ void PublicationManager::saveSubscriptionRequestsMap(const Map& map,
                                                      const std::string& storageFilename)
 {
     if (isShuttingDown()) {
-        JOYNR_LOG_DEBUG(logger, "Abort saving, because we are already shutting down.");
+        JOYNR_LOG_TRACE(logger, "Abort saving, because we are already shutting down.");
         return;
     }
 
@@ -807,7 +807,7 @@ void PublicationManager::sendPublicationError(
     subscriptionPublication.setError(std::move(exception));
     sendSubscriptionPublication(
             publication, subscriptionInformation, request, std::move(subscriptionPublication));
-    JOYNR_LOG_DEBUG(logger, "sent subscription error");
+    JOYNR_LOG_TRACE(logger, "sent subscription error");
 }
 
 void PublicationManager::sendSubscriptionPublication(

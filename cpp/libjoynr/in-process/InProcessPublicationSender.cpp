@@ -53,7 +53,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       */
 
     const std::string subscriptionId = subscriptionPublication.getSubscriptionId();
-    JOYNR_LOG_TRACE(logger, "Sending publication. id={}", subscriptionId);
+    JOYNR_LOG_DEBUG(logger, "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);
     std::shared_ptr<ISubscriptionCallback> callback =

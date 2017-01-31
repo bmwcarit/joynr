@@ -562,7 +562,7 @@ void PublicationManager::selectiveBroadcastOccurred(
                                 subscriptionId,
                                 timeUntilNextPublication);
             } else {
-                JOYNR_LOG_DEBUG(
+                JOYNR_LOG_WARN(
                         logger,
                         "Omitting broadcast publication for subscription {} because of error.",
                         subscriptionId);

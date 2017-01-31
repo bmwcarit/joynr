@@ -70,7 +70,7 @@ bool MulticastReceiverDirectory::unregisterMulticastReceiver(const std::string& 
 std::unordered_set<std::string> MulticastReceiverDirectory::getReceivers(
         const std::string& multicastId)
 {
-    JOYNR_LOG_DEBUG(logger, "get multicast receivers: multicastId={}", multicastId);
+    JOYNR_LOG_TRACE(logger, "get multicast receivers: multicastId={}", multicastId);
     std::lock_guard<std::recursive_mutex> lock(mutex);
 
     std::unordered_set<std::string> foundReceivers;
