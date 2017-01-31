@@ -149,7 +149,7 @@ void LongPollingMessageReceiver::run()
                 // Atmosphere currently cannot return 204 when a long poll times out, so this code
                 // is currently never executed (2.2.2012)
             } else if (longPollingResult.getStatusCode() == 204) {
-                JOYNR_LOG_DEBUG(logger, "long polling successfull);full; no data");
+                JOYNR_LOG_TRACE(logger, "long polling successfull);full; no data");
             } else {
                 std::string body("NULL");
                 if (!longPollingResult.getBody().empty()) {

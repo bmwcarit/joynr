@@ -247,7 +247,7 @@ void SubscriptionManager::unregisterSubscription(const std::string& subscription
     }
     std::shared_ptr<Subscription> subscription(subscriptions.take(subscriptionId));
     std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
-    JOYNR_LOG_DEBUG(
+    JOYNR_LOG_TRACE(
             logger, "Called unregister / unsubscribe on subscription id= {}", subscriptionId);
     {
         std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(multicastSubscribersMutex);
@@ -478,10 +478,10 @@ void SubscriptionManager::MissedPublicationRunnable::run()
         std::int64_t timeSinceLastPublication = now - subscription->timeOfLastPublication;
         bool publicationInTime = timeSinceLastPublication < alertAfterInterval;
         if (publicationInTime) {
-            JOYNR_LOG_DEBUG(logger, "Publication in time for subscription id={}", subscriptionId);
+            JOYNR_LOG_TRACE(logger, "Publication in time for subscription id={}", subscriptionId);
             delay = alertAfterInterval - timeSinceLastPublication;
         } else {
-            JOYNR_LOG_DEBUG(logger, "Publication missed for subscription id={}", subscriptionId);
+            JOYNR_LOG_TRACE(logger, "Publication missed for subscription id={}", subscriptionId);
             std::shared_ptr<ISubscriptionListenerBase> listener =
                     subscription->subscriptionListener;
 
@@ -489,7 +489,7 @@ void SubscriptionManager::MissedPublicationRunnable::run()
             listener->onError(error);
             delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
-        JOYNR_LOG_DEBUG(logger, "Rescheduling MissedPublicationRunnable with delay: {}", delay);
+        JOYNR_LOG_TRACE(logger, "Rescheduling MissedPublicationRunnable with delay: {}", delay);
         subscription->missedPublicationRunnableHandle =
                 subscriptionManager.missedPublicationScheduler->schedule(
                         new MissedPublicationRunnable(decayTime,
@@ -500,7 +500,7 @@ void SubscriptionManager::MissedPublicationRunnable::run()
                                                       alertAfterInterval),
                         std::chrono::milliseconds(delay));
     } else {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_TRACE(logger,
                         "Publication expired / interrupted. Expiring on subscription id={}",
                         subscriptionId);
     }

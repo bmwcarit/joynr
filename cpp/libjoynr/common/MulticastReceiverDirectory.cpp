@@ -33,7 +33,7 @@ MulticastReceiverDirectory::~MulticastReceiverDirectory()
 void MulticastReceiverDirectory::registerMulticastReceiver(const std::string& multicastId,
                                                            const std::string& receiverId)
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "register multicast receiver: multicastId={}, receiverId={}",
                     multicastId,
                     receiverId);
@@ -45,7 +45,7 @@ void MulticastReceiverDirectory::registerMulticastReceiver(const std::string& mu
 bool MulticastReceiverDirectory::unregisterMulticastReceiver(const std::string& multicastId,
                                                              const std::string& receiverId)
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "unregister multicast receiver: multicastId={}, receiverId={}",
                     multicastId,
                     receiverId);
@@ -54,12 +54,12 @@ bool MulticastReceiverDirectory::unregisterMulticastReceiver(const std::string& 
         MulticastMatcher matcher(multicastId);
         std::unordered_set<std::string>& receivers = multicastReceivers[matcher];
         receivers.erase(receiverId);
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_TRACE(logger,
                         "removed multicast receiver: multicastId={}, receiverId={}",
                         multicastId,
                         receiverId);
         if (receivers.empty()) {
-            JOYNR_LOG_DEBUG(logger, "removed last multicast receiver: multicastId={}", multicastId);
+            JOYNR_LOG_TRACE(logger, "removed last multicast receiver: multicastId={}", multicastId);
             multicastReceivers.erase(matcher);
         }
         return true;
