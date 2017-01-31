@@ -666,7 +666,8 @@ else(USE_PLATFORM_MUESLI)
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
-        CMAKE_ARGS -DBUILD_MUESLI_TESTS=Off
+        CMAKE_ARGS "-DBUILD_MUESLI_TESTS=Off;"
+                   "-DENABLE_CLANG_FORMATTER=${ENABLE_CLANG_FORMATTER}"
         # Disable build step
         #BUILD_COMMAND ""
     )
