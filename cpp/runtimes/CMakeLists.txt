@@ -94,7 +94,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
     )
 
-    AddClangFormat(JoynrClusterControllerRuntime)
+    AddClangFormat(JoynrClusterControllerRuntime ${JoynrClusterControllerRuntime_EXPORT_HEADER})
 
     AddIncludeWhatYouUse(JoynrClusterControllerRuntime)
 
@@ -184,7 +184,7 @@ target_include_directories(
     ${JoynrRuntime_INCLUDE_DIRECTORIES}
 )
 
-AddClangFormat(JoynrWsRuntime)
+AddClangFormat(JoynrWsRuntime ${JoynrRuntime_EXPORT_HEADER})
 
 AddIncludeWhatYouUse(JoynrWsRuntime)
 
@@ -261,7 +261,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         PRIVATE ${JoynrRuntime_INCLUDE_DIRECTORIES}
     )
 
-    AddClangFormat(JoynrDbusRuntime)
+    AddClangFormat(JoynrDbusRuntime ${JoynrRuntime_EXPORT_HEADER})
 
     AddIncludeWhatYouUse(JoynrDbusRuntime)
 

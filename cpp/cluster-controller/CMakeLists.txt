@@ -191,7 +191,7 @@ list(
 )
 
 
-AddClangFormat(JoynrClusterController)
+AddClangFormat(JoynrClusterController ${JoynrClusterController_EXPORT_HEADER})
 
 AddIncludeWhatYouUse(JoynrClusterController)
 

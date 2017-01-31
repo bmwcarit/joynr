@@ -193,7 +193,7 @@ if(JOYNR_ENABLE_DLT_LOGGING)
 add_dependencies(JoynrCommon DLT::DLT)
 endif(JOYNR_ENABLE_DLT_LOGGING)
 
-AddClangFormat(JoynrCommon)
+AddClangFormat(JoynrCommon ${JoynrCommon_EXPORT_HEADER})
 
 AddIncludeWhatYouUse(JoynrCommon)
 
