@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>backend-services</artifactId>
-		<version>0.23.0</version>
+		<version>0.23.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -73,7 +73,7 @@
 		<!-- 
 			The sources of javassist must be added to the WAR due to its LGPL-2.1 license.
 			It is pulled in as transitive dependency:
-			io.joynr.java.messaging:messaging-servlet:jar:classes:0.23.0:compile
+			io.joynr.java.messaging:messaging-servlet:jar:classes:0.23.1:compile
 			+- org.reflections:reflections:jar:0.9.8:compile
 			|  +- javassist:javassist:jar:3.12.1.GA:compile
 			Please double check the correct version if these dependencies change.
@@ -87,7 +87,7 @@
 			The sources of hibernate-entitymanager. hibernate-core and hibernate-commons-annotations
 			must be added to the WAR due to its LGPL-2.1 license.
 			It is pulled in as transitive dependency:
-			+- io.joynr.java.backend-services:capabilities-directory:jar:0.23.0:compile
+			+- io.joynr.java.backend-services:capabilities-directory:jar:0.23.1:compile
 			|  +- org.hibernate:hibernate-entitymanager:jar:4.3.8.Final:compile
 			|  |  +- org.hibernate:hibernate-core:jar:4.3.8.Final:compile
 			|  |  +- org.hibernate.common:hibernate-commons-annotations:jar:4.0.5.Final:compile
