@@ -1,7 +1,5 @@
 package io.joynr.messaging;
 
-import joynr.JoynrMessage;
-
 /*
  * #%L
  * %%
@@ -21,6 +19,6 @@ import joynr.JoynrMessage;
  * #L%
  */
 
-public interface IMessaging extends IRawMessaging {
-    public void transmit(JoynrMessage message, FailureAction failureAction);
+public interface IRawMessaging {
+    public void transmit(String serializedMessage, FailureAction failureAction);
 }
