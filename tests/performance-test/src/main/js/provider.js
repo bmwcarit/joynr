@@ -34,6 +34,7 @@ var log = testbase.logging.log;
 console.log = function() {};
 log("domain: " + domain);
 
+testbase.provisioning_common.logging.configuration.loggers.root.level = "error";
 joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
     log("joynr started");
     joynr = loadedJoynr;
