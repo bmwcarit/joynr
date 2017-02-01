@@ -28,21 +28,32 @@ define([
     "ws",
     "joynr/messaging/JoynrMessage",
     "joynr/util/JSONSerializer",
-    "joynr/exceptions/JoynrRuntimeException"
-], function(ws, JoynrMessage, JSONSerializer, JoynrRuntimeException) {
+    "joynr/exceptions/JoynrRuntimeException",
+    "joynr/system/LoggerFactory"
+], function(ws, JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
     if (typeof Buffer !== "function") {
         throw new JoynrRuntimeException(
                 "Decoding of binary websocket messages not possible. Buffer not available.");
     }
+    var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocket");
+
+    ws.encodeString = function(string) {
+        return string;
+    };
+    ws.decodeEventData = function(data) {
+        return data;
+    };
+
     ws.marshalJoynrMessage = function(joynrMessage) {
         return JSONSerializer.stringify(joynrMessage);
     };
 
-    ws.unmarshalJoynrMessage = function(event) {
+    ws.unmarshalJoynrMessage = function(event, callback) {
         if (typeof event.data === "object") {
-            return new JoynrMessage(JSON.parse(event.data.toString()));
+            callback(new JoynrMessage(JSON.parse(event.data.toString())));
+        } else {
+            log.error("Received unsupported message from websocket.");
         }
-        return undefined;
     };
 
     return ws;

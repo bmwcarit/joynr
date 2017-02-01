@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ define(
              *            libjoynr
              */
             function initializeConnection(websocket, localAddress) {
-                websocket.send(JSON.stringify(localAddress), {binary: true});
+                websocket.send(WebSocket.encodeString(JSON.stringify(localAddress)), {binary: true});
             }
 
             /**
@@ -228,14 +228,11 @@ define(
                         // the attribute is set.
                         Object.defineProperty(this, "onmessage", {
                             set : function(newCallback) {
-                                onmessageCallback = newCallback;
                                 if (typeof newCallback === "function") {
-                                    websocket.onmessage = function(data) {
-                                        var joynrMessage = WebSocket.unmarshalJoynrMessage(data);
-                                        if (joynrMessage !== null && joynrMessage !== undefined) {
-                                            newCallback(joynrMessage);
-                                        }
+                                    onmessageCallback = function(data) {
+                                        WebSocket.unmarshalJoynrMessage(data, newCallback);
                                     };
+                                    websocket.onmessage = onmessageCallback;
                                 } else {
                                     throw new Error(
                                             "onmessage callback must be a function, but instead was of type "

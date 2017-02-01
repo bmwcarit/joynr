@@ -77,9 +77,11 @@ define([
 
             var webSocketMessagingStub = webSocketMessagingStubFactory.build(ccAddress);
             webSocketMessagingStub.transmit(joynrMessage);
-            expect(websocket.send).toHaveBeenCalledWith(JSON.stringify(joynrMessage), {
-                binary : true
-            });
+            expect(websocket.send).toHaveBeenCalledWith(
+                    WebSocket.marshalJoynrMessage(joynrMessage),
+                    {
+                        binary : true
+                    });
         });
 
         it("reuses existing websocket messaging stub", function() {
