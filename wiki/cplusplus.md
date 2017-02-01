@@ -122,24 +122,28 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
 
-Use the createRuntimeAsync static method of JoynrRuntime to create the runtime asynchronously:
+Use the ```createRuntimeAsync``` static method of ```JoynrRuntime``` to create the runtime
+asynchronously:
 
 
 ```cpp
-    auto onRuntimeCreated = [](std::unique_ptr<JoynrRuntime> createdRuntime) {
-        // Process the created runtime here
+    auto onSuccess = []() {
+        // this lambda will be called once the runtime is initialized
     };
 
-    auto onErrorCallback = [](exceptions::JoynrRuntimeException& exception) {
+    auto onError = [](exceptions::JoynrRuntimeException& exception) {
         // Process the error here
     };
 
-    JoynrRuntime::createRuntimeAsync(
+    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntimeAsync(
         pathToLibJoynrSettings,
-        onRuntimeCreated,
-        onErrorCallback,
+        onSuccess,
+        onError,
         pathToMessagingSettings);
 ```
+
+The ```JoynrRuntime``` instance that is returned by ```createRuntimeAsync``` MUST NOT be
+used before ```onSuccess``` is called.
 
 ## The discovery quality of service
 

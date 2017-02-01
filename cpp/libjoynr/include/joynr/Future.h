@@ -63,7 +63,7 @@ public:
      */
     void wait()
     {
-        JOYNR_LOG_INFO(logger, "resultReceived.getStatus():{}", resultReceived.getStatus());
+        JOYNR_LOG_TRACE(logger, "resultReceived.getStatus():{}", resultReceived.getStatus());
         resultReceived.wait();
         resultReceived.notify();
     }
@@ -92,7 +92,7 @@ public:
      */
     void onError(const std::shared_ptr<exceptions::JoynrException>& error)
     {
-        JOYNR_LOG_INFO(logger, "onError has been invoked");
+        JOYNR_LOG_TRACE(logger, "onError has been invoked");
         this->error = error;
         status = StatusCodeEnum::ERROR;
         resultReceived.notify();
@@ -196,7 +196,7 @@ public:
      */
     void onSuccess(Ts... results)
     {
-        JOYNR_LOG_INFO(this->logger, "onSuccess has been invoked");
+        JOYNR_LOG_TRACE(this->logger, "onSuccess has been invoked");
         this->status = StatusCodeEnum::SUCCESS;
         // transform variadic templates into a std::tuple
         this->results = std::make_tuple(std::move(results)...);

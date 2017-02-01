@@ -244,11 +244,11 @@ class JavaTypeUtil extends AbstractTypeUtil {
 	}
 
 	def String getDefaultValue(FTypeRef typeRef) {
-		if (typeRef.isMap) {
-			return "new " + typeRef.joynrName + "()";
-		}
 		if (typeRef.isTypeDef) {
 			return getDefaultValue(typeRef.typeDefType.actualType);
+		}
+		if (typeRef.isMap) {
+			return "new " + typeRef.joynrName + "()";
 		}
 		if (typeRef.isCompound || typeRef.isMap) {
 			return "new " + typeRef.compoundType.joynrName + "()";

@@ -5,6 +5,16 @@
 * **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
   existing MessagingQos APIs remain working
 
+#joynr 0.23.1
+
+## API relevant changes
+* **[C++]** createRuntimeAsync returns runtime directly instead of via a callback;
+  the runtime must not be used until the onSuccess callback is called
+* **[C++]** ProxyBuilder::buildAsync will not block if arbitration is not possible
+
+## Other changes
+* **[C++, Java, JS]** Fix bugs in code generation for typedef.
+
 #joynr 0.23.0
 
 ## API relevant changes

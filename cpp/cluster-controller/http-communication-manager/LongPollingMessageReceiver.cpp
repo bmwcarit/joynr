@@ -89,7 +89,7 @@ void LongPollingMessageReceiver::run()
 {
     checkServerTime();
     std::string createChannelUrl = brokerUrl.getCreateChannelUrl(channelId).toString();
-    JOYNR_LOG_INFO(logger, "Running lpmr with channelId {}", channelId);
+    JOYNR_LOG_DEBUG(logger, "Running lpmr with channelId {}", channelId);
     std::shared_ptr<IHttpPostBuilder> createChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
     currentRequest.reset(
@@ -100,17 +100,17 @@ void LongPollingMessageReceiver::run()
 
     std::string channelUrl;
     while (channelUrl.empty() && !isInterrupted()) {
-        JOYNR_LOG_DEBUG(logger, "sending create channel request");
+        JOYNR_LOG_TRACE(logger, "sending create channel request");
         HttpResult createChannelResult = currentRequest->execute();
         if (createChannelResult.getStatusCode() == 201) {
             const std::unordered_multimap<std::string, std::string>& headers =
                     createChannelResult.getHeaders();
             auto it = headers.find("Location");
             channelUrl = it->second;
-            JOYNR_LOG_INFO(logger, "channel creation successfull; channel url: {}", channelUrl);
+            JOYNR_LOG_DEBUG(logger, "channel creation successfull; channel url: {}", channelUrl);
             channelCreatedSemaphore->notify();
         } else {
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_WARN(logger,
                            "channel creation failed); status code: {}",
                            createChannelResult.getStatusCode());
             std::unique_lock<std::mutex> lock(interruptedMutex);
@@ -131,7 +131,7 @@ void LongPollingMessageReceiver::run()
                                      ->withTimeout(settings.longPollTimeout)
                                      ->build());
 
-        JOYNR_LOG_DEBUG(logger, "sending long polling request; url: {}", channelUrl);
+        JOYNR_LOG_TRACE(logger, "sending long polling request; url: {}", channelUrl);
         HttpResult longPollingResult = currentRequest->execute();
         if (!isInterrupted()) {
             // TODO: remove HttpErrorCodes and use constants.
@@ -148,7 +148,7 @@ void LongPollingMessageReceiver::run()
                 // Atmosphere currently cannot return 204 when a long poll times out, so this code
                 // is currently never executed (2.2.2012)
             } else if (longPollingResult.getStatusCode() == 204) {
-                JOYNR_LOG_DEBUG(logger, "long polling successfull);full; no data");
+                JOYNR_LOG_TRACE(logger, "long polling successfull);full; no data");
             } else {
                 std::string body("NULL");
                 if (!longPollingResult.getBody().empty()) {
@@ -194,7 +194,7 @@ void LongPollingMessageReceiver::checkServerTime()
             timeCheckRequestBuilder->addHeader("Accept", "text/plain")
                     ->withTimeout(settings.brokerTimeout)
                     ->build());
-    JOYNR_LOG_DEBUG(logger, "CheckServerTime: sending request to Bounce Proxy ({})", timeCheckUrl);
+    JOYNR_LOG_TRACE(logger, "CheckServerTime: sending request to Bounce Proxy ({})", timeCheckUrl);
     std::chrono::system_clock::time_point localTimeBeforeRequest = std::chrono::system_clock::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();
     std::chrono::system_clock::time_point localTimeAfterRequest = std::chrono::system_clock::now();
@@ -227,14 +227,14 @@ void LongPollingMessageReceiver::checkServerTime()
         auto minMaxTime = std::minmax(serverTime, localTime);
         std::uint64_t diff = minMaxTime.second - minMaxTime.first;
 
-        JOYNR_LOG_INFO(logger,
-                       "CheckServerTime [server time={}] [local time={}] [diff={} ms]",
-                       util::toDateString(JoynrTimePoint(std::chrono::milliseconds(serverTime))),
-                       util::toDateString(JoynrTimePoint(std::chrono::milliseconds(localTime))),
-                       diff);
+        JOYNR_LOG_DEBUG(logger,
+                        "CheckServerTime [server time={}] [local time={}] [diff={} ms]",
+                        util::toDateString(JoynrTimePoint(std::chrono::milliseconds(serverTime))),
+                        util::toDateString(JoynrTimePoint(std::chrono::milliseconds(localTime))),
+                        diff);
 
         if (diff > 500) {
-            JOYNR_LOG_ERROR(logger, "CheckServerTime: time difference to server is {} ms", diff);
+            JOYNR_LOG_WARN(logger, "CheckServerTime: time difference to server is {} ms", diff);
         }
     }
 }

@@ -387,6 +387,9 @@ class TypeUtil {
 		if (type instanceof FMapType){
 			return true;
 		}
+		if (type instanceof FTypeDef){
+			return isMap(type.actualType)
+		}
 		return false
 	}
 
@@ -402,6 +405,9 @@ class TypeUtil {
 		}
 		if (type instanceof FEnumerationType){
 			return true
+		}
+		if (type instanceof FTypeDef){
+			return isEnum(type.actualType)
 		}
 		return false
 	}
@@ -475,7 +481,9 @@ class TypeUtil {
 	}
 
 	def filterComplex(Iterable<? extends Object> iterable, boolean includeTypeDefs) {
-		iterable.filter(typeof(FType)).filter[type | (type.typeDef && includeTypeDefs) || type.compound || type.enum || type.map]
+		iterable.filter(typeof(FType)).filter[type | (type.typeDef && includeTypeDefs)
+			|| (!type.typeDef && (type.compound || type.enum || type.map))
+		]
 	}
 
 	def boolean isPartOfTypeCollection(FType datatype) {

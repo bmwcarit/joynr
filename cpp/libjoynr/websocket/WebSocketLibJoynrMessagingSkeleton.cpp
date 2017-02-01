@@ -65,7 +65,7 @@ void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const std::string
                             joynrMsg.getHeaderMessageId());
             return;
         }
-        JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
+        JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", message);
 
         if (joynrMsg.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
             joynrMsg.setReceivedFromGlobal(true);

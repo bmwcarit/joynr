@@ -146,11 +146,11 @@ class JSTypeUtil extends AbstractTypeUtil {
 	}
 
 	def String checkPropertyTypeName(FTypeRef type, boolean isArray) {
-		if (type.isTypeDef){
-			return checkPropertyTypeName(type.derived.typeDefType.actualType, type.derived.typeDefType.actualType instanceof FArrayType);
-		}
 		if (isArray || type.byteBuffer) {
 			return "\"Array\""
+		}
+		if (type.isTypeDef){
+			return checkPropertyTypeName(type.derived.typeDefType.actualType, type.derived.typeDefType.actualType instanceof FArrayType);
 		}
 		if (type.isPrimitive) {
 			if (type.getPrimitive.bool) {

@@ -29,12 +29,13 @@ define("joynr/proxy/OnChangeSubscriptionQos", [
     /**
      * @classdesc
      * Class representing the quality of service settings for subscriptions
-     * based on changes.<br/>
-     * This class stores quality of service settings used for subscriptions to
-     * <b>broadcasts and attributes</b> in generated proxy objects. Notifications
-     * will only be sent if the subscribed value has changed. The subscription
-     * will automatically expire after the expiry date is reached.<br/>
-     * minIntervalMs can be used to prevent too many messages being sent.
+     * based on changes, including <b>attribute subscriptions and selective broadcasts</b>
+     * <br/>
+     * Notifications will only be sent if the subscribed value has changed.
+     * <br/>
+     * Other than the fields from SubscriptionQos, OnChangeSubscriptionQos adds:
+     * minIntervalMs: can be used to prevent too many messages from being sent. See the description
+     * of settings.minIntervalMs in the OnChangeSubscriptionQos constructor for more information
      *
      * @summary
      * Constructor of OnChangeSubscriptionQos object used for subscriptions

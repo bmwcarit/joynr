@@ -37,6 +37,7 @@
 #include "joynr/Future.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/IProxyBuilder.h"
+#include "joynr/Logger.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
@@ -124,6 +125,8 @@ private:
     std::shared_ptr<IMessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
     DiscoveryQos discoveryQos;
+
+    ADD_LOGGER(ProxyBuilder);
 };
 
 template <class T>
@@ -200,6 +203,13 @@ void ProxyBuilder<T>::buildAsync(
             return;
         }
 
+        JOYNR_LOG_DEBUG(logger,
+                        "DISCOVERY proxy created for provider participantId: {}, for domain: [{}], "
+                        "interface: {}",
+                        discoverEntry.getParticipantId(),
+                        domain,
+                        T::INTERFACE_NAME());
+
         bool useInProcessConnector =
                 requestCallerDirectory->containsRequestCaller(discoverEntry.getParticipantId());
         std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos));
@@ -234,6 +244,9 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     this->discoveryQos = discoveryQos;
     return this;
 }
+
+template <class T>
+INIT_LOGGER(ProxyBuilder<T>);
 
 } // namespace joynr
 #endif // PROXYBUILDER_H

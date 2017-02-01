@@ -1310,8 +1310,8 @@
 					</executions>
 					<configuration>
 						<lineEnding>KEEP</lineEnding>
-						<configFile>java-formatter/code-formatter-config.xml</configFile>
 						<overrideConfigCompilerVersion>true</overrideConfigCompilerVersion>
+						<configFile>java-formatter/code-formatter-config.xml</configFile>
 					</configuration>
 					<dependencies>
 						<dependency>
