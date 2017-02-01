@@ -22,7 +22,21 @@
  * See: http://dev.w3.org/html5/websockets/#the-websocket-interface
  *
  */
-define([ "ws"
-], function(ws) {
+define([
+    "ws",
+    "joynr/messaging/JoynrMessage",
+    "joynr/util/JSONSerializer"
+], function(ws, JoynrMessage, JSONSerializer) {
+    ws.marshalJoynrMessage = function(joynrMessage) {
+        return JSONSerializer.stringify(joynrMessage);
+    };
+
+    ws.unmarshalJoynrMessage = function(event) {
+        if (typeof event.data === "string") {
+            return new JoynrMessage(JSON.parse(event.data));
+        }
+        return undefined;
+    };
+
     return ws;
 });

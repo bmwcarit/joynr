@@ -44,10 +44,8 @@ define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
                 var listener;
 
                 settings.sharedWebSocket.onmessage =
-                        function(event) {
-                            var received = event.data;
-                            if (listener !== undefined && typeof event.data === "string") {
-                                var joynrMessage = new JoynrMessage(JSON.parse(event.data));
+                        function(joynrMessage) {
+                            if (listener !== undefined) {
                                 if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
                                     && settings.mainTransport) {
                                     joynrMessage.setReceivedFromGlobal(true);
