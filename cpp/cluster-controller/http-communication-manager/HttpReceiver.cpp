@@ -143,22 +143,22 @@ bool HttpReceiver::tryToDeleteChannel()
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(
             deleteChannelRequestBuilder->withTimeout(std::chrono::seconds(20))->build());
-    JOYNR_LOG_DEBUG(logger, "sending delete channel request to {}", deleteChannelUrl);
+    JOYNR_LOG_TRACE(logger, "sending delete channel request to {}", deleteChannelUrl);
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
     std::int64_t statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
         channelCreatedSemaphore->waitFor(
                 std::chrono::seconds(5)); // Reset the channel created Semaphore.
-        JOYNR_LOG_INFO(logger, "channel deletion successfull");
+        JOYNR_LOG_DEBUG(logger, "channel deletion successfull");
 
         return true;
     } else if (statusCode == 204) {
-        JOYNR_LOG_INFO(logger, "channel did not exist: {}", statusCode);
+        JOYNR_LOG_DEBUG(logger, "channel did not exist: {}", statusCode);
         return true;
     } else {
-        JOYNR_LOG_INFO(logger,
-                       "channel deletion failed with status code: {}",
-                       deleteChannelResult.getStatusCode());
+        JOYNR_LOG_DEBUG(logger,
+                        "channel deletion failed with status code: {}",
+                        deleteChannelResult.getStatusCode());
         return false;
     }
 }

@@ -84,7 +84,7 @@ void HttpMessagingSkeleton::onTextMessageReceived(const std::string& message)
                             msg.getHeaderMessageId());
             return;
         }
-        JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
+        JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", message);
 
         auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_ERROR(logger,

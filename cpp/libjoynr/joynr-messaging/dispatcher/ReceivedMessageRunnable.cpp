@@ -35,7 +35,7 @@ ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
           message(message),
           dispatcher(dispatcher)
 {
-    JOYNR_LOG_DEBUG(
+    JOYNR_LOG_TRACE(
             logger, "Creating ReceivedMessageRunnable for message type: {}", message.getType());
 }
 
@@ -47,7 +47,7 @@ void ReceivedMessageRunnable::run()
 {
     const std::string messageType = message.getType();
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "Running ReceivedMessageRunnable for message type: {}, msg ID: {} and "
                     "payload: {}",
                     messageType,

@@ -34,6 +34,8 @@ typeCollection TestTypes {
 
 	typedef TypeDefForPrimitive is Int32
 	typedef TypeDefForTStruct is TStruct
+	typedef TypeDefForTStringKeyMap is TStringKeyMap
+	typedef TypeDefForTEnum is TEnum
 
 	struct TStructExtended extends TStruct {
 		TEnum tEnum
@@ -99,6 +101,17 @@ typeCollection TestTypes {
 	map TEverythingMap {TEnum to TEverythingExtendedStruct}
 
 	map TStringToByteBufferMap {String to ByteBuffer}
+
+	struct TStructWithTypedefMembers {
+		TypeDefForPrimitive typeDefForPrimitive
+		TypeDefForTStruct typeDefForTStruct
+		TypeDefForTStringKeyMap typeDefForTStringKeyMap
+		TypeDefForTEnum typeDefForTEnum
+		TypeDefForPrimitive[] arrayOfTypeDefForPrimitive
+		TypeDefForTStruct[] arrayOfTypeDefForTStruct
+		TypeDefForTStringKeyMap[] arrayOfTypeDefForTStringKeyMap
+		TypeDefForTEnum[] arrayOfTypeDefForTEnum
+	}
 }
 
 typeCollection TestTypesWithoutVersion {

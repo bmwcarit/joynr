@@ -84,7 +84,7 @@ public class RequestDeserializer extends JsonDeserializer<Request> {
                 try {
                     params[i] = objectMapper.treeToValue(paramNode, javaClasses[i]);
                 } catch (Exception e) {
-                    logger.error("unable to deserialize to " + javaClasses[i]);
+                    logger.error("unable to deserialize to " + javaClasses[i] + " reason: " + e.getMessage());
                     params[i] = null;
                 }
                 i++;

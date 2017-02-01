@@ -47,6 +47,7 @@ requirejs.onError =
         });
         // overwrite default behavior of joynr: do not throw the error, instead just print it
         console.error(err);
+        process.exit(1);
     };
 
 requirejs.config({
@@ -133,6 +134,7 @@ requirejs([
     "tests/joynr/util/JSONSerializerTest",
     "tests/joynr/util/TypingTest",
     "tests/joynr/util/LongTimerTest",
+    "tests/joynr/util/TypeGeneratorTest",
     "tests/joynr/capabilities/discovery/DiscoveryQosTest",
     "tests/joynr/capabilities/discovery/CapabilityDiscoveryTest",
     "tests/joynr/capabilities/CapabilityInformationTest",
@@ -145,7 +147,6 @@ requirejs([
     "tests/joynr/dispatching/types/SubscriptionPublicationTest",
     "tests/joynr/dispatching/types/RequestTest",
     "tests/joynr/dispatching/types/SubscriptionRequestTest",
-    "tests/joynr/dispatching/types/MulticastRequestTest",
     "tests/joynr/dispatching/types/ReplyTest",
     "tests/joynr/dispatching/subscription/SubscriptionUtilTest",
     "tests/joynr/dispatching/subscription/PublicationManagerTest",

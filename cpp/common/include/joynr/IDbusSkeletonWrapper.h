@@ -40,7 +40,7 @@ public:
             : // factory(NULL),
               serviceAddress(serviceAddress)
     {
-        JOYNR_LOG_INFO(logger, "Registering dbus skeleton on address: {}", serviceAddress);
+        JOYNR_LOG_TRACE(logger, "Registering dbus skeleton on address: {}", serviceAddress);
 
         // create the skeleton
         std::shared_ptr<_SkeletonClass> skeleton = std::make_shared<_SkeletonClass>(callBack);
@@ -61,7 +61,7 @@ public:
 
     ~IDbusSkeletonWrapper()
     {
-        JOYNR_LOG_INFO(logger, "Unregistering dbus skeleton from address: {}", serviceAddress);
+        JOYNR_LOG_TRACE(logger, "Unregistering dbus skeleton from address: {}", serviceAddress);
 
         auto runtime = CommonAPI::Runtime::load("DBus");
         bool success = runtime->getServicePublisher()->unregisterService(serviceAddress);

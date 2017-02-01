@@ -175,13 +175,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT) ||
         brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::TCP)) {
-        JOYNR_LOG_INFO(logger, "MQTT-Messaging");
+        JOYNR_LOG_DEBUG(logger, "MQTT-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
                 brokerUrl.toString(), "");
         addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(globalAddress);
         doMqttMessaging = true;
     } else {
-        JOYNR_LOG_INFO(logger, "HTTP-Messaging");
+        JOYNR_LOG_DEBUG(logger, "HTTP-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
                 brokerUrl.toString(), "");
         addressCalculator = std::make_unique<joynr::HttpMulticastAddressCalculator>(globalAddress);
@@ -189,7 +189,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     }
 
     if (!doHttpMessaging && boost::starts_with(bounceproxyProtocol, "HTTP")) {
-        JOYNR_LOG_INFO(logger, "HTTP-Messaging");
+        JOYNR_LOG_DEBUG(logger, "HTTP-Messaging");
         doHttpMessaging = true;
     }
 
@@ -292,9 +292,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     if (doHttpMessaging) {
 
         if (!httpMessageReceiver) {
-            JOYNR_LOG_INFO(logger,
-                           "The http message receiver supplied is NULL, creating the default "
-                           "http MessageReceiver");
+            JOYNR_LOG_DEBUG(logger,
+                            "The http message receiver supplied is NULL, creating the default "
+                            "http MessageReceiver");
 
             httpMessageReceiver = std::make_shared<HttpReceiver>(
                     messagingSettings, clusterControllerId, receiverId);
@@ -312,9 +312,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
         // create http message sender
         if (!httpMessageSender) {
-            JOYNR_LOG_INFO(logger,
-                           "The http message sender supplied is NULL, creating the default "
-                           "http MessageSender");
+            JOYNR_LOG_DEBUG(logger,
+                            "The http message sender supplied is NULL, creating the default "
+                            "http MessageSender");
 
             httpMessageSender = std::make_shared<HttpSender>(
                     messagingSettings.getBounceProxyUrl(),
@@ -338,9 +338,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         }
 
         if (!mqttMessageReceiver) {
-            JOYNR_LOG_INFO(logger,
-                           "The mqtt message receiver supplied is NULL, creating the default "
-                           "mqtt MessageReceiver");
+            JOYNR_LOG_DEBUG(logger,
+                            "The mqtt message receiver supplied is NULL, creating the default "
+                            "mqtt MessageReceiver");
 
             mqttMessageReceiver = std::make_shared<MqttReceiver>(
                     messagingSettings, clusterControllerId, receiverId);
@@ -365,9 +365,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
         // create message sender
         if (!mqttMessageSender) {
-            JOYNR_LOG_INFO(logger,
-                           "The mqtt message sender supplied is NULL, creating the default "
-                           "mqtt MessageSender");
+            JOYNR_LOG_DEBUG(logger,
+                            "The mqtt message sender supplied is NULL, creating the default "
+                            "mqtt MessageSender");
 
             mqttMessageSender = std::make_shared<MqttSender>(messagingSettings);
 

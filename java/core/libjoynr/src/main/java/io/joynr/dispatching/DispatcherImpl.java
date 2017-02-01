@@ -238,7 +238,10 @@ public class DispatcherImpl implements Dispatcher {
 
             @Override
             public void onFailure(JoynrException error) {
-                logger.error("Error processing request: \r\n {} ; error: {}", request, error);
+                // do not log ApplicationExceptions as errors: these are not a sign of a system error
+                if (error instanceof JoynrRuntimeException) {
+                    logger.error("Error processing request: {}", request, error);
+                }
                 Reply reply = new Reply(request.getRequestReplyId(), error);
                 try {
                     sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders);
