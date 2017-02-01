@@ -4,6 +4,9 @@
 
 * **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
   existing MessagingQos APIs remain working
+* **[JEE]** Applications can inject a RawMessagingPreprocessor to modify or inspect messages arriving
+  via MQTT
+
 
 #joynr 0.23.1
 

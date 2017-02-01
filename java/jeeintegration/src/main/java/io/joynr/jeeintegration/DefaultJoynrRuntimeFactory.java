@@ -58,7 +58,10 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
+import io.joynr.jeeintegration.api.JoynrRawMessagingPreprocessor;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -99,6 +102,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     private Injector fInjector = null;
 
+    private RawMessagingPreprocessor rawMessagePreprocessor;
+
     /**
      * Constructor in which the JEE runtime injects the managed resources and the JEE joynr integration specific
      * configuration data (see {@link JoynrProperties} and {@link JoynrLocalDomain}
@@ -110,10 +115,12 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
      *
      * @param joynrProperties  the joynr properties, if present, by {@link #prepareJoynrProperties(Properties)} to prepare the properties with which the injector is created.
      * @param joynrLocalDomain the joynr local domain name to use for the application.
+     * @param rawMessagePreprocessor can be optionally provided to intercept incoming messages and inspect or modify them
      */
     @Inject
     public DefaultJoynrRuntimeFactory(@JoynrProperties Instance<Properties> joynrProperties,
                                       @JoynrLocalDomain Instance<String> joynrLocalDomain,
+                                      @JoynrRawMessagingPreprocessor Instance<RawMessagingPreprocessor> rawMessagePreprocessor,
                                       BeanManager beanManager) {
         if (!joynrLocalDomain.isUnsatisfied() && !joynrLocalDomain.isAmbiguous()) {
             this.joynrLocalDomain = joynrLocalDomain.get();
@@ -122,6 +129,19 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             LOG.error(message);
             throw new JoynrIllegalStateException(message);
         }
+
+        if (!rawMessagePreprocessor.isUnsatisfied()) {
+            if (!rawMessagePreprocessor.isAmbiguous()) {
+                this.rawMessagePreprocessor = rawMessagePreprocessor.get();
+            } else {
+                String message = "Only one RawMessagePreprocessor may be provided.";
+                LOG.error(message);
+                throw new JoynrIllegalStateException(message);
+            }
+        } else {
+            this.rawMessagePreprocessor = new NoOpRawMessagingPreprocessor();
+        }
+
         Properties configuredProperties;
         if (!joynrProperties.isUnsatisfied() && !joynrProperties.isAmbiguous()) {
             configuredProperties = joynrProperties.get();
@@ -167,7 +187,15 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             fInjector = new JoynrInjectorFactory(joynrProperties,
                                                  new StaticDomainAccessControlProvisioningModule(),
                                                  getMessageProcessorsModule(),
-                                                 override(new CCInProcessRuntimeModule()).with(new JeeJoynrIntegrationModule(scheduledExecutorService))).getInjector();
+                                                 override(new CCInProcessRuntimeModule()).with(new JeeJoynrIntegrationModule(scheduledExecutorService),
+                                                                                               new AbstractModule() {
+
+                                                                                                   @Override
+                                                                                                   protected void configure() {
+                                                                                                       bind(RawMessagingPreprocessor.class).toInstance(rawMessagePreprocessor);
+
+                                                                                                   }
+                                                                                               })).getInjector();
         }
         return fInjector;
     }
@@ -260,4 +288,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         return joynrLocalDomain;
     }
 
+    public RawMessagingPreprocessor getRawMessagePreprocessor() {
+        return rawMessagePreprocessor;
+    }
 }

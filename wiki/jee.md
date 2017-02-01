@@ -292,6 +292,26 @@ See also the
 [Radio JEE provider bean](../examples/radio-jee/radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBean.java)
 for a working example.
 
+#### Injecting a RawMessagingPreprocessor
+
+if you need to inspect or modify incoming joynr messages, you can provide a producer of
+@JoynrRawMessagingPreprocessor, whose process method will be called for each incoming MQTT
+message.
+
+For example:
+
+	@Produces
+	@JoynrRawMessagingPreprocessor
+	RawMessagingPreprocessor rawMessagingPreprocessor() {
+		return new RawMessagingPreprocessor() {
+			@Override
+			public String process(String rawMessage) {
+				// do something with the message here
+				return rawMessage;
+			}
+		};
+	}
+
 ### Calling services
 
 In order to call services provided by other participants (e.g. applications
