@@ -85,8 +85,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     private static final String MQTT = "mqtt";
 
-    private static final String LOCALHOST_URL = "https://localhost:8443/";
-
     private Properties joynrProperties;
 
     private final String joynrLocalDomain;
@@ -177,8 +175,10 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private AbstractModule getMessageProcessorsModule() {
         final Set<Bean<?>> joynrMessageProcessorBeans = beanManager.getBeans(JoynrMessageProcessor.class,
                                                                              new AnnotationLiteral<Any>() {
+                                                                                 private static final long serialVersionUID = 1L;
                                                                              });
         return new AbstractModule() {
+            @SuppressWarnings("unchecked")
             @Override
             protected void configure() {
 
@@ -188,7 +188,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                 for (Bean<?> bean : joynrMessageProcessorBeans) {
                     joynrMessageProcessorMultibinder.addBinding()
                                                     .toInstance((JoynrMessageProcessor) Proxy.newProxyInstance(getClass().getClassLoader(),
-                                                                                                               new Class[]{ JoynrMessageProcessor.class },
+                                                                                                               new Class[]{
+                                                                                                                       JoynrMessageProcessor.class },
                                                                                                                new BeanCallingProxy<JoynrMessageProcessor>((Bean<JoynrMessageProcessor>) bean,
                                                                                                                                                            beanManager)));
                 }
@@ -223,39 +224,32 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         }
     }
 
-    private String getEnvWithDefault(String variableName, String defaultValue) {
-        String value = System.getenv(variableName);
-        if (value == null || value.trim().isEmpty()) {
-            value = defaultValue;
-        }
-        return value;
-    }
-
     private void provisionAccessControl(Properties properties, String domain, String[] interfaceNames) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
         List<MasterAccessControlEntry> allEntries = new ArrayList<>();
         for (String interfaceName : interfaceNames) {
             MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
-                domain,
-                interfaceName,
-                TrustLevel.LOW,
-                new TrustLevel[]{TrustLevel.LOW},
-                TrustLevel.LOW,
-                new TrustLevel[]{TrustLevel.LOW},
-                "*",
-                Permission.YES,
-                new Permission[]{joynr.infrastructure.DacTypes.Permission.YES});
+                                                                                                domain,
+                                                                                                interfaceName,
+                                                                                                TrustLevel.LOW,
+                                                                                                new TrustLevel[]{
+                                                                                                        TrustLevel.LOW },
+                                                                                                TrustLevel.LOW,
+                                                                                                new TrustLevel[]{
+                                                                                                        TrustLevel.LOW },
+                                                                                                "*",
+                                                                                                Permission.YES,
+                                                                                                new Permission[]{
+                                                                                                        joynr.infrastructure.DacTypes.Permission.YES });
             allEntries.add(newMasterAccessControlEntry);
         }
-        MasterAccessControlEntry[] provisionedAccessControlEntries = allEntries.toArray(
-            new MasterAccessControlEntry[allEntries.size()]);
+        MasterAccessControlEntry[] provisionedAccessControlEntries = allEntries.toArray(new MasterAccessControlEntry[allEntries.size()]);
         String provisionedAccessControlEntriesAsJson;
         try {
             provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
-            properties.setProperty(
-                StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
-                provisionedAccessControlEntriesAsJson);
+            properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
+                                   provisionedAccessControlEntriesAsJson);
         } catch (JsonProcessingException e) {
             LOG.error("Error parsing JSON.", e);
         }
