@@ -41,6 +41,8 @@ import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttModule;
@@ -92,6 +94,7 @@ public class MqttPahoClientTest {
                                                 bind(MessageRouter.class).toInstance(mockMessageRouter);
                                                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                                                     .toInstance(Executors.newScheduledThreadPool(10));
+                                                bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
                                             }
                                         });
         mqttClientFactory = injector.getInstance(MqttClientFactory.class);

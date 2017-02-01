@@ -28,6 +28,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeleton;
@@ -52,8 +53,9 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     MqttClientFactory mqttClientFactory,
                                                     MqttMessageSerializerFactory messageSerializerFactory,
                                                     @Named(MessagingPropertyKeys.CHANNELID) String channelId,
-                                                    @Named(MessagingPropertyKeys.RECEIVERID) String receiverId) {
-        super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
+                                                    @Named(MessagingPropertyKeys.RECEIVERID) String receiverId,
+                                                    RawMessagingPreprocessor rawMessagingPreprocessor) {
+        super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory, rawMessagingPreprocessor);
         this.channelId = channelId;
         this.receiverId = receiverId;
     }

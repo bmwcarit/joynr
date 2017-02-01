@@ -21,18 +21,30 @@ package io.joynr.messaging.mqtt;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.junit.Assert.fail;
 
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.serialize.JsonSerializer;
+import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.MqttAddress;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
@@ -56,7 +68,11 @@ public class MqttMessagingSkeletonTest {
 
     @Before
     public void setup() {
-        subject = new MqttMessagingSkeleton(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
+        subject = new MqttMessagingSkeleton(ownAddress,
+                                            messageRouter,
+                                            mqttClientFactory,
+                                            messageSerializerFactory,
+                                            new NoOpRawMessagingPreprocessor());
         when(mqttClientFactory.create()).thenReturn(mqttClient);
         subject.init();
         verify(mqttClient).subscribe(anyString());
@@ -84,6 +100,28 @@ public class MqttMessagingSkeletonTest {
 
         subject.unregisterMulticastSubscription(multicastId);
         verify(mqttClient).unsubscribe("one/two/#");
+    }
+
+    @Test
+    public void testRawMessagePreprocessorIsCalled() throws Exception {
+        RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        when(preprocessor.process(anyString())).then(returnsFirstArg());
+        when(messageSerializerFactory.create(Mockito.any(MqttAddress.class))).thenReturn(new JsonSerializer(objectMapper));
+        subject = new MqttMessagingSkeleton(ownAddress,
+                                            messageRouter,
+                                            mqttClientFactory,
+                                            messageSerializerFactory,
+                                            preprocessor);
+        JoynrMessage message = new JoynrMessage();
+        message.setPayload("payload");
+        subject.transmit(objectMapper.writeValueAsString(message), new FailureAction() {
+            @Override
+            public void execute(Throwable error) {
+                fail("failure action was erroneously called");
+            }
+        });
+        verify(messageRouter).route(message);
     }
 
 }

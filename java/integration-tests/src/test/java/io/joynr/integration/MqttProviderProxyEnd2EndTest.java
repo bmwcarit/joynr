@@ -26,11 +26,13 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -49,6 +51,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
     private Properties mqttConfig;
     private static Process mosquittoProcess;
     private static int mqttBrokerPort;
+    private int incomingMessageCount;
 
     @BeforeClass
     // NOTE: when running in Eclipse, it may be necessary to set the system variable -Dpath=path/to/mosquitto
@@ -67,6 +70,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
+        incomingMessageCount = 0;
         mqttConfig = new Properties();
         mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
         // test is using 2 global address typs, so need to set one of them as primary
@@ -74,7 +78,22 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         joynrConfig.putAll(mqttConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
         Module modulesWithRuntime = Modules.override(runtimeModule).with(new AtmosphereMessagingModule(),
-                                                                         new MqttPahoModule());
+                                                                         new MqttPahoModule(),
+                                                                         new AbstractModule() {
+
+                                                                             @Override
+                                                                             protected void configure() {
+                                                                                 bind(RawMessagingPreprocessor.class).toInstance(new RawMessagingPreprocessor() {
+
+                                                                                     @Override
+                                                                                     public String process(String rawMessage) {
+                                                                                         incomingMessageCount++;
+                                                                                         return rawMessage;
+                                                                                     }
+                                                                                 });
+                                                                             }
+
+                                                                         });
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 

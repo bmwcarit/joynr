@@ -35,6 +35,7 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageSerializer;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -52,15 +53,18 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     private MqttClientFactory mqttClientFactory;
     private MqttAddress ownAddress;
     private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
+    private RawMessagingPreprocessor rawMessagingPreprocessor;
 
     @Inject
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
-                                 MqttMessageSerializerFactory messageSerializerFactory) {
+                                 MqttMessageSerializerFactory messageSerializerFactory,
+                                 RawMessagingPreprocessor rawMessagingPreprocessor) {
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
+        this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         messageSerializer = messageSerializerFactory.create(ownAddress);
     }
 
@@ -133,7 +137,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
-        JoynrMessage message = messageSerializer.deserialize(serializedMessage);
+        JoynrMessage message = messageSerializer.deserialize(rawMessagingPreprocessor.process(serializedMessage));
         transmit(message, failureAction);
 
     }

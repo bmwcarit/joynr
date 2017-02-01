@@ -69,6 +69,8 @@ import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.inprocess.InProcessMessageSerializerFactory;
@@ -148,6 +150,8 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
         bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();
+        bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
+
         install(new StaticCapabilitiesProvisioningModule());
 
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();

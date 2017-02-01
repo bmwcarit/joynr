@@ -34,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.jeeintegration.messaging.SharedSubscriptionsMqttMessagingSkeleton;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
@@ -79,7 +80,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
                                                                "channelId",
-                                                               "receiverId");
+                                                               "receiverId",
+                                                               new NoOpRawMessagingPreprocessor());
         subject.init();
         verify(mqttClient).subscribe(eq("$share:channelId:ownTopic/#"));
         verify(mqttClient).subscribe(eq("replyto/ownTopic/receiverId/#"));
@@ -92,7 +94,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
                                                                "channel@123_bling$$",
-                                                               "receiverId");
+                                                               "receiverId",
+                                                               new NoOpRawMessagingPreprocessor());
         subject.init();
         verify(mqttClient).subscribe(startsWith("$share:channelbling:"));
     }
@@ -104,7 +107,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
                                                                "@123_$$-!",
-                                                               "receiverId");
+                                                               "receiverId",
+                                                               new NoOpRawMessagingPreprocessor());
         subject.init();
     }
 
