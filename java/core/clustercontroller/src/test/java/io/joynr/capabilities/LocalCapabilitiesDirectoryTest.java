@@ -285,8 +285,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                         channelAddressSerialized);
 
         localCapabilitiesDirectory.add(discoveryEntry);
-        verify(globalCapabilitiesClient, timeout(10000).never()).add(any(Callback.class),
-                                                                     any(GlobalDiscoveryEntry.class));
+        verify(globalCapabilitiesClient, never()).add(any(Callback.class), any(GlobalDiscoveryEntry.class));
     }
 
     @SuppressWarnings("unchecked")
