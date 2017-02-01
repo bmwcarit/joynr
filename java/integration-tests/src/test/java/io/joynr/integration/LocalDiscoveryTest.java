@@ -19,6 +19,8 @@ package io.joynr.integration;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
@@ -38,12 +40,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.google.common.collect.Sets;
@@ -135,6 +138,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
  * Test class to check whether the DiscoveryEntryWithMetaInfo from local or global lookup is correctly made available
  * to the JoynrMessagingConnector in libjoynr.
  */
+@RunWith(MockitoJUnitRunner.class)
 public class LocalDiscoveryTest {
     private JoynrRuntime runtime;
 
@@ -151,19 +155,17 @@ public class LocalDiscoveryTest {
     @Mock
     private MessageRouter messageRouterMock;
     @Mock
-    private ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner;
+    private ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleanerMock;
     @Mock
-    private ScheduledExecutorService capabilitiesFreshnessUpdateExecutor;
-
+    private ScheduledExecutorService capabilitiesFreshnessUpdateExecutorMock;
     @Mock
     private JoynrMessagingConnectorFactory joynrMessagingConnectorFactoryMock;
 
     @Captor
-    private ArgumentCaptor<Collection<DiscoveryEntryWithMetaInfo>> capabilitiesCaptor;
+    private ArgumentCaptor<Set<DiscoveryEntryWithMetaInfo>> discoveryEntryWithMetaInfoArgumentCaptor;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         final LocalCapabilitiesDirectoryImpl localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioningMock,
                                                                                                              globalAddressProviderMock,
@@ -171,9 +173,9 @@ public class LocalDiscoveryTest {
                                                                                                              globalDiscoveryEntryCacheMock,
                                                                                                              messageRouterMock,
                                                                                                              globalCapabilitiesDirectoryClientMock,
-                                                                                                             expiredDiscoveryEntryCacheCleaner,
+                                                                                                             expiredDiscoveryEntryCacheCleanerMock,
                                                                                                              3600000,
-                                                                                                             capabilitiesFreshnessUpdateExecutor);
+                                                                                                             capabilitiesFreshnessUpdateExecutorMock);
 
         Module testModule = Modules.override(new CCInProcessRuntimeModule()).with(new AbstractModule() {
             @Override
@@ -196,14 +198,15 @@ public class LocalDiscoveryTest {
         String testDomain = "testDomain";
         String interfaceName = testProxy.INTERFACE_NAME;
         Collection<DiscoveryEntry> discoveryEntries = new HashSet<>();
-        discoveryEntries.add(new DiscoveryEntry(VersionUtil.getVersionFromAnnotation(testProxy.class),
-                                                testDomain,
-                                                interfaceName,
-                                                "participantId",
-                                                new ProviderQos(),
-                                                System.currentTimeMillis(),
-                                                System.currentTimeMillis() + 100000,
-                                                "publicKeyId"));
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(VersionUtil.getVersionFromAnnotation(testProxy.class),
+                                                           testDomain,
+                                                           interfaceName,
+                                                           "participantId",
+                                                           new ProviderQos(),
+                                                           System.currentTimeMillis(),
+                                                           System.currentTimeMillis() + 100000,
+                                                           "publicKeyId");
+        discoveryEntries.add(discoveryEntry);
         Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
                                                                                                                               discoveryEntries);
 
@@ -229,8 +232,11 @@ public class LocalDiscoveryTest {
         try {
             future.get(5000);
             verify(joynrMessagingConnectorFactoryMock).create(anyString(),
-                                                              eq(discoveryEntriesWithMetaInfo),
+                                                              discoveryEntryWithMetaInfoArgumentCaptor.capture(),
                                                               any(MessagingQos.class));
+
+            assertDiscoveryEntryEqualsCaptured(discoveryEntry);
+
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
@@ -303,11 +309,11 @@ public class LocalDiscoveryTest {
                                                                                                                               discoveryEntries);
 
         when(globalDiscoveryEntryCacheMock.lookup(any(String[].class), eq(interfaceName), anyLong())).thenReturn(new HashSet<DiscoveryEntry>());
-        Mockito.doAnswer(new Answer<List<GlobalDiscoveryEntry>>() {
+        Mockito.doAnswer(new Answer<Object>() {
 
             @SuppressWarnings("rawtypes")
             @Override
-            public List<GlobalDiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
+            public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
                 assert (arguments[0] instanceof Callback);
                 ((Callback) arguments[0]).resolve((Object) globalDiscoveryEntries);
@@ -336,9 +342,12 @@ public class LocalDiscoveryTest {
 
         try {
             future.get(5000);
+
             verify(joynrMessagingConnectorFactoryMock).create(anyString(),
-                                                              eq(discoveryEntriesWithMetaInfo),
+                                                              discoveryEntryWithMetaInfoArgumentCaptor.capture(),
                                                               any(MessagingQos.class));
+
+            assertDiscoveryEntryEqualsCaptured(discoveryEntry);
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
@@ -393,7 +402,7 @@ public class LocalDiscoveryTest {
 
         when(localDiscoveryEntryStoreMock.lookup(any(String[].class), eq(interfaceName))).thenReturn(localDiscoveryEntries);
         when(globalDiscoveryEntryCacheMock.lookup(any(String[].class), eq(interfaceName), anyLong())).thenReturn(cachedDiscoveryEntries);
-        Mockito.doAnswer(new Answer<List<GlobalDiscoveryEntry>>() {
+        Mockito.doAnswer(new Answer<Object>() {
 
             @SuppressWarnings("rawtypes")
             @Override
@@ -441,5 +450,15 @@ public class LocalDiscoveryTest {
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
+    }
+
+    private void assertDiscoveryEntryEqualsCaptured(DiscoveryEntry discoveryEntry) {
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesCaptured = discoveryEntryWithMetaInfoArgumentCaptor.getAllValues()
+                                                                                                           .get(0);
+        assertTrue(discoveryEntriesCaptured.size() == 1);
+        DiscoveryEntryWithMetaInfo discoveryEntryCaptured = discoveryEntriesCaptured.iterator().next();
+        assertEquals(discoveryEntry.getDomain(), discoveryEntryCaptured.getDomain());
+        assertEquals(discoveryEntry.getInterfaceName(), discoveryEntryCaptured.getInterfaceName());
+        assertEquals(discoveryEntry.getParticipantId(), discoveryEntryCaptured.getParticipantId());
     }
 }
