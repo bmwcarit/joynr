@@ -67,6 +67,7 @@ class JoynrMessageSender;
 class IMessaging;
 class CcMessageRouter;
 class WebSocketMessagingStubFactory;
+class MosquittoConnection;
 
 namespace infrastructure
 {
@@ -124,14 +125,14 @@ protected:
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
-    std::shared_ptr<HttpMessagingSkeleton> httpMessagingSkeleton;
-    std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
-
     std::shared_ptr<IMessageReceiver> httpMessageReceiver;
     std::shared_ptr<IMessageSender> httpMessageSender;
+    std::shared_ptr<HttpMessagingSkeleton> httpMessagingSkeleton;
 
+    std::shared_ptr<MosquittoConnection> mosquittoConnection;
     std::shared_ptr<IMessageReceiver> mqttMessageReceiver;
     std::shared_ptr<IMessageSender> mqttMessageSender;
+    std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
 
     std::vector<IDispatcher*> dispatcherList;
     InProcessConnectorFactory* inProcessConnectorFactory;

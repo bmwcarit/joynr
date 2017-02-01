@@ -41,6 +41,7 @@
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 #include "cluster-controller/mqtt/MqttReceiver.h"
 #include "cluster-controller/mqtt/MqttSender.h"
+#include "cluster-controller/mqtt/MosquittoConnection.h"
 
 #include "joynr/infrastructure/DacTypes/ControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
@@ -122,12 +123,13 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           joynrMessageSender(nullptr),
           localCapabilitiesDirectory(nullptr),
           libJoynrMessagingSkeleton(nullptr),
-          httpMessagingSkeleton(nullptr),
-          mqttMessagingSkeleton(nullptr),
           httpMessageReceiver(httpMessageReceiver),
           httpMessageSender(httpMessageSender),
+          httpMessagingSkeleton(nullptr),
+          mosquittoConnection(nullptr),
           mqttMessageReceiver(mqttMessageReceiver),
           mqttMessageSender(mqttMessageSender),
+          mqttMessagingSkeleton(nullptr),
           dispatcherList(),
           inProcessConnectorFactory(nullptr),
           inProcessPublicationSender(nullptr),
@@ -342,18 +344,17 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       */
 
     if (doMqttMessaging) {
-
-        if (!mqttMessageReceiver && !mqttMessageSender) {
-            mosqpp::lib_init();
+        if (!mqttMessageReceiver || !mqttMessageSender) {
+            mosquittoConnection =
+                    std::make_shared<MosquittoConnection>(messagingSettings, receiverId);
         }
-
         if (!mqttMessageReceiver) {
             JOYNR_LOG_DEBUG(logger,
                             "The mqtt message receiver supplied is NULL, creating the default "
                             "mqtt MessageReceiver");
 
             mqttMessageReceiver = std::make_shared<MqttReceiver>(
-                    messagingSettings, clusterControllerId, receiverId);
+                    mosquittoConnection, messagingSettings, clusterControllerId);
 
             assert(mqttMessageReceiver != nullptr);
         }
@@ -379,7 +380,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                             "The mqtt message sender supplied is NULL, creating the default "
                             "mqtt MessageSender");
 
-            mqttMessageSender = std::make_shared<MqttSender>(messagingSettings);
+            mqttMessageSender = std::make_shared<MqttSender>(mosquittoConnection);
 
             mqttMessageSender->registerReceiver(mqttMessageReceiver);
         }
@@ -701,9 +702,8 @@ void JoynrClusterControllerRuntime::startMessaging()
         }
     }
     if (doMqttMessaging) {
-        assert(mqttMessageReceiver != nullptr);
-        if (!mqttMessagingIsRunning) {
-            mqttMessageReceiver->startReceiveQueue();
+        if (mosquittoConnection && !mqttMessagingIsRunning) {
+            mosquittoConnection->start();
             mqttMessagingIsRunning = true;
         }
     }
@@ -719,8 +719,8 @@ void JoynrClusterControllerRuntime::stopMessaging()
         }
     }
     if (doMqttMessaging) {
-        if (mqttMessagingIsRunning) {
-            mqttMessageReceiver->stopReceiveQueue();
+        if (mosquittoConnection && mqttMessagingIsRunning) {
+            mosquittoConnection->stop();
             mqttMessagingIsRunning = false;
         }
     }

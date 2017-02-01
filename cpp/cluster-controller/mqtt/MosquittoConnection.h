@@ -16,19 +16,30 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CLUSTER_CONTROLLER_MQTT_MOSQUITTOCONNECTION_H_
-#define CLUSTER_CONTROLLER_MQTT_MOSQUITTOCONNECTION_H_
+#ifndef MOSQUITTOCONNECTION_H
+#define MOSQUITTOCONNECTION_H
 
-#include "mosquittopp.h"
+#include <cstdint>
+#include <functional>
+#include <string>
+#include <thread>
+#include <unordered_set>
 
-#include "MqttSettings.h"
+#include <mosquittopp.h>
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
+#include "cluster-controller/mqtt/MqttSettings.h"
+
 namespace joynr
 {
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
 
 class MessagingSettings;
 
@@ -36,28 +47,66 @@ class MosquittoConnection : public mosqpp::mosquittopp
 {
 
 public:
-    explicit MosquittoConnection(const MessagingSettings& brokerUrl);
+    explicit MosquittoConnection(const MessagingSettings& settings, const std::string& receiverId);
 
-    ~MosquittoConnection() override = default;
+    ~MosquittoConnection() override;
 
     virtual uint16_t getMqttQos() const;
     std::string getMqttPrio() const;
     bool isMqttRetain() const;
 
+    void start();
+    void stop();
+
+    void publishMessage(
+            const std::string& topic,
+            const int qosLevel,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
+            std::uint32_t payloadlen,
+            const void* payload);
+    void subscribeToTopic(const std::string& topic);
+    void unsubscribeFromTopic(const std::string& topic);
+    void registerChannelId(const std::string& channelId);
+    void registerReceiveCallback(std::function<void(const std::string&)> onTextMessageReceived);
+    bool isSubscribedToChannelTopic() const;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoConnection);
 
-    MqttSettings mqttSettings;
+    void runLoop();
 
+    void on_disconnect(int rc) final;
+    void on_log(int level, const char* str) final;
+    void on_error() final;
+    void on_connect(int rc) final;
+    void on_message(const mosquitto_message* message) final;
+    void on_publish(int mid) final;
+    void on_subscribe(int mid, int qos_count, const int* granted_qos) final;
+    void restoreSubscriptions();
+    void subscribeToTopicInternal(const std::string& topic, const bool isChannelTopic = false);
+
+    MqttSettings mqttSettings;
     const BrokerUrl brokerUrl;
 
-    ADD_LOGGER(MosquittoConnection);
+    std::string receiverId;
+    std::string channelId;
+    int subscribeChannelMid;
+    std::string topic;
+    std::unordered_set<std::string> additionalTopics;
+    std::recursive_mutex additionalTopicsMutex;
 
-    void on_disconnect(int rc) override;
-    void on_log(int level, const char* str) override;
-    void on_error() override;
+    std::atomic<bool> isConnected;
+    std::atomic<bool> isRunning;
+    std::atomic<bool> isChannelIdRegistered;
+    std::atomic<bool> subscribedToChannelTopic;
+
+    std::function<void(const std::string&)> onTextMessageReceived;
+
+    std::thread thread;
+
+    ADD_LOGGER(MosquittoConnection);
 };
 
 } // namespace joynr
 
-#endif // CLUSTER_CONTROLLER_MQTT_MOSQUITTOCONNECTION_H_
+#endif // MOSQUITTOCONNECTION_H
