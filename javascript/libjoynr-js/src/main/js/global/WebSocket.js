@@ -24,7 +24,8 @@ define(
             "joynr/messaging/JoynrMessage",
             "joynr/util/JSONSerializer",
             "joynr/exceptions/JoynrRuntimeException",
-            "joynr/system/LoggerFactory"
+            "joynr/system/LoggerFactory",
+            "text-encoding"
         ],
         function(JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
             if (typeof TextDecoder !== "function") {
