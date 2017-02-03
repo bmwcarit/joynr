@@ -733,190 +733,30 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
 
+    auto invokeSetter = [testProvider](std::int64_t value) {
+        auto onSuccess = [](){};
+        types::Localisation::GpsLocation location;
+        location.setDeviceTime(value);
+        testProvider->setLocation(location, onSuccess, nullptr);
+    };
     // Change the location once
-    testProxy->setLocation(types::Localisation::GpsLocation(9.0,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            1));
+    invokeSetter(-1);
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     // Change the location multiple times
-    testProxy->setLocation(types::Localisation::GpsLocation(9.0,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.1,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.2,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.3,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.4,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
+    for (int i = 0; i < 5; ++i) {
+        invokeSetter(i);
+    }
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.0,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.1,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.2,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.3,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.4,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
+    for (int i = 0; i < 5; ++i) {
+        invokeSetter(i+5);
+    }
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.0,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.1,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.2,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.3,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.4,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
+    for (int i = 0; i < 5; ++i) {
+        invokeSetter(i+10);
+    }
 
     // Wait for 3 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
