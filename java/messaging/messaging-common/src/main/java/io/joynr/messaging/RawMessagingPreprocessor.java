@@ -24,7 +24,9 @@ public abstract class RawMessagingPreprocessor {
     /**
      *
      * @param rawMessage
-     * @return the filtered rawMessage
+     * @return the processed rawMessage. NOTE: you are responsible for
+     * returning a message that can still be parsed by the messaging skeleton;
+     * otherwise the message will be discarded.
      */
     public abstract String process(String rawMessage);
 }
