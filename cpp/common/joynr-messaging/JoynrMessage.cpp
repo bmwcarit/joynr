@@ -79,6 +79,7 @@ const std::string& JoynrMessage::CUSTOM_HEADER_PREFIX()
     return customHeaderPrefix;
 }
 
+const std::string JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID = "z4";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY = "oneWay";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_REPLY = "reply";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST = "request";
