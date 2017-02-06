@@ -18,6 +18,8 @@
  */
 #include "runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeletonTLS.h"
 
+#include <openssl/ssl.h>
+
 namespace joynr
 {
 WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
@@ -32,6 +34,11 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
                                                                       messageRouter,
                                                                       messagingStubFactory)
 {
+    // ensure that OpenSSL is correctly initialized
+    ::SSL_library_init();
+    ::SSL_load_error_strings();
+    ::OpenSSL_add_all_algorithms();
+
     endpoint.set_tls_init_handler([this, caPemFile, certPemFile, privateKeyPemFile](
                                           ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
         std::ignore = hdl;
