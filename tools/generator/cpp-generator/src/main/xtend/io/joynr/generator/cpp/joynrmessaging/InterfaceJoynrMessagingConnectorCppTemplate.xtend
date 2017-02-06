@@ -384,7 +384,14 @@ bool «className»::usesClusterController() const{
 						subscriptionListener,
 						subscriptionQos,
 						subscriptionRequest);
-			JOYNR_LOG_DEBUG(logger, subscriptionRequest.toString());
+			JOYNR_LOG_DEBUG(logger,
+					"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
+					"participantId: {}, provider participantId: [{}]",
+					subscriptionRequest.getSubscriptionId(),
+					attributeName,
+					joynr::serializer::serializeToJson(*subscriptionQos),
+					proxyParticipantId,
+					providerParticipantId);
 			joynrMessageSender->sendSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
@@ -574,7 +581,6 @@ bool «className»::usesClusterController() const{
 							subscriptionListener,
 							subscriptionQos,
 							subscriptionRequest);
-			JOYNR_LOG_DEBUG(logger, subscriptionRequest.toString());
 			joynrMessageSender->sendBroadcastSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
@@ -589,7 +595,6 @@ bool «className»::usesClusterController() const{
 					proxyParticipantId = proxyParticipantId,
 					providerParticipantId = providerParticipantId,
 					clonedMessagingQos, subscriptionRequest] () {
-						JOYNR_LOG_DEBUG(logger, subscriptionRequest->toString());
 						if (auto ptr = joynrMessageSender.lock())
 						{
 							ptr->sendMulticastSubscriptionRequest(
@@ -628,6 +633,18 @@ bool «className»::usesClusterController() const{
 							std::move(onSuccess),
 							std::move(onError));
 		«ENDIF»
+		JOYNR_LOG_DEBUG(logger,
+				"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
+				"participantId: {}, provider participantId: [{}]",
+				«IF broadcast.selective»
+					subscriptionRequest.getSubscriptionId(),
+				«ELSE»
+					subscriptionRequest->getSubscriptionId(),
+				«ENDIF»
+				broadcastName,
+				joynr::serializer::serializeToJson(*subscriptionQos),
+				proxyParticipantId,
+				providerParticipantId);
 		return future;
 	}
 
