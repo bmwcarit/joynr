@@ -179,9 +179,22 @@ bool «className»::usesClusterController() const{
 						future->onError(error);
 					};
 
+			JOYNR_LOG_DEBUG(logger,
+					"REQUEST call proxy: requestReplyId: {}, method: {}, proxy "
+					"participantId: {}, provider participantId: [{}]",
+					request.getRequestReplyId(),
+					request.getMethodName(),
+					proxyParticipantId,
+					providerParticipantId);
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccess), std::move(onError));
 			operationRequest(replyCaller, request);
 			future->get(«attributeName»);
+			JOYNR_LOG_DEBUG(logger,
+					"REQUEST returns successful: requestReplyId: {}, method: {}, response: {}",
+					request.getRequestReplyId(),
+					request.getMethodName(),
+					joynr::serializer::serializeToJson(«attributeName»)
+			);
 		}
 
 		«produceAsyncGetterSignature(attribute, className)»
@@ -192,22 +205,49 @@ bool «className»::usesClusterController() const{
 			request.setMethodName("get«attributeName.toFirstUpper»");
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
-			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
-					[future, onSuccess = std::move(onSuccess)] (const «returnType»& «attributeName») {
-						future->onSuccess(«attributeName»);
-						if (onSuccess){
-							onSuccess(«attributeName»);
-						}
-					};
+			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper = [
+					future,
+					onSuccess = std::move(onSuccess),
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] (const «returnType»& «attributeName») {
+				JOYNR_LOG_DEBUG(logger,
+						"REQUEST returns successful: requestReplyId: {}, method: {}, response: {}",
+						requestReplyId,
+						methodName,
+						joynr::serializer::serializeToJson(«attributeName»)
+				);
+				future->onSuccess(«attributeName»);
+				if (onSuccess){
+					onSuccess(«attributeName»);
+				}
+			};
 
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-					[future, onError = std::move(onError)] (const std::shared_ptr<exceptions::JoynrException>& error) {
-						future->onError(error);
-						if (onError){
-							onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
-						}
-					};
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
+					future,
+					onError = std::move(onError),
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] (const std::shared_ptr<exceptions::JoynrException>& error) {
+				JOYNR_LOG_DEBUG(logger,
+						"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
+						requestReplyId,
+						methodName,
+						error->what()
+				);
+				future->onError(error);
+				if (onError){
+					onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
+				}
+			};
 
+			JOYNR_LOG_DEBUG(logger,
+					"REQUEST call proxy: requestReplyId: {}, method: {}, proxy "
+					"participantId: {}, provider participantId: [{}]",
+					request.getRequestReplyId(),
+					request.getMethodName(),
+					proxyParticipantId,
+					providerParticipantId);
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			operationRequest(replyCaller, request);
 
@@ -225,22 +265,49 @@ bool «className»::usesClusterController() const{
 
 			auto future = std::make_shared<joynr::Future<void>>();
 
-			std::function<void()> onSuccessWrapper =
-					[future, onSuccess = std::move(onSuccess)] () {
-						future->onSuccess();
-						if (onSuccess) {
-							onSuccess();
-						}
-					};
+			std::function<void()> onSuccessWrapper = [
+					future,
+					onSuccess = std::move(onSuccess),
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] () {
+				JOYNR_LOG_DEBUG(logger,
+						"REQUEST returns successful: requestReplyId: {}, method: {}",
+						requestReplyId,
+						methodName
+				);
+				future->onSuccess();
+				if (onSuccess) {
+					onSuccess();
+				}
+			};
 
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-				[future, onError = std::move(onError)] (const std::shared_ptr<exceptions::JoynrException>& error) {
-					future->onError(error);
-					if (onError) {
-						onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
-					}
-				};
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
+					future,
+					onError = std::move(onError),
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] (const std::shared_ptr<exceptions::JoynrException>& error) {
+				JOYNR_LOG_DEBUG(logger,
+					"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
+					requestReplyId,
+					methodName,
+					error->what()
+				);
+				future->onError(error);
+				if (onError) {
+					onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
+				}
+			};
 
+			JOYNR_LOG_DEBUG(logger,
+					"REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy "
+					"participantId: {}, provider participantId: [{}]",
+					request.getRequestReplyId(),
+					request.getMethodName(),
+					joynr::serializer::serializeToJson(«attributeName»),
+					proxyParticipantId,
+					providerParticipantId);
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			operationRequest(replyCaller, request);
 			return future;
@@ -266,9 +333,22 @@ bool «className»::usesClusterController() const{
 						future->onError(error);
 					};
 
+			JOYNR_LOG_DEBUG(logger,
+					"REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy "
+					"participantId: {}, provider participantId: [{}]",
+					request.getRequestReplyId(),
+					request.getMethodName(),
+					joynr::serializer::serializeToJson(«attributeName»),
+					proxyParticipantId,
+					providerParticipantId);
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccess), std::move(onError));
 			operationRequest(replyCaller, request);
 			future->get();
+			JOYNR_LOG_DEBUG(logger,
+					"REQUEST returns successful: requestReplyId: {}, method: {}",
+					request.getRequestReplyId(),
+					request.getMethodName()
+			);
 		}
 
 	«ENDIF»
