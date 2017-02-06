@@ -163,6 +163,10 @@ bool «className»::usesClusterController() const{
 	«IF attribute.readable»
 		«produceSyncGetterSignature(attribute, className)»
 		{
+			joynr::Request request;
+			// explicitly set to no parameters
+			request.setParams();
+			request.setMethodName("get«attributeName.toFirstUpper»");
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccess =
@@ -176,12 +180,16 @@ bool «className»::usesClusterController() const{
 					};
 
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccess), std::move(onError));
-			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
+			operationRequest(replyCaller, request);
 			future->get(«attributeName»);
 		}
 
 		«produceAsyncGetterSignature(attribute, className)»
 		{
+			joynr::Request request;
+			// explicitly set to no parameters
+			request.setParams();
+			request.setMethodName("get«attributeName.toFirstUpper»");
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
@@ -201,7 +209,7 @@ bool «className»::usesClusterController() const{
 					};
 
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
+			operationRequest(replyCaller, request);
 
 			return future;
 		}
