@@ -20,6 +20,7 @@ package io.joynr.generator.cpp.joynrmessaging
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
+import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
@@ -28,7 +29,6 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.franca.core.franca.FMethod
-import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 
 class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 
@@ -61,6 +61,31 @@ request.setParams(
 	«ENDFOR»
 );
 '''
+
+	def getParamsPlaceholders(int numberOfParams) {
+		var placeholders = ""
+		for (var i = 0; i < numberOfParams; i++) {
+			if(i != 0) {
+				placeholders += ", "
+			}
+			placeholders += "{}"
+		}
+		return placeholders;
+	}
+
+	def logMethodCall(FMethod method)
+	'''
+		JOYNR_LOG_DEBUG(logger,
+				"REQUEST call proxy: requestReplyId: {}, method: {}, params: «getParamsPlaceholders(method.inputParameters.size)», proxy "
+				"participantId: {}, provider participantId: [{}]",
+				request.getRequestReplyId(),
+				request.getMethodName(),
+				«FOR inputParam : method.inputParameters»
+					joynr::serializer::serializeToJson(«inputParam.joynrName»),
+				«ENDFOR»
+				proxyParticipantId,
+				providerParticipantId);
+	'''
 
 	override generate()
 '''
@@ -318,9 +343,19 @@ bool «className»::usesClusterController() const{
 					future->onError(error);
 				};
 
+			«logMethodCall(method)»
+
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccess), std::move(onError));
 			operationRequest(replyCaller, request);
 			future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
+			JOYNR_LOG_DEBUG(logger,
+				"REQUEST returns successful: requestReplyId: {}, method: {}, response: «getParamsPlaceholders(method.outputParameters.size)»",
+				request.getRequestReplyId(),
+				request.getMethodName()«IF !method.outputParameters.empty»,«ENDIF»
+				«FOR outParam : method.outputParameters SEPARATOR ", "»
+					joynr::serializer::serializeToJson(«outParam.joynrName»)
+				«ENDFOR»
+			);
 		}
 
 		«produceAsyncMethodSignature(francaIntf, method, className)»
@@ -329,19 +364,46 @@ bool «className»::usesClusterController() const{
 
 			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
-			std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
-					[future, onSuccess = std::move(onSuccess)] («outputTypedConstParamList») {
-						future->onSuccess(«outputUntypedParamList»);
-						if (onSuccess) {
-							onSuccess(«outputUntypedParamList»);
-						}
-					};
+			std::function<void(«outputTypedConstParamList»)> onSuccessWrapper = [
+					future,
+					onSuccess = std::move(onSuccess),
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] («outputTypedConstParamList»)
+			{
+				JOYNR_LOG_DEBUG(logger,
+					"REQUEST returns successful: requestReplyId: {}, method: {}, response: «getParamsPlaceholders(method.outputParameters.size)»",
+					requestReplyId,
+					methodName«IF !method.outputParameters.empty»,«ENDIF»
+					«FOR outParam : method.outputParameters SEPARATOR ", "»
+						joynr::serializer::serializeToJson(«outParam.joynrName»)
+					«ENDFOR»
+				);
+				future->onSuccess(«outputUntypedParamList»);
+				if (onSuccess) {
+					onSuccess(«outputUntypedParamList»);
+				}
+			};
 
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-					[future, onRuntimeError = std::move(onRuntimeError)«IF method.hasErrorEnum», onApplicationError = std::move(onApplicationError)«ENDIF»] (const std::shared_ptr<exceptions::JoynrException>& error) {
-					future->onError(error);
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
+					future,
+					onRuntimeError = std::move(onRuntimeError),
+					«IF method.hasErrorEnum»onApplicationError = std::move(onApplicationError),«ENDIF»
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] (const std::shared_ptr<exceptions::JoynrException>& error)
+			{
+				JOYNR_LOG_DEBUG(logger,
+					"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
+					requestReplyId,
+					methodName,
+					error->what()
+				);
+				future->onError(error);
 					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 				};
+
+			«logMethodCall(method)»
 
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			operationRequest(replyCaller, request);
