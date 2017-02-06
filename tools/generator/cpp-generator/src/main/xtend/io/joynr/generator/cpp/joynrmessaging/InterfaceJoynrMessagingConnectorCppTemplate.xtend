@@ -44,18 +44,18 @@ class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 	def produceParameterSetters(FMethod method)
 '''
 «IF !method.fireAndForget»
-joynr::Request internalRequestObject;
+joynr::Request request;
 «ELSE»
-joynr::OneWayRequest internalRequestObject;
+joynr::OneWayRequest request;
 «ENDIF»
 
-internalRequestObject.setMethodName("«method.joynrName»");
-internalRequestObject.setParamDatatypes({
+request.setMethodName("«method.joynrName»");
+request.setParamDatatypes({
 	«FOR param : getInputParameters(method) SEPARATOR ','»
 	"«param.joynrTypeName»"
 	«ENDFOR»
 	});
-internalRequestObject.setParams(
+request.setParams(
 	«FOR param : getInputParameters(method) SEPARATOR ','»
 		«param.name»
 	«ENDFOR»
@@ -185,10 +185,10 @@ bool «className»::usesClusterController() const{
 	«IF attribute.writable»
 		«produceAsyncSetterSignature(attribute, className)»
 		{
-			joynr::Request internalRequestObject;
-			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
-			internalRequestObject.setParamDatatypes({"«attribute.joynrTypeName»"});
-			internalRequestObject.setParams(«attributeName»);
+			joynr::Request request;
+			request.setMethodName("set«attributeName.toFirstUpper»");
+			request.setParamDatatypes({"«attribute.joynrTypeName»"});
+			request.setParams(«attributeName»);
 
 			auto future = std::make_shared<joynr::Future<void>>();
 
@@ -209,16 +209,16 @@ bool «className»::usesClusterController() const{
 				};
 
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-			operationRequest(replyCaller, internalRequestObject);
+			operationRequest(replyCaller, request);
 			return future;
 		}
 
 		«produceSyncSetterSignature(attribute, className)»
 		{
-			joynr::Request internalRequestObject;
-			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
-			internalRequestObject.setParamDatatypes({"«attribute.joynrTypeName»"});
-			internalRequestObject.setParams(«attributeName»);
+			joynr::Request request;
+			request.setMethodName("set«attributeName.toFirstUpper»");
+			request.setParamDatatypes({"«attribute.joynrTypeName»"});
+			request.setParams(«attributeName»);
 
 			auto future = std::make_shared<joynr::Future<void>>();
 
@@ -234,7 +234,7 @@ bool «className»::usesClusterController() const{
 					};
 
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccess), std::move(onError));
-			operationRequest(replyCaller, internalRequestObject);
+			operationRequest(replyCaller, request);
 			future->get();
 		}
 
@@ -319,7 +319,7 @@ bool «className»::usesClusterController() const{
 				};
 
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccess), std::move(onError));
-			operationRequest(replyCaller, internalRequestObject);
+			operationRequest(replyCaller, request);
 			future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
 		}
 
@@ -344,7 +344,7 @@ bool «className»::usesClusterController() const{
 				};
 
 			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-			operationRequest(replyCaller, internalRequestObject);
+			operationRequest(replyCaller, request);
 			return future;
 		}
 	«ELSE»
@@ -352,7 +352,7 @@ bool «className»::usesClusterController() const{
 			{
 				«produceParameterSetters(method)»
 
-				operationOneWayRequest(internalRequestObject);
+				operationOneWayRequest(request);
 			}
 	«ENDIF»
 «ENDFOR»
