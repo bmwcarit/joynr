@@ -25,6 +25,7 @@
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
@@ -54,14 +55,15 @@ protected:
      *  handleArbitrationFinished has to be implemented by the concrete provider proxy.
      *  It is called as soon as the arbitration result is available.
      */
-    virtual void handleArbitrationFinished(const std::string& participantId,
-                                           bool useInProcessConnector);
+    virtual void handleArbitrationFinished(
+            const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
+            bool useInProcessConnector);
 
     ConnectorFactory* connectorFactory;
     std::string domain;
     MessagingQos qosSettings;
-    std::string providerParticipantId;
     std::string proxyParticipantId;
+    types::DiscoveryEntryWithMetaInfo providerDiscoveryEntry;
     ADD_LOGGER(ProxyBase);
 };
 

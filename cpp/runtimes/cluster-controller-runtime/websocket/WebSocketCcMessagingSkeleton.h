@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <utility>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -38,7 +39,6 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Util.h"
-#include "joynr/MessageRouter.h"
 #include "joynr/IWebSocketSendInterface.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketPpSender.h"
@@ -46,12 +46,12 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/IMessaging.h"
+#include "joynr/IMessageRouter.h"
 
 namespace joynr
 {
 
 class JoynrMessage;
-class MessageRouter;
 class WebSocketMessagingStubFactory;
 
 namespace system
@@ -77,7 +77,7 @@ public:
      */
     WebSocketCcMessagingSkeleton(
             boost::asio::io_service& ioService,
-            std::shared_ptr<MessageRouter> messageRouter,
+            std::shared_ptr<IMessageRouter> messageRouter,
             std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory)
             : endpoint(),
               receiver(),
@@ -100,14 +100,15 @@ public:
         endpoint.clear_error_channels(websocketpp::log::alevel::all);
 
         // register handlers
-        using namespace std::placeholders;
-        endpoint.set_close_handler(
-                std::bind(&WebSocketCcMessagingSkeleton::onConnectionClosed, this, _1));
+        endpoint.set_close_handler(std::bind(
+                &WebSocketCcMessagingSkeleton::onConnectionClosed, this, std::placeholders::_1));
 
         // new connections are handled in onInitMessageReceived; if initialization was successful,
         // any further messages for this connection are handled in onTextMessageReceived
-        endpoint.set_message_handler(
-                std::bind(&WebSocketCcMessagingSkeleton::onInitMessageReceived, this, _1, _2));
+        endpoint.set_message_handler(std::bind(&WebSocketCcMessagingSkeleton::onInitMessageReceived,
+                                               this,
+                                               std::placeholders::_1,
+                                               std::placeholders::_2));
 
         receiver.registerReceiveCallback(
                 [this](const std::string& msg) { onTextMessageReceived(msg); });
@@ -187,9 +188,11 @@ private:
                 messagingStubFactory->addClient(clientAddress, sender);
 
                 typename Server::connection_ptr connection = endpoint.get_con_from_hdl(hdl);
-                using namespace std::placeholders;
-                connection->set_message_handler(std::bind(
-                        &WebSocketPpReceiver<Server>::onMessageReceived, &receiver, _1, _2));
+                connection->set_message_handler(
+                        std::bind(&WebSocketPpReceiver<Server>::onMessageReceived,
+                                  &receiver,
+                                  std::placeholders::_1,
+                                  std::placeholders::_2));
                 {
                     std::unique_lock<std::mutex> lock(clientsMutex);
                     clients[hdl] = clientAddress;
@@ -231,7 +234,7 @@ private:
                 return;
             }
 
-            JOYNR_LOG_TRACE(logger, "<<<< INCOMING <<<< {}", message);
+            JOYNR_LOG_DEBUG(logger, "<<<< INCOMING <<<< {}", message);
 
             auto onFailure = [joynrMsg](const exceptions::JoynrRuntimeException& e) {
                 JOYNR_LOG_ERROR(logger,
@@ -262,7 +265,7 @@ private:
              std::owner_less<ConnectionHandle>> clients;
     /*! Router for incoming messages */
     std::mutex clientsMutex;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
     /*! Factory to build outgoing messaging stubs */
     std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
 

@@ -204,7 +204,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             });
             var subscriptionInfo = Util.extend({
                 proxyId : settings.proxyId,
-                providerId : settings.providerId,
+                providerDiscoveryEntry : settings.providerDiscoveryEntry,
                 lastPublicationTime_ms : 0
             }, subscriptionRequest);
 
@@ -275,8 +275,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            settings
          * @param {String}
          *            settings.proxyId participantId of the sender
-         * @param {String}
-         *            settings.providerId participantId of the receiver
+         * @param {DiscoveryEntryWithMetaInfo}
+         *            settings.providerDiscoveryEntry DiscoveryEntry of the receiver
          * @param {String}
          *            settings.attributeType the type of the subscribing attribute
          * @param {String}
@@ -340,7 +340,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 
                         dispatcher.sendSubscriptionRequest({
                             from : settings.proxyId,
-                            to : settings.providerId,
+                            toDiscoveryEntry : settings.providerDiscoveryEntry,
                             messagingQos : messagingQos,
                             subscriptionRequest : subscriptionRequest
                         }).catch(function(error) {
@@ -380,7 +380,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 });
             } else {
                 request = new MulticastSubscriptionRequest({
-                    multicastId : SubscriptionUtil.createMulticastId(parameters.providerId, parameters.broadcastName, parameters.partitions),
+                    multicastId : SubscriptionUtil.createMulticastId(parameters.providerDiscoveryEntry.participantId, parameters.broadcastName, parameters.partitions),
                     subscriptionId : parameters.subscriptionId || uuid(),
                     subscribedToName : parameters.broadcastName,
                     qos : parameters.subscriptionQos
@@ -397,8 +397,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            parameters
          * @param {String}
          *            parameters.proxyId participantId of the sender
-         * @param {String}
-         *            parameters.providerId participantId of the receiver
+         * @param {DiscoveryEntryWithMetaInfo}
+         *            parameters.providerDiscoveryEntry DiscoveryEntry of the receiver
          * @param {String}
          *            parameters.broadcastName the name of the broadcast being subscribed to
          * @param {String[]}
@@ -448,7 +448,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 
                 dispatcher.sendBroadcastSubscriptionRequest({
                     from : parameters.proxyId,
-                    to : parameters.providerId,
+                    toDiscoveryEntry : parameters.providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     subscriptionRequest : subscriptionRequest
                 }).catch(function(error) {
@@ -616,7 +616,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             if (subscriptionInfo.multicastId !== undefined) {
                 promise = dispatcher.sendMulticastSubscriptionStop({
                     from : subscriptionInfo.proxyId,
-                    to : subscriptionInfo.providerId,
+                    toDiscoveryEntry : subscriptionInfo.providerDiscoveryEntry,
                     messagingQos : settings.messagingQos,
                     multicastId : subscriptionInfo.multicastId,
                     subscriptionStop : subscriptionStop
@@ -624,7 +624,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             } else {
                 promise = dispatcher.sendSubscriptionStop({
                     from : subscriptionInfo.proxyId,
-                    to : subscriptionInfo.providerId,
+                    toDiscoveryEntry : subscriptionInfo.providerDiscoveryEntry,
                     messagingQos : settings.messagingQos,
                     subscriptionStop : subscriptionStop
                 });

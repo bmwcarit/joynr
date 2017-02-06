@@ -51,7 +51,7 @@ public class InMemoryMulticastReceiverRegistry implements MulticastReceiverRegis
     @Override
     public void registerMulticastReceiver(String multicastId, String participantId) {
         Pattern idPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
-        logger.debug("Compiled pattern {} for multicast ID {}", idPattern, multicastId);
+        logger.trace("Compiled pattern {} for multicast ID {}", idPattern, multicastId);
         if (!multicastReceivers.containsKey(idPattern)) {
             multicastReceivers.putIfAbsent(idPattern, new HashSet<String>());
         }

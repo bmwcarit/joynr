@@ -1,7 +1,5 @@
 package io.joynr.arbitration;
 
-import java.util.Arrays;
-
 /*
  * #%L
  * %%
@@ -23,20 +21,25 @@ import java.util.Arrays;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
-import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Sets;
 
 public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStrategyFunction {
     private static final Logger logger = LoggerFactory.getLogger(FixedParticipantArbitrationStrategyFunction.class);
 
     @Override
-    public Collection<DiscoveryEntry> select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities) {
+    public Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                  Collection<DiscoveryEntryWithMetaInfo> capabilities) {
         String participantId = parameters.get(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD);
         logger.trace("starting select Provider by participant Id: {}", participantId);
-        DiscoveryEntry capabilityWithParticipantId = null;
-        for (DiscoveryEntry discoveryEntry : capabilities) {
+        DiscoveryEntryWithMetaInfo capabilityWithParticipantId = null;
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             if (discoveryEntry.getParticipantId().equals(participantId)) {
                 capabilityWithParticipantId = discoveryEntry;
                 break;
@@ -44,6 +47,6 @@ public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStra
         }
         logger.trace("capability with participantId: {}: {}" + participantId, capabilityWithParticipantId);
 
-        return capabilityWithParticipantId == null ? null : Arrays.asList(capabilityWithParticipantId);
+        return capabilityWithParticipantId == null ? null : Sets.newHashSet(capabilityWithParticipantId);
     }
 }

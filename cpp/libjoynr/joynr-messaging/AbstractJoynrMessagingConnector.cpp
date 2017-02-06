@@ -31,15 +31,16 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         const std::string& domain,
         const std::string& interfaceName,
         const std::string& proxyParticipantId,
-        const std::string& providerParticipantId,
-        const MessagingQos& qosSettings)
+        const MessagingQos& qosSettings,
+        const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
         : joynrMessageSender(joynrMessageSender),
           subscriptionManager(subscriptionManager),
           domain(domain),
           interfaceName(interfaceName),
           proxyParticipantId(proxyParticipantId),
-          providerParticipantId(providerParticipantId),
-          qosSettings(qosSettings)
+          providerParticipantId(providerDiscoveryEntry.getParticipantId()),
+          qosSettings(qosSettings),
+          providerDiscoveryEntry(providerDiscoveryEntry)
 {
 }
 

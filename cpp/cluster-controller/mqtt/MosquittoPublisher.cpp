@@ -89,7 +89,7 @@ void MosquittoPublisher::run()
         }
     }
 
-    JOYNR_LOG_DEBUG(logger, "Try to disconnect Mosquitto Connection");
+    JOYNR_LOG_TRACE(logger, "Try to disconnect Mosquitto Connection");
     int rc = disconnect();
     if (rc == MOSQ_ERR_SUCCESS) {
         JOYNR_LOG_DEBUG(logger, "Mosquitto Connection disconnected");

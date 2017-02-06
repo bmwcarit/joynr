@@ -23,10 +23,12 @@
 #include <memory>
 
 #include "joynr/JoynrRuntime.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/CapabilityUtils.h"
 
 namespace joynr
 {
@@ -43,20 +45,20 @@ public:
         entry = discoveryEntry;
     }
 
-    void lookup(std::vector<joynr::types::DiscoveryEntry>& result,
+    void lookup(std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result,
                 const std::vector<std::string>& domains,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos) override
     {
-        result.push_back(entry);
+        result.push_back(joynr::util::convert(true, entry));
     }
 
     void lookup(
 
-            joynr::types::DiscoveryEntry& result,
+            joynr::types::DiscoveryEntryWithMetaInfo& result,
             const std::string& participantId) override
     {
-        result = entry;
+        result = joynr::util::convert(true, entry);
     }
 
     void remove(const std::string& participantId) override
@@ -123,7 +125,7 @@ public:
 
 private:
     SingleThreadedIOService singleThreadedIOService;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
     std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy;
     std::shared_ptr<JoynrMessageSender> joynrMessageSender;
     IDispatcher* joynrDispatcher;

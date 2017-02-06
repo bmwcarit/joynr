@@ -115,7 +115,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
         }
     }
 
-    private void sendInitializationMessage() throws InterruptedException, JoynrCommunicationException  {
+    private void sendInitializationMessage() throws InterruptedException, JoynrCommunicationException {
         String serializedAddress;
         try {
             serializedAddress = objectMapper.writeValueAsString(ownAddress);
@@ -198,7 +198,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     @Override
     public void onWebSocketText(String serializedMessage) {
         super.onWebSocketText(serializedMessage);
-        logger.debug(this.getClass().getSimpleName() + ": Received TEXT message: " + serializedMessage);
+        logger.trace(this.getClass().getSimpleName() + ": Received TEXT message: " + serializedMessage);
         messageListener.transmit(serializedMessage, new FailureAction() {
 
             @Override
@@ -209,7 +209,11 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
-    public synchronized void writeText(Address to, String message, long timeout, TimeUnit unit, final FailureAction failureAction) {
+    public synchronized void writeText(Address to,
+                                       String message,
+                                       long timeout,
+                                       TimeUnit unit,
+                                       final FailureAction failureAction) {
         if (messageListener == null) {
             throw new JoynrDelayMessageException(20, "WebSocket write failed: receiver has not been set yet");
         }

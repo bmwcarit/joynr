@@ -77,6 +77,11 @@ namespace joynr {
 	template <class ... Ts> class Future;
 	template <typename... Ts> class ISubscriptionListener;
 
+namespace types
+{
+	class DiscoveryEntryWithMetaInfo;
+} // namespace types
+
 namespace exceptions
 {
 	class JoynrException;
@@ -148,8 +153,8 @@ public:
 		std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
-		const std::string& providerParticipantId,
-		const joynr::MessagingQos &qosSettings);
+		const joynr::MessagingQos &qosSettings,
+		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryInfo);
 
 	/**
 	 * @brief Checks whether cluster controller is used

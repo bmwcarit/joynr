@@ -29,9 +29,23 @@ provisioning.ccAddress = {
 
 provisioning.logging = {
     configuration : {
+        appenders : {
+            appender : [
+                {
+                    type : "Console",
+                    name : "STDOUT",
+                    PatternLayout : {
+                        pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                    }
+                }
+            ]
+        },
         loggers : {
             root : {
-                level : "error"
+                level : "debug",
+                AppenderRef : [{
+                        ref : "STDOUT"
+                }]
             }
         }
     }

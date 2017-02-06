@@ -70,7 +70,9 @@ public class MulticastSubscribeInvocation extends SubscriptionInvocation {
         return listener;
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "MulticastSubscribeInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+                                                      value = "EI_EXPOSE_REP",
+                                                      justification = "MulticastSubscribeInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
     public Class<?>[] getOutParameterTypes() {
         return outParameterTypes;
     }

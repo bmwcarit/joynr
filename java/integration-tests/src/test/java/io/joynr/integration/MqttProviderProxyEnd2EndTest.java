@@ -105,7 +105,10 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMulticastWithPartitions() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class).setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                                             .setMessagingQos(messagingQos)
+                                             .setDiscoveryQos(discoveryQos)
+                                             .build();
         final List<String> errors = new ArrayList<>();
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override

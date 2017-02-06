@@ -63,9 +63,8 @@ public class SubscriptionEnd2EndTest extends AbstractSubscriptionEnd2EndTest {
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
         Module modulesWithRuntime = Modules.override(modules).with(runtimeModule);
-        DummyJoynrApplication application = (DummyJoynrApplication)
-                new JoynrInjectorFactory(joynrConfig, modulesWithRuntime)
-                        .createApplication(DummyJoynrApplication.class);
+        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
+                                                                                             modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 
         dummyApplications.add(application);
         return application.getRuntime();

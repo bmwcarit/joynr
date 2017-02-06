@@ -55,8 +55,7 @@ public class ReflectionUtilsTest {
         addSingleElementToFixture(fixture, "io.joynr.dispatcher.rpc.RequestStatus", RequestStatus.class);
         addSingleElementToFixture(fixture, "io.joynr.dispatcher.rpc.RequestStatus[]", RequestStatus[].class);
 
-        for (Map.Entry<String, Class<?>[]>entry : fixture.entrySet())
-        {
+        for (Map.Entry<String, Class<?>[]> entry : fixture.entrySet()) {
             String datatypeName = ReflectionUtils.toDatatypeNames(entry.getValue())[0];
             String key = entry.getKey();
             Assert.assertEquals(key, datatypeName);

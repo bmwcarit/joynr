@@ -61,7 +61,9 @@ public class AclServletTest extends JerseyTest {
     public void testEditorGetsAllDomainRoles() {
         WebResource webResource = resource();
         String responseMsg = webResource.path(AccessControlEditorServlet.SERVLET_PATH
-                + AccessControlEditorServlet.DOMAIN_ROLE_PATH).type(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+                + AccessControlEditorServlet.DOMAIN_ROLE_PATH)
+                                        .type(MediaType.APPLICATION_JSON_TYPE)
+                                        .get(String.class);
         assertEquals(gson.toJson(TestContextListener.createDomainRoleEntryList()), responseMsg);
     }
 
@@ -69,7 +71,9 @@ public class AclServletTest extends JerseyTest {
     public void testEditorGetsAllMasterAccessControlEntrys() {
         WebResource webResource = resource();
         String responseMsg = webResource.path(AccessControlEditorServlet.SERVLET_PATH
-                + AccessControlEditorServlet.MASTER_ACL_PATH).type(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+                + AccessControlEditorServlet.MASTER_ACL_PATH)
+                                        .type(MediaType.APPLICATION_JSON_TYPE)
+                                        .get(String.class);
         assertEquals(gson.toJson(TestContextListener.createMasterACLEntryList()), responseMsg);
     }
 
@@ -77,7 +81,9 @@ public class AclServletTest extends JerseyTest {
     public void testEditorGetsAllOwnerAccessControlEntrys() {
         WebResource webResource = resource();
         String responseMsg = webResource.path(AccessControlEditorServlet.SERVLET_PATH
-                + AccessControlEditorServlet.OWNER_ACL_PATH).type(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+                + AccessControlEditorServlet.OWNER_ACL_PATH)
+                                        .type(MediaType.APPLICATION_JSON_TYPE)
+                                        .get(String.class);
         assertEquals(gson.toJson(TestContextListener.createOwnerACLEntryList()), responseMsg);
 
     }
@@ -88,7 +94,9 @@ public class AclServletTest extends JerseyTest {
         String userToDelete = TestContextListener.user1;
 
         webResource.path(AccessControlEditorServlet.SERVLET_PATH + AccessControlEditorServlet.DOMAIN_ROLE_PATH + "/"
-                + userToDelete + "/" + Role.MASTER).header("Authorization", "testApiKey").delete();
+                + userToDelete + "/" + Role.MASTER)
+                   .header("Authorization", "testApiKey")
+                   .delete();
         Mockito.verify(TestContextListener.mockedStore, Mockito.times(1)).removeDomainRole(userToDelete, Role.MASTER);
 
     }
@@ -100,7 +108,9 @@ public class AclServletTest extends JerseyTest {
         //{userId}/{domain}/{interfaceName}/{operation}
         webResource.path(AccessControlEditorServlet.SERVLET_PATH + AccessControlEditorServlet.MASTER_ACL_PATH + "/"
                 + TestContextListener.user1 + "/" + TestContextListener.domain1 + "/" + TestContextListener.interface1
-                + "/" + TestContextListener.operation1).header("Authorization", "testApiKey").delete();
+                + "/" + TestContextListener.operation1)
+                   .header("Authorization", "testApiKey")
+                   .delete();
         Mockito.verify(TestContextListener.mockedStore, Mockito.times(1))
                .removeMasterAccessControlEntry(TestContextListener.user1,
                                                TestContextListener.domain1,
@@ -115,7 +125,9 @@ public class AclServletTest extends JerseyTest {
 
         webResource.path(AccessControlEditorServlet.SERVLET_PATH + AccessControlEditorServlet.OWNER_ACL_PATH + "/"
                 + TestContextListener.user1 + "/" + TestContextListener.domain1 + "/" + TestContextListener.interface1
-                + "/" + TestContextListener.operation1).header("Authorization", "testApiKey").delete();
+                + "/" + TestContextListener.operation1)
+                   .header("Authorization", "testApiKey")
+                   .delete();
         Mockito.verify(TestContextListener.mockedStore, Mockito.times(1))
                .removeOwnerAccessControlEntry(TestContextListener.user1,
                                               TestContextListener.domain1,

@@ -149,6 +149,7 @@ define([
                     testMutability(radioProxy.weakSignal, "subscribe");
                     testMutability(radioProxy.weakSignal, "unsubscribe");
                     done();
+                    return null;
                 });
             });
         });

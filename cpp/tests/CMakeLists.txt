@@ -45,6 +45,7 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "libjoynrSystemIntegration2.settings"
         "ca.crt"
         "testclient.pem"
+        "MessagingSettingsWithAccessControl.settings"
     )
 
     foreach(testFile ${TEST_FILES})
@@ -255,6 +256,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
         "unit-tests/serializer/*.cpp"
     )
 
+    file(
+        GLOB g_UnitTests_HEADERS
+        "unit-tests/*.h"
+    )
+
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         list(
             APPEND g_UnitTests_SOURCES
@@ -267,6 +273,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
             g_UnitTests
             ${cluster_controller_test_HEADERS}
             ${cluster_controller_test_SOURCES}
+            ${g_UnitTests_HEADERS}
             ${g_UnitTests_SOURCES}
         )
 
@@ -281,7 +288,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_UnitTests
+        install(TARGETS g_UnitTests JoynrTestGenerated
             DESTINATION ${INSTALL_TEST_DIR}
         )
     endif(${BUILD_UNIT_TESTS})
@@ -322,7 +329,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_IntegrationTests
+        install(TARGETS g_IntegrationTests JoynrTestGenerated
             DESTINATION ${INSTALL_TEST_DIR}
         )
     endif(${BUILD_INTEGRATION_TESTS})
@@ -377,7 +384,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_SystemIntegrationTests
+        install(TARGETS g_SystemIntegrationTests JoynrTestGenerated
             DESTINATION ${INSTALL_TEST_DIR}
         )
     endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
@@ -413,9 +420,9 @@ else()
             PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
         )
 
-    install(TARGETS g_UnitTests
-            DESTINATION ${INSTALL_TEST_DIR}
-        )
+    install(TARGETS g_UnitTests JoynrTestGenerated
+        DESTINATION ${INSTALL_TEST_DIR}
+    )
     endif(${BUILD_UNIT_TESTS})
 
     ############################
@@ -449,7 +456,7 @@ else()
             PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_SystemIntegrationTests
+        install(TARGETS g_SystemIntegrationTests JoynrTestGenerated
             DESTINATION ${INSTALL_TEST_DIR}
         )
     endif(${BUILD_SYSTEM_INTEGRATION_TESTS})

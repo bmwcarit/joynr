@@ -47,13 +47,14 @@ import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 //TODO maybe Connector should not be a dynamic proxy. ProxyInvocationHandler could call execute...Method() directly.
 final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocationHandler {
     @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(JoynrMessagingConnectorInvocationHandler.class);
 
-    private final Set<String> toParticipantIds;
+    private final Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
     private final String fromParticipantId;
 
     private final MessagingQos qosSettings;
@@ -63,13 +64,13 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     private final SubscriptionManager subscriptionManager;
 
-    JoynrMessagingConnectorInvocationHandler(Set<String> toParticipantIds,
+    JoynrMessagingConnectorInvocationHandler(Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                              String fromParticipantId,
                                              MessagingQos qosSettings,
                                              RequestReplyManager requestReplyManager,
                                              ReplyCallerDirectory replyCallerDirectory,
                                              SubscriptionManager subscriptionManager) {
-        this.toParticipantIds = toParticipantIds;
+        this.toDiscoveryEntries = toDiscoveryEntries;
         this.fromParticipantId = fromParticipantId;
 
         this.qosSettings = qosSettings;
@@ -87,10 +88,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
         }
-        if (toParticipantIds.size() > 1) {
+        if (toDiscoveryEntries.size() > 1) {
             throw new JoynrIllegalStateException("You can't execute async methods for multiple participants.");
         }
-        if (toParticipantIds.isEmpty()) {
+        if (toDiscoveryEntries.isEmpty()) {
             throw new JoynrIllegalStateException("You must have exactly one participant to be able to execute an async method.");
         }
 
@@ -110,6 +111,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         Request request = new Request(method.getName(), paramsWithoutCallback, paramDatatypesWithoutCallback);
         String requestReplyId = request.getRequestReplyId();
+        logger.debug("REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy participantId: {}, provider discovery entries: {}",
+                     requestReplyId,
+                     method.getName(),
+                     paramsWithoutCallback,
+                     fromParticipantId,
+                     toDiscoveryEntries);
 
         RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(requestReplyId,
                                                                                                    callback,
@@ -120,7 +127,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms());
 
         replyCallerDirectory.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, expiryDate);
-        requestReplyManager.sendRequest(fromParticipantId, toParticipantIds.iterator().next(), request, qosSettings);
+        requestReplyManager.sendRequest(fromParticipantId, toDiscoveryEntries.iterator().next(), request, qosSettings);
         return future;
     }
 
@@ -137,10 +144,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
         }
-        if (toParticipantIds.size() > 1) {
+        if (toDiscoveryEntries.size() > 1) {
             throw new JoynrIllegalStateException("You can't execute sync methods for multiple participants.");
         }
-        if (toParticipantIds.isEmpty()) {
+        if (toDiscoveryEntries.isEmpty()) {
             throw new JoynrIllegalStateException("You must have exactly one participant to be able to execute a sync method.");
         }
 
@@ -149,14 +156,19 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         Request request = new Request(method.getName(), args, method.getParameterTypes());
         Reply reply;
         String requestReplyId = request.getRequestReplyId();
+        logger.debug("REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy participantId: {}, provider discovery entries: {}",
+                     requestReplyId,
+                     method.getName(),
+                     args,
+                     fromParticipantId,
+                     toDiscoveryEntries);
         SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
-                                                                                      toParticipantIds,
                                                                                       requestReplyId,
                                                                                       request);
         ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms());
         replyCallerDirectory.addReplyCaller(requestReplyId, synchronizedReplyCaller, expiryDate);
         reply = (Reply) requestReplyManager.sendSyncRequest(fromParticipantId,
-                                                            toParticipantIds.iterator().next(),
+                                                            toDiscoveryEntries.iterator().next(),
                                                             request,
                                                             synchronizedReplyCaller,
                                                             qosSettings);
@@ -164,10 +176,23 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             if (method.getReturnType().equals(void.class)) {
                 return null;
             }
-            return RpcUtils.reconstructReturnedObject(method, methodMetaInformation, reply.getResponse());
+            Object response = RpcUtils.reconstructReturnedObject(method, methodMetaInformation, reply.getResponse());
+            logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: {}",
+                         requestReplyId,
+                         method.getName(),
+                         response);
+            return response;
         } else if (reply.getError() instanceof ApplicationException) {
+            logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                         requestReplyId,
+                         method.getName(),
+                         reply.getError());
             throw (ApplicationException) reply.getError();
         } else {
+            logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                         requestReplyId,
+                         method.getName(),
+                         reply.getError());
             throw (JoynrRuntimeException) reply.getError();
         }
 
@@ -179,48 +204,60 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
         }
-        if (toParticipantIds.isEmpty()) {
+        if (toDiscoveryEntries.isEmpty()) {
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute an oneWayMethod.");
         }
 
         OneWayRequest request = new OneWayRequest(method.getName(), args, method.getParameterTypes());
-        requestReplyManager.sendOneWayRequest(fromParticipantId, toParticipantIds, request, qosSettings);
+        requestReplyManager.sendOneWayRequest(fromParticipantId, toDiscoveryEntries, request, qosSettings);
     }
 
     @Override
     public void executeSubscriptionMethod(UnsubscribeInvocation unsubscribeInvocation) {
 
-        if (toParticipantIds.isEmpty()) {
+        if (toDiscoveryEntries.isEmpty()) {
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
         }
 
         subscriptionManager.unregisterSubscription(fromParticipantId,
-                                                   toParticipantIds,
+                                                   toDiscoveryEntries,
                                                    unsubscribeInvocation.getSubscriptionId(),
                                                    qosSettings);
     }
 
     @Override
     public void executeSubscriptionMethod(AttributeSubscribeInvocation attributeSubscription) {
-        if (toParticipantIds.isEmpty()) {
+        if (toDiscoveryEntries.isEmpty()) {
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
         }
 
-        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantIds, attributeSubscription);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, toDiscoveryEntries, attributeSubscription);
+        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy participantId: {}, provider: {}",
+                     attributeSubscription.getSubscriptionId(),
+                     attributeSubscription.getSubscriptionName(),
+                     attributeSubscription.getQos(),
+                     fromParticipantId,
+                     toDiscoveryEntries);
     }
 
     @Override
     public void executeSubscriptionMethod(BroadcastSubscribeInvocation broadcastSubscription) {
 
-        if (toParticipantIds.isEmpty()) {
+        if (toDiscoveryEntries.isEmpty()) {
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
         }
 
-        subscriptionManager.registerBroadcastSubscription(fromParticipantId, toParticipantIds, broadcastSubscription);
+        subscriptionManager.registerBroadcastSubscription(fromParticipantId, toDiscoveryEntries, broadcastSubscription);
+        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider: {}",
+                     broadcastSubscription.getSubscriptionId(),
+                     broadcastSubscription.getBroadcastName(),
+                     broadcastSubscription.getQos(),
+                     fromParticipantId,
+                     toDiscoveryEntries);
     }
 
     @Override
     public void executeSubscriptionMethod(MulticastSubscribeInvocation multicastSubscription) {
-        subscriptionManager.registerMulticastSubscription(fromParticipantId, toParticipantIds, multicastSubscription);
+        subscriptionManager.registerMulticastSubscription(fromParticipantId, toDiscoveryEntries, multicastSubscription);
     }
 }

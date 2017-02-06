@@ -93,13 +93,13 @@ public class LegacyCapabilitiesProvisioning {
 
         // @CHECKSTYLE:OFF
         public LegacyProvisioningPropertiesHolder(String discoveryDirectoryUrl,
-                String domainAccessControllerUrl,
-                String channelId,
-                String discoveryDirectoriesDomain,
-                String capabilitiesDirectoryParticipantId,
-                String capabilitiesDirectoryChannelId,
-                String domainAccessControllerParticipantId,
-                String domainAccessControllerChannelId) {
+                                                  String domainAccessControllerUrl,
+                                                  String channelId,
+                                                  String discoveryDirectoriesDomain,
+                                                  String capabilitiesDirectoryParticipantId,
+                                                  String capabilitiesDirectoryChannelId,
+                                                  String domainAccessControllerParticipantId,
+                                                  String domainAccessControllerChannelId) {
             // @CHECKSTYLE:ON
             this.discoveryDirectoryUrl = discoveryDirectoryUrl;
             this.domainAccessControllerUrl = domainAccessControllerUrl;
@@ -143,12 +143,13 @@ public class LegacyCapabilitiesProvisioning {
         boolean hasUrl = isPresent(urlForAddress);
         boolean hasParticipantId = isPresent(participantId);
         if (hasUrl && !hasParticipantId) {
-            throw new IllegalArgumentException(
-                format("When configuring the discovery directory or domain access controller "
-                        + "via properties, you must provide both a URL and a participant ID per service.%n"
-                        + "You provided the URL '%s' and the participant ID '%s' for the service %s.%n"
-                        + "Please complete the configuration and restart the application.",
-                    urlForAddress, participantId, interfaceName));
+            throw new IllegalArgumentException(format("When configuring the discovery directory or domain access controller "
+                                                              + "via properties, you must provide both a URL and a participant ID per service.%n"
+                                                              + "You provided the URL '%s' and the participant ID '%s' for the service %s.%n"
+                                                              + "Please complete the configuration and restart the application.",
+                                                      urlForAddress,
+                                                      participantId,
+                                                      interfaceName));
         }
         if (hasParticipantId && hasUrl && isPresent(channelId) && isPresent(domain)) {
             Address address;
@@ -160,19 +161,19 @@ public class LegacyCapabilitiesProvisioning {
                 address = new ChannelAddress(urlForAddress, channelId);
             }
             DiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
-                domain,
-                interfaceName,
-                participantId,
-                new ProviderQos(),
-                System.currentTimeMillis(),
-                Long.MAX_VALUE,
-                "",
-                address);
+                                                                                    domain,
+                                                                                    interfaceName,
+                                                                                    participantId,
+                                                                                    new ProviderQos(),
+                                                                                    System.currentTimeMillis(),
+                                                                                    Long.MAX_VALUE,
+                                                                                    "",
+                                                                                    address);
             logger.debug("Created legacy discovery entry: {}", discoveryEntry);
             legacyDiscoveryEntries.put(interfaceClass, discoveryEntry);
             legacyAddresses.put(interfaceClass, address);
         } else {
-            logger.debug("Insufficient properties data to create entry for interface {}", interfaceName);
+            logger.trace("Insufficient properties data to create entry for interface {}", interfaceName);
         }
     }
 

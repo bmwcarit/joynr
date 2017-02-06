@@ -155,8 +155,8 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 int addendB = 4444444;
                 Integer sum = systemIntegrationTestProxy.add(addendA, addendB);
                 if (sum != null && sum == (addendA + addendB)) {
-                    LOG.info("SIT RESULT success: Java consumer -> " + providerDomain
-                        + " (" + addendA + " + " + addendB + " =  " + sum + ")");
+                    LOG.info("SIT RESULT success: Java consumer -> " + providerDomain + " (" + addendA + " + "
+                            + addendB + " =  " + sum + ")");
                     success = true;
                 }
             } catch (Exception e) {

@@ -43,13 +43,12 @@ void WebSocketMessagingStub::transmit(
     std::string serializedMessage = joynr::serializer::serializeToJson(message);
 
     if (!webSocket->isInitialized()) {
-        JOYNR_LOG_TRACE(
-                logger, "WebSocket not ready. Unable to send message {}", serializedMessage);
+        JOYNR_LOG_WARN(logger, "WebSocket not ready. Unable to send message {}", serializedMessage);
         onFailure(exceptions::JoynrDelayMessageException(
                 "WebSocket not ready. Unable to send message"));
     }
 
-    JOYNR_LOG_TRACE(logger, ">>>> OUTGOING >>>> {}", serializedMessage);
+    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> transmit(serializedMessage={})", serializedMessage);
     webSocket->send(serializedMessage, onFailure);
 }
 

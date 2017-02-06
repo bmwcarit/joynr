@@ -87,7 +87,8 @@ public class ChannelEntity {
         return new Channel(bpInfo.convertToBounceProxyInformation(), this.channelId, URI.create(this.location));
     }
 
-    @SuppressFBWarnings(justification = "generated code from Eclipse", value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    @SuppressFBWarnings(justification = "generated code from Eclipse",
+                        value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -98,7 +99,8 @@ public class ChannelEntity {
         return result;
     }
 
-    @SuppressFBWarnings(justification = "generated code from Eclipse", value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    @SuppressFBWarnings(justification = "generated code from Eclipse",
+                        value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

@@ -239,11 +239,11 @@ public class LongPollChannel {
 
                         @Override
                         public void run() {
-                            logger.info("ARRIVED {} messageId: {} type: {} from: {} to: {} header: {}", new String[]{
-                                    httpget.getURI().toString(), message.getId(), message.getType(),
-                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                                    message.getHeader().toString() });
+                            logger.info("ARRIVED {} messageId: {} type: {} from: {} to: {} header: {}",
+                                        new String[]{ httpget.getURI().toString(), message.getId(), message.getType(),
+                                                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
+                                                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                                                message.getHeader().toString() });
                             logger.debug("\r\n<<<<<<<<<<<<<<<<<\r\n:{}", message.toLogMessage());
                             messageArrivedListener.messageArrived(message);
                         }

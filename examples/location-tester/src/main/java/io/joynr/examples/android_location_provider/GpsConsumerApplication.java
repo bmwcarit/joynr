@@ -231,7 +231,9 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         }, subscriptionQos);
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DM_DEFAULT_ENCODING", justification = "Just reading key-input, encoding does not matter here")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+                                                      value = "DM_DEFAULT_ENCODING",
+                                                      justification = "Just reading key-input, encoding does not matter here")
     static void pressQEnterToContinue() {
         try {
             // sleep a while to have the log output at the end

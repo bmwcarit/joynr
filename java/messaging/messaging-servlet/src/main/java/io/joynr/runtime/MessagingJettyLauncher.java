@@ -47,7 +47,9 @@ public class MessagingJettyLauncher {
     private static int port = 0;
     private static Server server;
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DM_DEFAULT_ENCODING", justification = "Just reading key-input, encoding does not matter here")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+                                                      value = "DM_DEFAULT_ENCODING",
+                                                      justification = "Just reading key-input, encoding does not matter here")
     public static void main(String[] args) throws Exception {
 
         String host = System.getProperty("host");

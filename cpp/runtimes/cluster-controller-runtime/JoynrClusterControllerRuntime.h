@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 #include <memory>
 #include <vector>
 
+#include "cluster-controller/access-control/LocalDomainAccessController.h"
 #include "cluster-controller/mqtt/MqttSettings.h"
 
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
@@ -64,6 +65,7 @@ class IPlatformSecurityManager;
 class Settings;
 class JoynrMessageSender;
 class IMessaging;
+class CcMessageRouter;
 class WebSocketMessagingStubFactory;
 
 namespace infrastructure
@@ -109,6 +111,8 @@ protected:
     void initializeAllDependencies();
     void importPersistedLocalCapabilitiesDirectory();
 
+    std::shared_ptr<IMessageRouter> getMessageRouter() final;
+
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
     IDispatcher* ccDispatcher;
@@ -134,9 +138,10 @@ protected:
     InProcessPublicationSender* inProcessPublicationSender;
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     ConnectorFactory* connectorFactory;
-    // take ownership, so a pointer is used
+
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
+    std::unique_ptr<LocalDomainAccessController> localDomainAccessController;
     ClusterControllerSettings clusterControllerSettings;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -161,6 +166,9 @@ private:
     MqttSettings mqttSettings;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
 
+    std::shared_ptr<CcMessageRouter> ccMessageRouter;
+
+    void enableAccessController(MessagingSettings& messagingSettings);
     friend class ::JoynrClusterControllerRuntimeTest;
 };
 

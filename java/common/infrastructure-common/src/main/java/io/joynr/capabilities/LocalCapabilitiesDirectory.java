@@ -24,6 +24,7 @@ import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.system.DiscoveryProvider;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 import java.util.Set;
 
@@ -93,7 +94,7 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
      * @return the capability with the given participant ID. Or null if not found.
      */
     @CheckForNull
-    DiscoveryEntry lookup(String participantId, DiscoveryQos discoveryQos);
+    DiscoveryEntryWithMetaInfo lookup(String participantId, DiscoveryQos discoveryQos);
 
     /**
      *

@@ -17,21 +17,8 @@
  * #L%
  */
 
-(function() {
-    var setupDefaultSettings = function(defaultSettings) {
-        // do nothing
-        return defaultSettings;
-    };
-
-    // AMD support
-    if (typeof define === 'function' && define.amd) {
-        define("joynr/start/settings/defaultSettings", [], function() {
-            return setupDefaultSettings({});
-        });
-    } else {
-        window.joynr = window.joynr || {};
-        window.joynr.start = window.joynr.start || {};
-        window.joynr.start.defaultSettings = {};
-        setupDefaultSettings(window.joynr.start.defaultSettings);
-    }
-}());
+define("joynr/start/settings/defaultSettings", [], function() {
+    var defaultSettings = {};
+    // do nothing
+    return defaultSettings;
+});

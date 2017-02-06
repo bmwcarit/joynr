@@ -491,7 +491,9 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
             /*
              * This can be the case, when no consumer request has been performed during the lifetime of the provider
              */
-            LOG.debug("Subscription for ace subscription for interface '{}' domain '{}' not found", interfaceName, domain);
+            LOG.debug("Subscription for ace subscription for interface '{}' domain '{}' not found",
+                      interfaceName,
+                      domain);
         }
     }
 

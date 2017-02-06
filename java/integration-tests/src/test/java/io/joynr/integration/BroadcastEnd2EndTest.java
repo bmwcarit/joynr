@@ -74,7 +74,7 @@ public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
     @Override
     @After
     public void tearDown() throws Exception {
-    super.tearDown();
+        super.tearDown();
         for (DummyJoynrApplication application : dummyApplications) {
             application.shutdown();
         }

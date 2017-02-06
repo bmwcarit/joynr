@@ -145,4 +145,10 @@ typeCollection {
 		**>
 		String address
 	}
+
+	<** @description: Used for lookups between libjoynr and a cluster controller. Contains additional information **>
+	struct DiscoveryEntryWithMetaInfo extends DiscoveryEntry {
+		<** @description: Indicates whether a provider is registered at the local cluster controller **>
+		Boolean isLocal
+	}
 }

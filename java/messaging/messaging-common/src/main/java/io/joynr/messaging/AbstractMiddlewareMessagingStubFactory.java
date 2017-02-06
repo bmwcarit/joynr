@@ -29,7 +29,7 @@ abstract public class AbstractMiddlewareMessagingStubFactory<S extends IMessagin
 
     private Map<A, S> stubMap = new HashMap<>();
 
-    protected abstract  S createInternal(A address);
+    protected abstract S createInternal(A address);
 
     public synchronized IMessaging create(A address) {
         if (!stubMap.containsKey(address)) {

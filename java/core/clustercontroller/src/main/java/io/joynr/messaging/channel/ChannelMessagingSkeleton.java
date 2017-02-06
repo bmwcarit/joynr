@@ -50,6 +50,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
+        logger.debug("<<< INCOMING <<< {}", message.toLogMessage());
         final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
         try {
             if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
@@ -58,7 +59,9 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
             addRequestorToMessageRouter(message.getFrom(), replyToChannelId);
             messageRouter.route(message);
         } catch (JoynrSendBufferFullException | JoynrMessageNotSentException exception) {
-            logger.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader(), exception);
+            logger.error("Error processing incoming message. Message will be dropped: {} ",
+                         message.getHeader(),
+                         exception);
             failureAction.execute(exception);
         }
     }
@@ -103,19 +106,20 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
             public void error(JoynrMessage message, Throwable error) {
                 logger.error("error receiving incoming message: {} error: {}", message.getId(), error.getMessage());
             }
-        }, new ReceiverStatusListener() {
+        },
+                              new ReceiverStatusListener() {
 
-            @Override
-            public void receiverStarted() {
+                                  @Override
+                                  public void receiverStarted() {
 
-            }
+                                  }
 
-            @Override
-            public void receiverException(Throwable e) {
-                logger.error("error in long polling message receiver error: {}", e.getMessage());
-                shutdown();
-            }
-        });
+                                  @Override
+                                  public void receiverException(Throwable e) {
+                                      logger.error("error in long polling message receiver error: {}", e.getMessage());
+                                      shutdown();
+                                  }
+                              });
     }
 
     @Override

@@ -22,6 +22,7 @@
 #include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/TestWithoutVersionProxy.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "AbstractSyncAsyncTest.cpp"
 
 using ::testing::A;
@@ -90,7 +91,10 @@ public:
                     "myDomain",
                     MessagingQos());
         const bool useInProcessCommunication = false;
-        proxy->handleArbitrationFinished(providerParticipantId, useInProcessCommunication);
+        types::DiscoveryEntryWithMetaInfo discoveryEntry;
+        discoveryEntry.setParticipantId(providerParticipantId);
+        discoveryEntry.setIsLocal(true);
+        proxy->handleArbitrationFinished(discoveryEntry, useInProcessCommunication);
         return proxy;
     }
 

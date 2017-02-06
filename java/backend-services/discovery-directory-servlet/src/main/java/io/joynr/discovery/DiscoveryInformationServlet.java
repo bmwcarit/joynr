@@ -52,29 +52,29 @@ public class DiscoveryInformationServlet extends HttpServlet {
     }
 
     @Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html");
-		PrintWriter out;
-		try {
-			out = response.getWriter();
-		} catch (Exception e) {
-			log("error getting writer", e);
-			return;
-		}
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("text/html");
+        PrintWriter out;
+        try {
+            out = response.getWriter();
+        } catch (Exception e) {
+            log("error getting writer", e);
+            return;
+        }
 
-		Set<DiscoveryEntry> globalDiscoveryEntries = new HashSet<>();
-		Set<DiscoveryEntry> allDiscoveryEntries = discoveryEntryStore.getAllDiscoveryEntries();
-		for (DiscoveryEntry discoveryEntry : allDiscoveryEntries) {
-			if (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL) {
-				try {
-					globalDiscoveryEntries.add(discoveryEntry);
-				} catch (Exception e) {
-					log("error adding channel information", e);
-				}
-			}
-		}
-		out.println(gson.toJson(globalDiscoveryEntries));
-	}
+        Set<DiscoveryEntry> globalDiscoveryEntries = new HashSet<>();
+        Set<DiscoveryEntry> allDiscoveryEntries = discoveryEntryStore.getAllDiscoveryEntries();
+        for (DiscoveryEntry discoveryEntry : allDiscoveryEntries) {
+            if (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL) {
+                try {
+                    globalDiscoveryEntries.add(discoveryEntry);
+                } catch (Exception e) {
+                    log("error adding channel information", e);
+                }
+            }
+        }
+        out.println(gson.toJson(globalDiscoveryEntries));
+    }
 
     @Override
     public void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

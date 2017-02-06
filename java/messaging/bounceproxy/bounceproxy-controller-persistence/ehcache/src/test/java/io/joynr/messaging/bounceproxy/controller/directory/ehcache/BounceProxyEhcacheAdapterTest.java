@@ -61,7 +61,8 @@ public class BounceProxyEhcacheAdapterTest {
                 bindConstant().annotatedWith(Names.named("joynr.bounceproxy.controller.bp_cache_config_file"))
                               .to("ehcache.xml");
             }
-        }, new EhcacheModule());
+        },
+                                                 new EhcacheModule());
         cache = injector.getInstance(BounceProxyEhcacheAdapter.class);
     }
 
@@ -90,8 +91,8 @@ public class BounceProxyEhcacheAdapterTest {
         BounceProxyRecord bp0 = cache.getBounceProxy("bp0.0");
         assertEquals("bp0.0", bp0.getBounceProxyId());
         assertEquals(BounceProxyStatus.ALIVE, bp0.getStatus());
-        assertThat(bp0.getFreshness().getTime(), allOf(greaterThanOrEqualTo(earliestAddTimestamp),
-                                                       lessThanOrEqualTo(latestAddTimestamp)));
+        assertThat(bp0.getFreshness().getTime(),
+                   allOf(greaterThanOrEqualTo(earliestAddTimestamp), lessThanOrEqualTo(latestAddTimestamp)));
 
         ControlledBounceProxyInformation bpInfo2 = new ControlledBounceProxyInformation("bp1.0",
                                                                                         URI.create("http://www.joynr1.de/bp1.0/"));
@@ -106,8 +107,8 @@ public class BounceProxyEhcacheAdapterTest {
         BounceProxyRecord bp1 = cache.getBounceProxy("bp1.0");
         assertEquals("bp1.0", bp1.getBounceProxyId());
         assertEquals(BounceProxyStatus.ALIVE, bp1.getStatus());
-        assertThat(bp1.getFreshness().getTime(), allOf(greaterThanOrEqualTo(earliestAddTimestamp),
-                                                       lessThanOrEqualTo(latestAddTimestamp)));
+        assertThat(bp1.getFreshness().getTime(),
+                   allOf(greaterThanOrEqualTo(earliestAddTimestamp), lessThanOrEqualTo(latestAddTimestamp)));
     }
 
     @Test
@@ -127,8 +128,8 @@ public class BounceProxyEhcacheAdapterTest {
 
         assertEquals("bp0.0", info.getBounceProxyId());
         assertEquals(BounceProxyStatus.ALIVE, info.getStatus());
-        assertThat(info.getFreshness().getTime(), allOf(greaterThanOrEqualTo(earliestAddTimestamp),
-                                                        lessThanOrEqualTo(latestAddTimestamp)));
+        assertThat(info.getFreshness().getTime(),
+                   allOf(greaterThanOrEqualTo(earliestAddTimestamp), lessThanOrEqualTo(latestAddTimestamp)));
 
         BounceProxyRecord updatedRecord = new BounceProxyRecord(bpInfo);
         updatedRecord.setStatus(BounceProxyStatus.EXCLUDED);
@@ -144,8 +145,8 @@ public class BounceProxyEhcacheAdapterTest {
 
         assertEquals("bp0.0", updatedInfo.getBounceProxyId());
         assertEquals(BounceProxyStatus.EXCLUDED, updatedInfo.getStatus());
-        assertThat(updatedInfo.getFreshness().getTime(), allOf(greaterThanOrEqualTo(earliestUpdateTimestamp),
-                                                               lessThanOrEqualTo(latestUpdateTimestamp)));
+        assertThat(updatedInfo.getFreshness().getTime(),
+                   allOf(greaterThanOrEqualTo(earliestUpdateTimestamp), lessThanOrEqualTo(latestUpdateTimestamp)));
     }
 
     @Test

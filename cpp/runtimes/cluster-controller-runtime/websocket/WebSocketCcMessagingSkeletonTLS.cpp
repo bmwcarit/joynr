@@ -16,13 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "WebSocketCcMessagingSkeletonTLS.h"
+#include "runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeletonTLS.h"
 
 namespace joynr
 {
 WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
         boost::asio::io_service& ioService,
-        std::shared_ptr<MessageRouter> messageRouter,
+        std::shared_ptr<IMessageRouter> messageRouter,
         std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
         const system::RoutingTypes::WebSocketAddress& serverAddress,
         const std::string& caPemFile,

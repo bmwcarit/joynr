@@ -43,12 +43,8 @@ public class MulticastIdUtilTest {
 
     @Test
     public void testCreateIdWithMultilevelWildcard() {
-        assertEquals("id/name/one/two/three/*", MulticastIdUtil.createMulticastId("id",
-                                                                                  "name",
-                                                                                  "one",
-                                                                                  "two",
-                                                                                  "three",
-                                                                                  "*"));
+        assertEquals("id/name/one/two/three/*",
+                     MulticastIdUtil.createMulticastId("id", "name", "one", "two", "three", "*"));
     }
 
     @Test(expected = JoynrIllegalStateException.class)

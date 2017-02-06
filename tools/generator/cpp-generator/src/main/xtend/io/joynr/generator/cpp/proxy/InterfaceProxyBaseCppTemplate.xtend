@@ -43,6 +43,7 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className».h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/ISubscriptionListener.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»InProcessConnector.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»JoynrMessagingConnector.h"
 
@@ -60,18 +61,18 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 }
 
 void «className»::handleArbitrationFinished(
-		const std::string &providerParticipantId,
+		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
 		bool useInProcessConnector
 ) {
 	connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«serviceName»Connector>(
 				domain,
 				proxyParticipantId,
-				providerParticipantId,
 				qosSettings,
-				useInProcessConnector
+				useInProcessConnector,
+				providerDiscoveryEntry
 	);
 
-	joynr::ProxyBase::handleArbitrationFinished(providerParticipantId, useInProcessConnector);
+	joynr::ProxyBase::handleArbitrationFinished(providerDiscoveryEntry, useInProcessConnector);
 }
 
 «FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»

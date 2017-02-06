@@ -40,6 +40,8 @@ require.config({
         "global/WaitsFor": "../test-classes/global/WaitsFor",
         "Date" : "../test-classes/global/Date",
         "joynr/tests": "../test-classes/joynr/tests",
+        "joynr/types/TestTypes": "../test-classes/joynr/types/TestTypes",
+        "joynr/types/TestTypesWithoutVersion": "../test-classes/joynr/types/TestTypesWithoutVersion",
         "joynr/provisioning": "../test-classes/joynr/provisioning",
         "joynr/vehicle": "../test-classes/joynr/vehicle",
         "joynr/datatypes": "../test-classes/joynr/datatypes",

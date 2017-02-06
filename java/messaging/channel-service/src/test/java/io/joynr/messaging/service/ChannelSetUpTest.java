@@ -73,7 +73,7 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .post(serverUrl + "?ccid=channel-123");
 
         assertEquals(200 /* OK */, response.getStatusCode());
@@ -94,7 +94,7 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .post(serverUrl + "?ccid=channel-123");
 
         assertEquals(201 /* Created */, response.getStatusCode());

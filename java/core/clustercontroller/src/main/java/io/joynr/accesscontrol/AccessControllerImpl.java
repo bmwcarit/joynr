@@ -120,8 +120,8 @@ public class AccessControllerImpl implements AccessController {
         case YES:
             return true;
         default:
-            logger.warn("Message {} to domain {}, interface {} failed AccessControl check", new Object[]{
-                    message.getId(), discoveryEntry.getDomain(), discoveryEntry.getInterfaceName() });
+            logger.warn("Message {} to domain {}, interface {} failed AccessControl check",
+                        new Object[]{ message.getId(), discoveryEntry.getDomain(), discoveryEntry.getInterfaceName() });
             return false;
         }
     }

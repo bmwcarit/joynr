@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@
 
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/MessageRouter.h"
 #include "joynr/MessagingSettings.h"
 
 namespace joynr
@@ -104,7 +103,7 @@ void MosquittoSubscriber::run()
         }
     }
 
-    JOYNR_LOG_DEBUG(logger, "Try to disconnect Mosquitto Connection");
+    JOYNR_LOG_TRACE(logger, "Try to disconnect Mosquitto Connection");
     int rc = disconnect();
     if (rc == MOSQ_ERR_SUCCESS) {
         JOYNR_LOG_DEBUG(logger, "Mosquitto Connection disconnected");
@@ -262,11 +261,12 @@ void MosquittoSubscriber::on_subscribe(int mid, int qos_count, const int* grante
 
 void MosquittoSubscriber::on_message(const struct mosquitto_message* message)
 {
-    JOYNR_LOG_DEBUG(logger, "Received raw message len: {}", message->payloadlen);
-
     std::string jsonObject(static_cast<char*>(message->payload), message->payloadlen);
 
-    JOYNR_LOG_DEBUG(logger, "Received raw message: {}", jsonObject);
+    JOYNR_LOG_DEBUG(logger,
+                    "Received raw message with len: {}, content: {}",
+                    message->payloadlen,
+                    jsonObject);
 
     if (onTextMessageReceived) {
         onTextMessageReceived(jsonObject);

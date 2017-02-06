@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
     } catch (const exceptions::JoynrException& e) {
         // exception sink
         success = false;
-        JOYNR_LOG_INFO(
+        JOYNR_LOG_ERROR(
                 logger, "SIT RESULT error: \"{}\" : C++ consumer -> {}", e.what(), providerDomain);
     }
 

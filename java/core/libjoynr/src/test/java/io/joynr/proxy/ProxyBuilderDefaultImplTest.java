@@ -176,7 +176,10 @@ public class ProxyBuilderDefaultImplTest {
                         Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = Maps.newHashMap();
                         for (String domain : domains) {
                             versionsByDomain.put(domain, discoveredVersions);
-                            exceptionsByDomain.put(domain, new NoCompatibleProviderFoundException("interfaceName", new Version(1,1), domain, discoveredVersions));
+                            exceptionsByDomain.put(domain, new NoCompatibleProviderFoundException("interfaceName",
+                                                                                                  new Version(1, 1),
+                                                                                                  domain,
+                                                                                                  discoveredVersions));
                         }
                         callback.onError(new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain));
                         return null;

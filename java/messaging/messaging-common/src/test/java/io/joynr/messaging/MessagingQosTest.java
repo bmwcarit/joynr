@@ -48,4 +48,28 @@ public class MessagingQosTest {
         assertEquals(MessagingQosEffort.BEST_EFFORT, messagingQos.getEffort());
     }
 
+    @Test
+    public void testDefaultEncrypt() {
+        MessagingQos messagingQos = new MessagingQos(0L);
+        assertEquals(false, messagingQos.getEncrypt());
+    }
+
+    @Test
+    public void testCustomEncrypt() {
+        boolean encrypt = true;
+        MessagingQos messagingQos = new MessagingQos(0L, MessagingQosEffort.BEST_EFFORT, encrypt);
+        assertEquals(encrypt, messagingQos.getEncrypt());
+
+        messagingQos = new MessagingQos(0L, encrypt);
+        assertEquals(encrypt, messagingQos.getEncrypt());
+    }
+
+    @Test
+    public void testEncryptSetter() {
+        MessagingQos messagingQos = new MessagingQos(0L);
+        assertEquals(false, messagingQos.getEncrypt());
+        boolean encrypt = true;
+        messagingQos.setEncrypt(encrypt);
+        assertEquals(encrypt, messagingQos.getEncrypt());
+    }
 }

@@ -1,8 +1,5 @@
 package io.joynr.arbitration;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /*
  * #%L
  * %%
@@ -22,34 +19,39 @@ import java.util.Set;
  * #L%
  */
 
-public class ArbitrationResult {
-    private Set<String> participantIds;
+import java.util.HashSet;
+import java.util.Set;
 
-    public ArbitrationResult(final String ... participantIds) {
-        this.participantIds = new HashSet<>();
-        if (participantIds != null && participantIds.length > 0) {
-			for (String participantId : participantIds) {
-				this.participantIds.add(participantId);
-			}
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
+public class ArbitrationResult {
+    private Set<DiscoveryEntryWithMetaInfo> discoveryEntries;
+
+    public ArbitrationResult(final DiscoveryEntryWithMetaInfo... discoveryEntries) {
+        this.discoveryEntries = new HashSet<>();
+        if (discoveryEntries != null && discoveryEntries.length > 0) {
+            for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
+                this.discoveryEntries.add(discoveryEntry);
+            }
         }
     }
 
     public ArbitrationResult() {
     }
 
-    public Set<String> getParticipantIds() {
-        return participantIds;
+    public Set<DiscoveryEntryWithMetaInfo> getDiscoveryEntries() {
+        return discoveryEntries;
     }
 
-    public void setParticipantIds(Set<String> participantIds) {
-        this.participantIds = participantIds;
+    public void setDiscoveryEntries(Set<DiscoveryEntryWithMetaInfo> discoveryEntries) {
+        this.discoveryEntries = discoveryEntries;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((participantIds == null) ? 0 : participantIds.hashCode());
+        result = prime * result + ((discoveryEntries == null) ? 0 : discoveryEntries.hashCode());
         return result;
     }
 
@@ -65,11 +67,11 @@ public class ArbitrationResult {
             return false;
         }
         ArbitrationResult other = (ArbitrationResult) obj;
-        if (participantIds == null) {
-            if (other.participantIds != null) {
+        if (discoveryEntries == null) {
+            if (other.discoveryEntries != null) {
                 return false;
             }
-        } else if (!participantIds.equals(other.participantIds)) {
+        } else if (!discoveryEntries.equals(other.discoveryEntries)) {
             return false;
         }
         return true;

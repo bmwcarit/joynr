@@ -24,7 +24,8 @@ define([
     var loggingProxy;
 
     loggingProxy = {
-        log : function(value) {}
+        log : function(value) {},
+        providerDiscoveryEntry : {}
     };
 
     describe("libjoynr-js.joynr.system.DistributedLoggingAppender", function() {

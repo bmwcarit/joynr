@@ -32,6 +32,11 @@ class IJoynrMessageSender;
 class ISubscriptionManager;
 class MessagingQos;
 
+namespace types
+{
+class DiscoveryEntryWithMetaInfo;
+} // namespace types
+
 // traits class which is specialized for every Interface
 // this links Interface with the respective Connector
 template <typename Interface>
@@ -47,16 +52,16 @@ public:
     template <class T>
     std::unique_ptr<T> create(const std::string& domain,
                               const std::string proxyParticipantId,
-                              const std::string& providerParticipantId,
-                              const MessagingQos& qosSettings)
+                              const MessagingQos& qosSettings,
+                              const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
     {
         using Connector = typename JoynrMessagingTraits<T>::Connector;
         return std::make_unique<Connector>(messageSender,
                                            subscriptionManager,
                                            domain,
                                            proxyParticipantId,
-                                           providerParticipantId,
-                                           qosSettings);
+                                           qosSettings,
+                                           providerDiscoveryEntry);
     }
 
 private:

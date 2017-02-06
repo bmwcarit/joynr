@@ -239,7 +239,9 @@ public class StaticCapabilitiesProvisioningTest {
         return createInjectorForJsonValue(jsonValue, propertiesHolder);
     }
 
-    private Injector createInjectorForJsonValue(final String jsonValue, final LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder provisioningProperties) throws IOException {
+    private Injector createInjectorForJsonValue(final String jsonValue,
+                                                final LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder provisioningProperties)
+                                                                                                                                               throws IOException {
         final File tmpFile = File.createTempFile("capprovtest", "json");
         logger.trace("Writing serialised JSON {} to file {}", jsonValue, tmpFile);
         tmpFile.deleteOnExit();
@@ -256,14 +258,17 @@ public class StaticCapabilitiesProvisioningTest {
                                   .toInstance(provisioningProperties.capabilitiesDirectoryChannelId);
                 bind(String.class).annotatedWith(Names.named(PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID))
                                   .toInstance(provisioningProperties.capabilitiesDirectoryParticipantId);
-                bind(String.class).annotatedWith(Names.named(PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN)).toInstance(provisioningProperties.discoveryDirectoriesDomain);
+                bind(String.class).annotatedWith(Names.named(PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN))
+                                  .toInstance(provisioningProperties.discoveryDirectoriesDomain);
                 bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID))
                                   .toInstance(provisioningProperties.domainAccessControllerChannelId);
                 bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID))
                                   .toInstance(provisioningProperties.domainAccessControllerParticipantId);
                 bind(String.class).annotatedWith(Names.named(CHANNELID)).toInstance(provisioningProperties.channelId);
-                bind(String.class).annotatedWith(Names.named(DISCOVERYDIRECTORYURL)).toInstance(provisioningProperties.discoveryDirectoryUrl);
-                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL)).toInstance(provisioningProperties.domainAccessControllerUrl);
+                bind(String.class).annotatedWith(Names.named(DISCOVERYDIRECTORYURL))
+                                  .toInstance(provisioningProperties.discoveryDirectoryUrl);
+                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL))
+                                  .toInstance(provisioningProperties.domainAccessControllerUrl);
 
                 bind(ObjectMapper.class).toInstance(objectMapper);
                 bind(RoutingTable.class).toInstance(routingTable);

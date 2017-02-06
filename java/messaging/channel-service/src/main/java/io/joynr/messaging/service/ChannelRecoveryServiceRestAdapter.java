@@ -151,9 +151,9 @@ public class ChannelRecoveryServiceRestAdapter {
 
                                 // create new channel on different bounce proxy
                                 Channel newChannel = channelService.createChannel(ccid, atmosphereTrackingId);
-                                return Response.created(newChannel.getLocation()).header("bp",
-                                                                                         newChannel.getBounceProxy()
-                                                                                                   .getId()).build();
+                                return Response.created(newChannel.getLocation())
+                                               .header("bp", newChannel.getBounceProxy().getId())
+                                               .build();
                             }
                         } else {
                             throw new JoynrHttpException(Status.BAD_REQUEST.getStatusCode(),

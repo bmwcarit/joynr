@@ -50,6 +50,7 @@ import io.joynr.proxy.Future;
 import joynr.system.Discovery;
 import joynr.system.DiscoveryProxy;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.DiscoveryQos;
 import joynr.types.DiscoveryScope;
 import joynr.types.ProviderQos;
@@ -69,9 +70,9 @@ public class LocalDiscoveryAggregatorTest {
     private String[] oneDomain;
     private String discoveryProviderParticipantId;
     private LocalDiscoveryAggregator localDiscoveryAggregator;
-    private DiscoveryEntry discoveryProviderEntry;
-    private DiscoveryEntry anotherDiscoveryProviderEntry;
-    private DiscoveryEntry[] discoveryProviderEntries;
+    private DiscoveryEntryWithMetaInfo discoveryProviderEntry;
+    private DiscoveryEntryWithMetaInfo anotherDiscoveryProviderEntry;
+    private DiscoveryEntryWithMetaInfo[] discoveryProviderEntries;
     private String publicKeyId = "publicKeyId";
 
     @Mock
@@ -79,9 +80,9 @@ public class LocalDiscoveryAggregatorTest {
     @Mock
     Callback<Void> addCallback;
     @Mock
-    private Callback<DiscoveryEntry[]> lookupCallback;
+    private Callback<DiscoveryEntryWithMetaInfo[]> lookupCallback;
     @Mock
-    private Callback<DiscoveryEntry> lookupParticipantCallback;
+    private Callback<DiscoveryEntryWithMetaInfo> lookupParticipantCallback;
     @Mock
     private Callback<Void> removeCallback;
 
@@ -96,22 +97,24 @@ public class LocalDiscoveryAggregatorTest {
         localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyMock);
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        discoveryProviderEntry = new DiscoveryEntry(new Version(0, 1),
-                                                    systemServicesDomain,
-                                                    Discovery.INTERFACE_NAME,
-                                                    discoveryProviderParticipantId,
-                                                    providerQos,
-                                                    System.currentTimeMillis(),
-                                                    expiryDateMs,
-                                                    publicKeyId);
-        anotherDiscoveryProviderEntry = new DiscoveryEntry(new Version(0, 0),
-                                                           anotherDomain,
-                                                           Discovery.INTERFACE_NAME,
-                                                           discoveryProviderParticipantId,
-                                                           providerQos,
-                                                           System.currentTimeMillis(),
-                                                           expiryDateMs,
-                                                           publicKeyId);
+        discoveryProviderEntry = new DiscoveryEntryWithMetaInfo(new Version(0, 1),
+                                                                systemServicesDomain,
+                                                                Discovery.INTERFACE_NAME,
+                                                                discoveryProviderParticipantId,
+                                                                providerQos,
+                                                                System.currentTimeMillis(),
+                                                                expiryDateMs,
+                                                                publicKeyId,
+                                                                true);
+        anotherDiscoveryProviderEntry = new DiscoveryEntryWithMetaInfo(new Version(0, 0),
+                                                                       anotherDomain,
+                                                                       Discovery.INTERFACE_NAME,
+                                                                       discoveryProviderParticipantId,
+                                                                       providerQos,
+                                                                       System.currentTimeMillis(),
+                                                                       expiryDateMs,
+                                                                       publicKeyId,
+                                                                       true);
     }
 
     @SuppressWarnings("unchecked")
@@ -132,15 +135,15 @@ public class LocalDiscoveryAggregatorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void findsProvisionedEntryForSingleDomain() {
-        discoveryProviderEntries = new DiscoveryEntry[]{ discoveryProviderEntry };
+        discoveryProviderEntries = new DiscoveryEntryWithMetaInfo[]{ discoveryProviderEntry };
         oneDomain = new String[]{ systemServicesDomain };
         // Double Decla. allDomains = new String[]{ anotherDomain, systemServicesDomain };
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
-        Future<DiscoveryEntry[]> discoveryEntryFuture = localDiscoveryAggregator.lookup(lookupCallback,
-                                                                                        oneDomain,
-                                                                                        Discovery.INTERFACE_NAME,
-                                                                                        discoveryQos);
+        Future<DiscoveryEntryWithMetaInfo[]> discoveryEntryFuture = localDiscoveryAggregator.lookup(lookupCallback,
+                                                                                                    oneDomain,
+                                                                                                    Discovery.INTERFACE_NAME,
+                                                                                                    discoveryQos);
         ArgumentCaptor<DiscoveryEntry[]> discoveryEntriesCaptor = ArgumentCaptor.forClass(DiscoveryEntry[].class);
         verify(lookupCallback).resolve((Object) discoveryEntriesCaptor.capture());
         DiscoveryEntry[] discoveryEntriesPassed = discoveryEntriesCaptor.getValue();
@@ -170,7 +173,7 @@ public class LocalDiscoveryAggregatorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void findsProvisionedEntryForMultipleDomains() throws Exception {
-        discoveryProviderEntries = new DiscoveryEntry[]{ anotherDiscoveryProviderEntry };
+        discoveryProviderEntries = new DiscoveryEntryWithMetaInfo[]{ anotherDiscoveryProviderEntry };
         allDomains = new String[]{ systemServicesDomain, anotherDomain };
         String[] missingDomains = new String[]{ anotherDomain };
         DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -179,7 +182,7 @@ public class LocalDiscoveryAggregatorTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) {
-                Callback<DiscoveryEntry[]> callback = (Callback<DiscoveryEntry[]>) invocation.getArguments()[0];
+                Callback<DiscoveryEntryWithMetaInfo[]> callback = (Callback<DiscoveryEntryWithMetaInfo[]>) invocation.getArguments()[0];
                 callback.onSuccess(discoveryProviderEntries);
                 return null;
             }
@@ -188,10 +191,10 @@ public class LocalDiscoveryAggregatorTest {
                                            anyString(),
                                            any(DiscoveryQos.class));
 
-        Future<DiscoveryEntry[]> discoveryEntriesFuture = localDiscoveryAggregator.lookup(lookupCallback,
-                                                                                          allDomains,
-                                                                                          Discovery.INTERFACE_NAME,
-                                                                                          discoveryQos);
+        Future<DiscoveryEntryWithMetaInfo[]> discoveryEntriesFuture = localDiscoveryAggregator.lookup(lookupCallback,
+                                                                                                      allDomains,
+                                                                                                      Discovery.INTERFACE_NAME,
+                                                                                                      discoveryQos);
 
         assertNotNull(discoveryEntriesFuture);
         DiscoveryEntry[] result = discoveryEntriesFuture.get();

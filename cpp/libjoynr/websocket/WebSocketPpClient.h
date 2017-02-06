@@ -204,9 +204,9 @@ private:
     {
         if (reconnectTimerError == boost::asio::error::operation_aborted) {
             // Assume WebSocketPp.close() has been called
-            JOYNR_LOG_DEBUG(logger,
-                            "reconnect aborted after shutdown, error code from reconnect timer: {}",
-                            reconnectTimerError.message());
+            JOYNR_LOG_INFO(logger,
+                           "reconnect aborted after shutdown, error code from reconnect timer: {}",
+                           reconnectTimerError.message());
             return;
         } else if (reconnectTimerError) {
             JOYNR_LOG_ERROR(logger,
@@ -219,7 +219,7 @@ private:
                (secure && std::is_same<Config, websocketpp::config::asio_tls_client>::value));
 
         websocketpp::uri uri(secure, address.getHost(), address.getPort(), address.getPath());
-        JOYNR_LOG_DEBUG(logger, "Connecting to websocket server {}", uri.str());
+        JOYNR_LOG_INFO(logger, "Connecting to websocket server {}", uri.str());
 
         websocketpp::lib::error_code websocketError;
         ConnectionPtr connectionPtr = endpoint.get_connection(uri.str(), websocketError);
@@ -270,7 +270,7 @@ private:
         connection = hdl;
         sender->setConnectionHandle(connection);
         state = State::Connected;
-        JOYNR_LOG_DEBUG(logger, "connection established");
+        JOYNR_LOG_INFO(logger, "connection established");
 
         if (performingInitialConnect) {
             if (onConnectionOpenedCallback) {
@@ -295,12 +295,12 @@ private:
         state = State::Disconnected;
         sender->resetConnectionHandle();
         if (!isRunning) {
-            JOYNR_LOG_DEBUG(logger, "connection closed");
+            JOYNR_LOG_INFO(logger, "connection closed");
             if (onConnectionClosedCallback) {
                 onConnectionClosedCallback();
             }
         } else {
-            JOYNR_LOG_DEBUG(logger, "connection closed unexpectedly. Trying to reconnect...");
+            JOYNR_LOG_WARN(logger, "connection closed unexpectedly. Trying to reconnect...");
             delayedReconnect();
         }
     }
@@ -310,7 +310,7 @@ private:
         state = State::Disconnected;
         sender->resetConnectionHandle();
         if (!isRunning) {
-            JOYNR_LOG_DEBUG(logger, "connection closed");
+            JOYNR_LOG_INFO(logger, "connection closed");
         } else {
             ConnectionPtr con = endpoint.get_con_from_hdl(hdl);
             JOYNR_LOG_ERROR(logger,

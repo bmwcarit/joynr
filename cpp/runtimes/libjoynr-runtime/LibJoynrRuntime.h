@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,10 @@
 namespace joynr
 {
 
+class IMessageRouter;
 class IMessaging;
+class LibJoynrMessageRouter;
 class JoynrMessageSender;
-class MessageRouter;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
 class IMulticastAddressCalculator;
@@ -59,6 +60,8 @@ public:
     void unregisterProvider(const std::string& participantId) override;
 
 protected:
+    std::shared_ptr<IMessageRouter> getMessageRouter() final;
+
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
     InProcessConnectorFactory* inProcessConnectorFactory;
@@ -75,7 +78,7 @@ protected:
 
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
 
-    virtual void startLibJoynrMessagingSkeleton(std::shared_ptr<MessageRouter> messageRouter) = 0;
+    virtual void startLibJoynrMessagingSkeleton(std::shared_ptr<IMessageRouter> messageRouter) = 0;
 
     void init(std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
@@ -84,6 +87,7 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
+    std::shared_ptr<LibJoynrMessageRouter> libJoynrMessageRouter;
 };
 
 } // namespace joynr

@@ -19,7 +19,7 @@
 #ifndef WEBSOCKETCCMESSAGINGSKELETONNONTLS_H
 #define WEBSOCKETCCMESSAGINGSKELETONNONTLS_H
 
-#include "WebSocketCcMessagingSkeleton.h"
+#include "runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeleton.h"
 
 namespace joynr
 {
@@ -30,7 +30,7 @@ class WebSocketCcMessagingSkeletonNonTLS
 public:
     WebSocketCcMessagingSkeletonNonTLS(
             boost::asio::io_service& ioService,
-            std::shared_ptr<MessageRouter> messageRouter,
+            std::shared_ptr<IMessageRouter> messageRouter,
             std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
             const system::RoutingTypes::WebSocketAddress& serverAddress)
             : WebSocketCcMessagingSkeleton<websocketpp::config::asio>(ioService,

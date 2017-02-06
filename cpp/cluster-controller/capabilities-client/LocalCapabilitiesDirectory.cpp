@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,13 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/MessageRouter.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/CapabilityUtils.h"
 
 namespace joynr
 {
@@ -48,7 +50,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         MessagingSettings& messagingSettings,
         std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
         const std::string& localAddress,
-        MessageRouter& messageRouter,
+        IMessageRouter& messageRouter,
         LibjoynrSettings& libjoynrSettings,
         boost::asio::io_service& ioService,
         const std::string clusterControllerId)
@@ -289,18 +291,24 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
 {
     // return only local capabilities
     if (scope == joynr::types::DiscoveryScope::LOCAL_ONLY) {
-        callback->capabilitiesReceived(std::move(localCapabilities));
+        std::vector<types::DiscoveryEntryWithMetaInfo> localCapabilitiesWithMetaInfo =
+                util::convert(true, localCapabilities);
+        callback->capabilitiesReceived(std::move(localCapabilitiesWithMetaInfo));
         return true;
     }
 
     // return local then global capabilities
     if (scope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
+        std::vector<types::DiscoveryEntryWithMetaInfo> localCapabilitiesWithMetaInfo =
+                util::convert(true, localCapabilities);
+        std::vector<types::DiscoveryEntryWithMetaInfo> globalCapabilitiesWithMetaInfo =
+                util::convert(false, globalCapabilities);
         if (!localCapabilities.empty()) {
-            callback->capabilitiesReceived(std::move(localCapabilities));
+            callback->capabilitiesReceived(std::move(localCapabilitiesWithMetaInfo));
             return true;
         }
         if (!globalCapabilities.empty()) {
-            callback->capabilitiesReceived(std::move(globalCapabilities));
+            callback->capabilitiesReceived(std::move(globalCapabilitiesWithMetaInfo));
             return true;
         }
     }
@@ -309,13 +317,19 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
     if (scope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
         // return if global entries
         if (!globalCapabilities.empty()) {
+            std::vector<types::DiscoveryEntryWithMetaInfo> localCapabilitiesWithMetaInfo =
+                    util::convert(true, localCapabilities);
+            std::vector<types::DiscoveryEntryWithMetaInfo> globalCapabilitiesWithMetaInfo =
+                    util::convert(false, globalCapabilities);
+
             // remove duplicates
-            std::unordered_set<types::DiscoveryEntry> resultSet(
-                    std::make_move_iterator(localCapabilities.begin()),
-                    std::make_move_iterator(localCapabilities.end()));
-            resultSet.insert(std::make_move_iterator(globalCapabilities.begin()),
-                             std::make_move_iterator(globalCapabilities.end()));
-            std::vector<types::DiscoveryEntry> resultVec(resultSet.begin(), resultSet.end());
+            std::unordered_set<types::DiscoveryEntryWithMetaInfo> resultSet(
+                    std::make_move_iterator(localCapabilitiesWithMetaInfo.begin()),
+                    std::make_move_iterator(localCapabilitiesWithMetaInfo.end()));
+            resultSet.insert(std::make_move_iterator(globalCapabilitiesWithMetaInfo.begin()),
+                             std::make_move_iterator(globalCapabilitiesWithMetaInfo.end()));
+            std::vector<types::DiscoveryEntryWithMetaInfo> resultVec(
+                    resultSet.begin(), resultSet.end());
             callback->capabilitiesReceived(std::move(resultVec));
             return true;
         }
@@ -324,7 +338,9 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
     // return the global cached entries
     if (scope == joynr::types::DiscoveryScope::GLOBAL_ONLY) {
         if (!globalCapabilities.empty()) {
-            callback->capabilitiesReceived(std::move(globalCapabilities));
+            std::vector<types::DiscoveryEntryWithMetaInfo> globalCapabilitiesWithMetaInfo =
+                    util::convert(false, globalCapabilities);
+            callback->capabilitiesReceived(std::move(globalCapabilitiesWithMetaInfo));
             return true;
         }
     }
@@ -333,27 +349,31 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
 
 void LocalCapabilitiesDirectory::capabilitiesReceived(
         const std::vector<types::GlobalDiscoveryEntry>& results,
-        std::vector<types::DiscoveryEntry>&& cachedLocalCapabilies,
+        std::vector<types::DiscoveryEntry>&& cachedLocalCapabilities,
         std::shared_ptr<ILocalCapabilitiesCallback> callback,
         joynr::types::DiscoveryScope::Enum discoveryScope)
 {
     std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
-    std::vector<types::DiscoveryEntry> mergedEntries;
+    std::vector<types::DiscoveryEntryWithMetaInfo> mergedEntries;
 
     for (types::GlobalDiscoveryEntry globalDiscoveryEntry : results) {
+        types::DiscoveryEntryWithMetaInfo convertedEntry =
+                util::convert(false, globalDiscoveryEntry);
         capabilitiesMap.insert({globalDiscoveryEntry.getAddress(), globalDiscoveryEntry});
-        mergedEntries.push_back(std::move(globalDiscoveryEntry));
+        mergedEntries.push_back(std::move(convertedEntry));
     }
     registerReceivedCapabilities(std::move(capabilitiesMap));
 
     if (discoveryScope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL ||
         discoveryScope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
+        std::vector<types::DiscoveryEntryWithMetaInfo> cachedLocalCapabilitiesWithMetaInfo =
+                util::convert(false, cachedLocalCapabilities);
         // look if in the meantime there are some local providers registered
         // lookup in the local directory to get local providers which were registered in the
         // meantime.
         mergedEntries.insert(mergedEntries.end(),
-                             std::make_move_iterator(cachedLocalCapabilies.begin()),
-                             std::make_move_iterator(cachedLocalCapabilies.end()));
+                             std::make_move_iterator(cachedLocalCapabilitiesWithMetaInfo.begin()),
+                             std::make_move_iterator(cachedLocalCapabilitiesWithMetaInfo.end()));
     }
     callback->capabilitiesReceived(std::move(mergedEntries));
 }
@@ -443,9 +463,12 @@ void LocalCapabilitiesDirectory::callPendingLookups(const InterfaceAddress& inte
     if (localCapabilities.empty()) {
         return;
     }
+    std::vector<types::DiscoveryEntryWithMetaInfo> localCapabilitiesWithMetaInfo =
+            util::convert(true, localCapabilities);
+
     for (const std::shared_ptr<ILocalCapabilitiesCallback>& callback :
          pendingLookups[interfaceAddress]) {
-        callback->capabilitiesReceived(localCapabilities);
+        callback->capabilitiesReceived(localCapabilitiesWithMetaInfo);
     }
     pendingLookups.erase(interfaceAddress);
 }
@@ -587,7 +610,7 @@ void LocalCapabilitiesDirectory::lookup(
         const std::vector<std::string>& domains,
         const std::string& interfaceName,
         const types::DiscoveryQos& discoveryQos,
-        std::function<void(const std::vector<types::DiscoveryEntry>& result)> onSuccess,
+        std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>& result)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     if (domains.size() != 1) {
@@ -605,11 +628,11 @@ void LocalCapabilitiesDirectory::lookup(
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::lookup(
         const std::string& participantId,
-        std::function<void(const types::DiscoveryEntry&)> onSuccess,
+        std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     auto callback = [ onSuccess = std::move(onSuccess), onError, this, participantId ](
-            const std::vector<types::DiscoveryEntry>& capabilities)
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities)
     {
         if (capabilities.size() == 0) {
             joynr::exceptions::ProviderRuntimeException exception(
@@ -908,7 +931,7 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 }
 
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(
-        std::function<void(const std::vector<types::DiscoveryEntry>&)>&& onSuccess,
+        std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)>&& onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)>&& onError)
         : onSuccess(std::move(onSuccess)), onErrorCallback(std::move(onError))
 {
@@ -922,7 +945,7 @@ void LocalCapabilitiesCallback::onError(const exceptions::JoynrRuntimeException&
 }
 
 void LocalCapabilitiesCallback::capabilitiesReceived(
-        const std::vector<types::DiscoveryEntry>& capabilities)
+        const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities)
 {
     onSuccess(capabilities);
 }

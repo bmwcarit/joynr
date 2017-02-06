@@ -68,6 +68,7 @@ import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -121,7 +122,7 @@ public class LocalCapabilitiesDirectoryTest {
     private ScheduledExecutorService capabilitiesFreshnessUpdateExecutor;
 
     @Captor
-    private ArgumentCaptor<Collection<DiscoveryEntry>> capabilitiesCaptor;
+    private ArgumentCaptor<Collection<DiscoveryEntryWithMetaInfo>> capabilitiesCaptor;
 
     @Captor
     private ArgumentCaptor<Runnable> runnableCaptor;
@@ -367,8 +368,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                         publicKeyId,
                                                         channelAddressSerialized);
 
-        Mockito.doAnswer(createAddAnswerWithError()).when(globalCapabilitiesClient).add(any(Callback.class),
-                                                                                        eq(globalDiscoveryEntry));
+        Mockito.doAnswer(createAddAnswerWithError())
+               .when(globalCapabilitiesClient)
+               .add(any(Callback.class), eq(globalDiscoveryEntry));
 
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
         promise.then(new PromiseListener() {
@@ -671,15 +673,17 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        DiscoveryEntry expectedDiscoveryEntry = new DiscoveryEntry(new Version(47, 11),
-                                                                   domain1,
-                                                                   interfaceName1,
-                                                                   participantId1,
-                                                                   providerQos,
-                                                                   System.currentTimeMillis(),
-                                                                   expiryDateMs,
-                                                                   publicKeyId);
-        when(localDiscoveryEntryStoreMock.lookup(eq(participantId1), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(expectedDiscoveryEntry);
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           domain1,
+                                                           interfaceName1,
+                                                           participantId1,
+                                                           providerQos,
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs,
+                                                           publicKeyId);
+        DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                discoveryEntry);
+        when(localDiscoveryEntryStoreMock.lookup(eq(participantId1), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(discoveryEntry);
         DiscoveryEntry retrievedCapabilityEntry = localCapabilitiesDirectory.lookup(participantId1, discoveryQos);
         assertEquals(expectedDiscoveryEntry, retrievedCapabilityEntry);
     }
@@ -808,7 +812,7 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos, capabilitiesCallback);
 
         verify(capabilitiesCallback).processCapabilitiesReceived(capabilitiesCaptor.capture());
-        Collection<DiscoveryEntry> discoveredEntries = capabilitiesCaptor.getValue();
+        Collection<DiscoveryEntry> discoveredEntries = CapabilityUtils.convertToDiscoveryEntryList(capabilitiesCaptor.getValue());
         assertNotNull(discoveredEntries);
         assertEquals(2, discoveredEntries.size());
     }
@@ -848,16 +852,14 @@ public class LocalCapabilitiesDirectoryTest {
             entries.add(entry);
         }
 
-        when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
-                                                  eq(interfaceName),
-                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
+        when(globalDiscoveryEntryCacheMock.lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
 
         localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos, capabilitiesCallback);
 
         verify(globalCapabilitiesClient, times(0)).lookup(any(Callback.class),
-                                                argThat(Matchers.arrayContainingInAnyOrder(domains)),
-                                                eq(interfaceName),
-                                                eq(discoveryQos.getDiscoveryTimeoutMs()));
+                                                          argThat(Matchers.arrayContainingInAnyOrder(domains)),
+                                                          eq(interfaceName),
+                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
     }
 
     @SuppressWarnings("unchecked")
@@ -928,15 +930,155 @@ public class LocalCapabilitiesDirectoryTest {
                                                 eq(interfaceName),
                                                 eq(discoveryQos.getDiscoveryTimeoutMs()));
         verify(capabilitiesCallback).processCapabilitiesReceived(capabilitiesCaptor.capture());
-        Collection<DiscoveryEntry> captured = capabilitiesCaptor.getValue();
+        Collection<DiscoveryEntry> captured = CapabilityUtils.convertToDiscoveryEntrySet(capabilitiesCaptor.getValue());
         assertNotNull(captured);
         assertEquals(3, captured.size());
         assertTrue(captured.contains(localEntry));
-        assertTrue(captured.contains(globalEntry));
-        assertTrue(captured.contains(remoteGlobalEntry));
+        assertTrue(captured.contains(new DiscoveryEntry(globalEntry)));
+        assertTrue(captured.contains(new DiscoveryEntry(remoteGlobalEntry)));
     }
 
-    private class MyCollectionMatcher extends TypeSafeMatcher<Collection<DiscoveryEntry>> {
+    @Test
+    public void testLookupByParticipantId_localEntry_DiscoveryEntryWithMetaInfoContainsExpectedIsLocalValue() {
+        String participantId = "participantId";
+        String interfaceName = "interfaceName";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_THEN_GLOBAL);
+
+        // local DiscoveryEntry
+        String localDomain = "localDomain";
+        DiscoveryEntry localEntry = new DiscoveryEntry();
+        localEntry.setDomain(localDomain);
+        localEntry.setInterfaceName(interfaceName);
+        localEntry.setParticipantId(participantId);
+        when(localDiscoveryEntryStoreMock.lookup(eq(participantId), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(localEntry);
+
+        DiscoveryEntryWithMetaInfo capturedLocalEntry = localCapabilitiesDirectory.lookup(participantId, discoveryQos);
+        DiscoveryEntryWithMetaInfo localEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                localEntry);
+        assertEquals(localEntryWithMetaInfo, capturedLocalEntry);
+    }
+
+    @Test
+    public void testLookupByParticipantId_cachedEntry_DiscoveryEntryWithMetaInfoContainsExpectedIsLocalValue() {
+        String participantId = "participantId";
+        String interfaceName = "interfaceName";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_THEN_GLOBAL);
+
+        // cached global DiscoveryEntry
+        String globalDomain = "globalDomain";
+        GlobalDiscoveryEntry cachedGlobalEntry = new GlobalDiscoveryEntry();
+        cachedGlobalEntry.setDomain(globalDomain);
+        cachedGlobalEntry.setInterfaceName(interfaceName);
+        cachedGlobalEntry.setParticipantId(participantId);
+        when(globalDiscoveryEntryCacheMock.lookup(eq(participantId), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(cachedGlobalEntry);
+
+        DiscoveryEntryWithMetaInfo capturedCachedGlobalEntry = localCapabilitiesDirectory.lookup(participantId,
+                                                                                                 discoveryQos);
+        DiscoveryEntryWithMetaInfo cachedGlobalEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                       cachedGlobalEntry);
+        assertEquals(cachedGlobalEntryWithMetaInfo, capturedCachedGlobalEntry);
+    }
+
+    @Test
+    public void testLookupByParticipantId_globalEntry_DiscoveryEntryWithMetaInfoContainsExpectedIsLocalValue() {
+        String participantId = "participantId";
+        String interfaceName = "interfaceName";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_THEN_GLOBAL);
+
+        // remote global DiscoveryEntry
+        String remoteGlobalDomain = "remoteglobaldomain";
+        final GlobalDiscoveryEntry remoteGlobalEntry = new GlobalDiscoveryEntry(new Version(0, 0),
+                                                                                remoteGlobalDomain,
+                                                                                interfaceName,
+                                                                                participantId,
+                                                                                new ProviderQos(),
+                                                                                System.currentTimeMillis(),
+                                                                                System.currentTimeMillis() + 10000L,
+                                                                                "publicKeyId",
+                                                                                channelAddressSerialized);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                Callback<GlobalDiscoveryEntry> callback = (Callback<GlobalDiscoveryEntry>) invocation.getArguments()[0];
+                callback.onSuccess(remoteGlobalEntry);
+                return null;
+            }
+        }).when(globalCapabilitiesClient).lookup(any(Callback.class), eq(participantId), anyLong());
+
+        DiscoveryEntryWithMetaInfo capturedRemoteGlobalEntry = localCapabilitiesDirectory.lookup(participantId,
+                                                                                                 discoveryQos);
+        DiscoveryEntryWithMetaInfo remoteGlobalEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                       remoteGlobalEntry);
+        assertEquals(remoteGlobalEntryWithMetaInfo, capturedRemoteGlobalEntry);
+    }
+
+    @Test
+    public void testLookup_DiscoveryEntriesWithMetaInfoContainExpectedIsLocalValue() {
+        String globalDomain = "globaldomain";
+        String remoteGlobalDomain = "remoteglobaldomain";
+        String[] domains = new String[]{ "localdomain", globalDomain, remoteGlobalDomain };
+        String interfaceName = "interfaceName";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_THEN_GLOBAL);
+        CapabilitiesCallback capabilitiesCallback = mock(CapabilitiesCallback.class);
+
+        // local DiscoveryEntry
+        DiscoveryEntry localEntry = new DiscoveryEntry();
+        localEntry.setDomain(domains[0]);
+        when(localDiscoveryEntryStoreMock.lookup(eq(domains), eq(interfaceName))).thenReturn(Lists.newArrayList(localEntry));
+
+        // cached global DiscoveryEntry
+        GlobalDiscoveryEntry cachedGlobalEntry = new GlobalDiscoveryEntry();
+        cachedGlobalEntry.setDomain(globalDomain);
+        Collection<DiscoveryEntry> cachedEntries = Lists.newArrayList((DiscoveryEntry) cachedGlobalEntry);
+        when(globalDiscoveryEntryCacheMock.lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(cachedEntries);
+
+        // remote global DiscoveryEntry
+        final GlobalDiscoveryEntry remoteGlobalEntry = new GlobalDiscoveryEntry(new Version(0, 0),
+                                                                                remoteGlobalDomain,
+                                                                                interfaceName,
+                                                                                "participantIdRemote",
+                                                                                new ProviderQos(),
+                                                                                System.currentTimeMillis(),
+                                                                                System.currentTimeMillis() + 10000L,
+                                                                                "publicKeyId",
+                                                                                channelAddressSerialized);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                Callback<List<GlobalDiscoveryEntry>> callback = (Callback<List<GlobalDiscoveryEntry>>) invocation.getArguments()[0];
+                callback.onSuccess(Lists.newArrayList(remoteGlobalEntry));
+                return null;
+            }
+        }).when(globalCapabilitiesClient).lookup(any(Callback.class),
+                                                 eq(new String[]{ remoteGlobalDomain }),
+                                                 eq(interfaceName),
+                                                 anyLong());
+
+        localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos, capabilitiesCallback);
+
+        verify(capabilitiesCallback).processCapabilitiesReceived(capabilitiesCaptor.capture());
+        Collection<DiscoveryEntryWithMetaInfo> captured = capabilitiesCaptor.getValue();
+        assertNotNull(captured);
+        assertEquals(3, captured.size());
+
+        DiscoveryEntryWithMetaInfo localEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                localEntry);
+        assertTrue(captured.contains(localEntryWithMetaInfo));
+
+        DiscoveryEntryWithMetaInfo cachedGlobalEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                       cachedGlobalEntry);
+        assertTrue(captured.contains(cachedGlobalEntryWithMetaInfo));
+        DiscoveryEntryWithMetaInfo remoteGlobalEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                       remoteGlobalEntry);
+        assertTrue(captured.contains(remoteGlobalEntryWithMetaInfo));
+
+    }
+
+    private class MyCollectionMatcher extends TypeSafeMatcher<Collection<DiscoveryEntryWithMetaInfo>> {
 
         private int n;
 
@@ -950,13 +1092,13 @@ public class LocalCapabilitiesDirectoryTest {
         }
 
         @Override
-        protected boolean matchesSafely(Collection<DiscoveryEntry> item) {
+        protected boolean matchesSafely(Collection<DiscoveryEntryWithMetaInfo> item) {
             return item.size() == n;
         }
 
     }
 
-    Matcher<Collection<DiscoveryEntry>> hasNEntries(int n) {
+    Matcher<Collection<DiscoveryEntryWithMetaInfo>> hasNEntries(int n) {
         return new MyCollectionMatcher(n);
     }
 

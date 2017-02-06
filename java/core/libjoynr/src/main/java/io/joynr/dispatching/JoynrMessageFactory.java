@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 public class JoynrMessageFactory {
 
+    private static final String REQUEST_REPLY_ID_CUSTOM_HEADER = "z4";
     private final Set<JoynrMessageProcessor> messageProcessors;
     private ObjectMapper objectMapper;
     @Inject(optional = true)
@@ -115,34 +116,47 @@ public class JoynrMessageFactory {
                                       final String toParticipantId,
                                       Request request,
                                       MessagingQos messagingQos) {
-        return createMessage(JoynrMessage.MESSAGE_TYPE_REQUEST,
-                             fromParticipantId,
-                             toParticipantId,
-                             request,
-                             messagingQos);
+        JoynrMessage msg = createMessage(JoynrMessage.MESSAGE_TYPE_REQUEST,
+                                         fromParticipantId,
+                                         toParticipantId,
+                                         request,
+                                         messagingQos);
+        addRequestReplyIdCustomHeader(msg, request.getRequestReplyId());
+        return msg;
+    }
+
+    private JoynrMessage addRequestReplyIdCustomHeader(JoynrMessage msg, String requestReplyId) {
+        Map<String, String> customHeaders = Maps.newHashMap();
+        customHeaders.put(REQUEST_REPLY_ID_CUSTOM_HEADER, requestReplyId);
+        msg.setCustomHeaders(customHeaders);
+        return msg;
     }
 
     public JoynrMessage createReply(final String fromParticipantId,
                                     final String toParticipantId,
                                     Reply reply,
                                     MessagingQos messagingQos) {
-        return createMessage(JoynrMessage.MESSAGE_TYPE_REPLY,
-                             fromParticipantId,
-                             toParticipantId,
-                             reply,
-                             messagingQos,
-                             false);
+        JoynrMessage msg = createMessage(JoynrMessage.MESSAGE_TYPE_REPLY,
+                                         fromParticipantId,
+                                         toParticipantId,
+                                         reply,
+                                         messagingQos,
+                                         false);
+        addRequestReplyIdCustomHeader(msg, reply.getRequestReplyId());
+        return msg;
     }
 
     public JoynrMessage createSubscriptionReply(final String fromParticipantId,
                                                 final String toParticipantId,
                                                 SubscriptionReply subscriptionReply,
                                                 MessagingQos messagingQos) {
-        return createMessage(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REPLY,
-                             fromParticipantId,
-                             toParticipantId,
-                             subscriptionReply,
-                             messagingQos);
+        JoynrMessage msg = createMessage(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REPLY,
+                                         fromParticipantId,
+                                         toParticipantId,
+                                         subscriptionReply,
+                                         messagingQos);
+        addRequestReplyIdCustomHeader(msg, subscriptionReply.getSubscriptionId());
+        return msg;
     }
 
     public JoynrMessage createSubscriptionRequest(String fromParticipantId,
@@ -157,29 +171,39 @@ public class JoynrMessageFactory {
         } else {
             messageType = JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
         }
-        return createMessage(messageType, fromParticipantId, toParticipantId, subscriptionRequest, messagingQos);
+        JoynrMessage msg = createMessage(messageType,
+                                         fromParticipantId,
+                                         toParticipantId,
+                                         subscriptionRequest,
+                                         messagingQos);
+        addRequestReplyIdCustomHeader(msg, subscriptionRequest.getSubscriptionId());
+        return msg;
     }
 
     public JoynrMessage createPublication(String fromParticipantId,
                                           String toParticipantId,
                                           SubscriptionPublication publication,
                                           MessagingQos messagingQos) {
-        return createMessage(JoynrMessage.MESSAGE_TYPE_PUBLICATION,
-                             fromParticipantId,
-                             toParticipantId,
-                             publication,
-                             messagingQos);
+        JoynrMessage msg = createMessage(JoynrMessage.MESSAGE_TYPE_PUBLICATION,
+                                         fromParticipantId,
+                                         toParticipantId,
+                                         publication,
+                                         messagingQos);
+        addRequestReplyIdCustomHeader(msg, publication.getSubscriptionId());
+        return msg;
     }
 
     public JoynrMessage createSubscriptionStop(String fromParticipantId,
                                                String toParticipantId,
                                                SubscriptionStop subscriptionStop,
                                                MessagingQos messagingQos) {
-        return createMessage(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP,
-                             fromParticipantId,
-                             toParticipantId,
-                             subscriptionStop,
-                             messagingQos);
+        JoynrMessage msg = createMessage(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP,
+                                         fromParticipantId,
+                                         toParticipantId,
+                                         subscriptionStop,
+                                         messagingQos);
+        addRequestReplyIdCustomHeader(msg, subscriptionStop.getSubscriptionId());
+        return msg;
     }
 
     public JoynrMessage createMulticast(String fromParticipantId,
