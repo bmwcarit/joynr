@@ -30,6 +30,7 @@ ClusterControllerSettings::ClusterControllerSettings(Settings& settings) : setti
 {
     settings.fillEmptySettingsWithDefaults(DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME());
     checkSettings();
+    printSettings();
 }
 
 void ClusterControllerSettings::checkSettings()
