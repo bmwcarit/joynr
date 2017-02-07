@@ -198,6 +198,11 @@ protected:
     /** @brief Return an IMessageRouter instance */
     virtual std::shared_ptr<IMessageRouter> getMessageRouter() = 0;
 
+    bool checkAndLogCryptoFileExistence(const std::string& caPemFile,
+                                        const std::string& certPemFile,
+                                        const std::string& privateKeyPemFile,
+                                        Logger& logger);
+
     std::unique_ptr<SingleThreadedIOService> singleThreadIOService;
 
     /** @brief Factory for creating proxy instances */

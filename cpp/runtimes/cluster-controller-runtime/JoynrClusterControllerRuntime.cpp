@@ -26,7 +26,8 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <mosquittopp.h>
-#include "websocket/WebSocketCcMessagingSkeleton.h"
+#include "websocket/WebSocketCcMessagingSkeletonTLS.h"
+#include "websocket/WebSocketCcMessagingSkeletonNonTLS.h"
 
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
@@ -142,10 +143,12 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
           wsSettings(*(this->settings)),
           wsCcMessagingSkeleton(nullptr),
+          wsTLSCcMessagingSkeleton(nullptr),
           httpMessagingIsRunning(false),
           mqttMessagingIsRunning(false),
           doMqttMessaging(false),
           doHttpMessaging(false),
+          wsMessagingStubFactory(),
           mqttSettings(),
           multicastMessagingSkeletonDirectory(
                   std::make_shared<MulticastMessagingSkeletonDirectory>()),
@@ -259,18 +262,14 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     }
 
     // setup CC WebSocket interface
-    auto wsMessagingStubFactory = std::make_shared<WebSocketMessagingStubFactory>();
+    wsMessagingStubFactory = std::make_shared<WebSocketMessagingStubFactory>();
     wsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
         messagingStubFactory->remove(destinationAddress);
     });
-    system::RoutingTypes::WebSocketAddress wsAddress =
-            wsSettings.createClusterControllerMessagingAddress();
-    wsCcMessagingSkeleton =
-            std::make_shared<WebSocketCcMessagingSkeleton>(singleThreadIOService->getIOService(),
-                                                           ccMessageRouter,
-                                                           wsMessagingStubFactory,
-                                                           wsAddress);
+
+    createWsCCMessagingSkeletons();
+
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
     /* LibJoynr */
@@ -572,6 +571,52 @@ void JoynrClusterControllerRuntime::enableAccessController(MessagingSettings& me
             *localCapabilitiesDirectory, *localDomainAccessController);
 
     ccMessageRouter->setAccessController(accessController);
+}
+
+void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
+{
+    if (clusterControllerSettings.isWsTLSPortSet()) {
+        std::string certificateAuthorityPemFilename =
+                wsSettings.getCertificateAuthorityPemFilename();
+        std::string certificatePemFilename = wsSettings.getCertificatePemFilename();
+        std::string privateKeyPemFilename = wsSettings.getPrivateKeyPemFilename();
+
+        if (checkAndLogCryptoFileExistence(certificateAuthorityPemFilename,
+                                           certificatePemFilename,
+                                           privateKeyPemFilename,
+                                           logger)) {
+            JOYNR_LOG_INFO(logger, "Using TLS connection");
+
+            system::RoutingTypes::WebSocketAddress wsAddress(
+                    system::RoutingTypes::WebSocketProtocol::WSS,
+                    "localhost",
+                    clusterControllerSettings.getWsTLSPort(),
+                    "");
+
+            wsTLSCcMessagingSkeleton = std::make_shared<WebSocketCcMessagingSkeletonTLS>(
+                    singleThreadIOService->getIOService(),
+                    ccMessageRouter,
+                    wsMessagingStubFactory,
+                    wsAddress,
+                    certificateAuthorityPemFilename,
+                    certificatePemFilename,
+                    privateKeyPemFilename);
+        }
+    }
+
+    if (clusterControllerSettings.isWsPortSet()) {
+        system::RoutingTypes::WebSocketAddress wsAddress(
+                system::RoutingTypes::WebSocketProtocol::WS,
+                "localhost",
+                clusterControllerSettings.getWsPort(),
+                "");
+
+        wsCcMessagingSkeleton = std::make_shared<WebSocketCcMessagingSkeletonNonTLS>(
+                singleThreadIOService->getIOService(),
+                ccMessageRouter,
+                wsMessagingStubFactory,
+                wsAddress);
+    }
 }
 
 void JoynrClusterControllerRuntime::registerRoutingProvider()

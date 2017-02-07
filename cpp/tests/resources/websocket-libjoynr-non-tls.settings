@@ -1,0 +1,2 @@
+[websocket]
+cluster-controller-messaging-url=ws://localhost:4242

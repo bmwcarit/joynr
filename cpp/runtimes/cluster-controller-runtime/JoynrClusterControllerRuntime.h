@@ -57,7 +57,6 @@ class InProcessConnectorFactory;
 class JoynrMessagingConnectorFactory;
 class IDispatcher;
 class InProcessPublicationSender;
-class WebSocketCcMessagingSkeleton;
 class InProcessMessagingSkeleton;
 class HttpMessagingSkeleton;
 class MqttMessagingSkeleton;
@@ -67,6 +66,7 @@ class Settings;
 class JoynrMessageSender;
 class IMessaging;
 class CcMessageRouter;
+class WebSocketMessagingStubFactory;
 
 namespace infrastructure
 {
@@ -149,15 +149,19 @@ protected:
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
-    std::shared_ptr<WebSocketCcMessagingSkeleton> wsCcMessagingSkeleton;
+    std::shared_ptr<IMessaging> wsCcMessagingSkeleton;
+    std::shared_ptr<IMessaging> wsTLSCcMessagingSkeleton;
     bool httpMessagingIsRunning;
     bool mqttMessagingIsRunning;
     bool doMqttMessaging;
     bool doHttpMessaging;
+    std::shared_ptr<WebSocketMessagingStubFactory> wsMessagingStubFactory;
 
     ADD_LOGGER(JoynrClusterControllerRuntime);
 
 private:
+    void createWsCCMessagingSkeletons();
+
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
     MqttSettings mqttSettings;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
