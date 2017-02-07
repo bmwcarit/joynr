@@ -36,6 +36,7 @@ import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.JoynrMessageCreator;
+import io.joynr.messaging.JoynrMessageMetaInfo;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
@@ -57,11 +58,15 @@ public class RequestInterpreter {
 
     private Provider<JoynrMessageCreator> joynrMessageCreatorProvider;
 
+    private Provider<JoynrMessageMetaInfo> joynrMessageContext;
+
     @Inject
     public RequestInterpreter(JoynrMessageScope joynrMessageScope,
-                              Provider<JoynrMessageCreator> joynrMessageCreatorProvider) {
+                              Provider<JoynrMessageCreator> joynrMessageCreatorProvider,
+                              Provider<JoynrMessageMetaInfo> joynrMessageContext) {
         this.joynrMessageScope = joynrMessageScope;
         this.joynrMessageCreatorProvider = joynrMessageCreatorProvider;
+        this.joynrMessageContext = joynrMessageContext;
     }
 
     // use for caching because creation of MethodMetaInformation is expensive
@@ -130,6 +135,8 @@ public class RequestInterpreter {
             }
             joynrMessageScope.activate();
             joynrMessageCreatorProvider.get().setMessageCreatorId(request.getCreatorUserId());
+            joynrMessageContext.get().setMessageContext(request.getContext());
+
             logger.trace("invoke provider method {}({})", method.getName(), params == null ? "" : params);
             return method.invoke(requestCaller, params);
         } catch (IllegalAccessException e) {
