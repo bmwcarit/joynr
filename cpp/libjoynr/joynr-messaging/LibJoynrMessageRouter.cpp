@@ -104,7 +104,7 @@ void LibJoynrMessageRouter::route(const JoynrMessage& message, std::uint32_t try
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "Route message with Id {} and payload {}",
                     message.getHeaderMessageId(),
                     message.getPayload());
@@ -121,7 +121,7 @@ void LibJoynrMessageRouter::route(const JoynrMessage& message, std::uint32_t try
 
         // save the message for later delivery
         messageQueue->queueMessage(message);
-        JOYNR_LOG_DEBUG(logger, "message queued: {}", message.getPayload());
+        JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
 
         // and try to resolve destination address via parent message router
         std::lock_guard<std::mutex> lock(parentResolveMutex);
@@ -163,7 +163,7 @@ void LibJoynrMessageRouter::route(const JoynrMessage& message, std::uint32_t try
 bool LibJoynrMessageRouter::isParentMessageRouterSet()
 {
     if (!parentRouter) {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_TRACE(logger,
                         "Parent message router not set. Discard this message if it appears "
                         "during libJoynr initlization. It can be related to a configuration "
                         "problem. Check setting file.");
@@ -282,7 +282,7 @@ void LibJoynrMessageRouter::addMulticastReceiver(
     std::function<void()> onSuccessWrapper =
             [this, multicastId, subscriberParticipantId, onSuccess]() {
         multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_TRACE(logger,
                         "added multicast receiver={} for multicastId={}",
                         subscriberParticipantId,
                         multicastId);

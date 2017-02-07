@@ -204,7 +204,7 @@ void CcMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "Route message with Id {} and payload {}",
                     message.getHeaderMessageId(),
                     message.getPayload());
@@ -220,7 +220,7 @@ void CcMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
 
         // save the message for later delivery
         messageQueue->queueMessage(message);
-        JOYNR_LOG_DEBUG(logger, "message queued: {}", message.getPayload());
+        JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
         JOYNR_LOG_WARN(logger,
                        "No routing information found for destination participant ID \"{}\" "
                        "so far. Waiting for participant registration. "
@@ -389,7 +389,7 @@ void CcMessageRouter::registerMulticastReceiver(
             onError(error);
         }
     } else {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_TRACE(logger,
                         "No messaging skeleton found for multicast "
                         "provider (address=" +
                                 providerAddress->toString() + ").");
@@ -413,7 +413,7 @@ void CcMessageRouter::addMulticastReceiver(
     std::function<void()> onSuccessWrapper =
             [this, multicastId, subscriberParticipantId, onSuccess]() {
         multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_TRACE(logger,
                         "added multicast receiver={} for multicastId={}",
                         subscriberParticipantId,
                         multicastId);
@@ -476,7 +476,7 @@ void CcMessageRouter::removeMulticastReceiver(
         if (skeleton) {
             skeleton->unregisterMulticastSubscription(multicastId);
         } else {
-            JOYNR_LOG_DEBUG(logger,
+            JOYNR_LOG_TRACE(logger,
                             "No messaging skeleton found for multicast "
                             "provider (address=" +
                                     providerAddress->toString() + ").");
