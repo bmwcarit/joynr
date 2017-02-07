@@ -22,6 +22,8 @@ package io.joynr.messaging.mqtt;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Set;
+import java.io.Serializable;
+import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +144,10 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
-        JoynrMessage message = messageSerializer.deserialize(rawMessagingPreprocessor.process(serializedMessage));
+        HashMap<String, Serializable> context = new HashMap<String, Serializable>();
+        JoynrMessage message = messageSerializer.deserialize(rawMessagingPreprocessor.process(serializedMessage,
+                                                                                              context));
+        message.setContext(context);
 
         if (messageProcessors != null) {
             for (JoynrMessageProcessor processor : messageProcessors) {

@@ -1,5 +1,6 @@
 package itest.io.joynr.jeeintegration.preprocessor;
 
+
 /*
  * #%L
  * %%
@@ -19,6 +20,8 @@ package itest.io.joynr.jeeintegration.preprocessor;
  * #L%
  */
 
+import java.io.Serializable;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +31,7 @@ public class TestRawMessagingProcessor extends RawMessagingPreprocessor {
     private static final Logger logger = LoggerFactory.getLogger(RawMessagingPreprocessor.class);
 
     @Override
-    public String process(String rawMessage) {
+    public String process(String rawMessage, Map<String, Serializable> context) {
         logger.info("raw message received: " + rawMessage);
         return rawMessage;
     }

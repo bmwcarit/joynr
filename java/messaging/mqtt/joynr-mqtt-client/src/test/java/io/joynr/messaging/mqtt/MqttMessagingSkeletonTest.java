@@ -20,6 +20,7 @@ package io.joynr.messaging.mqtt;
  */
 
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -116,11 +117,12 @@ public class MqttMessagingSkeletonTest {
         verify(mqttClient).unsubscribe("one/two/#");
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testRawMessagePreprocessorIsCalled() throws Exception {
         RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
         ObjectMapper objectMapper = new ObjectMapper();
-        when(preprocessor.process(anyString())).then(returnsFirstArg());
+        when(preprocessor.process(anyString(), anyMap())).then(returnsFirstArg());
         when(messageSerializerFactory.create(Mockito.any(MqttAddress.class))).thenReturn(new JsonSerializer(objectMapper));
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,

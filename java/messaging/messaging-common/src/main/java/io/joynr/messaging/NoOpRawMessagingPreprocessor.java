@@ -18,11 +18,13 @@ package io.joynr.messaging;
  * limitations under the License.
  * #L%
  */
+import java.util.Map;
+import java.io.Serializable;
 
 public class NoOpRawMessagingPreprocessor extends RawMessagingPreprocessor {
 
     @Override
-    public String process(String rawMessage) {
+    public String process(String rawMessage, Map<String, Serializable> context) {
         return rawMessage;
     }
 }

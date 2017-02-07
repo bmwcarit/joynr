@@ -19,14 +19,22 @@ package io.joynr.messaging;
  * #L%
  */
 
+import java.io.Serializable;
+import java.util.Map;
+import javax.annotation.Nonnull;
+
 public abstract class RawMessagingPreprocessor {
 
     /**
-     *
      * @param rawMessage
+     * @param context you can optionally add String:Serializable pairs to this map, which
+     * will be made available to the message's recipient. The value must be serializable to
+     * support persistence of messages that could not be processed in the current lifecycle.
+     * The map is preinitialized.
      * @return the processed rawMessage. NOTE: you are responsible for
      * returning a message that can still be parsed by the messaging skeleton;
      * otherwise the message will be discarded.
      */
-    public abstract String process(String rawMessage);
+    public abstract String process(String rawMessage, @Nonnull Map<String, Serializable> context);
+
 }

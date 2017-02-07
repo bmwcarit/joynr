@@ -21,8 +21,10 @@ package io.joynr.integration;
 
 import static org.junit.Assert.fail;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
@@ -86,7 +88,8 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
                                                                                  bind(RawMessagingPreprocessor.class).toInstance(new RawMessagingPreprocessor() {
 
                                                                                      @Override
-                                                                                     public String process(String rawMessage) {
+                                                                                     public String process(String rawMessage,
+                                                                                                           Map<String, Serializable> context) {
                                                                                          incomingMessageCount++;
                                                                                          return rawMessage;
                                                                                      }

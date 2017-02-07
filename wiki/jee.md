@@ -305,8 +305,8 @@ For example:
 	RawMessagingPreprocessor rawMessagingPreprocessor() {
 		return new RawMessagingPreprocessor() {
 			@Override
-			public String process(String rawMessage) {
-				// do something with the message here
+			public String process(String rawMessage, @Nonnull Map<String, Serializable> context) {
+				// do something with the message here, and add entries to the context
 				return rawMessage;
 			}
 		};
