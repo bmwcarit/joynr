@@ -566,7 +566,7 @@ bool «className»::usesClusterController() const{
 					const std::vector<std::string>& partitions
 				«ENDIF»
 	) {
-		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
+		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName» broadcast.");
 		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
