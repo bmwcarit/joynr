@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <utility>
 #include <memory>
 #include <chrono>
@@ -370,6 +371,21 @@ bool JoynrMessage::isReceivedFromGlobal() const
 void JoynrMessage::setReceivedFromGlobal(bool receivedFromGlobal)
 {
     this->receivedFromGlobal = receivedFromGlobal;
+}
+
+std::string JoynrMessage::toLogMessage() const
+{
+    std::stringstream ss;
+    ss << "type=" << type;
+    ss << ", header={";
+    for (auto it = header.cbegin(); it != header.cend(); ++it) {
+        if (it != header.cbegin()) {
+            ss << ", ";
+        }
+        ss << it->first << "=" << it->second;
+    }
+    ss << "}";
+    return ss.str();
 }
 
 } // namespace joynr

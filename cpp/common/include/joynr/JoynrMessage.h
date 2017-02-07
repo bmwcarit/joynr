@@ -389,6 +389,12 @@ public:
         archive(MUESLI_NVP(type), MUESLI_NVP(header), MUESLI_NVP(payload));
     }
 
+    /**
+     * @brief toLogMessage Used to print log messages.
+     * @return a string representing this message used for logging.
+     */
+    std::string toLogMessage() const;
+
 private:
     /**
      * @brief CUSTOM_HEADER_PREFIX The prefix used when adding or retrieving custom headers

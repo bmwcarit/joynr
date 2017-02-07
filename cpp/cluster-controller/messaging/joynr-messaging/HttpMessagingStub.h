@@ -24,6 +24,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/IMessaging.h"
+#include "joynr/Logger.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
@@ -51,6 +52,8 @@ private:
     std::shared_ptr<IMessageSender> messageSender;
     const system::RoutingTypes::ChannelAddress destinationAddress;
     const std::string globalClusterControllerAddress;
+
+    ADD_LOGGER(HttpMessagingStub);
 };
 
 } // namespace joynr

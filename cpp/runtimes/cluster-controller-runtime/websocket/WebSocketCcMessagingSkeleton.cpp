@@ -177,7 +177,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const std::string& mess
             return;
         }
 
-        JOYNR_LOG_DEBUG(logger, "<<<< INCOMING <<<< {}", message);
+        JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", joynrMsg.toLogMessage());
 
         auto onFailure = [joynrMsg](const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_ERROR(logger,
