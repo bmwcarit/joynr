@@ -77,11 +77,9 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.messageSerializerFactory = messageSerializerFactory;
         this.channelId = channelId;
         this.receiverId = receiverId;
-        logger.debug("Created with httpBridgeEnabled: {}\n\tsharedSubscriptionsEnabled: {}\n\t"
-                + "ownAddress: {}\n\tmessageRouter: {}\n\tmqttClientFactory: {}"
-                + "\n\tmessageSerializer: {}\n\tchannelId: {}", new Object[]{ httpBridgeEnabled,
-                sharedSubscriptionsEnabled, this.ownAddress, this.messageRouter, this.mqttClientFactory,
-                this.messageSerializerFactory, this.channelId });
+        logger.debug("Created with httpBridgeEnabled: {} sharedSubscriptionsEnabled: {} "
+                + "ownAddress: {} channelId: {}", new Object[]{ httpBridgeEnabled, sharedSubscriptionsEnabled,
+                this.ownAddress, this.channelId });
     }
 
     @Override
