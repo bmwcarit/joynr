@@ -163,38 +163,8 @@ bool «className»::usesClusterController() const{
 	«IF attribute.readable»
 		«produceSyncGetterSignature(attribute, className)»
 		{
-			joynr::Request request;
-			// explicitly set to no parameters
-			request.setParams();
-			request.setMethodName("get«attributeName.toFirstUpper»");
-			auto future = std::make_shared<joynr::Future<«returnType»>>();
-
-			std::function<void(const «returnType»& «attributeName»)> onSuccess =
-					[future] (const «returnType»& «attributeName») {
-						future->onSuccess(«attributeName»);
-					};
-
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onError =
-					[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
-						future->onError(error);
-					};
-
-			JOYNR_LOG_DEBUG(logger,
-					"REQUEST call proxy: requestReplyId: {}, method: {}, proxy "
-					"participantId: {}, provider participantId: [{}]",
-					request.getRequestReplyId(),
-					request.getMethodName(),
-					proxyParticipantId,
-					providerParticipantId);
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccess), std::move(onError));
-			operationRequest(replyCaller, request);
+			auto future = get«attributeName.toFirstUpper»Async();
 			future->get(«attributeName»);
-			JOYNR_LOG_DEBUG(logger,
-					"REQUEST returns successful: requestReplyId: {}, method: {}, response: {}",
-					request.getRequestReplyId(),
-					request.getMethodName(),
-					joynr::serializer::serializeToJson(«attributeName»)
-			);
 		}
 
 		«produceAsyncGetterSignature(attribute, className)»
@@ -315,40 +285,8 @@ bool «className»::usesClusterController() const{
 
 		«produceSyncSetterSignature(attribute, className)»
 		{
-			joynr::Request request;
-			request.setMethodName("set«attributeName.toFirstUpper»");
-			request.setParamDatatypes({"«attribute.joynrTypeName»"});
-			request.setParams(«attributeName»);
-
-			auto future = std::make_shared<joynr::Future<void>>();
-
-
-			std::function<void()> onSuccess =
-					[future] () {
-						future->onSuccess();
-					};
-
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onError =
-					[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
-						future->onError(error);
-					};
-
-			JOYNR_LOG_DEBUG(logger,
-					"REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy "
-					"participantId: {}, provider participantId: [{}]",
-					request.getRequestReplyId(),
-					request.getMethodName(),
-					joynr::serializer::serializeToJson(«attributeName»),
-					proxyParticipantId,
-					providerParticipantId);
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccess), std::move(onError));
-			operationRequest(replyCaller, request);
+			auto future = set«attributeName.toFirstUpper»Async(«attributeName»);
 			future->get();
-			JOYNR_LOG_DEBUG(logger,
-					"REQUEST returns successful: requestReplyId: {}, method: {}",
-					request.getRequestReplyId(),
-					request.getMethodName()
-			);
 		}
 
 	«ENDIF»
@@ -425,32 +363,8 @@ bool «className»::usesClusterController() const{
 	«IF !method.fireAndForget»
 		«produceSyncMethodSignature(method, className)»
 		{
-			«produceParameterSetters(method)»
-			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
-
-			std::function<void(«outputTypedConstParamList»)> onSuccess =
-					[future] («outputTypedConstParamList») {
-						future->onSuccess(«outputUntypedParamList»);
-					};
-
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onError =
-				[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
-					future->onError(error);
-				};
-
-			«logMethodCall(method)»
-
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccess), std::move(onError));
-			operationRequest(replyCaller, request);
-			future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
-			JOYNR_LOG_DEBUG(logger,
-				"REQUEST returns successful: requestReplyId: {}, method: {}, response: «getParamsPlaceholders(method.outputParameters.size)»",
-				request.getRequestReplyId(),
-				request.getMethodName()«IF !method.outputParameters.empty»,«ENDIF»
-				«FOR outParam : method.outputParameters SEPARATOR ", "»
-					joynr::serializer::serializeToJson(«outParam.joynrName»)
-				«ENDFOR»
-			);
+			auto future = «method.joynrName»Async(«method.commaSeperatedUntypedInputParameterList»);
+			future->get(«method.commaSeperatedUntypedOutputParameterList»);
 		}
 
 		«produceAsyncMethodSignature(francaIntf, method, className)»
