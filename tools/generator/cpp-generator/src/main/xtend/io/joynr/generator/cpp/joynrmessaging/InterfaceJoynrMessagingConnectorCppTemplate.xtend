@@ -211,15 +211,19 @@ bool «className»::usesClusterController() const{
 				}
 			};
 
-			JOYNR_LOG_DEBUG(logger,
-					"REQUEST call proxy: requestReplyId: {}, method: {}, proxy "
-					"participantId: {}, provider participantId: [{}]",
-					request.getRequestReplyId(),
-					request.getMethodName(),
-					proxyParticipantId,
-					providerParticipantId);
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-			operationRequest(replyCaller, request);
+			try {
+				JOYNR_LOG_DEBUG(logger,
+						"REQUEST call proxy: requestReplyId: {}, method: {}, proxy "
+						"participantId: {}, provider participantId: [{}]",
+						request.getRequestReplyId(),
+						request.getMethodName(),
+						proxyParticipantId,
+						providerParticipantId);
+				auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
+				operationRequest(replyCaller, request);
+			} catch (const std::invalid_argument& exception) {
+				throw joynr::exceptions::MethodInvocationException(exception.what());
+			}
 
 			return future;
 		}
@@ -270,16 +274,20 @@ bool «className»::usesClusterController() const{
 				}
 			};
 
-			JOYNR_LOG_DEBUG(logger,
-					"REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy "
-					"participantId: {}, provider participantId: [{}]",
-					request.getRequestReplyId(),
-					request.getMethodName(),
-					joynr::serializer::serializeToJson(«attributeName»),
-					proxyParticipantId,
-					providerParticipantId);
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-			operationRequest(replyCaller, request);
+			try {
+				JOYNR_LOG_DEBUG(logger,
+						"REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy "
+						"participantId: {}, provider participantId: [{}]",
+						request.getRequestReplyId(),
+						request.getMethodName(),
+						joynr::serializer::serializeToJson(«attributeName»),
+						proxyParticipantId,
+						providerParticipantId);
+				auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
+				operationRequest(replyCaller, request);
+			} catch (const std::invalid_argument& exception) {
+				throw joynr::exceptions::MethodInvocationException(exception.what());
+			}
 			return future;
 		}
 
@@ -412,10 +420,14 @@ bool «className»::usesClusterController() const{
 					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 				};
 
-			«logMethodCall(method)»
+			try {
+				«logMethodCall(method)»
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-			operationRequest(replyCaller, request);
+				auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
+				operationRequest(replyCaller, request);
+			} catch (const std::invalid_argument& exception) {
+				throw joynr::exceptions::MethodInvocationException(exception.what());
+			}
 			return future;
 		}
 	«ELSE»
