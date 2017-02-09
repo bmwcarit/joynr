@@ -44,7 +44,7 @@ public class MethodSignature {
         int result = 1;
         result = prime * result + ((parameterTypeNames == null) ? 0 : Arrays.hashCode(parameterTypeNames));
         result = prime * result + ((methodName == null) ? 0 : methodName.hashCode());
-        result = prime * result + ((requestCaller == null) ? 0 : requestCaller.getClass().hashCode());
+        result = prime * result + ((requestCaller == null) ? 0 : requestCaller.getProxy().getClass().hashCode());
         return result;
     }
 
@@ -78,7 +78,7 @@ public class MethodSignature {
             if (other.requestCaller != null) {
                 return false;
             }
-        } else if (!requestCaller.getClass().equals(other.requestCaller.getClass())) {
+        } else if (!requestCaller.getProxy().getClass().equals(other.requestCaller.getProxy().getClass())) {
             return false;
         }
         return true;

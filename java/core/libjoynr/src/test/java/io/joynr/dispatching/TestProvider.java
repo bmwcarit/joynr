@@ -21,48 +21,50 @@ package io.joynr.dispatching;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import io.joynr.provider.Deferred;
-import io.joynr.provider.Promise;
-import io.joynr.JoynrVersion;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import joynr.Request;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@JoynrVersion(major = 6, minor = 16)
-public class TestRequestCaller extends WaitTillCondition implements RequestCaller {
+import io.joynr.provider.Promise;
+import joynr.Request;
+import joynr.tests.DefaulttestProvider;
+
+public class TestProvider extends DefaulttestProvider {
 
     // maps from request payload to response
     private Map<Object, Object> sentPayloads = new HashMap<Object, Object>();
-    private static final Logger logger = LoggerFactory.getLogger(TestRequestCaller.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestProvider.class);
+    private WaitTillCondition waitTillCondition;
 
-    public TestRequestCaller(int numberOfMessagesExpected) {
-        super(numberOfMessagesExpected);
+    public TestProvider(int numberOfMessagesExpected) {
+        waitTillCondition = new WaitTillCondition(numberOfMessagesExpected) {
+
+            @Override
+            protected Collection<Object> getReceivedPayloads() {
+                return sentPayloads.keySet();
+            }
+        };
     }
 
-    public Promise<Deferred<String>> respond(String payload) {
-        Deferred<String> deferred = new Deferred<String>();
+    @Override
+    public Promise<MethodWithStringsDeferred> methodWithStrings(String payload) {
+
+        MethodWithStringsDeferred deferred = new MethodWithStringsDeferred();
         logger.info("Responding to payload: " + payload.toString());
         String response = "response to " + payload.toString();
         sentPayloads.put(payload, response);
 
-        releaseSemaphorePermit();
+        waitTillCondition.releaseSemaphorePermit();
         deferred.resolve(response);
-        return new Promise<Deferred<String>>(deferred);
+        return new Promise<>(deferred);
     }
 
     public Collection<Object> getSentPayloads() {
         return sentPayloads.values();
-    }
-
-    @Override
-    protected Collection<Object> getReceivedPayloads() {
-        return sentPayloads.keySet();
     }
 
     public String getSentPayloadFor(String payload) {
@@ -82,4 +84,19 @@ public class TestRequestCaller extends WaitTillCondition implements RequestCalle
         }
     }
 
+    public void waitForMessage(int timeOutMs) {
+        waitTillCondition.waitForMessage(timeOutMs);
+    }
+
+    public void assertAllPayloadsReceived(int timeOutMs) {
+        waitTillCondition.assertAllPayloadsReceived(timeOutMs);
+    }
+
+    public void assertReceivedPayloadsContainsNot(String payloads) {
+        waitTillCondition.assertReceivedPayloadsContainsNot(payloads);
+    }
+
+    public void assertReceivedPayloadsContains(String payloads) {
+        waitTillCondition.assertReceivedPayloadsContains(payloads);
+    }
 }

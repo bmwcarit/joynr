@@ -22,22 +22,33 @@ package io.joynr.dispatching;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class TestOneWayRecipient extends WaitTillCondition implements RequestCaller {
+import joynr.tests.DefaulttestProvider;
 
-    public TestOneWayRecipient(int numberOfMessagesExpected) {
-        super(numberOfMessagesExpected);
-    }
-
+public class TestOneWayRecipient extends DefaulttestProvider {
+    private WaitTillCondition waitTillCondition;
     private Collection<Object> receivedPayloads = new ArrayList<Object>();
 
-    public void receive(String message) {
-        receivedPayloads.add(message);
-        releaseSemaphorePermit();
+    public TestOneWayRecipient(int numberOfMessagesExpected) {
+        waitTillCondition = new WaitTillCondition(numberOfMessagesExpected) {
+
+            @Override
+            protected Collection<Object> getReceivedPayloads() {
+                return receivedPayloads;
+            }
+        };
     }
 
     @Override
+    public void fireAndForgetMethod(String message) {
+        receivedPayloads.add(message);
+        waitTillCondition.releaseSemaphorePermit();
+    }
+
     protected Collection<Object> getReceivedPayloads() {
         return receivedPayloads;
     }
 
+    public void assertAllPayloadsReceived(long timeOutMs) {
+        waitTillCondition.assertAllPayloadsReceived(timeOutMs);
+    }
 }

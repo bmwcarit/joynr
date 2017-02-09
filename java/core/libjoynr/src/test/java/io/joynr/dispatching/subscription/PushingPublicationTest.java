@@ -117,7 +117,7 @@ public class PushingPublicationTest {
 
         testSubscriptionPublisherImpl testSubscriptionPublisher = new testSubscriptionPublisherImpl();
         provider.setSubscriptionPublisher(testSubscriptionPublisher);
-        when(providerContainer.getRequestCaller()).thenReturn(new RequestCallerFactory().create(provider));
+        when(providerContainer.getProviderProxy()).thenReturn(new RequestCallerFactory().create(provider).getProxy());
         when(providerContainer.getSubscriptionPublisher()).thenReturn(testSubscriptionPublisher);
         setupMocks();
     }

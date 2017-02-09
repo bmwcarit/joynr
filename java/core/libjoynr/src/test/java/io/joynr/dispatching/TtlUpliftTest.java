@@ -192,7 +192,7 @@ public class TtlUpliftTest {
         joynrMessageFactoryWithTtlUplift = injectorWithTtlUplift.getInstance(JoynrMessageFactory.class);
 
         requestCaller = new RequestCallerFactory().create(provider);
-        when(providerContainer.getRequestCaller()).thenReturn(requestCaller);
+        when(providerContainer.getProviderProxy()).thenReturn(requestCaller.getProxy());
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
         Deferred<String> valueToPublishDeferred = new Deferred<String>();
         valueToPublishDeferred.resolve(valueToPublish);
@@ -212,7 +212,7 @@ public class TtlUpliftTest {
         publicationManagerWithTtlUplift = (PublicationManagerImpl) injectorWithPublicationUplift.getInstance(PublicationManager.class);
 
         payload = "payload";
-        Method method = TestRequestCaller.class.getMethod("respond", new Class[]{ String.class });
+        Method method = TestProvider.class.getMethod("methodWithStrings", new Class[]{ String.class });
         request = new Request(method.getName(), new String[]{ payload }, method.getParameterTypes());
         messagingQos = new MessagingQos(TTL);
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());

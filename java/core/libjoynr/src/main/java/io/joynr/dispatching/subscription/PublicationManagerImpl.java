@@ -229,7 +229,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         MessagingQos messagingQos = createMessagingQos(subscriptionQos);
 
         try {
-            Method method = findGetterForAttributeName(providerContainer.getRequestCaller().getClass(),
+            Method method = findGetterForAttributeName(providerContainer.getProviderProxy().getClass(),
                                                        subscriptionRequest.getSubscribedToName());
 
             triggerPublication(publicationInformation, providerContainer, method);
