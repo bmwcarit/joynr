@@ -51,6 +51,7 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -63,7 +64,6 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
 import joynr.MulticastSubscriptionQos;
-import joynr.OnChangeSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.DefaulttestProvider;
@@ -244,6 +244,13 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     protected static class TestProvider extends DefaulttestProvider {
+        @Override
+        public Promise<EchoCallingPrincipalDeferred> echoCallingPrincipal() {
+            EchoCallingPrincipalDeferred deferred = new EchoCallingPrincipalDeferred();
+            deferred.resolve(this.getCallContext().getPrincipal());
+            return new Promise<EchoCallingPrincipalDeferred>(deferred);
+        }
+
         @Override
         public Promise<Deferred<Integer>> getAttributeWithProviderRuntimeException() {
             Deferred<Integer> deferred = new Deferred<Integer>();
@@ -1211,4 +1218,11 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                                                                        TimeUnit.MILLISECONDS));
     }
 
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testCallingPrincipal() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        String callingPrincipal = proxy.echoCallingPrincipal();
+        assertEquals(System.getProperty("user.name"), callingPrincipal);
+    }
 }

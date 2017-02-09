@@ -181,10 +181,16 @@ interface test {
 
 	attribute TypeDefForPrimitive[] typeDefForPrimitiveArray
 
-	method fireAndForgetMethod fireAndForget {
-		in {
-			String input
+	method echoCallingPrincipal {
+		out {
+			String callingPrincipal
 		}
+	}
+
+	method fireAndForgetMethod fireAndForget {
+	    in {
+	        String input
+	    }
 	}
 
 	method addNumbers {

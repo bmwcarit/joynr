@@ -3,7 +3,7 @@ package io.joynr.provider;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,22 @@ package io.joynr.provider;
  */
 
 public abstract class AbstractJoynrProvider implements JoynrProvider {
+    static ThreadLocal<CallContext> callContext = new ThreadLocal<CallContext>() {
+        @Override
+        protected CallContext initialValue() {
+            return new CallContext();
+        }
+    };
+
     public AbstractJoynrProvider() {
     }
+
+    public CallContext getCallContext() {
+        return callContext.get();
+    }
+
+    public static void setCallContext(CallContext callContext) {
+        AbstractJoynrProvider.callContext.set(callContext);
+    }
+
 }
