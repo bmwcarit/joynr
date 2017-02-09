@@ -990,7 +990,7 @@
 									<arguments>
 										<argument>install</argument>
 										<argument>--prefix=${project.build.directory}/node-classes</argument>
-										<argument>browserify</argument>
+										<argument>browserify@13.3.0</argument>
 									</arguments>
 								</configuration>
 								<goals>
