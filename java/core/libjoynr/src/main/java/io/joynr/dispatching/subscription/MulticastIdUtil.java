@@ -56,4 +56,7 @@ public final class MulticastIdUtil {
         return partition;
     }
 
+    public static String sanitizeForPartition(String value) {
+        return value.replaceAll("[^a-zA-Z0-9]", "");
+    }
 }
