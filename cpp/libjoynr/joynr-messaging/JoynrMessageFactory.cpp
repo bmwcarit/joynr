@@ -53,6 +53,7 @@ JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
     // create message and set type
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getRequestReplyId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -64,6 +65,7 @@ JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getRequestReplyId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload), false);
     return msg;
 }
@@ -102,6 +104,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -114,6 +117,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionRequest(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -126,6 +130,7 @@ JoynrMessage JoynrMessageFactory::createMulticastSubscriptionRequest(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -138,6 +143,7 @@ JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -149,6 +155,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionReply(const std::string& sen
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload), false);
     return msg;
 }
@@ -160,6 +167,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionStop(const std::string& send
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }

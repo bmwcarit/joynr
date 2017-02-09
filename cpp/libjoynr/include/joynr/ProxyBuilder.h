@@ -204,7 +204,7 @@ void ProxyBuilder<T>::buildAsync(
         }
 
         JOYNR_LOG_DEBUG(logger,
-                        "DISCOVERY proxy created for provider participantId: {}, for domain: [{}], "
+                        "DISCOVERY proxy created for provider participantId: {}, domain: [{}], "
                         "interface: {}",
                         discoverEntry.getParticipantId(),
                         domain,

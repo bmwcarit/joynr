@@ -25,6 +25,8 @@
 namespace joynr
 {
 
+INIT_LOGGER(MqttMessagingStub);
+
 MqttMessagingStub::MqttMessagingStub(std::shared_ptr<IMessageSender> messageSender,
                                      const system::RoutingTypes::MqttAddress& destinationAddress,
                                      const std::string& globalClusterControllerAddress)
@@ -44,6 +46,7 @@ void MqttMessagingStub::transmit(
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
         message.setHeaderReplyAddress(globalClusterControllerAddress);
     }
+    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message.toLogMessage());
     messageSender->sendMessage(destinationAddress, message, onFailure);
 }
 

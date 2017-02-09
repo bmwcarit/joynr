@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <utility>
 #include <memory>
 #include <chrono>
@@ -79,6 +80,7 @@ const std::string& JoynrMessage::CUSTOM_HEADER_PREFIX()
     return customHeaderPrefix;
 }
 
+const std::string JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID = "z4";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY = "oneWay";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_REPLY = "reply";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST = "request";
@@ -369,6 +371,21 @@ bool JoynrMessage::isReceivedFromGlobal() const
 void JoynrMessage::setReceivedFromGlobal(bool receivedFromGlobal)
 {
     this->receivedFromGlobal = receivedFromGlobal;
+}
+
+std::string JoynrMessage::toLogMessage() const
+{
+    std::stringstream ss;
+    ss << "type=" << type;
+    ss << ", header={";
+    for (auto it = header.cbegin(); it != header.cend(); ++it) {
+        if (it != header.cbegin()) {
+            ss << ", ";
+        }
+        ss << it->first << "=" << it->second;
+    }
+    ss << "}";
+    return ss.str();
 }
 
 } // namespace joynr

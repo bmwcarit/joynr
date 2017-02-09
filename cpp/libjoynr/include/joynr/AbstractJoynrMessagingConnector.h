@@ -59,24 +59,6 @@ public:
     /**
      * @brief Makes a request and returns the received response via the callback.
      *
-     * @param methodName
-     * @param replyCaller
-
-     */
-    template <typename T>
-    void attributeRequest(const std::string& methodName, std::shared_ptr<IReplyCaller> replyCaller)
-    {
-        std::string attributeID = domain + ":" + interfaceName + ":" + methodName;
-        Request request;
-        // explicitly set to no parameters
-        request.setParams();
-        request.setMethodName(methodName);
-        sendRequest(request, replyCaller);
-    }
-
-    /**
-     * @brief Makes a request and returns the received response via the callback.
-     *
      * @param replyCaller
      * @param request
      */

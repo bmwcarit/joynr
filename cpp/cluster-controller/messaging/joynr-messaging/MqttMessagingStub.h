@@ -23,6 +23,7 @@
 
 #include "joynr/IMessaging.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
@@ -49,6 +50,7 @@ private:
     std::shared_ptr<IMessageSender> messageSender;
     const system::RoutingTypes::MqttAddress destinationAddress;
     const std::string globalClusterControllerAddress;
+    ADD_LOGGER(MqttMessagingStub);
 };
 
 } // namespace joynr

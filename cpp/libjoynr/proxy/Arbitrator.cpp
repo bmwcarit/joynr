@@ -92,7 +92,7 @@ void Arbitrator::startArbitration(
 
         std::string serializedDomainsList = boost::algorithm::join(domains, ", ");
         JOYNR_LOG_DEBUG(logger,
-                        "DISCOVERY lookup for domain: {}, interface: [{}]",
+                        "DISCOVERY lookup for domain: [{}], interface: {}",
                         serializedDomainsList,
                         interfaceName);
 

@@ -100,6 +100,7 @@ public:
      */
     static const std::string& HEADER_EFFORT();
 
+    static const std::string CUSTOM_HEADER_REQUEST_REPLY_ID;
     static const std::string VALUE_MESSAGE_TYPE_ONE_WAY;
     static const std::string VALUE_MESSAGE_TYPE_REQUEST;
     static const std::string VALUE_MESSAGE_TYPE_REPLY;
@@ -387,6 +388,12 @@ public:
     {
         archive(MUESLI_NVP(type), MUESLI_NVP(header), MUESLI_NVP(payload));
     }
+
+    /**
+     * @brief toLogMessage Used to print log messages.
+     * @return a string representing this message used for logging.
+     */
+    std::string toLogMessage() const;
 
 private:
     /**
