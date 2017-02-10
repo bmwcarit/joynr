@@ -39,6 +39,9 @@ void ClusterControllerSettings::checkSettings()
         setMulticastReceiverDirectoryPersistenceFilename(
                 DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME());
     }
+    if (!settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX())) {
+        setMqttClientIdPrefix(DEFAULT_MQTT_CLIENT_ID_PREFIX());
+    }
 }
 
 const std::string& ClusterControllerSettings::
@@ -58,6 +61,18 @@ const std::string& ClusterControllerSettings::SETTING_WS_TLS_PORT()
 const std::string& ClusterControllerSettings::SETTING_WS_PORT()
 {
     static const std::string value("cluster-controller/ws-port");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_MQTT_CLIENT_ID_PREFIX()
+{
+    static const std::string value("cluster-controller/mqtt-client-id-prefix");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
+{
+    static const std::string value("joynr");
     return value;
 }
 
@@ -115,12 +130,29 @@ void ClusterControllerSettings::setWsPort(std::uint16_t port)
     settings.set(SETTING_WS_PORT(), port);
 }
 
+bool ClusterControllerSettings::isMqttClientIdPrefixSet() const
+{
+    return settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX());
+}
+
+std::string ClusterControllerSettings::getMqttClientIdPrefix() const
+{
+    return settings.get<std::string>(SETTING_MQTT_CLIENT_ID_PREFIX());
+}
+
+void ClusterControllerSettings::setMqttClientIdPrefix(const std::string& mqttClientId)
+{
+    settings.set(SETTING_MQTT_CLIENT_ID_PREFIX(), mqttClientId);
+}
 void ClusterControllerSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {}  = {}",
                     SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(),
                     getMulticastReceiverDirectoryPersistenceFilename());
+
+    JOYNR_LOG_DEBUG(
+            logger, "SETTING: {}  = {}", SETTING_MQTT_CLIENT_ID_PREFIX(), getMqttClientIdPrefix());
 
     if (isWsTLSPortSet()) {
         JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_WS_TLS_PORT(), getWsTLSPort());

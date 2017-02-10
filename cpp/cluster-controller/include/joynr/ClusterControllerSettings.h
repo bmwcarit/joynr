@@ -35,9 +35,11 @@ public:
     static const std::string& SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
     static const std::string& SETTING_WS_TLS_PORT();
     static const std::string& SETTING_WS_PORT();
+    static const std::string& SETTING_MQTT_CLIENT_ID_PREFIX();
 
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
     static const std::string& DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
+    static const std::string& DEFAULT_MQTT_CLIENT_ID_PREFIX();
 
     explicit ClusterControllerSettings(Settings& settings);
     ClusterControllerSettings(const ClusterControllerSettings&) = default;
@@ -55,6 +57,10 @@ public:
     bool isWsPortSet() const;
     std::uint16_t getWsPort() const;
     void setWsPort(std::uint16_t port);
+
+    bool isMqttClientIdPrefixSet() const;
+    std::string getMqttClientIdPrefix() const;
+    void setMqttClientIdPrefix(const std::string& mqttClientId);
 
     void printSettings() const;
 
