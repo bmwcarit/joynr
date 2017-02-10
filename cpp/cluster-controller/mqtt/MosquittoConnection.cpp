@@ -29,10 +29,10 @@ namespace joynr
 INIT_LOGGER(MosquittoConnection);
 
 MosquittoConnection::MosquittoConnection(const MessagingSettings& settings,
-                                         const std::string& receiverId)
-        : mqttSettings(),
+                                         const std::string& clientId)
+        : mosquittopp(clientId.c_str()),
+          mqttSettings(),
           brokerUrl(settings.getBrokerUrl()),
-          receiverId(receiverId),
           channelId(),
           subscribeChannelMid(),
           topic(),

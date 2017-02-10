@@ -47,7 +47,7 @@ class MosquittoConnection : public mosqpp::mosquittopp
 {
 
 public:
-    explicit MosquittoConnection(const MessagingSettings& settings, const std::string& receiverId);
+    explicit MosquittoConnection(const MessagingSettings& settings, const std::string& clientId);
 
     ~MosquittoConnection() override;
 
@@ -88,7 +88,6 @@ private:
     MqttSettings mqttSettings;
     const BrokerUrl brokerUrl;
 
-    std::string receiverId;
     std::string channelId;
     int subscribeChannelMid;
     std::string topic;
