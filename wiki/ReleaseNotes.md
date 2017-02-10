@@ -1,3 +1,11 @@
+#joynr 0.23.2
+
+## API relevant changes
+none
+
+## Other changes
+* **[JEE]** Fixed issue that caused joynr not to start correctly with debug logging enabled
+
 #joynr 0.23.1
 
 ## API relevant changes
