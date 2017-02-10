@@ -100,7 +100,6 @@ private:
     std::function<void(const exceptions::DiscoveryException& exception)> onErrorCallback;
 
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);
-    std::string participantId;
     bool arbitrationFinished;
     std::atomic<bool> arbitrationRunning;
     std::atomic<bool> keepArbitrationRunning;

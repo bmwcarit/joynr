@@ -55,7 +55,6 @@ Arbitrator::Arbitrator(
           discoveredIncompatibleVersions(),
           arbitrationError("Arbitration could not be finished in time."),
           arbitrationStrategyFunction(std::move(arbitrationStrategyFunction)),
-          participantId(""),
           arbitrationFinished(false),
           arbitrationRunning(false),
           keepArbitrationRunning(false),
