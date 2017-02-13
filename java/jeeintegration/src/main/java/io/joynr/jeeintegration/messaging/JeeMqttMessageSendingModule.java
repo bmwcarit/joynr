@@ -3,7 +3,7 @@ package io.joynr.jeeintegration.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,9 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.mqtt.DefaultMqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
 import io.joynr.messaging.mqtt.MqttMessageReplyToAddressCalculator;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
@@ -95,6 +97,7 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
 
         bind(MqttClientFactory.class).to(MqttPahoClientFactory.class);
         bind(MqttMessageReplyToAddressCalculator.class).toProvider(SharedSubscriptionReplyToAddressCalculatorProvider.class);
+        bind(MqttClientIdProvider.class).to(DefaultMqttClientIdProvider.class);
 
         Multibinder<MulticastAddressCalculator> multicastAddressCalculators = Multibinder.newSetBinder(binder(),
                                                                                                        new TypeLiteral<MulticastAddressCalculator>() {
