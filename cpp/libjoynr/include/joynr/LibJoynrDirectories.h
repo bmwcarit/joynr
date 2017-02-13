@@ -30,7 +30,6 @@ namespace joynr
 
 typedef Directory<std::string, RequestCaller> RequestCallerDirectory;
 typedef Directory<std::string, IReplyCaller> ReplyCallerDirectory;
-typedef Directory<std::string, ISubscriptionCallback> AttributeSubscriptionDirectory;
 
 } // namespace joynr
 #endif // LIBJOYNRDIRECTORIES_H
