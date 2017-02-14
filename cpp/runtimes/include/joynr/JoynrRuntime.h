@@ -82,7 +82,11 @@ public:
      * returned during the provider registration process.
      * @param participantId The participantId of the provider which shall be unregistered
      */
-    virtual void unregisterProvider(const std::string& participantId) = 0;
+    void unregisterProvider(const std::string& participantId)
+    {
+        assert(capabilitiesRegistrar);
+        capabilitiesRegistrar->remove(participantId);
+    }
 
     /**
      * @brief Unregisters the provider from the joynr framework

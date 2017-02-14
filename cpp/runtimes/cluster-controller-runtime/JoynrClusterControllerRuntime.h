@@ -89,7 +89,6 @@ public:
 
     ~JoynrClusterControllerRuntime() override;
 
-    void unregisterProvider(const std::string& participantId) override;
     void start();
     void stop(bool deleteChannel = false);
 

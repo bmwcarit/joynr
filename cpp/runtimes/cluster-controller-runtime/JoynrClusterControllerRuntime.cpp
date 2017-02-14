@@ -747,12 +747,6 @@ std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
     return runtime;
 }
 
-void JoynrClusterControllerRuntime::unregisterProvider(const std::string& participantId)
-{
-    assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->remove(participantId);
-}
-
 void JoynrClusterControllerRuntime::start()
 {
     startMessaging();

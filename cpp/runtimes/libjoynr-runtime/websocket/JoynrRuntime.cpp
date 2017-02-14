@@ -83,4 +83,5 @@ std::unique_ptr<Settings> JoynrRuntime::createSettings(const std::string& pathTo
 
     return settings;
 }
+
 } // namespace joynr

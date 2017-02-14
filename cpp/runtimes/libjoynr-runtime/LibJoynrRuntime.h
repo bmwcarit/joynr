@@ -57,8 +57,6 @@ public:
     explicit LibJoynrRuntime(std::unique_ptr<Settings> settings);
     ~LibJoynrRuntime() override;
 
-    void unregisterProvider(const std::string& participantId) override;
-
 protected:
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 

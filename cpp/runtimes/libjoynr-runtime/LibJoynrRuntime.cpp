@@ -203,10 +203,4 @@ std::shared_ptr<IMessageRouter> LibJoynrRuntime::getMessageRouter()
     return libJoynrMessageRouter;
 }
 
-void LibJoynrRuntime::unregisterProvider(const std::string& participantId)
-{
-    assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->remove(participantId);
-}
-
 } // namespace joynr
