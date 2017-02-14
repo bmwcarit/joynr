@@ -31,15 +31,23 @@ import com.google.inject.name.Named;
 @Singleton
 public class DefaultMqttClientIdProvider implements MqttClientIdProvider {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultMqttClientIdProvider.class);
+    private static final String DEFAULT_CLIENT_ID_PREFIX = "";
+
+    static class ClientIdPrefixHolder {
+        @Inject(optional = true)
+        @Named(MqttModule.PROPERTY_KEY_MQTT_CLIENT_ID_PREFIX)
+        String clientIdPrefix = DEFAULT_CLIENT_ID_PREFIX;
+    }
 
     private String clientId;
 
     @Inject
-    public DefaultMqttClientIdProvider(@Named(RECEIVERID) String receiverId) {
+    public DefaultMqttClientIdProvider(@Named(RECEIVERID) String receiverId, ClientIdPrefixHolder clientIdPrefixHolder) {
+        String clientIdPrefix = clientIdPrefixHolder.clientIdPrefix;
         if (receiverId.length() != 16) {
             LOG.warn("ReceiverId " + receiverId + " is not a UUID of expected length 16");
         }
-        this.clientId = "joynr:" + receiverId.substring(0, Math.min(17, receiverId.length() + 1));
+        this.clientId = clientIdPrefix + "joynr:" + receiverId.substring(0, Math.min(17, receiverId.length() + 1));
     }
 
     @Override
