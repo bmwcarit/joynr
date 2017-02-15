@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,10 @@ class ICapabilitiesClient
 {
 public:
     virtual ~ICapabilitiesClient() = default;
-    virtual void add(
-            const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList) = 0;
+    virtual void add(const types::GlobalDiscoveryEntry& entry,
+                     std::function<void()> onSuccess,
+                     std::function<void(const exceptions::JoynrRuntimeException& error)>
+                             onError = nullptr) = 0;
     virtual void remove(const std::string& participantId) = 0;
     virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
     virtual std::vector<types::GlobalDiscoveryEntry> lookup(const std::vector<std::string>& domains,

@@ -89,8 +89,10 @@ public class ExpiredDiscoveryEntryCacheCleanerTest {
 
         subject.scheduleCleanUpForCaches(cleanupAction, cache);
 
-        verify(scheduledExecutorService).scheduleAtFixedRate(runnableArgumentCaptor.capture(), eq(1L), eq(1L),
-            eq(TimeUnit.MINUTES));
+        verify(scheduledExecutorService).scheduleAtFixedRate(runnableArgumentCaptor.capture(),
+                                                             eq(1L),
+                                                             eq(1L),
+                                                             eq(TimeUnit.MINUTES));
         Runnable cleanupTask = runnableArgumentCaptor.getValue();
         cleanupTask.run();
         verify(cache).getAllDiscoveryEntries();

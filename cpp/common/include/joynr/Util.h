@@ -28,6 +28,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <memory>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
@@ -208,6 +209,12 @@ std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePo
  * Converts a std::chrono::system_clock::time_point to a printable string
  */
 std::string toDateString(const std::chrono::system_clock::time_point& timePoint);
+
+template <typename T>
+auto as_weak_ptr(std::shared_ptr<T> ptr)
+{
+    return std::weak_ptr<T>(ptr);
+}
 
 } // namespace util
 

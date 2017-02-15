@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/JoynrMessageFactory.h"
@@ -64,8 +63,8 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
-        messageSender(mockMessageRouter),
-        dispatcher(&messageSender, singleThreadIOService.getIOService()),
+        messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
+        dispatcher(messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
         singleThreadIOService.start();
@@ -74,7 +73,7 @@ public:
     void SetUp(){
         //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
+        subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadIOService.getIOService(), mockMessageRouter);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
@@ -94,9 +93,9 @@ protected:
     std::string proxyParticipantId;
 
     JoynrMessageFactory messageFactory;
-    JoynrMessageSender messageSender;
+    std::shared_ptr<JoynrMessageSender> messageSender;
     Dispatcher dispatcher;
-    SubscriptionManager * subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
 private:
     DISALLOW_COPY_AND_ASSIGN(BroadcastSubscriptionTest);
 };
@@ -117,6 +116,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     std::string subscribeToName = "locationUpdate";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
+                1000, // publication ttl
                 100 // minInterval_ms
     );
 
@@ -128,7 +128,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -167,6 +167,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     std::string subscribeToName = "locationUpdateWithSpeed";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
+                1000, // publication ttl
                 100 // minInterval_ms
     );
 
@@ -178,7 +179,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback= std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation, double>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

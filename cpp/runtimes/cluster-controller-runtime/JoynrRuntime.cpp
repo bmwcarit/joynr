@@ -39,32 +39,36 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settin
     return JoynrClusterControllerRuntime::create(std::move(settings));
 }
 
-void JoynrRuntime::createRuntimeAsync(
+std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         const std::string& pathToLibjoynrSettings,
-        std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)> runtimeCreatedCallback,
-        std::function<void(exceptions::JoynrRuntimeException& exception)>
-                runtimeCreationErrorCallback,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         const std::string& pathToMessagingSettings)
 {
+    std::unique_ptr<JoynrRuntime> runtime;
+
     try {
-        runtimeCreatedCallback(std::unique_ptr<JoynrRuntime>(
-                createRuntime(pathToLibjoynrSettings, pathToMessagingSettings)));
+        runtime = createRuntime(pathToLibjoynrSettings, pathToMessagingSettings);
+        onSuccess();
     } catch (exceptions::JoynrRuntimeException& exception) {
-        runtimeCreationErrorCallback(exception);
+        onError(exception);
     }
+    return runtime;
 }
 
-void JoynrRuntime::createRuntimeAsync(
+std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
-        std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)> runtimeCreatedCallback,
-        std::function<void(exceptions::JoynrRuntimeException& exception)>
-                runtimeCreationErrorCallback)
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException& exception)> onError)
 {
+    std::unique_ptr<JoynrRuntime> runtime;
     try {
-        runtimeCreatedCallback(std::unique_ptr<JoynrRuntime>(createRuntime(std::move(settings))));
+        runtime = createRuntime(std::move(settings));
+        onSuccess();
     } catch (exceptions::JoynrRuntimeException& exception) {
-        runtimeCreationErrorCallback(exception);
+        onError(exception);
     }
+    return runtime;
 }
 
 } // namespace joynr

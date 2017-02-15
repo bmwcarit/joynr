@@ -266,6 +266,17 @@ std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
     return value;
 }
 
+const std::string& MessagingSettings::ACCESS_CONTROL_ENABLE()
+{
+    static const std::string value("access-control/enable");
+    return value;
+}
+
+bool MessagingSettings::DEFAULT_ENABLE_ACCESS_CONTROLLER()
+{
+    return false;
+}
+
 const std::string& MessagingSettings::SETTING_MAXIMUM_TTL_MS()
 {
     static const std::string value("messaging/max-ttl-ms");
@@ -540,6 +551,16 @@ void MessagingSettings::setBrokerTimeout(std::int64_t timeout_ms)
     settings.set(SETTING_BROKER_TIMEOUT_MS(), timeout_ms);
 }
 
+bool MessagingSettings::enableAccessController() const
+{
+    return settings.get<bool>(ACCESS_CONTROL_ENABLE());
+}
+
+void MessagingSettings::setEnableAccessController(bool enable)
+{
+    settings.set(ACCESS_CONTROL_ENABLE(), enable);
+}
+
 std::uint64_t MessagingSettings::getMaximumTtlMs() const
 {
     return settings.get<std::uint64_t>(SETTING_MAXIMUM_TTL_MS());
@@ -664,6 +685,9 @@ void MessagingSettings::checkSettings()
     }
     if (!settings.contains(SETTING_TTL_UPLIFT_MS())) {
         settings.set(SETTING_TTL_UPLIFT_MS(), DEFAULT_TTL_UPLIFT_MS());
+    }
+    if (!settings.contains(ACCESS_CONTROL_ENABLE())) {
+        setEnableAccessController(DEFAULT_ENABLE_ACCESS_CONTROLLER());
     }
 }
 

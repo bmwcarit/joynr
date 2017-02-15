@@ -17,7 +17,10 @@
  * #L%
  */
 
-define([], function() {
+define([
+    "joynr/messaging/JoynrMessage",
+    "joynr/util/JSONSerializer"
+], function(JoynrMessage, JSONSerializer) {
 
     var websocket = {
         mock : true,
@@ -33,5 +36,17 @@ define([], function() {
     WebSocket.OPEN = 1;
     WebSocket.CLOSING = 2;
     WebSocket.CLOSED = 3;
+
+    WebSocket.marshalJoynrMessage = function(joynrMessage) {
+        return JSONSerializer.stringify(joynrMessage);
+    };
+
+    WebSocket.unmarshalJoynrMessage = function(event) {
+        if (typeof event.data === "string") {
+            return new JoynrMessage(JSON.parse(event.data));
+        }
+        return undefined;
+    };
+
     return WebSocket;
 });

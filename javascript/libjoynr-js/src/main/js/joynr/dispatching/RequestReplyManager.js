@@ -100,8 +100,8 @@ define(
                  *            settings
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {MessagingQos}
                  *            settings.messagingQos quality-of-service parameters such as time-to-live
                  * @param {Request}
@@ -132,8 +132,8 @@ define(
                  *            settings
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {MessagingQos}
                  *            settings.messagingQos quality-of-service parameters such as time-to-live
                  * @param {OneWayRequest}

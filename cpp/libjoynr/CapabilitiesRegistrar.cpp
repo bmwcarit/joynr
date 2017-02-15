@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
         joynr::system::IDiscoverySync& discoveryProxy,
         std::shared_ptr<ParticipantIdStorage> participantIdStorage,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
-        std::shared_ptr<MessageRouter> messageRouter,
+        std::shared_ptr<IMessageRouter> messageRouter,
         std::int64_t defaultExpiryIntervalMs,
         PublicationManager& publicationManager)
         : dispatcherList(dispatcherList),
@@ -58,8 +58,8 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
 
     auto future = std::make_shared<Future<void>>();
     auto onSuccess = [future]() { future->onSuccess(); };
-    auto onError = [future](const joynr::exceptions::ProviderRuntimeException& error) {
-        future->onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(error));
+    auto onError = [future](const joynr::exceptions::JoynrRuntimeException& error) {
+        future->onError(std::make_shared<joynr::exceptions::JoynrRuntimeException>(error));
     };
     messageRouter->removeNextHop(participantId, std::move(onSuccess), std::move(onError));
     try {

@@ -141,7 +141,8 @@ public abstract class AbstractJoynrJavaGeneratorTest {
 
     private String readContent(File fromFile) {
         StringBuffer buffer = new StringBuffer();
-        try (FileInputStream fis = new FileInputStream(fromFile); InputStreamReader reader = new InputStreamReader(fis);
+        try (FileInputStream fis = new FileInputStream(fromFile);
+                InputStreamReader reader = new InputStreamReader(fis);
                 BufferedReader bufferedReader = new BufferedReader(reader)) {
             String line = null;
             while ((line = bufferedReader.readLine()) != null) {

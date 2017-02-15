@@ -1,7 +1,5 @@
 package io.joynr.messaging.inprocess;
 
-import com.google.inject.Inject;
-
 /*
  * #%L
  * %%
@@ -21,12 +19,18 @@ import com.google.inject.Inject;
  * #L%
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.FailureAction;
 import joynr.JoynrMessage;
 
 public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSkeleton {
 
+    private static final Logger LOG = LoggerFactory.getLogger(InProcessLibjoynrMessagingSkeleton.class);
     private final Dispatcher dispatcher;
 
     @Inject
@@ -45,6 +49,7 @@ public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSke
 
     @Override
     public void transmit(JoynrMessage message) {
+        LOG.trace("<<< INCOMING <<< {}", message.toLogMessage());
         dispatcher.messageArrived(message);
     }
 

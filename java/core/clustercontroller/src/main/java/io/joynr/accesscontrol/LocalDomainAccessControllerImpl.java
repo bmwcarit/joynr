@@ -41,7 +41,7 @@ import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
-import joynr.OnChangeSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -63,9 +63,7 @@ import org.slf4j.LoggerFactory;
 public class LocalDomainAccessControllerImpl implements LocalDomainAccessController {
 
     // The LDAC subscribes to broadcasts of ACL changes, below are the subscriptionQos parameters
-    private static final long QOS_MIN_INTERVAL_MS = 1 * 1000L;
     private static final long QOS_DURATION_MS = 10 * 365 * 24 * 3600 * 1000L; // 10 years
-    private static final long QOS_PUBLICATION_TTL_MS = 5 * 1000L;
 
     private static final Logger LOG = LoggerFactory.getLogger(LocalDomainAccessControllerImpl.class);
     private static final String SINGLE_LEVEL_WILDCARD = "+";
@@ -493,7 +491,9 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
             /*
              * This can be the case, when no consumer request has been performed during the lifetime of the provider
              */
-            LOG.debug("Subscription for ace subscription for interface '{}' domain '{}' not found", interfaceName, domain);
+            LOG.debug("Subscription for ace subscription for interface '{}' domain '{}' not found",
+                      interfaceName,
+                      domain);
         }
     }
 
@@ -503,10 +503,8 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
     private void subscribeForDreChange(String userId) {
         long wsbExpiryDate = System.currentTimeMillis() + QOS_DURATION_MS;
-        OnChangeSubscriptionQos broadcastSubscriptionQos = new OnChangeSubscriptionQos();
-        broadcastSubscriptionQos.setMinIntervalMs(QOS_MIN_INTERVAL_MS)
-                                .setExpiryDateMs(wsbExpiryDate)
-                                .setPublicationTtlMs(QOS_PUBLICATION_TTL_MS);
+        MulticastSubscriptionQos broadcastSubscriptionQos = new MulticastSubscriptionQos();
+        broadcastSubscriptionQos.setExpiryDateMs(wsbExpiryDate);
         globalDomainAccessControllerClient.subscribeToDomainRoleEntryChangedBroadcast(new LdacDomainRoleEntryChangedBroadcastListener(localDomainAccessStore),
                                                                                       broadcastSubscriptionQos,
                                                                                       sanitiseForPartition(userId));
@@ -514,10 +512,8 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
     private AceSubscription subscribeForAceChange(String domain, String interfaceName) {
         long wsbExpiryDate = System.currentTimeMillis() + QOS_DURATION_MS;
-        OnChangeSubscriptionQos broadcastSubscriptionQos = new OnChangeSubscriptionQos();
-        broadcastSubscriptionQos.setMinIntervalMs(QOS_MIN_INTERVAL_MS)
-                                .setExpiryDateMs(wsbExpiryDate)
-                                .setPublicationTtlMs(QOS_PUBLICATION_TTL_MS);
+        MulticastSubscriptionQos broadcastSubscriptionQos = new MulticastSubscriptionQos();
+        broadcastSubscriptionQos.setExpiryDateMs(wsbExpiryDate);
         Future<String> mastersubscriptionId = globalDomainAccessControllerClient.subscribeToMasterAccessControlEntryChangedBroadcast(new LdacMasterAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
                                                                                                                                      broadcastSubscriptionQos,
                                                                                                                                      SINGLE_LEVEL_WILDCARD,

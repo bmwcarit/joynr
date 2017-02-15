@@ -54,6 +54,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_MAX_RETRY_COUNT = "joynr.messaging.maxretriescount";
     public static final String PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE = "joynr.discovery.participantids_persistence_file";
     public static final String DEFAULT_PARTICIPANTIDS_PERSISTENCE_FILE = "joynr_participantIds.properties";
+    public static final String PROPERTY_SUBSCRIPTIONREQUESTS_PERSISISTENCE_FILE = "joynr.dispatching.subscription.subscriptionrequests_persistence_file";
 
     public static final String PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS = "joynr.messaging.maximumparallelsends";
     public static final String PROPERTY_HOSTS_FILENAME = "joynr.messaging.hostsfilename";

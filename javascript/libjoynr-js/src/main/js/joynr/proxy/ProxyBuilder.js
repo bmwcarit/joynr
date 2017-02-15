@@ -201,8 +201,8 @@ define("joynr/proxy/ProxyBuilder", [
                                                         settings.loggingContext);
                                             }
                                             if (arbitratedCaps && arbitratedCaps.length > 0) {
-                                                proxy.providerParticipantId =
-                                                        arbitratedCaps[0].participantId;
+                                                proxy.providerDiscoveryEntry =
+                                                        arbitratedCaps[0];
                                             }
                                             dependencies.messageRouter.addNextHop(
                                                     proxy.proxyParticipantId,
@@ -213,7 +213,7 @@ define("joynr/proxy/ProxyBuilder", [
                                                                 + " to message router");
                                                     });
                                             dependencies.messageRouter
-                                                    .setToKnown(proxy.providerParticipantId);
+                                                    .setToKnown(proxy.providerDiscoveryEntry.participantId);
 
                                             var freeze =
                                                     settings.freeze === undefined

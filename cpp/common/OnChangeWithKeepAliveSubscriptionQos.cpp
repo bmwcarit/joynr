@@ -66,11 +66,12 @@ OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos()
 }
 
 OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
-        const std::int64_t& validityMs,
-        const std::int64_t& minIntervalMs,
-        const std::int64_t& maxIntervalMs,
-        const std::int64_t& alertAfterInterval)
-        : OnChangeSubscriptionQos(validityMs, minIntervalMs),
+        const std::int64_t validityMs,
+        const std::int64_t publicationTtlMs,
+        const std::int64_t minIntervalMs,
+        const std::int64_t maxIntervalMs,
+        const std::int64_t alertAfterInterval)
+        : OnChangeSubscriptionQos(validityMs, publicationTtlMs, minIntervalMs),
           maxIntervalMs(DEFAULT_MAX_INTERVAL_MS()),
           alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {

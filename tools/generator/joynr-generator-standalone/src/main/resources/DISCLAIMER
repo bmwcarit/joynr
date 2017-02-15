@@ -31,15 +31,15 @@ The software listed below included in some products is licensed under the “Ecl
 - org.eclipse.emf:org.eclipse.emf.codegen:2.11.0-v20150806-0404
   About file: info/org.eclipse.emf.codegen-2.11.0-v20150806-0404-jar/about.html
   Sources: http://git.eclipse.org/c/emf/org.eclipse.emf.git/tree/?h=R2_11_maintenance
-- org.eclipse.emf:org.eclipse.emf.common:2.11.0-v20150805-0538
-  About file: info/org.eclipse.emf.common-2.11.0-v20150805-0538-jar/about.html
-  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.common/2.11.0-v20150805-0538/org.eclipse.emf.common-2.11.0-v20150805-0538-sources.jar
-- org.eclipse.emf:org.eclipse.emf.ecore.xmi:2.11.1-v20150805-0538
-  About file: info/org.eclipse.emf.ecore.xmi-2.11.1-v20150805-0538-jar/about.html
-  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.ecore.xmi/2.11.0-v20150805-0538/org.eclipse.emf.ecore.xmi-2.11.0-v20150805-0538-sources.jar
-- org.eclipse.emf:org.eclipse.emf.ecore:2.11.1-v20150805-0538
-  About file: info/org.eclipse.emf.ecore-2.11.1-v20150805-0538-jar/about.html
-  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.ecore/2.11.0-v20150805-0538/org.eclipse.emf.ecore-2.11.0-v20150805-0538-sources.jar
+- org.eclipse.emf:org.eclipse.emf.common:2.12.0
+  About file: info/org.eclipse.emf.common-2.12.0-jar/about.html
+  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.common/2.12.0/org.eclipse.emf.common-2.12.0-sources.jar
+- org.eclipse.emf:org.eclipse.emf.ecore.xmi:2.12.0
+  About file: info/org.eclipse.emf.ecore.xmi-2.12.0-jar/about.html
+  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.ecore.xmi/2.12.0/org.eclipse.emf.ecore.xmi-2.12.0-sources.jar
+- org.eclipse.emf:org.eclipse.emf.ecore:2.12.0
+  About file: info/org.eclipse.emf.ecore-2.12.0-jar/about.html
+  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.ecore/2.12.0/org.eclipse.emf.ecore-2.12.0-sources.jar
 - org.eclipse.equinox:common:3.6.200-v20130402-1505
   About file: info/common-3.6.200-v20130402-1505-jar/about.html
   Sources: https://repo1.maven.org/maven2/org/eclipse/equinox/common/3.6.200-v20130402-1505/common-3.6.200-v20130402-1505-sources.jar

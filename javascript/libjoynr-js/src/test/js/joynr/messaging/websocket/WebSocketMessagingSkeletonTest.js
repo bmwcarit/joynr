@@ -22,13 +22,15 @@ define([
     "joynr/messaging/JoynrMessage",
     "joynr/system/RoutingTypes/WebSocketAddress",
     "joynr/system/RoutingTypes/WebSocketClientAddress",
-    "joynr/messaging/websocket/SharedWebSocket"
+    "joynr/messaging/websocket/SharedWebSocket",
+    "global/WebSocket"
 ], function(
         WebSocketMessagingSkeleton,
         JoynrMessage,
         WebSocketAddress,
         WebSocketClientAddress,
-        SharedWebSocket) {
+        SharedWebSocket,
+        WebSocket) {
 
     describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", function() {
 
@@ -135,7 +137,7 @@ define([
             webSocketMessagingSkeleton.registerListener(listener);
             expect(listener).not.toHaveBeenCalled();
 
-            sharedWebSocket.onmessage(event);
+            sharedWebSocket.onmessage(WebSocket.unmarshalJoynrMessage(event));
 
             expect(listener).toHaveBeenCalledWith(data);
             expect(listener.calls.count()).toBe(1);
@@ -143,18 +145,18 @@ define([
 
         it("event does not call through to unregistered listener", function() {
             webSocketMessagingSkeleton.registerListener(listener);
-            sharedWebSocket.onmessage(event);
+            sharedWebSocket.onmessage(WebSocket.unmarshalJoynrMessage(event));
             expect(listener).toHaveBeenCalled();
             expect(listener.calls.count()).toBe(1);
             webSocketMessagingSkeleton.unregisterListener(listener);
-            sharedWebSocket.onmessage(event);
+            sharedWebSocket.onmessage(WebSocket.unmarshalJoynrMessage(event));
             expect(listener.calls.count()).toBe(1);
         });
 
         function receiveMessageAndCheckForIsReceivedFromGlobalFlag(expectedValue) {
             webSocketMessagingSkeleton.registerListener(listener);
 
-            sharedWebSocket.onmessage(multicastEvent);
+            sharedWebSocket.onmessage(WebSocket.unmarshalJoynrMessage(multicastEvent));
 
             expect(listener).toHaveBeenCalled();
             expect(listener.calls.count()).toBe(1);

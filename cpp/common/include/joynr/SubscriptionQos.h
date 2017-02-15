@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+
 #ifndef SUBSCRIPTIONQOS_H
 #define SUBSCRIPTIONQOS_H
 
@@ -53,9 +54,8 @@ public:
      * @param validity Time span in milliseconds during which publications will be sent
      *
      * @see SubscriptionQos#setValidityMs
-     * @see SubscriptionQos#setPublicationTtlMs
      */
-    explicit SubscriptionQos(const std::int64_t& validityMs);
+    explicit SubscriptionQos(const std::int64_t validityMs);
 
     /** Destructor */
     virtual ~SubscriptionQos() = default;
@@ -96,22 +96,6 @@ public:
     virtual void setExpiryDateMs(const std::int64_t& expiryDateMs);
 
     /**
-     * @brief Gets the time to live value for publication messages.
-     *
-     * Notification messages will be sent with this time-to-live.
-     * If a notification message can not be delivered within its TTL,
-     * it will be deleted from the system.
-     * <p>NOTE: If a notification message is not delivered due to an
-     * expired TTL, it might raise a missed publication notification
-     * (depending on the value of the alert interval QoS).
-     *
-     * @return Returns the TTL of the publication Messages in milliseconds.
-     *
-     * @see SubscriptionQos#setExpiryDateMs
-     */
-    virtual std::int64_t getPublicationTtlMs() const;
-
-    /**
      * @brief Sets the validity of the subscription in milliseconds.
      *
      * The provider will send notifications for the next validity ms.
@@ -126,51 +110,11 @@ public:
      */
     virtual void setValidityMs(const std::int64_t& validityMs);
 
-    /**
-     * @brief Sets the time to live for publication messages in milliseconds
-     *
-     * Notification messages will be sent with this time-to-live. If a
-     * notification message can not be delivered within its TTL, it will
-     * be deleted from the system.
-     * <p>NOTE: If a notification message is not delivered due to an
-     * expired TTL, it might raise a missed publication notification
-     * (depending on the value of the alert interval QoS).
-     *
-     * @param publicationTtl_ms TTL of the publication Messages in milliseconds.
-     * <br/><br>
-     * <b>Minimum and Maximum Values:</b>
-     * <ul>
-     * <li>minimum publicationTtl_ms = 100. Smaller values will be rounded up.
-     * <li>maximum publicationTtl_ms = 2 592 000 000 (30 days). Larger values will be rounded down.
-     * </ul>
-     *
-     * @see SubscriptionQos#setExpiryDateMs
-     */
-    virtual void setPublicationTtlMs(const std::int64_t& publicationTtlMs);
-
     /** @brief Assignment operator */
     SubscriptionQos& operator=(const SubscriptionQos& subscriptionQos);
 
     /** @brief Equality operator */
     bool operator==(const SubscriptionQos& subscriptionQos) const;
-
-    /**
-     * @brief Returns the default publication time to live value in milliseconds:
-     * 10 000 (10 secs)
-     */
-    static const std::int64_t& DEFAULT_PUBLICATION_TTL_MS();
-
-    /**
-     * @brief Returns the minimum publication time to live value in milliseconds:
-     * 100
-     */
-    static const std::int64_t& MIN_PUBLICATION_TTL_MS();
-
-    /**
-     * @brief Returns the maximum publication time to live value in milliseconds:
-     * 2 592 000 000 (30 days)
-     */
-    static const std::int64_t& MAX_PUBLICATION_TTL_MS();
 
     /** @brief Returns the value for no expiry date in milliseconds: 0 */
     static const std::int64_t& NO_EXPIRY_DATE();
@@ -178,15 +122,12 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(expiryDateMs), MUESLI_NVP(publicationTtlMs));
+        archive(MUESLI_NVP(expiryDateMs));
     }
 
 protected:
     /** @brief The expiry date in milliseconds */
     std::int64_t expiryDateMs;
-
-    /** @brief The publication time to live in milliseconds */
-    std::int64_t publicationTtlMs;
 };
 
 } // namespace joynr

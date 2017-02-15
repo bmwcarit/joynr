@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.inprocess
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,10 +103,11 @@ private:
 	«val broadcastName = broadcast.joynrName»
 	std::shared_ptr<joynr::Future<std::string>> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			«IF broadcast.selective»
+				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest);
 			«ELSE»
+				std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
 				std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest,
 				const std::vector<std::string>& partitions);
 			«ENDIF»

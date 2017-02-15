@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,19 @@
  * limitations under the License.
  * #L%
  */
+
+#include <string>
+
+#include <gmock/gmock.h>
+
 #include "AbstractSyncAsyncTest.cpp"
 #include "joynr/tests/testJoynrMessagingConnector.h"
 #include "joynr/IReplyCaller.h"
-#include <string>
 #include "utils/MockObjects.h"
 #include "joynr/ISubscriptionCallback.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -50,7 +55,7 @@ public:
 
     TestJoynrMessagingConnectorTest():
         singleThreadedIOService(),
-        mockSubscriptionManager(singleThreadedIOService.getIOService(), nullptr),
+        mockSubscriptionManager(std::make_shared<MockSubscriptionManager>(singleThreadedIOService.getIOService(), nullptr)),
         gpsLocation(types::Localisation::GpsLocation(
                         9.0,
                         51.0,
@@ -90,25 +95,28 @@ public:
     }
 
     SingleThreadedIOService singleThreadedIOService;
-    MockSubscriptionManager mockSubscriptionManager;
+    std::shared_ptr<MockSubscriptionManager> mockSubscriptionManager;
     joynr::types::Localisation::GpsLocation gpsLocation;
     float floatValue;
     Semaphore semaphore;
 
-    tests::testJoynrMessagingConnector* createConnector(bool cacheEnabled) {
+    tests::testJoynrMessagingConnector* createConnector() {
+        types::DiscoveryEntryWithMetaInfo discoveryEntry;
+
+        discoveryEntry.setParticipantId(providerParticipantId);
+        discoveryEntry.setIsLocal(false);
+
         return new tests::testJoynrMessagingConnector(
                     mockJoynrMessageSender,
-                    &mockSubscriptionManager,
+                    mockSubscriptionManager,
                     "myDomain",
                     proxyParticipantId,
-                    providerParticipantId,
                     MessagingQos(),
-                    &mockClientCache,
-                    cacheEnabled);
+                    discoveryEntry);
     }
 
-    tests::Itest* createFixture(bool cacheEnabled) override {
-        return dynamic_cast<tests::Itest*>(createConnector(cacheEnabled));
+    tests::Itest* createFixture() override {
+        return dynamic_cast<tests::Itest*>(createConnector());
     }
 
     void invokeMulticastSubscriptionCallback(const std::string& subscribeToName,
@@ -153,14 +161,6 @@ TEST_F(TestJoynrMessagingConnectorTest, sync_setAttributeNotCached) {
 
 TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeNotCached) {
     testSync_getAttributeNotCached();
-}
-
-TEST_F(TestJoynrMessagingConnectorTest, async_getAttributeCached) {
-    testAsync_getAttributeCached();
-}
-
-TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeCached) {
-    testSync_getAttributeCached();
 }
 
 TEST_F(TestJoynrMessagingConnectorTest, async_getterCallReturnsProviderRuntimeException) {
@@ -248,12 +248,12 @@ TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute) {
 }
 
 TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
-    tests::testJoynrMessagingConnector* connector = createConnector(false);
+    std::unique_ptr<tests::testJoynrMessagingConnector> connector (createConnector());
 
     auto mockListener = std::make_shared<MockGpsFloatSubscriptionListener>();
 
     EXPECT_CALL(
-        mockSubscriptionManager,
+        *mockSubscriptionManager,
         registerSubscription(
             Eq("locationUpdateWithSpeed"), //subscribeToName
             _, // subscriberParticipantId
@@ -274,9 +274,10 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    auto qos = std::make_shared<OnChangeSubscriptionQos>();
+    auto qos = std::make_shared<MulticastSubscriptionQos>();
     connector->subscribeToLocationUpdateWithSpeedBroadcast(mockListener, qos);
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
+    EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mockSubscriptionManager.get()));
 }

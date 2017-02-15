@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageSender.h"
-#include "joynr/MessageRouter.h"
+#include "joynr/CcMessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
@@ -59,9 +59,9 @@ public:
     JoynrMessageFactory messageFactory;
     std::shared_ptr<MockMessageReceiver> mockMessageReceiver;
     std::shared_ptr<MockMessageSender> mockMessageSender;
-    MessagingStubFactory* messagingStubFactory;
+    std::shared_ptr<MessagingStubFactory> messagingStubFactory;
     SingleThreadedIOService singleThreadedIOService;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<CcMessageRouter> messageRouter;
     AbstractMessagingTest() :
         settingsFileName("MessagingTest.settings"),
         settings(settingsFileName),
@@ -77,20 +77,16 @@ public:
         messageFactory(),
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
-        messagingStubFactory(new MessagingStubFactory()),
+        messagingStubFactory(std::make_shared<MessagingStubFactory>()),
         singleThreadedIOService(),
         messageRouter(nullptr)
     {
-        std::unique_ptr<IMulticastAddressCalculator> addresscalculator =
-                std::make_unique<MqttMulticastAddressCalculator>(
-                    std::make_shared<const joynr::system::RoutingTypes::MqttAddress>()
-                );
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
-        messageRouter = std::make_unique<MessageRouter>(std::unique_ptr<MessagingStubFactory>(messagingStubFactory),
-                                                        std::shared_ptr<MulticastMessagingSkeletonDirectory>(),
-                                                        std::unique_ptr<IPlatformSecurityManager>(),
-                                                        singleThreadedIOService.getIOService(),
-                                                        std::move(addresscalculator));
+        messageRouter = std::make_unique<CcMessageRouter>(messagingStubFactory,
+                                                          std::make_shared<MulticastMessagingSkeletonDirectory>(),
+                                                          nullptr,
+                                                          singleThreadedIOService.getIOService(),
+                                                          nullptr);
         qos.setTtl(10000);
     }
 
@@ -117,7 +113,6 @@ public:
         // - MessageRunnable.run
         // - *MessagingStub.transmit (IMessaging)
         // - MessageSender.send
-
 
         MockDispatcher mockDispatcher;
         // InProcessMessagingSkeleton should receive the message
@@ -225,13 +220,13 @@ public:
                     request);
         message2.setHeaderReplyAddress(globalClusterControllerAddress);
 
-        // InProcessMessagingSkeleton should receive the message2 and message3
-        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2),_))
-                .Times(2).WillRepeatedly(ReleaseSemaphore(&semaphore));
-
-        // MessageSender should receive the message
+        // MessageSender should receive message
         EXPECT_CALL(*mockMessageSender, sendMessage(_, Eq(message),_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
+
+        // InProcessMessagingSkeleton should receive twice message2
+        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2),_))
+                .Times(2).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         EXPECT_CALL(*mockMessageReceiver, getGlobalClusterControllerAddress())
                 .WillRepeatedly(ReturnRefOfCopy(globalClusterControllerAddress));
@@ -239,7 +234,6 @@ public:
         auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
 
         messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr);
-
         messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
         messageRouter->route(message);

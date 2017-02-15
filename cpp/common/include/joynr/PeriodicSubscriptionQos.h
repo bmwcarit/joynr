@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 #include <cstdint>
 
-#include "joynr/SubscriptionQos.h"
+#include "joynr/UnicastSubscriptionQos.h"
 #include "joynr/Logger.h"
 
 namespace joynr
@@ -38,7 +38,7 @@ namespace joynr
  * will automatically expire after the expiry date is reached. If no publications
  * were received for alertAfter interval, publicationMissed will be called.
  */
-class JOYNRCOMMON_EXPORT PeriodicSubscriptionQos : public SubscriptionQos
+class JOYNRCOMMON_EXPORT PeriodicSubscriptionQos : public UnicastSubscriptionQos
 {
 public:
     /** @brief Default constructor */
@@ -61,13 +61,14 @@ public:
      * will be called if no publications were received.
      *
      * @see SubscriptionQos#setValidityMs
+     * @see UnicastSubscriptionQos#setPublicationTtlMs
      * @see PeriodicSubscriptionQos#setPeriodMs
      * @see PeriodicSubscriptionQos#setAlertAfterIntervalMs
-     * @see SubscriptionQos#setPublicationTtlMs
      */
-    PeriodicSubscriptionQos(const std::int64_t& validityMs,
-                            const std::int64_t& periodMs,
-                            const std::int64_t& alertAfterIntervalMs);
+    PeriodicSubscriptionQos(const std::int64_t validityMs,
+                            const std::int64_t publicationTtlMs,
+                            const std::int64_t periodMs,
+                            const std::int64_t alertAfterIntervalMs);
 
     /**
      * @brief Gets the period in milliseconds
@@ -181,7 +182,7 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<SubscriptionQos>(this),
+        archive(muesli::BaseClass<UnicastSubscriptionQos>(this),
                 MUESLI_NVP(periodMs),
                 MUESLI_NVP(alertAfterIntervalMs));
     }
@@ -207,7 +208,7 @@ private:
 } // namespace joynr
 
 MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::PeriodicSubscriptionQos,
-                                 joynr::SubscriptionQos,
+                                 joynr::UnicastSubscriptionQos,
                                  "joynr.PeriodicSubscriptionQos")
 
 #endif // PERIODICSUBSCRIPTIONQOS_H

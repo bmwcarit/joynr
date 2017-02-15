@@ -5,13 +5,18 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.23.0-SNAPSHOT)
+project(joynr-0.24.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 23)
+set(JOYNR_MINOR_VERSION 24)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
+)
+
+set(
+    JOYNR_SOVERSION
+    ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}
 )
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -494,6 +499,11 @@ include(SetCppStandard)
 #-Wpadded
 #-Wswitch-default
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    # Mac OS X
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,dynamic_lookup")
+endif()
+
 message(STATUS "CMAKE_GENERATOR=" ${CMAKE_GENERATOR})
 message(STATUS "compiler CMAKE_C_COMPILER=" ${CMAKE_C_COMPILER})
 message(STATUS "compiler CMAKE_C_COMPILER_ID=" ${CMAKE_C_COMPILER_ID})
@@ -661,7 +671,8 @@ else(USE_PLATFORM_MUESLI)
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
-        CMAKE_ARGS -DBUILD_MUESLI_TESTS=Off
+        CMAKE_ARGS "-DBUILD_MUESLI_TESTS=Off;"
+                   "-DENABLE_CLANG_FORMATTER=${ENABLE_CLANG_FORMATTER}"
         # Disable build step
         #BUILD_COMMAND ""
     )

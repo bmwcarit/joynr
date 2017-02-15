@@ -65,8 +65,9 @@ public class SingleControlledBounceProxyTest {
 
         // get bounce proxies list
         JsonPath listBps = given().get("bounceproxies").body().jsonPath();
-        assertThat(listBps, anyOf(containsBounceProxy(SingleControlledBounceProxy.ID, "ALIVE"),
-                                  containsBounceProxy(SingleControlledBounceProxy.ID, "ACTIVE")));
+        assertThat(listBps,
+                   anyOf(containsBounceProxy(SingleControlledBounceProxy.ID, "ALIVE"),
+                         containsBounceProxy(SingleControlledBounceProxy.ID, "ACTIVE")));
 
         // create channel on bounce proxy
         /* @formatter:off */

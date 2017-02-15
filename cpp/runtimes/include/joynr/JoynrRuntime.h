@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ namespace joynr
 {
 
 class SingleThreadedIOService;
+
 /**
  * @brief Class representing the central Joynr Api object,
  * used to register / unregister providers and create proxy builders
@@ -81,7 +82,11 @@ public:
      * returned during the provider registration process.
      * @param participantId The participantId of the provider which shall be unregistered
      */
-    virtual void unregisterProvider(const std::string& participantId) = 0;
+    void unregisterProvider(const std::string& participantId)
+    {
+        assert(capabilitiesRegistrar);
+        capabilitiesRegistrar->remove(participantId);
+    }
 
     /**
      * @brief Unregisters the provider from the joynr framework
@@ -129,7 +134,7 @@ public:
                                                           *discoveryProxy,
                                                           domain,
                                                           dispatcherAddress,
-                                                          messageRouter,
+                                                          getMessageRouter(),
                                                           messagingSettings.getMaximumTtlMs());
     }
 
@@ -151,34 +156,34 @@ public:
     static std::unique_ptr<JoynrRuntime> createRuntime(std::unique_ptr<Settings> settings);
 
     /**
-     * @brief Create a JoynrRuntime object. The call does not block. A callback
+     * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
      * will be called when the runtime creation finished.
      * @param pathToLibjoynrSettings Path to lib joynr setting files
-     * @param runtimeCreatedCallback Is called when the runtime is available
-     * @param runtimeCreationErrorCallback Is called when an error occurs
+     * @param onSuccess Is called when the runtime is available for use
+     * @param onError Is called when an error occurs
      * @param pathToMessagingSettings
-     * @return pointer to a JoynrRuntime instance
+     * @return unique_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * onSuccess is called
      */
-    static void createRuntimeAsync(const std::string& pathToLibjoynrSettings,
-                                   std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
-                                           runtimeCreatedCallback,
-                                   std::function<void(exceptions::JoynrRuntimeException& exception)>
-                                           runtimeCreationErrorCallback,
-                                   const std::string& pathToMessagingSettings = "");
+    static std::unique_ptr<JoynrRuntime> createRuntimeAsync(
+            const std::string& pathToLibjoynrSettings,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
+            const std::string& pathToMessagingSettings = "");
 
     /**
-     * @brief Create a JoynrRuntime object. The call does not block. A callback
+     * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
      * will be called when the runtime creation finished.
      * @param settings settings object
-     * @param runtimeCreatedCallback Is called when the runtime is available
-     * @param runtimeCreationErrorCallback Is called when an error occurs
-     * @return pointer to a JoynrRuntime instance
+     * @param onSuccess Is called when the runtime is available for use
+     * @param onError Is called when an error occurs
+     * @return unique_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * onSuccess is called
      */
-    static void createRuntimeAsync(std::unique_ptr<Settings> settings,
-                                   std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
-                                           runtimeCreatedCallback,
-                                   std::function<void(exceptions::JoynrRuntimeException& exception)>
-                                           runtimeCreationErrorCallback);
+    static std::unique_ptr<JoynrRuntime> createRuntimeAsync(
+            std::unique_ptr<Settings> settings,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError);
 
 protected:
     // NOTE: The implementation of the constructor and destructor must be inside this
@@ -193,6 +198,14 @@ protected:
 
     static std::unique_ptr<Settings> createSettings(const std::string& pathToLibjoynrSettings,
                                                     const std::string& pathToMessagingSettings);
+
+    /** @brief Return an IMessageRouter instance */
+    virtual std::shared_ptr<IMessageRouter> getMessageRouter() = 0;
+
+    bool checkAndLogCryptoFileExistence(const std::string& caPemFile,
+                                        const std::string& certPemFile,
+                                        const std::string& privateKeyPemFile,
+                                        Logger& logger);
 
     std::unique_ptr<SingleThreadedIOService> singleThreadIOService;
 
@@ -212,8 +225,6 @@ protected:
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    /** @brief MessageRouter instance */
-    std::shared_ptr<MessageRouter> messageRouter;
     /** @brief Wrapper for discovery proxies */
     std::unique_ptr<LocalDiscoveryAggregator> discoveryProxy;
     /**

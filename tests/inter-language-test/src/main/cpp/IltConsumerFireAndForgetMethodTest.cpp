@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
 
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/ISubscriptionListener.h"
-#include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/SubscriptionListener.h"
 #include "joynr/Semaphore.h"
 
 using namespace ::testing;
@@ -48,7 +48,8 @@ class IltConsumerFireAndForgetMethodTest : public IltAbstractConsumerTest<::test
 {
 public:
     IltConsumerFireAndForgetMethodTest()
-            : semaphore(0),
+            : publicationSemaphore(0),
+              onSubscribedSemaphore(0),
               mockInt32SubscriptionListener(new MockInt32SubscriptionListener()),
               attributeFireAndForgetSubscriptionId()
     {
@@ -56,10 +57,12 @@ public:
 
     void SetUp()
     {
+        ON_CALL(*mockInt32SubscriptionListener, onSubscribed(_))
+                .WillByDefault(ReleaseSemaphore(&onSubscribedSemaphore));
         ON_CALL(*mockInt32SubscriptionListener, onReceive(_))
-                .WillByDefault(ReleaseSemaphore(&semaphore));
+                .WillByDefault(ReleaseSemaphore(&publicationSemaphore));
         ON_CALL(*mockInt32SubscriptionListener, onError(_))
-                .WillByDefault(ReleaseSemaphore(&semaphore));
+                .WillByDefault(ReleaseSemaphore(&publicationSemaphore));
     }
 
     void TearDown()
@@ -73,7 +76,8 @@ public:
 
     void unsubscribeAttributeFireAndForget();
 
-    joynr::Semaphore semaphore;
+    joynr::Semaphore publicationSemaphore;
+    joynr::Semaphore onSubscribedSemaphore;
     std::shared_ptr<MockInt32SubscriptionListener> mockInt32SubscriptionListener;
     std::string attributeFireAndForgetSubscriptionId;
 
@@ -89,7 +93,7 @@ INIT_LOGGER(IltConsumerFireAndForgetMethodTest);
 void IltConsumerFireAndForgetMethodTest::waitForAttributeFireAndForgetPublication()
 {
     JOYNR_LOG_INFO(logger, "waitForAttributeFireAndForgetPublication");
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
     Mock::VerifyAndClearExpectations(mockInt32SubscriptionListener.get());
     JOYNR_LOG_INFO(logger, "waitForAttributeFireAndForgetPublication - DONE");
 }
@@ -105,8 +109,9 @@ void IltConsumerFireAndForgetMethodTest::subscribeToAttributeFireAndForget(
 {
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
+    int64_t publicationTtl = UnicastSubscriptionQos::DEFAULT_PUBLICATION_TTL_MS();
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(
+            validity, publicationTtl, minInterval_ms);
     EXPECT_CALL(*mockInt32SubscriptionListener, onSubscribed(_)).Times(1);
     EXPECT_CALL(*mockInt32SubscriptionListener, onReceive(0)).Times(1);
     EXPECT_CALL(*mockInt32SubscriptionListener, onError(_)).Times(0);
@@ -114,7 +119,9 @@ void IltConsumerFireAndForgetMethodTest::subscribeToAttributeFireAndForget(
         testInterfaceProxy.setAttributeFireAndForget(0);
         testInterfaceProxy.subscribeToAttributeFireAndForget(
                                    mockInt32SubscriptionListener, subscriptionQos)
-                ->get(attributeFireAndForgetSubscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, attributeFireAndForgetSubscriptionId);
+        EXPECT_TRUE(onSubscribedSemaphore.waitFor(
+                std::chrono::milliseconds(subscriptionIdFutureTimeoutMs)));
     });
     JOYNR_LOG_INFO(logger,
                    "subscribeToAttributeFireAndForget - subscriptionId: " +
@@ -131,6 +138,7 @@ void IltConsumerFireAndForgetMethodTest::unsubscribeAttributeFireAndForget()
                 attributeFireAndForgetSubscriptionId);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     JOYNR_LOG_INFO(
             logger,
             "unSubscribeAttributeFireAndForget: " + attributeFireAndForgetSubscriptionId + " - OK");

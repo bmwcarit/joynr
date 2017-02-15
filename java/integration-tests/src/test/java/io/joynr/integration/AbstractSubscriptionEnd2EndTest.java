@@ -649,7 +649,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "NPE in test would fail test")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION",
+                                                      justification = "NPE in test would fail test")
     @SuppressWarnings("unchecked")
     @Ignore
     @Test
@@ -676,7 +677,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         subscriptionQos.setAlertAfterIntervalMs(0);
         subscriptionQos.setPublicationTtlMs(0);
 
-        Future<String> subscriptionId = proxyToNonexistentDomain.subscribeToTestAttribute(integerListener, subscriptionQos);
+        Future<String> subscriptionId = proxyToNonexistentDomain.subscribeToTestAttribute(integerListener,
+                                                                                          subscriptionQos);
         Thread.sleep(4000);
         try {
             proxyToNonexistentDomain.unsubscribeFromTestAttribute(subscriptionId.get(FUTURE_SUBSCRIPTION_ID_TIMEOUTMS));

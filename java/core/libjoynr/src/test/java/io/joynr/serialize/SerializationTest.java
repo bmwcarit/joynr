@@ -23,6 +23,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,11 +34,14 @@ import java.util.concurrent.RejectedExecutionException;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.SetMultimap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.dispatching.subscription.FileSubscriptionRequestStorage;
+import io.joynr.dispatching.subscription.PersistedSubscriptionRequest;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrChannelNotAssignableException;
@@ -218,6 +222,27 @@ public class SerializationTest {
 
         TStringKeyMap readValue = objectMapper.readValue(valueAsString, TStringKeyMap.class);
         assertEquals(tStringMap, readValue);
+    }
+
+    @Test
+    public void serializeDeserializeSubscriptionRequests() throws Exception {
+        String persistenceFileName = "target/test_persistenceSubscriptionRequests_" + UUID.randomUUID().toString();
+        String proxyPid = "proxyPid";
+        String providerPid = "providerPid";
+        String subscriptionId = "subscriptionId";
+        String subscribedToName = "subscribedToName";
+        SubscriptionQos qos = new OnChangeSubscriptionQos();
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, subscribedToName, qos);
+        new File(persistenceFileName).delete();
+        FileSubscriptionRequestStorage fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
+        fileSubscriptionRequestStorage.persistSubscriptionRequest(proxyPid, providerPid, subscriptionRequest);
+        SetMultimap<String, PersistedSubscriptionRequest> savedSubscriptionRequests = fileSubscriptionRequestStorage.getSavedSubscriptionRequests();
+        assertEquals(1, savedSubscriptionRequests.get(providerPid).size());
+        PersistedSubscriptionRequest persistedSubscriptionRequest = savedSubscriptionRequests.get(providerPid)
+                                                                                             .iterator()
+                                                                                             .next();
+        assertEquals(subscriptionRequest, persistedSubscriptionRequest.getSubscriptonRequest());
+        assertEquals(proxyPid, persistedSubscriptionRequest.getProxyParticipantId());
     }
 
     @Test

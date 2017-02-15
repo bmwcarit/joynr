@@ -38,6 +38,7 @@ import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FArrayType
 
 class JSTypeUtil extends AbstractTypeUtil {
 
@@ -144,9 +145,12 @@ class JSTypeUtil extends AbstractTypeUtil {
 		checkPropertyTypeName(element.type, isArray(element))
 	}
 
-	def checkPropertyTypeName(FTypeRef type, boolean isArray) {
+	def String checkPropertyTypeName(FTypeRef type, boolean isArray) {
 		if (isArray || type.byteBuffer) {
 			return "\"Array\""
+		}
+		if (type.isTypeDef){
+			return checkPropertyTypeName(type.derived.typeDefType.actualType, type.derived.typeDefType.actualType instanceof FArrayType);
 		}
 		if (type.isPrimitive) {
 			if (type.getPrimitive.bool) {
@@ -156,17 +160,14 @@ class JSTypeUtil extends AbstractTypeUtil {
 				return "\"String\""
 			}
 			return "\"Number\""
-		} else {
-			if (type.isCompound || type.isMap) {
-				return "[\"Object\", \"" + type.derived.joynrName + "\"]"
-			}
-			else {
-				/* TODO in the final version, enumerations must always be represented as object.
-				 * Thus, String must be removed here once enums are fully supported
-				 */
-				return  "[\"String\", \"Object\", \"" + type.derived.joynrName + "\"]" 
-			}
 		}
+		if (type.isCompound || type.isMap) {
+			return "[\"Object\", \"" + type.derived.joynrName + "\"]"
+		}
+		/* TODO in the final version, enumerations must always be represented as object.
+		 * Thus, String must be removed here once enums are fully supported
+		 */
+		return  "[\"String\", \"Object\", \"" + type.derived.joynrName + "\"]"
 	}
 
 	def String getJsdocTypeName (FTypedElement typedElement) {

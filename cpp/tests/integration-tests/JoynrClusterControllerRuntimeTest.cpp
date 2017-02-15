@@ -197,10 +197,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, startMessagingHttpDoesNotThrow)
 TEST_F(JoynrClusterControllerRuntimeTest, startMessagingMqttWithHttpBackendDoesNotThrow)
 {
     createRuntimeMqttWithHttpBackend();
-    EXPECT_CALL(*mockMqttMessageReceiver, startReceiveQueue())
-            .Times(1);
-    EXPECT_CALL(*mockMqttMessageReceiver, stopReceiveQueue())
-            .Times(1);
     startMessagingDoesNotThrow();
 }
 
@@ -245,7 +241,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -296,7 +291,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -351,7 +345,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -362,6 +355,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     480, // validity
+                    1000, // publication ttl
                     200, // min interval
                     200, // max interval
                     200  // alert after interval
@@ -416,7 +410,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -424,6 +417,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     2000,   // validity
+                    1000, // publication ttl
                     100,   // min interval
                     1000,   // max interval
                     10000  // alert after interval

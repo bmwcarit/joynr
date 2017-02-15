@@ -48,7 +48,8 @@ public class ProviderQosPersisted extends ProviderQos implements Serializable {
             customParameterList.add(new CustomParameterPersisted(customParameter));
         }
     }
-    @OneToMany(cascade = {CascadeType.ALL}, orphanRemoval = true)
+
+    @OneToMany(cascade = { CascadeType.ALL }, orphanRemoval = true)
     public List<CustomParameterPersisted> getCustomParameterList() {
         return customParameterList;
     }

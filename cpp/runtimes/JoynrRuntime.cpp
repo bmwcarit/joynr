@@ -19,6 +19,7 @@
 #include "joynr/JoynrRuntime.h"
 
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -32,7 +33,6 @@ JoynrRuntime::JoynrRuntime(Settings& settings)
           messagingSettings(settings),
           systemServicesSettings(settings),
           dispatcherAddress(nullptr),
-          messageRouter(nullptr),
           discoveryProxy(nullptr),
           publicationManager(nullptr)
 {
@@ -42,6 +42,29 @@ JoynrRuntime::JoynrRuntime(Settings& settings)
 
 JoynrRuntime::~JoynrRuntime()
 {
+}
+
+bool JoynrRuntime::checkAndLogCryptoFileExistence(const std::string& caPemFile,
+                                                  const std::string& certPemFile,
+                                                  const std::string& privateKeyPemFile,
+                                                  Logger& logger)
+{
+    if (!util::fileExists(caPemFile)) {
+        JOYNR_LOG_ERROR(logger, "CA PEM file {} does not exist", caPemFile);
+        return false;
+    }
+
+    if (!util::fileExists(certPemFile)) {
+        JOYNR_LOG_ERROR(logger, "Cert PEM file {} does not exist", certPemFile);
+        return false;
+    }
+
+    if (!util::fileExists(privateKeyPemFile)) {
+        JOYNR_LOG_ERROR(logger, "Private key file {} does not exist", privateKeyPemFile);
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace joynr

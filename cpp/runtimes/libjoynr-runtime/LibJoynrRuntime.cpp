@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@
 #include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/JoynrMessageSender.h"
-#include "joynr/MessageRouter.h"
+#include "joynr/LibJoynrMessageRouter.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/MessagingStubFactory.h"
@@ -65,7 +65,6 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
 LibJoynrRuntime::~LibJoynrRuntime()
 {
     delete inProcessDispatcher;
-    delete joynrMessageSender;
     delete joynrDispatcher;
     delete libjoynrSettings;
     libjoynrSettings = nullptr;
@@ -87,15 +86,18 @@ void LibJoynrRuntime::init(
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
     // create message router
-    messageRouter = std::make_shared<MessageRouter>(std::move(messagingStubFactory),
-                                                    libjoynrMessagingAddress,
+    libJoynrMessageRouter =
+            std::make_shared<LibJoynrMessageRouter>(libjoynrMessagingAddress,
+                                                    std::move(messagingStubFactory),
                                                     singleThreadIOService->getIOService(),
                                                     std::move(addressCalculator));
 
-    messageRouter->loadRoutingTable(libjoynrSettings->getMessageRouterPersistenceFilename());
-    startLibJoynrMessagingSkeleton(messageRouter);
+    libJoynrMessageRouter->loadRoutingTable(
+            libjoynrSettings->getMessageRouterPersistenceFilename());
+    startLibJoynrMessagingSkeleton(libJoynrMessageRouter);
 
-    joynrMessageSender = new JoynrMessageSender(messageRouter, messagingSettings.getTtlUpliftMs());
+    joynrMessageSender = std::make_shared<JoynrMessageSender>(
+            libJoynrMessageRouter, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
@@ -105,19 +107,20 @@ void LibJoynrRuntime::init(
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
-                                                joynrMessageSender,
+                                                joynrMessageSender.get(),
                                                 messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
             libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
-    subscriptionManager =
-            new SubscriptionManager(singleThreadIOService->getIOService(), messageRouter);
+
+    subscriptionManager = std::make_shared<SubscriptionManager>(
+            singleThreadIOService->getIOService(), libJoynrMessageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadIOService->getIOService());
 
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
+    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager.get());
     inProcessConnectorFactory = new InProcessConnectorFactory(
-            subscriptionManager,
+            subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender,
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
@@ -126,8 +129,8 @@ void LibJoynrRuntime::init(
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             inProcessConnectorFactory, joynrMessagingConnectorFactory);
-    proxyFactory = std::make_unique<ProxyFactory>(
-            libjoynrMessagingAddress, std::move(connectorFactory), nullptr);
+    proxyFactory =
+            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
@@ -161,10 +164,9 @@ void LibJoynrRuntime::init(
     std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
     auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
-                                ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
-    messageRouter->setParentRouter(
+    libJoynrMessageRouter->setParentRouter(
             std::move(routingProxy), ccMessagingAddress, routingProviderParticipantId);
 
     // setup discovery
@@ -182,7 +184,6 @@ void LibJoynrRuntime::init(
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
 
     auto proxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
-                         ->setCached(false)
                          ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                          ->build();
 
@@ -192,15 +193,14 @@ void LibJoynrRuntime::init(
             *discoveryProxy,
             participantIdStorage,
             dispatcherAddress,
-            messageRouter,
+            libJoynrMessageRouter,
             messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
             *publicationManager);
 }
 
-void LibJoynrRuntime::unregisterProvider(const std::string& participantId)
+std::shared_ptr<IMessageRouter> LibJoynrRuntime::getMessageRouter()
 {
-    assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->remove(participantId);
+    return libJoynrMessageRouter;
 }
 
 } // namespace joynr

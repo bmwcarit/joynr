@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,10 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <utility>
 
 #include <boost/asio/io_service.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <websocketpp/config/asio.hpp>
 #include <websocketpp/server.hpp>
 
@@ -34,14 +36,22 @@
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/JoynrMessage.h"
+#include "joynr/Util.h"
+#include "joynr/IWebSocketSendInterface.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include "libjoynr/websocket/WebSocketPpSender.h"
+#include "joynr/system/RoutingTypes/WebSocketProtocol.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/IMessaging.h"
+#include "joynr/IMessageRouter.h"
 
 namespace joynr
 {
 
 class JoynrMessage;
-class MessageRouter;
 class WebSocketMessagingStubFactory;
 
 namespace system
@@ -56,41 +66,198 @@ class WebSocketAddress;
  * @class WebSocketCcMessagingSkeleton
  * @brief Messaging skeleton for the cluster controller
  */
-class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT WebSocketCcMessagingSkeleton : public IMessaging
+template <typename Config>
+class WebSocketCcMessagingSkeleton : public IMessaging
 {
-    using Config = websocketpp::config::asio;
-    using MessagePtr = Config::message_type::ptr;
-    using Server = websocketpp::server<Config>;
-    using ConnectionHandle = websocketpp::connection_hdl;
-
 public:
     /**
      * @brief Constructor
      * @param messageRouter Router
      * @param messagingStubFactory Factory
-     * @param serverAddress Address of the server
      */
     WebSocketCcMessagingSkeleton(
             boost::asio::io_service& ioService,
-            std::shared_ptr<MessageRouter> messageRouter,
-            std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
-            const system::RoutingTypes::WebSocketAddress& serverAddress);
+            std::shared_ptr<IMessageRouter> messageRouter,
+            std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory)
+            : endpoint(),
+              receiver(),
+              clients(),
+              clientsMutex(),
+              messageRouter(messageRouter),
+              messagingStubFactory(messagingStubFactory)
+    {
+
+        websocketpp::lib::error_code initializationError;
+        endpoint.init_asio(&ioService, initializationError);
+        if (initializationError) {
+            JOYNR_LOG_FATAL(logger,
+                            "error during WebSocketCcMessagingSkeleton initialization: ",
+                            initializationError.message());
+            return;
+        }
+
+        endpoint.clear_access_channels(websocketpp::log::alevel::all);
+        endpoint.clear_error_channels(websocketpp::log::alevel::all);
+
+        // register handlers
+        endpoint.set_close_handler(std::bind(
+                &WebSocketCcMessagingSkeleton::onConnectionClosed, this, std::placeholders::_1));
+
+        // new connections are handled in onInitMessageReceived; if initialization was successful,
+        // any further messages for this connection are handled in onTextMessageReceived
+        endpoint.set_message_handler(std::bind(&WebSocketCcMessagingSkeleton::onInitMessageReceived,
+                                               this,
+                                               std::placeholders::_1,
+                                               std::placeholders::_2));
+
+        receiver.registerReceiveCallback(
+                [this](const std::string& msg) { onTextMessageReceived(msg); });
+    }
 
     /**
      * @brief Destructor
      */
-    ~WebSocketCcMessagingSkeleton() override;
+    ~WebSocketCcMessagingSkeleton() override
+    {
+        websocketpp::lib::error_code shutdownError;
+        endpoint.stop_listening(shutdownError);
+        if (shutdownError) {
+            JOYNR_LOG_ERROR(logger,
+                            "error during WebSocketCcMessagingSkeleton shutdown: ",
+                            shutdownError.message());
+        }
+    }
 
-    void transmit(JoynrMessage& message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-            override;
+    void transmit(
+            JoynrMessage& message,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) override
+    {
+        try {
+            messageRouter->route(message);
+        } catch (exceptions::JoynrRuntimeException& e) {
+            onFailure(e);
+        }
+    }
+
+protected:
+    using MessagePtr = typename Config::message_type::ptr;
+    using Server = websocketpp::server<Config>;
+    using ConnectionHandle = websocketpp::connection_hdl;
+
+    ADD_LOGGER(WebSocketCcMessagingSkeleton);
+    Server endpoint;
+
+    void startAccept(std::uint16_t port)
+    {
+        try {
+            endpoint.set_reuse_addr(true);
+            endpoint.listen(port);
+            endpoint.start_accept();
+        } catch (const std::exception& e) {
+            JOYNR_LOG_FATAL(logger, "WebSocket server could not be started: \"{}\"", e.what());
+        }
+    }
 
 private:
-    void onConnectionClosed(ConnectionHandle hdl);
-    void onInitMessageReceived(ConnectionHandle hdl, MessagePtr message);
-    void onTextMessageReceived(const std::string& message);
+    void onConnectionClosed(ConnectionHandle hdl)
+    {
+        std::unique_lock<std::mutex> lock(clientsMutex);
+        auto it = clients.find(hdl);
+        if (it != clients.cend()) {
+            messagingStubFactory->onMessagingStubClosed(it->second);
+            clients.erase(it);
+        }
+    }
 
-    Server endpoint;
+    void onInitMessageReceived(ConnectionHandle hdl, MessagePtr message)
+    {
+        std::string textMessage = message->get_payload();
+        if (isInitializationMessage(textMessage)) {
+
+            JOYNR_LOG_DEBUG(logger,
+                            "received initialization message from websocket client: {}",
+                            message->get_payload());
+            // register client with messaging stub factory
+            try {
+                joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
+                joynr::serializer::deserializeFromJson(clientAddress, textMessage);
+
+                auto sender = std::make_shared<WebSocketPpSender<Server>>(endpoint);
+                sender->setConnectionHandle(hdl);
+
+                messagingStubFactory->addClient(clientAddress, sender);
+
+                typename Server::connection_ptr connection = endpoint.get_con_from_hdl(hdl);
+                connection->set_message_handler(
+                        std::bind(&WebSocketPpReceiver<Server>::onMessageReceived,
+                                  &receiver,
+                                  std::placeholders::_1,
+                                  std::placeholders::_2));
+                {
+                    std::unique_lock<std::mutex> lock(clientsMutex);
+                    clients[hdl] = clientAddress;
+                }
+
+            } catch (const std::invalid_argument& e) {
+                JOYNR_LOG_FATAL(
+                        logger,
+                        "client address must be valid, otherwise libjoynr and CC are deployed "
+                        "in different versions - raw: {} - error: {}",
+                        textMessage,
+                        e.what());
+            }
+        } else {
+            JOYNR_LOG_ERROR(
+                    logger, "received an initial message with wrong format: \"{}\"", textMessage);
+        }
+    }
+
+    void onTextMessageReceived(const std::string& message)
+    {
+        // deserialize message and transmit
+        try {
+            JoynrMessage joynrMsg;
+            joynr::serializer::deserializeFromJson(joynrMsg, message);
+            if (joynrMsg.getType().empty()) {
+                JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message);
+                return;
+            }
+            if (joynrMsg.getPayload().empty()) {
+                JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
+                return;
+            }
+            if (!joynrMsg.containsHeaderExpiryDate()) {
+                JOYNR_LOG_ERROR(
+                        logger,
+                        "received message [msgId=[{}] without decay time - dropping message",
+                        joynrMsg.getHeaderMessageId());
+                return;
+            }
+
+            JOYNR_LOG_DEBUG(logger, "<<<< INCOMING <<<< {}", joynrMsg.toLogMessage());
+
+            auto onFailure = [joynrMsg](const exceptions::JoynrRuntimeException& e) {
+                JOYNR_LOG_ERROR(logger,
+                                "Incoming Message with ID {} could not be sent! reason: {}",
+                                joynrMsg.getHeaderMessageId(),
+                                e.getMessage());
+            };
+            transmit(joynrMsg, onFailure);
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Unable to deserialize joynr message object from: {} - error: {}",
+                            message,
+                            e.what());
+            return;
+        }
+    }
+
+    bool isInitializationMessage(const std::string& message)
+    {
+        return boost::starts_with(
+                message, "{\"_typeName\":\"joynr.system.RoutingTypes.WebSocketClientAddress\"");
+    }
+
     WebSocketPpReceiver<Server> receiver;
     /*! List of client connections */
     std::map<ConnectionHandle,
@@ -98,14 +265,15 @@ private:
              std::owner_less<ConnectionHandle>> clients;
     /*! Router for incoming messages */
     std::mutex clientsMutex;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
     /*! Factory to build outgoing messaging stubs */
     std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
 
-    ADD_LOGGER(WebSocketCcMessagingSkeleton);
     DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
-    bool isInitializationMessage(const std::string& message);
 };
+
+template <typename Config>
+INIT_LOGGER(WebSocketCcMessagingSkeleton<Config>);
 
 } // namespace joynr
 #endif // WEBSOCKETCCMESSAGINGSKELETON_H

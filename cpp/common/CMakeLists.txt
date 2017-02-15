@@ -29,6 +29,7 @@ set(
 set(
     JoynrCommon_TARGET_LIBRARIES
     Boost::system
+    Boost::thread
 )
 
 if(JOYNR_ENABLE_DLT_LOGGING)
@@ -145,7 +146,7 @@ endif(JOYNR_ENABLE_DLT_LOGGING)
 set_target_properties(
     JoynrCommon
     PROPERTIES
-    SOVERSION "${JOYNR_VERSION}"
+    SOVERSION "${JOYNR_SOVERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}"
     COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${JOYNR_INSTALL_FULL_SYSCONFDIR}"
@@ -193,7 +194,7 @@ if(JOYNR_ENABLE_DLT_LOGGING)
 add_dependencies(JoynrCommon DLT::DLT)
 endif(JOYNR_ENABLE_DLT_LOGGING)
 
-AddClangFormat(JoynrCommon)
+AddClangFormat(JoynrCommon ${JoynrCommon_EXPORT_HEADER})
 
 AddIncludeWhatYouUse(JoynrCommon)
 

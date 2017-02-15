@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
-#include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
@@ -73,8 +72,8 @@ public:
         proxyParticipantId("TEST-proxyParticipantId"),
         requestReplyId("TEST-requestReplyId"),
         messageFactory(),
-        messageSender(mockMessageRouter),
-        dispatcher(&messageSender, singleThreadIOService.getIOService()),
+        messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
+        dispatcher(messageSender, singleThreadIOService.getIOService()),
         callContext(),
         getLocationCalledSemaphore(0)
     {
@@ -117,7 +116,7 @@ protected:
     std::string requestReplyId;
 
     JoynrMessageFactory messageFactory;
-    JoynrMessageSender messageSender;
+    std::shared_ptr<JoynrMessageSender> messageSender;
     Dispatcher dispatcher;
     joynr::CallContext callContext;
     joynr::Semaphore getLocationCalledSemaphore;
@@ -234,15 +233,15 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
                 reply
     );
 
-    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
+    auto mockSubscriptionManager = std::make_shared<MockSubscriptionManager>(singleThreadIOService.getIOService(), mockMessageRouter);
     auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
-    EXPECT_CALL(mockSubscriptionManager, getSubscriptionCallback(Eq(subscriptionId))).WillOnce(Return(mockSubscriptionCallback));
+    EXPECT_CALL(*mockSubscriptionManager, getSubscriptionCallback(Eq(subscriptionId))).WillOnce(Return(mockSubscriptionCallback));
 
     EXPECT_CALL(*mockSubscriptionCallback, execute(Eq(reply))).WillOnce(ReleaseSemaphore(&semaphore));
 
     // test code: send the subscription reply through the dispatcher.
     // This should cause our subscription callback to be called
-    dispatcher.registerSubscriptionManager(&mockSubscriptionManager);
+    dispatcher.registerSubscriptionManager(mockSubscriptionManager);
     dispatcher.receive(msg);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
@@ -250,9 +249,9 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
 }
 
 TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
-    MockSubscriptionManager mockSubscriptionManager(
+    auto mockSubscriptionManager = std::make_shared<MockSubscriptionManager>(
                 singleThreadIOService.getIOService(), mockMessageRouter);
-    dispatcher.registerSubscriptionManager(&mockSubscriptionManager);
+    dispatcher.registerSubscriptionManager(mockSubscriptionManager);
 
     const std::string senderParticipantId("senderParticipantId");
     const std::string multicastId = joynr::util::createMulticastId(
@@ -269,7 +268,7 @@ TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
 
     auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
 
-    EXPECT_CALL(mockSubscriptionManager, getMulticastSubscriptionCallback(multicastId))
+    EXPECT_CALL(*mockSubscriptionManager, getMulticastSubscriptionCallback(multicastId))
         .Times(1)
         .WillOnce(Return(mockSubscriptionCallback));
     EXPECT_CALL(*mockSubscriptionCallback, executePublication(_))

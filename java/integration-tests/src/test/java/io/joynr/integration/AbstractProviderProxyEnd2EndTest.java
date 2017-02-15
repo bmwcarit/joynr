@@ -62,6 +62,7 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
@@ -742,10 +743,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
-        subscriptionQos.setMinIntervalMs(0)
-                       .setValidityMs(CONST_DEFAULT_TEST_TIMEOUT)
-                       .setPublicationTtlMs(CONST_DEFAULT_TEST_TIMEOUT);
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastAdapter() {
 
             @Override
@@ -755,7 +752,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                 broadcastReceived.release();
 
             }
-        }, subscriptionQos);
+        }, new MulticastSubscriptionQos());
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -772,11 +769,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
-        subscriptionQos.setMinIntervalMs(0)
-                       .setValidityMs(CONST_DEFAULT_TEST_TIMEOUT)
-                       .setPublicationTtlMs(CONST_DEFAULT_TEST_TIMEOUT);
-
         final TStringKeyMap mapParam = new TStringKeyMap();
         mapParam.put("key", "value");
         proxy.subscribeToBroadcastWithMapParametersBroadcast(new BroadcastWithMapParametersBroadcastAdapter() {
@@ -785,7 +777,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                 assertEquals(mapParam, receivedMapParam);
                 broadcastReceived.release();
             }
-        }, subscriptionQos);
+        }, new MulticastSubscriptionQos());
 
         // wait to allow the subscription request to arrive at the provider
         getSubscriptionTestsPublisher().waitForBroadcastSubscription();
@@ -896,12 +888,12 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         try {
             future.get();
             fail("Should throw ApplicationException");
-        } catch (JoynrRuntimeException|InterruptedException e) {
+        } catch (JoynrRuntimeException | InterruptedException e) {
             fail(e.toString());
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationExceptionErrorEnumBase).onFailure((ErrorEnumBase)(expected.getError()));
+        verify(callbackWithApplicationExceptionErrorEnumBase).onFailure((ErrorEnumBase) (expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -963,12 +955,12 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         try {
             future.get();
             fail("Should throw ApplicationException");
-        } catch (JoynrRuntimeException|InterruptedException e) {
+        } catch (JoynrRuntimeException | InterruptedException e) {
             fail(e.toString());
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum).onFailure((MethodWithErrorEnumExtendedErrorEnum)(expected.getError()));
+        verify(callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum).onFailure((MethodWithErrorEnumExtendedErrorEnum) (expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -997,12 +989,12 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         try {
             future.get();
             fail("Should throw ApplicationException");
-        } catch (JoynrRuntimeException|InterruptedException e) {
+        } catch (JoynrRuntimeException | InterruptedException e) {
             fail(e.toString());
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum).onFailure((MethodWithImplicitErrorEnumErrorEnum)(expected.getError()));
+        verify(callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum).onFailure((MethodWithImplicitErrorEnumErrorEnum) (expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

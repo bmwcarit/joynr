@@ -1,7 +1,7 @@
 FROM fedora:24
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2016-07-20
+ENV REFRESHED_AT 2017-02-13
 
 ###################################################
 # set timezone
@@ -91,6 +91,12 @@ ENV INSTALL_DIR /data/install
 ###################################################
 COPY scripts /data/scripts
 
+###################################################
+# Generate certificates for system tests
+###################################################
+COPY openssl.conf /tmp/openssl.cnf
+RUN mkdir -p /data/ssl-data \
+    && /data/scripts/gen-certificates.sh --configfile /tmp/openssl.cnf --destdir /data/ssl-data
 
 ###################################################
 # add Tini - "A tiny but valid init for containers"

@@ -139,7 +139,6 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         // Send a message and expect to get a result
         std::unique_ptr<tests::testProxy> testProxy(
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                        ->setCached(false)
                         ->setDiscoveryQos(discoveryQos)
                         ->build());
 
@@ -412,7 +411,6 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         std::uint64_t qosRoundTripTTL = 1;
         std::unique_ptr<tests::testProxy> testProxy(
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                        ->setCached(false)
                         ->setDiscoveryQos(discoveryQos)
                         ->build());
         std::shared_ptr<Future<int>> testFuture(testProxy->addNumbersAsync(1, 2, 3));
@@ -433,7 +431,6 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         // Send a message and expect to get a result
         std::unique_ptr<tests::testProxy> testProxy(
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                        ->setCached(false)
                         ->setDiscoveryQos(discoveryQos)
                         ->build());
         std::vector<joynr::tests::testTypes::HavingComplexArrayMemberStruct> setValue;
@@ -465,7 +462,6 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         // Send a message and expect to get a result
         std::unique_ptr<tests::testProxy> testProxy =
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                        ->setCached(false)
                         ->setDiscoveryQos(discoveryQos)
                         ->build();
 
@@ -566,7 +562,6 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         // Send a message and expect to get a result
         std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosOneWayTTL, qosRoundTripTTL))
-                                                   ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
 
@@ -618,7 +613,6 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
     // Send a message and expect to get a result
     std::unique_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
@@ -627,6 +621,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
 
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(10000, // validity_ms
+                                                                   1000, // publication ttl
                                                                    minInterval_ms,
                                                                    maxInterval_ms,
                                                                    3000); // alertInterval_ms
@@ -677,7 +672,6 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
     // Send a message and expect to get a result
     std::unique_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
@@ -722,7 +716,6 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     // Send a message and expect to get a result
     std::unique_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
@@ -733,196 +726,37 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     std::int64_t minInterval_ms = 500;
     auto subscriptionQos =
             std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
+                                                      1000,            // publication ttl
                                                       minInterval_ms); // minInterval_ms
     auto future = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
 
+    auto invokeSetter = [testProvider](std::int64_t value) {
+        auto onSuccess = [](){};
+        types::Localisation::GpsLocation location;
+        location.setDeviceTime(value);
+        testProvider->setLocation(location, onSuccess, nullptr);
+    };
     // Change the location once
-    testProxy->setLocation(types::Localisation::GpsLocation(9.0,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            1));
+    invokeSetter(-1);
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     // Change the location multiple times
-    testProxy->setLocation(types::Localisation::GpsLocation(9.0,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.1,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.2,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.3,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.4,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
+    for (int i = 0; i < 5; ++i) {
+        invokeSetter(i);
+    }
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.0,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.1,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.2,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.3,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.4,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
+    for (int i = 0; i < 5; ++i) {
+        invokeSetter(i+5);
+    }
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.0,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.1,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.2,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.3,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
-    testProxy->setLocation(types::Localisation::GpsLocation(9.4,
-                                                            51.0,
-                                                            508.0,
-                                                            types::Localisation::GpsFixEnum::MODE2D,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            444,
-                                                            444,
-                                                            2));
+    for (int i = 0; i < 5; ++i) {
+        invokeSetter(i+10);
+    }
 
     // Wait for 3 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
@@ -966,12 +800,12 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
     // Send a message and expect to get a result
     std::unique_ptr<tests::testProxy> testProxy(
             proxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
+                                                                   1000, // publication ttl
                                                                    1000,   // minInterval_ms
                                                                    2000,   // maxInterval_ms
                                                                    3000);  // alertInterval_ms
@@ -1017,11 +851,11 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain)
         // Send a message and expect to get a result
         std::unique_ptr<tests::testProxy> testProxy(
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                        ->setCached(false)
                         ->setDiscoveryQos(discoveryQos)
                         ->build());
         auto subscriptionQos =
                 std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
+                                                                       1000, // publication ttl
                                                                        1000,   // minInterval_ms
                                                                        2000,   //  maxInterval_ms
                                                                        3000);  // alertInterval_ms
@@ -1085,11 +919,11 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
     // Send a message and expect to get a result
     std::unique_ptr<tests::testProxy> gpsProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(9000,   // validity_ms
+                                                                   1000, // publication ttl
                                                                    1000,   // minInterval_ms
                                                                    2000,   //  maxInterval_ms
                                                                    10000); // alertInterval_ms
@@ -1143,7 +977,6 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
     // Send a message and expect to get a result
     std::unique_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
@@ -1171,7 +1004,6 @@ std::unique_ptr<tests::testProxy> createTestProxy(JoynrRuntime& runtime,
     // Send a message and expect to get a result
     std::unique_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
     return testProxy;
@@ -1185,6 +1017,7 @@ void subscribeToLocation(
 {
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
+                                                                   1000, // publication ttl
                                                                    1000,   // minInterval_ms
                                                                    2000,   //  maxInterval_ms
                                                                    3000);  // alertInterval_ms
@@ -1263,7 +1096,6 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation)
     // Send a message and expect to get a result
     std::unique_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
@@ -1304,7 +1136,6 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
     // Send a message and expect to get a result
     std::unique_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 

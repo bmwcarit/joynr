@@ -481,13 +481,14 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 @Override
                 public void onFailure(MethodWithExtendedErrorEnumErrorEnum errorEnum) {
                     if (errorEnum == MethodWithExtendedErrorEnumErrorEnum.ERROR_3_3_NTC) {
-                        LOG.info(name.getMethodName() + " - 2nd - callback - caught ApplicationException with expected error enum");
+                        LOG.info(name.getMethodName()
+                                + " - 2nd - callback - caught ApplicationException with expected error enum");
                         methodWithExtendedErrorEnumAsyncCallbackResult = true;
                         methodWithExtendedErrorEnumAsyncCallbackDone = true;
                         return;
                     }
-                    LOG.info(name.getMethodName() + " - 2nd - callback - caught invalid ApplicationException with enum "
-                            + errorEnum);
+                    LOG.info(name.getMethodName()
+                            + " - 2nd - callback - caught invalid ApplicationException with enum " + errorEnum);
 
                     methodWithExtendedErrorEnumAsyncCallbackResult = false;
                     methodWithExtendedErrorEnumAsyncCallbackDone = true;
@@ -505,14 +506,17 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
             } catch (InterruptedException | JoynrRuntimeException | ApplicationException error) {
                 if (error instanceof ApplicationException) {
                     if (((ApplicationException) error).getError() == MethodWithExtendedErrorEnumErrorEnum.ERROR_3_3_NTC) {
-                        LOG.info(name.getMethodName() + " - 2nd - caught expected ApplicationException with correct error enum");
+                        LOG.info(name.getMethodName()
+                                + " - 2nd - caught expected ApplicationException with correct error enum");
                     } else {
-                        fail(name.getMethodName() + " - FAILED - 2nd - caught invalid ApplicationException with enum: " + ((ApplicationException) error).getError());
+                        fail(name.getMethodName() + " - FAILED - 2nd - caught invalid ApplicationException with enum: "
+                                + ((ApplicationException) error).getError());
                         return;
                     }
                 } else if (error instanceof JoynrRuntimeException) {
                     // incorrect exception, can output message
-                    fail(name.getMethodName() + " - FAILED - 2nd - caught invalid JoynrRuntimeException: " + error.getMessage());
+                    fail(name.getMethodName() + " - FAILED - 2nd - caught invalid JoynrRuntimeException: "
+                            + error.getMessage());
                     return;
                 } else {
                     // incorrect exception, can not output message

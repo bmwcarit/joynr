@@ -161,7 +161,6 @@ protected:
 
         std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
                 ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
         return std::move(testProxy);
@@ -191,6 +190,7 @@ protected:
         std::int64_t minInterval_ms = 50;
         auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                     500000,   // validity_ms
+                    1000,     // publication ttl
                     minInterval_ms);  // minInterval_ms
 
         subscribeTo(testProxy, subscriptionListener, subscriptionQos);
@@ -224,6 +224,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration) {
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
+                1000,     // publication ttl
                 minInterval_ms);  // minInterval_ms
     std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
 
@@ -258,6 +259,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
+                1000,     // publication ttl
                 minInterval_ms);  // minInterval_ms
     std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
 

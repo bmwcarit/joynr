@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@
 #include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
@@ -285,7 +286,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerMulticastSubscriptionRequest)
     expectedRequest.setMulticastId("multicastId");
     expectedRequest.setSubscriptionId("000-10000-01101");
     expectedRequest.setSubscribeToName("subscribeToName");
-    auto qos = std::make_shared<OnChangeSubscriptionQos>();
+    auto qos = std::make_shared<MulticastSubscriptionQos>();
     expectedRequest.setQos(qos);
 
     // Serialize into JSON

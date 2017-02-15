@@ -20,12 +20,9 @@ package joynr;
  */
 
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
-import io.joynr.pubsub.SubscriptionQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Class representing the quality of service settings for subscriptions based on
@@ -37,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * the expiry date is reached. If no publications were received for alertAfter
  * interval, publicationMissed will be called.
  */
-public class PeriodicSubscriptionQos extends SubscriptionQos implements HeartbeatSubscriptionInformation {
+public class PeriodicSubscriptionQos extends UnicastSubscriptionQos implements HeartbeatSubscriptionInformation {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(PeriodicSubscriptionQos.class);
 
@@ -76,85 +73,6 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     }
 
     /**
-     * Constructor of PeriodicSubscriptionQos objects with full parameter set.
-     * @deprecated This constructor will be deleted by 2017-01-01.
-     * Use the fluent interface instead:
-     * new PeriodicSubscriptionQos().setPeriodMs(periodMs)
-     *                              .setValidityMs(validityMs)
-     * @param periodMs
-     *            The provider will send notifications every period in milliseconds
-     *            independently of value changes.
-     * @param expiryDateMs
-     *            the end date of the subscription until which publications will
-     *            be sent. This value is provided in milliseconds
-     *            (since 1970-01-01T00:00:00.000).
-     * @param alertAfterIntervalMs
-     *            defines how long to wait for an update before publicationMissed
-     *            is called if no publications were received.
-     * @param publicationTtlMs
-     *            time to live for publication messages
-     *
-     * @see #setPeriodMs(long)
-     * @see #setAlertAfterIntervalMs(long)
-     * @see SubscriptionQos#SubscriptionQos(long, long)
-     *           SubscriptionQos.SubscriptionQos(long, long)
-     *           for more information on expiryDate and publicationTtl
-     */
-    @Deprecated
-    public PeriodicSubscriptionQos(long periodMs, long expiryDateMs, long alertAfterIntervalMs, long publicationTtlMs) {
-        super(expiryDateMs, publicationTtlMs);
-        setPeriodMs(periodMs);
-        setAlertAfterIntervalMs(alertAfterIntervalMs);
-    }
-
-    /**
-     * Constructor of PeriodicSubscriptionQos objects with specified period, expiry
-     * date, and publicationTtl.
-     * @deprecated This constructor will be deleted by 2017-01-01.
-     * Use the fluent interface instead:
-     * new PeriodicSubscriptionQos().setPeriodMs(periodMs)
-     *                              .setValidityMs(validityMs)
-     * @param periodMs
-     *            The provider will send notifications every period in milliseconds
-     *            independently of value changes.
-     * @param expiryDateMs
-     *            the end date of the subscription until which publications will
-     *            be sent. This value is provided in milliseconds
-     *            (since 1970-01-01T00:00:00.000).
-     * @param publicationTtlMs
-     *            time to live for publication messages
-     *
-     * @see #setPeriodMs(long)
-     * @see SubscriptionQos#SubscriptionQos(long, long)
-     *           SubscriptionQos.SubscriptionQos(long, long)
-     *           for more information on expiryDate and publicationTtl
-     * @see #setAlertAfterIntervalMs(long)
-     *           (alertAfterInterval will be set to its default value)
-     */
-    @Deprecated
-    public PeriodicSubscriptionQos(long periodMs, long expiryDateMs, long publicationTtlMs) {
-        this(periodMs, expiryDateMs, DEFAULT_ALERT_AFTER_INTERVAL_MS, publicationTtlMs);
-    }
-
-    /**
-     * @deprecated Use getAlertAfterIntervalMs instead
-     *
-     * Get the alertAfterInterval in milliseconds. <br>
-     * If no notification was received within the last alert interval, a missed
-     * publication notification will be raised.
-     *
-     * @return The alertAfterInterval in milliseconds. If more than
-     *         alertAfterInterval milliseconds pass without receiving a message,
-     *         the subscriptionManager will issue a publicationMissed. If set
-     *         to 0, never alert.
-     */
-    @Override
-    @Deprecated
-    public long getAlertAfterInterval() {
-        return getAlertAfterIntervalMs();
-    }
-
-    /**
      * Get the alertAfterInterval in milliseconds. <br>
      * If no notification was received within the last alert interval, a missed
      * publication notification will be raised.
@@ -167,37 +85,6 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     @Override
     public long getAlertAfterIntervalMs() {
         return alertAfterIntervalMs;
-    }
-
-    /**
-     * @deprecated Use setAlertAfterIntervalMs instead
-     * Set the alertAfterInterval in milliseconds. <br>
-     * If no notification was received within the last alert interval, a missed
-     * publication notification will be raised.<br>
-     * <br>
-     * <b>Minimum, Maximum, and Default Values:</b>
-     * <ul>
-     * <li>The absolute <b>minimum</b> setting is the period value. <br>
-     * Any value less than period will be replaced by the period setting.
-     * <li>The absolute <b>maximum</b> setting is 2.592.000.000 milliseconds (30 days). <br>
-     * Any value bigger than this maximum will be treated at the absolute maximum setting of
-     * 2.592.000.000 milliseconds.
-     * <li><b>Default</b> setting: 0 milliseconds (no alert).
-     * (no alert).
-     * </ul>
-     * <p>
-     * Use {@link #clearAlertAfterInterval()} to remove missed publication notifications.
-     *
-     * @param alertAfterIntervalMs
-     *            If more than alertInterval_ms pass without receiving a message,
-     *            subscriptionManager will issue a publication missed.
-     * @return the subscriptionQos (fluent interface)
-     *
-     * @see #clearAlertAfterInterval()
-     */
-    @Deprecated
-    public PeriodicSubscriptionQos setAlertAfterInterval(final long alertAfterIntervalMs) {
-        return setAlertAfterIntervalMs(alertAfterIntervalMs);
     }
 
     /**
@@ -251,20 +138,6 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     }
 
     /**
-     * @deprecated Use getPeriodMs instead
-     *
-     * Get the period in milliseconds. <br>
-     * The provider will periodically send notifications every period milliseconds.
-     * The period can thus be seen as a sort of heart beat.
-     *
-     * @return The period value of the subscription in milliseconds.
-     */
-    @Deprecated
-    public long getPeriod() {
-        return getPeriodMs();
-    }
-
-    /**
      * Get the period in milliseconds. <br>
      * The provider will periodically send notifications every period milliseconds.
      * The period can thus be seen as a sort of heart beat.
@@ -273,34 +146,6 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      */
     public long getPeriodMs() {
         return periodMs;
-    }
-
-    /**
-     * @deprecated use setPeriodMs instead
-     *
-     * Set the period in milliseconds.
-     * <br>
-     * The provider will periodically send notifications every period milliseconds.
-     * The period can thus be seen as a sort of heart beat.<br>
-     * <br>
-     * <b>Minimum, Maximum, and Default Values:</b>
-     * <ul>
-     * <li>The absolute <b>minimum</b> setting is 50 milliseconds.<br>
-     * Any value less than this minimum will be treated at the absolute minimum
-     * setting of 50 milliseconds.
-     * <li>The absolute <b>maximum</b> setting is 2.592.000.000 milliseconds (30 days).<br>
-     * Any value bigger than this maximum will be treated at the absolute maximum
-     * setting of 2.592.000.000 milliseconds (30 days).
-     * <li>The <b>default</b> setting is 50 milliseconds (MIN_PERIOD).
-     * </ul>
-     *
-     * @param periodMs
-     *            The publisher will send a notification at least every period_ms.
-     * @return the subscriptionQos (fluent interface)
-     */
-    @Deprecated
-    public PeriodicSubscriptionQos setPeriod(long periodMs) {
-        return setPeriodMs(periodMs);
     }
 
     /**
@@ -356,17 +201,6 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     @Override
     public PeriodicSubscriptionQos setValidityMs(long validityMs) {
         return (PeriodicSubscriptionQos) super.setValidityMs(validityMs);
-    }
-
-    @Override
-    @JsonIgnore
-    @Deprecated
-    /**
-     * @deprecated this method will be removed by 2017-01-01.
-     * Use getPeriodMs() instead.
-     */
-    public long getHeartbeat() {
-        return periodMs;
     }
 
     /**

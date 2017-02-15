@@ -32,6 +32,13 @@ set(
 include(GenerateJoynrExports)
 
 if(${BUILD_CLUSTER_CONTROLLER})
+    option(
+        ENABLE_ACCESS_CONTROL
+        "Should access control be enabled for the cluster-controller?"
+        OFF
+    )
+    message(STATUS "option ENABLE_ACCESS_CONTROL=" ${ENABLE_ACCESS_CONTROL})
+
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
     set(
         JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES
@@ -69,7 +76,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     file(
         GLOB JoynrClusterControllerRuntime_SOURCES
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "*.cpp"
+        "JoynrRuntime.cpp"
         "cluster-controller-runtime/*.cpp"
         "cluster-controller-runtime/websocket/*.cpp"
     )
@@ -80,6 +87,14 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${JoynrClusterControllerRuntime_HEADERS}
         ${JoynrClusterControllerRuntime_SOURCES}
     )
+
+    if(ENABLE_ACCESS_CONTROL)
+        target_compile_definitions(
+            JoynrClusterControllerRuntime
+            PRIVATE
+            JOYNR_ENABLE_ACCESS_CONTROL)
+    endif(ENABLE_ACCESS_CONTROL)
+
     target_include_directories(JoynrClusterControllerRuntime SYSTEM PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
 
     target_include_directories(
@@ -87,7 +102,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
     )
 
-    AddClangFormat(JoynrClusterControllerRuntime)
+    AddClangFormat(JoynrClusterControllerRuntime ${JoynrClusterControllerRuntime_EXPORT_HEADER})
 
     AddIncludeWhatYouUse(JoynrClusterControllerRuntime)
 
@@ -96,7 +111,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     set_target_properties(
         JoynrClusterControllerRuntime
         PROPERTIES
-        SOVERSION "${JOYNR_VERSION}"
+        SOVERSION "${JOYNR_SOVERSION}"
         VERSION "${JOYNR_VERSION}"
         PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
     )
@@ -177,7 +192,7 @@ target_include_directories(
     ${JoynrRuntime_INCLUDE_DIRECTORIES}
 )
 
-AddClangFormat(JoynrWsRuntime)
+AddClangFormat(JoynrWsRuntime ${JoynrRuntime_EXPORT_HEADER})
 
 AddIncludeWhatYouUse(JoynrWsRuntime)
 
@@ -197,7 +212,7 @@ GenerateJoynrExports(
 set_target_properties(
     JoynrWsRuntime
     PROPERTIES
-    SOVERSION "${JOYNR_VERSION}"
+    SOVERSION "${JOYNR_SOVERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
 )
@@ -254,7 +269,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         PRIVATE ${JoynrRuntime_INCLUDE_DIRECTORIES}
     )
 
-    AddClangFormat(JoynrDbusRuntime)
+    AddClangFormat(JoynrDbusRuntime ${JoynrRuntime_EXPORT_HEADER})
 
     AddIncludeWhatYouUse(JoynrDbusRuntime)
 
@@ -274,7 +289,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set_target_properties(
         JoynrDbusRuntime
         PROPERTIES
-        SOVERSION "${JOYNR_VERSION}"
+        SOVERSION "${JOYNR_SOVERSION}"
         VERSION "${JOYNR_VERSION}"
         PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
     )
@@ -349,6 +364,29 @@ if(${BUILD_CLUSTER_CONTROLLER})
         cluster-controller
         PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
     )
+
+    if(JOYNR_ENABLE_DLT_LOGGING)
+        set(
+          JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID
+          "JOCC"
+          CACHE
+          STRING
+          "DLT application id for cluster-controller"
+        )
+        set(
+          JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION
+          "joynr cluster controller"
+          CACHE
+          STRING
+          "DLT application description for cluster-controller"
+        )
+        target_compile_definitions(
+            cluster-controller
+            PRIVATE
+            JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID=${JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID}
+            JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION=${JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION}
+        )
+    endif()
 
     install(
         TARGETS cluster-controller

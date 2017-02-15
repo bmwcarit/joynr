@@ -22,7 +22,7 @@
 
 define([
             "joynr/capabilities/arbitration/Arbitrator",
-            "joynr/types/DiscoveryEntry",
+            "joynr/types/DiscoveryEntryWithMetaInfo",
             "joynr/types/ProviderQos",
             "joynr/types/CustomParameter",
             "joynr/proxy/DiscoveryQos",
@@ -39,7 +39,7 @@ define([
         ],
         function(
                 Arbitrator,
-                DiscoveryEntry,
+                DiscoveryEntryWithMetaInfo,
                 ProviderQos,
                 CustomParameter,
                 DiscoveryQos,
@@ -70,7 +70,7 @@ define([
             }
 
             function getDiscoveryEntry(domain, interfaceName, discoveryStrategy, providerVersion, supportsOnChangeSubscriptions) {
-                return new DiscoveryEntry({
+                return new DiscoveryEntryWithMetaInfo({
                     providerVersion : providerVersion,
                     domain : domain,
                     interfaceName : interfaceName,
@@ -81,7 +81,8 @@ define([
                         supportsOnChangeSubscriptions : supportsOnChangeSubscriptions}),
                     participandId : "700",
                     lastSeenDateMs : Date.now(),
-                    publicKeyId : ""
+                    publicKeyId : "",
+                    isLocal : true
                 });
             }
 
@@ -184,54 +185,59 @@ define([
                                     supportsOnChangeSubscriptions : true
                             });
 
-                            discoveryEntryWithMajor47AndMinor0 = new DiscoveryEntry({
+                            discoveryEntryWithMajor47AndMinor0 = new DiscoveryEntryWithMetaInfo({
                                 providerVersion : new Version({ majorVersion: 47, minorVersion: 0 }),
                                 domain : domain,
                                 interfaceName : interfaceName,
                                 qos : providerQos,
                                 participantId : "700",
                                 lastSeenDateMs : Date.now(),
-                                publicKeyId : ""
+                                publicKeyId : "",
+                                isLocal : true
                             });
 
-                            discoveryEntryWithMajor47AndMinor1 = new DiscoveryEntry({
+                            discoveryEntryWithMajor47AndMinor1 = new DiscoveryEntryWithMetaInfo({
                                 providerVersion : new Version({ majorVersion: 47, minorVersion: 1 }),
                                 domain : domain,
                                 interfaceName : interfaceName,
                                 qos : providerQos,
                                 participantId : "700",
                                 lastSeenDateMs : Date.now(),
-                                publicKeyId : ""
+                                publicKeyId : "",
+                                isLocal : false
                             });
 
-                            discoveryEntryWithMajor47AndMinor2 = new DiscoveryEntry({
+                            discoveryEntryWithMajor47AndMinor2 = new DiscoveryEntryWithMetaInfo({
                                 providerVersion : new Version({ majorVersion: 47, minorVersion: 2 }),
                                 domain : domain,
                                 interfaceName : interfaceName,
                                 qos : providerQos,
                                 participantId : "700",
                                 lastSeenDateMs : Date.now(),
-                                publicKeyId : ""
+                                publicKeyId : "",
+                                isLocal : true
                             });
 
-                            discoveryEntryWithMajor47AndMinor3 = new DiscoveryEntry({
+                            discoveryEntryWithMajor47AndMinor3 = new DiscoveryEntryWithMetaInfo({
                                 providerVersion : new Version({ majorVersion: 47, minorVersion: 3 }),
                                 domain : domain,
                                 interfaceName : interfaceName,
                                 qos : providerQos,
                                 participantId : "700",
                                 lastSeenDateMs : Date.now(),
-                                publicKeyId : ""
+                                publicKeyId : "",
+                                isLocal : false
                             });
 
-                            discoveryEntryWithMajor48AndMinor2 = new DiscoveryEntry({
+                            discoveryEntryWithMajor48AndMinor2 = new DiscoveryEntryWithMetaInfo({
                                 providerVersion : new Version({ majorVersion: 48, minorVersion: 2 }),
                                 domain : domain,
                                 interfaceName : interfaceName,
                                 qos : providerQos,
                                 participantId : "700",
                                 lastSeenDateMs : Date.now(),
-                                publicKeyId : ""
+                                publicKeyId : "",
+                                isLocal : true
                             });
 
                             //discoveryQos.arbitrationStrategy.and.returnValue([]);

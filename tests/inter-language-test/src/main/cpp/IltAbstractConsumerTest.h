@@ -18,6 +18,7 @@
  */
 #ifndef ILTABSTRACTCONSUMERTEST_H
 #define ILTABSTRACTCONSUMERTEST_H
+#include <chrono>
 #include <cstdlib>
 #include <memory>
 #include <gtest/gtest.h>
@@ -68,7 +69,6 @@ public:
 
         // Build a proxy
         testInterfaceProxy = proxyBuilder->setMessagingQos(joynr::MessagingQos(qosMsgTtl))
-                                     ->setCached(false)
                                      ->setDiscoveryQos(discoveryQos)
                                      ->build();
 
@@ -103,6 +103,9 @@ protected:
     static std::string providerDomain;
     static std::string programName;
 
+    static const std::uint16_t subscriptionIdFutureTimeoutMs;
+    static const std::chrono::milliseconds publicationTimeoutMs;
+
     ADD_LOGGER(IltAbstractConsumerTest);
 
 public:
@@ -133,6 +136,13 @@ std::string IltAbstractConsumerTest<T>::providerDomain = "joynr-inter-language-t
 
 template <typename T>
 std::string IltAbstractConsumerTest<T>::programName;
+
+template <typename T>
+const std::uint16_t IltAbstractConsumerTest<T>::subscriptionIdFutureTimeoutMs = 10000;
+
+template <typename T>
+const std::chrono::milliseconds IltAbstractConsumerTest<T>::publicationTimeoutMs =
+        std::chrono::milliseconds(10000);
 
 ACTION_P(ReleaseSemaphore, semaphore)
 {

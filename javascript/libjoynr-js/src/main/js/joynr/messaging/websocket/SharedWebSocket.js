@@ -67,7 +67,7 @@ define(
                 while (queuedMessages.length) {
                     queued = queuedMessages.shift();
                     try {
-                        websocket.send(JSONSerializer.stringify(queued.message));
+                        websocket.send(WebSocket.marshalJoynrMessage(queued.message));
                         queued.resolve();
                         // Error is thrown if the socket is no longer open
                     } catch (e) {
@@ -82,7 +82,8 @@ define(
                 return new Promise(function(resolve, reject){
                     if (websocket.readyState === WebSocket.OPEN) {
                         try {
-                            websocket.send(JSONSerializer.stringify(joynrMessage));
+                            //websocket.send(JSONSerializer.stringify(joynrMessage));
+                            websocket.send(WebSocket.marshalJoynrMessage(joynrMessage));
                             resolve();
                             // Error is thrown if the socket is no longer open, so requeue to the front
                         } catch (e) {
@@ -230,7 +231,12 @@ define(
                             set : function(newCallback) {
                                 onmessageCallback = newCallback;
                                 if (typeof newCallback === "function") {
-                                    websocket.onmessage = newCallback;
+                                    websocket.onmessage = function(data) {
+                                        var joynrMessage = WebSocket.unmarshalJoynrMessage(data);
+                                        if (joynrMessage !== null && joynrMessage !== undefined) {
+                                            newCallback(joynrMessage);
+                                        }
+                                    };
                                 } else {
                                     throw new Error(
                                             "onmessage callback must be a function, but instead was of type "

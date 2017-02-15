@@ -71,7 +71,7 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .delete(serverUrl + "/clusters/cluster0");
 
         assertEquals(202 /* Accepted */, response.getStatusCode());
@@ -83,7 +83,7 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .delete(serverUrl + "/bps/cluster0.instance0");
 
         assertEquals(501 /* Not Implemented */, response.getStatusCode());
@@ -95,7 +95,7 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .delete(serverUrl + "/channels/channel-123");
 
         assertEquals(501 /* Not Implemented */, response.getStatusCode());

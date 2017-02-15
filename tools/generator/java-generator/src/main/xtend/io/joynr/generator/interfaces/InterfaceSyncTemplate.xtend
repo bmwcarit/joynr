@@ -144,7 +144,7 @@ public interface «syncClassName» extends «interfaceName»«IF hasFireAndForge
 
 			public Object[] getValues() {
 			    return new Object[] {
-			        «FOR outParameter : method.outputParameters SEPARATOR ", "»
+			        «FOR outParameter : method.outputParameters SEPARATOR ","»
 			            «outParameter.name»
 			        «ENDFOR»
 			    };

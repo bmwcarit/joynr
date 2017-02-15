@@ -29,25 +29,27 @@ public class MessagingQos {
     public static final Map<String, String> DEFAULTQOS = new HashMap<String, String>();
     private long ttl_ms;
     private Map<String, String> customHeaders = new HashMap<>();
-    private MessagingQosEffort effort = NORMAL;
+    private MessagingQosEffort effort;
+    private boolean encrypt;
+
+    public MessagingQos(MessagingQos src) {
+        ttl_ms = src.getRoundTripTtl_ms();
+        effort = src.getEffort();
+        encrypt = src.getEncrypt();
+    }
 
     /**
      * MessagingQos with default values
      */
     public MessagingQos() {
-        ttl_ms = DEFAULT_TTL;
-    }
-
-    public MessagingQos(MessagingQos src) {
-        ttl_ms = src.getRoundTripTtl_ms();
-        effort = src.getEffort();
+        this(DEFAULT_TTL);
     }
 
     /**
      * @param ttl_ms Roundtrip timeout for rpc requests.
      */
     public MessagingQos(long ttl_ms) {
-        this.ttl_ms = ttl_ms;
+        this(ttl_ms, NORMAL);
     }
 
     /**
@@ -55,8 +57,49 @@ public class MessagingQos {
      * @param effort the effort to expend in ensuring message delivery.
      */
     public MessagingQos(long ttl_ms, MessagingQosEffort effort) {
+        this(ttl_ms, effort, false);
+    }
+
+    /**
+     * @param ttl_ms Roundtrip timeout for rpc requests.
+     * @param effort the effort to expend in ensuring message delivery.
+     */
+    public MessagingQos(MessagingQosEffort effort) {
+        this(DEFAULT_TTL, effort, false);
+    }
+
+    /**
+     * @param effort the effort to expend in ensuring message delivery.
+     * @param encrypt specifies, whether messages will be sent encrypted
+     */
+    public MessagingQos(MessagingQosEffort effort, boolean encrypt) {
+        this(DEFAULT_TTL, effort, encrypt);
+    }
+
+    /**
+     * @param encrypt specifies, whether messages will be sent encrypted
+     */
+    public MessagingQos(boolean encrypt) {
+        this(DEFAULT_TTL, encrypt);
+    }
+
+    /**
+     * @param ttl_ms Roundtrip timeout for rpc requests.
+     * @param encrypt specifies, whether messages will be sent encrypted
+     */
+    public MessagingQos(long ttl_ms, boolean encrypt) {
+        this(ttl_ms, NORMAL, encrypt);
+    }
+
+    /**
+     * @param ttl_ms Roundtrip timeout for rpc requests.
+     * @param effort the effort to expend in ensuring message delivery.
+     * @param encrypt specifies, whether messages will be sent encrypted
+     */
+    public MessagingQos(long ttl_ms, MessagingQosEffort effort, boolean encrypt) {
         this.ttl_ms = ttl_ms;
         this.effort = effort;
+        this.encrypt = encrypt;
     }
 
     public long getRoundTripTtl_ms() {
@@ -77,6 +120,22 @@ public class MessagingQos {
 
     public void setEffort(MessagingQosEffort effort) {
         this.effort = effort;
+    }
+
+    /**
+     * Gets Encrypt
+     *
+     * @return specifies, whether messages will be sent encrypted
+     */
+    public boolean getEncrypt() {
+        return encrypt;
+    }
+
+    /**
+     * @param encrypt specifies, whether messages will be sent encrypted
+     */
+    public void setEncrypt(boolean encrypt) {
+        this.encrypt = encrypt;
     }
 
     /**
@@ -123,5 +182,54 @@ public class MessagingQos {
 
     public Map<String, String> getCustomMessageHeaders() {
         return customHeaders;
+    }
+
+    /**
+     * Calculate code for hashing based on member contents
+     *
+     * @return The calculated hash code
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (ttl_ms ^ (ttl_ms >>> 32));
+        result = prime * result + ((effort == null) ? 0 : effort.hashCode());
+        result = prime * result + ((customHeaders == null) ? 0 : customHeaders.hashCode());
+        result = prime * result + Boolean.hashCode(encrypt);
+        return result;
+    }
+
+    /**
+     * Check for equality
+     *
+     * @param obj Reference to the object to compare to
+     * @return true, if objects are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        MessagingQos other = (MessagingQos) obj;
+        if (ttl_ms != other.ttl_ms) {
+            return false;
+        }
+        if (effort != other.effort) {
+            return false;
+        }
+        if (encrypt != other.encrypt) {
+            return false;
+        }
+        if (!customHeaders.equals(other.customHeaders)) {
+            return false;
+        }
+        return true;
     }
 }

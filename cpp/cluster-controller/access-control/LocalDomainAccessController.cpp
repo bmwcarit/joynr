@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@
 
 #include "LocalDomainAccessController.h"
 
-#include <cassert>
 #include <atomic>
+#include <cassert>
 #include <tuple>
 #include <regex>
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 
 namespace joynr
 {
@@ -36,13 +36,9 @@ using namespace infrastructure::DacTypes;
 
 INIT_LOGGER(LocalDomainAccessController);
 
-std::chrono::milliseconds LocalDomainAccessController::broadcastMinInterval =
-        std::chrono::seconds(1);
 // 10 years
 std::chrono::milliseconds LocalDomainAccessController::broadcastSubscriptionValidity =
         std::chrono::hours(24) * 365 * 10;
-std::chrono::milliseconds LocalDomainAccessController::broadcastPublicationTtl =
-        std::chrono::seconds(5);
 
 //--- Declarations of nested classes -------------------------------------------
 
@@ -163,7 +159,7 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
                                           const std::string& domain,
                                           Role::Enum role)
 {
-    JOYNR_LOG_DEBUG(logger, "execute: entering hasRole");
+    JOYNR_LOG_TRACE(logger, "execute: entering hasRole");
 
     // See if the user has the given role
     bool hasRole = false;
@@ -190,7 +186,7 @@ void LocalDomainAccessController::getConsumerPermission(
         TrustLevel::Enum trustLevel,
         std::shared_ptr<IGetConsumerPermissionCallback> callback)
 {
-    JOYNR_LOG_DEBUG(logger, "Entering getConsumerPermission with unknown operation");
+    JOYNR_LOG_TRACE(logger, "Entering getConsumerPermission with unknown operation");
 
     // Is the ACL for this domain/interface available?
     std::string compoundKey = createCompoundKey(domain, interfaceName);
@@ -241,7 +237,7 @@ Permission::Enum LocalDomainAccessController::getConsumerPermission(
         const std::string& operation,
         TrustLevel::Enum trustLevel)
 {
-    JOYNR_LOG_DEBUG(logger, "Entering getConsumerPermission with known operation");
+    JOYNR_LOG_TRACE(logger, "Entering getConsumerPermission with known operation");
 
     boost::optional<MasterAccessControlEntry> masterAceOptional =
             localDomainAccessStore->getMasterAccessControlEntry(
@@ -529,7 +525,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
         subscriptionIds = aceSubscriptions[compoundKey];
     }
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "Unsubscribing from ACL broadcasts for domain {}, interface {}",
                     domain,
                     interfaceName);
@@ -695,10 +691,10 @@ void LocalDomainAccessController::initialised(const std::string& domain,
 void LocalDomainAccessController::abortInitialisation(const std::string& domain,
                                                       const std::string& interfaceName)
 {
-    JOYNR_LOG_INFO(logger,
-                   "Removing outstanding ACL requests for domain {}, interface {}",
-                   domain,
-                   interfaceName);
+    JOYNR_LOG_TRACE(logger,
+                    "Removing outstanding ACL requests for domain {}, interface {}",
+                    domain,
+                    interfaceName);
 
     std::string compoundKey = createCompoundKey(domain, interfaceName);
     std::vector<ConsumerPermissionRequest> requests;
@@ -757,16 +753,14 @@ std::string LocalDomainAccessController::sanitizeForPartition(const std::string&
 std::shared_ptr<Future<std::string>> LocalDomainAccessController::subscribeForDreChange(
         const std::string& userId)
 {
-    auto broadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
-    broadcastSubscriptionQos->setMinIntervalMs(broadcastMinInterval.count());
-    broadcastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
-    broadcastSubscriptionQos->setPublicationTtlMs(broadcastPublicationTtl.count());
+    auto multicastSubscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    multicastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
     std::vector<std::string> partitions = {sanitizeForPartition(userId)};
 
     return globalDomainAccessControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
             std::static_pointer_cast<ISubscriptionListener<ChangeType::Enum, DomainRoleEntry>>(
                     domainRoleEntryChangedBroadcastListener),
-            broadcastSubscriptionQos,
+            multicastSubscriptionQos,
             partitions);
 }
 
@@ -774,11 +768,8 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
         const std::string& domain,
         const std::string& interfaceName)
 {
-    auto broadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
-
-    broadcastSubscriptionQos->setMinIntervalMs(broadcastMinInterval.count());
-    broadcastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
-    broadcastSubscriptionQos->setPublicationTtlMs(broadcastPublicationTtl.count());
+    auto multicastSubscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    multicastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
 
     AceSubscription subscriptionIds;
 
@@ -790,7 +781,7 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
                     std::static_pointer_cast<
                             ISubscriptionListener<ChangeType::Enum, MasterAccessControlEntry>>(
                             masterAccessControlEntryChangedBroadcastListener),
-                    broadcastSubscriptionQos,
+                    multicastSubscriptionQos,
                     partitions);
 
     subscriptionIds.mediatorAceSubscriptionIdFuture =
@@ -800,7 +791,7 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
                                     ISubscriptionListener<ChangeType::Enum,
                                                           MasterAccessControlEntry>>(
                                     mediatorAccessControlEntryChangedBroadcastListener),
-                            broadcastSubscriptionQos,
+                            multicastSubscriptionQos,
                             partitions);
 
     subscriptionIds.ownerAceSubscriptionIdFuture =
@@ -808,7 +799,7 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
                     std::static_pointer_cast<
                             ISubscriptionListener<ChangeType::Enum, OwnerAccessControlEntry>>(
                             ownerAccessControlEntryChangedBroadcastListener),
-                    broadcastSubscriptionQos,
+                    multicastSubscriptionQos,
                     partitions);
 
     return subscriptionIds;
@@ -876,7 +867,7 @@ void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onRec
     } else {
         parent.localDomainAccessStore->removeDomainRole(changedDre.getUid(), changedDre.getRole());
     }
-    JOYNR_LOG_DEBUG(parent.logger, "Changed DRE: {}", changedDre.toString());
+    JOYNR_LOG_TRACE(parent.logger, "Changed DRE: {}", changedDre.toString());
 }
 
 void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError(
@@ -904,14 +895,14 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
 {
     if (changeType != ChangeType::REMOVE) {
         parent.localDomainAccessStore->updateMasterAccessControlEntry(changedMasterAce);
-        JOYNR_LOG_DEBUG(parent.logger, "Changed MasterAce: {}", changedMasterAce.toString());
+        JOYNR_LOG_TRACE(parent.logger, "Changed MasterAce: {}", changedMasterAce.toString());
     } else {
         parent.localDomainAccessStore->removeMasterAccessControlEntry(
                 changedMasterAce.getUid(),
                 changedMasterAce.getDomain(),
                 changedMasterAce.getInterfaceName(),
                 changedMasterAce.getOperation());
-        JOYNR_LOG_DEBUG(parent.logger, "Removed MasterAce: {}", changedMasterAce.toString());
+        JOYNR_LOG_TRACE(parent.logger, "Removed MasterAce: {}", changedMasterAce.toString());
     }
 }
 
@@ -947,7 +938,7 @@ void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastList
                 changedMediatorAce.getInterfaceName(),
                 changedMediatorAce.getOperation());
     }
-    JOYNR_LOG_DEBUG(parent.logger, "Changed MediatorAce: {}", changedMediatorAce.toString());
+    JOYNR_LOG_TRACE(parent.logger, "Changed MediatorAce: {}", changedMediatorAce.toString());
 }
 
 void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError(
@@ -982,7 +973,7 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
                 changedOwnerAce.getInterfaceName(),
                 changedOwnerAce.getOperation());
     }
-    JOYNR_LOG_DEBUG(parent.logger, "Changed OwnerAce: {}", changedOwnerAce.toString());
+    JOYNR_LOG_TRACE(parent.logger, "Changed OwnerAce: {}", changedOwnerAce.toString());
 }
 
 void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError(

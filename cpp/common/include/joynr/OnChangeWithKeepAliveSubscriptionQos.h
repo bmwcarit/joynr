@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,15 +73,16 @@ public:
      * will be called if no publications were received.
      *
      * @see SubscriptionQos#setValidityMs
+     * @see UnicastSubscriptionQos#setPublicationTtlMs
      * @see OnChangeSubscriptionQos#setMinIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterIntervalMs
-     * @see SubscriptionQos#setPublicationTtlMs
      */
-    OnChangeWithKeepAliveSubscriptionQos(const std::int64_t& validityMs,
-                                         const std::int64_t& minIntervalMs,
-                                         const std::int64_t& maxIntervalMs,
-                                         const std::int64_t& alertAfterIntervalMs);
+    OnChangeWithKeepAliveSubscriptionQos(const std::int64_t validityMs,
+                                         const std::int64_t publicationTtlMs,
+                                         const std::int64_t minIntervalMs,
+                                         const std::int64_t maxIntervalMs,
+                                         const std::int64_t alertAfterIntervalMs);
 
     /**
      * @brief Sets minimum interval in milliseconds
@@ -245,7 +246,7 @@ private:
 
 // TODO register with actual parent or root base class?
 MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::OnChangeWithKeepAliveSubscriptionQos,
-                                 joynr::SubscriptionQos,
+                                 joynr::OnChangeSubscriptionQos,
                                  "joynr.OnChangeWithKeepAliveSubscriptionQos")
 
 #endif // ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H

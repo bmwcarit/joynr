@@ -26,24 +26,21 @@ namespace joynr
 INIT_LOGGER(AbstractJoynrMessagingConnector);
 
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
-        IJoynrMessageSender* joynrMessageSender,
-        ISubscriptionManager* subscriptionManager,
+        std::shared_ptr<IJoynrMessageSender> joynrMessageSender,
+        std::shared_ptr<ISubscriptionManager> subscriptionManager,
         const std::string& domain,
         const std::string& interfaceName,
         const std::string& proxyParticipantId,
-        const std::string& providerParticipantId,
         const MessagingQos& qosSettings,
-        IClientCache* cache,
-        bool cached)
+        const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
         : joynrMessageSender(joynrMessageSender),
           subscriptionManager(subscriptionManager),
           domain(domain),
           interfaceName(interfaceName),
           proxyParticipantId(proxyParticipantId),
-          providerParticipantId(providerParticipantId),
+          providerParticipantId(providerDiscoveryEntry.getParticipantId()),
           qosSettings(qosSettings),
-          cache(cache),
-          cached(cached)
+          providerDiscoveryEntry(providerDiscoveryEntry)
 {
 }
 

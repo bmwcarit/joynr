@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
  */
 #include "joynr/MulticastSubscriptionRequest.h"
 
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 
 namespace joynr
 {
@@ -43,10 +43,11 @@ std::string MulticastSubscriptionRequest::toString() const
 
 void MulticastSubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
 {
-    std::shared_ptr<OnChangeSubscriptionQos> onChangeQos =
-            std::dynamic_pointer_cast<OnChangeSubscriptionQos>(qos);
+    std::shared_ptr<MulticastSubscriptionQos> onChangeQos =
+            std::dynamic_pointer_cast<MulticastSubscriptionQos>(qos);
     assert(onChangeQos);
-    this->qos = onChangeQos;
+    // force object slicing
+    this->qos = std::make_shared<MulticastSubscriptionQos>(*onChangeQos);
 }
 
 std::string MulticastSubscriptionRequest::getMulticastId() const

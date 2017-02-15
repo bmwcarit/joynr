@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,20 +38,22 @@ const std::int64_t& OnChangeSubscriptionQos::MAX_MIN_INTERVAL_MS()
     return maxMinInterval;
 }
 
-OnChangeSubscriptionQos::OnChangeSubscriptionQos()
-        : SubscriptionQos(), minIntervalMs(MIN_MIN_INTERVAL_MS())
+OnChangeSubscriptionQos::OnChangeSubscriptionQos() : minIntervalMs(MIN_MIN_INTERVAL_MS())
 {
 }
 
-OnChangeSubscriptionQos::OnChangeSubscriptionQos(const std::int64_t& validityMs,
-                                                 const std::int64_t& minIntervalMs)
-        : SubscriptionQos(validityMs), minIntervalMs(DEFAULT_MIN_INTERVAL_MS())
+OnChangeSubscriptionQos::OnChangeSubscriptionQos(const std::int64_t validityMs,
+                                                 const std::int64_t publicationTtlMs,
+                                                 const std::int64_t minIntervalMs)
+        : UnicastSubscriptionQos(validityMs, publicationTtlMs),
+          minIntervalMs(DEFAULT_MIN_INTERVAL_MS())
 {
     setMinIntervalMs(minIntervalMs);
 }
 
 OnChangeSubscriptionQos::OnChangeSubscriptionQos(const OnChangeSubscriptionQos& other)
-        : SubscriptionQos(other), minIntervalMs(other.getMinIntervalMs())
+        : UnicastSubscriptionQos::UnicastSubscriptionQos(other),
+          minIntervalMs(other.getMinIntervalMs())
 {
 }
 

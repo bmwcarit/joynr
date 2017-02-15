@@ -71,6 +71,8 @@ public class JoynrIntegrationBean {
 
     private JoynrRuntime joynrRuntime;
 
+    private boolean deregisterOnShutdown = false;
+
     public JoynrIntegrationBean() {
     }
 
@@ -129,25 +131,27 @@ public class JoynrIntegrationBean {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked", "serial" })
-	private Set<ProviderQosFactory> getProviderQosFactories() {
-		Set<Bean<?>> providerQosFactoryBeans = beanManager.getBeans(ProviderQosFactory.class,
-																	new AnnotationLiteral<Any>() {
-																	});
-		Set<ProviderQosFactory> providerQosFactories = new HashSet<>();
-		for (Bean providerQosFactoryBean : providerQosFactoryBeans) {
-			ProviderQosFactory factory = (ProviderQosFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
-			providerQosFactories.add(factory);
-		}
-		return providerQosFactories;
-	}
+    private Set<ProviderQosFactory> getProviderQosFactories() {
+        Set<Bean<?>> providerQosFactoryBeans = beanManager.getBeans(ProviderQosFactory.class,
+                                                                    new AnnotationLiteral<Any>() {
+                                                                    });
+        Set<ProviderQosFactory> providerQosFactories = new HashSet<>();
+        for (Bean providerQosFactoryBean : providerQosFactoryBeans) {
+            ProviderQosFactory factory = (ProviderQosFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
+            providerQosFactories.add(factory);
+        }
+        return providerQosFactories;
+    }
 
     @PreDestroy
     public void destroy() {
-        for (Object provider : registeredProviders) {
-            try {
-                joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);
-            } catch (Exception e) {
-                LOG.error("Error unregistering provider", e);
+        if (deregisterOnShutdown) {
+            for (Object provider : registeredProviders) {
+                try {
+                    joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);
+                } catch (Exception e) {
+                    LOG.error("Error unregistering provider", e);
+                }
             }
         }
     }

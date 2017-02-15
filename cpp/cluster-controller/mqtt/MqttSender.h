@@ -16,9 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CLUSTER_CONTROLLER_MQTT_MQTTSENDER_H_
-#define CLUSTER_CONTROLLER_MQTT_MQTTSENDER_H_
-#include "MosquittoPublisher.h"
+#ifndef MQTTSENDER_H
+#define MQTTSENDER_H
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -30,16 +29,15 @@ namespace joynr
 
 class JoynrMessage;
 class MessagingSettings;
-class MosquittoPublisher;
-class MessagingSettings;
+class MosquittoConnection;
 
 class MqttSender : public IMessageSender
 {
 
 public:
-    explicit MqttSender(const MessagingSettings& settings);
+    explicit MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection);
 
-    ~MqttSender() override;
+    ~MqttSender() override = default;
 
     /**
     * @brief Sends the message to the given channel.
@@ -54,7 +52,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttSender);
 
-    MosquittoPublisher mosquittoPublisher;
+    std::shared_ptr<MosquittoConnection> mosquittoConnection;
     std::shared_ptr<IMessageReceiver> receiver;
 
     ADD_LOGGER(MqttSender);
@@ -62,4 +60,4 @@ private:
 
 } // namespace joynr
 
-#endif // CLUSTER_CONTROLLER_MQTT_MQTTSENDER_H_
+#endif // MQTTSENDER_H

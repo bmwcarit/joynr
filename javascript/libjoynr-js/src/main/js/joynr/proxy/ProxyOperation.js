@@ -279,7 +279,7 @@ define(
                                             });
 
                             return settings.dependencies.requestReplyManager.sendOneWayRequest({
-                                to : proxyOperation.parent.providerParticipantId,
+                                toDiscoveryEntry : proxyOperation.parent.providerDiscoveryEntry,
                                 from : proxyOperation.parent.proxyParticipantId,
                                 messagingQos : messagingQos,
                                 request : oneWayRequest
@@ -296,12 +296,13 @@ define(
                                             });
 
                             return settings.dependencies.requestReplyManager
-                                    .sendRequest({
-                                        to : proxyOperation.parent.providerParticipantId,
-                                        from : proxyOperation.parent.proxyParticipantId,
-                                        messagingQos : messagingQos,
-                                        request : request
-                                    })
+                                    .sendRequest(
+                                            {
+                                                toDiscoveryEntry : proxyOperation.parent.providerDiscoveryEntry,
+                                                from : proxyOperation.parent.proxyParticipantId,
+                                                messagingQos : messagingQos,
+                                                request : request
+                                            })
                                     .then(
                                             function(response) {
                                                 var responseKey, argumentValue;

@@ -109,9 +109,10 @@ public class AddressManager {
         if (result.size() == 0) {
             if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
-                    + message);
+                        + message);
             } else {
-                throw new JoynrIllegalStateException("Unable to find address for participant with ID " + toParticipantId);
+                throw new JoynrIllegalStateException("Unable to find address for participant with ID "
+                        + toParticipantId);
             }
         }
         return result;

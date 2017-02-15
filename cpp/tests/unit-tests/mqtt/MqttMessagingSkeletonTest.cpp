@@ -26,6 +26,7 @@
 
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 #include "cluster-controller/mqtt/MqttReceiver.h"
+#include "cluster-controller/mqtt/MosquittoConnection.h"
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/MessagingSettings.h"
@@ -55,7 +56,7 @@ class MockMqttReceiver : public joynr::MqttReceiver
 {
 public:
     MockMqttReceiver(const MessagingSettings& settings) :
-        MqttReceiver(settings, "channelId", "receiverId")
+        MqttReceiver(std::make_shared<MosquittoConnection>(settings, "receiverId"), settings, "channelId")
     {
     }
     MOCK_METHOD1(subscribeToTopic, void(const std::string& topic));

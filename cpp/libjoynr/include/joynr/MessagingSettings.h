@@ -67,6 +67,9 @@ public:
     static const std::string& SETTING_LONGPOLL_TIMEOUT_MS();
     static const std::string& SETTING_HTTP_CONNECT_TIMEOUT_MS();
     static const std::string& SETTING_BROKER_TIMEOUT_MS();
+
+    static const std::string& ACCESS_CONTROL_ENABLE();
+
     /**
      * @brief SETTING_MAXIMUM_TTL_MS The key used in settings to identifiy the maximum allowed value
      * of the time-to-live joynr message header.
@@ -105,6 +108,8 @@ public:
     static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME();
     static std::chrono::milliseconds DEFAULT_MQTT_RECONNECT_SLEEP_TIME();
     static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
+
+    static bool DEFAULT_ENABLE_ACCESS_CONTROLLER();
 
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
@@ -158,6 +163,10 @@ public:
     void setHttpConnectTimeout(std::int64_t timeout_ms);
     std::int64_t getBrokerTimeout() const;
     void setBrokerTimeout(std::int64_t timeout_ms);
+
+    bool enableAccessController() const;
+    void setEnableAccessController(bool enable);
+
     /**
      * @brief getMaximumTtlMs Get the maximum allowed time-to-live value in milliseconds for joynr
      * messages.

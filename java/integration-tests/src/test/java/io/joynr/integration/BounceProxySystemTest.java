@@ -275,9 +275,9 @@ public class BounceProxySystemTest {
     }
 
     private boolean isHtml(HttpEntity entity) {
-        return ContentType.TEXT_HTML.toString().toLowerCase().startsWith(entity.getContentType()
-                                                                               .getValue()
-                                                                               .toLowerCase());
+        return ContentType.TEXT_HTML.toString()
+                                    .toLowerCase()
+                                    .startsWith(entity.getContentType().getValue().toLowerCase());
     }
 
     private String encodeSendUrl(String encodedChannelUrl) {

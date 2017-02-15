@@ -34,71 +34,43 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
 
 std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
 {
-    Future<std::unique_ptr<JoynrRuntime>> runtimeFuture;
+    Future<void> runtimeFuture;
 
-    auto onSuccessCallback = [&runtimeFuture](std::unique_ptr<JoynrRuntime> createdRuntime) {
-        runtimeFuture.onSuccess(std::move(createdRuntime));
-    };
+    auto onSuccessCallback = [&runtimeFuture]() { runtimeFuture.onSuccess(); };
 
-    auto onErrorCallback = [&runtimeFuture](exceptions::JoynrRuntimeException& exception) {
+    auto onErrorCallback = [&runtimeFuture](const exceptions::JoynrRuntimeException& exception) {
         runtimeFuture.onError(
                 std::shared_ptr<joynr::exceptions::JoynrException>(exception.clone()));
     };
 
-    createRuntimeAsync(
+    auto runtime = createRuntimeAsync(
             std::move(settings), std::move(onSuccessCallback), std::move(onErrorCallback));
-
-    std::unique_ptr<JoynrRuntime> runtime;
-    runtimeFuture.get(runtime);
-
+    runtimeFuture.get();
     return runtime;
 }
 
-void JoynrRuntime::createRuntimeAsync(
+std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         const std::string& pathToLibjoynrSettings,
-        std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)> runtimeCreatedCallback,
-        std::function<void(exceptions::JoynrRuntimeException& exception)>
-                runtimeCreationErrorCallback,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         const std::string& pathToMessagingSettings)
 {
-    createRuntimeAsync(createSettings(pathToLibjoynrSettings, pathToMessagingSettings),
-                       runtimeCreatedCallback,
-                       runtimeCreationErrorCallback);
+    return createRuntimeAsync(createSettings(pathToLibjoynrSettings, pathToMessagingSettings),
+                              std::move(onSuccess),
+                              std::move(onError));
 }
 
-void JoynrRuntime::createRuntimeAsync(
+std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
-        std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)> runtimeCreatedCallback,
-        std::function<void(exceptions::JoynrRuntimeException& exception)>
-                runtimeCreationErrorCallback)
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException& exception)> onError)
 {
-    std::ignore = runtimeCreationErrorCallback;
+    std::ignore = onError;
 
-    struct ConfigurableDeleter
-    {
-        bool enabled = true;
-        void operator()(JoynrRuntime* ptr)
-        {
-            if (enabled) {
-                delete ptr;
-            }
-        }
-    };
-
-    std::shared_ptr<LibJoynrWebSocketRuntime> runtime(
-            new LibJoynrWebSocketRuntime(std::move(settings)), ConfigurableDeleter());
-
-    auto runtimeCreatedCallbackWrapper =
-            [ runtime, runtimeCreatedCallback = std::move(runtimeCreatedCallback) ]()
-    {
-        // Workaround. Can't move an unique_ptr into the lambda
-        std::unique_ptr<LibJoynrWebSocketRuntime> createdRuntime(runtime.get());
-        std::get_deleter<ConfigurableDeleter>(runtime)->enabled = false;
-
-        runtimeCreatedCallback(std::move(createdRuntime));
-    };
-
-    runtime->connect(std::move(runtimeCreatedCallbackWrapper));
+    auto runtime = std::make_unique<LibJoynrWebSocketRuntime>(std::move(settings));
+    runtime->connect(std::move(onSuccess));
+    // this is necessary for gcc 4.9
+    return std::move(runtime);
 }
 
 std::unique_ptr<Settings> JoynrRuntime::createSettings(const std::string& pathToLibjoynrSettings,
@@ -111,4 +83,5 @@ std::unique_ptr<Settings> JoynrRuntime::createSettings(const std::string& pathTo
 
     return settings;
 }
+
 } // namespace joynr

@@ -60,20 +60,12 @@ std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> CapabilitiesCl
 }
 
 void CapabilitiesClient::add(
-        const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList)
+        const types::GlobalDiscoveryEntry& entry,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    if (capabilitiesInformationList.empty()) {
-        return;
-    }
-
-    std::function<void(const exceptions::JoynrException&)> onError =
-            [&](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
-                        "Error occured during the execution of capabilitiesProxy->add. Error: {}",
-                        error.getMessage());
-    };
     assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, std::move(onError));
+    defaultCapabilitiesProxy->addAsync(entry, onSuccess, onError);
 }
 
 void CapabilitiesClient::remove(const std::string& participantId)

@@ -45,16 +45,14 @@ class InterfaceProxyCppTemplate extends InterfaceTemplate {
 «className»::«className»(
 		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
-		joynr::IClientCache *cache,
 		const std::string &domain,
-		const joynr::MessagingQos &qosSettings,
-		bool cached
+		const joynr::MessagingQos &qosSettings
 ) :
-		joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
-		«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
-		«IF hasFireAndForgetMethods(francaIntf)»«fireAndForgetClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),«ENDIF»
-		«syncClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
-		«asyncClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
+		joynr::ProxyBase(connectorFactory, domain, qosSettings),
+		«className»Base(messagingAddress, connectorFactory, domain, qosSettings),
+		«IF hasFireAndForgetMethods(francaIntf)»«fireAndForgetClassName»(messagingAddress, connectorFactory, domain, qosSettings),«ENDIF»
+		«syncClassName»(messagingAddress, connectorFactory, domain, qosSettings),
+		«asyncClassName»(messagingAddress, connectorFactory, domain, qosSettings)
 {
 }
 

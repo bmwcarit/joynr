@@ -49,6 +49,7 @@ var consumerBase = {
                 provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
                 joynr.selectRuntime("inprocess");
             }
+            provisioning.logging.configuration.loggers.root.level = "error";
             return joynr.load(provisioning).then(function(loadedJoynr) {
                 joynr = loadedJoynr;
                 log("joynr started");

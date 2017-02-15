@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,11 @@
 #include <memory>
 #include <tuple>
 
+#include "joynr/IMessageRouter.h"
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/IDispatcher.h"
-#include "joynr/MessageRouter.h"
+#include "joynr/MulticastBroadcastListener.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/Logger.h"
 #include "joynr/types/DiscoveryEntry.h"
@@ -37,6 +38,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/types/Version.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {
@@ -52,7 +54,7 @@ public:
             joynr::system::IDiscoverySync& discoveryProxy,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
-            std::shared_ptr<MessageRouter> messageRouter,
+            std::shared_ptr<IMessageRouter> messageRouter,
             std::int64_t defaultExpiryIntervalMs,
             PublicationManager& publicationManager);
 
@@ -138,7 +140,7 @@ private:
     joynr::system::IDiscoverySync& discoveryProxy;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
     std::int64_t defaultExpiryIntervalMs;
     PublicationManager& publicationManager;
     ADD_LOGGER(CapabilitiesRegistrar);

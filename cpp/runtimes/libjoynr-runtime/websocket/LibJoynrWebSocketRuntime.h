@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,9 @@
 
 namespace joynr
 {
-class WebSocketPpClient;
+class IWebSocketPpClient;
 class WebSocketLibJoynrMessagingSkeleton;
+class IWebSocketPpClient;
 
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime
 {
@@ -41,16 +42,17 @@ public:
     ~LibJoynrWebSocketRuntime() override;
 
 protected:
-    void startLibJoynrMessagingSkeleton(std::shared_ptr<MessageRouter> messageRouter) override;
+    void startLibJoynrMessagingSkeleton(std::shared_ptr<IMessageRouter> messageRouter) override;
+    void connect(std::function<void()> runtimeCreatedCallback);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);
 
-    void connect(std::function<void()> runtimeCreatedCallback);
     void sendInitializationMsg();
+    void createWebsocketClient();
 
     WebSocketSettings wsSettings;
-    std::shared_ptr<WebSocketPpClient> websocket;
+    std::shared_ptr<IWebSocketPpClient> websocket;
     std::string initializationMsg;
     ADD_LOGGER(LibJoynrWebSocketRuntime);
 

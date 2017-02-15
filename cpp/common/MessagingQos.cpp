@@ -25,8 +25,18 @@
 namespace joynr
 {
 
-MessagingQos::MessagingQos(std::uint64_t ttl, MessagingQosEffort::Enum effort)
-        : ttl(ttl), effort(effort), messageHeaders()
+MessagingQos::MessagingQos(std::uint64_t ttl, MessagingQosEffort::Enum effort, bool encrypt)
+        : ttl(ttl), effort(effort), encrypt(encrypt), messageHeaders()
+{
+}
+
+MessagingQos::MessagingQos(MessagingQosEffort::Enum effort, bool encrypt)
+        : MessagingQos::MessagingQos(default_ttl, effort, encrypt)
+{
+}
+
+MessagingQos::MessagingQos(std::uint64_t ttl, bool encrypt)
+        : MessagingQos::MessagingQos(ttl, MessagingQosEffort::Enum::NORMAL, encrypt)
 {
 }
 
@@ -48,6 +58,16 @@ MessagingQosEffort::Enum MessagingQos::getEffort() const
 void MessagingQos::setEffort(const MessagingQosEffort::Enum effort)
 {
     this->effort = effort;
+}
+
+bool MessagingQos::getEncrypt() const
+{
+    return encrypt;
+}
+
+void MessagingQos::setEncrypt(const bool encrypt)
+{
+    this->encrypt = encrypt;
 }
 
 void MessagingQos::putCustomMessageHeader(const std::string& key, const std::string& value)
@@ -84,7 +104,9 @@ const std::unordered_map<std::string, std::string>& MessagingQos::getCustomMessa
 
 bool MessagingQos::operator==(const MessagingQos& other) const
 {
-    return this->getTtl() == other.getTtl();
+    return (this->getTtl() == other.getTtl() && this->getEffort() == other.getEffort() &&
+            this->getEncrypt() == other.getEncrypt() &&
+            this->getCustomMessageHeaders() == other.getCustomMessageHeaders());
 }
 
 std::string MessagingQos::toString() const
@@ -93,6 +115,7 @@ std::string MessagingQos::toString() const
     msgQosAsString << "MessagingQos{";
     msgQosAsString << "ttl:" << getTtl();
     msgQosAsString << "effort:" << MessagingQosEffort::getLiteral(this->getEffort());
+    msgQosAsString << "encrypt:" << this->getEncrypt();
     msgQosAsString << "}";
     return msgQosAsString.str();
 }

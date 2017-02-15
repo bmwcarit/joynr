@@ -72,9 +72,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
 
     private boolean shutdown = false;
 
-    public WebSocketJettyServer(WebSocketAddress address,
-                                ObjectMapper objectMapper,
-                                int maxMessageSize) {
+    public WebSocketJettyServer(WebSocketAddress address, ObjectMapper objectMapper, int maxMessageSize) {
         this.address = address;
         this.objectMapper = objectMapper;
         this.maxMessageSize = maxMessageSize;
@@ -149,7 +147,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
 
     @Override
     public void shutdown() {
-        shutdown  = true;
+        shutdown = true;
         for (Session session : sessionMap.values()) {
             try {
                 session.disconnect();
@@ -165,8 +163,12 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     }
 
     @Override
-    public synchronized void writeText(Address toAddress, String message, long timeout, TimeUnit unit, final FailureAction failureAction) {
-        if (! (toAddress instanceof WebSocketClientAddress)) {
+    public synchronized void writeText(Address toAddress,
+                                       String message,
+                                       long timeout,
+                                       TimeUnit unit,
+                                       final FailureAction failureAction) {
+        if (!(toAddress instanceof WebSocketClientAddress)) {
             throw new JoynrIllegalStateException("Web Socket Server can only send to WebSocketClientAddresses");
         }
 
@@ -174,7 +176,8 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
         Session session = sessionMap.get(toClientAddress.getId());
         if (session == null) {
             //TODO We need a delay with invalidation of the stub
-            throw new JoynrDelayMessageException("no active session for WebSocketClientAddress: " + toClientAddress.getId());
+            throw new JoynrDelayMessageException("no active session for WebSocketClientAddress: "
+                    + toClientAddress.getId());
         }
         try {
             session.getRemote().sendString(message, new WriteCallback() {
@@ -182,6 +185,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                 public void writeSuccess() {
                     // Nothing to do
                 }
+
                 @Override
                 public void writeFailed(Throwable error) {
                     if (shutdown) {
@@ -231,7 +235,8 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
             }
         }
 
-        @Override public void onWebSocketClose(int statusCode, String reason) {
+        @Override
+        public void onWebSocketClose(int statusCode, String reason) {
             super.onWebSocketClose(statusCode, reason);
             openSockets.remove(CCWebSocketMessagingSkeletonSocket.this);
         }

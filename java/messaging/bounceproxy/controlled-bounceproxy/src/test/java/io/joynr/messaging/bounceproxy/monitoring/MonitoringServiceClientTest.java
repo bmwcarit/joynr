@@ -318,9 +318,9 @@ public class MonitoringServiceClientTest {
         // HttpResponse is set as out parameter of the handle method. The way to
         // set out parameters with Mockito is to use doAnswer
         Answer<Void> answerForHttpResponse = MockitoTestUtils.createAnswerForHttpResponse(httpStatus);
-        Mockito.doAnswer(answerForHttpResponse).when(handler).handle(any(HttpRequest.class),
-                                                                     any(HttpResponse.class),
-                                                                     any(HttpContext.class));
+        Mockito.doAnswer(answerForHttpResponse)
+               .when(handler)
+               .handle(any(HttpRequest.class), any(HttpResponse.class), any(HttpContext.class));
     }
 
     /**

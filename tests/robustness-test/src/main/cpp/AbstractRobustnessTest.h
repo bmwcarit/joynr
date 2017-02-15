@@ -78,7 +78,6 @@ protected:
 
         // Build a proxy
         proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
-                        ->setCached(false)
                         ->setDiscoveryQos(discoveryQos)
                         ->build();
 

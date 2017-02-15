@@ -1,10 +1,29 @@
+#joynr 0.24.0
+
+## API relevant changes
+
+* **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
+  existing MessagingQos APIs remain working
+
+#joynr 0.23.1
+
+## API relevant changes
+* **[C++]** createRuntimeAsync returns runtime directly instead of via a callback;
+  the runtime must not be used until the onSuccess callback is called
+* **[C++]** ProxyBuilder::buildAsync will not block if arbitration is not possible
+
+## Other changes
+* **[C++, Java, JS]** Fix bugs in code generation for typedef.
+
 #joynr 0.23.0
 
 ## API relevant changes
 
+* **[JEE]** Providers are no longer deregistered automatically when the application is shutdown.
 * **[C++]** Proxy builder returns a std::unique_ptr to the created proxy instead of a raw pointer.
 * **[C++]** Joynr runtime returns a std::unique_ptr to a created proxy builder instead of a raw pointer.
 * **[C++]** Created joynr runtime is returned as a std::unique_ptr.
+* **[All]** Introduce MulticastSubscriptionQos for non selective broadcasts.
 * **[All]** Removed deprecated time related APIs from `SubscriptionQos`, `PeriodicSubscriptionQos`,
   `OnChangeSubscriptionQos`, `OnChangeWithKeepAliveSubscriptionQos`,
   `HeartbeatSubscriptionInformation`, `DiscoveryQos`
@@ -15,9 +34,12 @@
   `registerProvider` API (without `providerQos` parameter) from `JoynrRuntime`
 * **[Java]** Removed deprecated `CAPABILITYDIRECTORYURL` from provisioning
 * **[All]** Removed deprecated `outputHeaderPath` member from AbstractJoynGeneratorMojo
+* **[C++]** createRuntimeAsync error callback exception parameter is now a const reference.
+* **[C++]** Removed method `setCached()` from ProxyBuilder
+* **[C++]** Removed protected member `cache` from ProxyBase, ProxyFactory
 
 ## Other changes
-None.
+* **[C++]** fix lifetime issue in JoynrMessagingConnector
 
 #joynr 0.22.4
 

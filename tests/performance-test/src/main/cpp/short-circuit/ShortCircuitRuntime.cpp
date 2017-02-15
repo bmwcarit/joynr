@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
+#include "cluster-controller/include/joynr/CcMessageRouter.h"
 
 namespace joynr
 {
@@ -53,14 +54,14 @@ ShortCircuitRuntime::ShortCircuitRuntime()
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
             std::make_unique<MqttMulticastAddressCalculator>(nullptr);
 
-    messageRouter = std::make_shared<MessageRouter>(std::move(messagingStubFactory),
-                                                    libjoynrMessagingAddress,
-                                                    singleThreadedIOService.getIOService(),
-                                                    std::move(addressCalculator));
+    messageRouter = std::make_shared<CcMessageRouter>(std::move(messagingStubFactory),
+                                                      nullptr,
+                                                      nullptr,
+                                                      singleThreadedIOService.getIOService(),
+                                                      std::move(addressCalculator));
 
-    joynrMessageSender = std::make_unique<JoynrMessageSender>(messageRouter);
-    joynrDispatcher =
-            new Dispatcher(joynrMessageSender.get(), singleThreadedIOService.getIOService());
+    joynrMessageSender = std::make_shared<JoynrMessageSender>(messageRouter);
+    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadedIOService.getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     dispatcherMessagingSkeleton =
@@ -69,23 +70,24 @@ ShortCircuitRuntime::ShortCircuitRuntime()
 
     publicationManager = new PublicationManager(
             singleThreadedIOService.getIOService(), joynrMessageSender.get());
-    subscriptionManager =
-            new SubscriptionManager(singleThreadedIOService.getIOService(), messageRouter);
+    subscriptionManager = std::make_shared<SubscriptionManager>(
+            singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());
 
-    inProcessPublicationSender = std::make_unique<InProcessPublicationSender>(subscriptionManager);
+    inProcessPublicationSender =
+            std::make_unique<InProcessPublicationSender>(subscriptionManager.get());
     inProcessConnectorFactory = new InProcessConnectorFactory(
-            subscriptionManager,
+            subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender.get(),
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
     joynrMessagingConnectorFactory =
-            new JoynrMessagingConnectorFactory(joynrMessageSender.get(), subscriptionManager);
+            new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             inProcessConnectorFactory, joynrMessagingConnectorFactory);
-    proxyFactory = std::make_unique<ProxyFactory>(
-            libjoynrMessagingAddress, std::move(connectorFactory), nullptr);
+    proxyFactory =
+            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
 
     std::string persistenceFilename = "dummy.txt";
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);

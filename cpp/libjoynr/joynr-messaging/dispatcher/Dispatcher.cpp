@@ -49,7 +49,7 @@ namespace joynr
 
 INIT_LOGGER(Dispatcher);
 
-Dispatcher::Dispatcher(JoynrMessageSender* messageSender,
+Dispatcher::Dispatcher(std::shared_ptr<JoynrMessageSender> messageSender,
                        boost::asio::io_service& ioService,
                        int maxThreads)
         : messageSender(messageSender),
@@ -64,35 +64,33 @@ Dispatcher::Dispatcher(JoynrMessageSender* messageSender,
 
 Dispatcher::~Dispatcher()
 {
-    JOYNR_LOG_DEBUG(logger, "Destructing Dispatcher");
+    JOYNR_LOG_TRACE(logger, "Destructing Dispatcher");
     handleReceivedMessageThreadPool.shutdown();
     delete publicationManager;
-    delete subscriptionManager;
     publicationManager = nullptr;
-    subscriptionManager = nullptr;
-    JOYNR_LOG_DEBUG(logger, "Destructing finished");
+    JOYNR_LOG_TRACE(logger, "Destructing finished");
 }
 
 void Dispatcher::addRequestCaller(const std::string& participantId,
                                   std::shared_ptr<RequestCaller> requestCaller)
 {
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
-    JOYNR_LOG_DEBUG(logger, "addRequestCaller id= {}", participantId);
+    JOYNR_LOG_TRACE(logger, "addRequestCaller id= {}", participantId);
     requestCallerDirectory.add(participantId, requestCaller);
 
     if (publicationManager != nullptr) {
         // publication manager queues received subscription requests, that are
         // received before the corresponding request caller is added
-        publicationManager->restore(participantId, requestCaller, messageSender);
+        publicationManager->restore(participantId, requestCaller, messageSender.get());
     } else {
-        JOYNR_LOG_DEBUG(logger, "No publication manager available!");
+        JOYNR_LOG_WARN(logger, "No publication manager available!");
     }
 }
 
 void Dispatcher::removeRequestCaller(const std::string& participantId)
 {
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
-    JOYNR_LOG_DEBUG(logger, "removeRequestCaller id= {}", participantId);
+    JOYNR_LOG_TRACE(logger, "removeRequestCaller id= {}", participantId);
     // TODO if a provider is removed, all publication runnables are stopped
     // the subscription request is deleted,
     // Q: Should it be restored once the provider is registered again?
@@ -104,20 +102,20 @@ void Dispatcher::addReplyCaller(const std::string& requestReplyId,
                                 std::shared_ptr<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings)
 {
-    JOYNR_LOG_DEBUG(logger, "addReplyCaller id= {}", requestReplyId);
+    JOYNR_LOG_TRACE(logger, "addReplyCaller id= {}", requestReplyId);
     // add the callback to the registry that is responsible for reply messages
     replyCallerDirectory.add(requestReplyId, replyCaller, qosSettings.getTtl());
 }
 
 void Dispatcher::removeReplyCaller(const std::string& requestReplyId)
 {
-    JOYNR_LOG_DEBUG(logger, "removeReplyCaller id= {}", requestReplyId);
+    JOYNR_LOG_TRACE(logger, "removeReplyCaller id= {}", requestReplyId);
     replyCallerDirectory.remove(requestReplyId);
 }
 
 void Dispatcher::receive(const JoynrMessage& message)
 {
-    JOYNR_LOG_DEBUG(logger, "receive(message). Message payload: {}", message.getPayload());
+    JOYNR_LOG_TRACE(logger, "receive(message). Message payload: {}", message.getPayload());
     ReceivedMessageRunnable* receivedMessageRunnable = new ReceivedMessageRunnable(message, *this);
     handleReceivedMessageThreadPool.execute(receivedMessageRunnable);
 }
@@ -154,7 +152,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
             reply.setRequestReplyId(requestReplyId);
             // send reply back to the original sender (ie. sender and receiver ids are reversed
             // on purpose)
-            JOYNR_LOG_DEBUG(logger,
+            JOYNR_LOG_TRACE(logger,
                             "Got reply from RequestInterpreter for requestReplyId {}",
                             requestReplyId);
             JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
@@ -172,9 +170,9 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
             Reply reply;
             reply.setRequestReplyId(requestReplyId);
             reply.setError(exception);
-            JOYNR_LOG_DEBUG(logger,
-                            "Got error reply from RequestInterpreter for requestReplyId {}",
-                            requestReplyId);
+            JOYNR_LOG_WARN(logger,
+                           "Got error reply from RequestInterpreter for requestReplyId {}",
+                           requestReplyId);
             JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now());
             std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -243,7 +241,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
             // removed
             // the caller
             // because its lifetime exceeded TTL
-            JOYNR_LOG_INFO(
+            JOYNR_LOG_WARN(
                     logger,
                     "caller not found in the ReplyCallerDirectory for requestid {}, ignoring",
                     requestReplyId);
@@ -292,7 +290,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
                                     message.getHeaderTo(),
                                     caller,
                                     subscriptionRequest,
-                                    messageSender);
+                                    messageSender.get());
         }
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
@@ -321,8 +319,10 @@ void Dispatcher::handleMulticastSubscriptionRequestReceived(const JoynrMessage& 
                 jsonSubscriptionRequest,
                 e.what());
     }
-    publicationManager->add(
-            message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest, messageSender);
+    publicationManager->add(message.getHeaderFrom(),
+                            message.getHeaderTo(),
+                            subscriptionRequest,
+                            messageSender.get());
 }
 
 void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message)
@@ -355,7 +355,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
                                     message.getHeaderTo(),
                                     caller,
                                     subscriptionRequest,
-                                    messageSender);
+                                    messageSender.get());
         }
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(
@@ -368,7 +368,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
 
 void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
 {
-    JOYNR_LOG_DEBUG(logger, "handleSubscriptionStopReceived");
+    JOYNR_LOG_TRACE(logger, "handleSubscriptionStopReceived");
     std::string jsonSubscriptionStop = message.getPayload();
 
     std::string subscriptionId;
@@ -488,7 +488,8 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     }
 }
 
-void Dispatcher::registerSubscriptionManager(ISubscriptionManager* subscriptionManager)
+void Dispatcher::registerSubscriptionManager(
+        std::shared_ptr<ISubscriptionManager> subscriptionManager)
 {
     this->subscriptionManager = subscriptionManager;
 }

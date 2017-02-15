@@ -95,7 +95,6 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
         capabilitiesProxyBuilder
             ->setMessagingQos(MessagingQos(10000)) //TODO magic values.
-            ->setCached(true)
             ->setDiscoveryQos(discoveryQos)
             ->build()
         );
@@ -103,7 +102,6 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::unique_ptr<CapabilitiesClient> capabilitiesClient (std::make_unique<CapabilitiesClient>());
     capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
 
-    std::vector<types::GlobalDiscoveryEntry> globalDiscoveryEntryList;
     std::string capDomain("testDomain");
     std::string capInterface("testInterface");
     types::ProviderQos capProviderQos;
@@ -113,19 +111,20 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::int64_t capLastSeenMs = 0;
     std::int64_t capExpiryDateMs = 1000;
     std::string capSerializedChannelAddress("testChannelId");
-    globalDiscoveryEntryList.push_back(types::GlobalDiscoveryEntry(
-                                           providerVersion,
-                                           capDomain,
-                                           capInterface,
-                                           capParticipantId,
-                                           capProviderQos,
-                                           capLastSeenMs,
-                                           capExpiryDateMs,
-                                           capPublicKeyId,
-                                           capSerializedChannelAddress));
+    types::GlobalDiscoveryEntry globalDiscoveryEntry(providerVersion,
+                capDomain,
+                capInterface,
+                capParticipantId,
+                capProviderQos,
+                capLastSeenMs,
+                capExpiryDateMs,
+                capPublicKeyId,
+                capSerializedChannelAddress);
 
     JOYNR_LOG_DEBUG(logger, "Registering capabilities");
-    capabilitiesClient->add(globalDiscoveryEntryList);
+    capabilitiesClient->add(globalDiscoveryEntry,
+                            [](){},
+                            [](const joynr::exceptions::JoynrRuntimeException& /*exception*/){});
     JOYNR_LOG_DEBUG(logger, "Registered capabilities");
 
     auto callback = std::make_shared<GlobalCapabilitiesMock>();

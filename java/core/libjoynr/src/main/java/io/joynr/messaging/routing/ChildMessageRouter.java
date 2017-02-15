@@ -49,9 +49,9 @@ import org.slf4j.LoggerFactory;
 /**
  * MessageRouter implementation which adds hops to its parent and tries to resolve unknown addresses at its parent
  */
- @Singleton
+@Singleton
 public class ChildMessageRouter extends MessageRouterImpl {
-     private Logger logger = LoggerFactory.getLogger(ChildMessageRouter.class);
+    private Logger logger = LoggerFactory.getLogger(ChildMessageRouter.class);
 
     private static interface DeferrableRegistration {
         void register();
@@ -63,16 +63,24 @@ public class ChildMessageRouter extends MessageRouterImpl {
     private Set<String> deferredParentHopsParticipantIds = new HashSet<>();
     private Map<String, DeferrableRegistration> deferredMulticastRegististrations = new HashMap<>();
 
-
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public ChildMessageRouter(RoutingTable routingTable,
                               @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
                               @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                               @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                              MessagingStubFactory messagingStubFactory, MessagingSkeletonFactory messagingSkeletonFactory, AddressManager addressManager, MulticastReceiverRegistry multicastReceiverRegistry) {
+                              MessagingStubFactory messagingStubFactory,
+                              MessagingSkeletonFactory messagingSkeletonFactory,
+                              AddressManager addressManager,
+                              MulticastReceiverRegistry multicastReceiverRegistry) {
         // CHECKSTYLE:ON
-        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory, messagingSkeletonFactory, addressManager, multicastReceiverRegistry);
+        super(routingTable,
+              scheduler,
+              sendMsgRetryIntervalMs,
+              messagingStubFactory,
+              messagingSkeletonFactory,
+              addressManager,
+              multicastReceiverRegistry);
         this.incomingAddress = incomingAddress;
     }
 
@@ -111,7 +119,7 @@ public class ChildMessageRouter extends MessageRouterImpl {
     }
 
     private void addNextHopToParent(String participantId) {
-        logger.debug("Adding next hop with participant id " + participantId + " to parent router");
+        logger.trace("Adding next hop with participant id " + participantId + " to parent router");
         if (incomingAddress instanceof ChannelAddress) {
             parentRouter.addNextHop(participantId, (ChannelAddress) incomingAddress);
         } else if (incomingAddress instanceof CommonApiDbusAddress) {
@@ -129,7 +137,9 @@ public class ChildMessageRouter extends MessageRouterImpl {
     }
 
     @Override
-    public void addMulticastReceiver(final String multicastId, final String subscriberParticipantId, final String providerParticipantId) {
+    public void addMulticastReceiver(final String multicastId,
+                                     final String subscriberParticipantId,
+                                     final String providerParticipantId) {
         super.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         DeferrableRegistration registerWithParent = new DeferrableRegistration() {
             @Override
@@ -142,14 +152,13 @@ public class ChildMessageRouter extends MessageRouterImpl {
         } else {
             synchronized (deferredMulticastRegististrations) {
                 deferredMulticastRegististrations.put(multicastId + subscriberParticipantId + providerParticipantId,
-                    registerWithParent);
+                                                      registerWithParent);
             }
         }
     }
 
     @Override
-    public void removeMulticastReceiver(String multicastId, String subscriberParticipantId,
-        String providerParticipantId) {
+    public void removeMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId) {
         super.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         if (parentRouter == null) {
             synchronized (deferredMulticastRegististrations) {

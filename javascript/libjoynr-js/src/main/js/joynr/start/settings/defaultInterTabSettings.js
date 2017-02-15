@@ -17,26 +17,11 @@
  * #L%
  */
 
-(function() {
-    var setupDefaultInterTabSettings =
-            function(defaultSettings) {
-                defaultSettings.window = window;
-                defaultSettings.parentWindow = window.opener || window.top;
-                defaultSettings.parentOrigin =
-                        location.origin || (window.location.protocol + '//' + window.location.host);
-                return defaultSettings;
-            };
-
-    // AMD support
-    if (typeof define === 'function' && define.amd) {
-        define("joynr/start/settings/defaultInterTabSettings", [], function() {
-            return setupDefaultInterTabSettings({});
-        });
-    } else {
-        window.joynr = window.joynr || {};
-        window.joynr.start = window.joynr.start || {};
-        window.joynr.start.defaultInterTabSettings =
-                window.joynr.start.defaultInterTabSettings || {};
-        setupDefaultInterTabSettings(window.joynr.start.defaultInterTabSettings);
-    }
-}());
+define("joynr/start/settings/defaultInterTabSettings", [], function() {
+    var defaultSettings = {};
+    defaultSettings.window = window;
+    defaultSettings.parentWindow = window.opener || window.top;
+    defaultSettings.parentOrigin =
+            location.origin || (window.location.protocol + '//' + window.location.host);
+    return defaultSettings;
+});

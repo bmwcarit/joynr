@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -478,9 +478,7 @@ private:
     std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
 
     ADD_LOGGER(LocalDomainAccessController);
-    static std::chrono::milliseconds broadcastMinInterval;
     static std::chrono::milliseconds broadcastSubscriptionValidity;
-    static std::chrono::milliseconds broadcastPublicationTtl;
 
     void initialiseLocalDomainAccessStore(const std::string& userId,
                                           const std::string& domain,

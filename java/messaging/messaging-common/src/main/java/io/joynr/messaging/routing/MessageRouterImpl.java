@@ -92,7 +92,7 @@ public class MessageRouterImpl implements MessageRouter {
     public void addMulticastReceiver(final String multicastId,
                                      String subscriberParticipantId,
                                      String providerParticipantId) {
-        logger.debug("Adding multicast receiver {} for multicast {} on provider {}",
+        logger.trace("Adding multicast receiver {} for multicast {} on provider {}",
                      subscriberParticipantId,
                      multicastId,
                      providerParticipantId);
@@ -130,7 +130,7 @@ public class MessageRouterImpl implements MessageRouter {
         if (messagingSkeleton != null && messagingSkeleton instanceof IMessagingMulticastSubscriber) {
             operation.perform((IMessagingMulticastSubscriber) messagingSkeleton);
         } else {
-            logger.debug("No messaging skeleton found for address {}, not performing multicast subscription.",
+            logger.trace("No messaging skeleton found for address {}, not performing multicast subscription.",
                          providerAddress);
         }
     }
@@ -161,22 +161,23 @@ public class MessageRouterImpl implements MessageRouter {
 
     private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
         try {
-            logger.debug("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
+            logger.trace("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
             schedule(new Runnable() {
                 @Override
                 public void run() {
-                    logger.debug("Starting processing of message {}", message);
+                    logger.trace("Starting processing of message {}", message);
                     try {
                         checkExpiry(message);
                         Set<Address> addresses = getAddresses(message);
+                        if (addresses.isEmpty()) {
+                            throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
+                                    + message.getTo());
+                        }
                         for (Address address : addresses) {
                             String messageId = message.getId().substring(UUID_TAIL);
-                            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId,
-                                    message.getType(),
-                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                            logger.trace(">>>>> SEND  ID:{}:{} header: {}", new Object[]{ messageId, message.getType(),
                                     message.getHeader().toString() });
-                            logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(),
+                            logger.trace(">>>>> body  ID:{}:{}: {}", new Object[]{ messageId, message.getType(),
                                     message.getPayload() });
                             IMessaging messagingStub = messagingStubFactory.create(address);
                             messagingStub.transmit(message, createFailureAction(message, retriesCount));
@@ -187,7 +188,10 @@ public class MessageRouterImpl implements MessageRouter {
                         failureAction.execute(error);
                     }
                 }
-            }, message.getId(), delayMs, TimeUnit.MILLISECONDS);
+            },
+                     message.getId(),
+                     delayMs,
+                     TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException e) {
             logger.error("Execution rejected while scheduling SendSerializedMessageRequest ", e);
             throw new JoynrSendBufferFullException(e);
@@ -273,9 +277,9 @@ public class MessageRouterImpl implements MessageRouter {
     }
 
     private long exponentialBackoff(long delayMs, int retries) {
-        logger.debug("TRIES: " + retries);
+        logger.trace("TRIES: " + retries);
         long millis = delayMs + (long) ((2 ^ (retries)) * delayMs * Math.random());
-        logger.debug("MILLIS: " + millis);
+        logger.trace("MILLIS: " + millis);
         return millis;
     }
 

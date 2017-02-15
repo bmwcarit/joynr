@@ -427,7 +427,7 @@ define(
                                         loggingManager : loggingManager
                                     }));
 
-                            arbitrator = new Arbitrator(discovery, CapabilitiesUtil.toDiscoveryEntries(typedCapabilities));
+                            arbitrator = new Arbitrator(discovery, typedCapabilities);
 
                             providerBuilder = Object.freeze(new ProviderBuilder());
 

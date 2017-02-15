@@ -102,8 +102,33 @@ TEST_F(MessagingQosTest, setCustomEffort)
     EXPECT_EQ(MessagingQosEffort::Enum::BEST_EFFORT, qos.getEffort());
 }
 
+TEST_F(MessagingQosTest, defaultEncrypt)
+{
+    EXPECT_EQ(false, qos.getEncrypt());
+}
+
+TEST_F(MessagingQosTest, setCustomEncrypt)
+{
+    EXPECT_EQ(false, qos.getEncrypt());
+    qos.setEncrypt(true);
+    EXPECT_EQ(true, qos.getEncrypt());
+}
+
 TEST_F(MessagingQosTest, constructorWithCustomEffort)
 {
     MessagingQos customEffortInstance = MessagingQos(0L, MessagingQosEffort::Enum::BEST_EFFORT);
     EXPECT_EQ(MessagingQosEffort::Enum::BEST_EFFORT, customEffortInstance.getEffort());
+}
+
+TEST_F(MessagingQosTest, constructorWithCustomEncrypt)
+{
+    bool encrypt = true;
+    MessagingQos customEncryptInstance = MessagingQos(0L, MessagingQosEffort::Enum::BEST_EFFORT, encrypt);
+    EXPECT_EQ(encrypt, customEncryptInstance.getEncrypt());
+
+    customEncryptInstance = MessagingQos(MessagingQosEffort::Enum::BEST_EFFORT, encrypt);
+    EXPECT_EQ(encrypt, customEncryptInstance.getEncrypt());
+
+    customEncryptInstance = MessagingQos(0L, encrypt);
+    EXPECT_EQ(encrypt, customEncryptInstance.getEncrypt());
 }

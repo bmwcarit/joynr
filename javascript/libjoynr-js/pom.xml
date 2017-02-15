@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.23.0-SNAPSHOT</version>
+		<version>0.24.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -990,7 +990,7 @@
 									<arguments>
 										<argument>install</argument>
 										<argument>--prefix=${project.build.directory}/node-classes</argument>
-										<argument>browserify</argument>
+										<argument>browserify@13.3.0</argument>
 									</arguments>
 								</configuration>
 								<goals>

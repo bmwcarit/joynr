@@ -56,7 +56,7 @@ import java.util.List;
 
 //The current generator is not able to check wether some of the imports are acutally necessary for this specific interface.
 //Therefore some imports migth be unused in this version of the interface.
-//To prevent warnings @SuppressWarnings("unused") is being used. 
+//To prevent warnings @SuppressWarnings("unused") is being used.
 //To prevent warnings about an unnecessary SuppressWarnings we have to import something that is not used. (e.g. TreeSet)
 import java.util.TreeSet;
 @SuppressWarnings("unused")

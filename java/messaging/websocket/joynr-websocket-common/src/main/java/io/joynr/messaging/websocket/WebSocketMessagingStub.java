@@ -48,7 +48,7 @@ public class WebSocketMessagingStub implements IMessaging {
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
-        logger.debug("WebSocketMessagingStub.transmit with message " + message);
+        logger.debug(">>> OUTGOING >>> {}", message.toLogMessage());
         long timeout = message.getExpiryDate() - System.currentTimeMillis();
         String serializedMessage;
         try {
@@ -61,6 +61,7 @@ public class WebSocketMessagingStub implements IMessaging {
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
+        logger.debug(">>> OUTGOING >>> {}", serializedMessage);
         webSocketEndpoint.writeText(toAddress, serializedMessage, 30, TimeUnit.SECONDS, failureAction);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 #include "IltAbstractConsumerTest.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Semaphore.h"
 
 using namespace ::testing;
@@ -27,14 +27,7 @@ using namespace ::testing;
 class IltConsumerAttributeSubscriptionTest : public IltAbstractConsumerTest<::testing::Test>
 {
 public:
-    IltConsumerAttributeSubscriptionTest()
-            : subscriptionIdFutureTimeout(10000), publicationTimeout(10000)
-    {
-    }
-
-protected:
-    std::uint16_t subscriptionIdFutureTimeout;
-    std::chrono::milliseconds publicationTimeout;
+    IltConsumerAttributeSubscriptionTest() = default;
 };
 
 joynr::Logger iltConsumerAttributeSubscriptionTestLogger("IltConsumerAttributeSubscriptionTest");
@@ -59,8 +52,9 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
+    int64_t publicationTtl = UnicastSubscriptionQos::DEFAULT_PUBLICATION_TTL_MS();
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(
+            validity, publicationTtl, minInterval_ms);
 
     auto mockEnumerationSubscriptionListener =
             std::make_shared<MockEnumerationSubscriptionListener>();
@@ -79,14 +73,15 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeEnumeration - register subscription");
         testInterfaceProxy->subscribeToAttributeEnumeration(listener, subscriptionQos)->get(
-                subscriptionIdFutureTimeout, subscriptionId);
+                subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeEnumeration - subscription registered");
 
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         testInterfaceProxy->unsubscribeFromAttributeEnumeration(subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }
 
@@ -113,8 +108,9 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithException
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
-    auto subscriptionQos =
-            std::make_shared<joynr::OnChangeSubscriptionQos>(validity, minInterval_ms);
+    int64_t publicationTtl = UnicastSubscriptionQos::DEFAULT_PUBLICATION_TTL_MS();
+    auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(
+            validity, publicationTtl, minInterval_ms);
 
     auto mockEnumerationSubscriptionListener = std::make_shared<MockBoolSubscriptionListener>();
     EXPECT_CALL(
@@ -129,12 +125,13 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithException
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeWithExceptionFromGetter - register subscription");
         testInterfaceProxy->subscribeToAttributeWithExceptionFromGetter(listener, subscriptionQos)
-                ->get(subscriptionIdFutureTimeout, subscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeWithExceptionFromGetter - subscription registered");
 
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         testInterfaceProxy->unsubscribeFromAttributeWithExceptionFromGetter(subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }

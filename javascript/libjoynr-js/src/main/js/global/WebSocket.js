@@ -19,6 +19,20 @@
  * #L%
  */
 
-define([], function() {
+define([
+    "joynr/messaging/JoynrMessage",
+    "joynr/util/JSONSerializer"
+], function(JoynrMessage, JSONSerializer) {
+    WebSocket.marshalJoynrMessage = function(joynrMessage) {
+        return JSONSerializer.stringify(joynrMessage);
+    };
+
+    WebSocket.unmarshalJoynrMessage = function(event) {
+        if (typeof event.data === "string") {
+            return new JoynrMessage(JSON.parse(event.data));
+        }
+        return undefined;
+    };
+
     return WebSocket;
 });

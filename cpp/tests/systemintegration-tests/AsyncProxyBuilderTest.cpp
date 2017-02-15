@@ -87,7 +87,6 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
     };
 
     testProxyBuilder->setMessagingQos(MessagingQos(50000))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->buildAsync(onSuccess, onFailure);
 
@@ -110,7 +109,6 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
     };
 
     testProxyBuilder->setMessagingQos(MessagingQos(50000))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->buildAsync(onSuccess, onFailure);
 

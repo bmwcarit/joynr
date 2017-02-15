@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@
 
 #include <cassert>
 
-#include "joynr/IMessaging.h"
 #include "joynr/IDispatcher.h"
+#include "joynr/IMessageRouter.h"
+#include "joynr/IMessaging.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/MessageRouter.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 
 namespace joynr
@@ -35,7 +36,7 @@ namespace joynr
 
 INIT_LOGGER(JoynrMessageSender);
 
-JoynrMessageSender::JoynrMessageSender(std::shared_ptr<MessageRouter> messageRouter,
+JoynrMessageSender::JoynrMessageSender(std::shared_ptr<IMessageRouter> messageRouter,
                                        std::uint64_t ttlUpliftMs)
         : dispatcher(nullptr), messageRouter(messageRouter), messageFactory(ttlUpliftMs)
 {
@@ -54,15 +55,11 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
 {
     assert(dispatcher != nullptr);
 
-    try {
-        dispatcher->addReplyCaller(request.getRequestReplyId(), callback, qos);
-        JoynrMessage message = messageFactory.createRequest(
-                senderParticipantId, receiverParticipantId, qos, request);
-        assert(messageRouter);
-        messageRouter->route(message);
-    } catch (const std::invalid_argument& exception) {
-        throw joynr::exceptions::MethodInvocationException(exception.what());
-    }
+    dispatcher->addReplyCaller(request.getRequestReplyId(), callback, qos);
+    JoynrMessage message =
+            messageFactory.createRequest(senderParticipantId, receiverParticipantId, qos, request);
+    assert(messageRouter);
+    messageRouter->route(message);
 }
 
 void JoynrMessageSender::sendOneWayRequest(const std::string& senderParticipantId,

@@ -91,7 +91,7 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
 {
     bool hasPermission = convertToBool(permission);
 
-    if (hasPermission == false) {
+    if (!hasPermission) {
         JOYNR_LOG_ERROR(owningAccessController.logger,
                         "Message {} to domain {}, interface {} failed ACL check",
                         message.getHeaderMessageId(),
@@ -103,12 +103,17 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
 
 void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 {
-
     std::string operation;
-    std::string messageType = message.getType();
-
-    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
-
+    const std::string messageType = message.getType();
+    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY) {
+        try {
+            OneWayRequest request;
+            joynr::serializer::deserializeFromJson(request, message.getPayload());
+            operation = request.getMethodName();
+        } catch (const std::exception& e) {
+            JOYNR_LOG_ERROR(logger, "could not deserialize OneWayRequest - error {}", e.what());
+        }
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
         try {
             Request request;
             joynr::serializer::deserializeFromJson(request, message.getPayload());
@@ -152,7 +157,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
     bool hasPermission = convertToBool(permission);
 
-    if (hasPermission == false) {
+    if (!hasPermission) {
         JOYNR_LOG_ERROR(owningAccessController.logger,
                         "Message {} to domain {}, interface/operation {}/{} failed ACL check",
                         message.getHeaderMessageId(),

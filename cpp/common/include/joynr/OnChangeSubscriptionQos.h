@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 #include <cstdint>
 
-#include "joynr/SubscriptionQos.h"
+#include "joynr/UnicastSubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -41,7 +41,7 @@ namespace joynr
  * called.
  * minInterval can be used to prevent too many messages being sent.
  */
-class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public SubscriptionQos
+class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public UnicastSubscriptionQos
 {
 
 public:
@@ -67,10 +67,12 @@ public:
      * excessive network traffic.
      *
      * @see SubscriptionQos#setValidityMs
+     * @see UnicastSubscriptionQos#publicationTtlMs
      * @see OnChangeSubscriptionQos#setMinIntervalMs
-     * @see SubscriptionQos#setPublicationTtlMs
      */
-    OnChangeSubscriptionQos(const std::int64_t& validityMs, const std::int64_t& minIntervalMs);
+    OnChangeSubscriptionQos(const std::int64_t validityMs,
+                            const std::int64_t publicationTtlMs,
+                            const std::int64_t minIntervalMs);
 
     /**
      * @brief Gets the minimum interval in milliseconds
@@ -132,7 +134,7 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<SubscriptionQos>(this), MUESLI_NVP(minIntervalMs));
+        archive(muesli::BaseClass<UnicastSubscriptionQos>(this), MUESLI_NVP(minIntervalMs));
     }
 
 protected:
@@ -151,7 +153,7 @@ protected:
 } // namespace joynr
 
 MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::OnChangeSubscriptionQos,
-                                 joynr::SubscriptionQos,
+                                 joynr::UnicastSubscriptionQos,
                                  "joynr.OnChangeSubscriptionQos")
 
 #endif // ONCHANGESUBSCRIPTIONQOS_H

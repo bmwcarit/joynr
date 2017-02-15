@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "joynr/Util.h"
-#include "libjoynr/websocket/WebSocketPpClient.h"
+#include "libjoynr/websocket/WebSocketPpClientTLS.h"
+#include "libjoynr/websocket/WebSocketPpClientNonTLS.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -34,11 +35,9 @@ namespace joynr
 INIT_LOGGER(LibJoynrWebSocketRuntime);
 
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings)
-        : LibJoynrRuntime(std::move(settings)),
-          wsSettings(*this->settings),
-          websocket(std::make_shared<WebSocketPpClient>(wsSettings,
-                                                        singleThreadIOService->getIOService()))
+        : LibJoynrRuntime(std::move(settings)), wsSettings(*this->settings)
 {
+    createWebsocketClient();
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
@@ -119,8 +118,44 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
     websocket->sendTextMessage(initializationMsg, onFailure);
 }
 
+void LibJoynrWebSocketRuntime::createWebsocketClient()
+{
+    system::RoutingTypes::WebSocketAddress webSocketAddress =
+            wsSettings.createClusterControllerMessagingAddress();
+
+    std::string certificateAuthorityPemFilename = wsSettings.getCertificateAuthorityPemFilename();
+    std::string certificatePemFilename = wsSettings.getCertificatePemFilename();
+    std::string privateKeyPemFilename = wsSettings.getPrivateKeyPemFilename();
+
+    if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS) {
+        if (checkAndLogCryptoFileExistence(certificateAuthorityPemFilename,
+                                           certificatePemFilename,
+                                           privateKeyPemFilename,
+                                           logger)) {
+            JOYNR_LOG_INFO(logger, "Using TLS connection");
+            websocket =
+                    std::make_shared<WebSocketPpClientTLS>(wsSettings,
+                                                           singleThreadIOService->getIOService(),
+                                                           certificateAuthorityPemFilename,
+                                                           certificatePemFilename,
+                                                           privateKeyPemFilename);
+        } else {
+            throw exceptions::JoynrRuntimeException(
+                    "Settings property 'cluster-controller-messaging-url' uses TLS "
+                    "but not all TLS properties were configured");
+        }
+    } else if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WS) {
+        JOYNR_LOG_INFO(logger, "Using non-TLS connection");
+        websocket = std::make_shared<WebSocketPpClientNonTLS>(
+                wsSettings, singleThreadIOService->getIOService());
+    } else {
+        throw exceptions::JoynrRuntimeException(
+                "Unknown protocol used for settings property 'cluster-controller-messaging-url'");
+    }
+}
+
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
-        std::shared_ptr<MessageRouter> messageRouter)
+        std::shared_ptr<IMessageRouter> messageRouter)
 {
     auto wsLibJoynrMessagingSkeleton =
             std::make_shared<WebSocketLibJoynrMessagingSkeleton>(std::move(messageRouter));

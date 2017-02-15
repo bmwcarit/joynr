@@ -138,7 +138,7 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.JSON)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
@@ -161,7 +161,7 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.JSON)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
@@ -187,7 +187,7 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.JSON)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
@@ -208,7 +208,7 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.JSON)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
@@ -230,7 +230,7 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.JSON)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
@@ -252,7 +252,7 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.JSON)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");

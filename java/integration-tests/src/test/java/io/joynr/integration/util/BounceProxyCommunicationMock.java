@@ -249,7 +249,7 @@ public class BounceProxyCommunicationMock {
     public void deleteChannel(final String myChannelId, final int timeout_ms, final int statusCode) {
         onrequest(timeout_ms)// .expect()
                              // .statusCode(statusCode)
-                             .log()
+        .log()
                              .all()
                              .when()
                              .delete("/channels/" + myChannelId + "/");

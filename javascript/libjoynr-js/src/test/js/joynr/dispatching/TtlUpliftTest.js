@@ -25,6 +25,7 @@ define([
     "joynr/dispatching/Dispatcher",
     "joynr/messaging/JoynrMessage",
     "joynr/messaging/MessagingQos",
+    "joynr/types/DiscoveryEntryWithMetaInfo",
     "joynr/dispatching/types/Request",
     "joynr/dispatching/types/Reply",
     "joynr/dispatching/types/BroadcastSubscriptionRequest",
@@ -40,6 +41,7 @@ define([
         Dispatcher,
         JoynrMessage,
         MessagingQos,
+        DiscoveryEntryWithMetaInfo,
         Request,
         Reply,
         BroadcastSubscriptionRequest,
@@ -52,6 +54,15 @@ define([
         uuid) {
 
     var providerId = "providerId";
+    var providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
+        domain : "testProviderDomain",
+        interfaceName : "interfaceName",
+        participantId : providerId,
+        lastSeenDateMs : Date.now(),
+        expiryDateMs : Date.now() + 60000,
+        publicKeyId : "publicKeyId",
+        isLocal : false
+    });
     var proxyId = "proxyId";
     var noTtlUplift = 0;
     var ttlUpliftMs = 10000;
@@ -258,7 +269,7 @@ define([
             it("send request", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     request : "request"
                 };
@@ -273,7 +284,7 @@ define([
             it("send one way request", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     request : "oneWayRequest"
                 };
@@ -288,7 +299,7 @@ define([
             it("send subscription request", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     subscriptionRequest : new SubscriptionRequest({
                         subscriptionId : "subscriptionId",
@@ -306,7 +317,7 @@ define([
             it("send broadcast subscription request", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     subscriptionRequest : new BroadcastSubscriptionRequest({
                         subscriptionId : "subscriptionId",
@@ -325,7 +336,7 @@ define([
             it("send multicast subscription request", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     subscriptionRequest : new MulticastSubscriptionRequest({
                         multicastId : "multicastId",
@@ -345,7 +356,7 @@ define([
             it("send multicast subscription stop", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     multicastId : "multicastId",
                     subscriptionStop : new SubscriptionStop({
@@ -363,7 +374,7 @@ define([
             it("send subscription stop", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     subscriptionStop : new SubscriptionStop({
                         subscriptionId : "subscriptionId"
@@ -527,7 +538,7 @@ define([
             it("send request", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     request : "request"
                 };
@@ -542,7 +553,7 @@ define([
             it("send one way request", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     request : "oneWayRequest"
                 };
@@ -557,7 +568,7 @@ define([
             it("send subscription request", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     subscriptionRequest : new SubscriptionRequest({
                         subscriptionId : "subscriptionId",
@@ -576,7 +587,7 @@ define([
             it("send broadcast subscription request", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     subscriptionRequest : new BroadcastSubscriptionRequest({
                         subscriptionId : "subscriptionId",
@@ -595,7 +606,7 @@ define([
             it("send multicast subscription request", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     subscriptionRequest : new MulticastSubscriptionRequest({
                         multicastId : "multicastId",
@@ -615,7 +626,7 @@ define([
             it("send multicast subscription stop", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     multicastId : "multicastId",
                     subscriptionStop : new SubscriptionStop({
@@ -633,7 +644,7 @@ define([
             it("send subscription stop", function() {
                 var settings = {
                     from : proxyId,
-                    to : providerId,
+                    toDiscoveryEntry : providerDiscoveryEntry,
                     messagingQos : messagingQos,
                     subscriptionStop : new SubscriptionStop({
                         subscriptionId : "subscriptionId"
