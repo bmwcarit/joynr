@@ -28,6 +28,7 @@
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "joynr/Settings.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -43,7 +44,8 @@ public:
 
 protected:
     void startLibJoynrMessagingSkeleton(std::shared_ptr<IMessageRouter> messageRouter) override;
-    void connect(std::function<void()> runtimeCreatedCallback);
+    void connect(std::function<void()> onSuccess,
+                 std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);

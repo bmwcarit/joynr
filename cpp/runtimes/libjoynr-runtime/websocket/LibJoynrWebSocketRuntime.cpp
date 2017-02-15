@@ -52,7 +52,9 @@ LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
     singleThreadIOService->stop();
 }
 
-void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallback)
+void LibJoynrWebSocketRuntime::connect(
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
 {
     std::string uuid = util::createUuid();
     // remove dashes
@@ -85,7 +87,8 @@ void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallb
 
     auto connectCallback = [
         this,
-        runtimeCreatedCallback = std::move(runtimeCreatedCallback),
+        onSuccess = std::move(onSuccess),
+        onError = std::move(onError),
         factory,
         libjoynrMessagingAddress,
         ccMessagingAddress
@@ -95,9 +98,12 @@ void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallb
 
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
                 std::make_unique<joynr::WebSocketMulticastAddressCalculator>(ccMessagingAddress);
-        init(factory, libjoynrMessagingAddress, ccMessagingAddress, std::move(addressCalculator));
-
-        runtimeCreatedCallback();
+        init(factory,
+             libjoynrMessagingAddress,
+             ccMessagingAddress,
+             std::move(addressCalculator),
+             std::move(onSuccess),
+             std::move(onError));
     };
 
     auto reconnectCallback = [this]() { sendInitializationMsg(); };

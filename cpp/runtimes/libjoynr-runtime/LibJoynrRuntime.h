@@ -81,7 +81,9 @@ protected:
     void init(std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress,
-              std::unique_ptr<IMulticastAddressCalculator> addressCalculator);
+              std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+              std::function<void()> onSuccess,
+              std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);

@@ -22,9 +22,12 @@
 #include <memory>
 #include <chrono>
 
+#include <gtest/gtest.h>
+
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 #include "joynr/Settings.h"
 #include "joynr/Semaphore.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -44,7 +47,7 @@ public:
         LibJoynrWebSocketRuntime::connect([&semaphore]()
         {
             semaphore.notify();
-        });
+        }, [](const exceptions::JoynrRuntimeException&){ FAIL(); });
 
         return semaphore.waitFor(timeoutMs);
     }

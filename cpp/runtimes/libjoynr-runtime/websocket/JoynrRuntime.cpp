@@ -65,10 +65,8 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError)
 {
-    std::ignore = onError;
-
     auto runtime = std::make_unique<LibJoynrWebSocketRuntime>(std::move(settings));
-    runtime->connect(std::move(onSuccess));
+    runtime->connect(std::move(onSuccess), std::move(onError));
     // this is necessary for gcc 4.9
     return std::move(runtime);
 }
