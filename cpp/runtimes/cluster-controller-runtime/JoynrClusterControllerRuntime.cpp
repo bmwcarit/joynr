@@ -445,9 +445,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     dispatcherAddress = libjoynrMessagingAddress;
 
-    const bool provisionClusterControllerDiscoveryEntries = true;
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(
-            systemServicesSettings, messagingSettings, provisionClusterControllerDiscoveryEntries);
+    auto provisionedDiscoveryEntries = getProvisionedEntries();
+    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(provisionedDiscoveryEntries);
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient =
@@ -515,7 +514,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
 #ifdef JOYNR_ENABLE_ACCESS_CONTROL
     // Do this after local capabilities directory and message router have been initialized.
-    enableAccessController(messagingSettings);
+    enableAccessController(messagingSettings, provisionedDiscoveryEntries);
 #endif // JOYNR_ENABLE_ACCESS_CONTROL
 }
 
@@ -524,7 +523,39 @@ std::shared_ptr<IMessageRouter> JoynrClusterControllerRuntime::getMessageRouter(
     return ccMessageRouter;
 }
 
-void JoynrClusterControllerRuntime::enableAccessController(MessagingSettings& messagingSettings)
+std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrClusterControllerRuntime::
+        getProvisionedEntries() const
+{
+    std::int64_t lastSeenDateMs = 0;
+    std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    std::string defaultPublicKeyId("");
+
+    auto provisionedDiscoveryEntries = JoynrRuntime::getProvisionedEntries();
+    // setting up the provisioned values for GlobalCapabilitiesClient
+    // The GlobalCapabilitiesServer is also provisioned in MessageRouter
+    types::ProviderQos capabilityProviderQos;
+    capabilityProviderQos.setPriority(1);
+    types::Version capabilityProviderVersion(
+            infrastructure::IGlobalCapabilitiesDirectory::MAJOR_VERSION,
+            infrastructure::IGlobalCapabilitiesDirectory::MINOR_VERSION);
+    provisionedDiscoveryEntries.insert(
+            std::make_pair(messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                           types::DiscoveryEntryWithMetaInfo(
+                                   capabilityProviderVersion,
+                                   messagingSettings.getDiscoveryDirectoriesDomain(),
+                                   infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
+                                   messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                                   capabilityProviderQos,
+                                   lastSeenDateMs,
+                                   expiryDateMs,
+                                   defaultPublicKeyId,
+                                   false)));
+    return provisionedDiscoveryEntries;
+}
+
+void JoynrClusterControllerRuntime::enableAccessController(
+        MessagingSettings& messagingSettings,
+        const std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>& provisionedEntries)
 {
     if (!messagingSettings.enableAccessController()) {
         return;
@@ -577,6 +608,11 @@ void JoynrClusterControllerRuntime::enableAccessController(MessagingSettings& me
 
     auto accessController = std::make_shared<joynr::AccessController>(
             *localCapabilitiesDirectory, *localDomainAccessController);
+
+    // whitelist provisioned entries into access controller
+    for (const auto& entry : provisionedEntries) {
+        accessController->addParticipantToWhitelist(entry.second.getParticipantId());
+    }
 
     ccMessageRouter->setAccessController(accessController);
 }

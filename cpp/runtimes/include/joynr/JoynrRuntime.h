@@ -207,6 +207,12 @@ protected:
                                         const std::string& privateKeyPemFile,
                                         Logger& logger);
 
+    /** @brief Get provisioned entries.
+     *  @return A map participantId -> DiscoveryEntryWithMetaInfo.
+     */
+    virtual std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> getProvisionedEntries()
+            const;
+
     std::unique_ptr<SingleThreadedIOService> singleThreadIOService;
 
     /** @brief Factory for creating proxy instances */
