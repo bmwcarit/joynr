@@ -66,7 +66,9 @@ public:
         LOCAL_ONLY = 2,
         /** only participants which match a keyword will be considered */
         KEYWORD = 3,
-        /** the participant with the highest priority will be selected */
+        /** the participant with the highest priority will be selected.
+            If multiple provider with the same highest priority are found,
+            one of these will be arbitrarly selected. */
         HIGHEST_PRIORITY = 4
     };
 
