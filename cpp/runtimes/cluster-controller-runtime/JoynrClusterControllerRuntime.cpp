@@ -348,8 +348,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             std::string ccMqttClientIdPrefix = clusterControllerSettings.getMqttClientIdPrefix();
             std::string mqttCliendId = ccMqttClientIdPrefix + receiverId;
 
-            mosquittoConnection =
-                    std::make_shared<MosquittoConnection>(messagingSettings, mqttCliendId);
+            mosquittoConnection = std::make_shared<MosquittoConnection>(
+                    messagingSettings, clusterControllerSettings, mqttCliendId);
         }
         if (!mqttMessageReceiver) {
             JOYNR_LOG_DEBUG(logger,

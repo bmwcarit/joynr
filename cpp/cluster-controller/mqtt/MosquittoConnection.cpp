@@ -20,6 +20,7 @@
 #include "cluster-controller/mqtt/MosquittoConnection.h"
 
 #include "joynr/MessagingSettings.h"
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "cluster-controller/mqtt/MqttSettings.h"
 
@@ -28,11 +29,12 @@ namespace joynr
 
 INIT_LOGGER(MosquittoConnection);
 
-MosquittoConnection::MosquittoConnection(const MessagingSettings& settings,
+MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSettings,
+                                         const ClusterControllerSettings& ccSettings,
                                          const std::string& clientId)
         : mosquittopp(clientId.c_str()),
           mqttSettings(),
-          brokerUrl(settings.getBrokerUrl()),
+          brokerUrl(messagingSettings.getBrokerUrl()),
           channelId(),
           subscribeChannelMid(),
           topic(),
@@ -52,12 +54,27 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& settings,
 
     mqttSettings.host = std::string(host);
     mqttSettings.port = port;
-    mqttSettings.keepAliveTime = settings.getMqttKeepAliveTime();
-    mqttSettings.reconnectSleepTimeMs = settings.getMqttReconnectSleepTime();
+    mqttSettings.keepAliveTime = messagingSettings.getMqttKeepAliveTime();
+    mqttSettings.reconnectSleepTimeMs = messagingSettings.getMqttReconnectSleepTime();
 
     JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", mqttSettings.host, mqttSettings.port);
 
     mosqpp::lib_init();
+
+    if (ccSettings.isMqttTlsEnabled()) {
+        int rc = tls_set(ccSettings.getMqttCertificateAuthorityPemFilename().c_str(),
+                         NULL,
+                         ccSettings.getMqttCertificatePemFilename().c_str(),
+                         ccSettings.getMqttPrivateKeyPemFilename().c_str());
+
+        if (rc != MOSQ_ERR_SUCCESS) {
+            JOYNR_LOG_ERROR(
+                    logger, "Could not initialize TLS connection - {}", mosqpp::strerror(rc));
+        }
+    } else {
+        JOYNR_LOG_DEBUG(logger, "MQTT connection not encrypted");
+    };
+
     connect(host.c_str(), port, mqttSettings.keepAliveTime.count());
 }
 

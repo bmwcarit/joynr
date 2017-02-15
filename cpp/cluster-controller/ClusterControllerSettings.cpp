@@ -70,6 +70,24 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_CLIENT_ID_PREFIX()
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME()
+{
+    static const std::string value("cluster-controller/mqtt-certificate-authority-pem-filename");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_PEM_FILENAME()
+{
+    static const std::string value("cluster-controller/mqtt-certificate-pem-filename");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME()
+{
+    static const std::string value("cluster-controller/mqtt-private-key-pem-filename");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
 {
     static const std::string value("joynr");
@@ -144,6 +162,43 @@ void ClusterControllerSettings::setMqttClientIdPrefix(const std::string& mqttCli
 {
     settings.set(SETTING_MQTT_CLIENT_ID_PREFIX(), mqttClientId);
 }
+
+bool ClusterControllerSettings::isMqttCertificateAuthorityPemFilenameSet() const
+{
+    return settings.contains(SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
+}
+
+std::string ClusterControllerSettings::getMqttCertificateAuthorityPemFilename() const
+{
+    return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
+}
+
+bool ClusterControllerSettings::isMqttCertificatePemFilenameSet() const
+{
+    return settings.contains(SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
+}
+
+std::string ClusterControllerSettings::getMqttCertificatePemFilename() const
+{
+    return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
+}
+
+bool ClusterControllerSettings::isMqttPrivateKeyPemFilenameSet() const
+{
+    return settings.contains(SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
+}
+
+std::string ClusterControllerSettings::getMqttPrivateKeyPemFilename() const
+{
+    return settings.get<std::string>(SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
+}
+
+bool ClusterControllerSettings::isMqttTlsEnabled() const
+{
+    return isMqttCertificateAuthorityPemFilenameSet() && isMqttCertificatePemFilenameSet() &&
+           isMqttPrivateKeyPemFilenameSet();
+}
+
 void ClusterControllerSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger,
@@ -164,6 +219,35 @@ void ClusterControllerSettings::printSettings() const
         JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_WS_PORT(), getWsPort());
     } else {
         JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_WS_PORT());
+    }
+
+    if (isMqttCertificateAuthorityPemFilenameSet()) {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = {}",
+                        SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME(),
+                        getMqttCertificateAuthorityPemFilename());
+    } else {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = NOT SET",
+                        SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
+    }
+
+    if (isMqttCertificatePemFilenameSet()) {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = {}",
+                        SETTING_MQTT_CERTIFICATE_PEM_FILENAME(),
+                        getMqttCertificatePemFilename());
+    } else {
+        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
+    }
+
+    if (isMqttPrivateKeyPemFilenameSet()) {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = {}",
+                        SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME(),
+                        getMqttPrivateKeyPemFilename());
+    } else {
+        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
     }
 }
 

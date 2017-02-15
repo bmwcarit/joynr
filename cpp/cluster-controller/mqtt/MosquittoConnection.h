@@ -42,12 +42,15 @@ class JoynrRuntimeException;
 } // namespace exceptions
 
 class MessagingSettings;
+class ClusterControllerSettings;
 
 class MosquittoConnection : public mosqpp::mosquittopp
 {
 
 public:
-    explicit MosquittoConnection(const MessagingSettings& settings, const std::string& clientId);
+    explicit MosquittoConnection(const MessagingSettings& messagingSettings,
+                                 const ClusterControllerSettings& ccSettings,
+                                 const std::string& clientId);
 
     ~MosquittoConnection() override;
 

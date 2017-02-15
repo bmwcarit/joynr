@@ -36,6 +36,9 @@ public:
     static const std::string& SETTING_WS_TLS_PORT();
     static const std::string& SETTING_WS_PORT();
     static const std::string& SETTING_MQTT_CLIENT_ID_PREFIX();
+    static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME();
+    static const std::string& SETTING_MQTT_CERTIFICATE_PEM_FILENAME();
+    static const std::string& SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME();
 
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
     static const std::string& DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
@@ -61,6 +64,17 @@ public:
     bool isMqttClientIdPrefixSet() const;
     std::string getMqttClientIdPrefix() const;
     void setMqttClientIdPrefix(const std::string& mqttClientId);
+
+    bool isMqttCertificateAuthorityPemFilenameSet() const;
+    std::string getMqttCertificateAuthorityPemFilename() const;
+
+    bool isMqttCertificatePemFilenameSet() const;
+    std::string getMqttCertificatePemFilename() const;
+
+    bool isMqttPrivateKeyPemFilenameSet() const;
+    std::string getMqttPrivateKeyPemFilename() const;
+
+    bool isMqttTlsEnabled() const;
 
     void printSettings() const;
 
