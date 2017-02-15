@@ -392,7 +392,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                 mqttMessageSender, mqttSerializedGlobalClusterControllerAddress));
     }
 
-    const std::string channelGlobalCapabilityDir =
+    const std::string globalClusterControllerAddress =
             doMqttMessaging ? mqttSerializedGlobalClusterControllerAddress
                             : httpSerializedGlobalClusterControllerAddress;
 
@@ -455,7 +455,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     localCapabilitiesDirectory =
             std::make_shared<LocalCapabilitiesDirectory>(messagingSettings,
                                                          capabilitiesClient,
-                                                         channelGlobalCapabilityDir,
+                                                         globalClusterControllerAddress,
                                                          *ccMessageRouter,
                                                          libjoynrSettings,
                                                          singleThreadIOService->getIOService(),
