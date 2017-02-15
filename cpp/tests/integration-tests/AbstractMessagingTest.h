@@ -81,12 +81,15 @@ public:
         singleThreadedIOService(),
         messageRouter(nullptr)
     {
+        const std::string globalCCAddress("globalAddress");
+
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
         messageRouter = std::make_unique<CcMessageRouter>(messagingStubFactory,
                                                           std::make_shared<MulticastMessagingSkeletonDirectory>(),
                                                           nullptr,
                                                           singleThreadedIOService.getIOService(),
-                                                          nullptr);
+                                                          nullptr,
+                                                          globalCCAddress);
         qos.setTtl(10000);
     }
 

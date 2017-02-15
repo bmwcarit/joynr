@@ -54,11 +54,14 @@ ShortCircuitRuntime::ShortCircuitRuntime()
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
             std::make_unique<MqttMulticastAddressCalculator>(nullptr);
 
+    const std::string& globalClusterControllerAddress("globalAddress");
+
     messageRouter = std::make_shared<CcMessageRouter>(std::move(messagingStubFactory),
                                                       nullptr,
                                                       nullptr,
                                                       singleThreadedIOService.getIOService(),
-                                                      std::move(addressCalculator));
+                                                      std::move(addressCalculator),
+                                                      globalClusterControllerAddress);
 
     joynrMessageSender = std::make_shared<JoynrMessageSender>(messageRouter);
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadedIOService.getIOService());

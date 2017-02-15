@@ -81,6 +81,7 @@ CcMessageRouter::CcMessageRouter(
         std::unique_ptr<IPlatformSecurityManager> securityManager,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+        const std::string& globalClusterControllerAddress,
         int maxThreads,
         std::unique_ptr<MessageQueue> messageQueue)
         : AbstractMessageRouter(std::move(messagingStubFactory),
@@ -91,7 +92,8 @@ CcMessageRouter::CcMessageRouter(
           joynr::system::RoutingAbstractProvider(),
           multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           securityManager(std::move(securityManager)),
-          multicastReceveiverDirectoryFilename()
+          multicastReceveiverDirectoryFilename(),
+          globalClusterControllerAddress(globalClusterControllerAddress)
 {
 }
 
@@ -138,6 +140,18 @@ void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
     }
 
     reestablishMulticastSubscriptions();
+}
+
+void CcMessageRouter::getGlobalAddress(
+        std::function<void(const std::string&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    if (globalClusterControllerAddress.empty()) {
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "No cluster-controller global address available."));
+    } else {
+        onSuccess(globalClusterControllerAddress);
+    }
 }
 
 void CcMessageRouter::reestablishMulticastSubscriptions()
