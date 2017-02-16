@@ -199,8 +199,8 @@ void LibJoynrRuntime::init(
             messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
             *publicationManager);
 
-    std::ignore = onError;
-    onSuccess();
+    libJoynrMessageRouter->queryGlobalClusterControllerAddress(
+            std::move(onSuccess), std::move(onError));
 }
 
 std::shared_ptr<IMessageRouter> LibJoynrRuntime::getMessageRouter()

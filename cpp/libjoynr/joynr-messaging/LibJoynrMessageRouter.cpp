@@ -70,7 +70,9 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
           parentAddress(nullptr),
           incomingAddress(incomingAddress),
           runningParentResolves(),
-          parentResolveMutex()
+          parentResolveMutex(),
+          globalParentClusterControllerAddressMutex(),
+          globalParentClusterControllerAddress()
 {
 }
 
@@ -86,6 +88,26 @@ void LibJoynrMessageRouter::setParentRouter(
     // this is necessary because during normal registration, the parent proxy is not yet set
     addProvisionedNextHop(parentParticipantId, this->parentAddress);
     addNextHopToParent(this->parentRouter->getProxyParticipantId());
+}
+
+void LibJoynrMessageRouter::queryGlobalClusterControllerAddress(
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
+{
+    assert(parentRouter);
+
+    auto onSuccessWrapper = [ onSuccess = std::move(onSuccess), this ](
+            const std::string& globalAddress)
+    {
+        {
+            std::lock_guard<std::mutex> lock(globalParentClusterControllerAddressMutex);
+            globalParentClusterControllerAddress = globalAddress;
+        }
+
+        onSuccess();
+    };
+
+    parentRouter->getGlobalAddressAsync(std::move(onSuccessWrapper), std::move(onError));
 }
 
 /**
