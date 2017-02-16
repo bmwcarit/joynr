@@ -218,6 +218,14 @@ void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
+    if (message.getHeaderReplyAddress().empty() && !message.isLocalMessage() &&
+        (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+        message.setHeaderReplyAddress(globalClusterControllerAddress);
+    }
+
     JOYNR_LOG_TRACE(logger,
                     "Route message with Id {} and payload {}",
                     message.getHeaderMessageId(),

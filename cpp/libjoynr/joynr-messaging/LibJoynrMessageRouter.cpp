@@ -134,6 +134,15 @@ void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
             getDestinationAddresses(message);
 
+    if (!message.isLocalMessage() &&
+        (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+        std::lock_guard<std::mutex> lock(globalParentClusterControllerAddressMutex);
+        message.setHeaderReplyAddress(globalParentClusterControllerAddress);
+    }
+
     // if destination address is not known
     if (destAddresses.empty()) {
         if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
