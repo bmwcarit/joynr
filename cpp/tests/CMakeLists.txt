@@ -120,25 +120,25 @@ file(
     "gen/*.h"
 )
 
-add_library(JoynrTestGenerated SHARED
+add_library(TestGenerated SHARED
     ${JoynrTest_GENSOURCES}
     ${JoynrTest_GENHEADERS}
 )
 
 # add needed dependencies by linking to target joynr
-target_link_libraries(JoynrTestGenerated Joynr)
+target_link_libraries(TestGenerated Joynr)
 
 if(NOT USE_PLATFORM_SPDLOG)
-    add_dependencies(JoynrTestGenerated spdlog)
+    add_dependencies(TestGenerated spdlog)
 endif(NOT USE_PLATFORM_SPDLOG)
 
 target_include_directories(
-    JoynrTestGenerated
+    TestGenerated
     PUBLIC ${JoynrTest_INCLUDE_DIRECTORIES}
 )
 
 target_include_directories(
-    JoynrTestGenerated
+    TestGenerated
     SYSTEM PUBLIC
     ${JoynrTest_SYSTEM_INCLUDE_DIRECTORIES}
 )
@@ -279,7 +279,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_UnitTests
-            JoynrTestGenerated
+            TestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -288,8 +288,9 @@ if(${BUILD_CLUSTER_CONTROLLER})
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_UnitTests JoynrTestGenerated
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_UnitTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_UNIT_TESTS})
 
@@ -320,7 +321,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_IntegrationTests
-            JoynrTestGenerated
+            TestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -329,8 +330,9 @@ if(${BUILD_CLUSTER_CONTROLLER})
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_IntegrationTests JoynrTestGenerated
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_IntegrationTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_INTEGRATION_TESTS})
 
@@ -363,7 +365,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_SystemIntegrationTests
-            JoynrTestGenerated
+            TestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -384,8 +386,9 @@ if(${BUILD_CLUSTER_CONTROLLER})
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_SystemIntegrationTests JoynrTestGenerated
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_SystemIntegrationTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 
@@ -411,7 +414,7 @@ else()
 
     target_link_libraries(
             g_UnitTests
-            JoynrTestGenerated
+            TestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
         )
 
@@ -420,8 +423,9 @@ else()
             PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
         )
 
-    install(TARGETS g_UnitTests JoynrTestGenerated
-        DESTINATION ${INSTALL_TEST_DIR}
+    install(TARGETS g_UnitTests TestGenerated
+        RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
     endif(${BUILD_UNIT_TESTS})
 
@@ -447,7 +451,7 @@ else()
 
         target_link_libraries(
             g_SystemIntegrationTests
-            JoynrTestGenerated
+            TestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
         )
 
@@ -456,8 +460,9 @@ else()
             PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_SystemIntegrationTests JoynrTestGenerated
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_SystemIntegrationTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 
