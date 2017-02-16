@@ -104,14 +104,14 @@ public:
                 &WebSocketCcMessagingSkeleton::onConnectionClosed, this, std::placeholders::_1));
 
         // new connections are handled in onInitMessageReceived; if initialization was successful,
-        // any further messages for this connection are handled in onTextMessageReceived
+        // any further messages for this connection are handled in onMessageReceived
         endpoint.set_message_handler(std::bind(&WebSocketCcMessagingSkeleton::onInitMessageReceived,
                                                this,
                                                std::placeholders::_1,
                                                std::placeholders::_2));
 
         receiver.registerReceiveCallback(
-                [this](const std::string& msg) { onTextMessageReceived(msg); });
+                [this](const std::string& msg) { onMessageReceived(msg); });
     }
 
     /**
@@ -171,6 +171,15 @@ private:
 
     void onInitMessageReceived(ConnectionHandle hdl, MessagePtr message)
     {
+        using websocketpp::frame::opcode::value;
+        const value mode = message->get_opcode();
+        if (mode != value::binary) {
+            JOYNR_LOG_ERROR(
+                    logger,
+                    "received an initial message of unsupported message type {}, dropping message",
+                    mode);
+            return;
+        }
         std::string textMessage = message->get_payload();
         if (isInitializationMessage(textMessage)) {
 
@@ -212,7 +221,7 @@ private:
         }
     }
 
-    void onTextMessageReceived(const std::string& message)
+    void onMessageReceived(const std::string& message)
     {
         // deserialize message and transmit
         try {

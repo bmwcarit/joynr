@@ -45,7 +45,7 @@ void WebSocketLibJoynrMessagingSkeleton::transmit(
     }
 }
 
-void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const std::string& message)
+void WebSocketLibJoynrMessagingSkeleton::onMessageReceived(const std::string& message)
 {
     // deserialize message and transmit
     try {

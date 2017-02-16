@@ -1,7 +1,9 @@
+/*global Buffer: true, TextEncoder: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,11 +76,30 @@ define([
             data = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
             });
-            event.data = JSON.stringify(data);
             multicastEvent = new MessageEvent();
-            multicastEvent.data = JSON.stringify(new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
-            }));
+            if (typeof Buffer === "function") {
+                // node environment
+                event.data = Buffer.from(JSON.stringify(data));
+                event.target = {
+                    binaryType : "arraybuffer"
+                };
+                multicastEvent.data = Buffer.from(JSON.stringify(new JoynrMessage({
+                    type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+                })));
+            } else if (typeof TextEncoder === "function") {
+                // browser
+                var textEncoder = new TextEncoder();
+                event.data = textEncoder.encode(JSON.stringify(data));
+                event.target = {
+                    binaryType : "arraybuffer"
+                };
+                multicastEvent.data = textEncoder.encode(JSON.stringify(new JoynrMessage({
+                    type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+                })));
+            } else {
+                // browser without TextDecoder
+                done.fail("error in beforeEach: Buffer/TextEncoder not supported");
+            }
             done();
         });
 
@@ -137,7 +158,7 @@ define([
             webSocketMessagingSkeleton.registerListener(listener);
             expect(listener).not.toHaveBeenCalled();
 
-            sharedWebSocket.onmessage(WebSocket.unmarshalJoynrMessage(event));
+            sharedWebSocket.onmessage(event);
 
             expect(listener).toHaveBeenCalledWith(data);
             expect(listener.calls.count()).toBe(1);
@@ -145,18 +166,18 @@ define([
 
         it("event does not call through to unregistered listener", function() {
             webSocketMessagingSkeleton.registerListener(listener);
-            sharedWebSocket.onmessage(WebSocket.unmarshalJoynrMessage(event));
+            sharedWebSocket.onmessage(event);
             expect(listener).toHaveBeenCalled();
             expect(listener.calls.count()).toBe(1);
             webSocketMessagingSkeleton.unregisterListener(listener);
-            sharedWebSocket.onmessage(WebSocket.unmarshalJoynrMessage(event));
+            sharedWebSocket.onmessage(event);
             expect(listener.calls.count()).toBe(1);
         });
 
         function receiveMessageAndCheckForIsReceivedFromGlobalFlag(expectedValue) {
             webSocketMessagingSkeleton.registerListener(listener);
 
-            sharedWebSocket.onmessage(WebSocket.unmarshalJoynrMessage(multicastEvent));
+            sharedWebSocket.onmessage(multicastEvent);
 
             expect(listener).toHaveBeenCalled();
             expect(listener.calls.count()).toBe(1);
