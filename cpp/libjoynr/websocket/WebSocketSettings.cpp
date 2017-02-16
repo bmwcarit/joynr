@@ -55,19 +55,19 @@ const std::string& WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS()
 
 const std::string& WebSocketSettings::SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME()
 {
-    static const std::string value("tls/certificate-authority-pem-filename");
+    static const std::string value("websocket/certificate-authority-pem-filename");
     return value;
 }
 
 const std::string& WebSocketSettings::SETTING_CERTIFICATE_PEM_FILENAME()
 {
-    static const std::string value("tls/certificate-pem-filename");
+    static const std::string value("websocket/certificate-pem-filename");
     return value;
 }
 
 const std::string& WebSocketSettings::SETTING_PRIVATE_KEY_PEM_FILENAME()
 {
-    static const std::string value("tls/private-key-pem-filename");
+    static const std::string value("websocket/private-key-pem-filename");
     return value;
 }
 
