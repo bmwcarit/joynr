@@ -57,21 +57,6 @@ RUN dnf update -y \
 	&& dnf clean all
 
 ###################################################
-# build and install mosquitto 1.4.7 mqtt broker
-# do not build documentation
-# run mosquitto as user "joynr"
-# do not limit message queue
-# use settings in /etc/mosquitto/mosquitto.conf
-###################################################
-RUN dnf update -y \
-    && dnf install -y mosquitto \
-    mosquitto-devel \
-    && sed -i "s/#max_queued_messages 100/max_queued_messages 0/" /etc/mosquitto/mosquitto.conf \
-    && sed -i "s/#user mosquitto/user joynr/" /etc/mosquitto/mosquitto.conf \
-    && sed -i "s/#listener/listener 1883\n\nlistener 9001\nprotocol websockets/" /etc/mosquitto/mosquitto.conf \
-    && dnf clean all
-
-###################################################
 # create data directories and volumes
 ###################################################
 WORKDIR /
@@ -85,18 +70,27 @@ ENV BUILD_DIR /data/build
 ENV SRC_DIR /data/src
 ENV INSTALL_DIR /data/install
 
-
 ###################################################
 # copy scripts and set start command
 ###################################################
 COPY scripts /data/scripts
 
 ###################################################
-# Generate certificates for system tests
+# Generate certificates
 ###################################################
 COPY openssl.conf /tmp/openssl.cnf
 RUN mkdir -p /data/ssl-data \
     && /data/scripts/gen-certificates.sh --configfile /tmp/openssl.cnf --destdir /data/ssl-data
+
+###################################################
+# install mosquitto mqtt broker
+###################################################
+RUN dnf update -y \
+    && dnf install -y mosquitto \
+    mosquitto-devel \
+    && dnf clean all
+COPY mosquitto.conf /etc/mosquitto/mosquitto.conf
+
 
 ###################################################
 # add Tini - "A tiny but valid init for containers"
