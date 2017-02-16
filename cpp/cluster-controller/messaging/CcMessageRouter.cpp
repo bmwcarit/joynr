@@ -198,7 +198,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void CcMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
+void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(

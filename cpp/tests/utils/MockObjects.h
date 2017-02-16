@@ -366,7 +366,7 @@ public:
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeRemoveNextHopOnSuccessFct));
     }
 
-    MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, std::uint32_t tryCount));
+    MOCK_METHOD2(route, void(joynr::JoynrMessage& message, std::uint32_t tryCount));
 
     MOCK_METHOD6(registerMulticastReceiver, void(const std::string& multicastId,
                                                  const std::string& subscriberParticipantId,

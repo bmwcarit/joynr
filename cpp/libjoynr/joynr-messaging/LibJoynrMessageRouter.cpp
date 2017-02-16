@@ -114,7 +114,7 @@ void LibJoynrMessageRouter::queryGlobalClusterControllerAddress(
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void LibJoynrMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
+void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(

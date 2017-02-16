@@ -91,7 +91,7 @@ public:
     /*
      * Implement methods from IMessageRouter
      */
-    void route(const JoynrMessage& message, std::uint32_t tryCount = 0) final;
+    void route(JoynrMessage& message, std::uint32_t tryCount = 0) final;
 
     void addNextHop(
             const std::string& participantId,
