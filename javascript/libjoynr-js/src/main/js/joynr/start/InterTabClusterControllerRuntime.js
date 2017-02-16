@@ -669,6 +669,11 @@ define(
 
                             routingProvider =
                                     providerBuilder.build(RoutingProvider, {
+                                        globalAddress : {
+                                            get : function() {
+                                                return Promise.resolve(globalClusterControllerAddress);
+                                            }
+                                        },
                                         addNextHop : function(opArgs) {
                                             var address;
                                             if (opArgs.channelAddress !== undefined) {
