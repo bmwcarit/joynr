@@ -272,12 +272,6 @@ void AccessController::hasConsumerPermission(
         std::string domain = discoveryEntry.getDomain();
         std::string interfaceName = discoveryEntry.getInterfaceName();
 
-        // TODO: remove this shortcut used for system integration tests
-        if (interfaceName == "tests/test") {
-            callback->hasConsumerPermission(true);
-            return;
-        }
-
         // Create a callback object
         auto ldacCallback = std::make_shared<LdacConsumerPermissionCallback>(
                 *this, message, domain, interfaceName, TrustLevel::HIGH, callback);
