@@ -46,6 +46,7 @@
 #include "joynr/infrastructure/DacTypes/ControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/serializer/Serializer.h"
 
 #include "joynr/BrokerUrl.h"
@@ -605,6 +606,18 @@ void JoynrClusterControllerRuntime::enableAccessController(
 
     localDomainAccessController =
             std::make_unique<joynr::LocalDomainAccessController>(std::move(localDomainAccessStore));
+
+    // create GlobalDomainAccessController proxy
+    std::unique_ptr<ProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>>
+            capabilitiesProxyBuilder =
+                    createProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>(
+                            "io.joynr");
+
+    DiscoveryQos discoveryQos(10000);
+    auto proxyGlobalDomainAccessController =
+            capabilitiesProxyBuilder->setDiscoveryQos(discoveryQos)->build();
+
+    localDomainAccessController->init(std::move(proxyGlobalDomainAccessController));
 
     auto accessController = std::make_shared<joynr::AccessController>(
             *localCapabilitiesDirectory, *localDomainAccessController);
