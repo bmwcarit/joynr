@@ -1177,3 +1177,10 @@ INSTANTIATE_TEST_CASE_P(
         testing::Values(std::make_tuple(
                 "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings",
                 "test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings")));
+
+INSTANTIATE_TEST_CASE_P(
+        MqttOverTLSWithHttpBackend,
+        CombinedEnd2EndTest,
+        testing::Values(std::make_tuple(
+                "test-resources/MqttOverTLSWithHttpBackendSystemIntegrationTest1.settings",
+                "test-resources/MqttOverTLSWithHttpBackendSystemIntegrationTest2.settings")));

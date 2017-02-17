@@ -37,6 +37,8 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "HttpSystemIntegrationTest2.settings"
         "MqttWithHttpBackendSystemIntegrationTest1.settings"
         "MqttWithHttpBackendSystemIntegrationTest2.settings"
+        "MqttOverTLSWithHttpBackendSystemIntegrationTest1.settings"
+        "MqttOverTLSWithHttpBackendSystemIntegrationTest2.settings"
         "MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
         "HttpMessagingSettingsTest.settings"
         "MqttMessagingSettingsTest.settings"
