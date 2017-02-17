@@ -135,6 +135,7 @@ public class MessageRouterTest {
                 joynrMessage = new JoynrMessage();
                 joynrMessage.setTo(toParticipantId);
                 joynrMessage.setLocalMessage(true);
+                joynrMessage.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
             }
 
             @Provides
