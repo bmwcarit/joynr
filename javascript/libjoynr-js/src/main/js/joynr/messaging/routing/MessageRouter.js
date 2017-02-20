@@ -115,9 +115,9 @@ define(
                     return started;
                 }
 
-                function setGlobalClusterControllerAddress(newAddress) {
+                this.setGlobalClusterControllerAddress = function (newAddress) {
                     globalClusterControllerAddress = newAddress;
-                }
+                };
 
                 /**
                  * @function MessageRouter#getStorageKey
@@ -215,7 +215,7 @@ define(
                             routingProxy = newRoutingProxy;
 
                             var globalAddressPromise = routingProxy.globalAddress.get().then(function(globalAddress) {
-                                setGlobalClusterControllerAddress(globalAddress);
+                                that.setGlobalClusterControllerAddress(globalAddress);
                             }).catch(function(error) {
                                 throw new Error("Failed to get globalAddress from parent router: " + error
                                         + (error instanceof JoynrException ? " " + error.detailMessage : ""));

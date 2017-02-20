@@ -475,6 +475,7 @@ define(
                                 }),
                                 messageQueue : new MessageQueue(messageQueueSettings)
                             });
+                            messageRouter.setGlobalClusterControllerAddress(globalClusterControllerAddress);
                             browserMessagingSkeleton.registerListener(messageRouter.route);
 
                             longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
