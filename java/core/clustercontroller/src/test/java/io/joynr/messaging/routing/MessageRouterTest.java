@@ -40,6 +40,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
@@ -47,6 +48,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.inject.util.Modules;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -61,6 +63,7 @@ import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.messaging.routing.TestGlobalAddressModule;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -151,7 +154,9 @@ public class MessageRouterTest {
             }
         };
 
-        Injector injector = Guice.createInjector(mockModule);
+        Module testModule = Modules.override(mockModule).with(new TestGlobalAddressModule());
+
+        Injector injector = Guice.createInjector(testModule);
         messageRouter = injector.getInstance(MessageRouter.class);
         GlobalAddressProvider globalAddressProvider = injector.getInstance(GlobalAddressProvider.class);
         expectedReplyToAddress = RoutingTypesUtil.toAddressString(globalAddressProvider.get());
