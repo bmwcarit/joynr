@@ -66,8 +66,13 @@ public class RoutingTableImpl implements RoutingTable {
         // NOTE: ConcurrentMap cannot contain null values, this means if result is not null the new
         //       address was not added to the routing table
         if (result != null) {
-            logger.warn("unable to put(participantId={}, address={}) into routing table,"
-                    + " since the participant ID is already associated with address={}", participantId, address, result);
+            if (!address.equals(result)) {
+                logger.warn("unable to put(participantId={}, address={}) into routing table,"
+                                    + " since the participant ID is already associated with address={}",
+                            participantId,
+                            address,
+                            result);
+            }
         } else {
             logger.trace("put(participantId={}, address={}) successfully into routing table", participantId, address);
         }
