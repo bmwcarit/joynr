@@ -5,6 +5,7 @@ none
 
 ## Other changes
 * **[JEE]** Fixed issue that caused joynr not to start correctly with debug logging enabled
+* **[Java]** Do not send customHeaders as their own json object
 
 #joynr 0.23.1
 
