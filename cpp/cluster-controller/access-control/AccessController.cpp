@@ -238,8 +238,10 @@ bool AccessController::needsPermissionCheck(const JoynrMessage& message)
     }
 
     std::string messageType = message.getType();
-    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY ||
-        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
+    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST ||
+        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION ||
+        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY ||
+        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
         // reply messages don't need permission check
         // they are filtered by request reply ID or subscritpion ID
         return false;
