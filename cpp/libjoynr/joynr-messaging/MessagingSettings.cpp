@@ -766,6 +766,10 @@ void MessagingSettings::printSettings() const
                     "SETTING: {} = {})",
                     SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                     getCapabilitiesFreshnessUpdateIntervalMs().count());
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    ACCESS_CONTROL_ENABLE(),
+                    settings.get<std::string>(ACCESS_CONTROL_ENABLE()));
 }
 
 } // namespace joynr

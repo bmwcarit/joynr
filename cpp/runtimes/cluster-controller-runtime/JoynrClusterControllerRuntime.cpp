@@ -530,9 +530,13 @@ void JoynrClusterControllerRuntime::enableAccessController(MessagingSettings& me
         return;
     }
 
+    JOYNR_LOG_DEBUG(logger,
+                    "AccessControl was enabled attempting to load entries from {}.",
+                    ACC_ENTRIES_FILE);
+
     if (!joynr::util::fileExists(ACC_ENTRIES_FILE)) {
-        JOYNR_LOG_WARN(
-                logger, "AccessControl was enabled but {} does not exists.", ACC_ENTRIES_FILE);
+        JOYNR_LOG_ERROR(
+                logger, "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
         return;
     }
 
