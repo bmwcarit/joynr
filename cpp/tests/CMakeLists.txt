@@ -30,10 +30,14 @@ include(AddGtestGmock)
 ### copy test resources and settings ##########################################
 macro(CONFIGURE_TEST_FILES targetDirectory)
     set(TEST_FILES
+        "AccessControlNoPermission.entries"
+        "AccessControlYesPermission.entries"
         "integrationtest.settings"
         "websocket-cc-tls.settings"
         "websocket-libjoynr-tls.settings"
         "websocket-libjoynr-non-tls.settings"
+        "MessagingWithAccessControlDisabled.settings"
+        "MessagingWithAccessControlEnabled.settings"
         "HttpSystemIntegrationTest1.settings"
         "HttpSystemIntegrationTest2.settings"
         "MqttWithHttpBackendSystemIntegrationTest1.settings"
@@ -48,7 +52,6 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "libjoynrSystemIntegration2.settings"
         "ca.crt"
         "testclient.pem"
-        "MessagingSettingsWithAccessControl.settings"
     )
 
     foreach(testFile ${TEST_FILES})
