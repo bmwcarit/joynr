@@ -551,6 +551,23 @@ std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrClusterCont
                                    expiryDateMs,
                                    defaultPublicKeyId,
                                    false)));
+
+    types::Version gDACProviderVersion(
+            infrastructure::IGlobalDomainAccessController::MAJOR_VERSION,
+            infrastructure::IGlobalDomainAccessController::MINOR_VERSION);
+    provisionedDiscoveryEntries.insert(
+            std::make_pair(messagingSettings.getGlobalDomainAccessControlParticipantId(),
+                           types::DiscoveryEntryWithMetaInfo(
+                                   gDACProviderVersion,
+                                   messagingSettings.getDiscoveryDirectoriesDomain(),
+                                   infrastructure::IGlobalDomainAccessController::INTERFACE_NAME(),
+                                   messagingSettings.getGlobalDomainAccessControlParticipantId(),
+                                   capabilityProviderQos,
+                                   lastSeenDateMs,
+                                   expiryDateMs,
+                                   defaultPublicKeyId,
+                                   false)));
+
     return provisionedDiscoveryEntries;
 }
 
@@ -607,15 +624,36 @@ void JoynrClusterControllerRuntime::enableAccessController(
     localDomainAccessController =
             std::make_unique<joynr::LocalDomainAccessController>(std::move(localDomainAccessStore));
 
+    // Provision global domain access controller in MessageRouter
+    auto globalDomainAccessControlAddress =
+            std::make_shared<joynr::system::RoutingTypes::MqttAddress>();
+    try {
+        joynr::serializer::deserializeFromJson(
+                *globalDomainAccessControlAddress,
+                messagingSettings.getGlobalDomainAccessControlAddress());
+    } catch (const std::invalid_argument& ex) {
+        JOYNR_LOG_ERROR(logger,
+                        "Cannot deserialize global domain access controller address. Reason: {}.",
+                        ex.what());
+    }
+
+    ccMessageRouter->addProvisionedNextHop(
+            messagingSettings.getGlobalDomainAccessControlParticipantId(),
+            globalDomainAccessControlAddress);
+
     // create GlobalDomainAccessController proxy
     std::unique_ptr<ProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>>
-            capabilitiesProxyBuilder =
+            globalDomainAccessControllerProxyBuilder =
                     createProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>(
-                            "io.joynr");
+                            messagingSettings.getDiscoveryDirectoriesDomain());
 
     DiscoveryQos discoveryQos(10000);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    discoveryQos.addCustomParameter(
+            "fixedParticipantId", messagingSettings.getGlobalDomainAccessControlParticipantId());
+
     auto proxyGlobalDomainAccessController =
-            capabilitiesProxyBuilder->setDiscoveryQos(discoveryQos)->build();
+            globalDomainAccessControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 
     localDomainAccessController->init(std::move(proxyGlobalDomainAccessController));
 
