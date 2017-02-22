@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -140,6 +141,16 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_ERROR(logger,
                             "could not deserialize BroadcastSubscriptionRequest - error {}",
+                            e.what());
+        }
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
+        try {
+            MulticastSubscriptionRequest request;
+            joynr::serializer::deserializeFromJson(request, message.getPayload());
+            operation = request.getSubscribeToName();
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "could not deserialize MulticastSubscriptionRequest - error {}",
                             e.what());
         }
     }
