@@ -139,7 +139,7 @@ protected:
     const std::int64_t MESSAGINGQOS_TTL;
 };
 
-TEST_F(End2EndAccessControlTest, proxyDoesNotHavePermission) {
+TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission) {
 
     init("test-resources/AccessControlYesPermissions.entries");
 
@@ -154,7 +154,7 @@ TEST_F(End2EndAccessControlTest, proxyDoesNotHavePermission) {
                  exceptions::JoynrTimeOutException);
 }
 
-TEST_F(End2EndAccessControlTest, proxyDoesHavePermission) {
+TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesHavePermission) {
 
     init("test-resources/AccessControlNoPermissions.entries");
 
