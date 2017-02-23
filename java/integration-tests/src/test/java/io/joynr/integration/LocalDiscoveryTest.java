@@ -169,6 +169,7 @@ public class LocalDiscoveryTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(localDiscoveryEntryStoreMock.hasDiscoveryEntry(any(DiscoveryEntry.class))).thenReturn(true);
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         final LocalCapabilitiesDirectoryImpl localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioningMock,
                                                                                                              globalAddressProviderMock,
