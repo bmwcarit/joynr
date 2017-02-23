@@ -166,6 +166,11 @@ public:
                     request,
                     isLocalMessage);
 
+        // We must set the reply address here. Otherwise the message router will
+        // set it and the message which was created will differ from the message
+        // which is passed to the messaging-skeleton.
+        message.setHeaderReplyAddress(globalClusterControllerAddress);
+
         // InProcessMessagingSkeleton should receive the message
         EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
