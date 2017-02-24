@@ -39,15 +39,15 @@ import org.slf4j.LoggerFactory;
  * The MessageRouter is responsible for routing messages to their destination, and internally queues message post
  * requests using an executor service.
  * <p>
- * This override of the normal {@link io.joynr.messaging.routing.MessageRouterImpl} is necessary, because the standard
+ * This override of the normal {@link io.joynr.messaging.routing.AbstractMessageRouter} is necessary, because the standard
  * implementation calls {@link ScheduledExecutorService#isShutdown()}, which results in an exception in a JEE
  * environment. Hence, this implementation overrides the {@link #schedule(Runnable, String, long, TimeUnit)} method and provides an
  * implementation which doesn't call <code>isShutdown()</code>.
  *
- * @see io.joynr.messaging.routing.MessageRouterImpl
+ * @see io.joynr.messaging.routing.AbstractMessageRouter
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that no new messages are scheduled when scheduler is shuting down")
-public class JeeMessageRouter extends io.joynr.messaging.routing.MessageRouterImpl {
+public class JeeMessageRouter extends io.joynr.messaging.routing.AbstractMessageRouter {
 
     private static final Logger LOG = LoggerFactory.getLogger(JeeMessageRouter.class);
     private ScheduledExecutorService scheduler;

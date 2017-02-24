@@ -31,7 +31,7 @@ import io.joynr.runtime.GlobalAddressProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
-public class CcMessageRouter extends MessageRouterImpl {
+public class CcMessageRouter extends AbstractMessageRouter {
     private String replyToAddress;
 
     @Inject

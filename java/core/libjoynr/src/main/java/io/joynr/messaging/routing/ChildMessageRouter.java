@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * MessageRouter implementation which adds hops to its parent and tries to resolve unknown addresses at its parent
  */
 @Singleton
-public class ChildMessageRouter extends MessageRouterImpl {
+public class ChildMessageRouter extends AbstractMessageRouter {
     private Logger logger = LoggerFactory.getLogger(ChildMessageRouter.class);
 
     private static interface DeferrableRegistration {

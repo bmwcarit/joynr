@@ -46,10 +46,10 @@ import joynr.system.RoutingTypes.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract public class MessageRouterImpl implements MessageRouter {
+abstract public class AbstractMessageRouter implements MessageRouter {
     private static final long TERMINATION_TIMEOUT = 5000;
 
-    private Logger logger = LoggerFactory.getLogger(MessageRouterImpl.class);
+    private Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private final RoutingTable routingTable;
     private static final int UUID_TAIL = 32;
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
@@ -62,13 +62,13 @@ abstract public class MessageRouterImpl implements MessageRouter {
 
     @Inject
     @Singleton
-    public MessageRouterImpl(RoutingTable routingTable,
-                             @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
-                             @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                             MessagingStubFactory messagingStubFactory,
-                             MessagingSkeletonFactory messagingSkeletonFactory,
-                             AddressManager addressManager,
-                             MulticastReceiverRegistry multicastReceiverRegistry) {
+    public AbstractMessageRouter(RoutingTable routingTable,
+                                 @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                                 MessagingStubFactory messagingStubFactory,
+                                 MessagingSkeletonFactory messagingSkeletonFactory,
+                                 AddressManager addressManager,
+                                 MulticastReceiverRegistry multicastReceiverRegistry) {
         this.routingTable = routingTable;
         this.scheduler = scheduler;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
