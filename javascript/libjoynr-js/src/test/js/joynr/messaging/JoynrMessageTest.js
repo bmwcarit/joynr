@@ -142,6 +142,16 @@ define([ "joynr/messaging/JoynrMessage"
             expect(joynrMessage.isReceivedFromGlobal).toBe(true);
         });
 
+        it("allows to change isLocalMessage", function() {
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : "hello"
+            });
+            expect(joynrMessage.isLocalMessage).toBe(false);
+            joynrMessage.setIsLocalMessage(true);
+            expect(joynrMessage.isLocalMessage).toBe(true);
+        });
+
         it("has comfort functions for setting values", function() {
             var joynrMessage = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
