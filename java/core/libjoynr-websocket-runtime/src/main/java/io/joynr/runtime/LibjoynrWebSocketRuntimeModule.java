@@ -19,7 +19,7 @@ package io.joynr.runtime;
  * #L%
  */
 import com.google.inject.name.Names;
-import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.WebSocketMessageSerializerFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
@@ -46,7 +46,7 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         super.configure();
         install(new WebSocketJettyClientModule());
         bind(JoynrRuntime.class).to(LibjoynrRuntime.class).in(Singleton.class);
-        bind(MessageRouter.class).to(ChildMessageRouter.class);
+        bind(MessageRouter.class).to(LibJoynrMessageRouter.class);
         bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
                            .toInstance(Boolean.TRUE);
 

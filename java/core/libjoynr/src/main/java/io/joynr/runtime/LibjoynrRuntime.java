@@ -12,7 +12,7 @@ import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.ProxyBuilder;
@@ -58,7 +58,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
-                           ChildMessageRouter messageRouter,
+                           LibJoynrMessageRouter messageRouter,
                            @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId) {
         super(objectMapper,
               proxyBuilderFactory,

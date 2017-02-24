@@ -42,7 +42,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.joynr.common.ExpiryDate;
 
-import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.JoynrMessage;
@@ -52,7 +52,7 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ChildMessageRouterTest {
+public class LibJoynrMessageRouterTest {
 
     @Mock
     IMessaging messagingStub;
@@ -76,7 +76,7 @@ public class ChildMessageRouterTest {
     private MulticastReceiverRegistry multicastReceiverRegistry;
 
     private JoynrMessage message;
-    private ChildMessageRouter messageRouter;
+    private LibJoynrMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
     private String globalAddress = "global-address";
@@ -93,16 +93,16 @@ public class ChildMessageRouterTest {
         when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
         when(messageRouterParent.getGlobalAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
-        when(parentAddress.getChannelId()).thenReturn("ChildMessageRouterTestChannel");
+        when(parentAddress.getChannelId()).thenReturn("LibJoynrMessageRouterTestChannel");
 
-        messageRouter = new ChildMessageRouter(routingTable,
-                                               incomingAddress,
-                                               provideMessageSchedulerThreadPoolExecutor(),
-                                               sendMsgRetryIntervalMs,
-                                               messagingStubFactory,
-                                               messagingSkeletonFactory,
-                                               addressManager,
-                                               multicastReceiverRegistry);
+        messageRouter = new LibJoynrMessageRouter(routingTable,
+                                                  incomingAddress,
+                                                  provideMessageSchedulerThreadPoolExecutor(),
+                                                  sendMsgRetryIntervalMs,
+                                                  messagingStubFactory,
+                                                  messagingSkeletonFactory,
+                                                  addressManager,
+                                                  multicastReceiverRegistry);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
     }
 

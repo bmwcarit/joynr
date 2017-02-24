@@ -50,8 +50,8 @@ import org.slf4j.LoggerFactory;
  * MessageRouter implementation which adds hops to its parent and tries to resolve unknown addresses at its parent
  */
 @Singleton
-public class ChildMessageRouter extends AbstractMessageRouter {
-    private Logger logger = LoggerFactory.getLogger(ChildMessageRouter.class);
+public class LibJoynrMessageRouter extends AbstractMessageRouter {
+    private Logger logger = LoggerFactory.getLogger(LibJoynrMessageRouter.class);
 
     private static interface DeferrableRegistration {
         void register();
@@ -66,14 +66,14 @@ public class ChildMessageRouter extends AbstractMessageRouter {
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public ChildMessageRouter(RoutingTable routingTable,
-                              @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
-                              @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
-                              @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                              MessagingStubFactory messagingStubFactory,
-                              MessagingSkeletonFactory messagingSkeletonFactory,
-                              AddressManager addressManager,
-                              MulticastReceiverRegistry multicastReceiverRegistry) {
+    public LibJoynrMessageRouter(RoutingTable routingTable,
+                                 @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
+                                 @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                                 MessagingStubFactory messagingStubFactory,
+                                 MessagingSkeletonFactory messagingSkeletonFactory,
+                                 AddressManager addressManager,
+                                 MulticastReceiverRegistry multicastReceiverRegistry) {
         // CHECKSTYLE:ON
         super(routingTable,
               scheduler,
