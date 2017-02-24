@@ -109,7 +109,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                                                  toDiscoveryEntry.getParticipantId(),
                                                                  request,
                                                                  messagingQos);
-
+        message.setLocalMessage(toDiscoveryEntry.getIsLocal());
         messageRouter.route(message);
     }
 
