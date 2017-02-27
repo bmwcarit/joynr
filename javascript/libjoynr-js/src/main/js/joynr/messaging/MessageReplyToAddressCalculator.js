@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,13 +55,13 @@ define(
 
                 this.setReplyTo =
                         function(message) {
-                            checkForExistingReplyToAddress();
                             var type = message.type;
                             if ((type !== undefined)
                                 && (message.replyChannelId === undefined)
                                 && ((type === JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST)
                                     || (type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST)
                                     || (type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) || (type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST))) {
+                                checkForExistingReplyToAddress();
                                 message.replyChannelId = replyToAddress;
                             }
                         };

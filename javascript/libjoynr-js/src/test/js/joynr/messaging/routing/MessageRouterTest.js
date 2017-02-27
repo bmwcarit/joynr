@@ -57,7 +57,7 @@ define([
                         var messagingStubSpy, messagingSkeletonSpy, messagingStubFactorySpy, messagingSkeletonFactorySpy;
                         var messageQueueSpy, messageRouter, routingProxySpy, parentMessageRouterAddress, incomingAddress;
                         var multicastAddressCalculatorSpy;
-                        var testGlobalClusterControllerAddress;
+                        var testGlobalClusterControllerAddress, serializedTestGlobalClusterControllerAddress;
 
                         var createMessageRouter =
                                 function(
@@ -179,6 +179,7 @@ define([
                             typeRegistry.addType("joynr.system.RoutingTypes.BrowserAddress", BrowserAddress);
 
                             testGlobalClusterControllerAddress = "testGlobalAddress";
+                            serializedTestGlobalClusterControllerAddress = JSON.stringify(testGlobalClusterControllerAddress);
                             routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
                                "addNextHop",
                                "removeNextHop",
@@ -195,6 +196,7 @@ define([
                                 createRootMessageRouter(
                                         persistencySpy,
                                         messageQueueSpy);
+                            messageRouter.setGlobalClusterControllerAddress(testGlobalClusterControllerAddress);
 
                             done();
                         });
@@ -365,6 +367,34 @@ define([
                                     }).catch(fail);
                                 });
 
+                        it("sets replyTo address for non local messages", function(done) {
+                            messageRouter.addNextHop(joynrMessage.to, address);
+
+                            joynrMessage.setIsLocalMessage(false);
+                            expect(joynrMessage.replyChannelId).toEqual(undefined);
+
+                            messageRouter.route(joynrMessage);
+
+                            expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                            var transmittedJoynrMessage = messagingStubSpy.transmit.calls.argsFor(0)[0];
+                            expect(transmittedJoynrMessage.replyChannelId).toEqual(serializedTestGlobalClusterControllerAddress);
+                            done();
+                        });
+
+                        it("does not set replyTo address for local messages", function(done) {
+                            messageRouter.addNextHop(joynrMessage.to, address);
+
+                            joynrMessage.setIsLocalMessage(true);
+                            expect(joynrMessage.replyChannelId).toEqual(undefined);
+
+                            messageRouter.route(joynrMessage);
+
+                            expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                            var transmittedJoynrMessage = messagingStubSpy.transmit.calls.argsFor(0)[0];
+                            expect(transmittedJoynrMessage.replyChannelId).toEqual(undefined);
+                            done();
+                        });
+
 
                         describe("route multicast messages", function() {
                             var parameters;
@@ -510,9 +540,16 @@ define([
                                             messageQueueSpy,
                                             incomingAddress,
                                             parentMessageRouterAddress);
+                                messageRouter.setGlobalClusterControllerAddress(testGlobalClusterControllerAddress);
                             });
 
                             it("queries global address from routing provider", function(done) {
+                                messageRouter =
+                                    createMessageRouter(
+                                            persistencySpy,
+                                            messageQueueSpy,
+                                            incomingAddress,
+                                            parentMessageRouterAddress);
                                 messageRouter.setRoutingProxy(routingProxySpy)
                                 .then(function() {
                                     expect(routingProxySpy.globalAddress.get).toHaveBeenCalled();
@@ -520,6 +557,34 @@ define([
                                 }).catch(function(error) {
                                     done.fail(error);
                                 });
+                            });
+
+                            it("sets replyTo address for non local messages", function(done) {
+                                messageRouter.addNextHop(joynrMessage.to, address);
+
+                                joynrMessage.setIsLocalMessage(false);
+                                expect(joynrMessage.replyChannelId).toEqual(undefined);
+
+                                messageRouter.route(joynrMessage);
+
+                                expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                                var transmittedJoynrMessage = messagingStubSpy.transmit.calls.argsFor(0)[0];
+                                expect(transmittedJoynrMessage.replyChannelId).toEqual(serializedTestGlobalClusterControllerAddress);
+                                done();
+                            });
+
+                            it("does not set replyTo address for local messages", function(done) {
+                                messageRouter.addNextHop(joynrMessage.to, address);
+
+                                joynrMessage.setIsLocalMessage(true);
+                                expect(joynrMessage.replyChannelId).toEqual(undefined);
+
+                                messageRouter.route(joynrMessage);
+
+                                expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                                var transmittedJoynrMessage = messagingStubSpy.transmit.calls.argsFor(0)[0];
+                                expect(transmittedJoynrMessage.replyChannelId).toEqual(undefined);
+                                done();
                             });
 
                             it(

@@ -29,6 +29,7 @@ define(
             "joynr/system/LoggerFactory",
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/messaging/JoynrMessage",
+            "joynr/messaging/MessageReplyToAddressCalculator",
             "joynr/exceptions/JoynrException",
             "joynr/util/Typing",
             "joynr/util/JSONSerializer",
@@ -39,6 +40,7 @@ define(
                 LoggerFactory,
                 InProcessAddress,
                 JoynrMessage,
+                MessageReplyToAddressCalculator,
                 JoynrException,
                 Typing,
                 JSONSerializer) {
@@ -93,6 +95,8 @@ define(
                 var messagingSkeletonFactory = settings.messagingSkeletonFactory;
                 var multicastReceiversRegistry = {};
                 var globalClusterControllerAddress;
+                var messageReplyToAddressCalculator = new MessageReplyToAddressCalculator({});
+                var messagesWithoutReplyTo = [];
 
                 // if (settings.routingTable === undefined) {
                 // throw new Error("routing table is undefined");
@@ -117,6 +121,10 @@ define(
 
                 this.setGlobalClusterControllerAddress = function (newAddress) {
                     globalClusterControllerAddress = newAddress;
+                    messageReplyToAddressCalculator.setReplyToAddress(globalClusterControllerAddress);
+                    messagesWithoutReplyTo.forEach(function(msg) {
+                        that.route(msg);
+                    });
                 };
 
                 /**
@@ -398,29 +406,43 @@ define(
                                 .forJoynrMessage(joynrMessage));
                         settings.messageQueue.putMessage(joynrMessage);
                         throw new Error(errorMsg);
-                    } else {
-                        messagingStub =
-                                settings.messagingStubFactory
-                                        .createMessagingStub(address);
-                        if (messagingStub === undefined) {
-                            errorMsg =
-                                    "No message receiver found for participantId: "
-                                        + joynrMessage.to
-                                        + " queuing message.";
-                            log.info(errorMsg, DiagnosticTags
-                                    .forJoynrMessage(joynrMessage));
+                    }
+
+                    if (!joynrMessage.isLocalMessage) {
+                        try {
+                            messageReplyToAddressCalculator.setReplyTo(joynrMessage);
+                        } catch (error) {
+                            messagesWithoutReplyTo.push(joynrMessage);
+                            errorMsg = "replyTo address could not be set: "
+                                + error
+                                + ". Queuing message.";
+                            log.warn(errorMsg, JSON.stringify(DiagnosticTags
+                                    .forJoynrMessage(joynrMessage)));
                             throw new Error(errorMsg);
-                        } else {
-                            return messagingStub.transmit(joynrMessage).then(function() {
-                                //succeeded, do nothing
-                                return null;
-                            }).catch(function(error) {
-                                //error while transmitting message
-                                log.debug("Error while transmitting message: " + error);
-                                //TODO queue message and retry later
-                                return null;
-                            });
                         }
+                    }
+
+                    messagingStub =
+                            settings.messagingStubFactory
+                                    .createMessagingStub(address);
+                    if (messagingStub === undefined) {
+                        errorMsg =
+                                "No message receiver found for participantId: "
+                                    + joynrMessage.to
+                                    + " queuing message.";
+                        log.info(errorMsg, DiagnosticTags
+                                .forJoynrMessage(joynrMessage));
+                        throw new Error(errorMsg);
+                    } else {
+                        return messagingStub.transmit(joynrMessage).then(function() {
+                            //succeeded, do nothing
+                            return null;
+                        }).catch(function(error) {
+                            //error while transmitting message
+                            log.debug("Error while transmitting message: " + error);
+                            //TODO queue message and retry later
+                            return null;
+                        });
                     }
                 }
 

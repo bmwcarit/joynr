@@ -119,6 +119,7 @@ requirejs([
     "tests/joynr/messaging/MessagingStubFactoryTest",
     "tests/joynr/messaging/JoynrMessageTest",
     "tests/joynr/messaging/MessagingQosTest",
+    "tests/joynr/messaging/MessageReplyToAddressCalculatorTest",
     "tests/joynr/system/DistributedLoggingAppenderFactoryTest",
     //"tests/joynr/system/LoggingManagerTest",
     "tests/joynr/system/DistributedLoggingAppenderTest",

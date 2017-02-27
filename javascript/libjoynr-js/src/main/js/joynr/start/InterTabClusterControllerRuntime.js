@@ -370,7 +370,8 @@ define(
                             persistency.setItem("joynr.channels.channelId.1", channelId);
 
                             clusterControllerSettings = defaultClusterControllerSettings({
-                                bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl
+                                bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl,
+                                brokerUri: provisioning.brokerUri
                             });
                             untypedCapabilities = provisioning.capabilities || [];
                             var defaultCapabilities = clusterControllerSettings.capabilities || [];
@@ -378,6 +379,7 @@ define(
                             untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
                             /*jslint nomen: true */// allow use of _typeName once
                             typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
+                            typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
                             /*jslint nomen: false */
                             typedCapabilities = [];
                             for (i = 0; i < untypedCapabilities.length; i++) {

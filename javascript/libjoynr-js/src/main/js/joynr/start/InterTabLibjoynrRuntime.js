@@ -26,7 +26,6 @@ define(
             "joynr/capabilities/arbitration/Arbitrator",
             "joynr/provider/ProviderBuilder",
             "joynr/proxy/ProxyBuilder",
-            "joynr/types/GlobalDiscoveryEntry",
             "joynr/capabilities/CapabilitiesRegistrar",
             "joynr/capabilities/ParticipantIdStorage",
             "joynr/dispatching/RequestReplyManager",
@@ -57,7 +56,7 @@ define(
             "joynr/system/RoutingProxy",
             "joynr/types/TypeRegistrySingleton",
             "joynr/types/DiscoveryScope",
-            "joynr/types/DiscoveryEntry",
+            "joynr/types/DiscoveryEntryWithMetaInfo",
             "joynr/util/UtilInternal",
             "joynr/util/CapabilitiesUtil",
             "joynr/system/DistributedLoggingAppenderConstructorFactory",
@@ -76,7 +75,6 @@ define(
                 Arbitrator,
                 ProviderBuilder,
                 ProxyBuilder,
-                GlobalDiscoveryEntry,
                 CapabilitiesRegistrar,
                 ParticipantIdStorage,
                 RequestReplyManager,
@@ -107,7 +105,7 @@ define(
                 RoutingProxy,
                 TypeRegistrySingleton,
                 DiscoveryScope,
-                DiscoveryEntry,
+                DiscoveryEntryWithMetaInfo,
                 Util,
                 CapabilitiesUtil,
                 DistributedLoggingAppenderConstructorFactory,
@@ -326,7 +324,7 @@ define(
                             typedCapabilities = [];
                             for (i = 0; i < untypedCapabilities.length; i++) {
                                 var capability =
-                                        new GlobalDiscoveryEntry(untypedCapabilities[i]);
+                                        new DiscoveryEntryWithMetaInfo(untypedCapabilities[i]);
                                 initialRoutingTable[capability.participantId] = ccAddress;
                                 typedCapabilities.push(capability);
                             }

@@ -334,13 +334,15 @@ define(
 
                             untypedCapabilities = provisioning.capabilities || [];
                             clusterControllerSettings = defaultClusterControllerSettings({
-                                bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl
+                                bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl,
+                                brokerUri: provisioning.brokerUri
                             });
                             var defaultClusterControllerCapabilities = clusterControllerSettings.capabilities || [];
 
                             untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
                             /*jslint nomen: true */// allow use of _typeName once
                             typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
+                            typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
                             /*jslint nomen: false */
                             typedCapabilities = [];
                             var errorMessage;
