@@ -45,6 +45,7 @@ public:
               senderID(),
               receiverID(),
               requestReplyID(),
+              isLocalMessage(true),
               qos(),
               request(),
               oneWayRequest(),
@@ -149,6 +150,7 @@ protected:
     std::string senderID;
     std::string receiverID;
     std::string requestReplyID;
+    const bool isLocalMessage;
     MessagingQos qos;
     Request request;
     OneWayRequest oneWayRequest;
@@ -160,13 +162,13 @@ INIT_LOGGER(JoynrMessageFactoryTest);
 
 TEST_F(JoynrMessageFactoryTest, createRequest_withContentType)
 {
-    JoynrMessage joynrMessage = messageFactory.createRequest(senderID, receiverID, qos, request);
+    JoynrMessage joynrMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
     checkHeaderCreatorFromTo(joynrMessage);
 }
 
 TEST_F(JoynrMessageFactoryTest, createRequest)
 {
-    JoynrMessage joynrMessage = messageFactory.createRequest(senderID, receiverID, qos, request);
+    JoynrMessage joynrMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
     // warning if prepareRequest needs to long this assert will fail as it compares absolute
     // timestamps
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
@@ -203,7 +205,7 @@ TEST_F(JoynrMessageFactoryTest, createReply)
 TEST_F(JoynrMessageFactoryTest, createOneWayRequest)
 {
     JoynrMessage joynrMessage =
-            messageFactory.createOneWayRequest(senderID, receiverID, qos, oneWayRequest);
+            messageFactory.createOneWayRequest(senderID, receiverID, qos, oneWayRequest, isLocalMessage);
     checkHeaderCreatorFromTo(joynrMessage);
     checkOneWayRequest(joynrMessage);
     EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
@@ -249,7 +251,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest)
     subscriptionRequest.setSubscribeToName("attributeName");
     subscriptionRequest.setQos(subscriptionQos);
     JoynrMessage joynrMessage = messageFactory.createSubscriptionRequest(
-            senderID, receiverID, qos, subscriptionRequest);
+            senderID, receiverID, qos, subscriptionRequest, isLocalMessage);
     checkHeaderCreatorFromTo(joynrMessage);
     EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, joynrMessage.getType());
 }
@@ -263,7 +265,7 @@ TEST_F(JoynrMessageFactoryTest, createMulticastSubscriptionRequest)
     subscriptionRequest.setSubscribeToName("attributeName");
     subscriptionRequest.setQos(subscriptionQos);
     JoynrMessage joynrMessage = messageFactory.createMulticastSubscriptionRequest(
-            senderID, receiverID, qos, subscriptionRequest);
+            senderID, receiverID, qos, subscriptionRequest, isLocalMessage);
     checkHeaderCreatorFromTo(joynrMessage);
     EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, joynrMessage.getType());
 }
@@ -285,20 +287,20 @@ TEST_F(JoynrMessageFactoryTest, testRequestContentType)
     request.setMethodName("methodName");
     request.setParams(std::string("test"));
 
-    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request);
+    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
     EXPECT_EQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON, message.getHeaderContentType());
 }
 
 TEST_F(JoynrMessageFactoryTest, testSetNoEffortHeader)
 {
-    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request);
+    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
     EXPECT_FALSE(message.containsHeaderEffort());
 }
 
 TEST_F(JoynrMessageFactoryTest, testSetBestEffortHeader)
 {
     qos.setEffort(MessagingQosEffort::Enum::BEST_EFFORT);
-    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request);
+    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
     EXPECT_TRUE(message.containsHeaderEffort());
     EXPECT_EQ(MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT),
               message.getHeaderEffort());

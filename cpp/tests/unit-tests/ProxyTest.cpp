@@ -69,7 +69,8 @@ public:
             const std::string&, // receiver participant ID
             const MessagingQos&, // messaging QoS
             const Request&, // request object to send
-            std::shared_ptr<IReplyCaller> // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller>, // reply caller to notify when reply is received
+            bool isLocalMessage
     )>& setExpectationsForSendRequestCall(std::string methodName) override {
         return EXPECT_CALL(
                     *mockJoynrMessageSender,
@@ -78,7 +79,8 @@ public:
                         Eq(providerParticipantId), // receiver participant ID
                         _, // messaging QoS
                         Property(&Request::getMethodName, Eq(methodName)), // request object to send
-                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()) // reply caller to notify when reply is received
+                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()), // reply caller to notify when reply is received
+                        _ // isLocalFlag
                     )
         );
     }

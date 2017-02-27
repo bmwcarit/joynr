@@ -75,7 +75,8 @@ public:
         messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
         dispatcher(messageSender, singleThreadIOService.getIOService()),
         callContext(),
-        getLocationCalledSemaphore(0)
+        getLocationCalledSemaphore(0),
+        isLocalMessage(true)
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
         singleThreadIOService.start();
@@ -120,6 +121,7 @@ protected:
     Dispatcher dispatcher;
     joynr::CallContext callContext;
     joynr::Semaphore getLocationCalledSemaphore;
+    const bool isLocalMessage;
 };
 
 INIT_LOGGER(DispatcherTest);
@@ -151,7 +153,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
-                request
+                request,
+                isLocalMessage
     );
 
     // construct the result we expect in messaging.transmit. The JoynrMessage
@@ -294,7 +297,8 @@ TEST_F(DispatcherTest, receive_setCallContext) {
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
-                request
+                request,
+                isLocalMessage
     );
     msg.setHeaderCreatorUserId(expectedPrincipal);
 

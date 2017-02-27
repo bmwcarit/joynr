@@ -312,11 +312,13 @@ TYPED_TEST(RequestReplySerializerTest, exampleSerializerTestWithJoynrRequestOfCo
 TYPED_TEST(RequestReplySerializerTest, serializeJoynrMessage)
 {
     // Create a Request
+    const bool isLocalMessage = true;
     joynr::Request outgoingRequest = this->initializeRequestWithPrimitiveValues();
     joynr::JoynrMessage outgoingMessage = joynr::JoynrMessageFactory().createRequest("sender",
                                                                                      "receiver",
                                                                                      joynr::MessagingQos(),
-                                                                                     outgoingRequest);
+                                                                                     outgoingRequest,
+                                                                                     isLocalMessage);
 
     JOYNR_LOG_TRACE(this->logger, "outgoing JoynrMessage payload JSON: {}", outgoingMessage.getPayload());
 

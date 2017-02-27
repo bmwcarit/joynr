@@ -55,6 +55,7 @@ public:
     MessagingQos qos;
     std::shared_ptr<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
     Semaphore semaphore;
+    const bool isLocalMessage;
 
     JoynrMessageFactory messageFactory;
     std::shared_ptr<MockMessageReceiver> mockMessageReceiver;
@@ -74,6 +75,7 @@ public:
         qos(),
         inProcessMessagingSkeleton(std::make_shared<MockInProcessMessagingSkeleton>()),
         semaphore(0),
+        isLocalMessage(false),
         messageFactory(),
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
@@ -135,7 +137,7 @@ public:
 
         messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
-        messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller);
+        messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller, isLocalMessage);
 
         WaitXTimes(2);
     }
@@ -147,7 +149,8 @@ public:
                     senderId,
                     invalidReceiverId,
                     qos,
-                    request);
+                    request,
+                    isLocalMessage);
 
 
         messageRouter->route(message);
@@ -160,7 +163,8 @@ public:
                     senderId,
                     receiverId,
                     qos,
-                    request);
+                    request,
+                    isLocalMessage);
 
         // InProcessMessagingSkeleton should receive the message
         EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),_))
@@ -188,7 +192,8 @@ public:
                     senderId,
                     receiverId,
                     qos,
-                    request);
+                    request,
+                    isLocalMessage);
         message.setHeaderReplyAddress(globalClusterControllerAddress);
 
         // InProcessMessagingSkeleton should not receive the message
@@ -212,7 +217,8 @@ public:
                     senderId,
                     receiverId,
                     qos,
-                    request);
+                    request,
+                    isLocalMessage);
         message.setHeaderReplyAddress(globalClusterControllerAddress);
 
         std::string receiverId2("receiverId2");
@@ -220,7 +226,8 @@ public:
                     senderId,
                     receiverId2,
                     qos,
-                    request);
+                    request,
+                    isLocalMessage);
         message2.setHeaderReplyAddress(globalClusterControllerAddress);
 
         // MessageSender should receive message

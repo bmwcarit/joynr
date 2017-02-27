@@ -342,7 +342,8 @@ bool «className»::usesClusterController() const{
 						proxyParticipantId,
 						providerParticipantId,
 						clonedMessagingQos,
-						subscriptionRequest
+						subscriptionRequest,
+						providerDiscoveryEntry.getIsLocal()
 			);
 			return future;
 		}
@@ -511,7 +512,8 @@ bool «className»::usesClusterController() const{
 						proxyParticipantId,
 						providerParticipantId,
 						clonedMessagingQos,
-						subscriptionRequest
+						subscriptionRequest,
+						providerDiscoveryEntry.getIsLocal()
 			);
 		«ELSE»
 			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
@@ -520,14 +522,16 @@ bool «className»::usesClusterController() const{
 					[joynrMessageSender = joynr::util::as_weak_ptr(joynrMessageSender),
 					proxyParticipantId = proxyParticipantId,
 					providerParticipantId = providerParticipantId,
-					clonedMessagingQos, subscriptionRequest] () {
+					clonedMessagingQos, subscriptionRequest,
+					isLocalMessage = providerDiscoveryEntry.getIsLocal()] () {
 						if (auto ptr = joynrMessageSender.lock())
 						{
 							ptr->sendMulticastSubscriptionRequest(
 										proxyParticipantId,
 										providerParticipantId,
 										clonedMessagingQos,
-										*subscriptionRequest
+										*subscriptionRequest,
+										isLocalMessage
 							);
 						}
 					};

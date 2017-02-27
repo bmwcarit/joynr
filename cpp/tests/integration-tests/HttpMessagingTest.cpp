@@ -27,7 +27,8 @@ class HttpMessagingTest : public AbstractMessagingTest {
 public:
     ADD_LOGGER(HttpMessagingTest);
     HttpMessagingTest() :
-        receiverChannelId("receiverChannelId")
+        receiverChannelId("receiverChannelId"),
+        isLocalMessage(true)
     {
         // provision global capabilities directory
         auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
@@ -41,6 +42,7 @@ public:
     }
 protected:
     const std::string receiverChannelId;
+    const bool isLocalMessage;
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingTest);
 };
@@ -85,7 +87,8 @@ TEST_F(HttpMessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
                 senderId,
                 receiverId,
                 qos,
-                request);
+                request,
+                isLocalMessage);
 
     // LipciMessagingSkeleton should receive the message
 // NOTE: LipciMessaging doesn't exists (2012-05-08)

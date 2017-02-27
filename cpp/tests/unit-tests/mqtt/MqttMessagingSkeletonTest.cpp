@@ -67,7 +67,8 @@ class MqttMessagingSkeletonTest : public ::testing::Test {
 public:
     MqttMessagingSkeletonTest() :
         singleThreadedIOService(),
-        mockMessageRouter(singleThreadedIOService.getIOService())
+        mockMessageRouter(singleThreadedIOService.getIOService()),
+        isLocalMessage(false)
     {
         singleThreadedIOService.start();
     }
@@ -92,7 +93,8 @@ public:
                 senderID,
                 receiverID,
                 qosSettings,
-                request
+                request,
+                isLocalMessage
                 );
         joynr::system::RoutingTypes::MqttAddress replyAddress;
         replyAddressSerialized = joynr::serializer::serializeToJson(replyAddress);
@@ -109,6 +111,7 @@ protected:
     std::string senderID;
     std::string receiverID;
     MessagingQos qosSettings;
+    const bool isLocalMessage;
 };
 
 MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "") {
@@ -165,7 +168,8 @@ TEST_F(MqttMessagingSkeletonTest, transmitCallsAddNextHopForRequests)
             senderID,
             receiverID,
             qosSettings,
-            request
+            request,
+            isLocalMessage
             );
     message.setHeaderReplyAddress(replyAddressSerialized);
     transmitCallsAddNextHop();
@@ -178,7 +182,8 @@ TEST_F(MqttMessagingSkeletonTest, transmitCallsAddNextHopForSubscriptionRequests
             senderID,
             receiverID,
             qosSettings,
-            request
+            request,
+            isLocalMessage
             );
     message.setHeaderReplyAddress(replyAddressSerialized);
     transmitCallsAddNextHop();
@@ -191,7 +196,8 @@ TEST_F(MqttMessagingSkeletonTest, transmitCallsAddNextHopForBroadcastSubscriptio
             senderID,
             receiverID,
             qosSettings,
-            request
+            request,
+            isLocalMessage
             );
     message.setHeaderReplyAddress(replyAddressSerialized);
     transmitCallsAddNextHop();
@@ -204,7 +210,8 @@ TEST_F(MqttMessagingSkeletonTest, transmitCallsAddNextHopForMulticastSubscriptio
             senderID,
             receiverID,
             qosSettings,
-            request
+            request,
+            isLocalMessage
             );
     message.setHeaderReplyAddress(replyAddressSerialized);
     transmitCallsAddNextHop();
