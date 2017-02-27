@@ -65,7 +65,7 @@ public:
         runtime2->start();
 
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
-        discoveryQos.setDiscoveryTimeoutMs(1000);
+        discoveryQos.setDiscoveryTimeoutMs(3000);
         discoveryQos.setRetryIntervalMs(250);
 
         messagingQos.setTtl(500);

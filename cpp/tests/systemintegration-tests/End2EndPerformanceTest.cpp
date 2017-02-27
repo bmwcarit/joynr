@@ -115,7 +115,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
             runtime2->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setDiscoveryTimeoutMs(3000);
 
     std::int64_t qosRoundTripTTL = 50000;
 
