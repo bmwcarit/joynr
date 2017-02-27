@@ -55,7 +55,7 @@ public:
         domain = "cppEnd2EndRPCTest_Domain_" + util::createUuid();
 
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeoutMs(1000);
+        discoveryQos.setDiscoveryTimeoutMs(3000);
     }
     // Sets up the test fixture.
     void SetUp(){
