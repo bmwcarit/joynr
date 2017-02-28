@@ -5,6 +5,10 @@
 * **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
   existing MessagingQos APIs remain working
 
+## Other changes
+* **[C++]** Access control can be activated in the cluster-controller. Default: OFF.
+  Refer to [cluster controller settings](ClusterControllerSettings.md) for more info.
+
 #joynr 0.23.1
 
 ## API relevant changes
