@@ -31,8 +31,7 @@ public:
         testSettingsFileNameNonExistent("test-resources/MessagingSettingsTest-nonexistent.settings"),
         testSettingsFileNameHttp("test-resources/HttpMessagingSettingsTest.settings"),
         testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings"),
-        testSettingsFileNameMqttWithHttpBackend("test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"),
-        testSettingsFileNameAccessControl("test-resources/MessagingWithAccessControlEnabled.settings")
+        testSettingsFileNameMqttWithHttpBackend("test-resources/MqttWithHttpBackendMessagingSettingsTest.settings")
     {
     }
 
@@ -42,7 +41,6 @@ protected:
     const std::string testSettingsFileNameHttp;
     const std::string testSettingsFileNameMqtt;
     const std::string testSettingsFileNameMqttWithHttpBackend;
-    const std::string testSettingsFileNameAccessControl;
 };
 
 INIT_LOGGER(MessagingSettingsTest);
@@ -121,37 +119,26 @@ TEST_F(MessagingSettingsTest, mqttWithHttpBackend) {
     checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
 }
 
-TEST_F(MessagingSettingsTest, writeAccessControlToSettings) {
-    // write new settings
-    {
-        Settings testSettings(testSettingsFileNameAccessControl);
-        ASSERT_TRUE(testSettings.isLoaded());
+TEST_F(MessagingSettingsTest, accessControlIsEnabled) {
+    Settings testSettings("test-resources/MessagingWithAccessControlEnabled.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
 
-        MessagingSettings messagingSettings(testSettings);
+    MessagingSettings messagingSettings(testSettings);
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::ACCESS_CONTROL_ENABLE()));
 
-        // in the loaded setting file the access control is set to false
-        EXPECT_FALSE(messagingSettings.enableAccessController());
+    // In the loaded setting file the access control is set to false
+    EXPECT_TRUE(messagingSettings.enableAccessController());
+}
 
-        messagingSettings.setEnableAccessController(true);
-        EXPECT_TRUE(messagingSettings.enableAccessController());
+TEST_F(MessagingSettingsTest, accessControlIsDisabled) {
+    Settings testSettings("test-resources/MessagingWithAccessControlDisabled.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
 
-        testSettings.sync();
-    }
+    MessagingSettings messagingSettings(testSettings);
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::ACCESS_CONTROL_ENABLE()));
 
-    // load and check
-    {
-        Settings testSettings(testSettingsFileNameAccessControl);
-        ASSERT_TRUE(testSettings.isLoaded());
-
-        MessagingSettings messagingSettings(testSettings);
-
-        // in the loaded setting file the access control is set now to true
-        EXPECT_TRUE(messagingSettings.enableAccessController());
-
-        // revert changes to setting file
-        messagingSettings.setEnableAccessController(false);
-        testSettings.sync();
-    }
+    // In the loaded setting file the access control is set to false
+    EXPECT_FALSE(messagingSettings.enableAccessController());
 }
 
 /*
