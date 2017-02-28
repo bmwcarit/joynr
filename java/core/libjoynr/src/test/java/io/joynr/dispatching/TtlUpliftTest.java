@@ -56,6 +56,7 @@ import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.PublicationManagerImpl;
 import io.joynr.dispatching.subscription.SubscriptionRequestStorage;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.AbstractSubscriptionPublisher;

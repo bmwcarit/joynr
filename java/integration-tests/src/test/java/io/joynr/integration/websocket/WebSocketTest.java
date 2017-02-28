@@ -25,8 +25,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.joynr.dispatching.JoynrMessageFactory;
-import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;

@@ -30,6 +30,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
 import joynr.BroadcastSubscriptionRequest;

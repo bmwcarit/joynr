@@ -1,4 +1,4 @@
-package io.joynr.dispatching;
+package io.joynr.messaging;
 
 /*
  * #%L

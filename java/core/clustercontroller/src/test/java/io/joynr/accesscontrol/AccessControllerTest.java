@@ -35,7 +35,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
-import io.joynr.dispatching.JoynrMessageProcessor;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import joynr.JoynrMessage;

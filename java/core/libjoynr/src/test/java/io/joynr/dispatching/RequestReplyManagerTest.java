@@ -59,6 +59,7 @@ import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.AbstractSubscriptionPublisher;
