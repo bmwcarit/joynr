@@ -191,6 +191,11 @@ define([
                             };
                             spyOn(routingProxySpy.globalAddress, "get").and.returnValue(Promise.resolve(testGlobalClusterControllerAddress));
 
+                            messageRouter =
+                                createRootMessageRouter(
+                                        persistencySpy,
+                                        messageQueueSpy);
+
                             done();
                         });
 
@@ -203,10 +208,6 @@ define([
                                 "resolves a previously persisted channel address",
                                 function(done) {
                                     var participantId = "participantId", channelAddress;
-                                    messageRouter =
-                                            createRootMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy);
 
                                     channelAddress = new ChannelAddress({
                                         messagingEndpointUrl : "http://testurl.com",
@@ -232,10 +233,6 @@ define([
                                 function(done) {
                                     var participantId = "participantId", browserAddress;
                                     var resolveNextHopSpy = jasmine.createSpy("resolveNextHopSpy");
-                                    messageRouter =
-                                            createRootMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy);
 
                                     browserAddress = new BrowserAddress({
                                         windowId : "windowId"
@@ -256,35 +253,8 @@ define([
                                 });
 
                         it(
-                                "address can be resolved once known to message router",
-                                function(done) {
-                                    var participantId = "participantId-setToKnown";
-                                    messageRouter =
-                                            createMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy,
-                                                    incomingAddress,
-                                                    parentMessageRouterAddress);
-
-                                    messageRouter.resolveNextHop(participantId)
-                                        .then(function(address) {
-                                            expect(address).toBe(undefined);
-                                            // it is expected that the given participantId cannot be resolved
-                                            messageRouter.setToKnown(participantId);
-                                            return messageRouter.resolveNextHop(participantId).then(function(address) {
-                                                expect(address).toBe(parentMessageRouterAddress);
-                                                return done();
-                                            }).catch(done.fail);
-                                        });
-                                });
-
-                        it(
                                 "queue Message with unknown destinationParticipant",
                                 function(done) {
-                                    messageRouter =
-                                            createRootMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy);
                                     joynrMessage2.expiryDate = Date.now() + 2000;
 
                                     var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
@@ -313,10 +283,6 @@ define([
                         it(
                                 "routes previously queued message once respective participant gets registered",
                                 function(done) {
-                                    messageRouter =
-                                            createRootMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy);
                                     var messageQueue = [];
                                     messageQueue[0] = joynrMessage2;
                                     joynrMessage2.expiryDate = Date.now() + 2000;
@@ -366,10 +332,6 @@ define([
                         it(
                                 "drop previously queued message if respective participant gets registered after expiry date",
                                 function(done) {
-                                    messageRouter =
-                                            createRootMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy);
                                     joynrMessage2.expiryDate = Date.now() + 2000;
 
                                     var returnValue = messageRouter.route(joynrMessage2);
@@ -403,148 +365,6 @@ define([
                                     }).catch(fail);
                                 });
 
-                        it("queries global address from routing provider", function(done) {
-                            messageRouter.setRoutingProxy(routingProxySpy)
-                            .then(function() {
-                                expect(routingProxySpy.globalAddress.get).toHaveBeenCalled();
-                                done();
-                            }).catch(function(error) {
-                                done.fail(error);
-                            });
-                        });
-
-
-                        describe("addMulticastReceiver", function() {
-                            var parameters;
-                            beforeEach(function() {
-                                parameters = {
-                                    multicastId : "multicastId- " + uuid(),
-                                    subscriberParticipantId : "subscriberParticipantId",
-                                    providerParticipantId : "providerParticipantId"
-                                };
-
-                                messageRouter =
-                                    createMessageRouter(
-                                            persistencySpy,
-                                            messageQueueSpy,
-                                            incomingAddress,
-                                            parentMessageRouterAddress);
-
-                                messageRouter.setToKnown(parameters.providerParticipantId);
-
-                               routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
-
-                               expect(messageRouter.hasMulticastReceivers()).toBe(false);
-                            });
-
-                            it("calls matching skeleton", function() {
-                                messageRouter.addMulticastReceiver(parameters);
-
-                                expect(messagingSkeletonSpy.registerMulticastSubscription).toHaveBeenCalled();
-
-                                expect(messagingSkeletonSpy.registerMulticastSubscription).toHaveBeenCalledWith(parameters.multicastId);
-
-                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
-                            });
-
-                            it("calls routing proxy if available", function() {
-                                messageRouter.setRoutingProxy(routingProxySpy);
-
-                                messageRouter.addMulticastReceiver(parameters);
-
-                                expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
-
-                                expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
-
-                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
-                            });
-
-                            it("does not call routing proxy for in process provider", function() {
-                                messageRouter.setRoutingProxy(routingProxySpy);
-
-                                parameters.providerParticipantId = "inProcessParticipant";
-                                messageRouter.addNextHop(parameters.providerParticipantId, new InProcessAddress(undefined));
-                                messageRouter.addMulticastReceiver(parameters);
-
-                                expect(routingProxySpy.addMulticastReceiver).not.toHaveBeenCalled();
-
-                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
-                            });
-
-                            it("queues calls and forwards them once proxy is available", function() {
-                                messageRouter.addMulticastReceiver(parameters);
-
-                                messageRouter.setRoutingProxy(routingProxySpy);
-
-                                expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
-
-                                expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
-
-                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
-                            });
-                        });
-
-                        describe("removeMulticastReceiver", function() {
-                            var parameters;
-                            beforeEach(function() {
-                                parameters = {
-                                    multicastId : "multicastId- " + uuid(),
-                                    subscriberParticipantId : "subscriberParticipantId",
-                                    providerParticipantId : "providerParticipantId"
-                                };
-
-                                messageRouter =
-                                    createMessageRouter(
-                                            persistencySpy,
-                                            messageQueueSpy,
-                                            incomingAddress,
-                                            parentMessageRouterAddress);
-
-                                messageRouter.setToKnown(parameters.providerParticipantId);
-
-                                routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
-                                routingProxySpy.removeMulticastReceiver.and.returnValue(Promise.resolve());
-
-                                expect(messageRouter.hasMulticastReceivers()).toBe(false);
-                                /* addMulticastReceiver is already tested, but added here for
-                                 * checking proper removeMulticastReceiver functionality */
-                                messageRouter.addMulticastReceiver(parameters);
-                                expect(messageRouter.hasMulticastReceivers()).toBe(true);
-                            });
-
-                            it("calls matching skeleton registration and unregistration", function() {
-                                messageRouter.removeMulticastReceiver(parameters);
-
-                                expect(messagingSkeletonSpy.unregisterMulticastSubscription).toHaveBeenCalled();
-
-                                expect(messagingSkeletonSpy.unregisterMulticastSubscription).toHaveBeenCalledWith(parameters.multicastId);
-                                expect(messageRouter.hasMulticastReceivers()).toBe(false);
-                            });
-
-                            it("calls routing proxy if available", function() {
-                                messageRouter.setRoutingProxy(routingProxySpy);
-
-                                messageRouter.removeMulticastReceiver(parameters);
-
-                                expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalled();
-
-                                expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalledWith(parameters);
-
-                                expect(messageRouter.hasMulticastReceivers()).toBe(false);
-                            });
-
-                            it("queues calls and forwards them once proxy is available", function() {
-                                messageRouter.removeMulticastReceiver(parameters);
-
-                                messageRouter.setRoutingProxy(routingProxySpy);
-
-                                expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalled();
-
-                                expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalledWith(parameters);
-
-                                expect(messageRouter.hasMulticastReceivers()).toBe(false);
-                            });
-                        });
 
                         describe("route multicast messages", function() {
                             var parameters;
@@ -565,10 +385,6 @@ define([
                                 multicastMessage.from = "senderParticipantId";
                                 multicastMessage.payload = "hello";
 
-                                messageRouter =
-                                    createRootMessageRouter(
-                                            persistencySpy,
-                                            messageQueueSpy);
 
                                 /* add routing table entry for parameters.subscriberParticipantId,
                                  * otherwise messaging stub call can be executed by the message router
@@ -637,15 +453,12 @@ define([
                                 expect(messagingStubSpy.transmit).toHaveBeenCalled();
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(3);
                             });
-                        });
+                        }); // describe route multicast messages
+
 
                         it(
                                 "routes messages using the messagingStubFactory and messageStub",
                                 function(done) {
-                                    messageRouter =
-                                            createRootMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy);
 
                                     messageRouter.addNextHop(joynrMessage.to, address);
                                     messageRouter.route(joynrMessage);
@@ -670,11 +483,6 @@ define([
                                 });
 
                         it("discards messages without resolvable address", function(done) {
-                            messageRouter =
-                                    createRootMessageRouter(
-                                            persistencySpy,
-                                            messageQueueSpy);
-
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                             var onRejectedSpy = jasmine.createSpy("onRejectedSpy");
 
@@ -693,251 +501,356 @@ define([
                             }).catch(fail);
                         });
 
-                        it(
-                                "check if routing proxy is called with queued hop additions",
-                                function(done) {
-                                    messageRouter =
-                                            createMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy,
-                                                    incomingAddress,
-                                                    parentMessageRouterAddress);
-                                    routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
-                                    var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
-                                    messageRouter.addNextHop(joynrMessage.to, address).then(
-                                            onFulfilledSpy);
-                                    increaseFakeTime(1);
+                        describe("ChildMessageRouter", function() {
+                            beforeEach(function() {
+                                messageRouter =
+                                    createMessageRouter(
+                                            persistencySpy,
+                                            messageQueueSpy,
+                                            incomingAddress,
+                                            parentMessageRouterAddress);
+                            });
 
-                                    expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
-                                    messageRouter.setRoutingProxy(routingProxySpy);
-                                    expect(routingProxySpy.addNextHop).toHaveBeenCalled();
-                                    expect(
-                                            routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId)
-                                            .toEqual(joynrMessage.to);
-                                    expect(
-                                            routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress)
-                                            .toEqual(incomingAddress);
-                                    increaseFakeTime(1);
+                            it("queries global address from routing provider", function(done) {
+                                messageRouter.setRoutingProxy(routingProxySpy)
+                                .then(function() {
+                                    expect(routingProxySpy.globalAddress.get).toHaveBeenCalled();
                                     done();
+                                }).catch(function(error) {
+                                    done.fail(error);
+                                });
+                            });
+
+                            it(
+                                    "address can be resolved once known to message router",
+                                    function(done) {
+                                        var participantId = "participantId-setToKnown";
+
+                                        messageRouter.resolveNextHop(participantId)
+                                            .then(function(address) {
+                                                expect(address).toBe(undefined);
+                                                // it is expected that the given participantId cannot be resolved
+                                                messageRouter.setToKnown(participantId);
+                                                return messageRouter.resolveNextHop(participantId).then(function(address) {
+                                                    expect(address).toBe(parentMessageRouterAddress);
+                                                    return done();
+                                                }).catch(done.fail);
+                                            });
+                                    });
+
+                            describe("addMulticastReceiver", function() {
+                                var parameters;
+                                beforeEach(function() {
+                                    parameters = {
+                                        multicastId : "multicastId- " + uuid(),
+                                        subscriberParticipantId : "subscriberParticipantId",
+                                        providerParticipantId : "providerParticipantId"
+                                    };
+
+                                    messageRouter.setToKnown(parameters.providerParticipantId);
+
+                                    routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
+
+                                   expect(messageRouter.hasMulticastReceivers()).toBe(false);
                                 });
 
-                        it(
-                                "check if resolved hop from routing proxy is cached",
-                                function(done) {
-                                    messageRouter =
-                                            createMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy,
-                                                    incomingAddress,
-                                                    parentMessageRouterAddress);
-                                    routingProxySpy.resolveNextHop.and.returnValue(Promise.resolve({ resolved: true }));
+                                it("calls matching skeleton", function() {
+                                    messageRouter.addMulticastReceiver(parameters);
+
+                                    expect(messagingSkeletonSpy.registerMulticastSubscription).toHaveBeenCalled();
+
+                                    expect(messagingSkeletonSpy.registerMulticastSubscription).toHaveBeenCalledWith(parameters.multicastId);
+
+                                    expect(messageRouter.hasMulticastReceivers()).toBe(true);
+                                });
+
+                                it("calls routing proxy if available", function() {
                                     messageRouter.setRoutingProxy(routingProxySpy);
 
-                                    messageRouter.resolveNextHop(joynrMessage.to).then(function(address) {
-                                        expect(address).toBe(parentMessageRouterAddress);
-                                        expect(routingProxySpy.resolveNextHop.calls.count()).toBe(1);
-                                        routingProxySpy.resolveNextHop.calls.reset();
-                                        return messageRouter.resolveNextHop(joynrMessage.to);
-                                    }).then(function(address){
-                                        expect(address).toBe(parentMessageRouterAddress);
-                                        expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
-                                        done();
-                                        return null;
-                                    }).catch(done.fail);
+                                    messageRouter.addMulticastReceiver(parameters);
+
+                                    expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
+
+                                    expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
+
+                                    expect(messageRouter.hasMulticastReceivers()).toBe(true);
                                 });
 
-                        it(
-                                "check if routing proxy is called with multiple queued hop additions",
-                                function(done) {
-                                    messageRouter =
-                                            createMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy,
-                                                    incomingAddress,
-                                                    parentMessageRouterAddress);
-
-                                    var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-                                    messageRouter.addNextHop(joynrMessage.to, address);
-                                    messageRouter.addNextHop(joynrMessage2.to, address).then(
-                                            onFulfilledSpy);
-                                    routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
-                                    increaseFakeTime(1);
-                                    expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
+                                it("does not call routing proxy for in process provider", function() {
                                     messageRouter.setRoutingProxy(routingProxySpy);
-                                    expect(routingProxySpy.addNextHop).toHaveBeenCalled();
-                                    expect(
-                                            routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId)
-                                            .toEqual(joynrMessage.to);
-                                    expect(
-                                            routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress)
-                                            .toEqual(incomingAddress);
-                                    expect(
-                                            routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId)
-                                            .toEqual(joynrMessage2.to);
-                                    expect(
-                                            routingProxySpy.addNextHop.calls.argsFor(1)[0].browserAddress)
-                                            .toEqual(incomingAddress);
-                                    increaseFakeTime(1);
-                                    done();
+
+                                    parameters.providerParticipantId = "inProcessParticipant";
+                                    messageRouter.addNextHop(parameters.providerParticipantId, new InProcessAddress(undefined));
+                                    messageRouter.addMulticastReceiver(parameters);
+
+                                    expect(routingProxySpy.addMulticastReceiver).not.toHaveBeenCalled();
+
+                                    expect(messageRouter.hasMulticastReceivers()).toBe(true);
                                 });
 
-                        it(
-                                "check if routing proxy is called with queued hop removals",
-                                function(done) {
-                                    messageRouter =
-                                            createMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy,
-                                                    incomingAddress,
-                                                    parentMessageRouterAddress);
+                                it("queues calls and forwards them once proxy is available", function() {
+                                    messageRouter.addMulticastReceiver(parameters);
 
-                                    var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-                                    routingProxySpy.removeNextHop.and.returnValue(Promise.resolve());
-                                    messageRouter.removeNextHop(joynrMessage.to).then(
-                                            onFulfilledSpy);
-                                    expect(onFulfilledSpy).not.toHaveBeenCalled();
-                                    onFulfilledSpy.calls.reset();
-                                    expect(routingProxySpy.removeNextHop).not
-                                            .toHaveBeenCalled();
                                     messageRouter.setRoutingProxy(routingProxySpy);
-                                    increaseFakeTime(1);
 
-                                    waitsFor(function() {
-                                        return routingProxySpy.removeNextHop.calls.count() > 0;
-                                    }, "routingProxySpy.removeNextHop to be invoked", 1000).then(function() {
-                                        expect(routingProxySpy.removeNextHop).toHaveBeenCalled();
-                                        expect(
-                                                routingProxySpy.removeNextHop.calls.argsFor(0)[0].participantId)
-                                                .toEqual(joynrMessage.to);
-                                        done();
-                                        return null;
-                                    }).catch(fail);
+                                    expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
+
+                                    expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
+
+                                    expect(messageRouter.hasMulticastReceivers()).toBe(true);
+                                });
+                            }); // describe addMulticastReceiver
+
+                            describe("removeMulticastReceiver", function() {
+                                var parameters;
+                                beforeEach(function() {
+                                    parameters = {
+                                        multicastId : "multicastId- " + uuid(),
+                                        subscriberParticipantId : "subscriberParticipantId",
+                                        providerParticipantId : "providerParticipantId"
+                                    };
+
+                                    messageRouter.setToKnown(parameters.providerParticipantId);
+
+                                    routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
+                                    routingProxySpy.removeMulticastReceiver.and.returnValue(Promise.resolve());
+
+                                    expect(messageRouter.hasMulticastReceivers()).toBe(false);
+                                    /* addMulticastReceiver is already tested, but added here for
+                                     * checking proper removeMulticastReceiver functionality */
+                                    messageRouter.addMulticastReceiver(parameters);
+                                    expect(messageRouter.hasMulticastReceivers()).toBe(true);
                                 });
 
-                        it(
-                                "check if routing proxy is called with multiple queued hop removals",
-                                function(done) {
-                                    messageRouter =
-                                            createMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy,
-                                                    incomingAddress,
-                                                    parentMessageRouterAddress);
+                                it("calls matching skeleton registration and unregistration", function() {
+                                    messageRouter.removeMulticastReceiver(parameters);
 
-                                    var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                                    expect(messagingSkeletonSpy.unregisterMulticastSubscription).toHaveBeenCalled();
 
-                                    routingProxySpy.removeNextHop.and.returnValue(Promise.resolve());
-                                    messageRouter.removeNextHop(joynrMessage.to);
-                                    messageRouter.removeNextHop(joynrMessage2.to).then(
-                                            onFulfilledSpy);
-                                    expect(onFulfilledSpy).not.toHaveBeenCalled();
-                                    expect(routingProxySpy.removeNextHop).not
-                                            .toHaveBeenCalled();
+                                    expect(messagingSkeletonSpy.unregisterMulticastSubscription).toHaveBeenCalledWith(parameters.multicastId);
+                                    expect(messageRouter.hasMulticastReceivers()).toBe(false);
+                                });
+
+                                it("calls routing proxy if available", function() {
                                     messageRouter.setRoutingProxy(routingProxySpy);
-                                    increaseFakeTime(1);
 
-                                    waitsFor(function() {
-                                        return routingProxySpy.removeNextHop.calls.count() === 2;
-                                    }, "routingProxySpy.removeNextHop to be invoked", 1000).then(function() {
-                                        expect(routingProxySpy.removeNextHop).toHaveBeenCalled();
-                                        expect(
-                                                routingProxySpy.removeNextHop.calls.argsFor(0)[0].participantId)
-                                                .toEqual(joynrMessage.to);
-                                        expect(
-                                                routingProxySpy.removeNextHop.calls.argsFor(1)[0].participantId)
-                                                .toEqual(joynrMessage2.to);
-                                        done();
-                                        return null;
-                                    }).catch(fail);
+                                    messageRouter.removeMulticastReceiver(parameters);
+
+                                    expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalled();
+
+                                    expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalledWith(parameters);
+
+                                    expect(messageRouter.hasMulticastReceivers()).toBe(false);
                                 });
 
-                        it(
-                                "check if routing proxy is called with queued hop removals",
-                                function(done) {
-                                    var resolveNextHopSpy = jasmine.createSpy("resolveNextHopSpy");
-                                    messageRouter =
-                                            createMessageRouter(
-                                                    persistencySpy,
-                                                    messageQueueSpy,
-                                                    incomingAddress,
-                                                    parentMessageRouterAddress);
-                                    routingProxySpy.resolveNextHop.and.returnValue(Promise.resolve({
-                                        resolved:true
-                                    }));
+                                it("queues calls and forwards them once proxy is available", function() {
+                                    messageRouter.removeMulticastReceiver(parameters);
 
-                                    messageRouter.resolveNextHop(joynrMessage.to).then(
-                                        resolveNextHopSpy);
-                                    increaseFakeTime(1);
+                                    messageRouter.setRoutingProxy(routingProxySpy);
 
-                                    waitsFor(function() {
-                                        return resolveNextHopSpy.calls.count() > 0;
-                                    }, "resolveNextHop returned first time", 1000).then(function() {
-                                        expect(resolveNextHopSpy).toHaveBeenCalledWith(undefined);
-                                        resolveNextHopSpy.calls.reset();
-                                        messageRouter.setRoutingProxy(routingProxySpy);
-                                        expect(routingProxySpy.resolveNextHop).not
-                                                .toHaveBeenCalled();
-                                        messageRouter.resolveNextHop(joynrMessage.to).then(
-                                                resolveNextHopSpy);
+                                    expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalled();
+
+                                    expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalledWith(parameters);
+
+                                    expect(messageRouter.hasMulticastReceivers()).toBe(false);
+                                });
+                            }); // describe removeMulticastReceiver
+
+                            it(
+                                    "check if routing proxy is called with queued hop additions",
+                                    function(done) {
+                                        routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
+                                        var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+
+                                        messageRouter.addNextHop(joynrMessage.to, address).then(
+                                                onFulfilledSpy);
                                         increaseFakeTime(1);
 
-                                        return waitsFor(function() {
-                                            return resolveNextHopSpy.calls.count() > 0;
-                                        }, "resolveNextHop returned second time", 1000);
-                                    }).then(function() {
-                                        expect(routingProxySpy.resolveNextHop).toHaveBeenCalled();
+                                        expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
+                                        messageRouter.setRoutingProxy(routingProxySpy);
+                                        expect(routingProxySpy.addNextHop).toHaveBeenCalled();
                                         expect(
-                                                routingProxySpy.resolveNextHop.calls.argsFor(0)[0].participantId)
+                                                routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId)
                                                 .toEqual(joynrMessage.to);
-                                        expect(resolveNextHopSpy).toHaveBeenCalledWith(
-                                                parentMessageRouterAddress);
+                                        expect(
+                                                routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress)
+                                                .toEqual(incomingAddress);
+                                        increaseFakeTime(1);
                                         done();
-                                        return null;
-                                    }).catch(fail);
-                                });
-                        it(
-                                " throws exception when called while shut down",
-                                function(done) {
-                                    messageRouter =
-                                        createMessageRouter(
-                                                persistencySpy,
-                                                messageQueueSpy,
-                                                incomingAddress,
-                                                parentMessageRouterAddress);
-
-                                    messageRouter.shutdown();
-
-                                    expect(messageQueueSpy.shutdown).toHaveBeenCalled();
-                                    messageRouter.removeNextHop("hopId").then(fail).catch(function() {
-                                        return messageRouter.resolveNextHop("hopId").then(fail);
-                                    }).catch(function() {
-                                        return messageRouter.addNextHop("hopId", {}).then(fail);
-                                    }).catch(done);
-                                });
-
-                        it(
-                                " reject pending promises when shut down",
-                                function(done) {
-                                    messageRouter =
-                                        createMessageRouter(
-                                                persistencySpy,
-                                                messageQueueSpy,
-                                                incomingAddress,
-                                                parentMessageRouterAddress);
-
-                                    var addNextHopPromise = messageRouter.addNextHop(joynrMessage.to, address).then(fail);
-                                    var removeNextHopPromise = messageRouter.removeNextHop(joynrMessage.to).then(fail);
-                                    increaseFakeTime(1);
-
-                                    messageRouter.shutdown();
-                                    addNextHopPromise.catch(function() {
-                                       return removeNextHopPromise.catch(function() {
-                                           done();
-                                       });
                                     });
-                                });
-                    });
-        });
+
+                            it(
+                                    "check if resolved hop from routing proxy is cached",
+                                    function(done) {
+                                        routingProxySpy.resolveNextHop.and.returnValue(Promise.resolve({ resolved: true }));
+                                        messageRouter.setRoutingProxy(routingProxySpy);
+
+                                        messageRouter.resolveNextHop(joynrMessage.to).then(function(address) {
+                                            expect(address).toBe(parentMessageRouterAddress);
+                                            expect(routingProxySpy.resolveNextHop.calls.count()).toBe(1);
+                                            routingProxySpy.resolveNextHop.calls.reset();
+                                            return messageRouter.resolveNextHop(joynrMessage.to);
+                                        }).then(function(address){
+                                            expect(address).toBe(parentMessageRouterAddress);
+                                            expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
+                                            done();
+                                            return null;
+                                        }).catch(done.fail);
+                                    });
+
+                            it(
+                                    "check if routing proxy is called with multiple queued hop additions",
+                                    function(done) {
+                                        var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+
+                                        messageRouter.addNextHop(joynrMessage.to, address);
+                                        messageRouter.addNextHop(joynrMessage2.to, address).then(
+                                                onFulfilledSpy);
+                                        routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
+                                        increaseFakeTime(1);
+                                        expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
+                                        messageRouter.setRoutingProxy(routingProxySpy);
+                                        expect(routingProxySpy.addNextHop).toHaveBeenCalled();
+                                        expect(
+                                                routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId)
+                                                .toEqual(joynrMessage.to);
+                                        expect(
+                                                routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress)
+                                                .toEqual(incomingAddress);
+                                        expect(
+                                                routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId)
+                                                .toEqual(joynrMessage2.to);
+                                        expect(
+                                                routingProxySpy.addNextHop.calls.argsFor(1)[0].browserAddress)
+                                                .toEqual(incomingAddress);
+                                        increaseFakeTime(1);
+                                        done();
+                                    });
+
+                            it(
+                                    "check if routing proxy is called with queued hop removals",
+                                    function(done) {
+                                        var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+
+                                        routingProxySpy.removeNextHop.and.returnValue(Promise.resolve());
+                                        messageRouter.removeNextHop(joynrMessage.to).then(
+                                                onFulfilledSpy);
+                                        expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                        onFulfilledSpy.calls.reset();
+                                        expect(routingProxySpy.removeNextHop).not
+                                                .toHaveBeenCalled();
+                                        messageRouter.setRoutingProxy(routingProxySpy);
+                                        increaseFakeTime(1);
+
+                                        waitsFor(function() {
+                                            return routingProxySpy.removeNextHop.calls.count() > 0;
+                                        }, "routingProxySpy.removeNextHop to be invoked", 1000).then(function() {
+                                            expect(routingProxySpy.removeNextHop).toHaveBeenCalled();
+                                            expect(
+                                                    routingProxySpy.removeNextHop.calls.argsFor(0)[0].participantId)
+                                                    .toEqual(joynrMessage.to);
+                                            done();
+                                            return null;
+                                        }).catch(fail);
+                                    });
+
+                            it(
+                                    "check if routing proxy is called with multiple queued hop removals",
+                                    function(done) {
+                                        var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+
+                                        routingProxySpy.removeNextHop.and.returnValue(Promise.resolve());
+                                        messageRouter.removeNextHop(joynrMessage.to);
+                                        messageRouter.removeNextHop(joynrMessage2.to).then(
+                                                onFulfilledSpy);
+                                        expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                        expect(routingProxySpy.removeNextHop).not
+                                                .toHaveBeenCalled();
+                                        messageRouter.setRoutingProxy(routingProxySpy);
+                                        increaseFakeTime(1);
+
+                                        waitsFor(function() {
+                                            return routingProxySpy.removeNextHop.calls.count() === 2;
+                                        }, "routingProxySpy.removeNextHop to be invoked", 1000).then(function() {
+                                            expect(routingProxySpy.removeNextHop).toHaveBeenCalled();
+                                            expect(
+                                                    routingProxySpy.removeNextHop.calls.argsFor(0)[0].participantId)
+                                                    .toEqual(joynrMessage.to);
+                                            expect(
+                                                    routingProxySpy.removeNextHop.calls.argsFor(1)[0].participantId)
+                                                    .toEqual(joynrMessage2.to);
+                                            done();
+                                            return null;
+                                        }).catch(fail);
+                                    });
+
+                            it(
+                                    "check if routing proxy is called with queued hop removals",
+                                    function(done) {
+                                        var resolveNextHopSpy = jasmine.createSpy("resolveNextHopSpy");
+                                        routingProxySpy.resolveNextHop.and.returnValue(Promise.resolve({
+                                            resolved:true
+                                        }));
+
+                                        messageRouter.resolveNextHop(joynrMessage.to).then(
+                                            resolveNextHopSpy);
+                                        increaseFakeTime(1);
+
+                                        waitsFor(function() {
+                                            return resolveNextHopSpy.calls.count() > 0;
+                                        }, "resolveNextHop returned first time", 1000).then(function() {
+                                            expect(resolveNextHopSpy).toHaveBeenCalledWith(undefined);
+                                            resolveNextHopSpy.calls.reset();
+                                            messageRouter.setRoutingProxy(routingProxySpy);
+                                            expect(routingProxySpy.resolveNextHop).not
+                                                    .toHaveBeenCalled();
+                                            messageRouter.resolveNextHop(joynrMessage.to).then(
+                                                    resolveNextHopSpy);
+                                            increaseFakeTime(1);
+
+                                            return waitsFor(function() {
+                                                return resolveNextHopSpy.calls.count() > 0;
+                                            }, "resolveNextHop returned second time", 1000);
+                                        }).then(function() {
+                                            expect(routingProxySpy.resolveNextHop).toHaveBeenCalled();
+                                            expect(
+                                                    routingProxySpy.resolveNextHop.calls.argsFor(0)[0].participantId)
+                                                    .toEqual(joynrMessage.to);
+                                            expect(resolveNextHopSpy).toHaveBeenCalledWith(
+                                                    parentMessageRouterAddress);
+                                            done();
+                                            return null;
+                                        }).catch(fail);
+                                    });
+                            it(
+                                    " throws exception when called while shut down",
+                                    function(done) {
+                                        messageRouter.shutdown();
+
+                                        expect(messageQueueSpy.shutdown).toHaveBeenCalled();
+                                        messageRouter.removeNextHop("hopId").then(fail).catch(function() {
+                                            return messageRouter.resolveNextHop("hopId").then(fail);
+                                        }).catch(function() {
+                                            return messageRouter.addNextHop("hopId", {}).then(fail);
+                                        }).catch(done);
+                                    });
+
+                            it(
+                                    " reject pending promises when shut down",
+                                    function(done) {
+                                        var addNextHopPromise = messageRouter.addNextHop(joynrMessage.to, address).then(fail);
+                                        var removeNextHopPromise = messageRouter.removeNextHop(joynrMessage.to).then(fail);
+                                        increaseFakeTime(1);
+
+                                        messageRouter.shutdown();
+                                        addNextHopPromise.catch(function() {
+                                           return removeNextHopPromise.catch(function() {
+                                               done();
+                                           });
+                                        });
+                                    });
+                        }); // describe ChildMessageRouter
+
+                    }); // describe MessageRouter
+        }); // define
