@@ -115,6 +115,7 @@ RUN asadmin start-domain && \
     asadmin --user admin set-log-levels io.joynr.messaging=FINE && \
     asadmin --user admin set-log-levels io.joynr.dispatching=FINE && \
     asadmin --user admin set-log-levels io.joynr.jeeintegration=FINE && \
+    asadmin --user admin set configs.config.server-config.network-config.network-listeners.network-listener.http-listener-1.enabled=false && \
     asadmin --user admin stop-domain
 
 RUN chmod -R 777 /opt/payara41
