@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@
 
 define("joynr/messaging/mqtt/MqttMessagingStubFactory", [
     "joynr/util/Typing",
-    "joynr/messaging/mqtt/MqttMessagingStub",
-    "joynr/system/RoutingTypes/MqttAddress"
-], function(Typing, MqttMessagingStub, MqttAddress) {
+    "joynr/messaging/mqtt/MqttMessagingStub"
+], function(Typing, MqttMessagingStub) {
 
     /**
      * @constructor
@@ -30,34 +29,24 @@ define("joynr/messaging/mqtt/MqttMessagingStubFactory", [
      *            settings
      * @param {SharedMqttClient}
      *            settings.client the mqtt client
-     * @param {MqttAddress}
-     *            settings.address
-     * @param {MessageReplyToAddressCalculator} messageReplyToAddressCalculator calculates the replyTo address
      */
-    var MqttMessagingStubFactory =
-            function MqttMessagingStubFactory(settings) {
-                Typing.checkProperty(settings, "Object", "settings");
-                Typing.checkProperty(settings.address, "MqttAddress", "address");
-                Typing.checkProperty(settings.client, "SharedMqttClient", "client");
-                Typing.checkProperty(
-                        settings.messageReplyToAddressCalculator,
-                        "MessageReplyToAddressCalculator",
-                        "messageReplyToAddressCalculator");
+    var MqttMessagingStubFactory = function MqttMessagingStubFactory(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.client, "SharedMqttClient", "client");
 
-                /**
-                 * @name MqttMessagingStubFactory#build
-                 * @function
-                 */
-                this.build = function build(address) {
-                    Typing.checkProperty(address, "MqttAddress", "address");
+        /**
+         * @name MqttMessagingStubFactory#build
+         * @function
+         */
+        this.build = function build(address) {
+            Typing.checkProperty(address, "MqttAddress", "address");
 
-                    return new MqttMessagingStub({
-                        address : address,
-                        client : settings.client,
-                        messageReplyToAddressCalculator : settings.messageReplyToAddressCalculator
-                    });
-                };
-            };
+            return new MqttMessagingStub({
+                address : address,
+                client : settings.client
+            });
+        };
+    };
 
     return MqttMessagingStubFactory;
 

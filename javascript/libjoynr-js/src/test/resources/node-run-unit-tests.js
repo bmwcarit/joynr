@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,6 +102,9 @@ requirejs([
     "tests/joynr/messaging/channel/LongPollingChannelMessageReceiverTest",
     "tests/joynr/messaging/channel/ChannelMessagingSkeletonTest",
     "tests/joynr/messaging/channel/ChannelMessagingSenderTest",
+    "tests/joynr/messaging/mqtt/MqttMessagingSkeletonTest",
+    "tests/joynr/messaging/mqtt/MqttMessagingStubFactoryTest",
+    "tests/joynr/messaging/mqtt/MqttMessagingStubTest",
     "tests/joynr/messaging/routing/MessageQueueTest",
     "tests/joynr/messaging/routing/MessageRouterTest",
     "tests/joynr/messaging/inprocess/InProcessMessagingStubFactoryTest",

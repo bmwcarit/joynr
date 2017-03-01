@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ define(
             "joynr/messaging/mqtt/MqttMessagingStubFactory",
             "joynr/messaging/mqtt/MqttMessagingSkeleton",
             "joynr/system/RoutingTypes/MqttAddress",
-            "joynr/messaging/MessageReplyToAddressCalculator",
             "joynr/messaging/mqtt/SharedMqttClient",
             "joynr/messaging/mqtt/MqttMulticastAddressCalculator",
             "joynr/messaging/MessagingSkeletonFactory",
@@ -98,7 +97,6 @@ define(
                 MqttMessagingStubFactory,
                 MqttMessagingSkeleton,
                 MqttAddress,
-                MessageReplyToAddressCalculator,
                 SharedMqttClient,
                 MqttMulticastAddressCalculator,
                 MessagingSkeletonFactory,
@@ -370,23 +368,14 @@ define(
                                         provisioning.messaging.maxQueueSizeInKBytes;
                             }
 
-                            var channelMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
-                                //replyToAddress is provided later
-                            });
-
                             channelMessagingStubFactory = new ChannelMessagingStubFactory({
                                 myChannelId : channelId,
-                                channelMessagingSender : channelMessagingSender,
-                                messageReplyToAddressCalculator : channelMessageReplyToAddressCalculator
+                                channelMessagingSender : channelMessagingSender
                             });
 
                             var globalClusterControllerAddress = new MqttAddress({
                                 brokerUri : provisioning.brokerUri,
                                 topic : channelId
-                            });
-
-                            var mqttMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
-                                replyToAddress : globalClusterControllerAddress
                             });
 
                             var mqttClient = new SharedMqttClient({
@@ -402,8 +391,7 @@ define(
                             messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
                             messagingStubFactories[MqttAddress._typeName] = new MqttMessagingStubFactory({
                                 client : mqttClient,
-                                address : globalClusterControllerAddress,
-                                messageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
+                                address : globalClusterControllerAddress
                             });
                             /*jslint nomen: false */
 
@@ -453,7 +441,6 @@ define(
 
                                         mqttClient.onConnected().then(function() {
                                             capabilityDiscovery.globalAddressReady(globalClusterControllerAddress);
-                                            channelMessageReplyToAddressCalculator.setReplyToAddress(channelAddress);
                                             channelMessagingStubFactory.globalAddressReady(channelAddress);
                                             return null;
                                         });
