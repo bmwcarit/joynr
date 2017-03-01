@@ -28,6 +28,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
@@ -39,29 +40,30 @@ import org.slf4j.LoggerFactory;
  * The MessageRouter is responsible for routing messages to their destination, and internally queues message post
  * requests using an executor service.
  * <p>
- * This override of the normal {@link io.joynr.messaging.routing.AbstractMessageRouter} is necessary, because the standard
+ * This override of the normal {@link io.joynr.messaging.routing.CcMessageRouter} is necessary, because the standard
  * implementation calls {@link ScheduledExecutorService#isShutdown()}, which results in an exception in a JEE
  * environment. Hence, this implementation overrides the {@link #schedule(Runnable, String, long, TimeUnit)} method and provides an
  * implementation which doesn't call <code>isShutdown()</code>.
  *
- * @see io.joynr.messaging.routing.AbstractMessageRouter
+ * @see io.joynr.messaging.routing.CcMessageRouter
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that no new messages are scheduled when scheduler is shuting down")
-public class JeeMessageRouter extends io.joynr.messaging.routing.AbstractMessageRouter {
+public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter {
 
     private static final Logger LOG = LoggerFactory.getLogger(JeeMessageRouter.class);
     private ScheduledExecutorService scheduler;
-    private String replyToAddress;
 
     @Inject
-    public JeeMessageRouter(RoutingTable routingTable,
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
+    public JeeMessageRouter(GlobalAddressProvider globalAddressProvider, RoutingTable routingTable,
                             @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                             @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                             MessagingStubFactory messagingStubFactory,
                             MessagingSkeletonFactory messagingSkeletonFactory,
                             AddressManager addressManager,
                             MulticastReceiverRegistry multicastReceiverRegistry) {
-        super(routingTable,
+        super(globalAddressProvider,
+              routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
               messagingStubFactory,
@@ -82,14 +84,5 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.AbstractMessage
     protected void schedule(Runnable runnable, String messageId, long delay, TimeUnit timeUnit) {
         LOG.trace("Scheduling {} on {} with delay {} {}", new Object[]{ runnable, scheduler, delay, timeUnit });
         scheduler.schedule(runnable, delay, timeUnit);
-    }
-
-    @Override
-    protected String getReplyToAddress() {
-        return replyToAddress;
-    }
-    
-    protected void setReplyToAddress(String replyToAddress) {
-        this.replyToAddress = replyToAddress;
     }
 }
