@@ -75,7 +75,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MessageRouterTest {
+public class CcMessageRouterTest {
 
     private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
     private final ChannelAddress channelAddress = new ChannelAddress("http://testUrl", channelId);
