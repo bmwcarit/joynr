@@ -98,6 +98,7 @@ public:
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
             std::function<void()> onSuccess = nullptr) final;
+    void queueMessage(const JoynrMessage& message) final;
 
     /*
      * Implement methods from RoutingAbstractProvider

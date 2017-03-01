@@ -219,8 +219,7 @@ void CcMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
         }
 
         // save the message for later delivery
-        messageQueue->queueMessage(message);
-        JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+        queueMessage(message);
         JOYNR_LOG_WARN(logger,
                        "No routing information found for destination participant ID \"{}\" "
                        "so far. Waiting for participant registration. "
@@ -483,6 +482,12 @@ void CcMessageRouter::removeMulticastReceiver(
         }
         onSuccess();
     }
+}
+
+void CcMessageRouter::queueMessage(const JoynrMessage& message)
+{
+    JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+    messageQueue->queueMessage(message);
 }
 
 /**

@@ -398,6 +398,8 @@ public:
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+
+    MOCK_METHOD1(queueMessage, void(const joynr::JoynrMessage& message));
 };
 
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {
