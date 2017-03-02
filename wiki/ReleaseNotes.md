@@ -1,3 +1,13 @@
+#joynr 0.23.2
+
+## API relevant changes
+none
+
+## Other changes
+* **[JEE]** Fixed issue that caused joynr not to start correctly with debug logging enabled
+* **[Java]** Do not send customHeaders as their own json object
+* **[Java]** Made MQTT reconnect behavior more robust
+
 #joynr 0.23.1
 
 ## API relevant changes

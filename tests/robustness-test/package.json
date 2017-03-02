@@ -1,13 +1,13 @@
 {
   "name": "robustness-test",
-  "version": "0.23.1",
+  "version": "0.23.2",
   "license": "Apache-2.0",
   "description": "Robustness Tests",
   "main": "src/main/js/consumer.js",
   "private": true,
   "dependencies": {
       "bluebird" : "3.3.5",
-      "joynr" : ">=0.23.1"
+      "joynr" : ">=0.23.2"
   },
   "config": {
     "domain": "joynr-robustness-test-domain",

@@ -26,6 +26,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.RejectedExecutionException;
@@ -401,12 +403,15 @@ public class SerializationTest {
         message.setType(type);
         message.setExpirationDate(expirationDate);
         message.setPayload(payload);
+        Map<String, String> customHeaders = new HashMap<>();
+        customHeaders.put("key", "value");
+        message.setCustomHeaders(customHeaders);
 
         String writeValueAsString = objectMapper.writeValueAsString(message);
-
         JoynrMessage receivedMessage = objectMapper.readValue(writeValueAsString, JoynrMessage.class);
-
         Assert.assertEquals(message, receivedMessage);
+        Assert.assertEquals(message.getCustomHeaders(), customHeaders);
+
     }
 
     @Test
