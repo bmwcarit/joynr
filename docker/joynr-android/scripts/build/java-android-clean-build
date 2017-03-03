@@ -23,8 +23,41 @@ while [ "$1" != "" ]; do
     shift
 done
 
+# 1st run; just build without tests to provide WAR files for payara
+mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+-DskipTests \
+-Dmaven.test.failure.ignore=true \
+-Denforcer.skip=true -Dmaven.compile.fork=true \
+-Dmaven.junit.fork=true
+
+echo '####################################################'
+echo '# start services'
+echo '####################################################'
+mosquitto -c /etc/mosquitto/mosquitto.conf -v &
+MOSQUITTO_PID=$!
+
+DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-.*war")
+
+/data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
+
+# Assume that mosquitto and payara have sufficient time to startup before reaching
+# any test code that requires it;
+# also assume that it is safe to remove and recreate WAR files once payara got
+# started and WAR files have been deployed
+
+# 2nd run; now including test execution which requires mosquitto / payara
 mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
 -DskipTests=false \
 -Dmaven.test.failure.ignore=true \
 -Denforcer.skip=true -Dmaven.compile.fork=true \
 -Dmaven.junit.fork=true
+
+echo '####################################################'
+echo '# stop services'
+echo '####################################################'
+
+/data/src/docker/joynr-base/scripts/stop-payara.sh
+
+kill -TERM $MOSQUITTO_PID
+wait $MOSQUITTO_PID
+exit 0

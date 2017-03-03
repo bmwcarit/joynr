@@ -24,5 +24,5 @@ asadmin start-database
 
 for warFile in $(echo $warFileList | tr "," "\n")
 do
-    asadmin deploy $warFile
+    asadmin deploy --force=true $warFile
 done
