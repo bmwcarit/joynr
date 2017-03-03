@@ -357,10 +357,12 @@ endif(ENABLE_DOXYGEN)
 
 ######## Add Boost ########
 
-find_package(Boost 1.58.0 REQUIRED
-    COMPONENTS
+set(JOYNR_BOOST_REQUIRED_COMPONENTS
     system
-    thread
+    thread)
+set(JOYNR_BOOST_REQUIRED_VERSION 1.58.0)
+find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
+    COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
 )
 include(CheckBoostImportTargets)
 

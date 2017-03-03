@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,15 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/types/DiscoveryEntry.h"
-#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
-class IRequestCallerDirectory;
-class SystemServicesSettings;
-class MessagingSettings;
 
 namespace types
 {
+
+class DiscoveryEntry;
+class DiscoveryEntryWithMetaInfo;
 class DiscoveryQos;
 } // namespace types
 
@@ -49,9 +47,8 @@ class DiscoveryQos;
 class JOYNR_EXPORT LocalDiscoveryAggregator : public joynr::system::IDiscoverySync
 {
 public:
-    LocalDiscoveryAggregator(const SystemServicesSettings& systemServicesSettings,
-                             const MessagingSettings& messagingSettings,
-                             bool provisionClusterControllerDiscoveryEntries);
+    LocalDiscoveryAggregator(std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>
+                                     provisionedDiscoveryEntries);
 
     void setDiscoveryProxy(std::unique_ptr<IDiscoverySync> discoveryProxy);
 

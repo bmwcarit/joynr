@@ -150,9 +150,9 @@ LocalDomainAccessController::LocalDomainAccessController(
 }
 
 void LocalDomainAccessController::init(
-        std::shared_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
+        std::unique_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
 {
-    this->globalDomainAccessControllerProxy = globalDomainAccessControllerProxy;
+    this->globalDomainAccessControllerProxy = std::move(globalDomainAccessControllerProxy);
 }
 
 bool LocalDomainAccessController::hasRole(const std::string& userId,

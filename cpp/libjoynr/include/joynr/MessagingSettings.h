@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,8 @@ public:
     static const std::string& SETTING_BROKER_TIMEOUT_MS();
 
     static const std::string& ACCESS_CONTROL_ENABLE();
+    static const std::string& ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS();
+    static const std::string& ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID();
 
     /**
      * @brief SETTING_MAXIMUM_TTL_MS The key used in settings to identifiy the maximum allowed value
@@ -124,6 +126,9 @@ public:
     std::string getCapabilitiesDirectoryUrl() const;
     std::string getCapabilitiesDirectoryChannelId() const;
     std::string getCapabilitiesDirectoryParticipantId() const;
+
+    std::string getGlobalDomainAccessControlAddress() const;
+    std::string getGlobalDomainAccessControlParticipantId() const;
 
     std::chrono::seconds getMqttKeepAliveTime() const;
     void setMqttKeepAliveTime(std::chrono::seconds mqttKeepAliveTime);

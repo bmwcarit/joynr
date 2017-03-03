@@ -27,12 +27,17 @@ endif(${WIN32})
 
 include(AddGtestGmock)
 
+### copy test resources and settings ##########################################
 macro(CONFIGURE_TEST_FILES targetDirectory)
     set(TEST_FILES
+        "AccessControlNoPermission.entries"
+        "AccessControlYesPermission.entries"
         "integrationtest.settings"
         "websocket-cc-tls.settings"
         "websocket-libjoynr-tls.settings"
         "websocket-libjoynr-non-tls.settings"
+        "MessagingWithAccessControlDisabled.settings"
+        "MessagingWithAccessControlEnabled.settings"
         "HttpSystemIntegrationTest1.settings"
         "HttpSystemIntegrationTest2.settings"
         "MqttWithHttpBackendSystemIntegrationTest1.settings"
@@ -47,7 +52,6 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "libjoynrSystemIntegration2.settings"
         "ca.crt"
         "testclient.pem"
-        "MessagingSettingsWithAccessControl.settings"
     )
 
     foreach(testFile ${TEST_FILES})
@@ -59,7 +63,6 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
     endforeach()
 endmacro(CONFIGURE_TEST_FILES)
 
-### copy test resources and settings ##########################################
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     CONFIGURE_TEST_FILES("${JOYNR_BINARY_DIR}/Debug")
     CONFIGURE_TEST_FILES("${JOYNR_BINARY_DIR}/Release")
@@ -244,6 +247,12 @@ set(
     "TestMain.cpp"
 )
 
+list(APPEND JOYNR_BOOST_REQUIRED_COMPONENTS filesystem regex)
+find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
+    COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
+)
+include(CheckBoostImportTargets)
+
 if(${BUILD_CLUSTER_CONTROLLER})
     ###############
     # g_UnitTests #
@@ -369,6 +378,8 @@ if(${BUILD_CLUSTER_CONTROLLER})
             g_SystemIntegrationTests
             TestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
+            Boost::filesystem
+            Boost::regex
         )
 
         set_target_properties(
@@ -386,6 +397,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         target_include_directories(
             g_SystemIntegrationTests
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+            PRIVATE ${BOOST_INCLUDE_DIRS}
         )
 
         install(TARGETS g_SystemIntegrationTests TestGenerated
@@ -455,11 +467,14 @@ else()
             g_SystemIntegrationTests
             TestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
+            Boost::filesystem
+            Boost::regex
         )
 
         target_include_directories(
             g_SystemIntegrationTests
             PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
+            PRIVATE ${BOOST_INCLUDE_DIRS}
         )
 
         install(TARGETS g_SystemIntegrationTests TestGenerated
