@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,6 @@ MessagingSettings::MessagingSettings(const MessagingSettings& other) : settings(
 const std::string& MessagingSettings::SETTING_BROKER_URL()
 {
     static const std::string value("messaging/broker-url");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_BOUNCE_PROXY_URL()
-{
-    static const std::string value("messaging/bounceproxy-url");
     return value;
 }
 
@@ -353,22 +347,6 @@ void MessagingSettings::setBrokerUrl(const BrokerUrl& brokerUrl)
     settings.set(SETTING_BROKER_URL(), url);
 }
 
-BrokerUrl MessagingSettings::getBounceProxyUrl() const
-{
-    return BrokerUrl(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
-}
-
-std::string MessagingSettings::getBounceProxyUrlString() const
-{
-    return settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
-}
-
-void MessagingSettings::setBounceProxyUrl(const BrokerUrl& bounceProxyUrl)
-{
-    std::string url = bounceProxyUrl.getBrokerChannelsBaseUrl().toString();
-    settings.set(SETTING_BOUNCE_PROXY_URL(), url);
-}
-
 std::string MessagingSettings::getDiscoveryDirectoriesDomain() const
 {
     return settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN());
@@ -622,16 +600,6 @@ void MessagingSettings::checkSettings()
         settings.set(SETTING_BROKER_URL(), brokerUrl);
     }
 
-    if (!settings.contains(SETTING_BOUNCE_PROXY_URL())) {
-        settings.set(SETTING_BOUNCE_PROXY_URL(), brokerUrl);
-    } else {
-        std::string bounceProxyUrl = settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
-        if (bounceProxyUrl.back() != '/') {
-            bounceProxyUrl.append("/");
-            settings.set(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl);
-        }
-    }
-
     assert(settings.contains(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_URL()));
@@ -697,10 +665,6 @@ void MessagingSettings::printSettings() const
                     "SETTING: {} = {})",
                     SETTING_BROKER_URL(),
                     settings.get<std::string>(SETTING_BROKER_URL()));
-    JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {} = {})",
-                    SETTING_BOUNCE_PROXY_URL(),
-                    settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {} = {})",
                     SETTING_DISCOVERY_DIRECTORIES_DOMAIN(),

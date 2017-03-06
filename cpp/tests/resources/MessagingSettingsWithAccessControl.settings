@@ -5,7 +5,6 @@ max-ttl-ms=2592000000
 discovery-entry-expiry-interval-ms=86400000
 purge-expired-discovery-entries-interval-ms=3600000
 broker-url=mqtt://localhost:1883/
-bounceproxy-url=http://localhost:8080/bounceproxy/
 discovery-directories-domain=io.joynr
 discovery-messages-ttl=1814400000
 capabilities-directory-url=http://localhost:8080/discovery/channels/

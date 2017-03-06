@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
     MessagingSettings messagingSettings(testSettings);
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BROKER_URL()));
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BOUNCE_PROXY_URL()));
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
@@ -83,16 +82,11 @@ TEST_F(MessagingSettingsTest, overrideDefaultSettings) {
 
 void checkBrokerSettings(
         MessagingSettings messagingSettings,
-        std::string expectedBrokerUrl,
-        std::string expectedBounceProxyUrl) {
+        std::string expectedBrokerUrl) {
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BROKER_URL()));
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BOUNCE_PROXY_URL()));
 
     std::string brokerUrl = messagingSettings.getBrokerUrlString();
     EXPECT_EQ(expectedBrokerUrl, brokerUrl);
-
-    std::string bounceProxyUrl = messagingSettings.getBounceProxyUrlString();
-    EXPECT_EQ(expectedBounceProxyUrl, bounceProxyUrl);
 }
 
 void checkDiscoveryDirectorySettings(
@@ -137,11 +131,7 @@ TEST_F(MessagingSettingsTest, writeAccessControlToSettings) {
     }
 }
 
-/*
- * This test does not work anymore, as http only can not be configured by setting the broker url to a http url
- * Before re-activating this patch, a parameter should be added to the settings file which explicitely enable/disables http/mqtt
- */
-TEST_F(MessagingSettingsTest, DISABLED_httpOnly) {
+TEST_F(MessagingSettingsTest, httpOnly) {
     std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/");
     std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");
 
@@ -149,19 +139,13 @@ TEST_F(MessagingSettingsTest, DISABLED_httpOnly) {
     EXPECT_TRUE(testSettings.isLoaded());
     MessagingSettings messagingSettings(testSettings);
 
-    // since only brokerUrl is present, bounceProxyUrl is setup identically
-    checkBrokerSettings(messagingSettings, expectedBrokerUrl, expectedBrokerUrl);
+    checkBrokerSettings(messagingSettings, expectedBrokerUrl);
 
     checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
 }
 
-/*
- * This test does not work anymore, as mqtt only can not be configured by setting the broker url to a mqtt url
- * Before re-activating this patch, a parameter should be added to the settings file which explicitely enable/disables http/mqtt
- */
-TEST_F(MessagingSettingsTest, DISABLED_mqttOnly) {
+TEST_F(MessagingSettingsTest, mqttOnly) {
     std::string expectedBrokerUrl("mqtt://custom-broker-host:1883/");
-    std::string defaultBounceProxyUrl("http://localhost:8080/bounceproxy/");
     std::string expectedCapabilitiesDirectoryChannelId("mqtt_discoverydirectory_channelid");
 
     Settings testSettings(testSettingsFileNameMqtt);
@@ -169,7 +153,7 @@ TEST_F(MessagingSettingsTest, DISABLED_mqttOnly) {
     MessagingSettings messagingSettings(testSettings);
 
     // since only brokerUrl is present, bounceProxyUrl is setup identically
-    checkBrokerSettings(messagingSettings, expectedBrokerUrl, defaultBounceProxyUrl);
+    checkBrokerSettings(messagingSettings, expectedBrokerUrl);
 
     checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
 }

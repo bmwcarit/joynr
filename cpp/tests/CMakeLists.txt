@@ -35,6 +35,7 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "websocket-libjoynr-non-tls.settings"
         "HttpSystemIntegrationTest1.settings"
         "HttpSystemIntegrationTest2.settings"
+        "HttpJoynrClusterControllerRuntimeTest.settings"
         "MqttSystemIntegrationTest1.settings"
         "MqttSystemIntegrationTest2.settings"
         "MqttJoynrClusterControllerRuntimeTest.settings"

@@ -8,6 +8,10 @@ index=0
 longpoll-retry-interval=5000
 delete-channel-retry-interval=5000
 
+capabilities-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/discovery/channels/
+capabilities-directory-channelid=discoverydirectory_channelid
+capabilities-directory-participantid=capabilitiesdirectory_participantid
+
 [capabilitiesClient]
 fakeDomain=integrationDomain
 fakeInterfaceName=integrationInterfaceName

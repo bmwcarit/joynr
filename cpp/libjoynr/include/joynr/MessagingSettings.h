@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ public:
     ~MessagingSettings() = default;
 
     static const std::string& SETTING_BROKER_URL();
-    static const std::string& SETTING_BOUNCE_PROXY_URL();
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
@@ -114,10 +113,6 @@ public:
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
     void setBrokerUrl(const BrokerUrl& brokerUrl);
-
-    BrokerUrl getBounceProxyUrl() const;
-    std::string getBounceProxyUrlString() const;
-    void setBounceProxyUrl(const BrokerUrl& brokerUrl);
 
     std::string getDiscoveryDirectoriesDomain() const;
 

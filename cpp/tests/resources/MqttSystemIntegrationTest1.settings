@@ -1,6 +1,5 @@
 [messaging]
 broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@
-bounceproxy-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/bounceproxy/
 
 discovery-directories-domain=io.joynr
 

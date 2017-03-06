@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ public:
 
     void createRuntimeMqtt() {
         EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
-                .Times(1);
+                .Times(0);
         EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
 
@@ -132,6 +132,8 @@ public:
     void createRuntimeHttp() {
         EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
+        EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
+                .Times(0);
 
         runtime = std::make_unique<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(settingsFilenameHttp),
@@ -176,11 +178,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeHttp)
 }
 
 void JoynrClusterControllerRuntimeTest::startMessagingDoesNotThrow() {
-    EXPECT_CALL(*mockHttpMessageReceiver, startReceiveQueue())
-            .Times(1);
-    EXPECT_CALL(*mockHttpMessageReceiver, stopReceiveQueue())
-            .Times(1);
-
     ASSERT_TRUE(runtime != nullptr);
     runtime->startMessaging();
     runtime->stopMessaging();
@@ -188,12 +185,22 @@ void JoynrClusterControllerRuntimeTest::startMessagingDoesNotThrow() {
 
 TEST_F(JoynrClusterControllerRuntimeTest, startMessagingHttpDoesNotThrow)
 {
+    EXPECT_CALL(*mockHttpMessageReceiver, startReceiveQueue())
+            .Times(1);
+    EXPECT_CALL(*mockHttpMessageReceiver, stopReceiveQueue())
+            .Times(1);
+
     createRuntimeHttp();
     startMessagingDoesNotThrow();
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, startMessagingMqttDoesNotThrow)
 {
+    EXPECT_CALL(*mockHttpMessageReceiver, startReceiveQueue())
+            .Times(0);
+    EXPECT_CALL(*mockHttpMessageReceiver, stopReceiveQueue())
+            .Times(0);
+
     createRuntimeMqtt();
     startMessagingDoesNotThrow();
 }

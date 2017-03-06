@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     Logger logger("ClockSkewTest");
 
     // Get the location of the bounce proxy
-    Url bounceurl = messagingSettings.getBounceProxyUrl().getTimeCheckUrl();
+    Url bounceurl = messagingSettings.getBrokerUrl().getTimeCheckUrl();
     ASSERT_TRUE(bounceurl.isValid());
     std::string urlString = bounceurl.toString();
     const char *url  = urlString.c_str();
