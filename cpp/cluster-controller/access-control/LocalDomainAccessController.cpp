@@ -274,7 +274,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateMasterAccessControlEntry(
         const MasterAccessControlEntry& updatedMasterAce)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControllerProxy->updateMasterAccessControlEntry(success, updatedMasterAce);
 
     return success;
@@ -285,7 +285,7 @@ bool LocalDomainAccessController::removeMasterAccessControlEntry(const std::stri
                                                                  const std::string& interfaceName,
                                                                  const std::string& operation)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControllerProxy->removeMasterAccessControlEntry(
             success, uid, domain, interfaceName, operation);
 
@@ -314,7 +314,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateMediatorAccessControlEntry(
         const MasterAccessControlEntry& updatedMediatorAce)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControllerProxy->updateMediatorAccessControlEntry(
             success, updatedMediatorAce);
 
@@ -326,7 +326,7 @@ bool LocalDomainAccessController::removeMediatorAccessControlEntry(const std::st
                                                                    const std::string& interfaceName,
                                                                    const std::string& operation)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControllerProxy->removeMediatorAccessControlEntry(
             success, uid, domain, interfaceName, operation);
 
@@ -354,7 +354,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateOwnerAccessControlEntry(
         const OwnerAccessControlEntry& updatedOwnerAce)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControllerProxy->updateOwnerAccessControlEntry(success, updatedOwnerAce);
 
     return success;
@@ -365,7 +365,7 @@ bool LocalDomainAccessController::removeOwnerAccessControlEntry(const std::strin
                                                                 const std::string& interfaceName,
                                                                 const std::string& operation)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControllerProxy->removeOwnerAccessControlEntry(
             success, uid, domain, interfaceName, operation);
 
