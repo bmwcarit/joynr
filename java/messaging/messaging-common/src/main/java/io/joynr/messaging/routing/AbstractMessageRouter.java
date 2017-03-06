@@ -27,6 +27,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.CheckForNull;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -78,6 +80,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         this.multicastReceiverRegistry = multicastReceiverRegistry;
     }
 
+    @CheckForNull
     abstract protected String getReplyToAddress();
 
     @Override

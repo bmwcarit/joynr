@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.annotation.CheckForNull;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -87,6 +89,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
+    @CheckForNull
     protected String getReplyToAddress() {
         return replyToAddress;
     }

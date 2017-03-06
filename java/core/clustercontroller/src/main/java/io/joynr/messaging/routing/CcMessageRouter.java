@@ -21,6 +21,7 @@ package io.joynr.messaging.routing;
 
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.annotation.CheckForNull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -64,6 +65,7 @@ public class CcMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
+    @CheckForNull
     protected String getReplyToAddress() {
         return replyToAddress;
     }
