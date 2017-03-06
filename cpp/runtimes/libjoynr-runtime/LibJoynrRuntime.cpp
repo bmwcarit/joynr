@@ -118,7 +118,7 @@ void LibJoynrRuntime::init(
             singleThreadIOService->getIOService(), libJoynrMessageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadIOService->getIOService());
 
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager.get());
+    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
     inProcessConnectorFactory = new InProcessConnectorFactory(
             subscriptionManager.get(),
             publicationManager,

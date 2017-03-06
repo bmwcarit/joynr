@@ -74,8 +74,7 @@ ShortCircuitRuntime::ShortCircuitRuntime()
             singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());
 
-    inProcessPublicationSender =
-            std::make_unique<InProcessPublicationSender>(subscriptionManager.get());
+    inProcessPublicationSender = std::make_unique<InProcessPublicationSender>(subscriptionManager);
     inProcessConnectorFactory = new InProcessConnectorFactory(
             subscriptionManager.get(),
             publicationManager,

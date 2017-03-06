@@ -419,7 +419,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadIOService->getIOService(), ccMessageRouter);
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager.get());
+    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
 
     auto libjoynrMessagingAddress =
             std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);
