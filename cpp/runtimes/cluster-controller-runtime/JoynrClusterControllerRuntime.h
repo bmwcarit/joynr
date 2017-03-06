@@ -140,7 +140,6 @@ protected:
     InProcessConnectorFactory* inProcessConnectorFactory;
     InProcessPublicationSender* inProcessPublicationSender;
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
-    ConnectorFactory* connectorFactory;
 
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;

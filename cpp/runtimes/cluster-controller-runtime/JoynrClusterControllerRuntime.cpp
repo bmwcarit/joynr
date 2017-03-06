@@ -135,7 +135,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           inProcessConnectorFactory(nullptr),
           inProcessPublicationSender(nullptr),
           joynrMessagingConnectorFactory(nullptr),
-          connectorFactory(nullptr),
           settings(std::move(settings)),
           libjoynrSettings(*(this->settings)),
           localDomainAccessController(nullptr),
