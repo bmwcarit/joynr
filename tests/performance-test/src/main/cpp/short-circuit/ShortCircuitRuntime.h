@@ -135,8 +135,6 @@ private:
     PublicationManager* publicationManager;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::unique_ptr<InProcessPublicationSender> inProcessPublicationSender;
-    InProcessConnectorFactory* inProcessConnectorFactory;
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     std::unique_ptr<ProxyFactory> proxyFactory;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;

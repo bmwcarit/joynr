@@ -132,9 +132,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           mqttMessageSender(mqttMessageSender),
           mqttMessagingSkeleton(nullptr),
           dispatcherList(),
-          inProcessConnectorFactory(nullptr),
           inProcessPublicationSender(nullptr),
-          joynrMessagingConnectorFactory(nullptr),
           settings(std::move(settings)),
           libjoynrSettings(*(this->settings)),
           localDomainAccessController(nullptr),
@@ -423,16 +421,16 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     auto libjoynrMessagingAddress =
             std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);
     // subscriptionManager = new SubscriptionManager(...)
-    inProcessConnectorFactory = new InProcessConnectorFactory(
+    auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
             subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender,
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
-    joynrMessagingConnectorFactory =
-            new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
+    auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(
+            joynrMessageSender, subscriptionManager);
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
-            inProcessConnectorFactory, joynrMessagingConnectorFactory);
+            std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
     proxyFactory =
             std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
 

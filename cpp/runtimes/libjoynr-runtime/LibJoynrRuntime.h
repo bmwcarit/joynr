@@ -62,8 +62,6 @@ protected:
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
-    InProcessConnectorFactory* inProcessConnectorFactory;
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     std::shared_ptr<IMessaging> joynrMessagingSendStub;
     std::shared_ptr<JoynrMessageSender> joynrMessageSender;
     IDispatcher* joynrDispatcher;

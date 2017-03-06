@@ -137,9 +137,7 @@ protected:
     std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
 
     std::vector<IDispatcher*> dispatcherList;
-    InProcessConnectorFactory* inProcessConnectorFactory;
     InProcessPublicationSender* inProcessPublicationSender;
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
 
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
