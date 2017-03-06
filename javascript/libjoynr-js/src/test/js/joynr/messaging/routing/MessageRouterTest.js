@@ -30,6 +30,7 @@ define([
             "global/Promise",
             "Date",
             "global/WaitsFor",
+            "joynr/util/UtilInternal",
             "uuid"
         ],
         function(
@@ -42,6 +43,7 @@ define([
                 Promise,
                 Date,
                 waitsFor,
+                Util,
                 uuid) {
             var fakeTime;
 
@@ -585,6 +587,35 @@ define([
                                 var transmittedJoynrMessage = messagingStubSpy.transmit.calls.argsFor(0)[0];
                                 expect(transmittedJoynrMessage.replyChannelId).toEqual(undefined);
                                 done();
+                            });
+
+                            it("queues non local messages until global address is available", function(done) {
+                                messageRouter =
+                                    createMessageRouter(
+                                            persistencySpy,
+                                            messageQueueSpy,
+                                            incomingAddress,
+                                            parentMessageRouterAddress);
+                                routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
+                                messageRouter.addNextHop(joynrMessage.to, address);
+
+                                joynrMessage.setIsLocalMessage(false);
+                                var expectedJoynrMessage = new JoynrMessage(Util.extendDeep({}, joynrMessage));
+                                expectedJoynrMessage.replyChannelId = serializedTestGlobalClusterControllerAddress;
+
+                                expect(messageRouter.route.bind(this, joynrMessage)).toThrowError(Error);
+
+                                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+
+                                messageRouter.setRoutingProxy(routingProxySpy);
+
+                                waitsFor(function() {
+                                    return (messagingStubSpy.transmit.calls.count() >= 1);
+                                }, "wait for tranmsit to be done", 1000).finally(function() {
+                                    expect(messagingStubSpy.transmit).toHaveBeenCalledWith(expectedJoynrMessage);
+                                    done();
+                                    return null;
+                                });
                             });
 
                             it(
