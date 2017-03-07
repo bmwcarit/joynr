@@ -427,6 +427,7 @@ define(
                                 brokerUri : provisioning.brokerUri,
                                 topic : channelId
                             });
+                            var serializedGlobalClusterControllerAddress = JSON.stringify(globalClusterControllerAddress);
 
                             var mqttClient = new SharedMqttClient({
                                 address: globalClusterControllerAddress,
@@ -464,7 +465,7 @@ define(
                                 }),
                                 messageQueue : new MessageQueue(messageQueueSettings)
                             });
-                            messageRouter.setGlobalClusterControllerAddress(globalClusterControllerAddress);
+                            messageRouter.setGlobalClusterControllerAddress(serializedGlobalClusterControllerAddress);
                             browserMessagingSkeleton.registerListener(messageRouter.route);
 
                             longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
@@ -660,7 +661,7 @@ define(
                                     providerBuilder.build(RoutingProvider, {
                                         globalAddress : {
                                             get : function() {
-                                                return Promise.resolve(globalClusterControllerAddress);
+                                                return Promise.resolve(serializedGlobalClusterControllerAddress);
                                             }
                                         },
                                         addNextHop : function(opArgs) {

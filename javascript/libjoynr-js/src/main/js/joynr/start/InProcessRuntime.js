@@ -377,6 +377,7 @@ define(
                                 brokerUri : provisioning.brokerUri,
                                 topic : channelId
                             });
+                            var serializedGlobalClusterControllerAddress = JSON.stringify(globalClusterControllerAddress);
 
                             var mqttClient = new SharedMqttClient({
                                 address: globalClusterControllerAddress,
@@ -411,7 +412,7 @@ define(
                                 }),
                                 messageQueue : new MessageQueue(messageQueueSettings)
                             });
-                            messageRouter.setGlobalClusterControllerAddress(globalClusterControllerAddress);
+                            messageRouter.setGlobalClusterControllerAddress(serializedGlobalClusterControllerAddress);
 
                             longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
                                 persistency : persistency,

@@ -59,7 +59,7 @@ define([
                         var messagingStubSpy, messagingSkeletonSpy, messagingStubFactorySpy, messagingSkeletonFactorySpy;
                         var messageQueueSpy, messageRouter, routingProxySpy, parentMessageRouterAddress, incomingAddress;
                         var multicastAddressCalculatorSpy;
-                        var testGlobalClusterControllerAddress, serializedTestGlobalClusterControllerAddress;
+                        var serializedTestGlobalClusterControllerAddress;
 
                         var createMessageRouter =
                                 function(
@@ -180,8 +180,7 @@ define([
                             typeRegistry.addType("joynr.system.RoutingTypes.ChannelAddress", ChannelAddress);
                             typeRegistry.addType("joynr.system.RoutingTypes.BrowserAddress", BrowserAddress);
 
-                            testGlobalClusterControllerAddress = "testGlobalAddress";
-                            serializedTestGlobalClusterControllerAddress = JSON.stringify(testGlobalClusterControllerAddress);
+                            serializedTestGlobalClusterControllerAddress = "testGlobalAddress";
                             routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
                                "addNextHop",
                                "removeNextHop",
@@ -192,13 +191,13 @@ define([
                             routingProxySpy.globalAddress = {
                                 get : null
                             };
-                            spyOn(routingProxySpy.globalAddress, "get").and.returnValue(Promise.resolve(testGlobalClusterControllerAddress));
+                            spyOn(routingProxySpy.globalAddress, "get").and.returnValue(Promise.resolve(serializedTestGlobalClusterControllerAddress));
 
                             messageRouter =
                                 createRootMessageRouter(
                                         persistencySpy,
                                         messageQueueSpy);
-                            messageRouter.setGlobalClusterControllerAddress(testGlobalClusterControllerAddress);
+                            messageRouter.setGlobalClusterControllerAddress(serializedTestGlobalClusterControllerAddress);
 
                             done();
                         });
@@ -542,7 +541,7 @@ define([
                                             messageQueueSpy,
                                             incomingAddress,
                                             parentMessageRouterAddress);
-                                messageRouter.setGlobalClusterControllerAddress(testGlobalClusterControllerAddress);
+                                messageRouter.setGlobalClusterControllerAddress(serializedTestGlobalClusterControllerAddress);
                             });
 
                             it("queries global address from routing provider", function(done) {

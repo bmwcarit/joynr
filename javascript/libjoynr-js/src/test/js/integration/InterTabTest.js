@@ -1012,9 +1012,10 @@ define([
 
                                         // test routing provider returns correct global address
                                         return routingProxy.globalAddress.get();
-                                    }).then(function(globalAddress) {
-                                        expect(globalAddress).toBeDefined();
-                                        expect(globalAddress).not.toBeNull();
+                                    }).then(function(globalAddressString) {
+                                        expect(globalAddressString).toBeDefined();
+                                        expect(globalAddressString).not.toBeNull();
+                                        var globalAddress = JSON.parse(globalAddressString);
                                         /*jslint nomen: true*/
                                         expect(globalAddress._typeName).toEqual(MqttAddress._typeName);
                                         /*jslint nomen: false*/

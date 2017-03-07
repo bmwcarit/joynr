@@ -47,7 +47,7 @@ define([
         });
 
         function testSetsReplyToAddressOfMessage(msg) {
-            messageReplyToAddressCalculator.setReplyToAddress(globalAddress);
+            messageReplyToAddressCalculator.setReplyToAddress(JSON.stringify(globalAddress));
             expect(msg.replyChannelId).toEqual(undefined);
             messageReplyToAddressCalculator.setReplyTo(msg);
             expect(msg.replyChannelId).toEqual(serializedGlobalAddress);
@@ -76,7 +76,7 @@ define([
         });
 
         it("does not overwrite already set replyTo address", function() {
-            messageReplyToAddressCalculator.setReplyToAddress(globalAddress);
+            messageReplyToAddressCalculator.setReplyToAddress(JSON.stringify(globalAddress));
             var request = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
             });
@@ -88,7 +88,7 @@ define([
         });
 
         function testDoesNotSetReplyToAddressOfMessage(msg) {
-            messageReplyToAddressCalculator.setReplyToAddress(globalAddress);
+            messageReplyToAddressCalculator.setReplyToAddress(JSON.stringify(globalAddress));
             expect(msg.replyChannelId).toEqual(undefined);
             messageReplyToAddressCalculator.setReplyTo(msg);
             expect(msg.replyChannelId).toEqual(undefined);

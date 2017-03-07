@@ -19,11 +19,9 @@
 
 define(
         "joynr/messaging/MessageReplyToAddressCalculator",
-        [
-            "joynr/messaging/JoynrMessage",
-            "joynr/util/JSONSerializer"
+        [ "joynr/messaging/JoynrMessage"
         ],
-        function(JoynrMessage, JSONSerializer) {
+        function(JoynrMessage) {
 
             /**
              * @name MessageReplyToAddressCalculator
@@ -43,11 +41,11 @@ define(
                         };
 
                 /**
-                 * Helper function allowing to share the reply to address with the calculator after object creation
+                 * Helper function allowing to share the serialized reply to address with the calculator after object creation
                  */
-                this.setReplyToAddress = function(address) {
-                    replyToAddress = JSONSerializer.stringify(address);
-                    if (address !== undefined) {
+                this.setReplyToAddress = function(serializedAddress) {
+                    replyToAddress = serializedAddress;
+                    if (replyToAddress !== undefined) {
                         //disable check implementation
                         checkForExistingReplyToAddress = function() {};
                     }
