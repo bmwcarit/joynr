@@ -26,6 +26,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doAnswer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
@@ -34,6 +35,7 @@ import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
@@ -54,7 +56,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 /**
  * Test the AccessController
@@ -114,17 +118,28 @@ public class AccessControllerTest {
         message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, messagingQos);
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
-        DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                                                   testDomain,
-                                                                                   testInterface,
-                                                                                   toParticipantId,
-                                                                                   new ProviderQos(),
-                                                                                   System.currentTimeMillis(),
-                                                                                   System.currentTimeMillis()
-                                                                                           + ONE_MINUTE_IN_MS,
-                                                                                   testPublicKeyId,
-                                                                                   false);
-        when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(discoveryEntry);
+        final DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                         testDomain,
+                                                                                         testInterface,
+                                                                                         toParticipantId,
+                                                                                         new ProviderQos(),
+                                                                                         System.currentTimeMillis(),
+                                                                                         System.currentTimeMillis()
+                                                                                                 + ONE_MINUTE_IN_MS,
+                                                                                         testPublicKeyId,
+                                                                                         false);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                CapabilityCallback callback = (CapabilityCallback) invocation.getArguments()[2];
+                callback.processCapabilityReceived(discoveryEntry);
+                return null;
+            }
+        }).when(localCapabilitiesDirectory).lookup(eq(toParticipantId),
+                                                   any(DiscoveryQos.class),
+                                                   any(CapabilityCallback.class));
+
     }
 
     @Test
