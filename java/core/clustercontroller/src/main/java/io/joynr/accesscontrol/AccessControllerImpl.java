@@ -26,6 +26,8 @@ import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import joynr.JoynrMessage;
 import joynr.Request;
@@ -45,6 +47,8 @@ public class AccessControllerImpl implements AccessController {
     private final LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private final LocalDomainAccessController localDomainAccessController;
     private final ObjectMapper objectMapper;
+
+    private Set<String> whitelistedParticipantIds = new HashSet<String>();
 
     @Inject
     AccessControllerImpl(LocalCapabilitiesDirectory localCapabilitiesDirectory,
@@ -73,8 +77,29 @@ public class AccessControllerImpl implements AccessController {
         });
     }
 
+    private boolean needsPermissionCheck(final JoynrMessage message) {
+        if (whitelistedParticipantIds.contains(message.getTo())) {
+            return false;
+        }
+
+        String messageType = message.getType();
+
+        if (messageType.equals(JoynrMessage.MESSAGE_TYPE_REPLY)
+                || messageType.equals(JoynrMessage.MESSAGE_TYPE_PUBLICATION)
+                || messageType.equals(JoynrMessage.MESSAGE_TYPE_MULTICAST)
+                || messageType.equals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REPLY)) {
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public boolean hasConsumerPermission(final JoynrMessage message) {
+        if (!needsPermissionCheck(message)) {
+            return true;
+        }
+
         // Check permission at the interface level
         // First get the domain and interface that is being called from appropriate capability entry
         DiscoveryEntry discoveryEntry = getCapabilityEntry(message);
