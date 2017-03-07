@@ -95,9 +95,10 @@ public class AccessControllerImpl implements AccessController {
     }
 
     @Override
-    public boolean hasConsumerPermission(final JoynrMessage message) {
+    public void hasConsumerPermission(final JoynrMessage message, final HasConsumerPermissionCallback callback) {
         if (!needsPermissionCheck(message)) {
-            return true;
+            callback.hasConsumerPermission(true);
+            return;
         }
 
         // Check permission at the interface level
@@ -105,7 +106,8 @@ public class AccessControllerImpl implements AccessController {
         DiscoveryEntry discoveryEntry = getCapabilityEntry(message);
         if (discoveryEntry == null) {
             logger.error("Failed to get capability for participant id {} for acl check", message.getTo());
-            return false;
+            callback.hasConsumerPermission(false);
+            return;
         }
 
         String domain = discoveryEntry.getDomain();
@@ -138,17 +140,24 @@ public class AccessControllerImpl implements AccessController {
             }
         }
 
+        boolean hasPermissionResult = false;
+
         switch (permission) {
         case ASK:
             assert false : "Permission.ASK user dialog not yet implemnted.";
-            return false;
+            hasPermissionResult = false;
+            break;
         case YES:
-            return true;
+            hasPermissionResult = true;
+            break;
         default:
             logger.warn("Message {} to domain {}, interface {} failed AccessControl check",
                         new Object[]{ message.getId(), discoveryEntry.getDomain(), discoveryEntry.getInterfaceName() });
-            return false;
+            hasPermissionResult = false;
+            break;
         }
+
+        callback.hasConsumerPermission(hasPermissionResult);
     }
 
     @Override

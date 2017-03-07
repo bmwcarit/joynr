@@ -24,6 +24,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
@@ -51,6 +53,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
@@ -82,6 +85,7 @@ public class AccessControllerTest {
     private String testPublicKeyId = "testPublicKeyId";
     private MessagingQos messagingQos = new MessagingQos(1000);
     private ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
+    private HasConsumerPermissionCallback callback = Mockito.mock(HasConsumerPermissionCallback.class);
 
     @BeforeClass
     public static void initialize() {
@@ -127,7 +131,8 @@ public class AccessControllerTest {
     public void testAccessWithInterfaceLevelAccessControl() {
         when(localDomainAccessController.getConsumerPermission(DUMMY_USERID, testDomain, testInterface, TrustLevel.HIGH)).thenReturn(Permission.YES);
 
-        assertTrue(accessController.hasConsumerPermission(message));
+        accessController.hasConsumerPermission(message, callback);
+        verify(callback, Mockito.times(1)).hasConsumerPermission(true);
     }
 
     @Test
@@ -139,7 +144,8 @@ public class AccessControllerTest {
                                                                testOperation,
                                                                TrustLevel.HIGH)).thenReturn(Permission.YES);
 
-        assertTrue(accessController.hasConsumerPermission(message));
+        accessController.hasConsumerPermission(message, callback);
+        verify(callback, Mockito.times(1)).hasConsumerPermission(true);
     }
 
     @Test
@@ -151,6 +157,7 @@ public class AccessControllerTest {
                                                                TrustLevel.HIGH)).thenReturn(Permission.NO);
         message.setPayload("invalid serialization of Request object");
 
-        assertFalse(accessController.hasConsumerPermission(message));
+        accessController.hasConsumerPermission(message, callback);
+        verify(callback, Mockito.times(1)).hasConsumerPermission(false);
     }
 }
