@@ -118,7 +118,7 @@ protected:
 
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
-    IDispatcher* ccDispatcher;
+
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     IMessaging* joynrMessagingSendSkeleton;
     std::shared_ptr<JoynrMessageSender> joynrMessageSender;

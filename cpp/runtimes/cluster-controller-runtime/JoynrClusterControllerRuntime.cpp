@@ -118,7 +118,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         : JoynrRuntime(*settings),
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
-          ccDispatcher(nullptr),
           subscriptionManager(nullptr),
           joynrMessagingSendSkeleton(nullptr),
           joynrMessageSender(nullptr),
