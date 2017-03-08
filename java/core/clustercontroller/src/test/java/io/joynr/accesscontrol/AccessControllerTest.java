@@ -19,12 +19,9 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.doAnswer;
 
@@ -37,7 +34,6 @@ import com.google.inject.multibindings.Multibinder;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
@@ -46,7 +42,6 @@ import joynr.JoynrMessage;
 import joynr.Request;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
@@ -88,7 +83,6 @@ public class AccessControllerTest {
     private String testOperation = "testOperation";
     private String testPublicKeyId = "testPublicKeyId";
     private MessagingQos messagingQos = new MessagingQos(1000);
-    private ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
     private HasConsumerPermissionCallback callback = Mockito.mock(HasConsumerPermissionCallback.class);
 
     @BeforeClass
@@ -144,7 +138,19 @@ public class AccessControllerTest {
 
     @Test
     public void testAccessWithInterfaceLevelAccessControl() {
-        when(localDomainAccessController.getConsumerPermission(DUMMY_USERID, testDomain, testInterface, TrustLevel.HIGH)).thenReturn(Permission.YES);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                GetConsumerPermissionCallback callback = (GetConsumerPermissionCallback) invocation.getArguments()[4];
+                callback.getConsumerPermission(Permission.YES);
+                return null;
+            }
+
+        }).when(localDomainAccessController).getConsumerPermission(eq(DUMMY_USERID),
+                                                                   eq(testDomain),
+                                                                   eq(testInterface),
+                                                                   eq(TrustLevel.HIGH),
+                                                                   any(GetConsumerPermissionCallback.class));
 
         accessController.hasConsumerPermission(message, callback);
         verify(callback, Mockito.times(1)).hasConsumerPermission(true);
@@ -152,7 +158,20 @@ public class AccessControllerTest {
 
     @Test
     public void testAccessWithOperationLevelAccessControl() {
-        when(localDomainAccessController.getConsumerPermission(DUMMY_USERID, testDomain, testInterface, TrustLevel.HIGH)).thenReturn(null);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                GetConsumerPermissionCallback callback = (GetConsumerPermissionCallback) invocation.getArguments()[4];
+                callback.getConsumerPermission(null);
+                return null;
+            }
+
+        }).when(localDomainAccessController).getConsumerPermission(eq(DUMMY_USERID),
+                                                                   eq(testDomain),
+                                                                   eq(testInterface),
+                                                                   eq(TrustLevel.HIGH),
+                                                                   any(GetConsumerPermissionCallback.class));
+
         when(localDomainAccessController.getConsumerPermission(DUMMY_USERID,
                                                                testDomain,
                                                                testInterface,
@@ -165,6 +184,20 @@ public class AccessControllerTest {
 
     @Test
     public void testAccessWithOperationLevelAccessControlAndFaultyMessage() {
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                GetConsumerPermissionCallback callback = (GetConsumerPermissionCallback) invocation.getArguments()[4];
+                callback.getConsumerPermission(null);
+                return null;
+            }
+
+        }).when(localDomainAccessController).getConsumerPermission(eq(DUMMY_USERID),
+                                                                   eq(testDomain),
+                                                                   eq(testInterface),
+                                                                   eq(TrustLevel.HIGH),
+                                                                   any(GetConsumerPermissionCallback.class));
+
         when(localDomainAccessController.getConsumerPermission(DUMMY_USERID,
                                                                testDomain,
                                                                testInterface,

@@ -139,7 +139,11 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
     @Override
     @CheckForNull
-    public Permission getConsumerPermission(String userId, String domain, String interfaceName, TrustLevel trustLevel) {
+    public void getConsumerPermission(String userId,
+                                      String domain,
+                                      String interfaceName,
+                                      TrustLevel trustLevel,
+                                      GetConsumerPermissionCallback callback) {
         UserDomainInterfaceOperationKey subscriptionKey = new UserDomainInterfaceOperationKey(null,
                                                                                               domain,
                                                                                               interfaceName,
@@ -149,7 +153,8 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         // Handle special cases which should not require a lookup or a subscription
         Permission specialPermission = handleSpecialCases(domain, interfaceName);
         if (specialPermission != null) {
-            return specialPermission;
+            callback.getConsumerPermission(specialPermission);
+            return;
         }
 
         if (subscriptionsMap.get(subscriptionKey) == null) {
@@ -169,9 +174,9 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
         if ((masterAces != null && masterAces.size() > 1) || (mediatorAces != null && mediatorAces.size() > 1)
                 || (ownerAces != null && ownerAces.size() > 1)) {
-            return null;
+            callback.getConsumerPermission(null);
         } else {
-            return getConsumerPermission(userId, domain, interfaceName, WILDCARD, trustLevel);
+            callback.getConsumerPermission(getConsumerPermission(userId, domain, interfaceName, WILDCARD, trustLevel));
         }
     }
 

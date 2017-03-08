@@ -98,9 +98,10 @@ public class AccessControllerImpl implements AccessController {
     }
 
     @Override
-    public void hasConsumerPermission(final JoynrMessage message, final HasConsumerPermissionCallback callback) {
+    public void hasConsumerPermission(final JoynrMessage message,
+                                      final HasConsumerPermissionCallback hasConsumerPermissionCallback) {
         if (!needsPermissionCheck(message)) {
-            callback.hasConsumerPermission(true);
+            hasConsumerPermissionCallback.hasConsumerPermission(true);
             return;
         }
 
@@ -111,64 +112,70 @@ public class AccessControllerImpl implements AccessController {
             public void processCapabilityReceived(DiscoveryEntryWithMetaInfo discoveryEntry) {
                 if (discoveryEntry == null) {
                     logger.error("Failed to get capability for participant id {} for acl check", message.getTo());
-                    callback.hasConsumerPermission(false);
+                    hasConsumerPermissionCallback.hasConsumerPermission(false);
                     return;
                 }
 
-                String domain = discoveryEntry.getDomain();
-                String interfaceName = discoveryEntry.getInterfaceName();
+                final String domain = discoveryEntry.getDomain();
+                final String interfaceName = discoveryEntry.getInterfaceName();
+                final String msgCreatorUid = message.getHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID);
+
+                GetConsumerPermissionCallback consumerPermissionCallback = new GetConsumerPermissionCallback() {
+                    @Override
+                    public void getConsumerPermission(Permission permission) {
+                        // if permission still not defined, have to deserialize message and try again
+                        if (permission == null) {
+                            try {
+                                // Deserialize the request from message and take operation value
+                                Request request = objectMapper.readValue(message.getPayload(), Request.class);
+                                String operation = request.getMethodName();
+
+                                // Get the permission for the requested operation
+                                permission = localDomainAccessController.getConsumerPermission(msgCreatorUid,
+                                                                                               domain,
+                                                                                               interfaceName,
+                                                                                               operation,
+                                                                                               TrustLevel.HIGH);
+                            } catch (IOException e) {
+                                logger.error("Cannot deserialize message", e);
+                                permission = Permission.NO;
+                            }
+                        }
+
+                        boolean hasPermissionResult = false;
+
+                        switch (permission) {
+                        case ASK:
+                            assert false : "Permission.ASK user dialog not yet implemnted.";
+                            hasPermissionResult = false;
+                            break;
+                        case YES:
+                            hasPermissionResult = true;
+                            break;
+                        default:
+                            logger.warn("Message {} to domain {}, interface {} failed AccessControl check",
+                                        new Object[]{ message.getId(), domain, interfaceName });
+                            hasPermissionResult = false;
+                            break;
+                        }
+
+                        hasConsumerPermissionCallback.hasConsumerPermission(hasPermissionResult);
+                    }
+                };
 
                 // try determine permission without expensive message deserialization
                 // since obtaining trust level from message header is still not supported use TrustLevel.HIGH
-                String msgCreatorUid = message.getHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID);
-                Permission permission = localDomainAccessController.getConsumerPermission(msgCreatorUid,
-                                                                                          domain,
-                                                                                          interfaceName,
-                                                                                          TrustLevel.HIGH);
-
-                // if permission still not defined, have to deserialize message and try again
-                if (permission == null) {
-                    try {
-                        // Deserialize the request from message and take operation value
-                        Request request = objectMapper.readValue(message.getPayload(), Request.class);
-                        String operation = request.getMethodName();
-
-                        // Get the permission for the requested operation
-                        permission = localDomainAccessController.getConsumerPermission(msgCreatorUid,
-                                                                                       domain,
-                                                                                       interfaceName,
-                                                                                       operation,
-                                                                                       TrustLevel.HIGH);
-                    } catch (IOException e) {
-                        logger.error("Cannot deserialize message", e);
-                        permission = Permission.NO;
-                    }
-                }
-
-                boolean hasPermissionResult = false;
-
-                switch (permission) {
-                case ASK:
-                    assert false : "Permission.ASK user dialog not yet implemnted.";
-                    hasPermissionResult = false;
-                    break;
-                case YES:
-                    hasPermissionResult = true;
-                    break;
-                default:
-                    logger.warn("Message {} to domain {}, interface {} failed AccessControl check", new Object[]{
-                            message.getId(), discoveryEntry.getDomain(), discoveryEntry.getInterfaceName() });
-                    hasPermissionResult = false;
-                    break;
-                }
-
-                callback.hasConsumerPermission(hasPermissionResult);
+                localDomainAccessController.getConsumerPermission(msgCreatorUid,
+                                                                  domain,
+                                                                  interfaceName,
+                                                                  TrustLevel.HIGH,
+                                                                  consumerPermissionCallback);
             }
 
             @Override
             public void onError(Throwable e) {
                 logger.error("Failed to get capability for participant id {} for acl check", message.getTo());
-                callback.hasConsumerPermission(false);
+                hasConsumerPermissionCallback.hasConsumerPermission(false);
             }
         });
     }
