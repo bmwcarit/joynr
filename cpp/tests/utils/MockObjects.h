@@ -1018,8 +1018,8 @@ public:
     MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {
 
     }
-    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& authenticationToken));
-    MOCK_METHOD4(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue, const std::string& authenticationToken));
+    MOCK_METHOD2(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName));
+    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue));
 };
 
 class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter {

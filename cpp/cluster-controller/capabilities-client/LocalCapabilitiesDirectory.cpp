@@ -808,7 +808,7 @@ void LocalCapabilitiesDirectory::insertInCache(const types::DiscoveryEntry& entr
 bool LocalCapabilitiesDirectory::hasEntryInCache(const types::DiscoveryEntry& entry,
                                                  bool localEntries)
 {
-    // the combination participantId is unique for [domain, interfaceName, authtoken]
+    // the combination participantId is unique for [domain, interfaceName]
     std::vector<types::DiscoveryEntry> entryList =
             searchCache(entry.getParticipantId(), std::chrono::milliseconds(-1), localEntries);
 

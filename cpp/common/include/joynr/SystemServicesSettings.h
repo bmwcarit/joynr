@@ -39,21 +39,15 @@ public:
     ~SystemServicesSettings() = default;
 
     static const std::string& SETTING_DOMAIN();
-    static const std::string& SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN();
     static const std::string& SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID();
-    static const std::string& SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN();
     static const std::string& SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID();
 
     static const std::string& DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME();
 
     std::string getDomain() const;
     void setJoynrSystemServicesDomain(const std::string& systemServicesDomain);
-    std::string getCcRoutingProviderAuthenticationToken() const;
-    void setCcRoutingProviderAuthenticationToken(const std::string& authenticationToken);
     std::string getCcRoutingProviderParticipantId() const;
     void setCcRoutingProviderParticipantId(const std::string& participantId);
-    std::string getCcDiscoveryProviderAuthenticationToken() const;
-    void setCcDiscoveryProviderAuthenticationToken(const std::string& authenticationToken);
     std::string getCcDiscoveryProviderParticipantId() const;
     void setCcDiscoveryProviderParticipantId(const std::string& participantId);
 
