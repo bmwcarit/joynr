@@ -50,6 +50,12 @@ const std::string& SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIP
     return value;
 }
 
+const std::string& SystemServicesSettings::SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()
+{
+    static const std::string value("system.services/cc-messagenotificationprovider-participantid");
+    return value;
+}
+
 const std::string& SystemServicesSettings::DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME()
 {
     static const std::string value("default-system-services.settings");
@@ -86,6 +92,17 @@ void SystemServicesSettings::setCcDiscoveryProviderParticipantId(const std::stri
     settings.set(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(), participantId);
 }
 
+std::string SystemServicesSettings::getCcMessageNotificationProviderParticipantId() const
+{
+    return settings.get<std::string>(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID());
+}
+
+void SystemServicesSettings::setCcMessageNotificationProviderParticipantId(
+        const std::string& participantId)
+{
+    settings.set(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID(), participantId);
+}
+
 bool SystemServicesSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
@@ -97,6 +114,7 @@ void SystemServicesSettings::checkSettings() const
     assert(settings.contains(SETTING_DOMAIN()));
     assert(settings.contains(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
     assert(settings.contains(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
+    assert(settings.contains(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()));
 }
 
 void SystemServicesSettings::printSettings() const
@@ -113,6 +131,11 @@ void SystemServicesSettings::printSettings() const
                     "SETTING: {} = {}",
                     SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(),
                     settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
+    JOYNR_LOG_DEBUG(
+            logger,
+            "SETTING: {} = {}",
+            SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID(),
+            settings.get<std::string>(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()));
 }
 
 } // namespace joynr
