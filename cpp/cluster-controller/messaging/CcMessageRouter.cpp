@@ -38,6 +38,7 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/MessageNotificationAbstractProvider.h"
 #include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilter.h"
 #include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters.h"
 #include "joynr/system/RoutingProxy.h"
@@ -75,7 +76,14 @@ private:
     ADD_LOGGER(ConsumerPermissionCallback);
 };
 
-//------ MessageQueuedForDeliveryBroadcastFilter -------------------------------
+//------ MessageNotification ---------------------------------------------------
+
+class CcMessageNotificationProvider : public joynr::system::MessageNotificationAbstractProvider
+{
+public:
+    virtual ~CcMessageNotificationProvider() = default;
+    using MessageNotificationAbstractProvider::fireMessageQueuedForDelivery;
+};
 
 class MessageQueuedForDeliveryBroadcastFilter
         : public joynr::system::MessageNotificationMessageQueuedForDeliveryBroadcastFilter
@@ -124,8 +132,11 @@ CcMessageRouter::CcMessageRouter(
           joynr::system::RoutingAbstractProvider(),
           multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           securityManager(std::move(securityManager)),
-          multicastReceveiverDirectoryFilename()
+          multicastReceveiverDirectoryFilename(),
+          messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>())
 {
+    messageNotificationProvider->addBroadcastFilter(
+            std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
 }
 
 CcMessageRouter::~CcMessageRouter()
@@ -171,6 +182,12 @@ void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
     }
 
     reestablishMulticastSubscriptions();
+}
+
+std::shared_ptr<system::MessageNotificationProvider> CcMessageRouter::
+        getMessageNotificationProvider() const
+{
+    return messageNotificationProvider;
 }
 
 void CcMessageRouter::reestablishMulticastSubscriptions()
