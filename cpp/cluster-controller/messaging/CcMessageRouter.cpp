@@ -38,6 +38,8 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilter.h"
+#include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
@@ -71,6 +73,37 @@ public:
 
 private:
     ADD_LOGGER(ConsumerPermissionCallback);
+};
+
+//------ MessageQueuedForDeliveryBroadcastFilter -------------------------------
+
+class MessageQueuedForDeliveryBroadcastFilter
+        : public joynr::system::MessageNotificationMessageQueuedForDeliveryBroadcastFilter
+{
+    bool filter(const std::string& participantId,
+                const std::string& messageType,
+                const joynr::system::
+                        MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters&
+                                filterParameters) override
+    {
+        const bool isParticipantIdSet = !filterParameters.getParticipantId().empty();
+        const bool isMessageTypeSet = !filterParameters.getMessageType().empty();
+
+        // if no filter parameters are set, always send broadcast
+        if (!isParticipantIdSet && !isMessageTypeSet) {
+            return true;
+        }
+        // if message type is empty, check if participant id matches
+        if (!isMessageTypeSet) {
+            return filterParameters.getParticipantId() == participantId;
+        }
+        // if participant type is empty, check if message type matches
+        if (!isParticipantIdSet) {
+            return filterParameters.getMessageType() == messageType;
+        }
+        return filterParameters.getParticipantId() == participantId &&
+               filterParameters.getMessageType() == messageType;
+    }
 };
 
 //------ MessageRouter ---------------------------------------------------------
