@@ -19,10 +19,11 @@
 #ifndef SYSTEMSERVICESSETTINGS_H
 #define SYSTEMSERVICESSETTINGS_H
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/Logger.h"
-
 #include <string>
+
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -33,9 +34,6 @@ class JOYNRCOMMON_EXPORT SystemServicesSettings
 {
 public:
     explicit SystemServicesSettings(Settings& settings);
-    SystemServicesSettings(const SystemServicesSettings&) = default;
-    SystemServicesSettings(SystemServicesSettings&&) = default;
-
     ~SystemServicesSettings() = default;
 
     static const std::string& SETTING_DOMAIN();
@@ -59,8 +57,7 @@ public:
     void printSettings() const;
 
 private:
-    void operator=(const SystemServicesSettings& other);
-
+    DISALLOW_COPY_AND_ASSIGN(SystemServicesSettings);
     Settings& settings;
     ADD_LOGGER(SystemServicesSettings);
     void checkSettings() const;
