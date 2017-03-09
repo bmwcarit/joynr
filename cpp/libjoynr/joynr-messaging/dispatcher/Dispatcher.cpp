@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,49 +141,9 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
             InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
 
     // deserialize Request
+    Request request;
     try {
-        Request request;
         joynr::serializer::deserializeFromJson(request, message.getPayload());
-        const std::string& requestReplyId = request.getRequestReplyId();
-        JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
-
-        auto onSuccess =
-                [requestReplyId, requestExpiryDate, this, senderId, receiverId](Reply&& reply) {
-            reply.setRequestReplyId(requestReplyId);
-            // send reply back to the original sender (ie. sender and receiver ids are reversed
-            // on purpose)
-            JOYNR_LOG_TRACE(logger,
-                            "Got reply from RequestInterpreter for requestReplyId {}",
-                            requestReplyId);
-            JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now());
-            std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                       requestExpiryDate - now).count();
-            messageSender->sendReply(receiverId, // receiver of the request is sender of reply
-                                     senderId,   // sender of request is receiver of reply
-                                     MessagingQos(ttl),
-                                     std::move(reply));
-        };
-
-        auto onError = [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-                const std::shared_ptr<exceptions::JoynrException>& exception) {
-            Reply reply;
-            reply.setRequestReplyId(requestReplyId);
-            reply.setError(exception);
-            JOYNR_LOG_WARN(logger,
-                           "Got error reply from RequestInterpreter for requestReplyId {}",
-                           requestReplyId);
-            JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now());
-            std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                       requestExpiryDate - now).count();
-            messageSender->sendReply(receiverId, // receiver of the request is sender of reply
-                                     senderId,   // sender of request is receiver of reply
-                                     MessagingQos(ttl),
-                                     std::move(reply));
-        };
-        // execute request
-        requestInterpreter->execute(caller, request, std::move(onSuccess), std::move(onError));
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize request object from: {} - error: {}",
@@ -191,6 +151,46 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                         e.what());
         return;
     }
+
+    const std::string& requestReplyId = request.getRequestReplyId();
+    JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
+
+    auto onSuccess =
+            [requestReplyId, requestExpiryDate, this, senderId, receiverId](Reply&& reply) {
+        reply.setRequestReplyId(requestReplyId);
+        // send reply back to the original sender (ie. sender and receiver ids are reversed
+        // on purpose)
+        JOYNR_LOG_TRACE(
+                logger, "Got reply from RequestInterpreter for requestReplyId {}", requestReplyId);
+        JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now());
+        std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate -
+                                                                                 now).count();
+        messageSender->sendReply(receiverId, // receiver of the request is sender of reply
+                                 senderId,   // sender of request is receiver of reply
+                                 MessagingQos(ttl),
+                                 std::move(reply));
+    };
+
+    auto onError = [requestReplyId, requestExpiryDate, this, senderId, receiverId](
+            const std::shared_ptr<exceptions::JoynrException>& exception) {
+        Reply reply;
+        reply.setRequestReplyId(requestReplyId);
+        reply.setError(exception);
+        JOYNR_LOG_WARN(logger,
+                       "Got error reply from RequestInterpreter for requestReplyId {}",
+                       requestReplyId);
+        JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now());
+        std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate -
+                                                                                 now).count();
+        messageSender->sendReply(receiverId, // receiver of the request is sender of reply
+                                 senderId,   // sender of request is receiver of reply
+                                 MessagingQos(ttl),
+                                 std::move(reply));
+    };
+    // execute request
+    requestInterpreter->execute(caller, request, std::move(onSuccess), std::move(onError));
 }
 
 void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
@@ -214,11 +214,9 @@ void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
             InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
 
     // deserialize json
+    OneWayRequest request;
     try {
-        OneWayRequest request;
         joynr::serializer::deserializeFromJson(request, message.getPayload());
-        // execute request
-        requestInterpreter->execute(caller, request);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize request object from: {} - error: {}",
@@ -226,38 +224,42 @@ void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
                         e.what());
         return;
     }
+
+    // execute request
+    requestInterpreter->execute(caller, request);
 }
 
 void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 {
     // deserialize the Reply
+    Reply reply;
     try {
-        Reply reply;
         joynr::serializer::deserializeFromJson(reply, message.getPayload());
-        std::string requestReplyId = reply.getRequestReplyId();
-        std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId);
-        if (caller == nullptr) {
-            // This used to be a fatal error, but it is possible that the replyCallerDirectory
-            // removed
-            // the caller
-            // because its lifetime exceeded TTL
-            JOYNR_LOG_WARN(
-                    logger,
-                    "caller not found in the ReplyCallerDirectory for requestid {}, ignoring",
-                    requestReplyId);
-            return;
-        }
-
-        caller->execute(std::move(reply));
-
-        // Clean up
-        removeReplyCaller(requestReplyId);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize reply object from: {} - error {}",
                         message.getPayload(),
                         e.what());
+        return;
     }
+
+    std::string requestReplyId = reply.getRequestReplyId();
+    std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId);
+    if (caller == nullptr) {
+        // This used to be a fatal error, but it is possible that the replyCallerDirectory
+        // removed
+        // the caller
+        // because its lifetime exceeded TTL
+        JOYNR_LOG_WARN(logger,
+                       "caller not found in the ReplyCallerDirectory for requestid {}, ignoring",
+                       requestReplyId);
+        return;
+    }
+
+    caller->execute(std::move(reply));
+
+    // Clean up
+    removeReplyCaller(requestReplyId);
 }
 
 void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
@@ -273,31 +275,31 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
 
     std::string jsonSubscriptionRequest = message.getPayload();
 
+    // PublicationManager is responsible for deleting SubscriptionRequests
+    SubscriptionRequest subscriptionRequest;
     try {
-        // PublicationManager is responsible for deleting SubscriptionRequests
-        SubscriptionRequest subscriptionRequest;
         joynr::serializer::deserializeFromJson(subscriptionRequest, jsonSubscriptionRequest);
-
-        if (!caller) {
-            // Provider not registered yet
-            // Dispatcher will call publicationManger->restore when a new provider is added to
-            // activate
-            // subscriptions for that provider
-            publicationManager->add(
-                    message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest);
-        } else {
-            publicationManager->add(message.getHeaderFrom(),
-                                    message.getHeaderTo(),
-                                    caller,
-                                    subscriptionRequest,
-                                    messageSender.get());
-        }
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize subscription request object from: {} - error: {}",
                         jsonSubscriptionRequest,
                         e.what());
         return;
+    }
+
+    if (!caller) {
+        // Provider not registered yet
+        // Dispatcher will call publicationManger->restore when a new provider is added to
+        // activate
+        // subscriptions for that provider
+        publicationManager->add(
+                message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest);
+    } else {
+        publicationManager->add(message.getHeaderFrom(),
+                                message.getHeaderTo(),
+                                caller,
+                                subscriptionRequest,
+                                messageSender.get());
     }
 }
 
@@ -318,7 +320,9 @@ void Dispatcher::handleMulticastSubscriptionRequestReceived(const JoynrMessage& 
                 "Unable to deserialize broadcast subscription request object from: {} - error: {}",
                 jsonSubscriptionRequest,
                 e.what());
+        return;
     }
+
     publicationManager->add(message.getHeaderFrom(),
                             message.getHeaderTo(),
                             subscriptionRequest,
@@ -339,30 +343,31 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     std::string jsonSubscriptionRequest = message.getPayload();
 
     // PublicationManager is responsible for deleting SubscriptionRequests
+    BroadcastSubscriptionRequest subscriptionRequest;
     try {
-        BroadcastSubscriptionRequest subscriptionRequest;
         joynr::serializer::deserializeFromJson(subscriptionRequest, jsonSubscriptionRequest);
-
-        if (!caller) {
-            // Provider not registered yet
-            // Dispatcher will call publicationManger->restore when a new provider is added to
-            // activate
-            // subscriptions for that provider
-            publicationManager->add(
-                    message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest);
-        } else {
-            publicationManager->add(message.getHeaderFrom(),
-                                    message.getHeaderTo(),
-                                    caller,
-                                    subscriptionRequest,
-                                    messageSender.get());
-        }
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(
                 logger,
                 "Unable to deserialize broadcast subscription request object from: {} - error: {}",
                 jsonSubscriptionRequest,
                 e.what());
+        return;
+    }
+
+    if (!caller) {
+        // Provider not registered yet
+        // Dispatcher will call publicationManger->restore when a new provider is added to
+        // activate
+        // subscriptions for that provider
+        publicationManager->add(
+                message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest);
+    } else {
+        publicationManager->add(message.getHeaderFrom(),
+                                message.getHeaderTo(),
+                                caller,
+                                subscriptionRequest,
+                                messageSender.get());
     }
 }
 
@@ -391,101 +396,104 @@ void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
 void Dispatcher::handleSubscriptionReplyReceived(const JoynrMessage& message)
 {
     std::string jsonSubscriptionReply = message.getPayload();
+
+    SubscriptionReply subscriptionReply;
     try {
-        SubscriptionReply subscriptionReply;
         joynr::serializer::deserializeFromJson(subscriptionReply, jsonSubscriptionReply);
-
-        const std::string subscriptionId = subscriptionReply.getSubscriptionId();
-
-        assert(subscriptionManager != nullptr);
-
-        std::shared_ptr<ISubscriptionCallback> callback =
-                subscriptionManager->getSubscriptionCallback(subscriptionId);
-        if (!callback) {
-            JOYNR_LOG_ERROR(logger,
-                            "Dropping subscription reply for non/no more existing subscription "
-                            "with id = {}",
-                            subscriptionId);
-            return;
-        }
-
-        callback->execute(std::move(subscriptionReply));
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize subscription reply object from: {} - error: {}",
                         jsonSubscriptionReply,
                         e.what());
+        return;
     }
+
+    const std::string subscriptionId = subscriptionReply.getSubscriptionId();
+
+    assert(subscriptionManager != nullptr);
+
+    std::shared_ptr<ISubscriptionCallback> callback =
+            subscriptionManager->getSubscriptionCallback(subscriptionId);
+    if (!callback) {
+        JOYNR_LOG_ERROR(logger,
+                        "Dropping subscription reply for non/no more existing subscription "
+                        "with id = {}",
+                        subscriptionId);
+        return;
+    }
+
+    callback->execute(std::move(subscriptionReply));
 }
 
 void Dispatcher::handleMulticastReceived(const JoynrMessage& message)
 {
     std::string jsonMulticastPublication = message.getPayload();
 
+    MulticastPublication multicastPublication;
     try {
-        MulticastPublication multicastPublication;
         joynr::serializer::deserializeFromJson(multicastPublication, jsonMulticastPublication);
-
-        const std::string multicastId = multicastPublication.getMulticastId();
-
-        assert(subscriptionManager != nullptr);
-
-        std::shared_ptr<ISubscriptionCallback> callback =
-                subscriptionManager->getMulticastSubscriptionCallback(multicastId);
-        if (callback == nullptr) {
-            JOYNR_LOG_ERROR(logger,
-                            "Dropping multicast publication for non/no more existing subscription "
-                            "with multicastId = {}",
-                            multicastId);
-            return;
-        }
-
-        // TODO: enable for periodic attribute subscriptions
-        // when MulticastPublication is extended by subscriptionId
-        // subscriptionManager->touchSubscriptionState(subscriptionId);
-
-        callback->execute(std::move(multicastPublication));
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize multicast publication object from: {} - error: {}",
                         jsonMulticastPublication,
                         e.what());
+        return;
     }
+
+    const std::string multicastId = multicastPublication.getMulticastId();
+
+    assert(subscriptionManager != nullptr);
+
+    std::shared_ptr<ISubscriptionCallback> callback =
+            subscriptionManager->getMulticastSubscriptionCallback(multicastId);
+    if (callback == nullptr) {
+        JOYNR_LOG_ERROR(logger,
+                        "Dropping multicast publication for non/no more existing subscription "
+                        "with multicastId = {}",
+                        multicastId);
+        return;
+    }
+
+    // TODO: enable for periodic attribute subscriptions
+    // when MulticastPublication is extended by subscriptionId
+    // subscriptionManager->touchSubscriptionState(subscriptionId);
+
+    callback->execute(std::move(multicastPublication));
 }
 
 void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
 {
     std::string jsonSubscriptionPublication = message.getPayload();
 
+    SubscriptionPublication subscriptionPublication;
     try {
-        SubscriptionPublication subscriptionPublication;
         joynr::serializer::deserializeFromJson(
                 subscriptionPublication, jsonSubscriptionPublication);
-
-        const std::string subscriptionId = subscriptionPublication.getSubscriptionId();
-
-        assert(subscriptionManager != nullptr);
-
-        std::shared_ptr<ISubscriptionCallback> callback =
-                subscriptionManager->getSubscriptionCallback(subscriptionId);
-        if (!callback) {
-            JOYNR_LOG_ERROR(
-                    logger,
-                    "Dropping publication for non/no more existing subscription with id = {}",
-                    subscriptionId);
-            return;
-        }
-
-        subscriptionManager->touchSubscriptionState(subscriptionId);
-
-        callback->execute(std::move(subscriptionPublication));
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(
                 logger,
                 "Unable to deserialize subscription publication object from: {} - error: {}",
                 jsonSubscriptionPublication,
                 e.what());
+        return;
     }
+
+    const std::string subscriptionId = subscriptionPublication.getSubscriptionId();
+
+    assert(subscriptionManager != nullptr);
+
+    std::shared_ptr<ISubscriptionCallback> callback =
+            subscriptionManager->getSubscriptionCallback(subscriptionId);
+    if (!callback) {
+        JOYNR_LOG_ERROR(logger,
+                        "Dropping publication for non/no more existing subscription with id = {}",
+                        subscriptionId);
+        return;
+    }
+
+    subscriptionManager->touchSubscriptionState(subscriptionId);
+
+    callback->execute(std::move(subscriptionPublication));
 }
 
 void Dispatcher::registerSubscriptionManager(
