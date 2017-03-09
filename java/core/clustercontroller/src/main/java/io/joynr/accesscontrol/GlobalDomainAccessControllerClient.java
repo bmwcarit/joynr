@@ -414,6 +414,10 @@ public class GlobalDomainAccessControllerClient {
         return Arrays.asList(getGlobalDomainRoleControllerProxy(TTL_30_DAYS_IN_MS).getDomainRoles(userId));
     }
 
+    public void getDomainRoles(Callback<DomainRoleEntry[]> callback, String userId) {
+        getGlobalDomainRoleControllerProxy(TTL_30_DAYS_IN_MS).getDomainRoles(callback, userId);
+    }
+
     public List<MasterAccessControlEntry> getMasterAccessControlEntries(String domain, String interfaceName) {
         return Arrays.asList(getGlobalDomainAccessControllerProxy(TTL_30_DAYS_IN_MS).getMasterAccessControlEntries(domain,
                                                                                                                    interfaceName));

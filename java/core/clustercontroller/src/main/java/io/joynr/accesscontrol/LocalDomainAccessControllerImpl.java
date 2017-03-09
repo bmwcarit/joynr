@@ -122,7 +122,10 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     @Override
     public boolean hasRole(String userId, String domain, Role role) {
         boolean hasRole = false;
-        DomainRoleEntry dre = localDomainAccessStore.getDomainRole(userId, role);
+        DomainRoleEntry dre;
+        synchronized (localDomainAccessStore) {
+            dre = localDomainAccessStore.getDomainRole(userId, role);
+        }
         if (dre != null) {
             List<String> domains = Arrays.asList(dre.getDomains());
             if (domains.contains(domain)) {
@@ -163,15 +166,15 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
             subscriptionsMap.put(subscriptionKey, subscribeForAceChange(domain, interfaceName));
         }
 
-        List<MasterAccessControlEntry> masterAces = localDomainAccessStore.getMasterAccessControlEntries(userId,
-                                                                                                         domain,
-                                                                                                         interfaceName);
-        List<MasterAccessControlEntry> mediatorAces = localDomainAccessStore.getMediatorAccessControlEntries(userId,
-                                                                                                             domain,
-                                                                                                             interfaceName);
-        List<OwnerAccessControlEntry> ownerAces = localDomainAccessStore.getOwnerAccessControlEntries(userId,
-                                                                                                      domain,
-                                                                                                      interfaceName);
+        List<MasterAccessControlEntry> masterAces;
+        List<MasterAccessControlEntry> mediatorAces;
+        List<OwnerAccessControlEntry> ownerAces;
+
+        synchronized (localDomainAccessStore) {
+            masterAces = localDomainAccessStore.getMasterAccessControlEntries(userId, domain, interfaceName);
+            mediatorAces = localDomainAccessStore.getMediatorAccessControlEntries(userId, domain, interfaceName);
+            ownerAces = localDomainAccessStore.getOwnerAccessControlEntries(userId, domain, interfaceName);
+        }
 
         if ((masterAces != null && masterAces.size() > 1) || (mediatorAces != null && mediatorAces.size() > 1)
                 || (ownerAces != null && ownerAces.size() > 1)) {
@@ -203,18 +206,15 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                             String operation,
                                             TrustLevel trustLevel) {
         LOG.debug("getConsumerPermission on domain {}, interface {}", domain, interfaceName);
-        MasterAccessControlEntry masterAce = localDomainAccessStore.getMasterAccessControlEntry(userId,
-                                                                                                domain,
-                                                                                                interfaceName,
-                                                                                                operation);
-        MasterAccessControlEntry mediatorAce = localDomainAccessStore.getMediatorAccessControlEntry(userId,
-                                                                                                    domain,
-                                                                                                    interfaceName,
-                                                                                                    operation);
-        OwnerAccessControlEntry ownerAce = localDomainAccessStore.getOwnerAccessControlEntry(userId,
-                                                                                             domain,
-                                                                                             interfaceName,
-                                                                                             operation);
+        MasterAccessControlEntry masterAce;
+        MasterAccessControlEntry mediatorAce;
+        OwnerAccessControlEntry ownerAce;
+
+        synchronized (localDomainAccessStore) {
+            masterAce = localDomainAccessStore.getMasterAccessControlEntry(userId, domain, interfaceName, operation);
+            mediatorAce = localDomainAccessStore.getMediatorAccessControlEntry(userId, domain, interfaceName, operation);
+            ownerAce = localDomainAccessStore.getOwnerAccessControlEntry(userId, domain, interfaceName, operation);
+        }
 
         return accessControlAlgorithm.getConsumerPermission(masterAce, mediatorAce, ownerAce, trustLevel);
     }
@@ -544,12 +544,22 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     private void queryDomainRoles(String userId) {
         LOG.debug("queryDomainRoles on userId {}", userId);
 
-        List<DomainRoleEntry> domainRoleEntries = globalDomainAccessControllerClient.getDomainRoles(userId);
-        if (domainRoleEntries != null) {
-            for (DomainRoleEntry entry : domainRoleEntries) {
-                localDomainAccessStore.updateDomainRole(entry);
+        globalDomainAccessControllerClient.getDomainRoles(new Callback<DomainRoleEntry[]>() {
+            @Override
+            public void onFailure(JoynrRuntimeException runtimeException) {
             }
-        }
+
+            @Override
+            public void onSuccess(DomainRoleEntry[] domainRoleEntries) {
+                if (domainRoleEntries != null) {
+                    synchronized (localDomainAccessStore) {
+                        for (DomainRoleEntry entry : domainRoleEntries) {
+                            localDomainAccessStore.updateDomainRole(entry);
+                        }
+                    }
+                }
+            }
+        }, userId);
     }
 
     private void queryAccessControlEntries(String domain, String interfaceName) {
@@ -557,27 +567,31 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
         List<MasterAccessControlEntry> masterAccessControlEntries = globalDomainAccessControllerClient.getMasterAccessControlEntries(domain,
                                                                                                                                      interfaceName);
-
-        if (masterAccessControlEntries != null) {
-            for (MasterAccessControlEntry entry : masterAccessControlEntries) {
-                localDomainAccessStore.updateMasterAccessControlEntry(entry);
+        synchronized (localDomainAccessStore) {
+            if (masterAccessControlEntries != null) {
+                for (MasterAccessControlEntry entry : masterAccessControlEntries) {
+                    localDomainAccessStore.updateMasterAccessControlEntry(entry);
+                }
             }
         }
 
         List<MasterAccessControlEntry> mediatorAccessControlEntries = globalDomainAccessControllerClient.getMediatorAccessControlEntries(domain,
                                                                                                                                          interfaceName);
-
-        if (mediatorAccessControlEntries != null) {
-            for (MasterAccessControlEntry entry : mediatorAccessControlEntries) {
-                localDomainAccessStore.updateMediatorAccessControlEntry(entry);
+        synchronized (localDomainAccessStore) {
+            if (mediatorAccessControlEntries != null) {
+                for (MasterAccessControlEntry entry : mediatorAccessControlEntries) {
+                    localDomainAccessStore.updateMediatorAccessControlEntry(entry);
+                }
             }
         }
 
         List<OwnerAccessControlEntry> ownerAccessControlEntries = globalDomainAccessControllerClient.getOwnerAccessControlEntries(domain,
                                                                                                                                   interfaceName);
-        if (ownerAccessControlEntries != null) {
-            for (OwnerAccessControlEntry entry : ownerAccessControlEntries) {
-                localDomainAccessStore.updateOwnerAccessControlEntry(entry);
+        synchronized (localDomainAccessStore) {
+            if (ownerAccessControlEntries != null) {
+                for (OwnerAccessControlEntry entry : ownerAccessControlEntries) {
+                    localDomainAccessStore.updateOwnerAccessControlEntry(entry);
+                }
             }
         }
 
