@@ -158,7 +158,8 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         }
 
         if (subscriptionsMap.get(subscriptionKey) == null) {
-            initializeLocalDomainAccessStore(userId, domain, interfaceName);
+            queryDomainRoles(userId);
+            queryAccessControlEntries(domain, interfaceName);
             subscriptionsMap.put(subscriptionKey, subscribeForAceChange(domain, interfaceName));
         }
 
@@ -540,8 +541,8 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         return new AceSubscription(mastersubscriptionId, mediatorsubscriptionId, ownersubscriptionId);
     }
 
-    private void initializeLocalDomainAccessStore(String userId, String domain, String interfaceName) {
-        LOG.debug("initializeLocalDomainAccessStore on domain {}, interface {}", domain, interfaceName);
+    private void queryDomainRoles(String userId) {
+        LOG.debug("queryDomainRoles on userId {}", userId);
 
         List<DomainRoleEntry> domainRoleEntries = globalDomainAccessControllerClient.getDomainRoles(userId);
         if (domainRoleEntries != null) {
@@ -549,6 +550,10 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                 localDomainAccessStore.updateDomainRole(entry);
             }
         }
+    }
+
+    private void queryAccessControlEntries(String domain, String interfaceName) {
+        LOG.debug("queryAccessControlEntries on domain {}, interface {}", domain, interfaceName);
 
         List<MasterAccessControlEntry> masterAccessControlEntries = globalDomainAccessControllerClient.getMasterAccessControlEntries(domain,
                                                                                                                                      interfaceName);
