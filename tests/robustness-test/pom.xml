@@ -108,6 +108,17 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>copy-backend-services-jee</id>
+						<phase>process-test-resources</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
 						<id>copy-backend-services</id>
 						<!--
 							NOTE: jetty:run runs in phase test-compile. Hence, backend services
