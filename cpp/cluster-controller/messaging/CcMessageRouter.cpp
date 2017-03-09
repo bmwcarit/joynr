@@ -537,6 +537,8 @@ void CcMessageRouter::removeMulticastReceiver(
 void CcMessageRouter::queueMessage(const JoynrMessage& message)
 {
     JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+    messageNotificationProvider->fireMessageQueuedForDelivery(
+            message.getHeaderTo(), message.getType());
     messageQueue->queueMessage(message);
 }
 
