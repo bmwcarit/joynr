@@ -43,9 +43,9 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8383/bounceproxy/");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
-                                    "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
+                                    "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL,
-                                    "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
+                                    "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "jee-consumer-joynr.properties");
 
         return joynrProperties;
