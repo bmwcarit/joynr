@@ -47,6 +47,9 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_BROKER_URI = "joynr.messaging.mqtt.brokeruri";
     public static final String PROPERTY_KEY_MQTT_CLIENT_ID_PREFIX = "joynr.messaging.mqtt.clientidprefix";
     public static final String PROPERTY_MQTT_ADDRESS = "property_mqtt_address";
+    public static final String PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC = "joynr.messaging.mqtt.keepalivetimersec";
+    public static final String PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC = "joynr.messaging.mqtt.connectiontimeoutsec";
+    public static final String PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS = "joynr.messaging.mqtt.timetowaitms";
 
     @Provides
     @Named(PROPERTY_MQTT_ADDRESS)
