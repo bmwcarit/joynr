@@ -1,11 +1,9 @@
 package io.joynr.accesscontrol;
 
-import joynr.infrastructure.DacTypes.Permission;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +19,8 @@ import joynr.infrastructure.DacTypes.Permission;
  * #L%
  */
 
-public interface GetConsumerPermissionCallback {
-    void getConsumerPermission(Permission permission);
+public interface QueryAccessControlEntriesCallback {
+    void queryAccessControlEntriesSucceeded();
 
-    void getConsumerPermissionFailed();
+    void queryAccessControlEntriesFailed();
 }

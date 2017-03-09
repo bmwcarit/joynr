@@ -161,6 +161,12 @@ public class AccessControllerImpl implements AccessController {
 
                         hasConsumerPermissionCallback.hasConsumerPermission(hasPermissionResult);
                     }
+
+                    @Override
+                    public void getConsumerPermissionFailed() {
+                        logger.error("Failed to query permission for message {}", message.getId());
+                        hasConsumerPermissionCallback.hasConsumerPermission(false);
+                    }
                 };
 
                 // try determine permission without expensive message deserialization

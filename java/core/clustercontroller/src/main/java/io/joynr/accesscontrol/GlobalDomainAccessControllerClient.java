@@ -423,14 +423,38 @@ public class GlobalDomainAccessControllerClient {
                                                                                                                    interfaceName));
     }
 
+    public void getMasterAccessControlEntries(Callback<MasterAccessControlEntry[]> callback,
+                                              String domain,
+                                              String interfaceName) {
+        getGlobalDomainAccessControllerProxy(TTL_30_DAYS_IN_MS).getMasterAccessControlEntries(callback,
+                                                                                              domain,
+                                                                                              interfaceName);
+    }
+
     public List<MasterAccessControlEntry> getMediatorAccessControlEntries(String domain, String interfaceName) {
         return Arrays.asList(getGlobalDomainAccessControllerProxy(TTL_30_DAYS_IN_MS).getMediatorAccessControlEntries(domain,
                                                                                                                      interfaceName));
     }
 
+    public void getMediatorAccessControlEntries(Callback<MasterAccessControlEntry[]> callback,
+                                                String domain,
+                                                String interfaceName) {
+        getGlobalDomainAccessControllerProxy(TTL_30_DAYS_IN_MS).getMediatorAccessControlEntries(callback,
+                                                                                                domain,
+                                                                                                interfaceName);
+    }
+
     public List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String domain, String interfaceName) {
         return Arrays.asList(getGlobalDomainAccessControllerProxy(TTL_30_DAYS_IN_MS).getOwnerAccessControlEntries(domain,
                                                                                                                   interfaceName));
+    }
+
+    public void getOwnerAccessControlEntries(Callback<OwnerAccessControlEntry[]> callback,
+                                             String domain,
+                                             String interfaceName) {
+        getGlobalDomainAccessControllerProxy(TTL_30_DAYS_IN_MS).getOwnerAccessControlEntries(callback,
+                                                                                             domain,
+                                                                                             interfaceName);
     }
 
     public void unsubscribeFromMasterAccessControlEntryChangedBroadcast(String subscriptionId) {

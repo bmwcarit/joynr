@@ -21,8 +21,10 @@ package io.joynr.accesscontrol;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
@@ -72,6 +74,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     private AccessControlAlgorithm accessControlAlgorithm = new AccessControlAlgorithm();
     private static final String WILDCARD = "*";
     private Map<UserDomainInterfaceOperationKey, AceSubscription> subscriptionsMap = new HashMap<UserDomainInterfaceOperationKey, AceSubscription>();
+    private Set<UserDomainInterfaceOperationKey> ongoingSubscriptions = new HashSet<UserDomainInterfaceOperationKey>();
     private GlobalDomainAccessControllerClient globalDomainAccessControllerClient;
 
     private DomainAccessControlStore localDomainAccessStore;
@@ -142,15 +145,15 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
     @Override
     @CheckForNull
-    public void getConsumerPermission(String userId,
-                                      String domain,
-                                      String interfaceName,
-                                      TrustLevel trustLevel,
-                                      GetConsumerPermissionCallback callback) {
-        UserDomainInterfaceOperationKey subscriptionKey = new UserDomainInterfaceOperationKey(null,
-                                                                                              domain,
-                                                                                              interfaceName,
-                                                                                              null);
+    public void getConsumerPermission(final String userId,
+                                      final String domain,
+                                      final String interfaceName,
+                                      final TrustLevel trustLevel,
+                                      final GetConsumerPermissionCallback callback) {
+        final UserDomainInterfaceOperationKey subscriptionKey = new UserDomainInterfaceOperationKey(null,
+                                                                                                    domain,
+                                                                                                    interfaceName,
+                                                                                                    null);
         LOG.debug("getConsumerPermission on domain {}, interface {}", domain, interfaceName);
 
         // Handle special cases which should not require a lookup or a subscription
@@ -161,11 +164,32 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         }
 
         if (subscriptionsMap.get(subscriptionKey) == null) {
-            queryDomainRoles(userId);
-            queryAccessControlEntries(domain, interfaceName);
-            subscriptionsMap.put(subscriptionKey, subscribeForAceChange(domain, interfaceName));
-        }
+            if (!ongoingSubscriptions.contains(subscriptionKey)) {
+                queryDomainRoles(userId);
+                queryAccessControlEntries(domain, interfaceName, new QueryAccessControlEntriesCallback() {
+                    @Override
+                    public void queryAccessControlEntriesSucceeded() {
+                        subscriptionsMap.put(subscriptionKey, subscribeForAceChange(domain, interfaceName));
+                        ongoingSubscriptions.remove(subscriptionKey);
+                        getConsumerPermissionWithCachedEntries(userId, domain, interfaceName, trustLevel, callback);
+                    }
 
+                    @Override
+                    public void queryAccessControlEntriesFailed() {
+                        callback.getConsumerPermissionFailed();
+                    }
+                });
+            }
+        } else {
+            getConsumerPermissionWithCachedEntries(userId, domain, interfaceName, trustLevel, callback);
+        }
+    }
+
+    private void getConsumerPermissionWithCachedEntries(String userId,
+                                                        String domain,
+                                                        String interfaceName,
+                                                        TrustLevel trustLevel,
+                                                        GetConsumerPermissionCallback callback) {
         List<MasterAccessControlEntry> masterAces;
         List<MasterAccessControlEntry> mediatorAces;
         List<OwnerAccessControlEntry> ownerAces;
@@ -562,39 +586,104 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         }, userId);
     }
 
-    private void queryAccessControlEntries(String domain, String interfaceName) {
+    private void queryAccessControlEntries(String domain,
+                                           String interfaceName,
+                                           QueryAccessControlEntriesCallback callback) {
         LOG.debug("queryAccessControlEntries on domain {}, interface {}", domain, interfaceName);
 
-        List<MasterAccessControlEntry> masterAccessControlEntries = globalDomainAccessControllerClient.getMasterAccessControlEntries(domain,
-                                                                                                                                     interfaceName);
-        synchronized (localDomainAccessStore) {
-            if (masterAccessControlEntries != null) {
-                for (MasterAccessControlEntry entry : masterAccessControlEntries) {
-                    localDomainAccessStore.updateMasterAccessControlEntry(entry);
-                }
-            }
-        }
+        final AceQuerySync querySync = new AceQuerySync(callback);
 
-        List<MasterAccessControlEntry> mediatorAccessControlEntries = globalDomainAccessControllerClient.getMediatorAccessControlEntries(domain,
-                                                                                                                                         interfaceName);
-        synchronized (localDomainAccessStore) {
-            if (mediatorAccessControlEntries != null) {
-                for (MasterAccessControlEntry entry : mediatorAccessControlEntries) {
-                    localDomainAccessStore.updateMediatorAccessControlEntry(entry);
-                }
+        globalDomainAccessControllerClient.getMasterAccessControlEntries(new Callback<MasterAccessControlEntry[]>() {
+            @Override
+            public void onFailure(JoynrRuntimeException runtimeException) {
+                LOG.error("Failed to query master access control entries: {}", runtimeException.toString());
+                querySync.registerException();
             }
-        }
 
-        List<OwnerAccessControlEntry> ownerAccessControlEntries = globalDomainAccessControllerClient.getOwnerAccessControlEntries(domain,
-                                                                                                                                  interfaceName);
-        synchronized (localDomainAccessStore) {
-            if (ownerAccessControlEntries != null) {
-                for (OwnerAccessControlEntry entry : ownerAccessControlEntries) {
-                    localDomainAccessStore.updateOwnerAccessControlEntry(entry);
+            @Override
+            public void onSuccess(MasterAccessControlEntry[] masterAccessControlEntries) {
+                synchronized (localDomainAccessStore) {
+                    if (masterAccessControlEntries != null) {
+                        for (MasterAccessControlEntry entry : masterAccessControlEntries) {
+                            localDomainAccessStore.updateMasterAccessControlEntry(entry);
+                        }
+                    }
                 }
+                querySync.registerSuccess();
             }
-        }
+        }, domain, interfaceName);
+
+        globalDomainAccessControllerClient.getMediatorAccessControlEntries(new Callback<MasterAccessControlEntry[]>() {
+            @Override
+            public void onFailure(JoynrRuntimeException runtimeException) {
+                LOG.error("Failed to query mediator access control entries: {}", runtimeException.toString());
+                querySync.registerException();
+            }
+
+            @Override
+            public void onSuccess(MasterAccessControlEntry[] mediatorAccessControlEntries) {
+                synchronized (localDomainAccessStore) {
+                    if (mediatorAccessControlEntries != null) {
+                        for (MasterAccessControlEntry entry : mediatorAccessControlEntries) {
+                            localDomainAccessStore.updateMediatorAccessControlEntry(entry);
+                        }
+                    }
+                }
+                querySync.registerSuccess();
+            }
+        }, domain, interfaceName);
+
+        globalDomainAccessControllerClient.getOwnerAccessControlEntries(new Callback<OwnerAccessControlEntry[]>() {
+            @Override
+            public void onFailure(JoynrRuntimeException runtimeException) {
+                LOG.error("Failed to query owner access control entries: {}", runtimeException.toString());
+                querySync.registerException();
+            }
+
+            @Override
+            public void onSuccess(OwnerAccessControlEntry[] ownerAccessControlEntries) {
+                synchronized (localDomainAccessStore) {
+                    if (ownerAccessControlEntries != null) {
+                        for (OwnerAccessControlEntry entry : ownerAccessControlEntries) {
+                            localDomainAccessStore.updateOwnerAccessControlEntry(entry);
+                        }
+                    }
+                }
+                querySync.registerSuccess();
+            }
+        }, domain, interfaceName);
 
         LOG.debug("Finished initializeLocalDomainAccessStore on domain {}, interface {}", domain, interfaceName);
+    }
+
+    static class AceQuerySync {
+        private int numPendingResponses = 3;
+        private int numErrors = 0;
+        private QueryAccessControlEntriesCallback finishedCallback;
+
+        public AceQuerySync(QueryAccessControlEntriesCallback finishedCallback) {
+            this.finishedCallback = finishedCallback;
+        }
+
+        public synchronized void registerSuccess() {
+            registerReponse();
+        }
+
+        public synchronized void registerException() {
+            numErrors++;
+            registerReponse();
+        }
+
+        private void registerReponse() {
+            numPendingResponses--;
+
+            if (numPendingResponses <= 0) {
+                if (numErrors == 0) {
+                    finishedCallback.queryAccessControlEntriesSucceeded();
+                } else {
+                    finishedCallback.queryAccessControlEntriesFailed();
+                }
+            }
+        }
     }
 }
