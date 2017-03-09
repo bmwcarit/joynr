@@ -20,8 +20,10 @@ package io.joynr.test.interlanguage.jee;
  */
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import io.joynr.provider.SubscriptionPublisherInjection;
 
 import java.util.Iterator;
@@ -31,8 +33,6 @@ import java.util.Map.Entry;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.exceptions.ApplicationException;
 import joynr.interlanguagetest.Enumeration;
-import joynr.interlanguagetest.TestInterface.MethodWithAnonymousErrorEnumErrorEnum;
-import joynr.interlanguagetest.TestInterface.MethodWithExtendedErrorEnumErrorEnum;
 import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
 import joynr.interlanguagetest.namedTypeCollection2.BaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.BaseStructWithoutElements;
@@ -72,10 +72,15 @@ public class IltProviderBean implements TestInterfaceSync,
     private MapStringString attributeMapStringString;
     private Integer attributeFireAndForget;
 
+    @SuppressWarnings("unused")
+    private TestInterfaceSubscriptionPublisher testInterfaceSubscriptionPublisher;
+
     private static final Logger logger = LoggerFactory.getLogger(IltProviderBean.class);
 
-    public IltProviderBean() {
+    @Inject
+    public IltProviderBean(@SubscriptionPublisher TestInterfaceSubscriptionPublisher testInterfaceSubscriptionPublisher) {
         attributeFireAndForget = 0;
+        this.testInterfaceSubscriptionPublisher = testInterfaceSubscriptionPublisher;
     }
 
     @Override
