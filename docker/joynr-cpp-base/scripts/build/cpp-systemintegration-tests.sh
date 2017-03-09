@@ -13,7 +13,7 @@ echo '####################################################'
 
 (
     cd /data/src/java
-    mvn install -DskipTests -o
+    mvn install -DskipTests
 
     DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-.*war")
 
