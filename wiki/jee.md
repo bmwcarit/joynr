@@ -312,6 +312,30 @@ For example:
 		};
 	}
 
+Inject `JoynrJeeMessageMetaInfo` to your EJB in order to retrieve the context for a received message.
+
+The context can be accessed by calling `JoynrJeeMessageMetaInfo.getMessageContext()`:
+
+    @Stateless
+    @ServiceProvider(serviceInterface = MyServiceSync.class)
+    public class MyBean implements MyServiceSync {
+        private JoynrJeeMessageMetaInfo messageMetaInfo;
+
+        @Inject
+        public MyBean(JoynrJeeMessageMetaInfo messageMetaInfo) {
+            this.messageMetaInfo = messageMetaInfo;
+        }
+
+        ... other method implementations ...
+
+        @Override
+        public void myMethod() {
+            ...
+            Map<String, Serializable> context = messageMetaInfo.getMessageContext();
+            ...
+        }
+    }
+
 ### Calling services
 
 In order to call services provided by other participants (e.g. applications

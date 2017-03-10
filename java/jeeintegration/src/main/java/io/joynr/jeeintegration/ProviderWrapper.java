@@ -40,6 +40,7 @@ import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
 import io.joynr.messaging.JoynrMessageCreator;
+import io.joynr.messaging.JoynrMessageMetaInfo;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
@@ -128,6 +129,7 @@ public class ProviderWrapper implements InvocationHandler {
             if (isProviderMethod(method, delegateToMethod)) {
                 JoynrJeeMessageContext.getInstance().activate();
                 copyMessageCreatorInfo();
+                copyMessageContext();
             }
             JoynrException joynrException = null;
             try {
@@ -220,19 +222,35 @@ public class ProviderWrapper implements InvocationHandler {
 
     private void copyMessageCreatorInfo() {
         JoynrMessageCreator joynrMessageCreator = injector.getInstance(JoynrMessageCreator.class);
-        Set<Bean<?>> beans = beanManager.getBeans(JoynrCallingPrincipal.class);
-        if (beans.size() != 1) {
-            throw new IllegalStateException("There must be exactly one EJB of type "
-                    + JoynrCallingPrincipal.class.getName() + ". Found " + beans.size());
-        }
-        @SuppressWarnings("unchecked")
-        Bean<JoynrCallingPrincipal> bean = (Bean<JoynrCallingPrincipal>) beans.iterator().next();
-        JoynrCallingPrincipal reference = (JoynrCallingPrincipal) beanManager.getReference(bean,
-                                                                                           JoynrCallingPrincipal.class,
-                                                                                           beanManager.createCreationalContext(bean));
+        JoynrCallingPrincipal reference = getUniqueBeanReference(JoynrCallingPrincipal.class);
+
         String messageCreatorId = joynrMessageCreator.getMessageCreatorId();
         LOG.trace("Setting user '{}' for message processing context.", messageCreatorId);
         reference.setUsername(messageCreatorId);
+    }
+
+    private void copyMessageContext() {
+        JoynrMessageMetaInfo joynrMessageContext = injector.getInstance(JoynrMessageMetaInfo.class);
+        JoynrJeeMessageMetaInfo jeeMessageContext = getUniqueBeanReference(JoynrJeeMessageMetaInfo.class);
+
+        LOG.trace("Setting message context for message processing context.");
+        jeeMessageContext.setMessageContext(joynrMessageContext.getMessageContext());
+    }
+
+    private <T> T getUniqueBeanReference(Class<T> beanClass)
+    {
+        Set<Bean<?>> beans = beanManager.getBeans(beanClass);
+        if (beans.size() != 1) {
+            throw new IllegalStateException("There must be exactly one EJB of type " + beanClass.getName() + ". Found " + beans.size());
+        }
+
+        @SuppressWarnings("unchecked")
+        Bean<T> bean = (Bean<T>) beans.iterator().next();
+
+        @SuppressWarnings("unchecked")
+        T reference = (T) beanManager.getReference(bean, beanClass, beanManager.createCreationalContext(bean));
+
+        return reference;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
