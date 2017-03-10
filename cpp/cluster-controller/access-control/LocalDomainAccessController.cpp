@@ -25,6 +25,8 @@
 #include <regex>
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
+#include "joynr/infrastructure/GlobalDomainAccessControlListEditorProxy.h"
+#include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/MulticastSubscriptionQos.h"
 
@@ -135,6 +137,8 @@ LocalDomainAccessController::LocalDomainAccessController(
           dreSubscriptions(),
           aceSubscriptions(),
           globalDomainAccessControllerProxy(),
+          globalDomainAccessControlListEditorProxy(),
+          globalDomainRoleControllerProxy(),
           localDomainAccessStore(std::move(localDomainAccessStore)),
           consumerPermissionRequests(),
           initStateMutex(),
@@ -153,6 +157,19 @@ void LocalDomainAccessController::init(
         std::shared_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
 {
     this->globalDomainAccessControllerProxy = globalDomainAccessControllerProxy;
+}
+
+void LocalDomainAccessController::init(std::shared_ptr<GlobalDomainAccessControlListEditorProxy>
+                                               globalDomainAccessControlListEditorProxy)
+{
+    this->globalDomainAccessControlListEditorProxy =
+            std::move(globalDomainAccessControlListEditorProxy);
+}
+
+void LocalDomainAccessController::init(
+        std::shared_ptr<GlobalDomainRoleControllerProxy> globalDomainRoleControllerProxy)
+{
+    this->globalDomainRoleControllerProxy = std::move(globalDomainRoleControllerProxy);
 }
 
 bool LocalDomainAccessController::hasRole(const std::string& userId,
@@ -266,7 +283,8 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
         getEditableMasterAccessControlEntries(const std::string& uid)
 {
     std::vector<MasterAccessControlEntry> resultMasterAces;
-    globalDomainAccessControllerProxy->getEditableMasterAccessControlEntries(resultMasterAces, uid);
+    globalDomainAccessControlListEditorProxy->getEditableMasterAccessControlEntries(
+            resultMasterAces, uid);
 
     return resultMasterAces;
 }
@@ -275,7 +293,8 @@ bool LocalDomainAccessController::updateMasterAccessControlEntry(
         const MasterAccessControlEntry& updatedMasterAce)
 {
     bool success;
-    globalDomainAccessControllerProxy->updateMasterAccessControlEntry(success, updatedMasterAce);
+    globalDomainAccessControlListEditorProxy->updateMasterAccessControlEntry(
+            success, updatedMasterAce);
 
     return success;
 }
@@ -286,7 +305,7 @@ bool LocalDomainAccessController::removeMasterAccessControlEntry(const std::stri
                                                                  const std::string& operation)
 {
     bool success;
-    globalDomainAccessControllerProxy->removeMasterAccessControlEntry(
+    globalDomainAccessControlListEditorProxy->removeMasterAccessControlEntry(
             success, uid, domain, interfaceName, operation);
 
     return success;
@@ -305,7 +324,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
         getEditableMediatorAccessControlEntries(const std::string& uid)
 {
     std::vector<MasterAccessControlEntry> resultMediatorAces;
-    globalDomainAccessControllerProxy->getEditableMediatorAccessControlEntries(
+    globalDomainAccessControlListEditorProxy->getEditableMediatorAccessControlEntries(
             resultMediatorAces, uid);
 
     return resultMediatorAces;
@@ -315,7 +334,7 @@ bool LocalDomainAccessController::updateMediatorAccessControlEntry(
         const MasterAccessControlEntry& updatedMediatorAce)
 {
     bool success;
-    globalDomainAccessControllerProxy->updateMediatorAccessControlEntry(
+    globalDomainAccessControlListEditorProxy->updateMediatorAccessControlEntry(
             success, updatedMediatorAce);
 
     return success;
@@ -327,7 +346,7 @@ bool LocalDomainAccessController::removeMediatorAccessControlEntry(const std::st
                                                                    const std::string& operation)
 {
     bool success;
-    globalDomainAccessControllerProxy->removeMediatorAccessControlEntry(
+    globalDomainAccessControlListEditorProxy->removeMediatorAccessControlEntry(
             success, uid, domain, interfaceName, operation);
 
     return success;
@@ -346,7 +365,8 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessController::
         getEditableOwnerAccessControlEntries(const std::string& uid)
 {
     std::vector<OwnerAccessControlEntry> resultOwnerAces;
-    globalDomainAccessControllerProxy->getEditableOwnerAccessControlEntries(resultOwnerAces, uid);
+    globalDomainAccessControlListEditorProxy->getEditableOwnerAccessControlEntries(
+            resultOwnerAces, uid);
 
     return resultOwnerAces;
 }
@@ -355,7 +375,8 @@ bool LocalDomainAccessController::updateOwnerAccessControlEntry(
         const OwnerAccessControlEntry& updatedOwnerAce)
 {
     bool success;
-    globalDomainAccessControllerProxy->updateOwnerAccessControlEntry(success, updatedOwnerAce);
+    globalDomainAccessControlListEditorProxy->updateOwnerAccessControlEntry(
+            success, updatedOwnerAce);
 
     return success;
 }
@@ -366,7 +387,7 @@ bool LocalDomainAccessController::removeOwnerAccessControlEntry(const std::strin
                                                                 const std::string& operation)
 {
     bool success;
-    globalDomainAccessControllerProxy->removeOwnerAccessControlEntry(
+    globalDomainAccessControlListEditorProxy->removeOwnerAccessControlEntry(
             success, uid, domain, interfaceName, operation);
 
     return success;
@@ -590,7 +611,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
         initialiser->abort();
     };
 
-    globalDomainAccessControllerProxy->getDomainRolesAsync(
+    globalDomainRoleControllerProxy->getDomainRolesAsync(
             userId, std::move(domainRoleOnSuccess), std::move(domainRoleOnError));
 
     std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)>
@@ -757,7 +778,7 @@ std::shared_ptr<Future<std::string>> LocalDomainAccessController::subscribeForDr
     multicastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
     std::vector<std::string> partitions = {sanitizeForPartition(userId)};
 
-    return globalDomainAccessControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
+    return globalDomainRoleControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
             std::static_pointer_cast<ISubscriptionListener<ChangeType::Enum, DomainRoleEntry>>(
                     domainRoleEntryChangedBroadcastListener),
             multicastSubscriptionQos,

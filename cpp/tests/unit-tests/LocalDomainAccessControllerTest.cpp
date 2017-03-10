@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,8 @@ class LocalDomainAccessControllerTest : public ::testing::Test {
 public:
     LocalDomainAccessControllerTest() : localDomainAccessStorePtr(nullptr),
                                         localDomainAccessController(),
-                                        mockGdacProxy()
+                                        mockGdacProxy(),
+                                        mockGdrcProxy()
     {
     }
 
@@ -89,7 +90,9 @@ public:
         localDomainAccessController =
                 std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
         mockGdacProxy = std::make_shared<MockGlobalDomainAccessControllerProxy>();
+        mockGdrcProxy = std::make_shared<MockGlobalDomainRoleControllerProxy>();
         localDomainAccessController->init(mockGdacProxy);
+        localDomainAccessController->init(mockGdrcProxy);
 
         userDre = DomainRoleEntry(TEST_USER, DOMAINS, Role::OWNER);
         masterAce = MasterAccessControlEntry(
@@ -119,6 +122,7 @@ protected:
     LocalDomainAccessStore* localDomainAccessStorePtr;
     std::unique_ptr<LocalDomainAccessController> localDomainAccessController;
     std::shared_ptr<MockGlobalDomainAccessControllerProxy> mockGdacProxy;
+    std::shared_ptr<MockGlobalDomainRoleControllerProxy> mockGdrcProxy;
     OwnerAccessControlEntry ownerAce;
     MasterAccessControlEntry masterAce;
     DomainRoleEntry userDre;
@@ -263,7 +267,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     ownerAcesFromGlobalDac.push_back(ownerAce);
 
     // Setup the mock GDAC proxy
-    EXPECT_CALL(*mockGdacProxy, getDomainRolesAsync(_,_,_))
+    EXPECT_CALL(*mockGdrcProxy, getDomainRolesAsync(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<1>(std::vector<DomainRoleEntry>()),
@@ -333,7 +337,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
 
 
     // Setup the mock GDAC proxy
-    EXPECT_CALL(*mockGdacProxy, getDomainRolesAsync(_,_,_))
+    EXPECT_CALL(*mockGdrcProxy, getDomainRolesAsync(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<1>(std::vector<DomainRoleEntry>()),
@@ -391,7 +395,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)> getMasterAcesOnSuccessFct;
 
     // Setup the mock GDAC proxy
-    EXPECT_CALL(*mockGdacProxy, getDomainRolesAsync(_,_,_))
+    EXPECT_CALL(*mockGdrcProxy, getDomainRolesAsync(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<1>(std::vector<DomainRoleEntry>()),

@@ -48,6 +48,8 @@ namespace joynr
 namespace infrastructure
 {
 class GlobalDomainAccessControllerProxy;
+class GlobalDomainRoleControllerProxy;
+class GlobalDomainAccessControlListEditorProxy;
 } // namespace infrastructure
 
 /**
@@ -81,6 +83,20 @@ public:
      */
     void init(std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
                       globalDomainAccessControllerProxy);
+
+    /**
+     * The init method has to be called first, only afterwards LocalDomainAccessController may be
+     * used.
+     */
+    void init(std::shared_ptr<infrastructure::GlobalDomainAccessControlListEditorProxy>
+                      globalDomainAccessControlListEditorProxy);
+
+    /**
+     * The init method has to be called first, only afterwards LocalDomainAccessController may be
+     * used.
+     */
+    void init(std::shared_ptr<infrastructure::GlobalDomainRoleControllerProxy>
+                      globalDomainRoleControllerProxy);
 
     /**
      * Check if user uid has role role for domain.
@@ -475,6 +491,10 @@ private:
 
     std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
+    std::shared_ptr<infrastructure::GlobalDomainAccessControlListEditorProxy>
+            globalDomainAccessControlListEditorProxy;
+    std::shared_ptr<infrastructure::GlobalDomainRoleControllerProxy>
+            globalDomainRoleControllerProxy;
     std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
 
     ADD_LOGGER(LocalDomainAccessController);
