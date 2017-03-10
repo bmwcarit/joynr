@@ -25,6 +25,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
@@ -32,6 +33,9 @@ import io.joynr.messaging.routing.MessageRouter;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
+
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,14 +46,25 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
 
     private MessageReceiver messageReceiver;
 
+    private Set<JoynrMessageProcessor> messageProcessors;
+
     @Inject
-    public ChannelMessagingSkeleton(MessageRouter messageRouter, MessageReceiver messageReceiver) {
+    public ChannelMessagingSkeleton(MessageRouter messageRouter,
+                                    MessageReceiver messageReceiver,
+                                    Set<JoynrMessageProcessor> messageProcessors) {
         this.messageRouter = messageRouter;
         this.messageReceiver = messageReceiver;
+        this.messageProcessors = messageProcessors;
     }
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
+        if (messageProcessors != null) {
+            for (JoynrMessageProcessor processor : messageProcessors) {
+                message = processor.processIncoming(message);
+            }
+        }
+
         logger.debug("<<< INCOMING <<< {}", message.toLogMessage());
         final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
         try {

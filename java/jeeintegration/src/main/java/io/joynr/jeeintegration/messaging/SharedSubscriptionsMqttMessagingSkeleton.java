@@ -24,9 +24,12 @@ import static io.joynr.jeeintegration.messaging.SharedSubscriptionReplyToAddress
 
 import static java.lang.String.format;
 
+import java.util.Set;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
@@ -48,14 +51,16 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private String receiverId;
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
     public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
                                                     MqttMessageSerializerFactory messageSerializerFactory,
                                                     @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                                     @Named(MessagingPropertyKeys.RECEIVERID) String receiverId,
-                                                    RawMessagingPreprocessor rawMessagingPreprocessor) {
-        super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory, rawMessagingPreprocessor);
+                                                    RawMessagingPreprocessor rawMessagingPreprocessor,
+                                                    Set<JoynrMessageProcessor> messageProcessors) {
+        super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory, rawMessagingPreprocessor, messageProcessors);
         this.channelId = channelId;
         this.receiverId = receiverId;
     }

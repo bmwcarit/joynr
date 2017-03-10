@@ -23,8 +23,12 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.inject.Guice;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
+
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
@@ -66,6 +70,9 @@ public class UrlResolverTest {
                                                          bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
                                                                                   .in(Singleton.class);
                                                          bind(MessageRouter.class).toInstance(mockMessageRouter);
+                                                         Multibinder.newSetBinder(binder(),
+                                                                                  new TypeLiteral<JoynrMessageProcessor>() {
+                                                                                  });
                                                      }
                                                  });
         urlResolver = injector.getInstance(UrlResolver.class);

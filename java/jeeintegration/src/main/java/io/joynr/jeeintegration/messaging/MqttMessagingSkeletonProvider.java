@@ -24,6 +24,8 @@ import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +34,7 @@ import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
@@ -59,6 +62,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private String channelId;
     private String receiverId;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
+    private Set<JoynrMessageProcessor> messageProcessors;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -70,11 +74,13 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          MqttMessageSerializerFactory messageSerializerFactory,
                                          @Named(CHANNELID) String channelId,
                                          @Named(RECEIVERID) String receiverId,
-                                         RawMessagingPreprocessor rawMessagingPreprocessor) {
+                                         RawMessagingPreprocessor rawMessagingPreprocessor,
+                                         Set<JoynrMessageProcessor> messageProcessors) {
         // CHECKSTYLE:ON
         httpBridgeEnabled = Boolean.valueOf(enableHttpBridge);
         sharedSubscriptionsEnabled = Boolean.valueOf(enableSharedSubscriptions);
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
+        this.messageProcessors = messageProcessors;
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
@@ -99,13 +105,15 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                 messageSerializerFactory,
                                                                 channelId,
                                                                 receiverId,
-                                                                rawMessagingPreprocessor);
+                                                                rawMessagingPreprocessor,
+                                                                messageProcessors);
         }
         return new MqttMessagingSkeleton(ownAddress,
                                          messageRouter,
                                          mqttClientFactory,
                                          messageSerializerFactory,
-                                         rawMessagingPreprocessor);
+                                         rawMessagingPreprocessor,
+                                         messageProcessors);
     }
 
 }

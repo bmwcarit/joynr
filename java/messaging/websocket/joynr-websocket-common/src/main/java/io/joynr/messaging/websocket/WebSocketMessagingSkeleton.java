@@ -20,6 +20,7 @@ package io.joynr.messaging.websocket;
  */
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -49,6 +51,7 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
     private WebSocketEndpointFactory webSocketEndpointFactory;
     private WebSocketAddress serverAddress;
     private boolean mainTransport;
+    private Set<JoynrMessageProcessor> messageProcessors;
 
     public static class MainTransportFlagBearer {
         @Inject(optional = true)
@@ -72,12 +75,14 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
                                       WebSocketEndpointFactory webSocketEndpointFactory,
                                       MessageRouter messageRouter,
                                       ObjectMapper objectMapper,
-                                      MainTransportFlagBearer mainTransportFlagBearer) {
+                                      MainTransportFlagBearer mainTransportFlagBearer,
+                                      Set<JoynrMessageProcessor> messageProcessors) {
         this.serverAddress = serverAddress;
         this.webSocketEndpointFactory = webSocketEndpointFactory;
         this.messageRouter = messageRouter;
         this.objectMapper = objectMapper;
         this.mainTransport = mainTransportFlagBearer.isMainTransport();
+        this.messageProcessors = messageProcessors;
     }
 
     @Override
@@ -104,6 +109,13 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
     public void transmit(String serializedMessage, FailureAction failureAction) {
         try {
             JoynrMessage message = objectMapper.readValue(serializedMessage, JoynrMessage.class);
+
+            if (messageProcessors != null) {
+                for (JoynrMessageProcessor processor : messageProcessors) {
+                    message = processor.processIncoming(message);
+                }
+            }
+
             transmit(message, failureAction);
         } catch (IOException error) {
             failureAction.execute(error);

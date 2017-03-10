@@ -26,10 +26,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
+
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
@@ -39,12 +44,13 @@ import joynr.system.RoutingTypes.MqttAddress;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
@@ -66,13 +72,21 @@ public class MqttMessagingSkeletonTest {
     @Mock
     private JoynrMqttClient mqttClient;
 
+    private FailureAction failIfCalledAction = new FailureAction() {
+        @Override
+        public void execute(Throwable error) {
+            fail("failure action was erroneously called");
+        }
+    };
+
     @Before
     public void setup() {
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,
                                             mqttClientFactory,
                                             messageSerializerFactory,
-                                            new NoOpRawMessagingPreprocessor());
+                                            new NoOpRawMessagingPreprocessor(),
+                                            new HashSet<JoynrMessageProcessor>());
         when(mqttClientFactory.create()).thenReturn(mqttClient);
         subject.init();
         verify(mqttClient).subscribe(anyString());
@@ -112,16 +126,38 @@ public class MqttMessagingSkeletonTest {
                                             messageRouter,
                                             mqttClientFactory,
                                             messageSerializerFactory,
-                                            preprocessor);
+                                            preprocessor,
+                                            new HashSet<JoynrMessageProcessor>());
         JoynrMessage message = new JoynrMessage();
         message.setPayload("payload");
-        subject.transmit(objectMapper.writeValueAsString(message), new FailureAction() {
-            @Override
-            public void execute(Throwable error) {
-                fail("failure action was erroneously called");
-            }
-        });
+        subject.transmit(objectMapper.writeValueAsString(message), failIfCalledAction);
         verify(messageRouter).route(message);
     }
 
+    @Test
+    public void testJoynrMessageProcessorIsCalled() throws Exception {
+        JoynrMessage testMessage = new JoynrMessage();
+        testMessage.setPayload("testPayload");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String serializedJoynrMessage = objectMapper.writeValueAsString(testMessage);
+
+        JoynrMessageProcessor processorMock = mock(JoynrMessageProcessor.class);
+
+        when(processorMock.processIncoming(Mockito.any(JoynrMessage.class))).then(returnsFirstArg());
+        when(messageSerializerFactory.create(Mockito.any(MqttAddress.class))).thenReturn(new JsonSerializer(objectMapper));
+
+        subject = new MqttMessagingSkeleton(ownAddress,
+                                            messageRouter,
+                                            mqttClientFactory,
+                                            messageSerializerFactory,
+                                            new NoOpRawMessagingPreprocessor(),
+                                            Sets.newHashSet(processorMock));
+
+        subject.transmit(serializedJoynrMessage, failIfCalledAction);
+
+        ArgumentCaptor<JoynrMessage> argCaptor = ArgumentCaptor.forClass(JoynrMessage.class);
+        verify(processorMock).processIncoming(argCaptor.capture());
+        assertEquals(testMessage.getPayload(), argCaptor.getValue().getPayload());
+    }
 }

@@ -21,6 +21,7 @@ package io.joynr.messaging.mqtt;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
@@ -54,17 +56,20 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     private MqttAddress ownAddress;
     private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
     private RawMessagingPreprocessor rawMessagingPreprocessor;
+    private Set<JoynrMessageProcessor> messageProcessors;
 
     @Inject
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttMessageSerializerFactory messageSerializerFactory,
-                                 RawMessagingPreprocessor rawMessagingPreprocessor) {
+                                 RawMessagingPreprocessor rawMessagingPreprocessor,
+                                 Set<JoynrMessageProcessor> messageProcessors) {
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
+        this.messageProcessors = messageProcessors;
         messageSerializer = messageSerializerFactory.create(ownAddress);
     }
 
@@ -138,8 +143,14 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
         JoynrMessage message = messageSerializer.deserialize(rawMessagingPreprocessor.process(serializedMessage));
-        transmit(message, failureAction);
 
+        if (messageProcessors != null) {
+            for (JoynrMessageProcessor processor : messageProcessors) {
+                message = processor.processIncoming(message);
+            }
+        }
+
+        transmit(message, failureAction);
     }
 
     protected JoynrMqttClient getClient() {
