@@ -43,14 +43,15 @@ public:
 
     std::size_t queueMessage(const JoynrMessage& message);
 
-    MessageQueueItem* getNextMessageForParticipant(const std::string destinationPartId);
+    std::unique_ptr<MessageQueueItem> getNextMessageForParticipant(
+            const std::string destinationPartId);
 
     std::int64_t removeOutdatedMessages();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
-    std::multimap<std::string, MessageQueueItem*> queue;
+    std::multimap<std::string, std::unique_ptr<MessageQueueItem>> queue;
     mutable std::mutex queueMutex;
 };
 } // namespace joynr
