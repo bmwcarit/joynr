@@ -116,18 +116,68 @@ public:
      * Unregister a provider identified by its globally unique participant ID. The participant ID is
      * returned during the provider registration process.
      * @param participantId The participantId of the provider which shall be unregistered
+     * @param onSucess: Will be invoked when provider unregistration succeeded.
+     * @param onError: Will be invoked when the provider could not be unregistered. An exception,
+     * which describes the error, is passed as the parameter.
      */
-    void unregisterProvider(const std::string& participantId)
+    void unregisterProviderAsync(
+            const std::string& participantId,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError)
     {
         assert(capabilitiesRegistrar);
-        capabilitiesRegistrar->remove(participantId);
+        capabilitiesRegistrar->removeAsync(participantId, std::move(onSuccess), std::move(onError));
     }
 
     /**
      * @brief Unregisters the provider from the joynr framework
      * @tparam TIntfProvider The interface class of the provider to unregister. The corresponding
      * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
-     * @param domain The domain the provider was registered for.
+     * @param domain The domain to unregister the provider from. It must match the domain used
+     * during provider registration.
+     * @param provider The provider instance to unregister the provider from.
+     * @param onSucess: Will be invoked when provider unregistration succeeded.
+     * @param onError: Will be invoked when the provider could not be unregistered. An exception,
+     * which describes the error, is passed as the parameter.
+     * @return The globally unique participant ID of the provider. It is assigned by the joynr
+     * communication framework.
+     */
+    template <class TIntfProvider>
+    std::string unregisterProviderAsync(
+            const std::string& domain,
+            std::shared_ptr<TIntfProvider> provider,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError)
+    {
+        assert(capabilitiesRegistrar);
+        assert(!domain.empty());
+        return capabilitiesRegistrar->removeAsync(
+                domain, provider, std::move(onSuccess), std::move(onError));
+    }
+
+    /**
+     * @brief Unregisters the provider from the joynr communication framework.
+     *
+     * Unregister a provider identified by its globally unique participant ID. The participant ID is
+     * returned during the provider registration process.
+     * @param participantId The participantId of the provider which shall be unregistered
+     */
+    void unregisterProvider(const std::string& participantId)
+    {
+        Future<void> future;
+        auto onSuccess = [&future]() { future.onSuccess(); };
+        auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+            future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+        };
+
+        unregisterProviderAsync(participantId, std::move(onSuccess), std::move(onError));
+        future.get();
+    }
+
+    /**
+     * @brief Unregisters the provider from the joynr framework
+     * @tparam TIntfProvider The interface class of the provider to unregister. The corresponding
+     * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
      * @param domain The domain to unregister the provider from. It must match the domain used
      * during provider registration.
      * @param provider The provider instance to unregister the provider from.
@@ -138,9 +188,16 @@ public:
     std::string unregisterProvider(const std::string& domain,
                                    std::shared_ptr<TIntfProvider> provider)
     {
-        assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return capabilitiesRegistrar->remove<TIntfProvider>(domain, provider);
+        Future<void> future;
+        auto onSuccess = [&future]() { future.onSuccess(); };
+        auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+            future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+        };
+        std::string participantId =
+                unregisterProviderAsync(domain, provider, std::move(onSuccess), std::move(onError));
+        future.get();
+        return participantId;
     }
 
     /**

@@ -154,7 +154,16 @@ public:
     std::string unregisterProvider(const std::string& domain,
                                    std::shared_ptr<TIntfProvider> provider)
     {
-        return capabilitiesRegistrar->remove<TIntfProvider>(domain, provider);
+        Future<void> future;
+        auto onSuccess = [&future]() { future.onSuccess(); };
+        auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+            future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+        };
+
+        std::string participantId = capabilitiesRegistrar->removeAsync<TIntfProvider>(
+                domain, provider, std::move(onSuccess), std::move(onError));
+        future.get();
+        return participantId;
     }
 
     template <class TIntfProxy>

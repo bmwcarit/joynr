@@ -157,8 +157,21 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
                     _
     ))
             .Times(1)
-            .WillOnce(Return(mockFuture));
-    std::string participantId = capabilitiesRegistrar->remove(domain, mockProvider);
+            .WillOnce(
+                DoAll(InvokeArgument<1>(),
+                      Return(mockFuture)
+                      )
+                );
+
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    std::string participantId = capabilitiesRegistrar->removeAsync(domain, mockProvider, onSuccess, onError);
+    future.get();
+
     EXPECT_EQ(expectedParticipantId, participantId);
 }
 
@@ -174,8 +187,20 @@ TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
                     _
     ))
             .Times(1)
-            .WillOnce(Return(mockFuture));
-    capabilitiesRegistrar->remove(expectedParticipantId);
+            .WillOnce(
+                DoAll(InvokeArgument<1>(),
+                      Return(mockFuture)
+                      )
+                );
+
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    capabilitiesRegistrar->removeAsync(expectedParticipantId, onSuccess, onError);
+    future.get();
 }
 
 TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapability){

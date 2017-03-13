@@ -120,16 +120,23 @@ public:
         return participantId;
     }
 
-    void remove(const std::string& participantId);
+    void removeAsync(
+            const std::string& participantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError);
 
     template <class T>
-    std::string remove(const std::string& domain, std::shared_ptr<T> provider)
+    std::string removeAsync(
+            const std::string& domain,
+            std::shared_ptr<T> provider,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
     {
         std::string interfaceName = provider->getInterfaceName();
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
-        remove(participantId);
+        removeAsync(participantId, std::move(onSuccess), std::move(onError));
         return participantId;
     }
 
