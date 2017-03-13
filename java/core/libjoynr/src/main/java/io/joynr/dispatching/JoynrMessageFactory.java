@@ -97,7 +97,7 @@ public class JoynrMessageFactory {
         message.setPayload(serializePayload(payload));
         message.setCustomHeaders(messagingQos.getCustomMessageHeaders());
         for (JoynrMessageProcessor processor : messageProcessors) {
-            message = processor.process(message);
+            message = processor.processOutgoing(message);
         }
         return message;
     }

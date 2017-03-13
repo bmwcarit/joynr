@@ -77,8 +77,12 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Stateless
     private class JoynrMessageProcessorTest implements JoynrMessageProcessor {
         @Override
-        public JoynrMessage process(JoynrMessage joynrMessage) {
+        public JoynrMessage processOutgoing(JoynrMessage joynrMessage) {
             joynrMessage.getHeader().put("test", "test");
+            return joynrMessage;
+        }
+        @Override
+        public JoynrMessage processIncoming(JoynrMessage joynrMessage) {
             return joynrMessage;
         }
     }

@@ -29,12 +29,22 @@ import joynr.JoynrMessage;
 public interface JoynrMessageProcessor {
 
     /**
-     * This method is passed in a joynr message, which it can then process, e.g. add or change headers,
-     * encrypt the payload, etc., and then returns a new message which is then used for further processing
-     * and transmitting.
+     * This method is passed in a joynr message, which was created and is prepared for transmission.
+     * It can then process, e.g. add or change headers, encrypt the payload, etc., and then returns a
+     * new message which is then used for further processing.
      *
      * @param joynrMessage the message to process.
      * @return the message which should be used.
      */
-    JoynrMessage process(JoynrMessage joynrMessage);
+    JoynrMessage processOutgoing(JoynrMessage joynrMessage);
+
+    /**
+     * This method is passed in a joynr message which was received by the messaging layer. It can then
+     * process, e.g. add or change headers, encrypt the payload, etc., and then returns a new message
+     * which is then used for further processing.
+     *
+     * @param joynrMessage the message to process.
+     * @return the message which should be used.
+     */
+    JoynrMessage processIncoming(JoynrMessage joynrMessage);
 }

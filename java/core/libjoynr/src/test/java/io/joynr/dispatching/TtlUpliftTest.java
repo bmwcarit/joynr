@@ -156,9 +156,14 @@ public class TtlUpliftTest {
                                               joynrMessageProcessorMultibinder.addBinding()
                                                                               .toInstance(new JoynrMessageProcessor() {
                                                                                   @Override
-                                                                                  public JoynrMessage process(JoynrMessage joynrMessage) {
+                                                                                  public JoynrMessage processOutgoing(JoynrMessage joynrMessage) {
                                                                                       joynrMessage.getHeader()
                                                                                                   .put("test", "test");
+                                                                                      return joynrMessage;
+                                                                                  }
+
+                                                                                  @Override
+                                                                                  public JoynrMessage processIncoming(JoynrMessage joynrMessage) {
                                                                                       return joynrMessage;
                                                                                   }
                                                                               });
