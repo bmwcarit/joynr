@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ std::unique_ptr<Arbitrator> ArbitratorFactory::createArbitrator(
         const std::string& domain,
         const std::string& interfaceName,
         const joynr::types::Version& interfaceVersion,
-        joynr::system::IDiscoverySync& discoveryProxy,
+        joynr::system::IDiscoveryAsync& discoveryProxy,
         const DiscoveryQos& discoveryQos)
 {
     std::unique_ptr<ArbitrationStrategyFunction> arbitrationStrategyFunction;

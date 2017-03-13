@@ -68,7 +68,7 @@ public:
      */
     ProxyBuilder(ProxyFactory& proxyFactory,
                  IRequestCallerDirectory* requestCallerDirectory,
-                 joynr::system::IDiscoverySync& discoveryProxy,
+                 joynr::system::IDiscoveryAsync& discoveryProxy,
                  const std::string& domain,
                  std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
                  std::shared_ptr<IMessageRouter> messageRouter,
@@ -118,7 +118,7 @@ private:
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
-    joynr::system::IDiscoverySync& discoveryProxy;
+    joynr::system::IDiscoveryAsync& discoveryProxy;
     std::unique_ptr<Arbitrator> arbitrator;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
@@ -133,7 +133,7 @@ template <class T>
 ProxyBuilder<T>::ProxyBuilder(
         ProxyFactory& proxyFactory,
         IRequestCallerDirectory* requestCallerDirectory,
-        joynr::system::IDiscoverySync& discoveryProxy,
+        system::IDiscoveryAsync& discoveryProxy,
         const std::string& domain,
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,

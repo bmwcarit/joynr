@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/types/Version.h"
 #include "joynr/IJoynrMessageSender.h"
-#include "joynr/SingleThreadedIOService.h"
 #include "joynr/SingleThreadedIOService.h"
 
 using namespace joynr;
@@ -104,18 +103,22 @@ TEST_F(CapabilitiesRegistrarTest, add){
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
     EXPECT_CALL(
                 mockDiscovery,
-                add(
+                addAsync(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                         Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
                         Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos)),
                         Property(&joynr::types::DiscoveryEntry::getProviderVersion, Eq(expectedProviderVersion))
-                    )
+                    ),
+                    _,
+                    _
                 )
-    ).WillOnce(Return());
+    ).WillOnce(Return(mockFuture));
 
     std::string participantId = capabilitiesRegistrar->add(domain, mockProvider, testQos);
     EXPECT_EQ(expectedParticipantId, participantId);
@@ -131,12 +134,15 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId))
             .Times(1);
-    EXPECT_CALL(mockDiscovery, remove(
-                    expectedParticipantId
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
+    EXPECT_CALL(mockDiscovery, removeAsync(
+                    expectedParticipantId,
+                    _,
+                    _
     ))
             .Times(1)
-            .WillOnce(Return())
-    ;
+            .WillOnce(Return(mockFuture));
     std::string participantId = capabilitiesRegistrar->remove(domain, mockProvider);
     EXPECT_EQ(expectedParticipantId, participantId);
 }
@@ -144,12 +150,16 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
 TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
     EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId))
             .Times(1);
-    EXPECT_CALL(mockDiscovery, remove(
-                    expectedParticipantId
+
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
+    EXPECT_CALL(mockDiscovery, removeAsync(
+                    expectedParticipantId,
+                    _,
+                    _
     ))
             .Times(1)
-            .WillOnce(Return())
-    ;
+            .WillOnce(Return(mockFuture));
     capabilitiesRegistrar->remove(expectedParticipantId);
 }
 
@@ -167,18 +177,22 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
 
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
+
     EXPECT_CALL(
                 mockDiscovery,
-                add(
+                addAsync(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                         Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
                         Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
-                    )
+                    ),
+                    _,
+                    _
                 )
-    ).Times(1).WillOnce(Return())
-    ;
+    ).Times(1).WillOnce(Return(mockFuture));
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);
@@ -216,18 +230,21 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
 
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
     EXPECT_CALL(
                 mockDiscovery,
-                add(
+                addAsync(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                         Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
                         Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
-                    )
+                    ),
+                    _,
+                    _
                 )
-    ).Times(1).WillOnce(Return())
-    ;
+    ).Times(1).WillOnce(Return(mockFuture));
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);

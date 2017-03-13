@@ -42,7 +42,7 @@ namespace joynr
 
 namespace system
 {
-class IDiscoverySync;
+class IDiscoveryAsync;
 } // namespace system
 
 /*
@@ -63,7 +63,7 @@ public:
     Arbitrator(const std::string& domain,
                const std::string& interfaceName,
                const joynr::types::Version& interfaceVersion,
-               joynr::system::IDiscoverySync& discoveryProxy,
+               joynr::system::IDiscoveryAsync& discoveryProxy,
                const DiscoveryQos& discoveryQos,
                std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction);
 
@@ -86,7 +86,7 @@ private:
     virtual void receiveCapabilitiesLookupResults(
             const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
 
-    joynr::system::IDiscoverySync& discoveryProxy;
+    joynr::system::IDiscoveryAsync& discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::types::DiscoveryQos systemDiscoveryQos;
     std::vector<std::string> domains;

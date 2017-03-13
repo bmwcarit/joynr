@@ -26,7 +26,7 @@ INIT_LOGGER(CapabilitiesRegistrar);
 
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         std::vector<IDispatcher*> dispatcherList,
-        joynr::system::IDiscoverySync& discoveryProxy,
+        system::IDiscoveryAsync& discoveryProxy,
         std::shared_ptr<ParticipantIdStorage> participantIdStorage,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,
@@ -48,7 +48,8 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
         currentDispatcher->removeRequestCaller(participantId);
     }
     try {
-        discoveryProxy.remove(participantId);
+        auto future = discoveryProxy.removeAsync(participantId);
+        future->wait();
     } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to remove provider (participant ID: {}) to discovery. Error: {}",

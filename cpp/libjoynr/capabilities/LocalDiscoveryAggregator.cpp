@@ -22,6 +22,7 @@
 #include <limits>
 #include <utility>
 
+#include "joynr/Future.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
@@ -35,14 +36,15 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
 {
 }
 
-void LocalDiscoveryAggregator::setDiscoveryProxy(
-        std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy)
+void LocalDiscoveryAggregator::setDiscoveryProxy(std::unique_ptr<IDiscoveryAsync> discoveryProxy)
 {
     this->discoveryProxy = std::move(discoveryProxy);
 }
 
-// inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discoveryEntry)
+std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
+        const types::DiscoveryEntry& discoveryEntry,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
     if (!discoveryProxy) {
         throw exceptions::JoynrRuntimeException(
@@ -50,49 +52,63 @@ void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discovery
                 "local capabilitites directory.");
     }
 
-    discoveryProxy->add(discoveryEntry);
+    return discoveryProxy->addAsync(
+            discoveryEntry, std::move(onSuccess), std::move(onRuntimeError));
 }
 
-// inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result,
-                                      const std::vector<std::string>& domains,
-                                      const std::string& interfaceName,
-                                      const joynr::types::DiscoveryQos& discoveryQos)
+std::shared_ptr<joynr::Future<std::vector<types::DiscoveryEntryWithMetaInfo>>>
+LocalDiscoveryAggregator::lookupAsync(
+        const std::vector<std::string>& domains,
+        const std::string& interfaceName,
+        const types::DiscoveryQos& discoveryQos,
+        std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
     if (!discoveryProxy) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
     }
-    discoveryProxy->lookup(result, domains, interfaceName, discoveryQos);
+    return discoveryProxy->lookupAsync(
+            domains, interfaceName, discoveryQos, std::move(onSuccess), std::move(onRuntimeError));
 }
 
-// inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntryWithMetaInfo& result,
-                                      const std::string& participantId)
+std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscoveryAggregator::
+        lookupAsync(const std::string& participantId,
+                    std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess,
+                    std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
     auto entry = provisionedDiscoveryEntries.find(participantId);
-    if (entry != provisionedDiscoveryEntries.end()) {
-        result = entry->second;
+    if (entry != provisionedDiscoveryEntries.cend()) {
+        if (onSuccess) {
+            onSuccess(entry->second);
+        }
+        auto future = std::make_shared<joynr::Future<types::DiscoveryEntryWithMetaInfo>>();
+        future->onSuccess(entry->second);
+        return future;
     } else {
         if (!discoveryProxy) {
             throw exceptions::JoynrRuntimeException(
                     "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                     "local capabilitites directory.");
         }
-        discoveryProxy->lookup(result, participantId);
+        return discoveryProxy->lookupAsync(
+                participantId, std::move(onSuccess), std::move(onRuntimeError));
     }
 }
 
-// inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::remove(const std::string& participantId)
+std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::removeAsync(
+        const std::string& participantId,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
     if (!discoveryProxy) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
     }
-    discoveryProxy->remove(participantId);
+    return discoveryProxy->removeAsync(
+            participantId, std::move(onSuccess), std::move(onRuntimeError));
 }
 
 } // namespace joynr

@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <tuple>
 
 #include "joynr/IMessageRouter.h"
 #include "joynr/RequestCallerFactory.h"
@@ -51,7 +50,7 @@ class JOYNR_EXPORT CapabilitiesRegistrar
 public:
     CapabilitiesRegistrar(
             std::vector<IDispatcher*> dispatcherList,
-            joynr::system::IDiscoverySync& discoveryProxy,
+            joynr::system::IDiscoveryAsync& discoveryProxy,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
             std::shared_ptr<IMessageRouter> messageRouter,
@@ -98,7 +97,8 @@ public:
                                            defaultExpiryDateMs,
                                            defaultPublicKeyId);
         try {
-            discoveryProxy.add(entry);
+            auto future = discoveryProxy.addAsync(entry);
+            future->wait();
         } catch (const exceptions::JoynrException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Unable to add provider (participant ID: {}, domain: {}, interface: "
@@ -137,7 +137,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     std::vector<IDispatcher*> dispatcherList;
-    joynr::system::IDiscoverySync& discoveryProxy;
+    joynr::system::IDiscoveryAsync& discoveryProxy;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<IMessageRouter> messageRouter;

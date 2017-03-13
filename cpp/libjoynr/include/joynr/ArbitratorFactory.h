@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ namespace joynr
 
 namespace system
 {
-class IDiscoverySync;
+class IDiscoveryAsync;
 } // namespace system
 
 class JOYNR_EXPORT ArbitratorFactory
@@ -44,7 +44,7 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             const types::Version& interfaceVersion,
-            joynr::system::IDiscoverySync& discoveryProxy,
+            joynr::system::IDiscoveryAsync& discoveryProxy,
             const DiscoveryQos& discoveryQos);
 };
 
