@@ -20,6 +20,7 @@
 #define PROVIDERARBITRATORFACTORY_H
 
 #include <string>
+#include <memory>
 
 #include "joynr/JoynrExport.h"
 #include "joynr/Arbitrator.h"
@@ -39,11 +40,12 @@ public:
     /*
      *  Creates an arbitrator object using the type specified in the qosParameters.
      */
-    static Arbitrator* createArbitrator(const std::string& domain,
-                                        const std::string& interfaceName,
-                                        const types::Version& interfaceVersion,
-                                        joynr::system::IDiscoverySync& discoveryProxy,
-                                        const DiscoveryQos& discoveryQos);
+    static std::unique_ptr<Arbitrator> createArbitrator(
+            const std::string& domain,
+            const std::string& interfaceName,
+            const types::Version& interfaceVersion,
+            joynr::system::IDiscoverySync& discoveryProxy,
+            const DiscoveryQos& discoveryQos);
 };
 
 } // namespace joynr

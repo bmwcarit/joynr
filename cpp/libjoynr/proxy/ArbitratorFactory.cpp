@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-#include <memory>
 
 #include "joynr/ArbitratorFactory.h"
 #include "joynr/ArbitrationStrategyFunction.h"
@@ -26,16 +25,16 @@
 #include "joynr/LastSeenArbitrationStrategyFunction.h"
 #include "joynr/QosArbitrationStrategyFunction.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/system/IDiscovery.h"
 
 namespace joynr
 {
 
-Arbitrator* ArbitratorFactory::createArbitrator(const std::string& domain,
-                                                const std::string& interfaceName,
-                                                const joynr::types::Version& interfaceVersion,
-                                                joynr::system::IDiscoverySync& discoveryProxy,
-                                                const DiscoveryQos& discoveryQos)
+std::unique_ptr<Arbitrator> ArbitratorFactory::createArbitrator(
+        const std::string& domain,
+        const std::string& interfaceName,
+        const joynr::types::Version& interfaceVersion,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const DiscoveryQos& discoveryQos)
 {
     std::unique_ptr<ArbitrationStrategyFunction> arbitrationStrategyFunction;
     DiscoveryQos::ArbitrationStrategy strategy = discoveryQos.getArbitrationStrategy();
@@ -61,12 +60,12 @@ Arbitrator* ArbitratorFactory::createArbitrator(const std::string& domain,
     default:
         throw exceptions::DiscoveryException("Arbitrator creation failed: Invalid strategy!");
     }
-    return new Arbitrator(domain,
-                          interfaceName,
-                          interfaceVersion,
-                          discoveryProxy,
-                          discoveryQos,
-                          std::move(arbitrationStrategyFunction));
+    return std::make_unique<Arbitrator>(domain,
+                                        interfaceName,
+                                        interfaceVersion,
+                                        discoveryProxy,
+                                        discoveryQos,
+                                        std::move(arbitrationStrategyFunction));
 }
 
 } // namespace joynr
