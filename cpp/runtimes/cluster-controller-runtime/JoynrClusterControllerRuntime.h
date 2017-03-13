@@ -25,7 +25,6 @@
 #include <vector>
 
 #include "cluster-controller/access-control/LocalDomainAccessController.h"
-#include "cluster-controller/mqtt/MqttSettings.h"
 
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
@@ -163,7 +162,6 @@ private:
     void createWsCCMessagingSkeletons();
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
-    MqttSettings mqttSettings;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
 
     std::shared_ptr<CcMessageRouter> ccMessageRouter;

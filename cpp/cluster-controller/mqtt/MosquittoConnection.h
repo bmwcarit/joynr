@@ -31,8 +31,6 @@
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
-#include "cluster-controller/mqtt/MqttSettings.h"
-
 namespace joynr
 {
 
@@ -54,7 +52,7 @@ public:
 
     ~MosquittoConnection() override;
 
-    virtual uint16_t getMqttQos() const;
+    virtual std::uint16_t getMqttQos() const;
     std::string getMqttPrio() const;
     bool isMqttRetain() const;
 
@@ -88,8 +86,12 @@ private:
     void restoreSubscriptions();
     void subscribeToTopicInternal(const std::string& topic, const bool isChannelTopic = false);
 
-    MqttSettings mqttSettings;
-    const BrokerUrl brokerUrl;
+    const MessagingSettings& messagingSettings;
+    const std::string host;
+    const std::uint16_t port;
+
+    const std::uint16_t mqttQos = 1;
+    const bool mqttRetain = false;
 
     std::string channelId;
     int subscribeChannelMid;

@@ -22,7 +22,6 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "cluster-controller/mqtt/MqttSettings.h"
 
 namespace joynr
 {
@@ -33,8 +32,9 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
                                          const ClusterControllerSettings& ccSettings,
                                          const std::string& clientId)
         : mosquittopp(clientId.c_str()),
-          mqttSettings(),
-          brokerUrl(messagingSettings.getBrokerUrl()),
+          messagingSettings(messagingSettings),
+          host(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost()),
+          port(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort()),
           channelId(),
           subscribeChannelMid(),
           topic(),
@@ -47,17 +47,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           onTextMessageReceived(),
           thread()
 {
-    const Url url = brokerUrl.getBrokerChannelsBaseUrl();
-
-    std::string host = url.getHost();
-    uint16_t port = url.getPort();
-
-    mqttSettings.host = std::string(host);
-    mqttSettings.port = port;
-    mqttSettings.keepAliveTime = messagingSettings.getMqttKeepAliveTime();
-    mqttSettings.reconnectSleepTimeMs = messagingSettings.getMqttReconnectSleepTime();
-
-    JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", mqttSettings.host, mqttSettings.port);
+    JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", host, port);
 
     mosqpp::lib_init();
 
@@ -75,7 +65,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
         JOYNR_LOG_DEBUG(logger, "MQTT connection not encrypted");
     };
 
-    connect(host.c_str(), port, mqttSettings.keepAliveTime.count());
+    connect(host.c_str(), port, messagingSettings.getMqttKeepAliveTime().count());
 }
 
 MosquittoConnection::~MosquittoConnection()
@@ -85,15 +75,12 @@ MosquittoConnection::~MosquittoConnection()
 
 void MosquittoConnection::on_disconnect(int rc)
 {
+
     if (rc == 0) {
-        JOYNR_LOG_DEBUG(
-                logger, "Disconnected from tcp://{}:{}", mqttSettings.host, mqttSettings.port);
+        JOYNR_LOG_DEBUG(logger, "Disconnected from tcp://{}:{}", host, port);
     } else {
-        JOYNR_LOG_ERROR(logger,
-                        "Unexpectedly disconnected from tcp://{}:{}, error: {}",
-                        mqttSettings.host,
-                        mqttSettings.port,
-                        rc);
+        JOYNR_LOG_ERROR(
+                logger, "Unexpectedly disconnected from tcp://{}:{}, error: {}", host, port, rc);
     }
 }
 
@@ -118,17 +105,18 @@ void MosquittoConnection::on_error()
 
 uint16_t MosquittoConnection::getMqttQos() const
 {
-    return mqttSettings.qos;
+    return mqttQos;
 }
 
 std::string MosquittoConnection::getMqttPrio() const
 {
-    return mqttSettings.prio;
+    static const std::string value("low");
+    return value;
 }
 
 bool MosquittoConnection::isMqttRetain() const
 {
-    return mqttSettings.retain;
+    return mqttRetain;
 }
 
 void MosquittoConnection::start()
@@ -167,7 +155,7 @@ void MosquittoConnection::runLoop()
                                 std::to_string(rc),
                                 mosqpp::strerror(rc));
             }
-            std::this_thread::sleep_for(mqttSettings.reconnectSleepTimeMs);
+            std::this_thread::sleep_for(messagingSettings.getMqttReconnectSleepTime());
             reconnect();
         }
     }

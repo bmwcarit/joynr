@@ -148,7 +148,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           doMqttMessaging(false),
           doHttpMessaging(false),
           wsMessagingStubFactory(),
-          mqttSettings(),
           multicastMessagingSkeletonDirectory(
                   std::make_shared<MulticastMessagingSkeletonDirectory>()),
           ccMessageRouter(nullptr)
