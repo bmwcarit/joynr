@@ -67,6 +67,8 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
     EXPECT_EQ(messagingSettings.getMqttKeepAliveTime().count(), MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME().count());
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_RECONNECT_SLEEP_TIME()));
     EXPECT_EQ(messagingSettings.getMqttReconnectSleepTime().count(), MessagingSettings::DEFAULT_MQTT_RECONNECT_SLEEP_TIME().count());
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT()));
+    EXPECT_EQ(messagingSettings.getMqttConnectionTimeout().count(), MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT().count());
     EXPECT_EQ(messagingSettings.getTtlUpliftMs(), MessagingSettings::DEFAULT_TTL_UPLIFT_MS());
 }
 

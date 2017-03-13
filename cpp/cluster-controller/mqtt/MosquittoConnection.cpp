@@ -135,8 +135,10 @@ void MosquittoConnection::stop()
 
 void MosquittoConnection::runLoop()
 {
+    const int mqttConnectionTimeoutMs = messagingSettings.getMqttConnectionTimeout().count();
+
     while (isRunning) {
-        int rc = loop();
+        int rc = loop(mqttConnectionTimeoutMs);
 
         if (rc != MOSQ_ERR_SUCCESS) {
             if (rc == MOSQ_ERR_CONN_LOST) {
