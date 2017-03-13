@@ -29,6 +29,9 @@
 #include "joynr/IJoynrMessageSender.h"
 #include "joynr/SingleThreadedIOService.h"
 
+using ::testing::DoAll;
+using ::testing::InvokeArgument;
+
 using namespace joynr;
 
 class CapabilitiesRegistrarTest : public ::testing::Test {
@@ -118,9 +121,21 @@ TEST_F(CapabilitiesRegistrarTest, add){
                     _,
                     _
                 )
-    ).WillOnce(Return(mockFuture));
+    ).WillOnce(
+                DoAll(InvokeArgument<1>(),
+                      Return(mockFuture)
+                      )
+                );
 
-    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider, testQos);
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    std::string participantId = capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError);
+    future.get();
+
     EXPECT_EQ(expectedParticipantId, participantId);
 }
 
@@ -192,7 +207,11 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                     _,
                     _
                 )
-    ).Times(1).WillOnce(Return(mockFuture));
+    ).Times(1).WillOnce(
+                DoAll(InvokeArgument<1>(),
+                      Return(mockFuture)
+                      )
+                );
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);
@@ -204,7 +223,15 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     capabilitiesRegistrar->addDispatcher(mockDispatcher1);
     capabilitiesRegistrar->addDispatcher(mockDispatcher2);
 
-    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider, testQos);
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    std::string participantId = capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError);
+    future.get();
+
     EXPECT_EQ(expectedParticipantId, participantId);
 
     delete mockDispatcher1;
@@ -244,7 +271,11 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
                     _,
                     _
                 )
-    ).Times(1).WillOnce(Return(mockFuture));
+    ).Times(1).WillOnce(
+                DoAll(InvokeArgument<1>(),
+                      Return(mockFuture)
+                      )
+                );
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);
@@ -254,7 +285,15 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     EXPECT_CALL(*mockDispatcher2, addRequestCaller(expectedParticipantId,_))
             .Times(1);
 
-    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider, testQos);
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    std::string participantId = capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError);
+    future.get();
+
     EXPECT_EQ(expectedParticipantId, participantId);
 
     delete mockDispatcher1;

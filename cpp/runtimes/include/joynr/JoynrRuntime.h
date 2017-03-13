@@ -55,6 +55,34 @@ public:
     virtual ~JoynrRuntime();
 
     /**
+     * @brief Registers a provider with the joynr communication framework asynchronously.
+     * @tparam TIntfProvider The interface class of the provider to register. The corresponding
+     * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
+     * @param domain The domain to register the provider on. Has to be
+     * identical at the client to be able to find the provider.
+     * @param provider The provider instance to register.
+     * @param providerQos The qos associated with the registered provider.
+     * @param onSucess: Will be invoked when provider registration succeeded.
+     * @param onError: Will be invoked when the provider could not be registered. An exception,
+     * which describes the error, is passed as the parameter.
+     * @return The globally unique participant ID of the provider. It is assigned by the joynr
+     * communication framework.
+     */
+    template <class TIntfProvider>
+    std::string registerProviderAsync(
+            const std::string& domain,
+            std::shared_ptr<TIntfProvider> provider,
+            const joynr::types::ProviderQos& providerQos,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError)
+    {
+        assert(capabilitiesRegistrar);
+        assert(!domain.empty());
+        return capabilitiesRegistrar->addAsync(
+                domain, provider, providerQos, std::move(onSuccess), std::move(onError));
+    }
+
+    /**
      * @brief Registers a provider with the joynr communication framework.
      * @tparam TIntfProvider The interface class of the provider to register. The corresponding
      * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
@@ -70,9 +98,16 @@ public:
                                  std::shared_ptr<TIntfProvider> provider,
                                  const joynr::types::ProviderQos& providerQos)
     {
-        assert(capabilitiesRegistrar);
-        assert(!domain.empty());
-        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider, providerQos);
+        Future<void> future;
+        auto onSuccess = [&future]() { future.onSuccess(); };
+        auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+            future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+        };
+
+        std::string participiantId = registerProviderAsync(
+                domain, provider, providerQos, std::move(onSuccess), std::move(onError));
+        future.get();
+        return participiantId;
     }
 
     /**

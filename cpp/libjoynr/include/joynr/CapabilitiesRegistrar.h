@@ -30,14 +30,15 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/MulticastBroadcastListener.h"
-#include "joynr/system/IDiscovery.h"
 #include "joynr/Logger.h"
-#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Future.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/types/Version.h"
+#include "joynr/Util.h"
+#include "joynr/system/IDiscovery.h"
 #include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/Version.h"
 
 namespace joynr
 {
@@ -58,9 +59,12 @@ public:
             PublicationManager& publicationManager);
 
     template <class T>
-    std::string add(const std::string& domain,
-                    std::shared_ptr<T> provider,
-                    const types::ProviderQos& providerQos)
+    std::string addAsync(
+            const std::string& domain,
+            std::shared_ptr<T> provider,
+            const types::ProviderQos& providerQos,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
     {
 
         std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
@@ -96,25 +100,23 @@ public:
                                            lastSeenDateMs,
                                            defaultExpiryDateMs,
                                            defaultPublicKeyId);
-        try {
-            auto future = discoveryProxy.addAsync(entry);
-            future->wait();
-        } catch (const exceptions::JoynrException& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "Unable to add provider (participant ID: {}, domain: {}, interface: "
-                            "{}) to discovery. Error: {}",
-                            participantId,
-                            domain,
-                            interfaceName,
-                            e.getMessage());
-        }
 
-        // add next hop to dispatcher
-        auto future = std::make_shared<joynr::Future<void>>();
-        auto onSuccess = [future]() { future->onSuccess(); };
-        messageRouter->addNextHop(participantId, dispatcherAddress, onSuccess);
-        future->wait();
+        auto onSuccessWrapper = [
+            messageRouter = util::as_weak_ptr(messageRouter),
+            participantId,
+            dispatcherAddress = dispatcherAddress,
+            onSuccess = std::move(onSuccess),
+            onError
+        ]
+        {
+            // add next hop to dispatcher
+            if (auto ptr = messageRouter.lock()) {
+                ptr->addNextHop(
+                        participantId, dispatcherAddress, std::move(onSuccess), std::move(onError));
+            }
+        };
 
+        discoveryProxy.addAsync(entry, std::move(onSuccessWrapper), std::move(onError));
         return participantId;
     }
 
