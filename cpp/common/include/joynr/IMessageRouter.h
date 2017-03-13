@@ -51,8 +51,10 @@ public:
 
     virtual void addNextHop(
             const std::string& participantId,
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            std::function<void()> onSuccess = nullptr) = 0;
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                    onError = nullptr) = 0;
 
     virtual void removeNextHop(
             const std::string& participantId,

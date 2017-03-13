@@ -132,7 +132,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest) {
             Pointee(A<joynr::system::RoutingTypes::Address>()),
             pointerToMqttAddressWithChannelId(replyAddressSerialized)
         ),
-        _)
+        _,_)
     ).Times(1);
     EXPECT_CALL(mockMessageRouter, route(message,_)).Times(1);
 
@@ -151,7 +151,7 @@ void MqttMessagingSkeletonTest::transmitCallsAddNextHop()
             Pointee(A<joynr::system::RoutingTypes::Address>()),
             pointerToMqttAddressWithChannelId(replyAddressSerialized)
         ),
-        _)
+        _,_)
     ).Times(1);
     auto onFailure = [](const exceptions::JoynrRuntimeException& e) {
         FAIL() << "onFailure called";

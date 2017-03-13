@@ -335,7 +335,8 @@ class MockMessageRouter : public joynr::AbstractMessageRouter {
 public:
     void invokeAddNextHopOnSuccessFct(const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            std::function<void()> onSuccess) {
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         if (onSuccess) {
             onSuccess();
         }
@@ -356,7 +357,7 @@ public:
     {
         EXPECT_CALL(
                 *this,
-                addNextHop(_,_,_)
+                addNextHop(_,_,_,_)
         )
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
         EXPECT_CALL(
@@ -375,10 +376,11 @@ public:
                                                  std::function<void()> onSuccess,
                                                  std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError));
 
-    MOCK_METHOD3(addNextHop, void(
+    MOCK_METHOD4(addNextHop, void(
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            std::function<void()> onSuccess));
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
     MOCK_METHOD3(removeNextHop, void(
             const std::string& participantId,

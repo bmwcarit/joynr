@@ -87,10 +87,11 @@ public:
      */
     void route(const JoynrMessage& message, std::uint32_t tryCount = 0) final;
 
-    void addNextHop(
-            const std::string& participantId,
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            std::function<void()> onSuccess = nullptr) final;
+    void addNextHop(const std::string& participantId,
+                    const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+                    std::function<void()> onSuccess = nullptr,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                            onError = nullptr) final;
 
     void removeNextHop(
             const std::string& participantId,

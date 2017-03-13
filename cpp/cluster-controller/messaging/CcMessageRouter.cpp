@@ -266,11 +266,13 @@ void CcMessageRouter::removeNextHop(
 
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
-        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-        std::function<void()> onSuccess)
+        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    addToRoutingTable(participantId, inprocessAddress);
-    sendMessages(participantId, inprocessAddress);
+    std::ignore = onError;
+    addToRoutingTable(participantId, address);
+    sendMessages(participantId, address);
     if (onSuccess) {
         onSuccess();
     }
