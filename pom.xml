@@ -178,7 +178,8 @@
 				</property>
 			</activation>
 			<properties>
-				<JOYNR_SERVER>joyntest:8080</JOYNR_SERVER>
+				<JOYNR_SERVER_HOST>joyntest</JOYNR_SERVER_HOST>
+				<JOYNR_SERVER_HTTP_PORT>8080</JOYNR_SERVER_HTTP_PORT>
 				<JOYNR_TEST_SERVER>joyntest:8080</JOYNR_TEST_SERVER>
 			</properties>
 		</profile>
@@ -368,7 +369,9 @@
 	</profiles>
 
 	<properties>
-		<JOYNR_SERVER>localhost:8080</JOYNR_SERVER>
+		<JOYNR_SERVER_HOST>localhost</JOYNR_SERVER_HOST>
+		<JOYNR_SERVER_HTTP_PORT>8080</JOYNR_SERVER_HTTP_PORT>
+		<JOYNR_SERVER_MQTT_PORT>1883</JOYNR_SERVER_MQTT_PORT>
 		<JOYNR_TEST_SERVER>localhost:8080</JOYNR_TEST_SERVER>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>

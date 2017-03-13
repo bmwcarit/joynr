@@ -1,7 +1,7 @@
 [
     {
         "_typeName": "joynr.types.GlobalDiscoveryEntry",
-        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.ChannelAddress\",\"messagingEndpointUrl\":\"http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/\",\"channelId\":\"discoverydirectory_channelid\"}",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.ChannelAddress\",\"messagingEndpointUrl\":\"http://${JOYNR_SERVER_HOST}:${JOYNR_SERVER_HTTP_PORT}/discovery/channels/discoverydirectory_channelid/\",\"channelId\":\"discoverydirectory_channelid\"}",
         "domain": "io.joynr",
         "expiryDateMs": 9223372036854775807,
         "interfaceName": "infrastructure/GlobalCapabilitiesDirectory",
@@ -23,7 +23,7 @@
     },
     {
         "_typeName": "joynr.types.GlobalDiscoveryEntry",
-        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.ChannelAddress\",\"messagingEndpointUrl\":\"http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/\",\"channelId\":\"domainaccesscontroller_channelid\"}",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.ChannelAddress\",\"messagingEndpointUrl\":\"http://${JOYNR_SERVER_HOST}:${JOYNR_SERVER_HTTP_PORT}/discovery/channels/discoverydirectory_channelid/\",\"channelId\":\"domainaccesscontroller_channelid\"}",
         "domain": "io.joynr",
         "expiryDateMs": 9223372036854775807,
         "interfaceName": "infrastructure/GlobalDomainAccessController",
