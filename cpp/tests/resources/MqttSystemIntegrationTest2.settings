@@ -4,7 +4,7 @@ broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@
 discovery-directories-domain=io.joynr
 
 capabilities-directory-url=" "
-capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"tcp://JOYNR_SERVER_HOST:JOYNR_SERVER_MQTT_PORT","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
+capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"tcp://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
 create-channel-retry-interval=500
