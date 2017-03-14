@@ -22,9 +22,11 @@ package io.joynr.accesscontrol;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.capabilities.CapabilitiesProvisioning;
 import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.runtime.SystemServicesSettings;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -43,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 public class AccessControllerImpl implements AccessController {
     private static final Logger logger = LoggerFactory.getLogger(AccessControllerImpl.class);
@@ -56,12 +59,18 @@ public class AccessControllerImpl implements AccessController {
     @Inject
     AccessControllerImpl(LocalCapabilitiesDirectory localCapabilitiesDirectory,
                          LocalDomainAccessController localDomainAccessController,
-                         ObjectMapper objectMapper) {
+                         ObjectMapper objectMapper,
+                         CapabilitiesProvisioning capabilitiesProvisioning,
+                         @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
+                         @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
         this.localCapabilitiesDirectory = localCapabilitiesDirectory;
         this.localDomainAccessController = localDomainAccessController;
         this.objectMapper = objectMapper;
 
         defineAndRegisterCapabilityListener();
+        whitelistProvisionedEntries(capabilitiesProvisioning);
+        whitelistedParticipantIds.add(discoveryProviderParticipantId);
+        whitelistedParticipantIds.add(routingProviderParticipantId);
     }
 
     private void defineAndRegisterCapabilityListener() {
@@ -78,6 +87,12 @@ public class AccessControllerImpl implements AccessController {
                 // NOOP
             }
         });
+    }
+
+    private void whitelistProvisionedEntries(CapabilitiesProvisioning capabilitiesProvisioning) {
+        for (DiscoveryEntry entry : capabilitiesProvisioning.getDiscoveryEntries()) {
+            whitelistedParticipantIds.add(entry.getParticipantId());
+        }
     }
 
     private boolean needsPermissionCheck(final JoynrMessage message) {

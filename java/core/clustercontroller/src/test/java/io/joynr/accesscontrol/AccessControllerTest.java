@@ -22,6 +22,10 @@ package io.joynr.accesscontrol;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.doAnswer;
 
@@ -32,6 +36,7 @@ import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.capabilities.CapabilitiesProvisioning;
 import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatching.JoynrMessageFactory;
@@ -42,6 +47,7 @@ import joynr.JoynrMessage;
 import joynr.Request;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
@@ -103,9 +109,19 @@ public class AccessControllerTest {
 
     @Before
     public void setup() {
+        String discoveryProviderParticipantId = "";
+        String routingProviderParticipantId = "";
         accessController = new AccessControllerImpl(localCapabilitiesDirectory,
                                                     localDomainAccessController,
-                                                    objectMapper);
+                                                    objectMapper,
+                                                    new CapabilitiesProvisioning() {
+                                                        @Override
+                                                        public Collection<DiscoveryEntry> getDiscoveryEntries() {
+                                                            return new ArrayList<DiscoveryEntry>();
+                                                        }
+                                                    },
+                                                    discoveryProviderParticipantId,
+                                                    routingProviderParticipantId);
 
         // Create a dummy message
         request = new Request(testOperation, new String[]{}, new Class<?>[]{});
