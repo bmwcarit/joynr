@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket.server;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package io.joynr.messaging.websocket.server;
  */
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -180,7 +181,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                     + toClientAddress.getId());
         }
         try {
-            session.getRemote().sendString(message, new WriteCallback() {
+            session.getRemote().sendBytes(ByteBuffer.wrap(message.getBytes(CHARSET)), new WriteCallback() {
                 @Override
                 public void writeSuccess() {
                     // Nothing to do
@@ -220,7 +221,8 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
         }
 
         @Override
-        public void onWebSocketText(String serializedMessage) {
+        public void onWebSocketBinary(byte[] payload, int offset, int len) {
+            String serializedMessage = new String(payload, offset, len, CHARSET);
             if (isInitializationMessage(serializedMessage)) {
                 try {
                     WebSocketClientAddress webSocketClientAddress = objectMapper.readValue(serializedMessage,

@@ -1,0 +1,37 @@
+[
+   {
+      "_typeName":"joynr.infrastructure.DacTypes.MasterAccessControlEntry",
+      "uid":"USER",
+      "domain":"End2EndAccessControlTest",
+      "interfaceName":"tests/test",
+      "defaultRequiredTrustLevel":"LOW",
+      "possibleRequiredTrustLevels":[
+         "LOW",
+         "MID",
+         "HIGH"
+      ],
+      "defaultRequiredControlEntryChangeTrustLevel":"LOW",
+      "possibleRequiredControlEntryChangeTrustLevels":[
+         "LOW",
+         "MID",
+         "HIGH"
+      ],
+      "operation":"*",
+      "defaultConsumerPermission":"NO",
+      "possibleConsumerPermissions":[
+         "NO",
+         "ASK",
+         "YES"
+      ]
+   },
+   {
+      "_typeName":"joynr.infrastructure.DacTypes.OwnerAccessControlEntry",
+      "uid":"USER",
+      "domain":"End2EndAccessControlTest",
+      "interfaceName":"tests/test",
+      "requiredTrustLevel":"LOW",
+      "requiredAceChangeTrustLevel":"LOW",
+      "operation":"*",
+      "consumerPermission":"YES"
+   }
+]

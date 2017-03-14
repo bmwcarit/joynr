@@ -56,7 +56,7 @@ public:
 
     virtual bool isConnected() const = 0;
 
-    virtual void sendTextMessage(
+    virtual void send(
             const std::string& msg,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
 

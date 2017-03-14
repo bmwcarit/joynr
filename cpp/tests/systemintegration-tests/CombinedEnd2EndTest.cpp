@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1139,3 +1139,10 @@ INSTANTIATE_TEST_CASE_P(
         testing::Values(std::make_tuple(
                 "test-resources/MqttSystemIntegrationTest1.settings",
                 "test-resources/MqttSystemIntegrationTest2.settings")));
+
+INSTANTIATE_TEST_CASE_P(
+        MqttOverTLS,
+        CombinedEnd2EndTest,
+        testing::Values(std::make_tuple(
+                "test-resources/MqttOverTLSSystemIntegrationTest1.settings",
+                "test-resources/MqttOverTLSSystemIntegrationTest2.settings")));

@@ -53,9 +53,10 @@ public:
     {}
     void SetUp() override {
         AbstractSyncAsyncTest::SetUp();
-        mockInProcessConnectorFactory = new MockInProcessConnectorFactory();
-        JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, nullptr);
-        mockConnectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
+        auto mockInProcessConnectorFactoryPtr = std::make_unique<MockInProcessConnectorFactory>();
+        mockInProcessConnectorFactory = mockInProcessConnectorFactoryPtr.get();
+        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(mockJoynrMessageSender, nullptr);
+        mockConnectorFactory = new ConnectorFactory(std::move(mockInProcessConnectorFactoryPtr), std::move(joynrMessagingConnectorFactory));
     }
 
     void TearDown() override {

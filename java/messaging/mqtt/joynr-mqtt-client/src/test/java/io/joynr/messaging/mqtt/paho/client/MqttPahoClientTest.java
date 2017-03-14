@@ -81,6 +81,9 @@ public class MqttPahoClientTest {
         Properties properties = new Properties();
         properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC, "60");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC, "30");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS, "-1");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
 
         injector = Guice.createInjector(new MqttPahoModule(),

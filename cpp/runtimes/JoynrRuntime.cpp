@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
 #include "joynr/JoynrRuntime.h"
 
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/system/IRouting.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/Util.h"
 
 namespace joynr
@@ -65,6 +67,46 @@ bool JoynrRuntime::checkAndLogCryptoFileExistence(const std::string& caPemFile,
     }
 
     return true;
+}
+
+std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrRuntime::
+        getProvisionedEntries() const
+{
+    std::int64_t lastSeenDateMs = 0;
+    std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    std::string defaultPublicKeyId("");
+    std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> provisionedDiscoveryEntries;
+
+    joynr::types::Version routingProviderVersion(
+            joynr::system::IRouting::MAJOR_VERSION, joynr::system::IRouting::MINOR_VERSION);
+    joynr::types::Version discoveryProviderVersion(
+            joynr::system::IDiscovery::MAJOR_VERSION, joynr::system::IDiscovery::MINOR_VERSION);
+    joynr::types::DiscoveryEntryWithMetaInfo routingProviderDiscoveryEntry(
+            routingProviderVersion,
+            systemServicesSettings.getDomain(),
+            joynr::system::IRouting::INTERFACE_NAME(),
+            systemServicesSettings.getCcRoutingProviderParticipantId(),
+            joynr::types::ProviderQos(),
+            lastSeenDateMs,
+            expiryDateMs,
+            defaultPublicKeyId,
+            true);
+    provisionedDiscoveryEntries.insert(std::make_pair(
+            routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryProviderDiscoveryEntry(
+            discoveryProviderVersion,
+            systemServicesSettings.getDomain(),
+            joynr::system::IDiscovery::INTERFACE_NAME(),
+            systemServicesSettings.getCcDiscoveryProviderParticipantId(),
+            joynr::types::ProviderQos(),
+            lastSeenDateMs,
+            expiryDateMs,
+            defaultPublicKeyId,
+            true);
+    provisionedDiscoveryEntries.insert(std::make_pair(
+            discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
+
+    return provisionedDiscoveryEntries;
 }
 
 } // namespace joynr

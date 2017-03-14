@@ -77,18 +77,16 @@ ShortCircuitRuntime::ShortCircuitRuntime()
             singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());
 
-    inProcessPublicationSender =
-            std::make_unique<InProcessPublicationSender>(subscriptionManager.get());
-    inProcessConnectorFactory = new InProcessConnectorFactory(
+    inProcessPublicationSender = std::make_unique<InProcessPublicationSender>(subscriptionManager);
+    auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
             subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender.get(),
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
-    joynrMessagingConnectorFactory =
-            new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
-
+    auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(
+            joynrMessageSender, subscriptionManager);
     auto connectorFactory = std::make_unique<ConnectorFactory>(
-            inProcessConnectorFactory, joynrMessagingConnectorFactory);
+            std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
     proxyFactory =
             std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
 

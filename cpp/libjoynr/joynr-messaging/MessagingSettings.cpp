@@ -105,6 +105,18 @@ const std::string& MessagingSettings::SETTING_MQTT_RECONNECT_SLEEP_TIME()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT()
+{
+    static const std::string value("messaging/mqtt-connection-timeout");
+    return value;
+}
+
+std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT()
+{
+    static const std::chrono::milliseconds value(1000);
+    return value;
+}
+
 std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_RECONNECT_SLEEP_TIME()
 {
     static const std::chrono::milliseconds value(1000);
@@ -266,6 +278,18 @@ const std::string& MessagingSettings::ACCESS_CONTROL_ENABLE()
     return value;
 }
 
+const std::string& MessagingSettings::ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()
+{
+    static const std::string value("access-control/global-domain-access-controller-address");
+    return value;
+}
+
+const std::string& MessagingSettings::ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()
+{
+    static const std::string value("access-control/global-domain-access-controller-participantid");
+    return value;
+}
+
 bool MessagingSettings::DEFAULT_ENABLE_ACCESS_CONTROLLER()
 {
     return false;
@@ -386,6 +410,11 @@ std::chrono::milliseconds MessagingSettings::getMqttReconnectSleepTime() const
 void MessagingSettings::setMqttReconnectSleepTime(std::chrono::milliseconds mqttReconnectSleepTime)
 {
     settings.set(SETTING_MQTT_RECONNECT_SLEEP_TIME(), mqttReconnectSleepTime.count());
+}
+
+std::chrono::milliseconds MessagingSettings::getMqttConnectionTimeout() const
+{
+    return std::chrono::milliseconds(settings.get<std::int64_t>(SETTING_MQTT_CONNECTION_TIMEOUT()));
 }
 
 std::int64_t MessagingSettings::getIndex() const
@@ -590,6 +619,17 @@ bool MessagingSettings::contains(const std::string& key) const
     return settings.contains(key);
 }
 
+std::string MessagingSettings::getGlobalDomainAccessControlAddress() const
+{
+    return settings.get<std::string>(ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS());
+}
+
+std::string MessagingSettings::getGlobalDomainAccessControlParticipantId() const
+{
+    return settings.get<std::string>(
+            ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
+}
+
 // Checks messaging settings and sets defaults
 void MessagingSettings::checkSettings()
 {
@@ -618,6 +658,9 @@ void MessagingSettings::checkSettings()
     if (!settings.contains(SETTING_MQTT_RECONNECT_SLEEP_TIME())) {
         settings.set(
                 SETTING_MQTT_RECONNECT_SLEEP_TIME(), DEFAULT_MQTT_RECONNECT_SLEEP_TIME().count());
+    }
+    if (!settings.contains(SETTING_MQTT_CONNECTION_TIMEOUT())) {
+        settings.set(SETTING_MQTT_CONNECTION_TIMEOUT(), DEFAULT_MQTT_CONNECTION_TIMEOUT().count());
     }
     if (!settings.contains(SETTING_INDEX())) {
         settings.set(SETTING_INDEX(), 0);
@@ -654,8 +697,25 @@ void MessagingSettings::checkSettings()
     if (!settings.contains(SETTING_TTL_UPLIFT_MS())) {
         settings.set(SETTING_TTL_UPLIFT_MS(), DEFAULT_TTL_UPLIFT_MS());
     }
+
     if (!settings.contains(ACCESS_CONTROL_ENABLE())) {
         setEnableAccessController(DEFAULT_ENABLE_ACCESS_CONTROLLER());
+    } else if (enableAccessController()) {
+        assert(settings.contains(ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
+        assert(settings.contains(ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
+
+        if (!settings.contains(ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS())) {
+            JOYNR_LOG_ERROR(logger,
+                            "Configuration error. Access controller is enabled but "
+                            "no {} was defined.",
+                            ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS());
+        }
+        if (!settings.contains(ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID())) {
+            JOYNR_LOG_ERROR(logger,
+                            "Configuration error. Access controller is enabled but "
+                            "no {} was defined.",
+                            ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
+        }
     }
 }
 
@@ -726,10 +786,27 @@ void MessagingSettings::printSettings() const
                     SETTING_DISCOVERY_MESSAGES_TTL_MS(),
                     settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
     JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
+    JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_TTL_UPLIFT_MS(), getTtlUpliftMs());
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {} = {})",
                     SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                     getCapabilitiesFreshnessUpdateIntervalMs().count());
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    ACCESS_CONTROL_ENABLE(),
+                    settings.get<std::string>(ACCESS_CONTROL_ENABLE()));
+    if (settings.get<bool>(ACCESS_CONTROL_ENABLE())) {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = {})",
+                        ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS(),
+                        settings.get<std::string>(
+                                ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = {})",
+                        ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID(),
+                        settings.get<std::string>(
+                                ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
+    }
 }
 
 } // namespace joynr

@@ -47,9 +47,6 @@ namespace joynr
 LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
         : JoynrRuntime(*settings),
           subscriptionManager(nullptr),
-          inProcessPublicationSender(nullptr),
-          inProcessConnectorFactory(nullptr),
-          joynrMessagingConnectorFactory(nullptr),
           joynrMessagingSendStub(nullptr),
           joynrMessageSender(nullptr),
           joynrDispatcher(nullptr),
@@ -120,17 +117,17 @@ void LibJoynrRuntime::init(
             singleThreadIOService->getIOService(), libJoynrMessageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadIOService->getIOService());
 
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager.get());
-    inProcessConnectorFactory = new InProcessConnectorFactory(
+    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
+    auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
             subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender,
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
-    joynrMessagingConnectorFactory =
-            new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
+    auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(
+            joynrMessageSender, subscriptionManager);
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
-            inProcessConnectorFactory, joynrMessagingConnectorFactory);
+            std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
     proxyFactory =
             std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
 
@@ -146,9 +143,8 @@ void LibJoynrRuntime::init(
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
-    const bool provisionClusterControllerDiscoveryEntries = false;
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(
-            systemServicesSettings, messagingSettings, provisionClusterControllerDiscoveryEntries);
+    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(getProvisionedEntries());
+
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
     std::string systemServicesDomain = systemServicesSettings.getDomain();

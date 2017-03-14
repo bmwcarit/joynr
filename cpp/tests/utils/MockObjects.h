@@ -1201,7 +1201,7 @@ public:
 
     MOCK_CONST_METHOD0(isConnected, bool());
 
-    MOCK_METHOD2(sendTextMessage, void(
+    MOCK_METHOD2(send, void(
             const std::string&,
             const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
 

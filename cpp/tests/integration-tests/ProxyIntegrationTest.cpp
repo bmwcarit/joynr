@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,74 +16,61 @@
  * limitations under the License.
  * #L%
  */
+
+#include <memory>
 #include <string>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/SubscriptionStop.h"
-#include "joynr/SubscriptionReply.h"
-#include "joynr/Request.h"
-#include "joynr/vehicle/GpsProxy.h"
-#include "joynr/InProcessConnectorFactory.h"
 #include "joynr/ConnectorFactory.h"
+#include "joynr/InProcessConnectorFactory.h"
+#include "joynr/JoynrMessagingConnectorFactory.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/vehicle/GpsProxy.h"
 
 #include "tests/utils/MockObjects.h"
-#include "joynr/PrivateCopyAssign.h"
 
-using ::testing::A;
-using ::testing::_;
 using ::testing::Return;
-using ::testing::Eq;
-using ::testing::AllOf;
-using ::testing::Property;
-using ::testing::Invoke;
-using ::testing::Unused;
 
 using namespace ::testing;
-
 using namespace joynr;
-
-
 
 class ProxyIntegrationTest : public ::testing::Test {
 public:
-
     ProxyIntegrationTest() :
-        mockInProcessConnectorFactory(new MockInProcessConnectorFactory()),
-        mockJoynrMessageSender(std::make_shared<MockJoynrMessageSender>()),
-        domain("cppProxyIntegrationTestDomain"),
-        messagingQos(),
-        endPointAddress(new system::RoutingTypes::ChannelAddress("http://endpoint:8080/bounceproxy", "endPointAddress"))
+        mockInProcessConnectorFactory(nullptr),
+        connectorFactory(nullptr)
     {
+        auto mockInProcessConnectorFactoryPtr = std::make_unique<MockInProcessConnectorFactory>();
+        mockInProcessConnectorFactory = mockInProcessConnectorFactoryPtr.get();
+        auto mockJoynrMessageSender = std::make_shared<MockJoynrMessageSender>();
+        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(std::move(mockJoynrMessageSender), nullptr);
+        connectorFactory = new ConnectorFactory(std::move(mockInProcessConnectorFactoryPtr), std::move(joynrMessagingConnectorFactory));
     }
 
-    ~ProxyIntegrationTest(){
-        delete mockInProcessConnectorFactory;
+    ~ProxyIntegrationTest() override{
+        // manually deleting the connectorFactory (this will also trigger deletion of mockInProcessConnectorFactory)
+        // normally performed in the ProxyFactory
+        delete connectorFactory;
     }
 
 protected:
-
     MockInProcessConnectorFactory* mockInProcessConnectorFactory;
-    std::shared_ptr<MockJoynrMessageSender> mockJoynrMessageSender;
-    std::string domain;
-    MessagingQos messagingQos;
-    std::shared_ptr<joynr::system::RoutingTypes::ChannelAddress> endPointAddress;
-
+    ConnectorFactory* connectorFactory;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyIntegrationTest);
 };
 
-typedef ProxyIntegrationTest GpsProxyDeathTest;
-
-
 TEST_F(ProxyIntegrationTest, proxyInitialisation)
 {
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, nullptr);
-    ConnectorFactory* connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
+    const std::string domain = "cppProxyIntegrationTestDomain";
+    MessagingQos messagingQos;
+    auto endPointAddress = std::make_shared<system::RoutingTypes::ChannelAddress>("http://endpoint:8080/bounceproxy", "endPointAddress");
+
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, domain, messagingQos);
+    auto proxy =  std::make_unique<vehicle::GpsProxy>(endPointAddress, connectorFactory, domain, messagingQos);
     ASSERT_TRUE(proxy != nullptr);
 }

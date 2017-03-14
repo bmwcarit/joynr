@@ -46,6 +46,7 @@
 #include "joynr/infrastructure/DacTypes/ControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/serializer/Serializer.h"
 
 #include "joynr/BrokerUrl.h"
@@ -117,7 +118,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         : JoynrRuntime(*settings),
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
-          ccDispatcher(nullptr),
           subscriptionManager(nullptr),
           joynrMessagingSendSkeleton(nullptr),
           joynrMessageSender(nullptr),
@@ -131,10 +131,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           mqttMessageSender(mqttMessageSender),
           mqttMessagingSkeleton(nullptr),
           dispatcherList(),
-          inProcessConnectorFactory(nullptr),
           inProcessPublicationSender(nullptr),
-          joynrMessagingConnectorFactory(nullptr),
-          connectorFactory(nullptr),
           settings(std::move(settings)),
           libjoynrSettings(*(this->settings)),
           localDomainAccessController(nullptr),
@@ -151,7 +148,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           doMqttMessaging(false),
           doHttpMessaging(false),
           wsMessagingStubFactory(),
-          mqttSettings(),
           multicastMessagingSkeletonDirectory(
                   std::make_shared<MulticastMessagingSkeletonDirectory>()),
           ccMessageRouter(nullptr)
@@ -171,8 +167,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
     assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());
-    const BrokerUrl bounceProxyUrl = messagingSettings.getBrokerUrl();
-    assert(bounceProxyUrl.getBrokerChannelsBaseUrl().isValid());
 
     // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP
     const Url url = brokerUrl.getBrokerChannelsBaseUrl();
@@ -225,25 +219,28 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
-    MessagingPropertiesPersistence persist(
-            messagingSettings.getMessagingPropertiesPersistenceFilename());
-    std::string clusterControllerId = persist.getChannelId();
-    std::string receiverId = persist.getReceiverId();
-
     const bool httpMessageReceiverSupplied = httpMessageReceiver != nullptr;
 
     std::string httpSerializedGlobalClusterControllerAddress;
     std::string mqttSerializedGlobalClusterControllerAddress;
 
+    MessagingPropertiesPersistence persist(
+            messagingSettings.getMessagingPropertiesPersistenceFilename());
+    std::string clusterControllerId = persist.getChannelId();
+    std::string receiverId = persist.getReceiverId();
+
     if (doHttpMessaging) {
-        if (!httpMessageReceiver) {
+        if (!httpMessageReceiverSupplied) {
             JOYNR_LOG_DEBUG(logger,
                             "The http message receiver supplied is NULL, creating the default "
                             "http MessageReceiver");
 
             httpMessageReceiver = std::make_shared<HttpReceiver>(
                     messagingSettings, clusterControllerId, receiverId);
+
+            assert(httpMessageReceiver != nullptr);
         }
+
         httpSerializedGlobalClusterControllerAddress =
                 httpMessageReceiver->getGlobalClusterControllerAddress();
     }
@@ -253,10 +250,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             std::string ccMqttClientIdPrefix = clusterControllerSettings.getMqttClientIdPrefix();
             std::string mqttCliendId = ccMqttClientIdPrefix + receiverId;
 
-            mosquittoConnection =
-                    std::make_shared<MosquittoConnection>(messagingSettings, mqttCliendId);
+            mosquittoConnection = std::make_shared<MosquittoConnection>(
+                    messagingSettings, clusterControllerSettings, mqttCliendId);
         }
-
         if (!mqttMessageReceiver) {
             JOYNR_LOG_DEBUG(logger,
                             "The mqtt message receiver supplied is NULL, creating the default "
@@ -264,7 +260,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
             mqttMessageReceiver = std::make_shared<MqttReceiver>(
                     mosquittoConnection, messagingSettings, clusterControllerId);
+
+            assert(mqttMessageReceiver != nullptr);
         }
+
         mqttSerializedGlobalClusterControllerAddress =
                 mqttMessageReceiver->getGlobalClusterControllerAddress();
     }
@@ -339,7 +338,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       * ClusterController side HTTP
       *
       */
-
     if (doHttpMessaging) {
         if (!httpMessageReceiverSupplied) {
             httpMessagingSkeleton = std::make_shared<HttpMessagingSkeleton>(*ccMessageRouter);
@@ -368,7 +366,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       * ClusterController side MQTT
       *
       */
-
     if (doMqttMessaging) {
         if (!mqttMessagingIsRunning) {
             mqttMessagingSkeleton = std::make_shared<MqttMessagingSkeleton>(
@@ -419,21 +416,21 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadIOService->getIOService(), ccMessageRouter);
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager.get());
+    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
 
     auto libjoynrMessagingAddress =
             std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);
     // subscriptionManager = new SubscriptionManager(...)
-    inProcessConnectorFactory = new InProcessConnectorFactory(
+    auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
             subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender,
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
-    joynrMessagingConnectorFactory =
-            new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
+    auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(
+            joynrMessageSender, subscriptionManager);
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
-            inProcessConnectorFactory, joynrMessagingConnectorFactory);
+            std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
     proxyFactory =
             std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
 
@@ -446,9 +443,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     dispatcherAddress = libjoynrMessagingAddress;
 
-    const bool provisionClusterControllerDiscoveryEntries = true;
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(
-            systemServicesSettings, messagingSettings, provisionClusterControllerDiscoveryEntries);
+    auto provisionedDiscoveryEntries = getProvisionedEntries();
+    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(provisionedDiscoveryEntries);
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient =
@@ -516,7 +512,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
 #ifdef JOYNR_ENABLE_ACCESS_CONTROL
     // Do this after local capabilities directory and message router have been initialized.
-    enableAccessController(messagingSettings);
+    enableAccessController(messagingSettings, provisionedDiscoveryEntries);
 #endif // JOYNR_ENABLE_ACCESS_CONTROL
 }
 
@@ -525,15 +521,68 @@ std::shared_ptr<IMessageRouter> JoynrClusterControllerRuntime::getMessageRouter(
     return ccMessageRouter;
 }
 
-void JoynrClusterControllerRuntime::enableAccessController(MessagingSettings& messagingSettings)
+std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrClusterControllerRuntime::
+        getProvisionedEntries() const
+{
+    std::int64_t lastSeenDateMs = 0;
+    std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    std::string defaultPublicKeyId("");
+
+    auto provisionedDiscoveryEntries = JoynrRuntime::getProvisionedEntries();
+    // setting up the provisioned values for GlobalCapabilitiesClient
+    // The GlobalCapabilitiesServer is also provisioned in MessageRouter
+    types::ProviderQos capabilityProviderQos;
+    capabilityProviderQos.setPriority(1);
+    types::Version capabilityProviderVersion(
+            infrastructure::IGlobalCapabilitiesDirectory::MAJOR_VERSION,
+            infrastructure::IGlobalCapabilitiesDirectory::MINOR_VERSION);
+    provisionedDiscoveryEntries.insert(
+            std::make_pair(messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                           types::DiscoveryEntryWithMetaInfo(
+                                   capabilityProviderVersion,
+                                   messagingSettings.getDiscoveryDirectoriesDomain(),
+                                   infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
+                                   messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                                   capabilityProviderQos,
+                                   lastSeenDateMs,
+                                   expiryDateMs,
+                                   defaultPublicKeyId,
+                                   false)));
+
+    types::Version gDACProviderVersion(
+            infrastructure::IGlobalDomainAccessController::MAJOR_VERSION,
+            infrastructure::IGlobalDomainAccessController::MINOR_VERSION);
+    provisionedDiscoveryEntries.insert(
+            std::make_pair(messagingSettings.getGlobalDomainAccessControlParticipantId(),
+                           types::DiscoveryEntryWithMetaInfo(
+                                   gDACProviderVersion,
+                                   messagingSettings.getDiscoveryDirectoriesDomain(),
+                                   infrastructure::IGlobalDomainAccessController::INTERFACE_NAME(),
+                                   messagingSettings.getGlobalDomainAccessControlParticipantId(),
+                                   capabilityProviderQos,
+                                   lastSeenDateMs,
+                                   expiryDateMs,
+                                   defaultPublicKeyId,
+                                   false)));
+
+    return provisionedDiscoveryEntries;
+}
+
+void JoynrClusterControllerRuntime::enableAccessController(
+        MessagingSettings& messagingSettings,
+        const std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>& provisionedEntries)
 {
     if (!messagingSettings.enableAccessController()) {
         return;
     }
 
+    JOYNR_LOG_DEBUG(logger,
+                    "AccessControl was enabled attempting to load entries from {}.",
+                    ACC_ENTRIES_FILE);
+
     if (!joynr::util::fileExists(ACC_ENTRIES_FILE)) {
-        JOYNR_LOG_WARN(
-                logger, "AccessControl was enabled but {} does not exists.", ACC_ENTRIES_FILE);
+        JOYNR_LOG_ERROR(
+                logger, "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
         return;
     }
 
@@ -572,8 +621,46 @@ void JoynrClusterControllerRuntime::enableAccessController(MessagingSettings& me
     localDomainAccessController =
             std::make_unique<joynr::LocalDomainAccessController>(std::move(localDomainAccessStore));
 
+    // Provision global domain access controller in MessageRouter
+    auto globalDomainAccessControlAddress =
+            std::make_shared<joynr::system::RoutingTypes::MqttAddress>();
+    try {
+        joynr::serializer::deserializeFromJson(
+                *globalDomainAccessControlAddress,
+                messagingSettings.getGlobalDomainAccessControlAddress());
+    } catch (const std::invalid_argument& ex) {
+        JOYNR_LOG_ERROR(logger,
+                        "Cannot deserialize global domain access controller address. Reason: {}.",
+                        ex.what());
+    }
+
+    ccMessageRouter->addProvisionedNextHop(
+            messagingSettings.getGlobalDomainAccessControlParticipantId(),
+            globalDomainAccessControlAddress);
+
+    // create GlobalDomainAccessController proxy
+    std::unique_ptr<ProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>>
+            globalDomainAccessControllerProxyBuilder =
+                    createProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>(
+                            messagingSettings.getDiscoveryDirectoriesDomain());
+
+    DiscoveryQos discoveryQos(10000);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    discoveryQos.addCustomParameter(
+            "fixedParticipantId", messagingSettings.getGlobalDomainAccessControlParticipantId());
+
+    auto proxyGlobalDomainAccessController =
+            globalDomainAccessControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
+
+    localDomainAccessController->init(std::move(proxyGlobalDomainAccessController));
+
     auto accessController = std::make_shared<joynr::AccessController>(
             *localCapabilitiesDirectory, *localDomainAccessController);
+
+    // whitelist provisioned entries into access controller
+    for (const auto& entry : provisionedEntries) {
+        accessController->addParticipantToWhitelist(entry.second.getParticipantId());
+    }
 
     ccMessageRouter->setAccessController(accessController);
 }

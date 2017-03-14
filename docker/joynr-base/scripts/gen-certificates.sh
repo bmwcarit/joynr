@@ -40,9 +40,9 @@ cd $DEST_DIR
 mkdir -p private
 mkdir -p certs
 
-openssl req -nodes -config $CONFIG_FILE -subj '/CN=test' -keyout private/ca.key.pem -new -x509 -days 7300 -sha256 -extensions v3_ca -out certs/ca.cert.pem
-openssl req -nodes -keyout private/cc.key.pem -new -days 7300 -subj '/C=DE/ST=Bavaria/L=Munich/CN=cc' -out certs/cc.csr.pem
-openssl x509 -req -days 7300 -CA certs/ca.cert.pem -CAkey private/ca.key.pem -set_serial 01 -in certs/cc.csr.pem -out certs/cc.cert.pem
-openssl req -nodes -keyout private/libjoynr.key.pem -new -days 7300 -subj '/C=DE/ST=Bavaria/L=Munich/CN=cc' -out certs/libjoynr.csr.pem
-openssl x509 -req -days 7300 -CA certs/ca.cert.pem -CAkey private/ca.key.pem -set_serial 01 -in certs/libjoynr.csr.pem -out certs/libjoynr.cert.pem
+openssl req -nodes -config $CONFIG_FILE -subj '/CN=ca' -keyout private/ca.key.pem -new -x509 -days 7300 -sha256 -extensions v3_ca -out certs/ca.cert.pem
+openssl req -nodes -keyout private/server.key.pem -new -days 7300 -subj '/C=DE/ST=Bavaria/L=Munich/CN=localhost' -out certs/server.csr.pem
+openssl x509 -req -days 7300 -CA certs/ca.cert.pem -CAkey private/ca.key.pem -set_serial 01 -in certs/server.csr.pem -out certs/server.cert.pem
+openssl req -nodes -keyout private/client.key.pem -new -days 7300 -subj '/C=DE/ST=Bavaria/L=Munich/CN=client' -out certs/client.csr.pem
+openssl x509 -req -days 7300 -CA certs/ca.cert.pem -CAkey private/ca.key.pem -set_serial 01 -in certs/client.csr.pem -out certs/client.cert.pem
 )

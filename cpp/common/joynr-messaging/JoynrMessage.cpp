@@ -283,7 +283,7 @@ std::string JoynrMessage::getHeaderCreatorUserId() const
 
 void JoynrMessage::setHeaderCreatorUserId(const std::string& creatorUserId)
 {
-    JOYNR_LOG_TRACE(logger, "########## header creater user id: {}", HEADER_CREATOR_USER_ID());
+    JOYNR_LOG_TRACE(logger, "########## header creator user id: {}", HEADER_CREATOR_USER_ID());
     setHeaderForKey(HEADER_CREATOR_USER_ID(), creatorUserId);
 }
 

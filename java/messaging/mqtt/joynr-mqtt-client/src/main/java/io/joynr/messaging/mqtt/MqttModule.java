@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,11 @@ public class MqttModule extends AbstractModule {
     // property key
     public static final String PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS = "joynr.messaging.mqtt.reconnect.sleepms";
     public static final String PROPERTY_KEY_MQTT_BROKER_URI = "joynr.messaging.mqtt.brokeruri";
+    public static final String PROPERTY_KEY_MQTT_CLIENT_ID_PREFIX = "joynr.messaging.mqtt.clientidprefix";
     public static final String PROPERTY_MQTT_ADDRESS = "property_mqtt_address";
+    public static final String PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC = "joynr.messaging.mqtt.keepalivetimersec";
+    public static final String PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC = "joynr.messaging.mqtt.connectiontimeoutsec";
+    public static final String PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS = "joynr.messaging.mqtt.timetowaitms";
 
     @Provides
     @Named(PROPERTY_MQTT_ADDRESS)
@@ -85,5 +89,6 @@ public class MqttModule extends AbstractModule {
         multicastAddressCalculators.addBinding().to(MqttMulticastAddressCalculator.class);
 
         bind(MqttMessageReplyToAddressCalculator.class).to(DefaultMqttMessageReplyToAddressCalculator.class);
+        bind(MqttClientIdProvider.class).to(DefaultMqttClientIdProvider.class);
     }
 }

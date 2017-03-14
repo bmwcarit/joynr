@@ -121,7 +121,7 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
                         "Sending websocket initialization message failed. Error: {}",
                         e.getMessage());
     };
-    websocket->sendTextMessage(initializationMsg, onFailure);
+    websocket->send(initializationMsg, onFailure);
 }
 
 void LibJoynrWebSocketRuntime::createWebsocketClient()
@@ -166,7 +166,7 @@ void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
     auto wsLibJoynrMessagingSkeleton =
             std::make_shared<WebSocketLibJoynrMessagingSkeleton>(std::move(messageRouter));
     websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](const std::string& msg) {
-        wsLibJoynrMessagingSkeleton->onTextMessageReceived(msg);
+        wsLibJoynrMessagingSkeleton->onMessageReceived(msg);
     });
 }
 

@@ -50,7 +50,7 @@ class WebSocketServer
     using ConnectionHandle = websocketpp::connection_hdl;
 
 public:
-    WebSocketServer() : port(), thread(), textMessageReceivedCallback()
+    WebSocketServer() : port(), thread(), messageReceivedCallback()
     {
         endpoint.clear_access_channels(websocketpp::log::alevel::all);
         endpoint.clear_error_channels(websocketpp::log::alevel::all);
@@ -67,9 +67,9 @@ public:
         return port;
     }
 
-    void registerTextMessageReceivedCallback(std::function<void(const std::string&)> callback)
+    void registerMessageReceivedCallback(std::function<void(const std::string&)> callback)
     {
-        textMessageReceivedCallback = std::move(callback);
+        messageReceivedCallback = std::move(callback);
     }
 
     void start()
@@ -96,15 +96,15 @@ private:
     {
         std::ignore = hdl;
         JOYNR_LOG_DEBUG(logger, "received message of size {}", msg->get_payload().size());
-        if(textMessageReceivedCallback)
+        if(messageReceivedCallback)
         {
-            textMessageReceivedCallback(msg->get_payload());
+            messageReceivedCallback(msg->get_payload());
         }
     }
     Server endpoint;
     std::uint32_t port;
     std::thread thread;
-    std::function<void(const std::string&)> textMessageReceivedCallback;
+    std::function<void(const std::string&)> messageReceivedCallback;
     ADD_LOGGER(WebSocketServer);
 };
 
@@ -174,7 +174,7 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
         receivedMessage = msg;
         sem.notify();
     };
-    server.registerTextMessageReceivedCallback(callback);
+    server.registerMessageReceivedCallback(callback);
 
     // send message using messaging stub
     joynr::WebSocketMessagingStub messagingStub(webSocket->getSender());

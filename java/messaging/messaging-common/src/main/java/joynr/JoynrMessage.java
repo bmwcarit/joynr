@@ -112,6 +112,7 @@ public class JoynrMessage implements JoynrType {
         }
     }
 
+    @JsonIgnore
     public Map<String, String> getCustomHeaders() {
         Map<String, String> customHeaders = new HashMap<>();
         for (Map.Entry<String, String> entry : header.entrySet()) {

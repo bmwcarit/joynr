@@ -31,6 +31,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.exceptions.JoynrSerializationException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
@@ -133,9 +134,12 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
-        JoynrMessage message = messageSerializer.deserialize(serializedMessage);
-        transmit(message, failureAction);
-
+        try {
+            JoynrMessage message = messageSerializer.deserialize(serializedMessage);
+            transmit(message, failureAction);
+        } catch (JoynrSerializationException e) {
+            LOG.error("Message: \"{}\", could not be serialized, exception: {}", serializedMessage, e.getMessage());
+        }
     }
 
     protected JoynrMqttClient getClient() {

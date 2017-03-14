@@ -27,26 +27,31 @@ endif(${WIN32})
 
 include(AddGtestGmock)
 
+### copy test resources and settings ##########################################
 macro(CONFIGURE_TEST_FILES targetDirectory)
     set(TEST_FILES
+        "AccessControlNoPermission.entries"
+        "AccessControlYesPermission.entries"
         "integrationtest.settings"
         "websocket-cc-tls.settings"
         "websocket-libjoynr-tls.settings"
         "websocket-libjoynr-non-tls.settings"
+        "MessagingWithAccessControlDisabled.settings"
+        "MessagingWithAccessControlEnabled.settings"
         "HttpSystemIntegrationTest1.settings"
         "HttpSystemIntegrationTest2.settings"
         "HttpJoynrClusterControllerRuntimeTest.settings"
         "MqttSystemIntegrationTest1.settings"
         "MqttSystemIntegrationTest2.settings"
+        "MqttOverTLSSystemIntegrationTest1.settings"
+        "MqttOverTLSSystemIntegrationTest2.settings"
         "MqttJoynrClusterControllerRuntimeTest.settings"
         "HttpMessagingSettingsTest.settings"
-        "MqttMessagingSettingsTest.settings"
         "MqttMessagingSettingsTest.settings"
         "libjoynrSystemIntegration1.settings"
         "libjoynrSystemIntegration2.settings"
         "ca.crt"
         "testclient.pem"
-        "MessagingSettingsWithAccessControl.settings"
     )
 
     foreach(testFile ${TEST_FILES})
@@ -58,7 +63,6 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
     endforeach()
 endmacro(CONFIGURE_TEST_FILES)
 
-### copy test resources and settings ##########################################
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     CONFIGURE_TEST_FILES("${JOYNR_BINARY_DIR}/Debug")
     CONFIGURE_TEST_FILES("${JOYNR_BINARY_DIR}/Release")
@@ -121,25 +125,25 @@ file(
     "gen/*.h"
 )
 
-add_library(JoynrTestGenerated SHARED
+add_library(TestGenerated SHARED
     ${JoynrTest_GENSOURCES}
     ${JoynrTest_GENHEADERS}
 )
 
 # add needed dependencies by linking to target joynr
-target_link_libraries(JoynrTestGenerated Joynr)
+target_link_libraries(TestGenerated Joynr)
 
 if(NOT USE_PLATFORM_SPDLOG)
-    add_dependencies(JoynrTestGenerated spdlog)
+    add_dependencies(TestGenerated spdlog)
 endif(NOT USE_PLATFORM_SPDLOG)
 
 target_include_directories(
-    JoynrTestGenerated
+    TestGenerated
     PUBLIC ${JoynrTest_INCLUDE_DIRECTORIES}
 )
 
 target_include_directories(
-    JoynrTestGenerated
+    TestGenerated
     SYSTEM PUBLIC
     ${JoynrTest_SYSTEM_INCLUDE_DIRECTORIES}
 )
@@ -243,6 +247,12 @@ set(
     "TestMain.cpp"
 )
 
+list(APPEND JOYNR_BOOST_REQUIRED_COMPONENTS filesystem regex)
+find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
+    COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
+)
+include(CheckBoostImportTargets)
+
 if(${BUILD_CLUSTER_CONTROLLER})
     ###############
     # g_UnitTests #
@@ -280,7 +290,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_UnitTests
-            JoynrTestGenerated
+            TestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -289,8 +299,9 @@ if(${BUILD_CLUSTER_CONTROLLER})
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_UnitTests JoynrTestGenerated
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_UnitTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_UNIT_TESTS})
 
@@ -321,7 +332,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_IntegrationTests
-            JoynrTestGenerated
+            TestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -330,8 +341,9 @@ if(${BUILD_CLUSTER_CONTROLLER})
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_IntegrationTests JoynrTestGenerated
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_IntegrationTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_INTEGRATION_TESTS})
 
@@ -364,8 +376,10 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_SystemIntegrationTests
-            JoynrTestGenerated
+            TestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
+            Boost::filesystem
+            Boost::regex
         )
 
         set_target_properties(
@@ -383,10 +397,12 @@ if(${BUILD_CLUSTER_CONTROLLER})
         target_include_directories(
             g_SystemIntegrationTests
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+            PRIVATE ${BOOST_INCLUDE_DIRS}
         )
 
-        install(TARGETS g_SystemIntegrationTests JoynrTestGenerated
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_SystemIntegrationTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 
@@ -412,7 +428,7 @@ else()
 
     target_link_libraries(
             g_UnitTests
-            JoynrTestGenerated
+            TestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
         )
 
@@ -421,8 +437,9 @@ else()
             PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
         )
 
-    install(TARGETS g_UnitTests JoynrTestGenerated
-        DESTINATION ${INSTALL_TEST_DIR}
+    install(TARGETS g_UnitTests TestGenerated
+        RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
     endif(${BUILD_UNIT_TESTS})
 
@@ -448,17 +465,21 @@ else()
 
         target_link_libraries(
             g_SystemIntegrationTests
-            JoynrTestGenerated
+            TestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
+            Boost::filesystem
+            Boost::regex
         )
 
         target_include_directories(
             g_SystemIntegrationTests
             PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
+            PRIVATE ${BOOST_INCLUDE_DIRS}
         )
 
-        install(TARGETS g_SystemIntegrationTests JoynrTestGenerated
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_SystemIntegrationTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 

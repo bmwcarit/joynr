@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
             {pattern: 'classes/lib/*.js', included: false},
+            {pattern: 'classes/lib/encoding.js', included: true},
             {pattern: 'test-classes/global/*.js', included: false},
             {pattern: 'classes/global/*.js', included: false},
             {pattern: 'classes/joynr.js', included: false},

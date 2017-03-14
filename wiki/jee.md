@@ -255,8 +255,15 @@ In some cases you might want to register your providers under a different domain
 application default (specified via `@JoynrLocalDomain`, see configuration documentation above).
 
 In order to do so, use the `@ProviderDomain` annotation on your implementing bean in addition
-to the `@ServiceLocator` annotation. The value you provide will be used as the domain when
+to the `@ServiceProvider` annotation. The value you provide will be used as the domain when
 registering the bean as a joynr provider.
+Here is an example of what that looks like:
+
+    @ServiceProvider(serviceInterface = MyServiceSync.class)
+    @ProviderDomain(MY_CUSTOM_DOMAIN)
+    private static class CustomDomainMyServiceBean implements MyServiceSync {
+        ...
+    }
 
 #### <a name="publishing_multicasts"></a> Publishing Multicasts
 
