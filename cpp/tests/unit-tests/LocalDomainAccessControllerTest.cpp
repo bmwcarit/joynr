@@ -84,8 +84,7 @@ public:
 
 
     void SetUp(){
-        bool startWithCleanDatabase = true;
-        auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>(startWithCleanDatabase);
+        auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>();
         localDomainAccessStorePtr = localDomainAccessStore.get();
         localDomainAccessController =
                 std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));

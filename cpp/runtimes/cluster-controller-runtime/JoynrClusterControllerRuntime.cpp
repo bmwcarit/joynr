@@ -603,7 +603,8 @@ void JoynrClusterControllerRuntime::enableAccessController(
         return;
     }
 
-    auto localDomainAccessStore = std::make_unique<joynr::LocalDomainAccessStore>();
+    auto localDomainAccessStore = std::make_unique<joynr::LocalDomainAccessStore>(
+            clusterControllerSettings.getLocalDomainAccessStorePersistenceFilename());
 
     // Use update methods to insert deserialized entries in access store
     for (const std::shared_ptr<joynr::infrastructure::DacTypes::ControlEntry> entry :

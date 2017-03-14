@@ -29,13 +29,8 @@ using namespace joynr::infrastructure::DacTypes;
 class LocalDomainAccessStoreTest : public ::testing::Test {
 public:
     LocalDomainAccessStoreTest()
+        : localDomainAccessStore()
     {
-
-    }
-
-    ~LocalDomainAccessStoreTest() = default;
-
-    void SetUp(){
         expectedDomainRoleEntry = DomainRoleEntry(TEST_USER1, DOMAINS, Role::OWNER);
         expectedMasterAccessControlEntry = MasterAccessControlEntry(TEST_USER1,
                                                                     TEST_DOMAIN1,
@@ -55,6 +50,8 @@ public:
                                                                   TEST_OPERATION1,
                                                                   Permission::NO);
     }
+
+    ~LocalDomainAccessStoreTest() = default;
 
 protected:
     LocalDomainAccessStore localDomainAccessStore;
