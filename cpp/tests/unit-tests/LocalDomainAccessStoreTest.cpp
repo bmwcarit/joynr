@@ -19,6 +19,7 @@
 
 #include <gtest/gtest.h>
 
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 
@@ -51,7 +52,10 @@ public:
                                                                   Permission::NO);
     }
 
-    ~LocalDomainAccessStoreTest() = default;
+    ~LocalDomainAccessStoreTest() override
+    {
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME().c_str());
+    }
 
 protected:
     LocalDomainAccessStore localDomainAccessStore;
@@ -296,3 +300,17 @@ TEST_F(LocalDomainAccessStoreTest, removeOwnerAce) {
     EXPECT_TRUE(ownerAces.empty());
 }
 
+TEST_F(LocalDomainAccessStoreTest, restoreFromPersistenceFile) {
+    {
+        LocalDomainAccessStore localDomainAccessStore(ClusterControllerSettings::DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
+        localDomainAccessStore.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
+    }
+
+    {
+        LocalDomainAccessStore localDomainAccessStore(ClusterControllerSettings::DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
+        EXPECT_EQ(expectedOwnerAccessControlEntry, localDomainAccessStore.getOwnerAccessControlEntry(expectedOwnerAccessControlEntry.getUid(),
+                                                                                                        expectedOwnerAccessControlEntry.getDomain(),
+                                                                                                        expectedOwnerAccessControlEntry.getInterfaceName(),
+                                                                                                        expectedOwnerAccessControlEntry.getOperation()).get());
+    }
+}
