@@ -35,7 +35,7 @@ class IMessageRouter;
 class WebSocketLibJoynrMessagingSkeleton : public IMessaging
 {
 public:
-    explicit WebSocketLibJoynrMessagingSkeleton(std::shared_ptr<IMessageRouter> messageRouter);
+    explicit WebSocketLibJoynrMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter);
 
     ~WebSocketLibJoynrMessagingSkeleton() override = default;
 
@@ -49,7 +49,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketLibJoynrMessagingSkeleton);
     ADD_LOGGER(WebSocketLibJoynrMessagingSkeleton);
 
-    std::shared_ptr<IMessageRouter> messageRouter;
+    std::weak_ptr<IMessageRouter> messageRouter;
 };
 
 } // namespace joynr
