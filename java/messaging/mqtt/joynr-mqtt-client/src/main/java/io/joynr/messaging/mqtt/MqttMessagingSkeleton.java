@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,6 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrSerializationException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
@@ -127,7 +125,8 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
                 messageRouter.addNextHop(message.getFrom(), RoutingTypesUtil.fromAddressString(replyToMqttAddress));
             }
             messageRouter.route(message);
-        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException e) {
+        } catch (Exception e) {
+            LOG.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader(), e);
             failureAction.execute(e);
         }
     }
