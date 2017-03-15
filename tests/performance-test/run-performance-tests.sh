@@ -2,7 +2,7 @@
 ###
 # #%L
 # %%
-# Copyright (C) 2016 BMW Car IT GmbH
+# Copyright (C) 2016 - 2017 BMW Car IT GmbH
 # %%
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -71,6 +71,9 @@ PROVIDER_PID=""
 ADDITIONAL_CC_ARGS=""
 
 SKIPBYTEARRAYSIZETIMESK=false
+
+# Select backend service protocol
+BACKEND_SERVICES="mqtt"
 
 function getCpuTime {
     PID=$1
@@ -446,11 +449,73 @@ function stopAnyProvider {
     fi
 }
 
+function startPayara {
+    DISCOVERY_WAR_FILE=target/discovery-jee.war
+    ACCESS_CONTROL_WAR_FILE=target/accesscontrol-jee.war
+
+    echo "Starting payara"
+
+    asadmin start-database
+    asadmin start-domain
+
+    asadmin deploy --force=true $DISCOVERY_WAR_FILE
+    asadmin deploy --force=true $ACCESS_CONTROL_WAR_FILE
+
+    echo "payara started"
+}
+
+function stopPayara {
+    echo "stopping payara"
+    for app in `asadmin list-applications | egrep '(discovery|access)' | cut -d" " -f1`;
+    do
+        echo "undeploy $app";
+        asadmin undeploy --droptables=true $app;
+    done
+
+    asadmin stop-domain
+    asadmin stop-database
+}
+
+function startServices {
+    startMosquitto
+    log '# starting services'
+
+    if [ "$BACKEND_SERVICES" = "HTTP" ]
+    then
+        startJetty
+    else
+        startPayara
+    fi
+    sleep 5
+}
+
+function stopServices {
+    stopMosquitto
+    log '# stopping services'
+
+    if [ "$BACKEND_SERVICES" = "HTTP" ]
+    then
+        stopJetty
+    else
+        stopPayara
+    fi
+
+    if [ -n "$MOSQUITTO_PID" ]
+    then
+        echo "Stopping mosquitto with PID $MOSQUITTO_PID"
+        disown $MOSQUITTO_PID
+        killProcessHierarchy $MOSQUITTO_PID
+        wait $MOSQUITTO_PID
+        MOSQUITTO_PID=""
+    fi
+}
+
 function echoUsage {
     echo "Usage: run-performance-tests.sh -j <jetty-dir> -p <performance-bin-dir> \
 -r <performance-results-dir> -s <performance-source-dir> \
 -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|OAP_TO_BACKEND_MOSQ|\
 CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-bin-dir>\
+-B <backend-services (MQTT|HTTP)>\
 [-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF> -z <mosquitto.conf> -n <use node ON|OFF>]"
 }
 
@@ -509,6 +574,9 @@ do
         n)
             USE_NPM=$OPTARG
             ;;
+        B)
+            BACKEND_SERVICES=$OPTARG
+            ;;
         \?)
             echoUsage
             exit 1
@@ -548,6 +616,18 @@ TESTCASES=('SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY')
 if [ ! $SKIPBYTEARRAYSIZETIMESK ]
 then
     TESTCASES+=('SEND_BYTEARRAY_WITH_SIZE_TIMES_K')
+fi
+
+fi
+
+if [ -z "$BACKEND_SERVICES" ]
+then
+    # use default (MQTT/JEE) Discovery and Access Control
+    BACKEND_SERVICES=MQTT
+elif [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
+then
+    log 'Invalid value for backend services: $BACKEND_SERVICES.'
+    exit 1
 fi
 
 if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ]
@@ -638,8 +718,7 @@ fi
 if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ]
 then
     checkDirExists $JETTY_PATH
-    startJetty
-    startMosquitto
+    startServices
     startCppClusterController
     startJavaPerformanceTestProvider
     startMeasureCpuUsage
@@ -652,6 +731,5 @@ then
     stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider
     stopCppClusterController
-    stopMosquitto
-    stopJetty
+    stopServices
 fi
