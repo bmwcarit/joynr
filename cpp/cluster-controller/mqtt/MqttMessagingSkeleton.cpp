@@ -44,12 +44,14 @@ std::string MqttMessagingSkeleton::translateMulticastWildcard(std::string topic)
 
 MqttMessagingSkeleton::MqttMessagingSkeleton(IMessageRouter& messageRouter,
                                              std::shared_ptr<MqttReceiver> mqttReceiver,
+                                             const std::string& multicastTopicPrefix,
                                              uint64_t ttlUplift)
         : messageRouter(messageRouter),
           mqttReceiver(mqttReceiver),
           ttlUplift(ttlUplift),
           multicastSubscriptionCount(),
-          multicastSubscriptionCountMutex()
+          multicastSubscriptionCountMutex(),
+          multicastTopicPrefix(multicastTopicPrefix)
 {
 }
 
@@ -58,7 +60,7 @@ void MqttMessagingSkeleton::registerMulticastSubscription(const std::string& mul
     std::string mqttTopic = translateMulticastWildcard(multicastId);
     std::lock_guard<std::mutex> lock(multicastSubscriptionCountMutex);
     if (multicastSubscriptionCount.find(mqttTopic) == multicastSubscriptionCount.cend()) {
-        mqttReceiver->subscribeToTopic(mqttTopic);
+        mqttReceiver->subscribeToTopic(multicastTopicPrefix + mqttTopic);
         multicastSubscriptionCount[mqttTopic] = 1;
     } else {
         multicastSubscriptionCount[mqttTopic]++;
@@ -75,7 +77,7 @@ void MqttMessagingSkeleton::unregisterMulticastSubscription(const std::string& m
                 logger, "unregister multicast subscription called for non existing subscription");
     } else if (countIterator->second == 1) {
         multicastSubscriptionCount.erase(mqttTopic);
-        mqttReceiver->unsubscribeFromTopic(mqttTopic);
+        mqttReceiver->unsubscribeFromTopic(multicastTopicPrefix + mqttTopic);
     } else {
         countIterator->second--;
     }

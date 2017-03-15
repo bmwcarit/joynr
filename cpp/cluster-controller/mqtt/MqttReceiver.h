@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ class JOYNRCLUSTERCONTROLLER_EXPORT MqttReceiver : public IMessageReceiver
 public:
     explicit MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnection,
                           const MessagingSettings& settings,
-                          const std::string& channelIdForMqttTopic);
+                          const std::string& channelIdForMqttTopic,
+                          const std::string& unicastTopicPrefix);
 
     ~MqttReceiver() override = default;
 

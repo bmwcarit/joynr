@@ -19,6 +19,7 @@
 #include "joynr/ClusterControllerSettings.h"
 
 #include "joynr/Settings.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -45,6 +46,12 @@ void ClusterControllerSettings::checkSettings()
     if (!settings.contains(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME())) {
         setLocalDomainAccessStorePersistenceFilename(
                 DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
+    }
+    if (!settings.contains(SETTING_MQTT_MULTICAST_TOPIC_PREFIX())) {
+        setMqttMulticastTopicPrefix(DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX());
+    }
+    if (!settings.contains(SETTING_MQTT_UNICAST_TOPIC_PREFIX())) {
+        setMqttMulticastTopicPrefix(DEFAULT_MQTT_UNICAST_TOPIC_PREFIX());
     }
 }
 
@@ -74,6 +81,18 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_CLIENT_ID_PREFIX()
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_MQTT_MULTICAST_TOPIC_PREFIX()
+{
+    static const std::string value("cluster-controller/mqtt-multicast-topic-prefix");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_MQTT_UNICAST_TOPIC_PREFIX()
+{
+    static const std::string value("cluster-controller/mqtt-unicast-topic-prefix");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME()
 {
     static const std::string value("cluster-controller/mqtt-certificate-authority-pem-filename");
@@ -95,6 +114,18 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_PRIVATE_KEY_PEM_FILEN
 const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
 {
     static const std::string value("joynr");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX()
+{
+    static const std::string value("");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::DEFAULT_MQTT_UNICAST_TOPIC_PREFIX()
+{
+    static const std::string value("");
     return value;
 }
 
@@ -167,6 +198,27 @@ void ClusterControllerSettings::setMqttClientIdPrefix(const std::string& mqttCli
     settings.set(SETTING_MQTT_CLIENT_ID_PREFIX(), mqttClientId);
 }
 
+std::string ClusterControllerSettings::getMqttMulticastTopicPrefix() const
+{
+    return settings.get<std::string>(SETTING_MQTT_MULTICAST_TOPIC_PREFIX());
+}
+
+void ClusterControllerSettings::setMqttMulticastTopicPrefix(
+        const std::string& mqttMulticastTopicPrefix)
+{
+    settings.set(SETTING_MQTT_MULTICAST_TOPIC_PREFIX(), mqttMulticastTopicPrefix);
+}
+
+std::string ClusterControllerSettings::getMqttUnicastTopicPrefix() const
+{
+    return settings.get<std::string>(SETTING_MQTT_UNICAST_TOPIC_PREFIX());
+}
+
+void ClusterControllerSettings::setMqttUnicastTopicPrefix(const std::string& mqttUnicastTopicPrefix)
+{
+    settings.set(SETTING_MQTT_UNICAST_TOPIC_PREFIX(), mqttUnicastTopicPrefix);
+}
+
 bool ClusterControllerSettings::isMqttCertificateAuthorityPemFilenameSet() const
 {
     return settings.contains(SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
@@ -236,6 +288,16 @@ void ClusterControllerSettings::printSettings() const
 
     JOYNR_LOG_DEBUG(
             logger, "SETTING: {}  = {}", SETTING_MQTT_CLIENT_ID_PREFIX(), getMqttClientIdPrefix());
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_MQTT_MULTICAST_TOPIC_PREFIX(),
+                    getMqttMulticastTopicPrefix());
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_MQTT_UNICAST_TOPIC_PREFIX(),
+                    getMqttUnicastTopicPrefix());
 
     if (isWsTLSPortSet()) {
         JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_WS_TLS_PORT(), getWsTLSPort());
