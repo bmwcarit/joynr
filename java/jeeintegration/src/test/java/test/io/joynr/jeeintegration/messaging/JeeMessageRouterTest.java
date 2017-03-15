@@ -84,7 +84,9 @@ public class JeeMessageRouterTest {
                                                         messagingStubFactory,
                                                         messagingSkeletonFactory,
                                                         addressManager,
-                                                        multicastReceiverRegistry);
+                                                        multicastReceiverRegistry,
+                                                        null,
+                                                        false);
 
         message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000L));
         subject.route(message);
@@ -101,7 +103,9 @@ public class JeeMessageRouterTest {
                                                         messagingStubFactory,
                                                         messagingSkeletonFactory,
                                                         addressManager,
-                                                        multicastReceiverRegistry);
+                                                        multicastReceiverRegistry,
+                                                        null,
+                                                        false);
 
         subject.shutdown();
 

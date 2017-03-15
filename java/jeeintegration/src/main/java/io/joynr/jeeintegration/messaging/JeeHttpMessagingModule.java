@@ -31,6 +31,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 
+import io.joynr.accesscontrol.AccessControlClientModule;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
@@ -82,6 +83,8 @@ public class JeeHttpMessagingModule extends AbstractModule {
 
                                                    });
         globalAddresses.addBinding().to(ServletHttpGlobalAddressFactory.class);
+
+        install(new AccessControlClientModule());
 
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);

@@ -26,8 +26,11 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import io.joynr.accesscontrol.AccessController;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.MessagingStubFactory;
@@ -61,7 +64,9 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
                             MessagingStubFactory messagingStubFactory,
                             MessagingSkeletonFactory messagingSkeletonFactory,
                             AddressManager addressManager,
-                            MulticastReceiverRegistry multicastReceiverRegistry) {
+                            MulticastReceiverRegistry multicastReceiverRegistry,
+                            AccessController accessController,
+                            @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl) {
         super(globalAddressProvider,
               routingTable,
               scheduler,
@@ -69,7 +74,9 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
               messagingStubFactory,
               messagingSkeletonFactory,
               addressManager,
-              multicastReceiverRegistry);
+              multicastReceiverRegistry,
+              accessController,
+              enableAccessControl);
         if (LOG.isDebugEnabled()) {
             LOG.debug(format("Initialising with:%n\troutingTable: %s%n\tscheduler: %s%n\tsendMsgRetryIntervalMs: %d%n\tmessageStubFactory: %s",
                              routingTable,
