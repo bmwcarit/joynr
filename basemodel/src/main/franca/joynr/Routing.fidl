@@ -111,6 +111,11 @@ interface Routing {
 	version {major 0 minor 1}
 
 	<**
+		@description: global address of cluster-controller
+	**>
+	attribute String globalAddress readonly // NOTIFYREADONLY
+
+	<**
 		@description: Adds a hop to the parent routing table.
 			<br/>
 			The overloaded methods (one for each concrete Address type) is

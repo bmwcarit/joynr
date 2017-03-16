@@ -38,7 +38,7 @@ public:
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(100);
         auto integrationSettings = std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
-        Settings settings("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings");
+        Settings settings("test-resources/MqttSystemIntegrationTest1.settings");
         Settings::merge(settings, *integrationSettings, false);
         runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(integrationSettings));
 

@@ -47,7 +47,7 @@ public class ResourceContentProvider {
         try {
             URI uri = new URI(provisionedCapabilitiesJsonFilename);
             if (!uri.isAbsolute()) {
-                throw new URISyntaxException(provisionedCapabilitiesJsonFilename, "URI is not aboslute");
+                throw new URISyntaxException(provisionedCapabilitiesJsonFilename, "URI is not absolute");
             }
             result = readFromUri(uri);
         } catch (URISyntaxException e) {

@@ -55,6 +55,7 @@ public:
     MessagingQos qos;
     std::shared_ptr<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
     Semaphore semaphore;
+    const bool isLocalMessage;
 
     JoynrMessageFactory messageFactory;
     std::shared_ptr<MockMessageReceiver> mockMessageReceiver;
@@ -74,6 +75,7 @@ public:
         qos(),
         inProcessMessagingSkeleton(std::make_shared<MockInProcessMessagingSkeleton>()),
         semaphore(0),
+        isLocalMessage(false),
         messageFactory(),
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
@@ -81,12 +83,15 @@ public:
         singleThreadedIOService(),
         messageRouter(nullptr)
     {
+        const std::string globalCCAddress("globalAddress");
+
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
         messageRouter = std::make_unique<CcMessageRouter>(messagingStubFactory,
                                                           std::make_shared<MulticastMessagingSkeletonDirectory>(),
                                                           nullptr,
                                                           singleThreadedIOService.getIOService(),
-                                                          nullptr);
+                                                          nullptr,
+                                                          globalCCAddress);
         qos.setTtl(10000);
     }
 
@@ -132,7 +137,7 @@ public:
 
         messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
-        messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller);
+        messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller, isLocalMessage);
 
         WaitXTimes(2);
     }
@@ -144,7 +149,8 @@ public:
                     senderId,
                     invalidReceiverId,
                     qos,
-                    request);
+                    request,
+                    isLocalMessage);
 
 
         messageRouter->route(message);
@@ -157,7 +163,13 @@ public:
                     senderId,
                     receiverId,
                     qos,
-                    request);
+                    request,
+                    isLocalMessage);
+
+        // We must set the reply address here. Otherwise the message router will
+        // set it and the message which was created will differ from the message
+        // which is passed to the messaging-skeleton.
+        message.setHeaderReplyAddress(globalClusterControllerAddress);
 
         // InProcessMessagingSkeleton should receive the message
         EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),_))
@@ -185,7 +197,8 @@ public:
                     senderId,
                     receiverId,
                     qos,
-                    request);
+                    request,
+                    isLocalMessage);
         message.setHeaderReplyAddress(globalClusterControllerAddress);
 
         // InProcessMessagingSkeleton should not receive the message
@@ -209,7 +222,8 @@ public:
                     senderId,
                     receiverId,
                     qos,
-                    request);
+                    request,
+                    isLocalMessage);
         message.setHeaderReplyAddress(globalClusterControllerAddress);
 
         std::string receiverId2("receiverId2");
@@ -217,7 +231,8 @@ public:
                     senderId,
                     receiverId2,
                     qos,
-                    request);
+                    request,
+                    isLocalMessage);
         message2.setHeaderReplyAddress(globalClusterControllerAddress);
 
         // MessageSender should receive message

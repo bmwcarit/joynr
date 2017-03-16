@@ -40,13 +40,13 @@ public:
     ~MessagingSettings() = default;
 
     static const std::string& SETTING_BROKER_URL();
-    static const std::string& SETTING_BOUNCE_PROXY_URL();
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
     static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME();
     static const std::string& SETTING_MQTT_RECONNECT_SLEEP_TIME();
+    static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT();
     static const std::string& SETTING_INDEX();
     static const std::string& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
@@ -109,6 +109,7 @@ public:
     static std::uint64_t DEFAULT_MAXIMUM_TTL_MS();
     static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME();
     static std::chrono::milliseconds DEFAULT_MQTT_RECONNECT_SLEEP_TIME();
+    static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT();
     static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
 
     static bool DEFAULT_ENABLE_ACCESS_CONTROLLER();
@@ -116,10 +117,6 @@ public:
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
     void setBrokerUrl(const BrokerUrl& brokerUrl);
-
-    BrokerUrl getBounceProxyUrl() const;
-    std::string getBounceProxyUrlString() const;
-    void setBounceProxyUrl(const BrokerUrl& brokerUrl);
 
     std::string getDiscoveryDirectoriesDomain() const;
 
@@ -134,6 +131,7 @@ public:
     void setMqttKeepAliveTime(std::chrono::seconds mqttKeepAliveTime);
     std::chrono::milliseconds getMqttReconnectSleepTime() const;
     void setMqttReconnectSleepTime(std::chrono::milliseconds mqttReconnectSleepTime);
+    std::chrono::milliseconds getMqttConnectionTimeout() const;
     std::int64_t getIndex() const;
     void setIndex(std::int64_t index);
     int getCreateChannelRetryInterval() const;

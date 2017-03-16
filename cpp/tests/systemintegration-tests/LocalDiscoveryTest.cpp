@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/tests/testProxy.h"
-#include "joynr/tests/DefaulttestProvider.h"
-#include "joynr/types/ProviderQos.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Settings.h"
+#include "joynr/tests/DefaulttestProvider.h"
+#include "joynr/tests/testProxy.h"
+#include "joynr/types/ProviderQos.h"
+
+#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -40,8 +41,8 @@ public:
         runtime2(nullptr),
         testDomain("testDomain")
     {
-        auto settings1 = std::make_unique<Settings>("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings");
-        auto settings2 = std::make_unique<Settings>("test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings");
+        auto settings1 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
+        auto settings2 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest2.settings");
 
         MessagingSettings messagingSettings1(*settings1);
         MessagingSettings messagingSettings2(*settings2);
@@ -155,4 +156,25 @@ TEST_F(LocalDiscoveryTest, testGloballLookup) {
        ->build());
 
     EXPECT_FALSE(testProxy->providerDiscoveryEntry.getIsLocal());
+}
+
+TEST_F(LocalDiscoveryTest, testAsyncRegistration)
+{
+    auto testProvider = std::make_shared<tests::DefaulttestProvider>();
+    joynr::types::ProviderQos providerQos;
+    auto onSuccess = []() {};
+    auto onError = [](const exceptions::JoynrRuntimeException&){
+        FAIL();
+    };
+
+    runtime1->registerProviderAsync<tests::testProvider>(testDomain, testProvider, providerQos, onSuccess, onError);
+
+    std::unique_ptr<ProxyBuilder<LocalDiscoveryTestTestProxy>> testProxyBuilder(
+        runtime2->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain)
+    );
+
+    std::unique_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
+       ->setMessagingQos(messagingQos)
+       ->setDiscoveryQos(discoveryQos)
+       ->build());
 }

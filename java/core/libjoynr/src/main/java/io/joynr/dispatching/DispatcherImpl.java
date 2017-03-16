@@ -91,6 +91,7 @@ public class DispatcherImpl implements Dispatcher {
                                                                                  toDiscoveryEntry.getParticipantId(),
                                                                                  subscriptionRequest,
                                                                                  messagingQos);
+            message.setLocalMessage(toDiscoveryEntry.getIsLocal());
 
             if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
                 String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
@@ -110,6 +111,7 @@ public class DispatcherImpl implements Dispatcher {
                                                                               toDiscoveryEntry.getParticipantId(),
                                                                               subscriptionStop,
                                                                               messagingQos);
+            message.setLocalMessage(toDiscoveryEntry.getIsLocal());
             messageRouter.route(message);
         }
 

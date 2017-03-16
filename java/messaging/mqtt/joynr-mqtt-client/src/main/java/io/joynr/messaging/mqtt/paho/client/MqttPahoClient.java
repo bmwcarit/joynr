@@ -50,12 +50,22 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private MqttClient mqttClient;
     private IMessaging messagingSkeleton;
     private int reconnectSleepMs;
+    private int keepAliveTimerSec;
+    private int connectionTimeoutSec;
+    private int timeToWaitMs;
 
     private Set<String> subscribedTopics = new HashSet<>();
 
-    public MqttPahoClient(MqttClient mqttClient, int reconnectSleepMs) throws MqttException {
+    public MqttPahoClient(MqttClient mqttClient,
+                          int reconnectSleepMS,
+                          int keepAliveTimerSec,
+                          int connectionTimeoutSec,
+                          int timeToWaitMs) throws MqttException {
         this.mqttClient = mqttClient;
-        this.reconnectSleepMs = reconnectSleepMs;
+        this.reconnectSleepMs = reconnectSleepMS;
+        this.keepAliveTimerSec = keepAliveTimerSec;
+        this.connectionTimeoutSec = connectionTimeoutSec;
+        this.timeToWaitMs = timeToWaitMs;
     }
 
     @Override
@@ -63,6 +73,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         while (!mqttClient.isConnected()) {
             try {
                 mqttClient.connect(getConnectOptions());
+                mqttClient.setTimeToWait(timeToWaitMs);
                 mqttClient.setCallback(this);
                 logger.debug("MQTT Connected client");
                 for (String topic : subscribedTopics) {
@@ -103,8 +114,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private MqttConnectOptions getConnectOptions() {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setAutomaticReconnect(false);
-        options.setConnectionTimeout(120);
-        options.setKeepAliveInterval(60);
+        options.setConnectionTimeout(connectionTimeoutSec);
+        options.setKeepAliveInterval(keepAliveTimerSec);
         options.setCleanSession(false);
         return options;
     }

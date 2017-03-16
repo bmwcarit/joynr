@@ -32,8 +32,7 @@ class MqttMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {
 
 public:
-    MqttMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
-                             const std::string& globalClusterControllerAddress);
+    MqttMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender);
     std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
@@ -43,7 +42,6 @@ public:
 
 private:
     std::shared_ptr<IMessageSender> messageSender;
-    std::string globalClusterControllerAddress;
 };
 
 } // namespace joynr

@@ -73,7 +73,7 @@ public:
         domain("End2EndAccessControlTest"),
         providerParticipantId(),
         semaphore(0),
-        AC_ENTRIES_FILE("AccessControl.entries"),
+        AC_ENTRIES_FILE("CCAccessControl.entries"),
         MESSAGINGQOS_TTL(1000)
     {
     }
@@ -141,7 +141,7 @@ protected:
 
 TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission) {
 
-    init("test-resources/AccessControlYesPermissions.entries");
+    init("test-resources/AccessControlYesPermission.entries");
 
     // If AccessControl is active, the proxy cannot call methodWithNoInputParameters (see AC_ENTRIES_FILE file)
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_,_))
@@ -156,7 +156,7 @@ TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission) {
 
 TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesHavePermission) {
 
-    init("test-resources/AccessControlNoPermissions.entries");
+    init("test-resources/AccessControlNoPermission.entries");
 
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_,_))
             .Times(1)

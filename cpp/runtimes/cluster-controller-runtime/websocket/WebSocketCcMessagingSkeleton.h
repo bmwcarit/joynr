@@ -182,31 +182,13 @@ private:
         }
         std::string textMessage = message->get_payload();
         if (isInitializationMessage(textMessage)) {
-
             JOYNR_LOG_DEBUG(logger,
                             "received initialization message from websocket client: {}",
                             message->get_payload());
             // register client with messaging stub factory
+            joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
             try {
-                joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
                 joynr::serializer::deserializeFromJson(clientAddress, textMessage);
-
-                auto sender = std::make_shared<WebSocketPpSender<Server>>(endpoint);
-                sender->setConnectionHandle(hdl);
-
-                messagingStubFactory->addClient(clientAddress, sender);
-
-                typename Server::connection_ptr connection = endpoint.get_con_from_hdl(hdl);
-                connection->set_message_handler(
-                        std::bind(&WebSocketPpReceiver<Server>::onMessageReceived,
-                                  &receiver,
-                                  std::placeholders::_1,
-                                  std::placeholders::_2));
-                {
-                    std::unique_lock<std::mutex> lock(clientsMutex);
-                    clients[hdl] = clientAddress;
-                }
-
             } catch (const std::invalid_argument& e) {
                 JOYNR_LOG_FATAL(
                         logger,
@@ -214,6 +196,23 @@ private:
                         "in different versions - raw: {} - error: {}",
                         textMessage,
                         e.what());
+                return;
+            }
+
+            auto sender = std::make_shared<WebSocketPpSender<Server>>(endpoint);
+            sender->setConnectionHandle(hdl);
+
+            messagingStubFactory->addClient(clientAddress, sender);
+
+            typename Server::connection_ptr connection = endpoint.get_con_from_hdl(hdl);
+            connection->set_message_handler(
+                    std::bind(&WebSocketPpReceiver<Server>::onMessageReceived,
+                              &receiver,
+                              std::placeholders::_1,
+                              std::placeholders::_2));
+            {
+                std::unique_lock<std::mutex> lock(clientsMutex);
+                clients[hdl] = clientAddress;
             }
         } else {
             JOYNR_LOG_ERROR(
@@ -224,34 +223,9 @@ private:
     void onMessageReceived(const std::string& message)
     {
         // deserialize message and transmit
+        JoynrMessage joynrMsg;
         try {
-            JoynrMessage joynrMsg;
             joynr::serializer::deserializeFromJson(joynrMsg, message);
-            if (joynrMsg.getType().empty()) {
-                JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message);
-                return;
-            }
-            if (joynrMsg.getPayload().empty()) {
-                JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
-                return;
-            }
-            if (!joynrMsg.containsHeaderExpiryDate()) {
-                JOYNR_LOG_ERROR(
-                        logger,
-                        "received message [msgId=[{}] without decay time - dropping message",
-                        joynrMsg.getHeaderMessageId());
-                return;
-            }
-
-            JOYNR_LOG_DEBUG(logger, "<<<< INCOMING <<<< {}", joynrMsg.toLogMessage());
-
-            auto onFailure = [joynrMsg](const exceptions::JoynrRuntimeException& e) {
-                JOYNR_LOG_ERROR(logger,
-                                "Incoming Message with ID {} could not be sent! reason: {}",
-                                joynrMsg.getHeaderMessageId(),
-                                e.getMessage());
-            };
-            transmit(joynrMsg, onFailure);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_ERROR(logger,
                             "Unable to deserialize joynr message object from: {} - error: {}",
@@ -259,6 +233,31 @@ private:
                             e.what());
             return;
         }
+
+        if (joynrMsg.getType().empty()) {
+            JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message);
+            return;
+        }
+        if (joynrMsg.getPayload().empty()) {
+            JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
+            return;
+        }
+        if (!joynrMsg.containsHeaderExpiryDate()) {
+            JOYNR_LOG_ERROR(logger,
+                            "received message [msgId=[{}] without decay time - dropping message",
+                            joynrMsg.getHeaderMessageId());
+            return;
+        }
+
+        JOYNR_LOG_DEBUG(logger, "<<<< INCOMING <<<< {}", joynrMsg.toLogMessage());
+
+        auto onFailure = [joynrMsg](const exceptions::JoynrRuntimeException& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Incoming Message with ID {} could not be sent! reason: {}",
+                            joynrMsg.getHeaderMessageId(),
+                            e.getMessage());
+        };
+        transmit(joynrMsg, onFailure);
     }
 
     bool isInitializationMessage(const std::string& message)

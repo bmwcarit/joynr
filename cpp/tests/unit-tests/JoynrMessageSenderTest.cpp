@@ -55,7 +55,8 @@ public:
         mockMessagingStub(),
         callBack(),
         singleThreadedIOService(),
-        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService()))
+        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
+        isLocalMessage(true)
     {
         singleThreadedIOService.start();
     }
@@ -81,6 +82,7 @@ protected:
     std::shared_ptr<IReplyCaller> callBack;
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
+    const bool isLocalMessage;
 };
 
 typedef JoynrMessageSenderTest JoynrMessageSenderDeathTest;
@@ -99,7 +101,8 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
                 senderID,
                 receiverID,
                 qosSettings,
-                request
+                request,
+                isLocalMessage
     );
 
     EXPECT_CALL( *(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST)),
@@ -107,7 +110,7 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
 
     JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
-    joynrMessageSender.sendRequest(senderID, receiverID, qosSettings, request, callBack);
+    joynrMessageSender.sendRequest(senderID, receiverID, qosSettings, request, callBack, isLocalMessage);
 }
 
 TEST_F(JoynrMessageSenderTest, sendOneWayRequest_normal){
@@ -123,7 +126,8 @@ TEST_F(JoynrMessageSenderTest, sendOneWayRequest_normal){
                 senderID,
                 receiverID,
                 qosSettings,
-                oneWayRequest
+                oneWayRequest,
+                isLocalMessage
     );
 
     EXPECT_CALL( *(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY)),
@@ -131,7 +135,7 @@ TEST_F(JoynrMessageSenderTest, sendOneWayRequest_normal){
 
     JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
-    joynrMessageSender.sendOneWayRequest(senderID, receiverID, qosSettings, oneWayRequest);
+    joynrMessageSender.sendOneWayRequest(senderID, receiverID, qosSettings, oneWayRequest, isLocalMessage);
 }
 
 
@@ -142,7 +146,7 @@ TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death)
     joynrMessageSender.registerDispatcher(&mockDispatcher);
 
     Request jsonRequest;
-    ASSERT_DEATH(joynrMessageSender.sendRequest(senderID, receiverID, qosSettings, jsonRequest, callBack), "Assertion.*");
+    ASSERT_DEATH(joynrMessageSender.sendRequest(senderID, receiverID, qosSettings, jsonRequest, callBack, isLocalMessage), "Assertion.*");
 }
 
 
@@ -181,7 +185,8 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
                 senderID,
                 receiverID,
                 qosSettings,
-                subscriptionRequest);
+                subscriptionRequest,
+                isLocalMessage);
 
     EXPECT_CALL(*mockMessageRouter, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)),
                                                   Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
@@ -189,7 +194,7 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
 
-    joynrMessageSender.sendSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest);
+    joynrMessageSender.sendSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest, isLocalMessage);
 }
 
 TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
@@ -210,7 +215,8 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
                 senderID,
                 receiverID,
                 qosSettings,
-                subscriptionRequest);
+                subscriptionRequest,
+                isLocalMessage);
 
     EXPECT_CALL(*mockMessageRouter, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)),
                                                   Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
@@ -218,7 +224,7 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     JoynrMessageSender joynrMessageSender(mockMessageRouter);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
 
-    joynrMessageSender.sendBroadcastSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest);
+    joynrMessageSender.sendBroadcastSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest, isLocalMessage);
 }
 
 //TODO implement sending a reply to a subscription request!
@@ -267,7 +273,8 @@ TEST_F(JoynrMessageSenderTest, sendMulticastSubscriptionRequest) {
             senderParticipantId,
             receiverParticipantId,
             messagingQos,
-            subscriptionRequest);
+            subscriptionRequest,
+            isLocalMessage);
 
     EXPECT_CALL(*mockMessageRouter, route(AllOf(
             Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)),
@@ -279,5 +286,6 @@ TEST_F(JoynrMessageSenderTest, sendMulticastSubscriptionRequest) {
             senderParticipantId,
             receiverParticipantId,
             messagingQos,
-            subscriptionRequest);
+            subscriptionRequest,
+            isLocalMessage);
 }

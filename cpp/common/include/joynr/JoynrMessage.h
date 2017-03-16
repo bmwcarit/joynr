@@ -383,6 +383,20 @@ public:
      */
     void setReceivedFromGlobal(bool receivedFromGlobal);
 
+    /**
+     * @return Returns whether the message is send to a provider that is registered on the local
+     * cluster-controller.
+     */
+    bool isLocalMessage() const;
+
+    /**
+     * Sets a flag which indiciates whether the message is send to a provider that is registered on
+     * the local cluster-controller.
+     * Won't be transmitted over the network (transient flag). Default is false.
+     * @param localMessage
+     */
+    void setLocalMessage(bool localMessage);
+
     template <class Archive>
     void serialize(Archive& archive)
     {
@@ -420,6 +434,10 @@ private:
     // receivedFromGlobal is a transient attribute which will not be serialized.
     // It is only used locally for routing decisions.
     bool receivedFromGlobal;
+
+    // Transient flag which marks message that are send to a provider which is registered
+    // on the local cluster-controller.
+    bool localMessage;
     ADD_LOGGER(JoynrMessage);
 
     void generateAndSetMsgIdHeaderIfAbsent();

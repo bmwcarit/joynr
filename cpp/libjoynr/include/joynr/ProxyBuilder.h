@@ -68,14 +68,14 @@ public:
      */
     ProxyBuilder(ProxyFactory& proxyFactory,
                  IRequestCallerDirectory* requestCallerDirectory,
-                 joynr::system::IDiscoverySync& discoveryProxy,
+                 joynr::system::IDiscoveryAsync& discoveryProxy,
                  const std::string& domain,
                  std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
                  std::shared_ptr<IMessageRouter> messageRouter,
                  std::uint64_t messagingMaximumTtlMs);
 
     /** Destructor */
-    ~ProxyBuilder() override;
+    ~ProxyBuilder() override = default;
 
     /**
      * @brief Build the proxy object
@@ -118,8 +118,8 @@ private:
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
-    joynr::system::IDiscoverySync& discoveryProxy;
-    Arbitrator* arbitrator;
+    joynr::system::IDiscoveryAsync& discoveryProxy;
+    std::unique_ptr<Arbitrator> arbitrator;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<IMessageRouter> messageRouter;
@@ -133,7 +133,7 @@ template <class T>
 ProxyBuilder<T>::ProxyBuilder(
         ProxyFactory& proxyFactory,
         IRequestCallerDirectory* requestCallerDirectory,
-        joynr::system::IDiscoverySync& discoveryProxy,
+        system::IDiscoveryAsync& discoveryProxy,
         const std::string& domain,
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,
@@ -143,27 +143,12 @@ ProxyBuilder<T>::ProxyBuilder(
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
           discoveryProxy(discoveryProxy),
-          arbitrator(nullptr),
+          arbitrator(),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
           messagingMaximumTtlMs(messagingMaximumTtlMs),
           discoveryQos()
 {
-}
-
-template <class T>
-ProxyBuilder<T>::~ProxyBuilder()
-{
-    if (arbitrator != nullptr) {
-        // question: it is only safe to delete the arbitrator here, if the proxybuilder will not be
-        // deleted
-        // before all arbitrations are finished.
-        delete arbitrator;
-        arbitrator = nullptr;
-        // TODO delete arbitrator
-        // 1. delete arbitrator or
-        // 2. (if std::shared_ptr) delete arbitrator
-    }
 }
 
 template <class T>

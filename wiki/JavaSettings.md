@@ -244,6 +244,35 @@ trying to connect again.
 * **User property**: `joynr.messaging.mqtt.reconnect.sleepms`
 * **Default value**: `1000`
 
+### `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC`
+Sets the "keep alive" interval measured in seconds. If no message is transmitted during this period,
+the client sends a ping message which is acknowledged by the server. This allows a client to detect
+disconnects without using TCP/IP mechanisms. A value of 0 disables the "keep alive" mechanism.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.keepalivetimersec`
+* **Default value**: `60`
+
+### `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC`
+Sets the connection timeout measured in seconds. This value states how long a client will wait until
+a network connection to the server is established. A value of 0 means that a client will wait until
+the network connection is established successfully or fails.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.connectiontimeoutsec`
+* **Default value**: `30`
+
+### `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`
+Sets the maximum time for an action to complete (measured in milliseconds) before the control is returned
+to the application. A value of -1 means that no timeout is used for actions.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.timetowaitms`
+* **Default value**: `-1`
+
 ## SystemServicesSettings
 
 ### `PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID`

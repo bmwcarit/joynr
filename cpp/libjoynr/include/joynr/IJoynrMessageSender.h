@@ -80,7 +80,8 @@ public:
                              const std::string& receiverParticipantId,
                              const MessagingQos& qos,
                              const Request& request,
-                             std::shared_ptr<IReplyCaller> callback) = 0;
+                             std::shared_ptr<IReplyCaller> callback,
+                             bool isLocalMessage) = 0;
 
     /*
      * Prepares and sends a single message
@@ -88,7 +89,8 @@ public:
     virtual void sendOneWayRequest(const std::string& senderParticipantId,
                                    const std::string& receiverParticipantId,
                                    const MessagingQos& qos,
-                                   const OneWayRequest& request) = 0;
+                                   const OneWayRequest& request,
+                                   bool isLocalMessage) = 0;
 
     /*
      * Prepares and sends a reply message (an answer to a request)
@@ -101,19 +103,22 @@ public:
     virtual void sendSubscriptionRequest(const std::string& senderParticipantId,
                                          const std::string& receiverParticipantId,
                                          const MessagingQos& qos,
-                                         const SubscriptionRequest& subscriptionRequest) = 0;
+                                         const SubscriptionRequest& subscriptionRequest,
+                                         bool isLocalMessage) = 0;
 
     virtual void sendBroadcastSubscriptionRequest(
             const std::string& senderParticipantId,
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
-            const BroadcastSubscriptionRequest& subscriptionRequest) = 0;
+            const BroadcastSubscriptionRequest& subscriptionRequest,
+            bool isLocalMessage) = 0;
 
     virtual void sendMulticastSubscriptionRequest(
             const std::string& senderParticipantId,
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
-            const MulticastSubscriptionRequest& subscriptionRequest) = 0;
+            const MulticastSubscriptionRequest& subscriptionRequest,
+            bool isLocalMessage) = 0;
 
     virtual void sendSubscriptionStop(const std::string& senderParticipantId,
                                       const std::string& receiverParticipantId,

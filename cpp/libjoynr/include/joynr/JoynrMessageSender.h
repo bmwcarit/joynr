@@ -85,14 +85,16 @@ public:
                      const std::string& receiverParticipantId,
                      const MessagingQos& qos,
                      const Request& request,
-                     std::shared_ptr<IReplyCaller> callback) override;
+                     std::shared_ptr<IReplyCaller> callback,
+                     bool isLocalMessage) override;
     /*
      * Prepares and sends a single message
      */
     virtual void sendOneWayRequest(const std::string& senderParticipantId,
                                    const std::string& receiverParticipantId,
                                    const MessagingQos& qos,
-                                   const OneWayRequest& request) override;
+                                   const OneWayRequest& request,
+                                   bool isLocalMessage) override;
     /*
      * Prepares and sends a reply message (an answer to a request)
      */
@@ -104,19 +106,20 @@ public:
     void sendSubscriptionRequest(const std::string& senderParticipantId,
                                  const std::string& receiverParticipantId,
                                  const MessagingQos& qos,
-                                 const SubscriptionRequest& subscriptionRequest) override;
+                                 const SubscriptionRequest& subscriptionRequest,
+                                 bool isLocalMessage) override;
 
-    void sendBroadcastSubscriptionRequest(
-            const std::string& senderParticipantId,
-            const std::string& receiverParticipantId,
-            const MessagingQos& qos,
-            const BroadcastSubscriptionRequest& subscriptionRequest) override;
+    void sendBroadcastSubscriptionRequest(const std::string& senderParticipantId,
+                                          const std::string& receiverParticipantId,
+                                          const MessagingQos& qos,
+                                          const BroadcastSubscriptionRequest& subscriptionRequest,
+                                          bool isLocalMessage) override;
 
-    void sendMulticastSubscriptionRequest(
-            const std::string& senderParticipantId,
-            const std::string& receiverParticipantId,
-            const MessagingQos& qos,
-            const MulticastSubscriptionRequest& subscriptionRequest) override;
+    void sendMulticastSubscriptionRequest(const std::string& senderParticipantId,
+                                          const std::string& receiverParticipantId,
+                                          const MessagingQos& qos,
+                                          const MulticastSubscriptionRequest& subscriptionRequest,
+                                          bool isLocalMessage) override;
 
     void sendSubscriptionReply(const std::string& senderParticipantId,
                                const std::string& receiverParticipantId,

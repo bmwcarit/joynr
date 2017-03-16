@@ -45,12 +45,6 @@ const std::string& MessagingSettings::SETTING_BROKER_URL()
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_BOUNCE_PROXY_URL()
-{
-    static const std::string value("messaging/bounceproxy-url");
-    return value;
-}
-
 const std::string& MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()
 {
     static const std::string value("messaging/discovery-directories-domain");
@@ -108,6 +102,18 @@ std::chrono::seconds MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME()
 const std::string& MessagingSettings::SETTING_MQTT_RECONNECT_SLEEP_TIME()
 {
     static const std::string value("messaging/mqtt-reconnect-sleep-time");
+    return value;
+}
+
+const std::string& MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT()
+{
+    static const std::string value("messaging/mqtt-connection-timeout");
+    return value;
+}
+
+std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT()
+{
+    static const std::chrono::milliseconds value(1000);
     return value;
 }
 
@@ -365,22 +371,6 @@ void MessagingSettings::setBrokerUrl(const BrokerUrl& brokerUrl)
     settings.set(SETTING_BROKER_URL(), url);
 }
 
-BrokerUrl MessagingSettings::getBounceProxyUrl() const
-{
-    return BrokerUrl(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
-}
-
-std::string MessagingSettings::getBounceProxyUrlString() const
-{
-    return settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
-}
-
-void MessagingSettings::setBounceProxyUrl(const BrokerUrl& bounceProxyUrl)
-{
-    std::string url = bounceProxyUrl.getBrokerChannelsBaseUrl().toString();
-    settings.set(SETTING_BOUNCE_PROXY_URL(), url);
-}
-
 std::string MessagingSettings::getDiscoveryDirectoriesDomain() const
 {
     return settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN());
@@ -420,6 +410,11 @@ std::chrono::milliseconds MessagingSettings::getMqttReconnectSleepTime() const
 void MessagingSettings::setMqttReconnectSleepTime(std::chrono::milliseconds mqttReconnectSleepTime)
 {
     settings.set(SETTING_MQTT_RECONNECT_SLEEP_TIME(), mqttReconnectSleepTime.count());
+}
+
+std::chrono::milliseconds MessagingSettings::getMqttConnectionTimeout() const
+{
+    return std::chrono::milliseconds(settings.get<std::int64_t>(SETTING_MQTT_CONNECTION_TIMEOUT()));
 }
 
 std::int64_t MessagingSettings::getIndex() const
@@ -645,16 +640,6 @@ void MessagingSettings::checkSettings()
         settings.set(SETTING_BROKER_URL(), brokerUrl);
     }
 
-    if (!settings.contains(SETTING_BOUNCE_PROXY_URL())) {
-        settings.set(SETTING_BOUNCE_PROXY_URL(), brokerUrl);
-    } else {
-        std::string bounceProxyUrl = settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
-        if (bounceProxyUrl.back() != '/') {
-            bounceProxyUrl.append("/");
-            settings.set(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl);
-        }
-    }
-
     assert(settings.contains(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_URL()));
@@ -673,6 +658,9 @@ void MessagingSettings::checkSettings()
     if (!settings.contains(SETTING_MQTT_RECONNECT_SLEEP_TIME())) {
         settings.set(
                 SETTING_MQTT_RECONNECT_SLEEP_TIME(), DEFAULT_MQTT_RECONNECT_SLEEP_TIME().count());
+    }
+    if (!settings.contains(SETTING_MQTT_CONNECTION_TIMEOUT())) {
+        settings.set(SETTING_MQTT_CONNECTION_TIMEOUT(), DEFAULT_MQTT_CONNECTION_TIMEOUT().count());
     }
     if (!settings.contains(SETTING_INDEX())) {
         settings.set(SETTING_INDEX(), 0);
@@ -739,10 +727,6 @@ void MessagingSettings::printSettings() const
                     settings.get<std::string>(SETTING_BROKER_URL()));
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {} = {})",
-                    SETTING_BOUNCE_PROXY_URL(),
-                    settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
-    JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {} = {})",
                     SETTING_DISCOVERY_DIRECTORIES_DOMAIN(),
                     settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
     JOYNR_LOG_DEBUG(logger,
@@ -802,6 +786,7 @@ void MessagingSettings::printSettings() const
                     SETTING_DISCOVERY_MESSAGES_TTL_MS(),
                     settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
     JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
+    JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_TTL_UPLIFT_MS(), getTtlUpliftMs());
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {} = {})",
                     SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),

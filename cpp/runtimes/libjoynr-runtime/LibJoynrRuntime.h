@@ -62,8 +62,6 @@ protected:
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
-    InProcessConnectorFactory* inProcessConnectorFactory;
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     std::shared_ptr<IMessaging> joynrMessagingSendStub;
     std::shared_ptr<JoynrMessageSender> joynrMessageSender;
     IDispatcher* joynrDispatcher;
@@ -81,7 +79,9 @@ protected:
     void init(std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress,
-              std::unique_ptr<IMulticastAddressCalculator> addressCalculator);
+              std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+              std::function<void()> onSuccess,
+              std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);

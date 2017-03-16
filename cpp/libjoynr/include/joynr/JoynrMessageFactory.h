@@ -55,7 +55,8 @@ public:
     JoynrMessage createRequest(const std::string& senderId,
                                const std::string& receiverId,
                                const MessagingQos& qos,
-                               const Request& payload) const;
+                               const Request& payload,
+                               bool isLocalMessage) const;
 
     JoynrMessage createReply(const std::string& senderId,
                              const std::string& receiverId,
@@ -65,7 +66,8 @@ public:
     JoynrMessage createOneWayRequest(const std::string& senderId,
                                      const std::string& receiverId,
                                      const MessagingQos& qos,
-                                     const OneWayRequest& payload) const;
+                                     const OneWayRequest& payload,
+                                     bool isLocalMessage) const;
 
     JoynrMessage createSubscriptionPublication(const std::string& senderId,
                                                const std::string& receiverId,
@@ -75,19 +77,20 @@ public:
     JoynrMessage createSubscriptionRequest(const std::string& senderId,
                                            const std::string& receiverId,
                                            const MessagingQos& qos,
-                                           const SubscriptionRequest& payload) const;
+                                           const SubscriptionRequest& payload,
+                                           bool isLocalMessage) const;
 
-    JoynrMessage createMulticastSubscriptionRequest(
-            const std::string& senderId,
-            const std::string& receiverId,
-            const MessagingQos& qos,
-            const MulticastSubscriptionRequest& payload) const;
+    JoynrMessage createMulticastSubscriptionRequest(const std::string& senderId,
+                                                    const std::string& receiverId,
+                                                    const MessagingQos& qos,
+                                                    const MulticastSubscriptionRequest& payload,
+                                                    bool isLocalMessage) const;
 
-    JoynrMessage createBroadcastSubscriptionRequest(
-            const std::string& senderId,
-            const std::string& receiverId,
-            const MessagingQos& qos,
-            const BroadcastSubscriptionRequest& payload) const;
+    JoynrMessage createBroadcastSubscriptionRequest(const std::string& senderId,
+                                                    const std::string& receiverId,
+                                                    const MessagingQos& qos,
+                                                    const BroadcastSubscriptionRequest& payload,
+                                                    bool isLocalMessage) const;
 
     JoynrMessage createSubscriptionReply(const std::string& senderId,
                                          const std::string& receiverId,

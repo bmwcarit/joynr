@@ -84,6 +84,7 @@ public:
                     std::unique_ptr<IPlatformSecurityManager> securityManager,
                     boost::asio::io_service& ioService,
                     std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+                    const std::string& globalClusterControllerAddress,
                     int maxThreads = 1,
                     std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
@@ -92,12 +93,13 @@ public:
     /*
      * Implement methods from IMessageRouter
      */
-    void route(const JoynrMessage& message, std::uint32_t tryCount = 0) final;
+    void route(JoynrMessage& message, std::uint32_t tryCount = 0) final;
 
-    void addNextHop(
-            const std::string& participantId,
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            std::function<void()> onSuccess = nullptr) final;
+    void addNextHop(const std::string& participantId,
+                    const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+                    std::function<void()> onSuccess = nullptr,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                            onError = nullptr) final;
 
     /*
      * Implement methods from RoutingAbstractProvider
@@ -148,6 +150,10 @@ public:
             std::function<void(const bool& resolved)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
+    void getGlobalAddress(
+            std::function<void(const std::string&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
+
     /*
      * Implement both IMessageRouter and RoutingAbstractProvider
      */
@@ -192,6 +198,7 @@ private:
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     std::shared_ptr<IAccessController> accessController;
     std::string multicastReceveiverDirectoryFilename;
+    const std::string globalClusterControllerAddress;
 };
 
 } // namespace joynr

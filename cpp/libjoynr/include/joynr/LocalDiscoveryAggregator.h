@@ -44,34 +44,51 @@ class DiscoveryQos;
  * lookup is performed by using a participant ID, these entries are checked and returned first
  * before the request is forwarded to the wrapped discovery provider.
  */
-class JOYNR_EXPORT LocalDiscoveryAggregator : public joynr::system::IDiscoverySync
+class JOYNR_EXPORT LocalDiscoveryAggregator : public joynr::system::IDiscoveryAsync
 {
 public:
     LocalDiscoveryAggregator(std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>
                                      provisionedDiscoveryEntries);
 
-    void setDiscoveryProxy(std::unique_ptr<IDiscoverySync> discoveryProxy);
+    void setDiscoveryProxy(std::unique_ptr<IDiscoveryAsync> discoveryProxy);
 
-    // inherited from joynr::system::IDiscoverySync
-    void add(const joynr::types::DiscoveryEntry& entry) override;
+    // inherited from joynr::system::IDiscoveryAsync
+    std::shared_ptr<joynr::Future<void>> addAsync(
+            const joynr::types::DiscoveryEntry& discoveryEntry,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr) override;
 
-    // inherited from joynr::system::IDiscoverySync
-    void lookup(std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result,
-                const std::vector<std::string>& domains,
-                const std::string& interfaceName,
-                const joynr::types::DiscoveryQos& discoveryQos) override;
+    // inherited from joynr::system::IDiscoveryAsync
+    std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
+    lookupAsync(
+            const std::vector<std::string>& domains,
+            const std::string& interfaceName,
+            const joynr::types::DiscoveryQos& discoveryQos,
+            std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
+                    onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr) override;
 
-    // inherited from joynr::system::IDiscoverySync
-    void lookup(joynr::types::DiscoveryEntryWithMetaInfo& result,
-                const std::string& participantId) override;
+    // inherited from joynr::system::IDiscoveryAsync
+    std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
+            const std::string& participantId,
+            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
+                    nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr) override;
 
-    // inherited from joynr::system::IDiscoverySync
-    void remove(const std::string& participantId) override;
+    // inherited from joynr::system::IDiscoveryAsync
+    std::shared_ptr<joynr::Future<void>> removeAsync(
+            const std::string& participantId,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);
 
-    std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy;
+    std::unique_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> provisionedDiscoveryEntries;
 };
 } // namespace joynr

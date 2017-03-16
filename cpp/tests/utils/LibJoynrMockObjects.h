@@ -142,10 +142,8 @@ public:
         joynr::tests::testAbstractProvider::registerBroadcastListener(broadcastListener);
     }
 
-    void methodWithNoInputParameters(std::function<void(
-                                             const std::int32_t& result
-                                          )> onSuccess,
-                                          std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError)
+    void methodWithNoInputParameters(std::function<void(const std::int32_t& result)> onSuccess,
+                                     std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError) override
     {
         methodWithNoInputParametersMock([](const std::int32_t&){},
                                         [](const joynr::exceptions::ProviderRuntimeException&){});

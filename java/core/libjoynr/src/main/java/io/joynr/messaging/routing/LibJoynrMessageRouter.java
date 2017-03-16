@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.annotation.CheckForNull;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -50,8 +52,8 @@ import org.slf4j.LoggerFactory;
  * MessageRouter implementation which adds hops to its parent and tries to resolve unknown addresses at its parent
  */
 @Singleton
-public class ChildMessageRouter extends MessageRouterImpl {
-    private Logger logger = LoggerFactory.getLogger(ChildMessageRouter.class);
+public class LibJoynrMessageRouter extends AbstractMessageRouter {
+    private Logger logger = LoggerFactory.getLogger(LibJoynrMessageRouter.class);
 
     private static interface DeferrableRegistration {
         void register();
@@ -61,18 +63,19 @@ public class ChildMessageRouter extends MessageRouterImpl {
     private RoutingProxy parentRouter;
     private Address incomingAddress;
     private Set<String> deferredParentHopsParticipantIds = new HashSet<>();
-    private Map<String, DeferrableRegistration> deferredMulticastRegististrations = new HashMap<>();
+    private Map<String, DeferrableRegistration> deferredMulticastRegistrations = new HashMap<>();
+    private String replyToAddress;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public ChildMessageRouter(RoutingTable routingTable,
-                              @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
-                              @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
-                              @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                              MessagingStubFactory messagingStubFactory,
-                              MessagingSkeletonFactory messagingSkeletonFactory,
-                              AddressManager addressManager,
-                              MulticastReceiverRegistry multicastReceiverRegistry) {
+    public LibJoynrMessageRouter(RoutingTable routingTable,
+                                 @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
+                                 @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                                 MessagingStubFactory messagingStubFactory,
+                                 MessagingSkeletonFactory messagingSkeletonFactory,
+                                 AddressManager addressManager,
+                                 MulticastReceiverRegistry multicastReceiverRegistry) {
         // CHECKSTYLE:ON
         super(routingTable,
               scheduler,
@@ -82,6 +85,13 @@ public class ChildMessageRouter extends MessageRouterImpl {
               addressManager,
               multicastReceiverRegistry);
         this.incomingAddress = incomingAddress;
+        this.replyToAddress = null;
+    }
+
+    @Override
+    @CheckForNull
+    protected String getReplyToAddress() {
+        return replyToAddress;
     }
 
     @Override
@@ -150,9 +160,9 @@ public class ChildMessageRouter extends MessageRouterImpl {
         if (parentRouter != null) {
             registerWithParent.register();
         } else {
-            synchronized (deferredMulticastRegististrations) {
-                deferredMulticastRegististrations.put(multicastId + subscriberParticipantId + providerParticipantId,
-                                                      registerWithParent);
+            synchronized (deferredMulticastRegistrations) {
+                deferredMulticastRegistrations.put(multicastId + subscriberParticipantId + providerParticipantId,
+                                                   registerWithParent);
             }
         }
     }
@@ -161,8 +171,8 @@ public class ChildMessageRouter extends MessageRouterImpl {
     public void removeMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId) {
         super.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         if (parentRouter == null) {
-            synchronized (deferredMulticastRegististrations) {
-                deferredMulticastRegististrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
+            synchronized (deferredMulticastRegistrations) {
+                deferredMulticastRegistrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
             }
         }
     }
@@ -179,12 +189,15 @@ public class ChildMessageRouter extends MessageRouterImpl {
         for (String participantIds : deferredParentHopsParticipantIds) {
             addNextHopToParent(participantIds);
         }
-        synchronized (deferredMulticastRegististrations) {
-            for (DeferrableRegistration registerWithParent : deferredMulticastRegististrations.values()) {
+        synchronized (deferredMulticastRegistrations) {
+            for (DeferrableRegistration registerWithParent : deferredMulticastRegistrations.values()) {
                 registerWithParent.register();
             }
         }
         deferredParentHopsParticipantIds.clear();
+
+        String globalAddress = parentRouter.getGlobalAddress();
+        replyToAddress = globalAddress;
     }
 
     /**

@@ -45,18 +45,27 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private MqttAddress ownAddress;
     private JoynrMqttClient mqttClient = null;
     private int reconnectSleepMs;
+    private int keepAliveTimerSec;
+    private int connectionTimeoutSec;
+    private int timeToWaitMs;
     private ScheduledExecutorService scheduledExecutorService;
     private MqttClientIdProvider clientIdProvider;
 
     @Inject
     public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS) int reconnectSleepMs,
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC) int keepAliveTimerSec,
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC) int connectionTimeoutSec,
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS) int timeToWaitMs,
                                  @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                  MqttClientIdProvider mqttClientIdProvider) {
         this.ownAddress = ownAddress;
         this.reconnectSleepMs = reconnectSleepMs;
         this.scheduledExecutorService = scheduledExecutorService;
         this.clientIdProvider = mqttClientIdProvider;
+        this.keepAliveTimerSec = keepAliveTimerSec;
+        this.connectionTimeoutSec = connectionTimeoutSec;
+        this.timeToWaitMs = timeToWaitMs;
     }
 
     @Override
@@ -78,7 +87,11 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                                    clientId,
                                                    new MemoryPersistence(),
                                                    scheduledExecutorService);
-            pahoClient = new MqttPahoClient(mqttClient, reconnectSleepMs);
+            pahoClient = new MqttPahoClient(mqttClient,
+                                            reconnectSleepMs,
+                                            keepAliveTimerSec,
+                                            connectionTimeoutSec,
+                                            timeToWaitMs);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);
         }

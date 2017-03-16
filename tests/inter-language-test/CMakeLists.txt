@@ -222,8 +222,5 @@ if(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
 endif(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.settings)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.dbus.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-consumer.settings)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-consumer.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-consumer.dbus.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.messaging.settings)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.dbus.settings)

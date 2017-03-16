@@ -106,7 +106,8 @@ JoynrMessage::JoynrMessage(const JoynrMessage& message)
         : type(message.type),
           header(message.header),
           payload(message.payload),
-          receivedFromGlobal(false)
+          receivedFromGlobal(false),
+          localMessage(false)
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
@@ -371,6 +372,16 @@ bool JoynrMessage::isReceivedFromGlobal() const
 void JoynrMessage::setReceivedFromGlobal(bool receivedFromGlobal)
 {
     this->receivedFromGlobal = receivedFromGlobal;
+}
+
+bool JoynrMessage::isLocalMessage() const
+{
+    return localMessage;
+}
+
+void JoynrMessage::setLocalMessage(bool localMessage)
+{
+    this->localMessage = localMessage;
 }
 
 std::string JoynrMessage::toLogMessage() const
