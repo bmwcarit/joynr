@@ -131,7 +131,7 @@ asynchronously:
         // this lambda will be called once the runtime is initialized
     };
 
-    auto onError = [](exceptions::JoynrRuntimeException& exception) {
+    auto onError = [](const exceptions::JoynrRuntimeException& exception) {
         // Process the error here
     };
 
@@ -345,8 +345,6 @@ The message order on Joynr RPCs will not be preserved.
 ```cpp
 #include "joynr/<Package>/<TypeCollection>/<Type>.h"
 
-std::shared_ptr<joynr::Future<<ReturnType1> [, ..., <ReturnTypeN>]> >
-    future(new joynr::Future<<ReturnType1> [, ..., <ReturnTypeN>]>());
 <ReturnType1> retval1;
 ...
 <ReturnTypeN> retvalN;
@@ -361,7 +359,7 @@ std::function<void(const joynr::exceptions::JoynrException&)> onError =
         // error handling
     };
 
-future = <interface>Proxy-><method>(... arguments ..., [onSuccess [, onError]]);
+auto future = <interface>Proxy-><method>(... arguments ..., [onSuccess [, onError]]);
 try {
     std::uint16_t optionalTimeoutMs = 500;
     future->get([optionalTimeoutMs, ]retval1 [, ..., retvalN ]);
@@ -814,19 +812,38 @@ Any specific broadcast filters must be added prior to registry.
 
 ```cpp
     // create instance of provider class
-    std::shared_ptr<My<Interface>Provider> provider(new My<Interface>Provider());
+    auto provider = std::make_shared<My<Interface>Provider>();
 
     // set up providerQos
     types::ProviderQos providerQos;
     // call setters to configure providerQos
 
     // create filter instance for each broadcast filter
-    std::shared_ptr<<Broadcast>BroadcastFilter> <broadcast>BroadcastFilter(
-            new <Broadcast>BroadcastFilter());
+    auto <broadcast>BroadcastFilter = std::make_shared<<Broadcast>BroadcastFilter>();
     provider->addBroadcastFilter(<broadcast>BroadcastFilter);
 
     runtime->registerProvider<<Package>::<Interface>Provider>(
         providerDomain, provider, providerQos);
+```
+
+Alternatively, use the ```registerProviderAsync``` method of ```JoynrRuntime``` to register the provider
+asynchronously:
+
+```cpp
+    auto onSuccess = []() {
+        // this lambda will be called once the provider is registered
+    };
+
+    auto onError = [](const exceptions::JoynrRuntimeException& exception) {
+        // Process the error here
+    };
+
+    runtime->registerProviderAsync<<Package>::<Interface>Provider>(
+        providerDomain,
+        provider,
+        providerQos,
+        onSuccess,
+        onError);
 ```
 
 ### Shutting down
@@ -836,8 +853,25 @@ On exit of the application it should cleanly unregister any providers the applic
     // for each provider class
     runtime->unregisterProvider<Package>::<Interface>Provider>(
         providerDomain, provider);
+```
 
-    delete runtime;
+Alternatively, use the ```unregisterProviderAsync``` method of ```JoynrRuntime``` to unregister the provider
+asynchronously:
+
+```cpp
+    auto onSuccess = []() {
+        // this lambda will be called once the provider is unregistered
+    };
+
+    auto onError = [](const exceptions::JoynrRuntimeException& exception) {
+        // Process the error here
+    };
+
+    runtime->unregisterProviderAsync<<Package>::<Interface>Provider>(
+        providerDomain,
+        provider,
+        onSuccess,
+        onError);
 ```
 
 ## The My&lt;Interface>Provider class

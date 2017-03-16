@@ -4,6 +4,7 @@
 
 * **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
   existing MessagingQos APIs remain working
+* **[C++]** Providers can be (un)registered asynchronously through `(un)registerProviderAsync`
 
 ## Other changes
 * **[C++]** Access control can be activated in the cluster-controller. Default: OFF.
