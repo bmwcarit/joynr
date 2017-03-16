@@ -268,7 +268,7 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test(timeout = 1000)
+    @Test(timeout = 2000)
     public void addLocalOnlyCapability() throws InterruptedException {
 
         ProviderQos providerQos = new ProviderQos();
@@ -285,8 +285,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                         channelAddressSerialized);
 
         localCapabilitiesDirectory.add(discoveryEntry);
-        verify(globalCapabilitiesClient, timeout(10000).never()).add(any(Callback.class),
-                                                                     any(GlobalDiscoveryEntry.class));
+        Thread.sleep(1000);
+        verify(globalCapabilitiesClient, never()).add(any(Callback.class), any(GlobalDiscoveryEntry.class));
     }
 
     @SuppressWarnings("unchecked")

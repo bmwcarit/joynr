@@ -167,24 +167,19 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
     assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());
-    const BrokerUrl bounceProxyUrl = messagingSettings.getBounceProxyUrl();
-    assert(bounceProxyUrl.getBrokerChannelsBaseUrl().isValid());
 
     // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP
     const Url url = brokerUrl.getBrokerChannelsBaseUrl();
     std::string brokerProtocol = url.getProtocol();
-    std::string bounceproxyProtocol = bounceProxyUrl.getBrokerChannelsBaseUrl().getProtocol();
 
     std::transform(brokerProtocol.begin(), brokerProtocol.end(), brokerProtocol.begin(), ::toupper);
-    std::transform(bounceproxyProtocol.begin(),
-                   bounceproxyProtocol.end(),
-                   bounceproxyProtocol.begin(),
-                   ::toupper);
 
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
 
     if (brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT) ||
+        brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
+                                  joynr::system::RoutingTypes::MqttProtocol::Enum::MQTTS) ||
         brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::TCP)) {
         JOYNR_LOG_DEBUG(logger, "MQTT-Messaging");
@@ -192,17 +187,17 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                 brokerUrl.toString(), "");
         addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(globalAddress);
         doMqttMessaging = true;
-    } else {
+    } else if (brokerProtocol == "HTTP" || brokerProtocol == "HTTPS") {
         JOYNR_LOG_DEBUG(logger, "HTTP-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
                 brokerUrl.toString(), "");
         addressCalculator = std::make_unique<joynr::HttpMulticastAddressCalculator>(globalAddress);
         doHttpMessaging = true;
-    }
-
-    if (!doHttpMessaging && boost::starts_with(bounceproxyProtocol, "HTTP")) {
-        JOYNR_LOG_DEBUG(logger, "HTTP-Messaging");
-        doHttpMessaging = true;
+    } else {
+        JOYNR_LOG_FATAL(logger, "invalid broker protocol in broker-url: {}", brokerProtocol);
+        throw exceptions::JoynrRuntimeException(
+                "Exception in JoynrRuntime: invalid broker protocol in broker-url: " +
+                brokerProtocol);
     }
 
     std::string capabilitiesDirectoryChannelId =
@@ -224,12 +219,66 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
+    const bool httpMessageReceiverSupplied = httpMessageReceiver != nullptr;
+
+    std::string httpSerializedGlobalClusterControllerAddress;
+    std::string mqttSerializedGlobalClusterControllerAddress;
+
+    MessagingPropertiesPersistence persist(
+            messagingSettings.getMessagingPropertiesPersistenceFilename());
+    std::string clusterControllerId = persist.getChannelId();
+    std::string receiverId = persist.getReceiverId();
+
+    if (doHttpMessaging) {
+        if (!httpMessageReceiverSupplied) {
+            JOYNR_LOG_DEBUG(logger,
+                            "The http message receiver supplied is NULL, creating the default "
+                            "http MessageReceiver");
+
+            httpMessageReceiver = std::make_shared<HttpReceiver>(
+                    messagingSettings, clusterControllerId, receiverId);
+
+            assert(httpMessageReceiver != nullptr);
+        }
+
+        httpSerializedGlobalClusterControllerAddress =
+                httpMessageReceiver->getGlobalClusterControllerAddress();
+    }
+
+    if (doMqttMessaging) {
+        if (!mqttMessageReceiver || !mqttMessageSender) {
+            std::string ccMqttClientIdPrefix = clusterControllerSettings.getMqttClientIdPrefix();
+            std::string mqttCliendId = ccMqttClientIdPrefix + receiverId;
+
+            mosquittoConnection = std::make_shared<MosquittoConnection>(
+                    messagingSettings, clusterControllerSettings, mqttCliendId);
+        }
+        if (!mqttMessageReceiver) {
+            JOYNR_LOG_DEBUG(logger,
+                            "The mqtt message receiver supplied is NULL, creating the default "
+                            "mqtt MessageReceiver");
+
+            mqttMessageReceiver = std::make_shared<MqttReceiver>(
+                    mosquittoConnection, messagingSettings, clusterControllerId);
+
+            assert(mqttMessageReceiver != nullptr);
+        }
+
+        mqttSerializedGlobalClusterControllerAddress =
+                mqttMessageReceiver->getGlobalClusterControllerAddress();
+    }
+
+    const std::string globalClusterControllerAddress =
+            doMqttMessaging ? mqttSerializedGlobalClusterControllerAddress
+                            : httpSerializedGlobalClusterControllerAddress;
+
     // init message router
     ccMessageRouter = std::make_shared<CcMessageRouter>(messagingStubFactory,
                                                         multicastMessagingSkeletonDirectory,
                                                         std::move(securityManager),
                                                         singleThreadIOService->getIOService(),
-                                                        std::move(addressCalculator));
+                                                        std::move(addressCalculator),
+                                                        globalClusterControllerAddress);
     ccMessageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
     ccMessageRouter->loadMulticastReceiverDirectory(
             clusterControllerSettings.getMulticastReceiverDirectoryPersistenceFilename());
@@ -285,38 +334,17 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // EndpointAddress to messagingStub is transmitted when a provider is registered
     // messagingStubFactory->registerInProcessMessagingSkeleton(libJoynrMessagingSkeleton);
 
-    std::string httpSerializedGlobalClusterControllerAddress;
-    std::string mqttSerializedGlobalClusterControllerAddress;
-
-    MessagingPropertiesPersistence persist(
-            messagingSettings.getMessagingPropertiesPersistenceFilename());
-    std::string clusterControllerId = persist.getChannelId();
-    std::string receiverId = persist.getReceiverId();
     /**
       * ClusterController side HTTP
       *
       */
-
     if (doHttpMessaging) {
-
-        if (!httpMessageReceiver) {
-            JOYNR_LOG_DEBUG(logger,
-                            "The http message receiver supplied is NULL, creating the default "
-                            "http MessageReceiver");
-
-            httpMessageReceiver = std::make_shared<HttpReceiver>(
-                    messagingSettings, clusterControllerId, receiverId);
-
-            assert(httpMessageReceiver != nullptr);
-
+        if (!httpMessageReceiverSupplied) {
             httpMessagingSkeleton = std::make_shared<HttpMessagingSkeleton>(*ccMessageRouter);
             httpMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
                 httpMessagingSkeleton->onTextMessageReceived(msg);
             });
         }
-
-        httpSerializedGlobalClusterControllerAddress =
-                httpMessageReceiver->getGlobalClusterControllerAddress();
 
         // create http message sender
         if (!httpMessageSender) {
@@ -325,39 +353,20 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                             "http MessageSender");
 
             httpMessageSender = std::make_shared<HttpSender>(
-                    messagingSettings.getBounceProxyUrl(),
+                    messagingSettings.getBrokerUrl(),
                     std::chrono::milliseconds(messagingSettings.getSendMsgMaxTtl()),
                     std::chrono::milliseconds(messagingSettings.getSendMsgRetryInterval()));
         }
 
-        messagingStubFactory->registerStubFactory(std::make_shared<HttpMessagingStubFactory>(
-                httpMessageSender, httpSerializedGlobalClusterControllerAddress));
+        messagingStubFactory->registerStubFactory(
+                std::make_shared<HttpMessagingStubFactory>(httpMessageSender));
     }
 
     /**
       * ClusterController side MQTT
       *
       */
-
     if (doMqttMessaging) {
-        if (!mqttMessageReceiver || !mqttMessageSender) {
-            std::string ccMqttClientIdPrefix = clusterControllerSettings.getMqttClientIdPrefix();
-            std::string mqttCliendId = ccMqttClientIdPrefix + receiverId;
-
-            mosquittoConnection = std::make_shared<MosquittoConnection>(
-                    messagingSettings, clusterControllerSettings, mqttCliendId);
-        }
-        if (!mqttMessageReceiver) {
-            JOYNR_LOG_DEBUG(logger,
-                            "The mqtt message receiver supplied is NULL, creating the default "
-                            "mqtt MessageReceiver");
-
-            mqttMessageReceiver = std::make_shared<MqttReceiver>(
-                    mosquittoConnection, messagingSettings, clusterControllerId);
-
-            assert(mqttMessageReceiver != nullptr);
-        }
-
         if (!mqttMessagingIsRunning) {
             mqttMessagingSkeleton = std::make_shared<MqttMessagingSkeleton>(
                     *ccMessageRouter,
@@ -370,9 +379,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     ->registerSkeleton<system::RoutingTypes::MqttAddress>(mqttMessagingSkeleton);
         }
 
-        mqttSerializedGlobalClusterControllerAddress =
-                mqttMessageReceiver->getGlobalClusterControllerAddress();
-
         // create message sender
         if (!mqttMessageSender) {
             JOYNR_LOG_DEBUG(logger,
@@ -384,13 +390,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             mqttMessageSender->registerReceiver(mqttMessageReceiver);
         }
 
-        messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(
-                mqttMessageSender, mqttSerializedGlobalClusterControllerAddress));
+        messagingStubFactory->registerStubFactory(
+                std::make_shared<MqttMessagingStubFactory>(mqttMessageSender));
     }
-
-    const std::string channelGlobalCapabilityDir =
-            doMqttMessaging ? mqttSerializedGlobalClusterControllerAddress
-                            : httpSerializedGlobalClusterControllerAddress;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     dbusSettings = new DbusSettings(*settings);
@@ -450,7 +452,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     localCapabilitiesDirectory =
             std::make_shared<LocalCapabilitiesDirectory>(messagingSettings,
                                                          capabilitiesClient,
-                                                         channelGlobalCapabilityDir,
+                                                         globalClusterControllerAddress,
                                                          *ccMessageRouter,
                                                          libjoynrSettings,
                                                          singleThreadIOService->getIOService(),

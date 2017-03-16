@@ -81,6 +81,7 @@ CcMessageRouter::CcMessageRouter(
         std::unique_ptr<IPlatformSecurityManager> securityManager,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+        const std::string& globalClusterControllerAddress,
         int maxThreads,
         std::unique_ptr<MessageQueue> messageQueue)
         : AbstractMessageRouter(std::move(messagingStubFactory),
@@ -91,7 +92,8 @@ CcMessageRouter::CcMessageRouter(
           joynr::system::RoutingAbstractProvider(),
           multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           securityManager(std::move(securityManager)),
-          multicastReceveiverDirectoryFilename()
+          multicastReceveiverDirectoryFilename(),
+          globalClusterControllerAddress(globalClusterControllerAddress)
 {
 }
 
@@ -140,6 +142,18 @@ void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
     reestablishMulticastSubscriptions();
 }
 
+void CcMessageRouter::getGlobalAddress(
+        std::function<void(const std::string&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    if (globalClusterControllerAddress.empty()) {
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "No cluster-controller global address available."));
+    } else {
+        onSuccess(globalClusterControllerAddress);
+    }
+}
+
 void CcMessageRouter::reestablishMulticastSubscriptions()
 {
     for (const auto& multicastId : multicastReceiverDirectory.getMulticastIds()) {
@@ -184,7 +198,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void CcMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
+void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
@@ -202,6 +216,14 @@ void CcMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
                                  " failed validation");
         JOYNR_LOG_ERROR(logger, errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
+    }
+
+    if (message.getHeaderReplyAddress().empty() && !message.isLocalMessage() &&
+        (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+        message.setHeaderReplyAddress(globalClusterControllerAddress);
     }
 
     JOYNR_LOG_TRACE(logger,

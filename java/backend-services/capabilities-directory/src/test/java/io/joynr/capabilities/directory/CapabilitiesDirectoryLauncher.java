@@ -19,21 +19,36 @@ package io.joynr.capabilities.directory;
  * #L%
  */
 
-import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrApplication;
-import io.joynr.runtime.JoynrApplicationModule;
-import io.joynr.runtime.JoynrInjectorFactory;
-
 import java.util.Properties;
-
-import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
-import joynr.types.ProviderQos;
 
 import com.google.inject.Inject;
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.util.Modules;
+
+import io.joynr.messaging.routing.GlobalAddressFactory;
+import io.joynr.messaging.routing.TestGlobalAddressModule;
+import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
+import io.joynr.runtime.JoynrApplication;
+import io.joynr.runtime.JoynrApplicationModule;
+import io.joynr.runtime.JoynrInjectorFactory;
+import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.types.ProviderQos;
+
+class MockChannelAddressFactory extends GlobalAddressFactory<ChannelAddress> {
+
+    @Override
+    public ChannelAddress create() {
+        return new ChannelAddress("messagingEndpointUrl", "channelId");
+    }
+
+    @Override
+    public boolean supportsTransport(String transport) {
+        return "longpolling".equals(transport);
+    }
+}
 
 public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
@@ -57,7 +72,8 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
                                                                         Modules.override(new JpaPersistModule("CapabilitiesDirectory"),
                                                                                          new CCInProcessRuntimeModule())
-                                                                               .with(new CapabilitiesDirectoryModule()));
+                                                                               .with(new TestGlobalAddressModule(),
+                                                                                     new CapabilitiesDirectoryModule()));
         capabilitiesDirectoryLauncher = injectorFactory.createApplication(new JoynrApplicationModule("capabilitiesDirectoryLauncher",
                                                                                                      CapabilitiesDirectoryLauncher.class));
         capabilitiesDirectoryLauncher.run();

@@ -43,21 +43,15 @@ public class MqttMessagingStub implements IMessaging {
     private MqttAddress address;
     private JoynrMqttClient mqttClient;
     private JoynrMessageSerializer messageSerializer;
-    private MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator;
 
-    public MqttMessagingStub(MqttAddress address,
-                             JoynrMqttClient mqttClient,
-                             JoynrMessageSerializer messageSerializer,
-                             MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator) {
+    public MqttMessagingStub(MqttAddress address, JoynrMqttClient mqttClient, JoynrMessageSerializer messageSerializer) {
         this.address = address;
         this.mqttClient = mqttClient;
         this.messageSerializer = messageSerializer;
-        this.mqttMessageReplyToAddressCalculator = mqttMessageReplyToAddressCalculator;
     }
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
-        mqttMessageReplyToAddressCalculator.setReplyTo(message);
         LOG.debug(">>> OUTGOING >>> {}", message.toLogMessage());
         String topic = address.getTopic();
         if (!JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {

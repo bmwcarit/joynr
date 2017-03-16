@@ -24,7 +24,6 @@ import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FAttribute
 import org.franca.core.franca.FBroadcast
-import org.eclipse.xtext.util.formallang.StringProduction.ProdElement
 
 class InterfaceSubscriptionUtil {
 	@Inject	extension InterfaceUtil

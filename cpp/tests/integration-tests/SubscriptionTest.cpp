@@ -78,7 +78,8 @@ public:
         dispatcher(messageSender, singleThreadedIOService.getIOService()),
         subscriptionManager(nullptr),
         provider(new MockTestProvider),
-        requestCaller(new joynr::tests::testRequestCaller(provider))
+        requestCaller(new joynr::tests::testRequestCaller(provider)),
+        isLocalMessage(true)
     {
         singleThreadedIOService.start();
     }
@@ -117,6 +118,7 @@ protected:
     std::shared_ptr<MockTestProvider> provider;
     PublicationManager* publicationManager;
     std::shared_ptr<joynr::tests::testRequestCaller> requestCaller;
+    const bool isLocalMessage;
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionTest);
 };
@@ -155,7 +157,8 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
-                subscriptionRequest);
+                subscriptionRequest,
+                isLocalMessage);
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher.receive(msg);
@@ -316,7 +319,8 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
-                subscriptionRequest);
+                subscriptionRequest,
+                isLocalMessage);
     // first received message with subscription request
 
     dispatcher.receive(msg);
@@ -423,7 +427,8 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
-                subscriptionRequest);
+                subscriptionRequest,
+                isLocalMessage);
     // first received message with subscription request
     dispatcher.receive(msg);
     // wait for two requests from the subscription
@@ -470,7 +475,8 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
-                subscriptionRequest);
+                subscriptionRequest,
+                isLocalMessage);
     // first received message with subscription request
     dispatcher.receive(msg);
 

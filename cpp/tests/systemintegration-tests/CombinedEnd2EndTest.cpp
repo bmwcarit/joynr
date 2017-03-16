@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1128,21 +1128,21 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
 }
 
 INSTANTIATE_TEST_CASE_P(
-        Http,
+        DISABLED_Http,
         CombinedEnd2EndTest,
         testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings",
                                         "test-resources/HttpSystemIntegrationTest2.settings")));
 
 INSTANTIATE_TEST_CASE_P(
-        MqttWithHttpBackend,
+        Mqtt,
         CombinedEnd2EndTest,
         testing::Values(std::make_tuple(
-                "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings",
-                "test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings")));
+                "test-resources/MqttSystemIntegrationTest1.settings",
+                "test-resources/MqttSystemIntegrationTest2.settings")));
 
 INSTANTIATE_TEST_CASE_P(
-        MqttOverTLSWithHttpBackend,
+        MqttOverTLS,
         CombinedEnd2EndTest,
         testing::Values(std::make_tuple(
-                "test-resources/MqttOverTLSWithHttpBackendSystemIntegrationTest1.settings",
-                "test-resources/MqttOverTLSWithHttpBackendSystemIntegrationTest2.settings")));
+                "test-resources/MqttOverTLSSystemIntegrationTest1.settings",
+                "test-resources/MqttOverTLSSystemIntegrationTest2.settings")));

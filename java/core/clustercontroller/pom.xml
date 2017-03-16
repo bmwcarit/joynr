@@ -48,6 +48,13 @@
 			<artifactId>infrastructure-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 		<!-- used to scan for annotations for subtypes -->
 		<dependency>
 			<groupId>org.reflections</groupId>

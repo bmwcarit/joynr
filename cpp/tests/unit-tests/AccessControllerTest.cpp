@@ -121,10 +121,12 @@ public:
 
     void SetUp(){
         messagingQos = MessagingQos(5000);
+        const bool isLocalMessage = true;
         message = messageFactory.createRequest(fromParticipantId,
                                      toParticipantId,
                                      messagingQos,
-                                     initOutgoingRequest(TEST_OPERATION, {}));
+                                     initOutgoingRequest(TEST_OPERATION, {}),
+                                     isLocalMessage);
         message.setHeaderCreatorUserId(DUMMY_USERID);
 
         ON_CALL(

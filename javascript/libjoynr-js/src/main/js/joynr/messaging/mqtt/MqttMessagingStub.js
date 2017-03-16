@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,10 @@
  */
 
 define("joynr/messaging/mqtt/MqttMessagingStub", [
-    "global/Promise",
-    "global/Mqtt",
     "joynr/messaging/JoynrMessage",
-    "joynr/util/UtilInternal",
     "joynr/util/JSONSerializer",
     "joynr/system/LoggerFactory"
-], function(Promise, Mqtt, JoynrMessage, Util, JSONSerializer, LoggerFactory) {
+], function(JoynrMessage, JSONSerializer, LoggerFactory) {
 
     /**
      * @name MqttMessagingStub
@@ -33,7 +30,6 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
      * @param {Object} settings the settings object for this constructor call
      * @param {MqttAddress} settings.address the mqtt address of the message destination
      * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
-     * @param {MessageReplyToAddressCalculator} messageReplyToAddressCalculator calculates the replyTo address
      */
     function MqttMessagingStub(settings) {
         var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
@@ -45,8 +41,6 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
          * @param {Object|JoynrMessage} message the message to transmit
          */
         this.transmit = function transmit(message) {
-            settings.messageReplyToAddressCalculator.setReplyTo(message);
-
             log.debug("transmit message: \"" + JSONSerializer.stringify(message) + "\"");
             var topic = settings.address.topic;
             if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {

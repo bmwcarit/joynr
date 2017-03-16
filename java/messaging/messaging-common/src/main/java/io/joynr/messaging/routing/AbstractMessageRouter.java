@@ -27,6 +27,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.CheckForNull;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -46,10 +48,10 @@ import joynr.system.RoutingTypes.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessageRouterImpl implements MessageRouter {
+abstract public class AbstractMessageRouter implements MessageRouter {
     private static final long TERMINATION_TIMEOUT = 5000;
 
-    private Logger logger = LoggerFactory.getLogger(MessageRouterImpl.class);
+    private Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private final RoutingTable routingTable;
     private static final int UUID_TAIL = 32;
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
@@ -62,13 +64,13 @@ public class MessageRouterImpl implements MessageRouter {
 
     @Inject
     @Singleton
-    public MessageRouterImpl(RoutingTable routingTable,
-                             @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
-                             @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                             MessagingStubFactory messagingStubFactory,
-                             MessagingSkeletonFactory messagingSkeletonFactory,
-                             AddressManager addressManager,
-                             MulticastReceiverRegistry multicastReceiverRegistry) {
+    public AbstractMessageRouter(RoutingTable routingTable,
+                                 @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                                 MessagingStubFactory messagingStubFactory,
+                                 MessagingSkeletonFactory messagingSkeletonFactory,
+                                 AddressManager addressManager,
+                                 MulticastReceiverRegistry multicastReceiverRegistry) {
         this.routingTable = routingTable;
         this.scheduler = scheduler;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
@@ -77,6 +79,9 @@ public class MessageRouterImpl implements MessageRouter {
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
     }
+
+    @CheckForNull
+    abstract protected String getReplyToAddress();
 
     @Override
     public void removeNextHop(String participantId) {
@@ -168,6 +173,25 @@ public class MessageRouterImpl implements MessageRouter {
                     logger.trace("Starting processing of message {}", message);
                     try {
                         checkExpiry(message);
+
+                        if (needsReplyTo(message)) {
+                            if (getReplyToAddress() == null) {
+                                String messageId = message.getId().substring(UUID_TAIL);
+                                logger.trace(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}",
+                                             new String[]{
+                                                     messageId,
+                                                     message.getType(),
+                                                     message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
+                                                     message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                                                     message.getHeader().toString() });
+                                logger.trace(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(),
+                                        message.getPayload() });
+                                FailureAction failureAction = createFailureAction(message, retriesCount);
+                                failureAction.execute(new JoynrDelayMessageException("replyToAddress still unavailable in scheduled message router thread"));
+                                return;
+                            }
+                            message.setReplyTo(getReplyToAddress());
+                        }
                         Set<Address> addresses = getAddresses(message);
                         if (addresses.isEmpty()) {
                             throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
@@ -209,6 +233,19 @@ public class MessageRouterImpl implements MessageRouter {
             logger.error(errorMessage);
             throw new JoynrMessageNotSentException(errorMessage);
         }
+    }
+
+    private boolean needsReplyTo(final JoynrMessage message) {
+        String type = message.getType();
+        if (message.isLocalMessage()) {
+            return false;
+        }
+        if (message.getReplyTo() == null
+                && (type.equals(message.MESSAGE_TYPE_REQUEST) || type.equals(message.MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                        || type.equals(message.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) || type.equals(message.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST))) {
+            return true;
+        }
+        return false;
     }
 
     private FailureAction createFailureAction(final JoynrMessage message, final int retriesCount) {

@@ -46,7 +46,8 @@ public:
         mockMessageRouter(singleThreadedIOService.getIOService()),
         senderID("senderId"),
         receiverID("receiverId"),
-        ttlUpliftMs(10000)
+        ttlUpliftMs(10000),
+        isLocalMessage(false)
     {
         singleThreadedIOService.start();
     }
@@ -65,6 +66,7 @@ protected:
     std::string senderID;
     std::string receiverID;
     std::uint64_t ttlUpliftMs;
+    const bool isLocalMessage;
 };
 
 TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift) {
@@ -75,7 +77,8 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift) {
                 senderID,
                 receiverID,
                 qos,
-                request);
+                request,
+                isLocalMessage);
     message.setHeaderReplyAddress(replyAddressSerialized);
 
     JoynrTimePoint expectedExpiryDate = message.getHeaderExpiryDate();
@@ -95,7 +98,8 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testTtlUplift) {
                 senderID,
                 receiverID,
                 qos,
-                request);
+                request,
+                isLocalMessage);
     message.setHeaderReplyAddress(replyAddressSerialized);
 
     JoynrTimePoint expectedExpiryDate = message.getHeaderExpiryDate() + std::chrono::milliseconds(ttlUpliftMs);
@@ -116,7 +120,8 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testTtlUpliftWithLargeTtl) {
                 senderID,
                 receiverID,
                 qos,
-                request);
+                request,
+                isLocalMessage);
     message.setHeaderReplyAddress(replyAddressSerialized);
 
     JoynrTimePoint expiryDate = maxAbsoluteTime - std::chrono::milliseconds(ttlUpliftMs / 2);

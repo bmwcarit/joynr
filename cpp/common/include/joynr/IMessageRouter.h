@@ -47,7 +47,7 @@ class JoynrRuntimeException;
 class JOYNR_EXPORT IMessageRouter
 {
 public:
-    virtual void route(const JoynrMessage& message, std::uint32_t tryCount = 0) = 0;
+    virtual void route(JoynrMessage& message, std::uint32_t tryCount = 0) = 0;
 
     virtual void addNextHop(
             const std::string& participantId,

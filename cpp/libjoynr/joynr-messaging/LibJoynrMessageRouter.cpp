@@ -70,7 +70,9 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
           parentAddress(nullptr),
           incomingAddress(incomingAddress),
           runningParentResolves(),
-          parentResolveMutex()
+          parentResolveMutex(),
+          globalParentClusterControllerAddressMutex(),
+          globalParentClusterControllerAddress()
 {
 }
 
@@ -88,11 +90,31 @@ void LibJoynrMessageRouter::setParentRouter(
     addNextHopToParent(this->parentRouter->getProxyParticipantId());
 }
 
+void LibJoynrMessageRouter::queryGlobalClusterControllerAddress(
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
+{
+    assert(parentRouter);
+
+    auto onSuccessWrapper = [ onSuccess = std::move(onSuccess), this ](
+            const std::string& globalAddress)
+    {
+        {
+            std::lock_guard<std::mutex> lock(globalParentClusterControllerAddressMutex);
+            globalParentClusterControllerAddress = globalAddress;
+        }
+
+        onSuccess();
+    };
+
+    parentRouter->getGlobalAddressAsync(std::move(onSuccessWrapper), std::move(onError));
+}
+
 /**
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void LibJoynrMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
+void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
@@ -111,6 +133,15 @@ void LibJoynrMessageRouter::route(const JoynrMessage& message, std::uint32_t try
     // search for the destination addresses
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
             getDestinationAddresses(message);
+
+    if (!message.isLocalMessage() &&
+        (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+        std::lock_guard<std::mutex> lock(globalParentClusterControllerAddressMutex);
+        message.setHeaderReplyAddress(globalParentClusterControllerAddress);
+    }
 
     // if destination address is not known
     if (destAddresses.empty()) {
