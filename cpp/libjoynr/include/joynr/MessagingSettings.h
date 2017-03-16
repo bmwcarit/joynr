@@ -46,7 +46,7 @@ public:
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
     static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME();
     static const std::string& SETTING_MQTT_RECONNECT_SLEEP_TIME();
-    static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT();
+    static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT_MS();
     static const std::string& SETTING_INDEX();
     static const std::string& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
@@ -109,7 +109,7 @@ public:
     static std::uint64_t DEFAULT_MAXIMUM_TTL_MS();
     static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME();
     static std::chrono::milliseconds DEFAULT_MQTT_RECONNECT_SLEEP_TIME();
-    static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT();
+    static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT_MS();
     static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
 
     static bool DEFAULT_ENABLE_ACCESS_CONTROLLER();
