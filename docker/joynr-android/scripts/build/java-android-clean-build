@@ -37,8 +37,9 @@ mosquitto -c /etc/mosquitto/mosquitto.conf -v &
 MOSQUITTO_PID=$!
 
 DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-.*war")
+DOMAIN_ACCESS_CONTROLLER_WAR_FILE=$(find /data/src/java/backend-services/domain-access-controller-jee/target -iregex ".*domain-access-controller-jee-.*war")
 
-/data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
+/data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE,$DOMAIN_ACCESS_CONTROLLER_WAR_FILE
 
 # Assume that mosquitto and payara have sufficient time to startup before reaching
 # any test code that requires it;
