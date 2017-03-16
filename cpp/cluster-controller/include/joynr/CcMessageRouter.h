@@ -21,13 +21,13 @@
 #define CCMESSAGEROUTER_H
 
 #include "joynr/AbstractMessageRouter.h"
+#include "joynr/system/RoutingAbstractProvider.h"
 
 #include <memory>
 #include <mutex>
 #include <string>
 #include <unordered_set>
 
-#include "joynr/IMessageRouter.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
@@ -57,7 +57,10 @@ class MulticastMessagingSkeletonDirectory;
 namespace system
 {
 class Address;
+class MessageNotificationProvider;
 } // namespace system
+
+class CcMessageNotificationProvider;
 
 /**
   * MessageRouter specialization for cluster-controller. It receives incoming JoynrMessages
@@ -100,6 +103,8 @@ public:
                     std::function<void()> onSuccess = nullptr,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
+
+    void queueMessage(const JoynrMessage& message) final;
 
     /*
      * Implement methods from RoutingAbstractProvider
@@ -177,7 +182,8 @@ public:
     void setAccessController(std::shared_ptr<IAccessController> accessController);
     void saveMulticastReceiverDirectory() const;
     void loadMulticastReceiverDirectory(std::string filename);
-
+    std::shared_ptr<joynr::system::MessageNotificationProvider> getMessageNotificationProvider()
+            const;
     friend class MessageRunnable;
     friend class ConsumerPermissionCallback;
 
@@ -199,6 +205,7 @@ private:
     std::shared_ptr<IAccessController> accessController;
     std::string multicastReceveiverDirectoryFilename;
     const std::string globalClusterControllerAddress;
+    std::shared_ptr<CcMessageNotificationProvider> messageNotificationProvider;
 };
 
 } // namespace joynr

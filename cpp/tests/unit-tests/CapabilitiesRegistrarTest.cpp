@@ -99,8 +99,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
     testQos.setPriority(100);
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::INTERFACE_NAME(),
-                    _
+                    IMockProviderInterface::INTERFACE_NAME()
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -142,8 +141,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
 TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::INTERFACE_NAME(),
-                    _
+                    IMockProviderInterface::INTERFACE_NAME()
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -211,8 +209,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
 
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::INTERFACE_NAME(),
-                    _
+                    IMockProviderInterface::INTERFACE_NAME()
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -276,8 +273,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
 
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::INTERFACE_NAME(),
-                    _
+                    IMockProviderInterface::INTERFACE_NAME()
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));

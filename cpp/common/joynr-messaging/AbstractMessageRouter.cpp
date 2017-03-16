@@ -187,7 +187,7 @@ void AbstractMessageRouter::scheduleMessage(
                                  ". Stub creation failed. Queueing message.");
         JOYNR_LOG_WARN(logger, errorMessage);
         // save the message for later delivery
-        messageQueue->queueMessage(message);
+        queueMessage(message);
     }
 }
 
@@ -208,6 +208,12 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::er
                         "Failed to schedule timer to remove outdated messages: {}",
                         errorCode.message());
     }
+}
+
+void AbstractMessageRouter::queueMessage(const JoynrMessage& message)
+{
+    JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+    messageQueue->queueMessage(message);
 }
 
 void AbstractMessageRouter::loadRoutingTable(std::string fileName)

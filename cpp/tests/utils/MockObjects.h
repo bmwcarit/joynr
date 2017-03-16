@@ -400,6 +400,8 @@ public:
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+
+    MOCK_METHOD1(queueMessage, void(const joynr::JoynrMessage& message));
 };
 
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {
@@ -1023,8 +1025,8 @@ public:
     MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {
 
     }
-    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& authenticationToken));
-    MOCK_METHOD4(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue, const std::string& authenticationToken));
+    MOCK_METHOD2(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName));
+    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue));
 };
 
 class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter {

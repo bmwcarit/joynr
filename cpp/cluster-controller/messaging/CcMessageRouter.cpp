@@ -38,6 +38,9 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/MessageNotificationAbstractProvider.h"
+#include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilter.h"
+#include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
@@ -73,6 +76,44 @@ private:
     ADD_LOGGER(ConsumerPermissionCallback);
 };
 
+//------ MessageNotification ---------------------------------------------------
+
+class CcMessageNotificationProvider : public joynr::system::MessageNotificationAbstractProvider
+{
+public:
+    virtual ~CcMessageNotificationProvider() = default;
+    using MessageNotificationAbstractProvider::fireMessageQueuedForDelivery;
+};
+
+class MessageQueuedForDeliveryBroadcastFilter
+        : public joynr::system::MessageNotificationMessageQueuedForDeliveryBroadcastFilter
+{
+    bool filter(const std::string& participantId,
+                const std::string& messageType,
+                const joynr::system::
+                        MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters&
+                                filterParameters) override
+    {
+        const bool isParticipantIdSet = !filterParameters.getParticipantId().empty();
+        const bool isMessageTypeSet = !filterParameters.getMessageType().empty();
+
+        // if no filter parameters are set, always send broadcast
+        if (!isParticipantIdSet && !isMessageTypeSet) {
+            return true;
+        }
+        // if message type is empty, check if participant id matches
+        if (!isMessageTypeSet) {
+            return filterParameters.getParticipantId() == participantId;
+        }
+        // if participant type is empty, check if message type matches
+        if (!isParticipantIdSet) {
+            return filterParameters.getMessageType() == messageType;
+        }
+        return filterParameters.getParticipantId() == participantId &&
+               filterParameters.getMessageType() == messageType;
+    }
+};
+
 //------ MessageRouter ---------------------------------------------------------
 
 CcMessageRouter::CcMessageRouter(
@@ -93,8 +134,11 @@ CcMessageRouter::CcMessageRouter(
           multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           securityManager(std::move(securityManager)),
           multicastReceveiverDirectoryFilename(),
-          globalClusterControllerAddress(globalClusterControllerAddress)
+          globalClusterControllerAddress(globalClusterControllerAddress),
+          messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>())
 {
+    messageNotificationProvider->addBroadcastFilter(
+            std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
 }
 
 CcMessageRouter::~CcMessageRouter()
@@ -140,6 +184,12 @@ void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
     }
 
     reestablishMulticastSubscriptions();
+}
+
+std::shared_ptr<system::MessageNotificationProvider> CcMessageRouter::
+        getMessageNotificationProvider() const
+{
+    return messageNotificationProvider;
 }
 
 void CcMessageRouter::getGlobalAddress(
@@ -241,8 +291,7 @@ void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
         }
 
         // save the message for later delivery
-        messageQueue->queueMessage(message);
-        JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+        queueMessage(message);
         JOYNR_LOG_WARN(logger,
                        "No routing information found for destination participant ID \"{}\" "
                        "so far. Waiting for participant registration. "
@@ -507,6 +556,14 @@ void CcMessageRouter::removeMulticastReceiver(
         }
         onSuccess();
     }
+}
+
+void CcMessageRouter::queueMessage(const JoynrMessage& message)
+{
+    JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+    messageNotificationProvider->fireMessageQueuedForDelivery(
+            message.getHeaderTo(), message.getType());
+    messageQueue->queueMessage(message);
 }
 
 /**

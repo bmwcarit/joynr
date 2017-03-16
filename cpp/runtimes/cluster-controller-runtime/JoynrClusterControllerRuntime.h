@@ -99,6 +99,7 @@ public:
     void deleteChannel();
     void registerRoutingProvider();
     void registerDiscoveryProvider();
+    void registerMessageNotificationProvider();
 
     /*
      * Inject predefined capabilities stored in a JSON file.
