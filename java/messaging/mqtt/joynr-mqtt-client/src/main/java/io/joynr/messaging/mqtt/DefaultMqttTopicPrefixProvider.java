@@ -19,27 +19,41 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
+import static io.joynr.messaging.MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO;
+import static io.joynr.messaging.MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST;
+import static io.joynr.messaging.MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 public class DefaultMqttTopicPrefixProvider implements MqttTopicPrefixProvider {
 
-    public static final String REPLYTO_PREFIX = "replyto/";
+    private String replyToPrefix;
+    private String unicastPrefix;
+    private String multicastPrefix;
 
-    public DefaultMqttTopicPrefixProvider() {
-
+    @Inject
+    public DefaultMqttTopicPrefixProvider(@Named(MQTT_TOPIC_PREFIX_REPLYTO) String replyToPrefix,
+                                          @Named(MQTT_TOPIC_PREFIX_UNICAST) String unicastPrefix,
+                                          @Named(MQTT_TOPIC_PREFIX_MULTICAST) String multicastPrefix) {
+        this.replyToPrefix = replyToPrefix;
+        this.unicastPrefix = unicastPrefix;
+        this.multicastPrefix = multicastPrefix;
     }
 
     @Override
     public String getMulticastTopicPrefix() {
-        return "";
+        return multicastPrefix;
     }
 
     @Override
     public String getSharedSubscriptionsReplyToTopicPrefix() {
-        return REPLYTO_PREFIX;
+        return replyToPrefix;
     }
 
     @Override
     public String getUnicastTopicPrefix() {
-        return "";
+        return unicastPrefix;
     }
 
 }

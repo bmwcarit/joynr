@@ -178,6 +178,33 @@ will be reachable via the selected global transport middleware.
 * **User property**: `joynr.messaging.primaryglobaltransport`
 * **Default value**: NOT SET
 
+### `MQTT_TOPIC_PREFIX_REPLYTO`
+Set the mqtt prefix to be prepended to replyTo topics when using shared subscriptions.
+If shared subscriptions are disabled, the unicast prefix is used, i.e. the replyTo address
+is the same as the global address for provider registration.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.sharedsubscriptionsreplyto`
+* **Default value**: `replyto/`
+
+### `MQTT_TOPIC_PREFIX_UNICAST`
+Can be used to set the cluster topic prefix (shared by all nodes in a MQTT cluster-node
+configuration).
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.unicast`
+* **Default value**: ``
+
+### `MQTT_TOPIC_PREFIX_MULTICAST`
+Set the mqtt prefix to be prepended to multicast topics.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.multicast`
+* **Default value**: ``
+
 ### `CAPABILITYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
