@@ -69,8 +69,10 @@ typeCollection DacTypes {
 
 <**
 	@description: A joynr internal interface that is used by the Local Domain
-		Access Controller (LDAC) to access the Global Domain Access Controller
-		(GDAC). The GDAC is a joynr backend component that consists of the Domain
+		Access Controller (LDAC) to access the role related functionality of the
+		Global Domain Access Controller (GDAC).
+
+		The GDAC is a joynr backend component that consists of the Domain
 		Role Table (DRT), the Master Access Control List (Master ACL), one optional
 		Mediator ACL and the Owner ACL.
 		The DRT controls whether a user is allowed to change Access Control

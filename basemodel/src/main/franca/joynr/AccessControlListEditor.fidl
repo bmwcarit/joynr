@@ -23,7 +23,8 @@ import infrastructure.* from "AccessControlTypes.fidl"
 
 <**
 	@description: This joynr internal interface provides write access to the
-        entries of the Global Domain Access Controller.
+		access and registration control entries of the Global Domain
+		Access Controller (GDAC).
 **>
 interface GlobalDomainAccessControlListEditor {
 	version {major 0 minor 1}
