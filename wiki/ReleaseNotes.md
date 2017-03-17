@@ -5,6 +5,13 @@
 * **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
   existing MessagingQos APIs remain working
 * **[C++]** Providers can be (un)registered asynchronously through `(un)registerProviderAsync`
+* **[All]** The 'GlobalDomainAccessController' interface has been split up into 3 interfaces:
+  'GlobalDomainRoleController' (contains the 'role' based APIs),
+  'GlobalDomainAccessController' (contains the read-only getter & broadcast APIs for
+  master / mediator / owner access and registration control entries) and
+  'GlobalDomainAccessControlListEditor' (contains the modification related APIs for
+  master / mediator / owner access and registration control entries)
+  See `basemodel/src/main/franca/joynr/*.fidl` for details.
 
 ## Other changes
 * **[C++]** Access control can be activated in the cluster-controller. Default: OFF.
