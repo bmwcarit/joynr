@@ -52,6 +52,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private MessageRouter messageRouter;
     private MqttMessageSerializerFactory messageSerializerFactory;
     private String channelId;
+    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Inject
     public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
@@ -60,7 +61,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
                                          MqttMessageSerializerFactory messageSerializerFactory,
-                                         @Named(CHANNELID) String channelId) {
+                                         @Named(CHANNELID) String channelId,
+                                         MqttTopicPrefixProvider mqttTopicPrefixProvider) {
         sharedSubscriptionsEnabled = Boolean.valueOf(enableSharedSubscriptions);
         this.ownAddress = ownAddress;
         this.replyToAddress = replyToAddress;
@@ -68,6 +70,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.mqttClientFactory = mqttClientFactory;
         this.messageSerializerFactory = messageSerializerFactory;
         this.channelId = channelId;
+        this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}", new Object[]{
                 sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
     }
@@ -80,9 +83,14 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                 messageRouter,
                                                                 mqttClientFactory,
                                                                 messageSerializerFactory,
-                                                                channelId);
+                                                                channelId,
+                                                                mqttTopicPrefixProvider);
         }
-        return new MqttMessagingSkeleton(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
+        return new MqttMessagingSkeleton(ownAddress,
+                                         messageRouter,
+                                         mqttClientFactory,
+                                         messageSerializerFactory,
+                                         mqttTopicPrefixProvider);
     }
 
 }

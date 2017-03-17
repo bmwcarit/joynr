@@ -31,17 +31,20 @@ public class MqttGlobalAddressFactory extends GlobalAddressFactory<MqttAddress> 
     private static final String SUPPORTED_TRANSPORT_MQTT = "mqtt";
     private String localChannelId;
     private String brokerUri;
+    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Inject
     public MqttGlobalAddressFactory(@Named(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI) String brokerUri,
-                                    @Named(MessagingPropertyKeys.CHANNELID) String localChannelId) {
+                                    @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
+                                    MqttTopicPrefixProvider mqttTopicPrefixProvider) {
         this.brokerUri = brokerUri;
         this.localChannelId = localChannelId;
+        this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
     }
 
     @Override
     public MqttAddress create() {
-        return new MqttAddress(brokerUri, localChannelId);
+        return new MqttAddress(brokerUri, mqttTopicPrefixProvider.getUnicastTopicPrefix() + localChannelId);
     }
 
     @Override

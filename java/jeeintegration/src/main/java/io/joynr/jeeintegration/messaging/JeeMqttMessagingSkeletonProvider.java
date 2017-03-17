@@ -35,6 +35,7 @@ import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
+import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -59,7 +60,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             MessageRouter messageRouter,
                                             MqttClientFactory mqttClientFactory,
                                             MqttMessageSerializerFactory messageSerializerFactory,
-                                            @Named(CHANNELID) String channelId) {
+                                            @Named(CHANNELID) String channelId,
+                                            MqttTopicPrefixProvider mqttTopicPrefixProvider) {
         // CHECKSTYLE:ON
         super(enableSharedSubscriptions,
               ownAddress,
@@ -67,7 +69,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               messageRouter,
               mqttClientFactory,
               messageSerializerFactory,
-              channelId);
+              channelId,
+              mqttTopicPrefixProvider);
         httpBridgeEnabled = Boolean.valueOf(enableHttpBridge);
         logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}", new Object[]{ httpBridgeEnabled,
                 ownAddress, channelId });

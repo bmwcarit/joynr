@@ -34,6 +34,7 @@ import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.mqtt.DefaultMqttClientIdProvider;
+import io.joynr.messaging.mqtt.DefaultMqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
@@ -41,6 +42,7 @@ import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
 import io.joynr.messaging.mqtt.MqttMulticastAddressCalculator;
 import io.joynr.messaging.mqtt.MqttReplyToAddressFactory;
+import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
@@ -107,6 +109,7 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
         replyToAddresses.addBinding().to(MqttReplyToAddressFactory.class);
 
         bind(MqttClientFactory.class).to(MqttPahoClientFactory.class);
+        bind(MqttTopicPrefixProvider.class).to(DefaultMqttTopicPrefixProvider.class);
         bind(MqttClientIdProvider.class).to(DefaultMqttClientIdProvider.class);
 
         Multibinder<MulticastAddressCalculator> multicastAddressCalculators = Multibinder.newSetBinder(binder(),

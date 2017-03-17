@@ -122,5 +122,6 @@ public class MqttModule extends AbstractModule {
         multicastAddressCalculators.addBinding().to(MqttMulticastAddressCalculator.class);
 
         bind(MqttClientIdProvider.class).to(DefaultMqttClientIdProvider.class);
+        bind(MqttTopicPrefixProvider.class).to(DefaultMqttTopicPrefixProvider.class);
     }
 }

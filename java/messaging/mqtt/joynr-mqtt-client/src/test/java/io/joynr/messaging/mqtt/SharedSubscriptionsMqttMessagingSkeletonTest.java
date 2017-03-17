@@ -36,6 +36,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
+import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -64,6 +65,9 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     @Mock
     private MqttMessageSerializerFactory mqttMessageSerializerFactory;
 
+    @Mock
+    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
+
     private SharedSubscriptionsMqttMessagingSkeleton subject;
 
     @Captor
@@ -84,7 +88,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
-                                                               "channelId");
+                                                               "channelId",
+                                                               mqttTopicPrefixProvider);
         subject.init();
         verify(mqttClient).subscribe(eq("$share:channelId:ownTopic/#"));
         verify(mqttClient).subscribe(eq(replyToAddressTopic + "/#"));
@@ -97,7 +102,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
-                                                               "channel@123_bling$$");
+                                                               "channel@123_bling$$",
+                                                               mqttTopicPrefixProvider);
         subject.init();
         verify(mqttClient).subscribe(startsWith("$share:channelbling:"));
     }
@@ -109,7 +115,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
-                                                               "@123_$$-!");
+                                                               "@123_$$-!",
+                                                               mqttTopicPrefixProvider);
         subject.init();
     }
 

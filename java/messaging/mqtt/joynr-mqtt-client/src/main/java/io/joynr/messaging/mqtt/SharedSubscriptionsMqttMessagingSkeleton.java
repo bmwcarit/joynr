@@ -39,7 +39,6 @@ import joynr.system.RoutingTypes.MqttAddress;
  */
 public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkeleton {
 
-    public static final String REPLYTO_PREFIX = "replyto/";
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
     private String channelId;
     private MqttAddress replyToAddress;
@@ -50,8 +49,9 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
                                                     MqttMessageSerializerFactory messageSerializerFactory,
-                                                    @Named(MessagingPropertyKeys.CHANNELID) String channelId) {
-        super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
+                                                    @Named(MessagingPropertyKeys.CHANNELID) String channelId,
+                                                    MqttTopicPrefixProvider mqttTopicPrefixProvider) {
+        super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory, mqttTopicPrefixProvider);
         this.replyToAddress = replyToAddress;
         this.channelId = channelId;
     }

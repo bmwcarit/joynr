@@ -19,6 +19,7 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
+import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
@@ -31,18 +32,20 @@ import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttReplyToAddressFactory extends GlobalAddressFactory<MqttAddress> {
-    private static final String REPLYTO_PREFIX = "replyto/";
     private static final String SUPPORTED_TRANSPORT_MQTT = "mqtt";
     private String replyToTopic;
     private String brokerUri;
 
     @Inject
     public MqttReplyToAddressFactory(@Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress globalAddress,
+                                     @Named(CHANNELID) String localChannelId,
                                      @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
-                                     @Named(RECEIVERID) String receiverId) {
-        brokerUri = globalAddress.getBrokerUri();
+                                     @Named(RECEIVERID) String receiverId,
+                                     MqttTopicPrefixProvider mqttTopicPrefixProvider) {
+        this.brokerUri = globalAddress.getBrokerUri();
         if (Boolean.valueOf(enableSharedSubscriptions)) {
-            replyToTopic = REPLYTO_PREFIX + globalAddress.getTopic() + "/" + receiverId;
+            replyToTopic = mqttTopicPrefixProvider.getSharedSubscriptionsReplyToTopicPrefix() + localChannelId + "/"
+                    + receiverId;
         } else {
             replyToTopic = globalAddress.getTopic();
         }
