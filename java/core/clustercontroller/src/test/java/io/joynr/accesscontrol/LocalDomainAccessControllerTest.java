@@ -49,8 +49,8 @@ import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
-import joynr.infrastructure.GlobalDomainAccessControllerProxy;
+import joynr.infrastructure.GlobalDomainRoleControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
+import joynr.infrastructure.GlobalDomainRoleControllerProxy;
 import joynr.types.GlobalDiscoveryEntry;
 import net.sf.ehcache.CacheManager;
 import org.junit.After;
@@ -145,10 +145,10 @@ public class LocalDomainAccessControllerTest {
         assertFalse("UID1 should not have role MASTER in DRT",
                     localDomainAccessController.hasRole(UID1, DOMAIN1, Role.MASTER));
 
-        Method method = GlobalDomainAccessControllerProxy.class.getMethod("subscribeToDomainRoleEntryChangedBroadcast",
-                                                                          DomainRoleEntryChangedBroadcastListener.class,
-                                                                          MulticastSubscriptionQos.class,
-                                                                          String[].class);
+        Method method = GlobalDomainRoleControllerProxy.class.getMethod("subscribeToDomainRoleEntryChangedBroadcast",
+                                                                        DomainRoleEntryChangedBroadcastListener.class,
+                                                                        MulticastSubscriptionQos.class,
+                                                                        String[].class);
         verify(proxyInvocationHandlerMock, times(1)).invoke(any(Object.class), eq(method), any(Object[].class));
     }
 

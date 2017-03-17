@@ -151,8 +151,7 @@ void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
         }
 
         // save the message for later delivery
-        messageQueue->queueMessage(message);
-        JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+        queueMessage(message);
 
         // and try to resolve destination address via parent message router
         std::lock_guard<std::mutex> lock(parentResolveMutex);

@@ -74,6 +74,8 @@ public:
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) = 0;
+
+    virtual void queueMessage(const JoynrMessage& message) = 0;
 };
 
 } // namespace joynr

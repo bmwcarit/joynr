@@ -27,6 +27,8 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
+import joynr.infrastructure.GlobalDomainRoleControllerAbstractProvider;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorAbstractProvider;
 import joynr.types.GlobalDiscoveryEntry;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.config.Configuration;
@@ -34,6 +36,7 @@ import net.sf.ehcache.config.Configuration;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
+import com.google.inject.Singleton;
 
 public class GlobalDomainAccessControllerModule extends AbstractModule {
 
@@ -41,6 +44,8 @@ public class GlobalDomainAccessControllerModule extends AbstractModule {
     protected void configure() {
 
         bind(GlobalDomainAccessControllerAbstractProvider.class).to(GlobalDomainAccessControllerProviderImpl.class);
+        bind(GlobalDomainRoleControllerAbstractProvider.class).to(GlobalDomainRoleControllerProviderImpl.class);
+        bind(GlobalDomainAccessControlListEditorAbstractProvider.class).to(GlobalDomainAccessControlListEditorProviderImpl.class);
         bind(DomainAccessControlStore.class).to(DomainAccessControlStoreEhCache.class);
         bind(DomainAccessControlProvisioning.class).to(StaticDomainAccessControlProvisioning.class);
     }
@@ -58,6 +63,7 @@ public class GlobalDomainAccessControllerModule extends AbstractModule {
     }
 
     @Provides
+    @Singleton
     CacheManager provideCacheManager() {
         Configuration configuration = new Configuration();
         configuration.setName("GDACEhCacheManager");

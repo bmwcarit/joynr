@@ -76,6 +76,7 @@
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
+#include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ParticipantIdStorage.h"
@@ -400,6 +401,8 @@ public:
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+
+    MOCK_METHOD1(queueMessage, void(const joynr::JoynrMessage& message));
 };
 
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {
@@ -1023,8 +1026,8 @@ public:
     MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {
 
     }
-    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& authenticationToken));
-    MOCK_METHOD4(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue, const std::string& authenticationToken));
+    MOCK_METHOD2(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName));
+    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue));
 };
 
 class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter {
@@ -1064,17 +1067,6 @@ public:
     {
     }
 
-    MOCK_METHOD3(
-            getDomainRolesAsync,
-            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>>>(
-                const std::string& uid,
-                std::function<void(
-                    const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
-                )> onSuccess,
-                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
-            )
-    );
-
     MOCK_METHOD4(
             getMasterAccessControlEntriesAsync,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>>>(
@@ -1111,6 +1103,48 @@ public:
             )
     );
 
+};
+
+class MockGlobalDomainRoleControllerProxy : public virtual joynr::infrastructure::GlobalDomainRoleControllerProxy {
+public:
+    MockGlobalDomainRoleControllerProxy() :
+        GlobalDomainRoleControllerProxy(
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
+                nullptr,
+                  "domain",
+                joynr::MessagingQos()),
+        ProxyBase(
+                nullptr,
+                "domain",
+                joynr::MessagingQos()),
+        GlobalDomainRoleControllerProxyBase(
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
+                nullptr,
+                "domain",
+                joynr::MessagingQos()),
+        GlobalDomainRoleControllerSyncProxy(
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
+                nullptr,
+                "domain",
+                joynr::MessagingQos()),
+        GlobalDomainRoleControllerAsyncProxy(
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
+                nullptr,
+                "domain",
+                joynr::MessagingQos())
+    {
+    }
+
+    MOCK_METHOD3(
+            getDomainRolesAsync,
+            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>>>(
+                const std::string& uid,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            )
+    );
 };
 
 class MockLocalDomainAccessController : public joynr::LocalDomainAccessController {
