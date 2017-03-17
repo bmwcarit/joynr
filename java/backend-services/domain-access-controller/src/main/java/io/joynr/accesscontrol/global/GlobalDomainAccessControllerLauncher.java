@@ -27,6 +27,8 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.util.Properties;
 
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
+import joynr.infrastructure.GlobalDomainRoleControllerAbstractProvider;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorAbstractProvider;
 import joynr.types.ProviderQos;
 
 import com.google.inject.Inject;
@@ -37,6 +39,12 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
 
     @Inject
     private GlobalDomainAccessControllerAbstractProvider globalDomainAccessSyncProvider;
+
+    @Inject
+    private GlobalDomainRoleControllerAbstractProvider globalDomainRoleSyncProvider;
+
+    @Inject
+    private GlobalDomainAccessControlListEditorAbstractProvider globalDomainAccessControlListEditorSyncProvider;
 
     public static void main(String[] args) {
         GlobalDomainAccessControllerLauncher.start();
@@ -62,6 +70,8 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
 
         ProviderQos providerQos = new ProviderQos();
         runtime.registerProvider(localDomain, globalDomainAccessSyncProvider, providerQos);
+        runtime.registerProvider(localDomain, globalDomainRoleSyncProvider, providerQos);
+        runtime.registerProvider(localDomain, globalDomainAccessControlListEditorSyncProvider, providerQos);
     }
 
     @Override

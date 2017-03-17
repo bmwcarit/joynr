@@ -21,7 +21,7 @@ package io.joynr.accesscontrol.broadcastlistener;
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
 import io.joynr.exceptions.SubscriptionException;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastAdapter;
+import joynr.infrastructure.GlobalDomainRoleControllerBroadcastInterface.DomainRoleEntryChangedBroadcastAdapter;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 

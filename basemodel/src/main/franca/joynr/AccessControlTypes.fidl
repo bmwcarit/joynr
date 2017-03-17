@@ -1,0 +1,238 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package infrastructure
+
+<**
+	@description: Data types used in communication between Local and Global
+		Domain Access Controller (LDAC and GDAC).
+**>
+typeCollection DacTypes {
+	enumeration Permission {
+		<**
+			@description: Access is granted without any user interaction.
+		**>
+		YES
+		<**
+			@description: User interaction is required which either allows
+				or denies access.
+		**>
+		ASK
+		<**
+			@description: Access is denied without any user interaction.
+		**>
+		NO
+	}
+
+	<**
+		@description: A Trust Level (TL) describes the trustworthiness of a
+			joynr user and the device he uses to connect to the joynr backend
+			or other joynr participants. There are four levels of
+			trustworthiness: HIGH, MID, LOW and NONE. Note that NONE refers
+			to a completely untrusted, non-authenticated user. All other TLs
+			are specified by requirements regarding the device used to
+			establish a connection (e.g. vehicle, mobile phone, etc.) and
+			the local authentication methods unlocking a user’s certificate
+			(e.g. passwords, biometric authentication, etc.).
+	**>
+	enumeration TrustLevel {
+		HIGH
+		MID
+		LOW
+		NONE
+	}
+
+	<**
+		@description: The Control Entry (CE) stores access permissions of users
+			for a domain/interface combination. It is the base class for
+			<code>MasterControlEntry</code> and <code>OwnerControlEntry</code>.
+	 **>
+	struct ControlEntry {
+		<**
+			@description: A unique user ID (UID) this Control Entry (CE) applies
+				to or the wildcard character (asterisk sign) if this CE applies
+				to all users. CEs that use the wildcard character are overruled
+				by specific ones (if they exist).
+		 **>
+		String uid
+		<**
+			@description: The domain this Control Entry (CE) applies to.
+		**>
+		String domain
+		<**
+			@description: The interface this Control Entry (CE) applies to.
+		**>
+		String interfaceName
+	}
+
+	<**
+		@description: The Master Control Entry (Master CE) stores default
+			Trust Levels (TLs) of users that must be met to apply this CE
+			or to change this CE. Additionally, it contains possible TLs to
+			be used to override default TLs in Owner Control Entries (Owner
+			CEs). It is the base class for <code>MasterAccessControlEntry</code>
+			and <code>MasterRegistrationControlEntry</code>.
+	**>
+	struct MasterControlEntry extends ControlEntry {
+		<**
+			@description: The default required trusted level (TL).
+				TL depends on used device and Authentication mechanism.
+		**>
+		TrustLevel defaultRequiredTrustLevel
+		<**
+			@description: A list of all possible Trust Levels that may be used
+				in an owner CE to overwrite the default required TL.
+		**>
+		TrustLevel[] possibleRequiredTrustLevels
+		<**
+			@description: The default Trust Level (TL) that is needed by the requester
+				in order to create, edit or delete a corresponding owner CE.
+		**>
+		TrustLevel defaultRequiredControlEntryChangeTrustLevel
+		<**
+			@description: A list of all possible Trust Levels (TLs) that may be used
+				in an owner CE to override the default required CE change TL.
+		**>
+		TrustLevel[] possibleRequiredControlEntryChangeTrustLevels
+	}
+
+	<**
+		@description: The Owner Control Entry (Owner CE) stores Trust Levels (TLs)
+			of users that must be met to apply this CE or to change this CE. It is
+			the base class for <code>OwnerAccessControlEntry</code>
+			and <code>OwnerRegistrationControlEntry</code>.
+	**>
+	struct OwnerControlEntry extends ControlEntry {
+		<**
+			@description: The Trust Level (TL) that is needed by the requester in
+				order to get the permission defined in this CE. The TL must be listed
+				in the possible required TLs of the corresponding Master CE. Otherwise
+				this constitutes a conflict.
+		**>
+		TrustLevel requiredTrustLevel
+		<**
+			@description: The Trust Level (TL) that is needed by the requester in
+				order to create, edit or delete an Owner ACE. The TL must be listed
+				in the possible required CE Change TLs of the corresponding Master
+				CE. Otherwise this constitutes a conflict.
+		**>
+		TrustLevel requiredAceChangeTrustLevel
+	}
+
+	<**
+		@description: The Master Access Control Entry (Master ACE) stores default
+			consumer permissions of users for a domain/interface/operations
+			combination. Additionally, it contains possible consumer permissions
+			to be used to override default consumer permissions in Owner Access
+			Control Entries (Owner ACEs). Master ACEs are stored by the Master
+			Access Control List (Master ACL) and the optional Mediator Access
+			Control List (Mediator ACL).
+	**>
+	struct MasterAccessControlEntry extends MasterControlEntry {
+		<**
+			@description: The operation this Access Control Entry (ACE) applies
+				to or the wildcard character (asterisk sign) if this ACE applies
+				to all operations of the corresponding interface. ACEs that use
+				the wildcard character are overruled by specific ones (if they
+				exist).
+		**>
+		String operation
+		<**
+			@description: The default consumer permission that applies to the specified
+				domain, interface and operations combination if there does not
+				exist a corresponding ACE in the owner Access Control List (ACL).
+		**>
+		Permission defaultConsumerPermission
+		<**
+			@description: A list of all possible consumer permissions that may be used in
+				an owner ACE to overwrite the default consumer permission.
+		**>
+		Permission[] possibleConsumerPermissions
+	}
+
+	<**
+		@description: The Master Registration Control Entry (Master RCE) stores
+			default provider permissions of users for a domain/interface combination.
+			Additionally, it contains possible provider permissions to be used to
+			override default provider permissions in Owner Registration Control
+			Entries (Owner RCEs). Master RCEs are stored by the Master Registration
+			Control List (Master RCL) and the optional Mediator Registration Control
+			List (Mediator RCL).
+	**>
+	struct MasterRegistrationControlEntry extends MasterControlEntry {
+		<**
+			@description: The default provider permission that applies to the specified
+				domain and interface combination if there does not exist a corresponding
+				RCE in the Owner Registration Control List (Owner RCL).
+		**>
+		Permission defaultProviderPermission
+		<**
+			@description: A list of all possible provider permissions that may be used in
+				an owner RCE to overwrite the default provider permission.
+		**>
+		Permission[] possibleProviderPermissions
+	}
+
+	<**
+		@description: The Owner Access Control Entry (Owner ACE) stores consumer
+			permissions of users for a domain/interface/operation combination. Owner
+			ACEs are stored by the Owner Access Control List (Owner ACL). If UID,
+			domain, interface and operation values of an Owner ACE match the values
+			of an Master ACE, default consumer permissions and TLs
+			of the Master ACE get overwritten by the consumer permissions and TLs of
+			the Owner ACE unless the consumer permissions or TLs conflict with their
+			respective possible consumer permissions and TLs.
+	**>
+	struct OwnerAccessControlEntry extends OwnerControlEntry {
+		<**
+			@description: The operation this Access Control Entry (ACE) applies
+				to or the wildcard character (asterisk sign) if this ACE applies
+				to all operations of the corresponding interface. ACEs that use
+				the wildcard character are overruled by specific ones (if they
+				exist).
+		**>
+		String operation
+		<**
+			@description: The consumer permission that applies to the specified
+				domain/interface/operation combination. The permission must be
+				listed in possible consumer permissions of the corresponding Master ACE.
+				Otherwise this constitutes a conflict.
+		**>
+		Permission consumerPermission
+	}
+
+	<**
+		@description: The Owner Registration Control Entry (Owner RCE) stores
+			provider permissions of users for a domain/interface combination.
+			Owner RCEs are stored by the Owner Registration Control List (Owner
+			RCL). If UIDs, domain and interface values of an Owner RCE match the
+			values of an Master RCE, default provider permissions and TLs of the
+			Master RCE get overwritten by the permissions and TLs of the Owner RCE
+			unless the permissions or TLs conflict with their respective possible
+			permissions and TLs.
+	**>
+	struct OwnerRegistrationControlEntry extends OwnerControlEntry {
+		<**
+			@description: The provider permission that applies to the specified
+				domain/interface/operations combination. The permission must be
+				listed in possible provider permissions of the corresponding Master ACE.
+				Otherwise this constitutes a conflict.
+		**>
+		Permission providerPermission
+	}
+}
