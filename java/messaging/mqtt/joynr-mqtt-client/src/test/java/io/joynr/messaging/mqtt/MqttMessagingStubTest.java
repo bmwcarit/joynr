@@ -51,14 +51,11 @@ public class MqttMessagingStubTest {
     @Mock
     private JoynrMessageSerializer messageSerializer;
 
-    @Mock
-    private MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator;
-
     private MqttMessagingStub subject;
 
     @Before
     public void setup() {
-        subject = new MqttMessagingStub(mqttAddress, mqttClient, messageSerializer, mqttMessageReplyToAddressCalculator);
+        subject = new MqttMessagingStub(mqttAddress, mqttClient, messageSerializer);
     }
 
     @Test

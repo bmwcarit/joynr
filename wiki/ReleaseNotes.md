@@ -4,6 +4,24 @@
 
 * **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
   existing MessagingQos APIs remain working
+* **[C++]** Providers can be (un)registered asynchronously through `(un)registerProviderAsync`
+
+## Other changes
+* **[C++]** Access control can be activated in the cluster-controller. Default: OFF.
+  Refer to [cluster controller settings](ClusterControllerSettings.md) for more info.
+* **[Java]** Added properties (`PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC`,
+  `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC` and `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`) to
+  configure the MQTT connection. See [JavaSettings](JavaSettings.md) for more information.
+
+#joynr 0.23.2
+
+## API relevant changes
+none
+
+## Other changes
+* **[JEE]** Fixed issue that caused joynr not to start correctly with debug logging enabled
+* **[Java]** Do not send customHeaders as their own json object
+* **[Java]** Made MQTT reconnect behavior more robust
 
 #joynr 0.23.1
 

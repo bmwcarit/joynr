@@ -1,3 +1,5 @@
+package io.joynr.messaging.routing;
+
 /*
  * #%L
  * %%
@@ -16,25 +18,19 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CLUSTER_CONTROLLER_MQTT_MQTTSETTINGS_H_
-#define CLUSTER_CONTROLLER_MQTT_MQTTSETTINGS_H_
 
-#include <chrono>
-#include <cstdint>
-#include <string>
+import io.joynr.messaging.routing.GlobalAddressFactory;
+import joynr.system.RoutingTypes.ChannelAddress;
 
-/**
- * Structure with values for mqtt configuration
- */
-struct MqttSettings
-{
-    std::string host = "localhost";
-    uint16_t port = 1883;
-    std::chrono::seconds keepAliveTime = std::chrono::seconds(60);
-    uint16_t qos = 1;
-    std::string prio = "low";
-    bool retain = false;
-    std::chrono::milliseconds reconnectSleepTimeMs = std::chrono::milliseconds(1000);
-};
+public class MockChannelAddressFactory extends GlobalAddressFactory<ChannelAddress> {
 
-#endif // CLUSTER_CONTROLLER_MQTT_MQTTSETTINGS_H_
+    @Override
+    public ChannelAddress create() {
+        return new ChannelAddress("messagingEndpointUrl", "channelId");
+    }
+
+    @Override
+    public boolean supportsTransport(String transport) {
+        return "longpolling".equals(transport);
+    }
+}

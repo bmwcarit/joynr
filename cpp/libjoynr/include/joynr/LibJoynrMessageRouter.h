@@ -20,6 +20,7 @@
 #ifndef CHILDMESSAGEROUTER_H
 #define CHILDMESSAGEROUTER_H
 
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -42,6 +43,11 @@ class io_service;
 
 namespace joynr
 {
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+}
 
 class IMessaging;
 class IMessagingStubFactory;
@@ -85,12 +91,13 @@ public:
     /*
      * Implement methods from IMessageRouter
      */
-    void route(const JoynrMessage& message, std::uint32_t tryCount = 0) final;
+    void route(JoynrMessage& message, std::uint32_t tryCount = 0) final;
 
-    void addNextHop(
-            const std::string& participantId,
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            std::function<void()> onSuccess = nullptr) final;
+    void addNextHop(const std::string& participantId,
+                    const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+                    std::function<void()> onSuccess = nullptr,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                            onError = nullptr) final;
 
     void removeNextHop(
             const std::string& participantId,
@@ -118,6 +125,10 @@ public:
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress,
                          std::string parentParticipantId);
 
+    void queryGlobalClusterControllerAddress(
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
+
     friend class MessageRunnable;
 
 private:
@@ -137,6 +148,9 @@ private:
     mutable std::mutex parentResolveMutex;
 
     void removeRunningParentResolvers(const std::string& destinationPartId);
+
+    std::mutex globalParentClusterControllerAddressMutex;
+    std::string globalParentClusterControllerAddress;
 };
 
 } // namespace joynr

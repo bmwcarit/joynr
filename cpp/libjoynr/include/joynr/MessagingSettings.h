@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,13 +40,13 @@ public:
     ~MessagingSettings() = default;
 
     static const std::string& SETTING_BROKER_URL();
-    static const std::string& SETTING_BOUNCE_PROXY_URL();
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
     static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME();
     static const std::string& SETTING_MQTT_RECONNECT_SLEEP_TIME();
+    static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT_MS();
     static const std::string& SETTING_INDEX();
     static const std::string& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
@@ -69,6 +69,8 @@ public:
     static const std::string& SETTING_BROKER_TIMEOUT_MS();
 
     static const std::string& ACCESS_CONTROL_ENABLE();
+    static const std::string& ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS();
+    static const std::string& ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID();
 
     /**
      * @brief SETTING_MAXIMUM_TTL_MS The key used in settings to identifiy the maximum allowed value
@@ -107,6 +109,7 @@ public:
     static std::uint64_t DEFAULT_MAXIMUM_TTL_MS();
     static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME();
     static std::chrono::milliseconds DEFAULT_MQTT_RECONNECT_SLEEP_TIME();
+    static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT_MS();
     static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
 
     static bool DEFAULT_ENABLE_ACCESS_CONTROLLER();
@@ -115,20 +118,20 @@ public:
     std::string getBrokerUrlString() const;
     void setBrokerUrl(const BrokerUrl& brokerUrl);
 
-    BrokerUrl getBounceProxyUrl() const;
-    std::string getBounceProxyUrlString() const;
-    void setBounceProxyUrl(const BrokerUrl& brokerUrl);
-
     std::string getDiscoveryDirectoriesDomain() const;
 
     std::string getCapabilitiesDirectoryUrl() const;
     std::string getCapabilitiesDirectoryChannelId() const;
     std::string getCapabilitiesDirectoryParticipantId() const;
 
+    std::string getGlobalDomainAccessControlAddress() const;
+    std::string getGlobalDomainAccessControlParticipantId() const;
+
     std::chrono::seconds getMqttKeepAliveTime() const;
     void setMqttKeepAliveTime(std::chrono::seconds mqttKeepAliveTime);
     std::chrono::milliseconds getMqttReconnectSleepTime() const;
     void setMqttReconnectSleepTime(std::chrono::milliseconds mqttReconnectSleepTime);
+    std::chrono::milliseconds getMqttConnectionTimeout() const;
     std::int64_t getIndex() const;
     void setIndex(std::int64_t index);
     int getCreateChannelRetryInterval() const;

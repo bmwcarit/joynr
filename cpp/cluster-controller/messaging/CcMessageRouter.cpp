@@ -38,6 +38,9 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/MessageNotificationAbstractProvider.h"
+#include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilter.h"
+#include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
@@ -73,6 +76,44 @@ private:
     ADD_LOGGER(ConsumerPermissionCallback);
 };
 
+//------ MessageNotification ---------------------------------------------------
+
+class CcMessageNotificationProvider : public joynr::system::MessageNotificationAbstractProvider
+{
+public:
+    virtual ~CcMessageNotificationProvider() = default;
+    using MessageNotificationAbstractProvider::fireMessageQueuedForDelivery;
+};
+
+class MessageQueuedForDeliveryBroadcastFilter
+        : public joynr::system::MessageNotificationMessageQueuedForDeliveryBroadcastFilter
+{
+    bool filter(const std::string& participantId,
+                const std::string& messageType,
+                const joynr::system::
+                        MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters&
+                                filterParameters) override
+    {
+        const bool isParticipantIdSet = !filterParameters.getParticipantId().empty();
+        const bool isMessageTypeSet = !filterParameters.getMessageType().empty();
+
+        // if no filter parameters are set, always send broadcast
+        if (!isParticipantIdSet && !isMessageTypeSet) {
+            return true;
+        }
+        // if message type is empty, check if participant id matches
+        if (!isMessageTypeSet) {
+            return filterParameters.getParticipantId() == participantId;
+        }
+        // if participant type is empty, check if message type matches
+        if (!isParticipantIdSet) {
+            return filterParameters.getMessageType() == messageType;
+        }
+        return filterParameters.getParticipantId() == participantId &&
+               filterParameters.getMessageType() == messageType;
+    }
+};
+
 //------ MessageRouter ---------------------------------------------------------
 
 CcMessageRouter::CcMessageRouter(
@@ -81,6 +122,7 @@ CcMessageRouter::CcMessageRouter(
         std::unique_ptr<IPlatformSecurityManager> securityManager,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+        const std::string& globalClusterControllerAddress,
         int maxThreads,
         std::unique_ptr<MessageQueue> messageQueue)
         : AbstractMessageRouter(std::move(messagingStubFactory),
@@ -91,8 +133,12 @@ CcMessageRouter::CcMessageRouter(
           joynr::system::RoutingAbstractProvider(),
           multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           securityManager(std::move(securityManager)),
-          multicastReceveiverDirectoryFilename()
+          multicastReceveiverDirectoryFilename(),
+          globalClusterControllerAddress(globalClusterControllerAddress),
+          messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>())
 {
+    messageNotificationProvider->addBroadcastFilter(
+            std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
 }
 
 CcMessageRouter::~CcMessageRouter()
@@ -140,6 +186,24 @@ void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
     reestablishMulticastSubscriptions();
 }
 
+std::shared_ptr<system::MessageNotificationProvider> CcMessageRouter::
+        getMessageNotificationProvider() const
+{
+    return messageNotificationProvider;
+}
+
+void CcMessageRouter::getGlobalAddress(
+        std::function<void(const std::string&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    if (globalClusterControllerAddress.empty()) {
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "No cluster-controller global address available."));
+    } else {
+        onSuccess(globalClusterControllerAddress);
+    }
+}
+
 void CcMessageRouter::reestablishMulticastSubscriptions()
 {
     for (const auto& multicastId : multicastReceiverDirectory.getMulticastIds()) {
@@ -184,7 +248,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void CcMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
+void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
@@ -204,6 +268,14 @@ void CcMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
+    if (message.getHeaderReplyAddress().empty() && !message.isLocalMessage() &&
+        (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
+         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+        message.setHeaderReplyAddress(globalClusterControllerAddress);
+    }
+
     JOYNR_LOG_TRACE(logger,
                     "Route message with Id {} and payload {}",
                     message.getHeaderMessageId(),
@@ -219,8 +291,7 @@ void CcMessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
         }
 
         // save the message for later delivery
-        messageQueue->queueMessage(message);
-        JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+        queueMessage(message);
         JOYNR_LOG_WARN(logger,
                        "No routing information found for destination participant ID \"{}\" "
                        "so far. Waiting for participant registration. "
@@ -266,11 +337,13 @@ void CcMessageRouter::removeNextHop(
 
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
-        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-        std::function<void()> onSuccess)
+        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    addToRoutingTable(participantId, inprocessAddress);
-    sendMessages(participantId, inprocessAddress);
+    std::ignore = onError;
+    addToRoutingTable(participantId, address);
+    sendMessages(participantId, address);
     if (onSuccess) {
         onSuccess();
     }
@@ -483,6 +556,14 @@ void CcMessageRouter::removeMulticastReceiver(
         }
         onSuccess();
     }
+}
+
+void CcMessageRouter::queueMessage(const JoynrMessage& message)
+{
+    JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+    messageNotificationProvider->fireMessageQueuedForDelivery(
+            message.getHeaderTo(), message.getType());
+    messageQueue->queueMessage(message);
 }
 
 /**

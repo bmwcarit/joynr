@@ -77,7 +77,7 @@ class LocalDomainAccessControllerTest : public ::testing::Test {
 public:
     LocalDomainAccessControllerTest() : localDomainAccessStorePtr(nullptr),
                                         localDomainAccessController(),
-                                        mockGdacProxy(),
+                                        mockGdacProxyMock(nullptr),
                                         mockGdrcProxy()
     {
     }
@@ -89,9 +89,10 @@ public:
         localDomainAccessStorePtr = localDomainAccessStore.get();
         localDomainAccessController =
                 std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
-        mockGdacProxy = std::make_shared<MockGlobalDomainAccessControllerProxy>();
+        auto mockGdacProxy = std::make_unique<MockGlobalDomainAccessControllerProxy>();
+        mockGdacProxyMock = mockGdacProxy.get();
+        localDomainAccessController->init(std::move(mockGdacProxy));
         mockGdrcProxy = std::make_shared<MockGlobalDomainRoleControllerProxy>();
-        localDomainAccessController->init(mockGdacProxy);
         localDomainAccessController->init(mockGdrcProxy);
 
         userDre = DomainRoleEntry(TEST_USER, DOMAINS, Role::OWNER);
@@ -121,7 +122,8 @@ public:
 protected:
     LocalDomainAccessStore* localDomainAccessStorePtr;
     std::unique_ptr<LocalDomainAccessController> localDomainAccessController;
-    std::shared_ptr<MockGlobalDomainAccessControllerProxy> mockGdacProxy;
+
+    MockGlobalDomainAccessControllerProxy* mockGdacProxyMock;
     std::shared_ptr<MockGlobalDomainRoleControllerProxy> mockGdrcProxy;
     OwnerAccessControlEntry ownerAce;
     MasterAccessControlEntry masterAce;
@@ -273,19 +275,19 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
                     InvokeArgument<1>(std::vector<DomainRoleEntry>()),
                     Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // nullptr pointer
             ));
-    EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))
+    EXPECT_CALL(*mockGdacProxyMock, getMasterAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(masterAcesFromGlobalDac),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
-    EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))
+    EXPECT_CALL(*mockGdacProxyMock, getMediatorAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(std::vector<MasterAccessControlEntry>()),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
-    EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))
+    EXPECT_CALL(*mockGdacProxyMock, getOwnerAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(ownerAcesFromGlobalDac),
@@ -343,19 +345,19 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
                     InvokeArgument<1>(std::vector<DomainRoleEntry>()),
                     Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // nullptr pointer
             ));
-    EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))
+    EXPECT_CALL(*mockGdacProxyMock, getMasterAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(masterAcesFromGlobalDac),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
-    EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))
+    EXPECT_CALL(*mockGdacProxyMock, getMediatorAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<3>(exceptions::JoynrRuntimeException("simulated communication failure")),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
-    EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))
+    EXPECT_CALL(*mockGdacProxyMock, getOwnerAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(ownerAcesFromGlobalDac),
@@ -401,19 +403,19 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
                     InvokeArgument<1>(std::vector<DomainRoleEntry>()),
                     Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // nullptr pointer
             ));
-    EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))
+    EXPECT_CALL(*mockGdacProxyMock, getMasterAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     SaveArg<2>(&getMasterAcesOnSuccessFct),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
-    EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))
+    EXPECT_CALL(*mockGdacProxyMock, getMediatorAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(std::vector<MasterAccessControlEntry>()),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
-    EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))
+    EXPECT_CALL(*mockGdacProxyMock, getOwnerAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(ownerAcesFromGlobalDac),

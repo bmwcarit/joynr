@@ -22,8 +22,6 @@ package io.joynr.runtime;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.websocket.WebSocketClientMessageSerializerFactory;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
@@ -43,7 +41,6 @@ public class CCWebSocketRuntimeModule extends ClusterControllerRuntimeModule {
         install(new WebSocketJettyServerModule());
         bind(JoynrRuntime.class).to(ClusterControllerRuntime.class);
         bind(ClusterControllerRuntime.class).in(Singleton.class);
-        bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
 
         messagingSkeletonFactory.addBinding(WebSocketClientAddress.class).to(WebSocketMessagingSkeleton.class);
         messagingStubFactory.addBinding(WebSocketClientAddress.class).to(WebSocketClientMessagingStubFactory.class);

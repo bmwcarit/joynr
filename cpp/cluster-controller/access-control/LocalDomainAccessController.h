@@ -81,7 +81,7 @@ public:
      * The init method has to be called first, only afterwards LocalDomainAccessController may be
      * used.
      */
-    void init(std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
+    void init(std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy>
                       globalDomainAccessControllerProxy);
 
     /**
@@ -489,7 +489,7 @@ private:
 
     std::unordered_map<std::string, AceSubscription> aceSubscriptions;
 
-    std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
+    std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
     std::shared_ptr<infrastructure::GlobalDomainAccessControlListEditorProxy>
             globalDomainAccessControlListEditorProxy;

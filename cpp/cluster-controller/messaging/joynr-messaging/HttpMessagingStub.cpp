@@ -28,11 +28,8 @@ namespace joynr
 INIT_LOGGER(HttpMessagingStub);
 
 HttpMessagingStub::HttpMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                                     const system::RoutingTypes::ChannelAddress& destinationAddress,
-                                     const std::string& globalClusterControllerAddress)
-        : messageSender(messageSender),
-          destinationAddress(destinationAddress),
-          globalClusterControllerAddress(globalClusterControllerAddress)
+                                     const system::RoutingTypes::ChannelAddress& destinationAddress)
+        : messageSender(messageSender), destinationAddress(destinationAddress)
 {
 }
 
@@ -40,11 +37,6 @@ void HttpMessagingStub::transmit(
         JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        message.setHeaderReplyAddress(globalClusterControllerAddress);
-    }
     JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message.toLogMessage());
     messageSender->sendMessage(destinationAddress, message, onFailure);
 }

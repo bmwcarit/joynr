@@ -25,7 +25,6 @@
 #include <vector>
 
 #include "cluster-controller/access-control/LocalDomainAccessController.h"
-#include "cluster-controller/mqtt/MqttSettings.h"
 
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
@@ -100,6 +99,7 @@ public:
     void deleteChannel();
     void registerRoutingProvider();
     void registerDiscoveryProvider();
+    void registerMessageNotificationProvider();
 
     /*
      * Inject predefined capabilities stored in a JSON file.
@@ -111,11 +111,14 @@ protected:
     void initializeAllDependencies();
     void importPersistedLocalCapabilitiesDirectory();
 
+    std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> getProvisionedEntries()
+            const final;
+
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
-    IDispatcher* ccDispatcher;
+
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     IMessaging* joynrMessagingSendSkeleton;
     std::shared_ptr<JoynrMessageSender> joynrMessageSender;
@@ -134,10 +137,7 @@ protected:
     std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
 
     std::vector<IDispatcher*> dispatcherList;
-    InProcessConnectorFactory* inProcessConnectorFactory;
     InProcessPublicationSender* inProcessPublicationSender;
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
-    ConnectorFactory* connectorFactory;
 
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
@@ -163,12 +163,13 @@ private:
     void createWsCCMessagingSkeletons();
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
-    MqttSettings mqttSettings;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
 
     std::shared_ptr<CcMessageRouter> ccMessageRouter;
 
-    void enableAccessController(MessagingSettings& messagingSettings);
+    void enableAccessController(
+            MessagingSettings& messagingSettings,
+            const std::map<std::string, types::DiscoveryEntryWithMetaInfo>& provisionedEntries);
     friend class ::JoynrClusterControllerRuntimeTest;
 };
 

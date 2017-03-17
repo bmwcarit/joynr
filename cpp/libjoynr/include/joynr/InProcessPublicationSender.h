@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@
 #ifndef INPROCESSPUBLICATIONSENDER_H
 #define INPROCESSPUBLICATIONSENDER_H
 
+#include <memory>
 #include <string>
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/Logger.h"
-#include "joynr/JoynrExport.h"
 #include "joynr/IPublicationSender.h"
+#include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -41,9 +42,9 @@ class MessagingQos;
 class JOYNR_EXPORT InProcessPublicationSender : public IPublicationSender
 {
 public:
-public:
     ~InProcessPublicationSender() override = default;
-    explicit InProcessPublicationSender(ISubscriptionManager* subscriptionManager);
+    explicit InProcessPublicationSender(std::shared_ptr<ISubscriptionManager> subscriptionManager);
+
     /**
      * @brief
      *
@@ -65,7 +66,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessPublicationSender);
-    ISubscriptionManager* subscriptionManager;
+    std::shared_ptr<ISubscriptionManager> subscriptionManager;
     ADD_LOGGER(InProcessPublicationSender);
 };
 

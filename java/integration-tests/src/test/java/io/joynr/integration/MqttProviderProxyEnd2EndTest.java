@@ -48,22 +48,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
 
     private Properties mqttConfig;
     private static Process mosquittoProcess;
-    private static int mqttBrokerPort;
-
-    @BeforeClass
-    // NOTE: when running in Eclipse, it may be necessary to set the system variable -Dpath=path/to/mosquitto
-    // even if mosquitto is on the usual path and can be started without extra path info from the command line.
-    public static void startBroker() throws Exception {
-        mqttBrokerPort = ServletUtil.findFreePort();
-        String path = System.getProperty("path") != null ? System.getProperty("path") : "";
-        ProcessBuilder processBuilder = new ProcessBuilder(path + "mosquitto", "-p", Integer.toString(mqttBrokerPort));
-        mosquittoProcess = processBuilder.start();
-    }
-
-    @AfterClass
-    public static void stopBroker() throws Exception {
-        mosquittoProcess.destroy();
-    }
+    private static int mqttBrokerPort = 1883;
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
@@ -71,6 +56,8 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
         // test is using 2 global address typs, so need to set one of them as primary
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+        mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:" + mqttBrokerPort);
+        mqttConfig.put(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://localhost:" + mqttBrokerPort);
         joynrConfig.putAll(mqttConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
         Module modulesWithRuntime = Modules.override(runtimeModule).with(new AtmosphereMessagingModule(),

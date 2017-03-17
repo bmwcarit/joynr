@@ -3,7 +3,7 @@ package io.joynr.discovery.jee;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,9 +114,9 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     @Override
     public void remove(String[] participantIds) {
         logger.debug("Removing global discovery entries with IDs {}", participantIds);
-        String queryString = "delete from GlobalDiscoveryEntryPersisted gdep where gdep.particpantId in :participantIds";
+        String queryString = "delete from GlobalDiscoveryEntryPersisted gdep where gdep.participantId in :participantIds";
         int deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
-                                        .setParameter("participantIds", participantIds)
+                                        .setParameter("participantIds", Sets.newHashSet(participantIds))
                                         .executeUpdate();
         logger.debug("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
     }

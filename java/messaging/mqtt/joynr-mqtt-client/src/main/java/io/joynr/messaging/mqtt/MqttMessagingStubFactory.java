@@ -29,21 +29,18 @@ public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFac
 
     private MqttMessageSerializerFactory mqttMessageSerializerFactory;
     private JoynrMqttClient mqttClient;
-    private MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator;
 
     @Inject
     public MqttMessagingStubFactory(MqttMessageSerializerFactory mqttMessageSerializerFactory,
-                                    MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator,
                                     MqttClientFactory mqttClientFactory) {
         this.mqttMessageSerializerFactory = mqttMessageSerializerFactory;
         this.mqttClient = mqttClientFactory.create();
-        this.mqttMessageReplyToAddressCalculator = mqttMessageReplyToAddressCalculator;
     }
 
     @Override
     protected MqttMessagingStub createInternal(MqttAddress address) {
         JoynrMessageSerializer messageSerializer = mqttMessageSerializerFactory.create(address);
-        return new MqttMessagingStub(address, mqttClient, messageSerializer, mqttMessageReplyToAddressCalculator);
+        return new MqttMessagingStub(address, mqttClient, messageSerializer);
     }
 
     @Override

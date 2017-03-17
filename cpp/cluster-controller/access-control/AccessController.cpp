@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -142,6 +143,16 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
                             "could not deserialize BroadcastSubscriptionRequest - error {}",
                             e.what());
         }
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
+        try {
+            MulticastSubscriptionRequest request;
+            joynr::serializer::deserializeFromJson(request, message.getPayload());
+            operation = request.getSubscribeToName();
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "could not deserialize MulticastSubscriptionRequest - error {}",
+                            e.what());
+        }
     }
 
     if (operation.empty()) {
@@ -238,8 +249,10 @@ bool AccessController::needsPermissionCheck(const JoynrMessage& message)
     }
 
     std::string messageType = message.getType();
-    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY ||
-        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
+    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST ||
+        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION ||
+        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY ||
+        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
         // reply messages don't need permission check
         // they are filtered by request reply ID or subscritpion ID
         return false;
@@ -271,12 +284,6 @@ void AccessController::hasConsumerPermission(
 
         std::string domain = discoveryEntry.getDomain();
         std::string interfaceName = discoveryEntry.getInterfaceName();
-
-        // TODO: remove this shortcut used for system integration tests
-        if (interfaceName == "tests/test") {
-            callback->hasConsumerPermission(true);
-            return;
-        }
 
         // Create a callback object
         auto ldacCallback = std::make_shared<LdacConsumerPermissionCallback>(

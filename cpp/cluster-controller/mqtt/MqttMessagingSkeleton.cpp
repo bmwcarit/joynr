@@ -118,50 +118,51 @@ void MqttMessagingSkeleton::transmit(
 
 void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
 {
+    JoynrMessage msg;
     try {
-        JoynrMessage msg;
         joynr::serializer::deserializeFromJson(msg, message);
-
-        if (msg.getType().empty()) {
-            JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
-            return;
-        }
-        if (msg.getPayload().empty()) {
-            JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
-            return;
-        }
-        if (!msg.containsHeaderExpiryDate()) {
-            JOYNR_LOG_ERROR(logger,
-                            "received message [msgId=[{}] without decay time - dropping message",
-                            msg.getHeaderMessageId());
-            return;
-        }
-        JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", msg.toLogMessage());
-
-        const JoynrTimePoint maxAbsoluteTime = DispatcherUtils::getMaxAbsoluteTime();
-        JoynrTimePoint msgExpiryDate = msg.getHeaderExpiryDate();
-        std::int64_t maxDiff = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                       maxAbsoluteTime - msgExpiryDate).count();
-        if (static_cast<std::int64_t>(ttlUplift) > maxDiff) {
-            msg.setHeaderExpiryDate(maxAbsoluteTime);
-        } else {
-            JoynrTimePoint newExpiryDate = msgExpiryDate + std::chrono::milliseconds(ttlUplift);
-            msg.setHeaderExpiryDate(newExpiryDate);
-        }
-
-        auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "Incoming Message with ID {} could not be sent! reason: {}",
-                            msg.getHeaderMessageId(),
-                            e.getMessage());
-        };
-        transmit(msg, onFailure);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize message. Raw message: {} - error: {}",
                         message,
                         e.what());
     }
+
+    if (msg.getType().empty()) {
+        JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
+        return;
+    }
+    if (msg.getPayload().empty()) {
+        JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
+        return;
+    }
+    if (!msg.containsHeaderExpiryDate()) {
+        JOYNR_LOG_ERROR(logger,
+                        "received message [msgId=[{}] without decay time - dropping message",
+                        msg.getHeaderMessageId());
+        return;
+    }
+    JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", msg.toLogMessage());
+
+    const JoynrTimePoint maxAbsoluteTime = DispatcherUtils::getMaxAbsoluteTime();
+    JoynrTimePoint msgExpiryDate = msg.getHeaderExpiryDate();
+    std::int64_t maxDiff = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   maxAbsoluteTime - msgExpiryDate).count();
+    if (static_cast<std::int64_t>(ttlUplift) > maxDiff) {
+        msg.setHeaderExpiryDate(maxAbsoluteTime);
+    } else {
+        JoynrTimePoint newExpiryDate = msgExpiryDate + std::chrono::milliseconds(ttlUplift);
+        msg.setHeaderExpiryDate(newExpiryDate);
+    }
+
+    auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "Incoming Message with ID {} could not be sent! reason: {}",
+                        msg.getHeaderMessageId(),
+                        e.getMessage());
+    };
+
+    transmit(msg, onFailure);
 }
 
 } // namespace joynr

@@ -58,6 +58,7 @@ public:
     std::string uuid;
     std::string domainName;
     joynr::Semaphore semaphore;
+    joynr::DiscoveryQos discoveryQos;
 
     static joynr::Logger logger;
 

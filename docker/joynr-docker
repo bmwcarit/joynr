@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function usage
 {
     echo "usage: joynr-docker build | push | pull | remove [--repository mydockerrepo.org --version versionnumber --additionaltags|-a <comma-separated list of tags>]"

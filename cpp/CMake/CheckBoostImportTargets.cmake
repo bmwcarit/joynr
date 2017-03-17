@@ -33,3 +33,28 @@ if(NOT TARGET Boost::thread)
         INTERFACE_LINK_LIBRARIES Boost::system
     )
 endif(NOT TARGET Boost::thread)
+
+if(NOT TARGET Boost::regex)
+    if(Boost_REGEX_LIBRARY)
+        message(STATUS "Boost::regex target not defined. Creating IMPORTED target.")
+        message(STATUS "variable Boost_REGEX_LIBRARY=${Boost_REGEX_LIBRARY}")
+        add_library(Boost::regex SHARED IMPORTED GLOBAL)
+        set_target_properties(Boost::regex PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${Boost_REGEX_LIBRARY}"
+        )
+    endif(Boost_REGEX_LIBRARY)
+endif(NOT TARGET Boost::regex)
+
+if(NOT TARGET Boost::filesystem)
+    if(Boost_FILESYSTEM_LIBRARY)
+        message(STATUS "Boost::filesystem target not defined. Creating IMPORTED target.")
+        message(STATUS "variable Boost_FILESYSTEM_LIBRARY=${Boost_FILESYSTEM_LIBRARY}")
+        add_library(Boost::filesystem SHARED IMPORTED GLOBAL)
+        set_target_properties(Boost::filesystem PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${Boost_FILESYSTEM_LIBRARY}"
+            INTERFACE_LINK_LIBRARIES Boost::system
+        )
+    endif(Boost_FILESYSTEM_LIBRARY)
+endif(NOT TARGET Boost::filesystem)

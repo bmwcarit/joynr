@@ -105,6 +105,7 @@ protected:
              typename =  std::enable_if_t<std::is_same<U, CcMessageRouter>::value>>
     std::unique_ptr<CcMessageRouter> createMessageRouter()
     {
+        const std::string globalCcAddress("globalAddress");
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue>();
         messageQueue = messageQueueForMessageRouter.get();
 
@@ -114,6 +115,7 @@ protected:
                     std::unique_ptr<IPlatformSecurityManager>(),
                     singleThreadedIOService.getIOService(),
                     std::make_unique<MqttMulticastAddressCalculator>(globalTransport),
+                    globalCcAddress,
                     6,
                     std::move(messageQueueForMessageRouter)
                 );

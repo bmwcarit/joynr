@@ -48,12 +48,14 @@ JoynrMessageFactory::JoynrMessageFactory(std::uint64_t ttlUpliftMs)
 JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
                                                 const std::string& receiverId,
                                                 const MessagingQos& qos,
-                                                const Request& payload) const
+                                                const Request& payload,
+                                                bool isLocalMessage) const
 {
     // create message and set type
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
     msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getRequestReplyId());
+    msg.setLocalMessage(isLocalMessage);
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -73,10 +75,12 @@ JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
 JoynrMessage JoynrMessageFactory::createOneWayRequest(const std::string& senderId,
                                                       const std::string& receiverId,
                                                       const MessagingQos& qos,
-                                                      const OneWayRequest& payload) const
+                                                      const OneWayRequest& payload,
+                                                      bool isLocalMessage) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
+    msg.setLocalMessage(isLocalMessage);
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -109,14 +113,15 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionRequest(
-        const std::string& senderId,
-        const std::string& receiverId,
-        const MessagingQos& qos,
-        const SubscriptionRequest& payload) const
+JoynrMessage JoynrMessageFactory::createSubscriptionRequest(const std::string& senderId,
+                                                            const std::string& receiverId,
+                                                            const MessagingQos& qos,
+                                                            const SubscriptionRequest& payload,
+                                                            bool isLocalMessage) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
+    msg.setLocalMessage(isLocalMessage);
     msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
@@ -126,10 +131,12 @@ JoynrMessage JoynrMessageFactory::createMulticastSubscriptionRequest(
         const std::string& senderId,
         const std::string& receiverId,
         const MessagingQos& qos,
-        const MulticastSubscriptionRequest& payload) const
+        const MulticastSubscriptionRequest& payload,
+        bool isLocalMessage) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
+    msg.setLocalMessage(isLocalMessage);
     msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
@@ -139,10 +146,12 @@ JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
         const std::string& senderId,
         const std::string& receiverId,
         const MessagingQos& qos,
-        const BroadcastSubscriptionRequest& payload) const
+        const BroadcastSubscriptionRequest& payload,
+        bool isLocalMessage) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
+    msg.setLocalMessage(isLocalMessage);
     msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;

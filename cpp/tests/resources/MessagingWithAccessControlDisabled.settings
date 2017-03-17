@@ -1,0 +1,30 @@
+[messaging]
+broker-url=mqtt://localhost:1883
+
+# Set bounceproxy to mqtt:// to disable http.
+bounceproxy-url=mqtt://localhost:1883
+
+discovery-directories-domain=io.joynr
+
+# Capabilities-directory-url will be ignored if capabilities-directory-channelid is set to a json-serialized MqttAddress
+capabilities-directory-url=" "
+capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"tcp://localhost:1883","topic":"discoverydirectory_channelid"}
+capabilities-directory-participantid=capabilitiesdirectory_participantid
+
+create-channel-retry-interval=500
+send-msg-retry-interval=500
+index=0
+longpoll-retry-interval=5000
+delete-channel-retry-interval=5000
+persistence-file=joynr-systemintegrationtest2.settings
+
+[capabilitiesClient]
+fakeDomain=integrationDomain
+fakeInterfaceName=integrationInterfaceName
+fakeChannelId=somerandomChannelId1
+fakeParticipantId=Fake_ParticipantId
+
+[lib-joynr]
+participantids-persistence-file = joynr_participantIds2.persist
+message-router-persistence-file = message-router-persistence-file2.persist
+

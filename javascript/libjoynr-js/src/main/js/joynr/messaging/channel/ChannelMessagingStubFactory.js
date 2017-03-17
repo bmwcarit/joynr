@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,57 +17,60 @@
  * #L%
  */
 
-define(
-        "joynr/messaging/channel/ChannelMessagingStubFactory",
-        [ "joynr/messaging/channel/ChannelMessagingStub"
-        ],
-        function(ChannelMessagingStub) {
+define("joynr/messaging/channel/ChannelMessagingStubFactory", [
+    "joynr/util/Typing",
+    "joynr/messaging/channel/ChannelMessagingStub"
+], function(Typing, ChannelMessagingStub) {
 
-            /**
-             * @constructor
-             * @name ChannelMessagingStubFactory
-             *
-             * @param {Object} settings
-             * @param {ChannelMessagingSender|Object} settings.channelMessagingSender
-             * @param {MessageReplyToAddressCalculator} settings.messageReplyToAddressCalculator calculates the replyTo address
-             */
-            function ChannelMessagingStubFactory(settings) {
-                var globalAddress;
+    /**
+     * @constructor
+     * @name ChannelMessagingStubFactory
+     *
+     * @param {Object} settings
+     * @param {ChannelMessagingSender|Object} settings.channelMessagingSender
+     */
+    function ChannelMessagingStubFactory(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(
+                settings.channelMessagingSender,
+                "ChannelMessagingSender",
+                "channelMessagingSender");
+        var globalAddress;
 
-                /**
-                 * This method is called when the global address has been created
-                 *
-                 * @function
-                 * @name CapabilityDiscovery#globalAddressReady
-                 *
-                 * @param {Address}
-                 *            globalAddress the address used to register discovery entries globally
-                 */
-                this.globalAddressReady = function globalAddressReady(newGlobalAddress) {
-                    globalAddress = newGlobalAddress;
-                };
+        /**
+         * This method is called when the global address has been created
+         *
+         * @function
+         * @name CapabilityDiscovery#globalAddressReady
+         *
+         * @param {Address}
+         *            globalAddress the address used to register discovery entries globally
+         */
+        this.globalAddressReady = function globalAddressReady(newGlobalAddress) {
+            globalAddress = newGlobalAddress;
+        };
 
-                /**
-                 * @name ChannelMessagingStubFactory#build
-                 * @function
-                 *
-                 * @param {ChannelAddress} address the address to generate a messaging stub for
-                 */
-                this.build = function build(address) {
-                    if (!globalAddress) {
-                        var error = new Error("global channel address not yet set");
-                        error.delay = true;
-                        throw error;
-                    }
-                    return new ChannelMessagingStub({
-                        destinationChannelAddress : address,
-                        channelMessagingSender : settings.channelMessagingSender,
-                        myChannelAddress : globalAddress,
-                        messageReplyToAddressCalculator : settings.messageReplyToAddressCalculator
-                    });
-                };
+        /**
+         * @name ChannelMessagingStubFactory#build
+         * @function
+         *
+         * @param {ChannelAddress} address the address to generate a messaging stub for
+         */
+        this.build = function build(address) {
+            Typing.checkProperty(address, "ChannelAddress", "address");
+            if (!globalAddress) {
+                var error = new Error("global channel address not yet set");
+                error.delay = true;
+                throw error;
             }
+            return new ChannelMessagingStub({
+                destinationChannelAddress : address,
+                channelMessagingSender : settings.channelMessagingSender,
+                myChannelAddress : globalAddress
+            });
+        };
+    }
 
-            return ChannelMessagingStubFactory;
+    return ChannelMessagingStubFactory;
 
-        });
+});

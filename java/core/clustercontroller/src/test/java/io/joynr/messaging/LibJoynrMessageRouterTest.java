@@ -20,6 +20,7 @@ package io.joynr.messaging;
  */
 
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -28,9 +29,11 @@ import java.util.concurrent.TimeUnit;
 
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -39,7 +42,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.joynr.common.ExpiryDate;
 
-import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.JoynrMessage;
@@ -49,7 +52,7 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ChildMessageRouterTest {
+public class LibJoynrMessageRouterTest {
 
     @Mock
     IMessaging messagingStub;
@@ -73,31 +76,44 @@ public class ChildMessageRouterTest {
     private MulticastReceiverRegistry multicastReceiverRegistry;
 
     private JoynrMessage message;
-    private ChildMessageRouter messageRouter;
+    private LibJoynrMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
+    private String globalAddress = "global-address";
 
     @Before
     public void setUp() {
         message = new JoynrMessage();
         message.setExpirationDate(ExpiryDate.fromRelativeTtl(10000));
         message.setTo(unknownParticipantId);
-
-        messageRouter = new ChildMessageRouter(routingTable,
-                                               incomingAddress,
-                                               provideMessageSchedulerThreadPoolExecutor(),
-                                               sendMsgRetryIntervalMs,
-                                               messagingStubFactory,
-                                               messagingSkeletonFactory,
-                                               addressManager,
-                                               multicastReceiverRegistry);
-        messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
+        message.setLocalMessage(false);
+        message.setType(message.MESSAGE_TYPE_REQUEST);
 
         when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
         when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
+        when(messageRouterParent.getGlobalAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
-        when(parentAddress.getChannelId()).thenReturn("MessageRouterImplTestChannel");
+        when(parentAddress.getChannelId()).thenReturn("LibJoynrMessageRouterTestChannel");
 
+        messageRouter = new LibJoynrMessageRouter(routingTable,
+                                                  incomingAddress,
+                                                  provideMessageSchedulerThreadPoolExecutor(),
+                                                  sendMsgRetryIntervalMs,
+                                                  messagingStubFactory,
+                                                  messagingSkeletonFactory,
+                                                  addressManager,
+                                                  multicastReceiverRegistry);
+        messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
+    }
+
+    @Test
+    public void itSetsReplyTo() throws Exception {
+        // message that is a request and not directed to routing provider should get set replyTo
+        messageRouter.route(message);
+        Thread.sleep(100);
+        ArgumentCaptor<JoynrMessage> messageCaptor = ArgumentCaptor.forClass(JoynrMessage.class);
+        Mockito.verify(messagingStub).transmit(messageCaptor.capture(), any(FailureAction.class));
+        assertEquals(globalAddress, messageCaptor.getValue().getReplyTo());
     }
 
     @Test

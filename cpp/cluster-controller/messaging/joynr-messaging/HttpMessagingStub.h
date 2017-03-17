@@ -40,8 +40,7 @@ class HttpMessagingStub : public IMessaging
 {
 public:
     explicit HttpMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                               const system::RoutingTypes::ChannelAddress& destinationAddress,
-                               const std::string& globalClusterControllerAddress);
+                               const system::RoutingTypes::ChannelAddress& destinationAddress);
     ~HttpMessagingStub() override = default;
     void transmit(JoynrMessage& message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
@@ -51,7 +50,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingStub);
     std::shared_ptr<IMessageSender> messageSender;
     const system::RoutingTypes::ChannelAddress destinationAddress;
-    const std::string globalClusterControllerAddress;
 
     ADD_LOGGER(HttpMessagingStub);
 };

@@ -336,7 +336,8 @@ class MockMessageRouter : public joynr::AbstractMessageRouter {
 public:
     void invokeAddNextHopOnSuccessFct(const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            std::function<void()> onSuccess) {
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         if (onSuccess) {
             onSuccess();
         }
@@ -357,7 +358,7 @@ public:
     {
         EXPECT_CALL(
                 *this,
-                addNextHop(_,_,_)
+                addNextHop(_,_,_,_)
         )
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
         EXPECT_CALL(
@@ -367,7 +368,7 @@ public:
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeRemoveNextHopOnSuccessFct));
     }
 
-    MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, std::uint32_t tryCount));
+    MOCK_METHOD2(route, void(joynr::JoynrMessage& message, std::uint32_t tryCount));
 
     MOCK_METHOD6(registerMulticastReceiver, void(const std::string& multicastId,
                                                  const std::string& subscriberParticipantId,
@@ -376,10 +377,11 @@ public:
                                                  std::function<void()> onSuccess,
                                                  std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError));
 
-    MOCK_METHOD3(addNextHop, void(
+    MOCK_METHOD4(addNextHop, void(
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            std::function<void()> onSuccess));
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
     MOCK_METHOD3(removeNextHop, void(
             const std::string& participantId,
@@ -399,6 +401,8 @@ public:
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+
+    MOCK_METHOD1(queueMessage, void(const joynr::JoynrMessage& message));
 };
 
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {
@@ -409,24 +413,26 @@ public:
             void(joynr::IDispatcher* dispatcher)
     );
 
-    MOCK_METHOD5(
+    MOCK_METHOD6(
             sendRequest,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
                 const joynr::MessagingQos& qos,
                 const joynr::Request& request,
-                std::shared_ptr<joynr::IReplyCaller> callback
+                std::shared_ptr<joynr::IReplyCaller> callback,
+                bool isLocalMessage
             )
     );
     
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendOneWayRequest,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
                 const joynr::MessagingQos& qos,
-                const joynr::OneWayRequest& request
+                const joynr::OneWayRequest& request,
+                bool isLocalMessage
             )
     );
 
@@ -440,23 +446,25 @@ public:
             )
     );
 
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendSubscriptionRequest,
             void(
                 const std::string &senderParticipantId,
                 const std::string &receiverParticipantId,
                 const joynr::MessagingQos& qos,
-                const joynr::SubscriptionRequest& subscriptionRequest
+                const joynr::SubscriptionRequest& subscriptionRequest,
+                bool isLocalMessage
             )
     );
 
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendBroadcastSubscriptionRequest,
             void(
                 const std::string &senderParticipantId,
                 const std::string &receiverParticipantId,
                 const joynr::MessagingQos& qos,
-                const joynr::BroadcastSubscriptionRequest& subscriptionRequest
+                const joynr::BroadcastSubscriptionRequest& subscriptionRequest,
+                bool isLocalMessage
             )
     );
 
@@ -498,13 +506,14 @@ public:
             )
    );
 
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendMulticastSubscriptionRequest,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
                 const joynr::MessagingQos& qos,
-                const joynr::MulticastSubscriptionRequest& subscriptionRequest
+                const joynr::MulticastSubscriptionRequest& subscriptionRequest,
+                bool isLocalMessage
             )
     );
 
@@ -1017,8 +1026,8 @@ public:
     MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {
 
     }
-    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& authenticationToken));
-    MOCK_METHOD4(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue, const std::string& authenticationToken));
+    MOCK_METHOD2(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName));
+    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue));
 };
 
 class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter {

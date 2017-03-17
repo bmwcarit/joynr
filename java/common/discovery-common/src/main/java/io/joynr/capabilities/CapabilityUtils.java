@@ -59,7 +59,7 @@ public class CapabilityUtils {
                                   globalDiscoveryEntry.getInterfaceName(),
                                   globalDiscoveryEntry.getParticipantId(),
                                   globalDiscoveryEntry.getQos(),
-                                  System.currentTimeMillis(),
+                                  globalDiscoveryEntry.getLastSeenDateMs(),
                                   globalDiscoveryEntry.getExpiryDateMs(),
                                   globalDiscoveryEntry.getPublicKeyId());
     }
@@ -94,7 +94,7 @@ public class CapabilityUtils {
                                         discoveryEntry.getInterfaceName(),
                                         discoveryEntry.getParticipantId(),
                                         discoveryEntry.getQos(),
-                                        System.currentTimeMillis(),
+                                        discoveryEntry.getLastSeenDateMs(),
                                         discoveryEntry.getExpiryDateMs(),
                                         discoveryEntry.getPublicKeyId(),
                                         serializeAddress(globalAddress));

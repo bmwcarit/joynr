@@ -61,16 +61,14 @@ INIT_LOGGER(MqttMessagingStubFactoryTest);
 
 TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses) {
     auto mockMessageSender = std::make_shared<MockMessageSender>();
-    std::string receiveChannelId = "channelId";
-    MqttMessagingStubFactory factory(mockMessageSender, receiveChannelId);
+    MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_TRUE(factory.canCreate(mqttAddress));
 }
 
 TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses) {
     auto mockMessageSender = std::make_shared<MockMessageSender>();
-    std::string receiveChannelId = "channelId";
-    MqttMessagingStubFactory factory(mockMessageSender, receiveChannelId);
+    MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_FALSE(factory.canCreate(channelAddress));
     EXPECT_FALSE(factory.canCreate(commonApiDbusAddress));
@@ -81,8 +79,7 @@ TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses) {
 
 TEST_F(MqttMessagingStubFactoryTest, createReturnsMessagingStub) {
     auto mockMessageSender = std::make_shared<MockMessageSender>();
-    std::string receiveChannelId = "channelId";
-    MqttMessagingStubFactory factory(mockMessageSender, receiveChannelId);
+    MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_TRUE(factory.create(mqttAddress).get() != nullptr);
 }

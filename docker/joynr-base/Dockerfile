@@ -7,54 +7,54 @@ ENV REFRESHED_AT 2017-02-13
 # set timezone
 ###################################################
 RUN rm /etc/localtime \
-	&& ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+    && ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 
 ###################################################
 # install base packages
 ###################################################
 RUN dnf update -y \
-	&& dnf install -y \
-	autoconf \
-	automake \
-	cmake \
-        corkscrew \
-	dbus-x11 \
-	expat-devel \
-	file \
-	gcc-c++ \
-	gdb \
-	git \
-	glibc.i686 \
-	icecream \
-	libcurl \
-	libcurl-devel \
-	libstdc++.i686 \
-	libtool \
-	libxcb \
-	libxcb-devel \
-	libX11-devel \
-	libXi-devel \
-	libXrender-devel \
-	openssl \
-	openssl-devel \
-	patch \
-	perl-version \
-	tar \
-	unzip \
-	wget \
-	which \
-	xcb-util \
-	xcb-util-devel \
-	xcb-util-*-devel \
-	zlib.i686 \
-	java-1.8.0-openjdk \
-	xz \
-	maven \
-	hostname.x86_64 \
+    && dnf install -y \
+    autoconf \
+    automake \
+    cmake \
+    corkscrew \
+    dbus-x11 \
+    expat-devel \
+    file \
+    gcc-c++ \
+    gdb \
+    git \
+    glibc.i686 \
+    icecream \
+    libcurl \
+    libcurl-devel \
+    libstdc++.i686 \
+    libtool \
+    libxcb \
+    libxcb-devel \
+    libX11-devel \
+    libXi-devel \
+    libXrender-devel \
+    openssl \
+    openssl-devel \
+    patch \
+    perl-version \
+    tar \
+    unzip \
+    wget \
+    which \
+    xcb-util \
+    xcb-util-devel \
+    xcb-util-*-devel \
+    zlib.i686 \
+    java-1.8.0-openjdk \
+    xz \
+    maven \
+    hostname.x86_64 \
         clang \
         libcxx-devel \
-	&& dnf groupinstall -y 'Development Tools' \
-	&& dnf clean all
+    && dnf groupinstall -y 'Development Tools' \
+    && dnf clean all
 
 ###################################################
 # create data directories and volumes
@@ -83,6 +83,28 @@ RUN mkdir -p /data/ssl-data \
     && /data/scripts/gen-certificates.sh --configfile /tmp/openssl.cnf --destdir /data/ssl-data
 
 ###################################################
+# Install payara
+###################################################
+ENV PATH ${PATH}:/opt/payara41/glassfish/bin
+
+RUN wget --quiet -O /opt/payara-4.1.1.164.zip https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/Payara+4.1.1.164/payara-4.1.1.164.zip && \
+    unzip -qq /opt/payara-4.1.1.164.zip -d /opt && \
+    rm /opt/payara-4.1.1.164.zip
+
+RUN asadmin start-domain && \
+    asadmin --user admin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor && \
+    asadmin --user admin create-jdbc-connection-pool --datasourceclassname org.apache.derby.jdbc.ClientDataSource --restype javax.sql.XADataSource --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool && \
+    asadmin --user admin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS && \
+    asadmin --user admin create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS && \
+    asadmin --user admin set-log-levels io.joynr.messaging=FINE && \
+    asadmin --user admin set-log-levels io.joynr.dispatching=FINE && \
+    asadmin --user admin set-log-levels io.joynr.jeeintegration=FINE && \
+    asadmin --user admin set configs.config.server-config.network-config.network-listeners.network-listener.http-listener-1.enabled=false && \
+    asadmin --user admin stop-domain
+
+RUN chmod -R 777 /opt/payara41
+
+###################################################
 # install mosquitto mqtt broker
 ###################################################
 RUN dnf update -y \
@@ -104,9 +126,9 @@ RUN chmod +x /tini
 ###################################################
 ENV GOSU_VERSION=1.3
 RUN cd /tmp \
-	&& curl -o gosu -sSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
-	&& mv gosu /usr/local/bin/gosu \
-	&& chmod 755 /usr/local/bin/gosu
+    && curl -o gosu -sSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
+    && mv gosu /usr/local/bin/gosu \
+    && chmod 755 /usr/local/bin/gosu
 
 COPY scripts/boot2user.sh /data/scripts/boot2user.sh
 

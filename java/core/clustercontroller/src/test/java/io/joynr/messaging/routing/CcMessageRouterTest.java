@@ -27,6 +27,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.junit.Assert;
 
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,18 +35,21 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Named;
-
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import com.google.inject.util.Modules;
+
 import io.joynr.common.ExpiryDate;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
@@ -57,9 +61,13 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
+import io.joynr.messaging.routing.CcMessageRouter;
+import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.messaging.routing.TestGlobalAddressModule;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +75,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MessageRouterTest {
+public class CcMessageRouterTest {
 
     private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
     private final ChannelAddress channelAddress = new ChannelAddress("http://testUrl", channelId);
@@ -87,6 +95,7 @@ public class MessageRouterTest {
 
     private MessageRouter messageRouter;
     private JoynrMessage joynrMessage;
+    private String expectedReplyToAddress;
     protected String toParticipantId = "toParticipantId";
 
     @Before
@@ -100,7 +109,7 @@ public class MessageRouterTest {
 
             @Override
             protected void configure() {
-                bind(MessageRouter.class).to(MessageRouterImpl.class);
+                bind(MessageRouter.class).to(CcMessageRouter.class);
                 bind(RoutingTable.class).toInstance(routingTable);
                 bind(AddressManager.class).toInstance(addressManager);
                 bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();
@@ -128,6 +137,8 @@ public class MessageRouterTest {
                 routingTable.put(toParticipantId, channelAddress);
                 joynrMessage = new JoynrMessage();
                 joynrMessage.setTo(toParticipantId);
+                joynrMessage.setLocalMessage(true);
+                joynrMessage.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
             }
 
             @Provides
@@ -143,8 +154,17 @@ public class MessageRouterTest {
             }
         };
 
-        Injector injector = Guice.createInjector(mockModule);
+        Module testModule = Modules.override(mockModule).with(new TestGlobalAddressModule());
+
+        Injector injector = Guice.createInjector(testModule);
         messageRouter = injector.getInstance(MessageRouter.class);
+        GlobalAddressProvider globalAddressProvider = injector.getInstance(GlobalAddressProvider.class);
+        expectedReplyToAddress = RoutingTypesUtil.toAddressString(globalAddressProvider.get());
+    }
+
+    @Test
+    public void testReplyToAddress() throws Exception {
+        Assert.assertEquals(expectedReplyToAddress, ((CcMessageRouter) messageRouter).getReplyToAddress());
     }
 
     @Test

@@ -259,7 +259,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) 
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 }
 
-INSTANTIATE_TEST_CASE_P(Http,
+INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         End2EndSelectiveBroadcastTest,
         testing::Values(
             std::make_tuple(
@@ -269,12 +269,12 @@ INSTANTIATE_TEST_CASE_P(Http,
         )
 );
 
-INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+INSTANTIATE_TEST_CASE_P(Mqtt,
         End2EndSelectiveBroadcastTest,
         testing::Values(
             std::make_tuple(
-                "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings",
-                "test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+                "test-resources/MqttSystemIntegrationTest1.settings",
+                "test-resources/MqttSystemIntegrationTest2.settings"
             )
         )
 );

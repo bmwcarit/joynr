@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,96 +18,33 @@
  */
 #include "joynr/LocalDiscoveryAggregator.h"
 
-#include <utility>
 #include <chrono>
 #include <limits>
+#include <utility>
 
+#include "joynr/Future.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/IRequestCallerDirectory.h"
-#include "joynr/SystemServicesSettings.h"
-#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
-
-#include "joynr/MessagingSettings.h"
-#include "joynr/types/ProviderQos.h"
 #include "joynr/types/DiscoveryEntry.h"
-#include "joynr/types/Version.h"
-#include "joynr/system/IRouting.h"
-#include "joynr/system/IDiscovery.h"
-#include "joynr/CapabilityUtils.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
 
 LocalDiscoveryAggregator::LocalDiscoveryAggregator(
-        const SystemServicesSettings& systemServicesSettings,
-        const MessagingSettings& messagingSettings,
-        bool provisionClusterControllerDiscoveryEntries)
-        : discoveryProxy(), provisionedDiscoveryEntries()
+        std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> provisionedDiscoveryEntries)
+        : discoveryProxy(), provisionedDiscoveryEntries(std::move(provisionedDiscoveryEntries))
 {
-    std::int64_t lastSeenDateMs = 0;
-    std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    std::string defaultPublicKeyId("");
-
-    joynr::types::Version routingProviderVersion(
-            joynr::system::IRouting::MAJOR_VERSION, joynr::system::IRouting::MINOR_VERSION);
-    joynr::types::Version discoveryProviderVersion(
-            joynr::system::IDiscovery::MAJOR_VERSION, joynr::system::IDiscovery::MINOR_VERSION);
-    joynr::types::DiscoveryEntryWithMetaInfo routingProviderDiscoveryEntry(
-            routingProviderVersion,
-            systemServicesSettings.getDomain(),
-            joynr::system::IRouting::INTERFACE_NAME(),
-            systemServicesSettings.getCcRoutingProviderParticipantId(),
-            joynr::types::ProviderQos(),
-            lastSeenDateMs,
-            expiryDateMs,
-            defaultPublicKeyId,
-            true);
-    provisionedDiscoveryEntries.insert(std::make_pair(
-            routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
-    joynr::types::DiscoveryEntryWithMetaInfo discoveryProviderDiscoveryEntry(
-            discoveryProviderVersion,
-            systemServicesSettings.getDomain(),
-            joynr::system::IDiscovery::INTERFACE_NAME(),
-            systemServicesSettings.getCcDiscoveryProviderParticipantId(),
-            joynr::types::ProviderQos(),
-            lastSeenDateMs,
-            expiryDateMs,
-            defaultPublicKeyId,
-            true);
-    provisionedDiscoveryEntries.insert(std::make_pair(
-            discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
-
-    if (provisionClusterControllerDiscoveryEntries) {
-        // setting up the provisioned values for GlobalCapabilitiesClient
-        // The GlobalCapabilitiesServer is also provisioned in MessageRouter
-        types::ProviderQos capabilityProviderQos;
-        capabilityProviderQos.setPriority(1);
-        types::Version capabilityProviderVersion(
-                infrastructure::IGlobalCapabilitiesDirectory::MAJOR_VERSION,
-                infrastructure::IGlobalCapabilitiesDirectory::MINOR_VERSION);
-        provisionedDiscoveryEntries.insert(std::make_pair(
-                messagingSettings.getCapabilitiesDirectoryParticipantId(),
-                types::DiscoveryEntryWithMetaInfo(
-                        capabilityProviderVersion,
-                        messagingSettings.getDiscoveryDirectoriesDomain(),
-                        infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
-                        messagingSettings.getCapabilitiesDirectoryParticipantId(),
-                        capabilityProviderQos,
-                        lastSeenDateMs,
-                        expiryDateMs,
-                        defaultPublicKeyId,
-                        false)));
-    }
 }
 
-void LocalDiscoveryAggregator::setDiscoveryProxy(
-        std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy)
+void LocalDiscoveryAggregator::setDiscoveryProxy(std::unique_ptr<IDiscoveryAsync> discoveryProxy)
 {
     this->discoveryProxy = std::move(discoveryProxy);
 }
 
-// inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discoveryEntry)
+std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
+        const types::DiscoveryEntry& discoveryEntry,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
     if (!discoveryProxy) {
         throw exceptions::JoynrRuntimeException(
@@ -115,49 +52,63 @@ void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discovery
                 "local capabilitites directory.");
     }
 
-    discoveryProxy->add(discoveryEntry);
+    return discoveryProxy->addAsync(
+            discoveryEntry, std::move(onSuccess), std::move(onRuntimeError));
 }
 
-// inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result,
-                                      const std::vector<std::string>& domains,
-                                      const std::string& interfaceName,
-                                      const joynr::types::DiscoveryQos& discoveryQos)
+std::shared_ptr<joynr::Future<std::vector<types::DiscoveryEntryWithMetaInfo>>>
+LocalDiscoveryAggregator::lookupAsync(
+        const std::vector<std::string>& domains,
+        const std::string& interfaceName,
+        const types::DiscoveryQos& discoveryQos,
+        std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
     if (!discoveryProxy) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
     }
-    discoveryProxy->lookup(result, domains, interfaceName, discoveryQos);
+    return discoveryProxy->lookupAsync(
+            domains, interfaceName, discoveryQos, std::move(onSuccess), std::move(onRuntimeError));
 }
 
-// inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntryWithMetaInfo& result,
-                                      const std::string& participantId)
+std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscoveryAggregator::
+        lookupAsync(const std::string& participantId,
+                    std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess,
+                    std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
     auto entry = provisionedDiscoveryEntries.find(participantId);
-    if (entry != provisionedDiscoveryEntries.end()) {
-        result = entry->second;
+    if (entry != provisionedDiscoveryEntries.cend()) {
+        if (onSuccess) {
+            onSuccess(entry->second);
+        }
+        auto future = std::make_shared<joynr::Future<types::DiscoveryEntryWithMetaInfo>>();
+        future->onSuccess(entry->second);
+        return future;
     } else {
         if (!discoveryProxy) {
             throw exceptions::JoynrRuntimeException(
                     "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                     "local capabilitites directory.");
         }
-        discoveryProxy->lookup(result, participantId);
+        return discoveryProxy->lookupAsync(
+                participantId, std::move(onSuccess), std::move(onRuntimeError));
     }
 }
 
-// inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::remove(const std::string& participantId)
+std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::removeAsync(
+        const std::string& participantId,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
     if (!discoveryProxy) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
     }
-    discoveryProxy->remove(participantId);
+    return discoveryProxy->removeAsync(
+            participantId, std::move(onSuccess), std::move(onRuntimeError));
 }
 
 } // namespace joynr

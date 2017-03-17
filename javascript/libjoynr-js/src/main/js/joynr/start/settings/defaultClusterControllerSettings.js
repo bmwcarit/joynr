@@ -53,9 +53,9 @@ define("joynr/start/settings/defaultClusterControllerSettings", [
                     expiryDateMs : Util.getMaxLongValue(),
                     publicKeyId : "",
                     address : JSON.stringify({
-                        _typeName : "joynr.system.RoutingTypes.ChannelAddress",
-                        channelId : defaultSettings.discoveryChannel,
-                        messagingEndpointUrl : defaultSettings.getDefaultDiscoveryChannelUrl()
+                        _typeName : "joynr.system.RoutingTypes.MqttAddress",
+                        topic : defaultSettings.discoveryChannel,
+                        brokerUri : settings.brokerUri
                     })
                 };
 

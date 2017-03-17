@@ -154,9 +154,9 @@ LocalDomainAccessController::LocalDomainAccessController(
 }
 
 void LocalDomainAccessController::init(
-        std::shared_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
+        std::unique_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
 {
-    this->globalDomainAccessControllerProxy = globalDomainAccessControllerProxy;
+    this->globalDomainAccessControllerProxy = std::move(globalDomainAccessControllerProxy);
 }
 
 void LocalDomainAccessController::init(std::shared_ptr<GlobalDomainAccessControlListEditorProxy>
@@ -292,7 +292,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateMasterAccessControlEntry(
         const MasterAccessControlEntry& updatedMasterAce)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControlListEditorProxy->updateMasterAccessControlEntry(
             success, updatedMasterAce);
 
@@ -304,7 +304,7 @@ bool LocalDomainAccessController::removeMasterAccessControlEntry(const std::stri
                                                                  const std::string& interfaceName,
                                                                  const std::string& operation)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControlListEditorProxy->removeMasterAccessControlEntry(
             success, uid, domain, interfaceName, operation);
 
@@ -333,7 +333,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateMediatorAccessControlEntry(
         const MasterAccessControlEntry& updatedMediatorAce)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControlListEditorProxy->updateMediatorAccessControlEntry(
             success, updatedMediatorAce);
 
@@ -345,7 +345,7 @@ bool LocalDomainAccessController::removeMediatorAccessControlEntry(const std::st
                                                                    const std::string& interfaceName,
                                                                    const std::string& operation)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControlListEditorProxy->removeMediatorAccessControlEntry(
             success, uid, domain, interfaceName, operation);
 
@@ -374,7 +374,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateOwnerAccessControlEntry(
         const OwnerAccessControlEntry& updatedOwnerAce)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControlListEditorProxy->updateOwnerAccessControlEntry(
             success, updatedOwnerAce);
 
@@ -386,7 +386,7 @@ bool LocalDomainAccessController::removeOwnerAccessControlEntry(const std::strin
                                                                 const std::string& interfaceName,
                                                                 const std::string& operation)
 {
-    bool success;
+    bool success = false;
     globalDomainAccessControlListEditorProxy->removeOwnerAccessControlEntry(
             success, uid, domain, interfaceName, operation);
 

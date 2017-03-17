@@ -236,6 +236,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         if (providerRuntime != null) {
             providerRuntime.unregisterProvider(domain, provider);
             providerRuntime.unregisterProvider(domainAsync, provider);
+            // wait grace period for the unregister (remove) message to get
+            // sent to global discovery
+            Thread.sleep(1000);
             providerRuntime.shutdown(true);
         }
         if (consumerRuntime != null) {

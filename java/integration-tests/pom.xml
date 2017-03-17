@@ -123,6 +123,13 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 		<!-- This dependency is needed to ensure the correct build order.
 			Some artifacts is needed by the maven-dependency-plugin, which
 			copies them to the currrent build directory.

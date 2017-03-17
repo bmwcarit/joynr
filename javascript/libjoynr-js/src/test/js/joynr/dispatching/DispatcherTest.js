@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ define(
 
             var providerId = "providerId";
             var proxyId = "proxyId";
-            var toDiscoveryEntry;
+            var toDiscoveryEntry, globalToDiscoveryEntry;
 
             describe(
                     "libjoynr-js.joynr.dispatching.Dispatcher",
@@ -105,6 +105,8 @@ define(
                                 publicKeyId : "publicKeyId",
                                 isLocal : true
                             });
+                            globalToDiscoveryEntry = new DiscoveryEntryWithMetaInfo(toDiscoveryEntry);
+                            globalToDiscoveryEntry.isLocal = false;
                             requestReplyManager = jasmine.createSpyObj("RequestReplyManager", [
                                 "handleOneWayRequest",
                                 "handleRequest",
@@ -455,6 +457,87 @@ define(
                                         subscriptionId : "subscriptionId"
                                     }), JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
                                 });
+
+                        function setsIsLocalMessageInSubscriptionRequest(subscriptionRequest, sendMethod) {
+                            var sentMessage;
+                            var messagingQos = new MessagingQos();
+
+                            sendMethod({
+                                from : "from",
+                                toDiscoveryEntry : toDiscoveryEntry,
+                                messagingQos : messagingQos,
+                                subscriptionRequest : subscriptionRequest
+                            });
+                            expect(clusterControllerMessagingStub.transmit)
+                                    .toHaveBeenCalled();
+                            sentMessage = clusterControllerMessagingStub.transmit.calls
+                                        .mostRecent().args[0];
+                            expect(sentMessage.isLocalMessage).toEqual(true);
+
+                            sendMethod({
+                                from : "from",
+                                toDiscoveryEntry : globalToDiscoveryEntry,
+                                messagingQos : messagingQos,
+                                subscriptionRequest : subscriptionRequest
+                            });
+                            expect(clusterControllerMessagingStub.transmit)
+                                    .toHaveBeenCalled();
+                            sentMessage = clusterControllerMessagingStub.transmit.calls
+                                        .mostRecent().args[0];
+                            expect(sentMessage.isLocalMessage).toEqual(false);
+                        }
+
+                        it("sets isLocalMessage in request messages", function(done) {
+                            var sentMessage;
+                            var messagingQos = new MessagingQos();
+
+                            var request = new Request({
+                                methodName : "methodName"
+                            });
+                            dispatcher.sendRequest({
+                                from : "from",
+                                toDiscoveryEntry : toDiscoveryEntry,
+                                messagingQos : messagingQos,
+                                request : request
+                            });
+                            expect(clusterControllerMessagingStub.transmit)
+                                    .toHaveBeenCalled();
+                            sentMessage = clusterControllerMessagingStub.transmit.calls
+                                        .mostRecent().args[0];
+                            expect(sentMessage.isLocalMessage).toEqual(true);
+
+                            dispatcher.sendRequest({
+                                from : "from",
+                                toDiscoveryEntry : globalToDiscoveryEntry,
+                                messagingQos : messagingQos,
+                                request : request
+                            });
+                            expect(clusterControllerMessagingStub.transmit)
+                                    .toHaveBeenCalled();
+                            sentMessage = clusterControllerMessagingStub.transmit.calls
+                                        .mostRecent().args[0];
+                            expect(sentMessage.isLocalMessage).toEqual(false);
+
+                            done();
+                        });
+
+                        it("sets isLocalMessage in subscription request messages", function(done) {
+                            var subscriptionRequestPayload = {
+                                subscribedToName : "subscribeToName",
+                                subscriptionId : subscriptionId
+                            };
+                            var subscriptionRequest = new SubscriptionRequest(subscriptionRequestPayload);
+                            setsIsLocalMessageInSubscriptionRequest(subscriptionRequest, dispatcher.sendSubscriptionRequest);
+
+                            var broadcastSubscriptionRequest = new BroadcastSubscriptionRequest(subscriptionRequestPayload);
+                            setsIsLocalMessageInSubscriptionRequest(broadcastSubscriptionRequest, dispatcher.sendBroadcastSubscriptionRequest);
+
+                            subscriptionRequestPayload.multicastId = multicastId;
+                            var multicastSubscriptionRequest = new MulticastSubscriptionRequest(subscriptionRequestPayload);
+                            setsIsLocalMessageInSubscriptionRequest(multicastSubscriptionRequest, dispatcher.sendBroadcastSubscriptionRequest);
+
+                            done();
+                        });
 
                         it(
                                 "enriches requests with custom headers",

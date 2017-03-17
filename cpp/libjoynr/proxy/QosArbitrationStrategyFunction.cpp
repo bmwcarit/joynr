@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
  * #L%
  */
 #include "joynr/QosArbitrationStrategyFunction.h"
+
+#include <sstream>
 
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/DiscoveryQos.h"
@@ -36,13 +38,13 @@ types::DiscoveryEntryWithMetaInfo QosArbitrationStrategyFunction::select(
 {
     std::ignore = customParameters;
     auto selectedDiscoveryEntryIt = discoveryEntries.cend();
-    std::int64_t highestPriority = -1;
+    std::int64_t highestPriority = types::ProviderQos().getPriority(); // get default value
 
     for (auto it = discoveryEntries.cbegin(); it != discoveryEntries.cend(); ++it) {
         types::ProviderQos providerQos = it->getQos();
         JOYNR_LOG_TRACE(logger, "Looping over discoveryEntry: {}", it->toString());
 
-        if (providerQos.getPriority() > highestPriority) {
+        if (providerQos.getPriority() >= highestPriority) {
             selectedDiscoveryEntryIt = it;
             JOYNR_LOG_TRACE(logger,
                             "setting selectedParticipantId to {}",
@@ -52,11 +54,11 @@ types::DiscoveryEntryWithMetaInfo QosArbitrationStrategyFunction::select(
     }
 
     if (selectedDiscoveryEntryIt == discoveryEntries.cend()) {
-        std::string errorMsg;
-        errorMsg = "There was more than one entries in capabilitiesEntries, but none of the "
-                   "compatible entries had a priority > -1";
-        JOYNR_LOG_WARN(logger, errorMsg);
-        throw exceptions::DiscoveryException(errorMsg);
+        std::stringstream errorMsg;
+        errorMsg << "There was more than one entry in capabilitiesEntries, but none of the "
+                    "compatible entries had a priority >= " << types::ProviderQos().getPriority();
+        JOYNR_LOG_WARN(logger, errorMsg.str());
+        throw exceptions::DiscoveryException(errorMsg.str());
     }
 
     return *selectedDiscoveryEntryIt;
