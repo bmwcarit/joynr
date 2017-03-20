@@ -23,7 +23,10 @@
 * **[Java]** Added properties (`PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC`,
   `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC` and `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`) to
   configure the MQTT connection. See [JavaSettings](JavaSettings.md) for more information.
-* moved to muesli 0.3.1 for serialization of boost::multi_index containers
+* **[C++]** Moved to muesli 0.3.1 for serialization of boost::multi_index containers
+* **[Java]** Allow to set prefixes of Mqtt topics, see [JavaSettings](JavaSettings.md).
+* **[C++]** Allow to set prefixes of Mqtt topics in cluster-controller settings:
+  `mqtt-multicast-topic-prefix` and `mqtt-unicast-topic-prefix`
 * **[Java]** Added property (`PROPERTY_ACCESSCONTROL_ENABLE`) to enable access control checks.
   See [JavaSettings](JavaSettings.md) for more information.
 
