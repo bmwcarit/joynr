@@ -46,6 +46,8 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID = "joynr.messaging.domainaccesscontrollerparticipantid";
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID = "joynr.messaging.domainaccesscontrollerchannelid";
+    public static final String PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID = "joynr.messaging.domainaccesscontrollisteditorparticipantid";
+    public static final String PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID = "joynr.messaging.domainrolecontrollerparticipantid";
 
     public static final String PROPERTY_CREATE_CHANNEL_RETRY_INTERVAL_MS = "joynr.messaging.createchannelretryintervalms";
     public static final String PROPERTY_DELETE_CHANNEL_RETRY_INTERVAL_MS = "joynr.messaging.deletechannelretryintervalms";
