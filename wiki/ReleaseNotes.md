@@ -19,6 +19,7 @@
 * **[Java]** Added properties (`PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC`,
   `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC` and `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`) to
   configure the MQTT connection. See [JavaSettings](JavaSettings.md) for more information.
+* moved to muesli 0.3.1 for serialization of boost::multi_index containers
 
 # joynr 0.23.2
 
