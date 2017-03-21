@@ -221,6 +221,11 @@ if(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
     set(JOYNR_SERVER_HTTP_PORT "8080")
 endif(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
 
+if(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
+    set(JOYNR_SERVER_MQTT_PORT "1883")
+endif(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-consumer.settings)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.messaging.settings)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.mqtt.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.mqtt.messaging.settings)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.http.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.http.messaging.settings)

@@ -12,7 +12,7 @@ max-ttl-ms=2592000000
 # discoverable anymore. # 86400000 = 1 day in millisecond.
 discovery-entry-expiry-interval-ms=86400000
 
-broker-url=mqtt://localhost:1883/
+broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
 
 discovery-directories-domain=io.joynr
 # TTL in msecs of messages used in communication between local discovery service and backend
@@ -23,8 +23,8 @@ discovery-directories-domain=io.joynr
 # 1814400000 = 21 days
 discovery-messages-ttl=1814400000
 
-capabilities-directory-url=http://localhost:8383/discovery/channels/
-capabilities-directory-channelid=discoverydirectory_channelid
+capabilities-directory-url=" "
+capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"tcp://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
 # Time span in seconds after which the mqtt broker will send a PING message to the client
