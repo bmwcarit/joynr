@@ -20,7 +20,6 @@ package io.joynr.jeeintegration.messaging;
  */
 
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_ADDRESS;
-import static io.joynr.jeeintegration.messaging.SharedSubscriptionReplyToAddressCalculatorProvider.REPLYTO_PREFIX;
 
 import static java.lang.String.format;
 
@@ -42,6 +41,7 @@ import joynr.system.RoutingTypes.MqttAddress;
  */
 public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkeleton {
 
+    public static final String REPLYTO_PREFIX = "replyto/";
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
     private String channelId;
     private String receiverId;

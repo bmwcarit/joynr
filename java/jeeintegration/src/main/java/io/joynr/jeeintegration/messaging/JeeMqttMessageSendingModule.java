@@ -32,7 +32,6 @@ import io.joynr.messaging.mqtt.DefaultMqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
-import io.joynr.messaging.mqtt.MqttMessageReplyToAddressCalculator;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
 import io.joynr.messaging.mqtt.MqttMulticastAddressCalculator;
@@ -96,7 +95,6 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
 
         bind(MqttClientFactory.class).to(MqttPahoClientFactory.class);
-        bind(MqttMessageReplyToAddressCalculator.class).toProvider(SharedSubscriptionReplyToAddressCalculatorProvider.class);
         bind(MqttClientIdProvider.class).to(DefaultMqttClientIdProvider.class);
 
         Multibinder<MulticastAddressCalculator> multicastAddressCalculators = Multibinder.newSetBinder(binder(),
