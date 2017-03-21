@@ -41,7 +41,7 @@ RUN cd /opt \
 RUN cd /opt \
     && git clone https://github.com/bmwcarit/muesli.git \
     && cd muesli \
-    && git checkout 0.2.0 \
+    && git checkout 0.3.1 \
     && mkdir build \
     && cd build \
     && cmake -DBUILD_MUESLI_TESTS=Off -DUSE_PLATFORM_RAPIDJSON=On .. \

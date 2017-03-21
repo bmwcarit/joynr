@@ -124,6 +124,7 @@ protected:
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
+    void queueMessage(const JoynrMessage& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);

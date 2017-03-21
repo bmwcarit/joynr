@@ -151,8 +151,7 @@ void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
         }
 
         // save the message for later delivery
-        messageQueue->queueMessage(message);
-        JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+        queueMessage(message);
 
         // and try to resolve destination address via parent message router
         std::lock_guard<std::mutex> lock(parentResolveMutex);
@@ -261,12 +260,13 @@ void LibJoynrMessageRouter::addNextHopToParent(
 
 void LibJoynrMessageRouter::addNextHop(
         const std::string& participantId,
-        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-        std::function<void()> onSuccess)
+        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    addToRoutingTable(participantId, inprocessAddress);
-    addNextHopToParent(participantId, onSuccess);
-    sendMessages(participantId, inprocessAddress);
+    addToRoutingTable(participantId, address);
+    addNextHopToParent(participantId, std::move(onSuccess), std::move(onError));
+    sendMessages(participantId, address);
 }
 
 void LibJoynrMessageRouter::removeNextHop(

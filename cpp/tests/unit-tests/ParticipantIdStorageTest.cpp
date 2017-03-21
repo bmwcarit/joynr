@@ -44,8 +44,7 @@ TEST_F(ParticipantIdStorageTest, defaultProviderParticipantId)
 
     std::string participantId = store.getProviderParticipantId("domain.myDomain",
                                                            "interface.mytest",
-                                                           "defaultParticipantId",
-                                                           "myauthtoken");
+                                                           "defaultParticipantId");
     ASSERT_EQ(std::string("defaultParticipantId"), participantId);
 }
 
@@ -56,8 +55,7 @@ TEST_F(ParticipantIdStorageTest, newProviderParticipantId)
     ParticipantIdStorage store(storageFile);
     std::string participantId = store.getProviderParticipantId("domain.myDomain",
                                                            "interface.mytest",
-                                                           std::string(),
-                                                           "myauthtoken");
+                                                           std::string());
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 32);
 }
@@ -70,8 +68,7 @@ TEST_F(ParticipantIdStorageTest, persistedProviderParticipantId)
         ParticipantIdStorage store(storageFile);
         participantId = store.getProviderParticipantId("domain.myDomain",
                                                        "interface.mytest",
-                                                       "persistMe",
-                                                       "myauthtoken");
+                                                       "persistMe");
         ASSERT_EQ(std::string("persistMe"), participantId);
     }
 
@@ -81,8 +78,7 @@ TEST_F(ParticipantIdStorageTest, persistedProviderParticipantId)
     // Check that the setting was persisted
     participantId = store.getProviderParticipantId("domain.myDomain",
                                                    "interface.mytest",
-                                                   std::string(),
-                                                   "myauthtoken");
+                                                   std::string());
 
     ASSERT_EQ(std::string("persistMe"), participantId);
 }

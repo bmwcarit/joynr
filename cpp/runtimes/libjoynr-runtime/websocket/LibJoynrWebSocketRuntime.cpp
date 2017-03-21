@@ -42,9 +42,6 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> set
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 {
-    // reset receive callback to remove last reference to MessageRouter in
-    // WebSocketLibJoynrMessagingSkeleton
-    websocket->registerReceiveCallback(nullptr);
     websocket->close();
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now
@@ -164,7 +161,7 @@ void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
         std::shared_ptr<IMessageRouter> messageRouter)
 {
     auto wsLibJoynrMessagingSkeleton =
-            std::make_shared<WebSocketLibJoynrMessagingSkeleton>(std::move(messageRouter));
+            std::make_shared<WebSocketLibJoynrMessagingSkeleton>(util::as_weak_ptr(messageRouter));
     websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](const std::string& msg) {
         wsLibJoynrMessagingSkeleton->onMessageReceived(msg);
     });

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 #include "joynr/ClusterControllerSettings.h"
 
 #include "joynr/Settings.h"
-#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -41,6 +40,11 @@ void ClusterControllerSettings::checkSettings()
     }
     if (!settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX())) {
         setMqttClientIdPrefix(DEFAULT_MQTT_CLIENT_ID_PREFIX());
+    }
+
+    if (!settings.contains(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME())) {
+        setLocalDomainAccessStorePersistenceFilename(
+                DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
     }
 }
 
@@ -199,6 +203,30 @@ bool ClusterControllerSettings::isMqttTlsEnabled() const
            isMqttPrivateKeyPemFilenameSet();
 }
 
+const std::string& ClusterControllerSettings::
+        DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME()
+{
+    static const std::string value("LocalDomainAccessStore.persist");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::
+        SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME()
+{
+    static const std::string value("cluster-controller/local-domain-access-store-persistence-file");
+    return value;
+}
+std::string ClusterControllerSettings::getLocalDomainAccessStorePersistenceFilename() const
+{
+    return settings.get<std::string>(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
+}
+
+void ClusterControllerSettings::setLocalDomainAccessStorePersistenceFilename(
+        const std::string& filename)
+{
+    settings.set(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(), filename);
+}
+
 void ClusterControllerSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger,
@@ -249,6 +277,11 @@ void ClusterControllerSettings::printSettings() const
     } else {
         JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
     }
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(),
+                    getLocalDomainAccessStorePersistenceFilename());
 }
 
 } // namespace joynr

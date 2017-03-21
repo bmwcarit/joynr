@@ -74,7 +74,7 @@ Firefox):
 * Provider: http://localhost:8080/provider.html
 * Consumer: http://localhost:8080/consumer.html
 
-##Provisioning
+## Provisioning
 joynr provides four different joynr runtimes:
 
 * WebSocket libjoynr runtime: communicates

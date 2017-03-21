@@ -95,9 +95,7 @@ class AccessControllerTest : public ::testing::Test {
 public:
     AccessControllerTest() :
         singleThreadedIOService(),
-        localDomainAccessControllerMock(std::make_unique<LocalDomainAccessStore>(
-                        true // start with clean database
-        )),
+        localDomainAccessControllerMock(std::make_unique<LocalDomainAccessStore>()),
         accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
         settings(),
         messagingSettingsMock(settings),

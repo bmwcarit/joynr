@@ -1,0 +1,51 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package system
+
+interface MessageNotification {
+
+	version {major 0 minor 1}
+
+	<**
+		@description: Event that is fired when the cluster controller
+			receives a message for a known recipient, but cannot deliver it
+			to the recipient due to not being able to create a messaging stub.
+			The interface provider offers a participant ID filter as well as
+			a message type filter for this selective broadcast.
+			The participant ID filter filters events based on whether the recipient of the queued
+			message matches the specified participant ID or does no filtering if this
+			parameter is not set.
+			The message type filter filters events based on whether the type of the queued
+			message matches the specified message type or does no filtering if this
+			parameter is not set.
+		@param: participantId (String) filter parameter that
+			is used by the recipient filter and defines
+			the joynr participant of interest
+		@param: messageType (String) filter parameter that
+			is used by the recipient filter and defines
+			the joynr message type of interest
+	**>
+	broadcast messageQueuedForDelivery selective {
+		out {
+			String participantId
+			String messageType
+		}
+	}
+}
+

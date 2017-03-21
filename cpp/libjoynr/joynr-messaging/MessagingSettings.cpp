@@ -105,13 +105,13 @@ const std::string& MessagingSettings::SETTING_MQTT_RECONNECT_SLEEP_TIME()
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT()
+const std::string& MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()
 {
-    static const std::string value("messaging/mqtt-connection-timeout");
+    static const std::string value("messaging/mqtt-connection-timeout-ms");
     return value;
 }
 
-std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT()
+std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS()
 {
     static const std::chrono::milliseconds value(1000);
     return value;
@@ -414,7 +414,8 @@ void MessagingSettings::setMqttReconnectSleepTime(std::chrono::milliseconds mqtt
 
 std::chrono::milliseconds MessagingSettings::getMqttConnectionTimeout() const
 {
-    return std::chrono::milliseconds(settings.get<std::int64_t>(SETTING_MQTT_CONNECTION_TIMEOUT()));
+    return std::chrono::milliseconds(
+            settings.get<std::int64_t>(SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
 }
 
 std::int64_t MessagingSettings::getIndex() const
@@ -659,8 +660,9 @@ void MessagingSettings::checkSettings()
         settings.set(
                 SETTING_MQTT_RECONNECT_SLEEP_TIME(), DEFAULT_MQTT_RECONNECT_SLEEP_TIME().count());
     }
-    if (!settings.contains(SETTING_MQTT_CONNECTION_TIMEOUT())) {
-        settings.set(SETTING_MQTT_CONNECTION_TIMEOUT(), DEFAULT_MQTT_CONNECTION_TIMEOUT().count());
+    if (!settings.contains(SETTING_MQTT_CONNECTION_TIMEOUT_MS())) {
+        settings.set(
+                SETTING_MQTT_CONNECTION_TIMEOUT_MS(), DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
     }
     if (!settings.contains(SETTING_INDEX())) {
         settings.set(SETTING_INDEX(), 0);

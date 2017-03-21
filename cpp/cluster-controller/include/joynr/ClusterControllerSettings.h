@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,11 @@
 #ifndef CLUSTERCONTROLLERSETTINGS_H
 #define CLUSTERCONTROLLERSETTINGS_H
 
+#include <cstdint>
+#include <string>
+
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-
-#include <string>
 
 namespace joynr
 {
@@ -39,10 +40,12 @@ public:
     static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME();
     static const std::string& SETTING_MQTT_CERTIFICATE_PEM_FILENAME();
     static const std::string& SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME();
+    static const std::string& SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
 
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
     static const std::string& DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_MQTT_CLIENT_ID_PREFIX();
+    static const std::string& DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
 
     explicit ClusterControllerSettings(Settings& settings);
     ClusterControllerSettings(const ClusterControllerSettings&) = default;
@@ -75,6 +78,9 @@ public:
     std::string getMqttPrivateKeyPemFilename() const;
 
     bool isMqttTlsEnabled() const;
+
+    std::string getLocalDomainAccessStorePersistenceFilename() const;
+    void setLocalDomainAccessStorePersistenceFilename(const std::string& filename);
 
     void printSettings() const;
 

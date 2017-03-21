@@ -65,6 +65,9 @@ LibJoynrRuntime::~LibJoynrRuntime()
     delete joynrDispatcher;
     delete libjoynrSettings;
     libjoynrSettings = nullptr;
+
+    delete inProcessPublicationSender;
+    inProcessPublicationSender = nullptr;
 }
 
 void LibJoynrRuntime::init(

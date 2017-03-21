@@ -92,6 +92,7 @@
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/MessageNotificationProvider.h"
 
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
@@ -602,7 +603,8 @@ void JoynrClusterControllerRuntime::enableAccessController(
         return;
     }
 
-    auto localDomainAccessStore = std::make_unique<joynr::LocalDomainAccessStore>();
+    auto localDomainAccessStore = std::make_unique<joynr::LocalDomainAccessStore>(
+            clusterControllerSettings.getLocalDomainAccessStorePersistenceFilename());
 
     // Use update methods to insert deserialized entries in access store
     for (const std::shared_ptr<joynr::infrastructure::DacTypes::ControlEntry> entry :
@@ -726,7 +728,7 @@ void JoynrClusterControllerRuntime::registerRoutingProvider()
     routingProviderQos.setPriority(1);
     routingProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
     routingProviderQos.setSupportsOnChangeSubscriptions(false);
-    registerProvider<joynr::system::RoutingProvider>(domain, routingProvider, routingProviderQos);
+    registerProvider(domain, routingProvider, routingProviderQos);
 }
 
 void JoynrClusterControllerRuntime::registerDiscoveryProvider()
@@ -744,8 +746,26 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
     discoveryProviderQos.setPriority(1);
     discoveryProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
     discoveryProviderQos.setSupportsOnChangeSubscriptions(false);
-    registerProvider<joynr::system::DiscoveryProvider>(
-            domain, discoveryProvider, discoveryProviderQos);
+    registerProvider(domain, discoveryProvider, discoveryProviderQos);
+}
+
+void JoynrClusterControllerRuntime::registerMessageNotificationProvider()
+{
+    std::shared_ptr<joynr::system::MessageNotificationProvider> messageNotificationProvider =
+            ccMessageRouter->getMessageNotificationProvider();
+    std::string domain(systemServicesSettings.getDomain());
+    std::string interfaceName(messageNotificationProvider->getInterfaceName());
+    std::string participantId(
+            systemServicesSettings.getCcMessageNotificationProviderParticipantId());
+
+    // provision the participant ID for the message notification provider
+    participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
+
+    joynr::types::ProviderQos messageNotificationProviderQos;
+    messageNotificationProviderQos.setPriority(1);
+    messageNotificationProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
+    messageNotificationProviderQos.setSupportsOnChangeSubscriptions(false);
+    registerProvider(domain, messageNotificationProvider, messageNotificationProviderQos);
 }
 
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
@@ -840,6 +860,7 @@ void JoynrClusterControllerRuntime::start()
     startMessaging();
     registerRoutingProvider();
     registerDiscoveryProvider();
+    registerMessageNotificationProvider();
     singleThreadIOService->start();
 }
 

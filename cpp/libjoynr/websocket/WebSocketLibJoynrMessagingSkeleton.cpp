@@ -29,8 +29,8 @@ namespace joynr
 INIT_LOGGER(WebSocketLibJoynrMessagingSkeleton);
 
 WebSocketLibJoynrMessagingSkeleton::WebSocketLibJoynrMessagingSkeleton(
-        std::shared_ptr<IMessageRouter> messageRouter)
-        : messageRouter(messageRouter)
+        std::weak_ptr<IMessageRouter> messageRouter)
+        : messageRouter(std::move(messageRouter))
 {
 }
 
@@ -39,7 +39,9 @@ void WebSocketLibJoynrMessagingSkeleton::transmit(
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     try {
-        messageRouter->route(message);
+        if (auto ptr = messageRouter.lock()) {
+            ptr->route(message);
+        }
     } catch (const exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }
