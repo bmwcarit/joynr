@@ -29,17 +29,21 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class MqttMulticastAddressCalculator implements MulticastAddressCalculator {
 
     private MqttAddress globalAddress;
+    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Inject
-    public MqttMulticastAddressCalculator(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress globalAddress) {
+    public MqttMulticastAddressCalculator(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress globalAddress,
+                                          MqttTopicPrefixProvider mqttTopicPrefixProvider) {
         this.globalAddress = (MqttAddress) globalAddress;
+        this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
     }
 
     @Override
     public Address calculate(JoynrMessage message) {
         Address result = null;
         if (globalAddress != null) {
-            result = new MqttAddress(globalAddress.getBrokerUri(), message.getTo());
+            String topic = mqttTopicPrefixProvider.getMulticastTopicPrefix() + message.getTo();
+            result = new MqttAddress(globalAddress.getBrokerUri(), topic);
         }
         return result;
     }
