@@ -58,7 +58,7 @@ public class MqttModule extends AbstractModule {
      * for communication (an alternative is to use the {@link JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY HTTP bridge}
      * configuration).
      */
-    public static final String PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS = "joynr.jeeintegration.enable.sharedsubscriptions";
+    public static final String PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS = "joynr.messaging.mqtt.enable.sharedsubscriptions";
 
     @Provides
     @Named(PROPERTY_MQTT_ADDRESS)

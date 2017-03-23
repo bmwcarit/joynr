@@ -284,7 +284,7 @@ is useful if you want to run a cluster of JEE nodes while using only MQTT for co
 
 * **OPTIONAL**
 * **Type**: Boolean
-* **User property**: `joynr.jeeintegration.enable.sharedsubscriptions`
+* **User property**: `joynr.messaging.mqtt.enable.sharedsubscriptions`
 * **Default value**: `false`
 
 ## SystemServicesSettings
