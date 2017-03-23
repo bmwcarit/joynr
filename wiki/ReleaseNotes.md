@@ -12,6 +12,9 @@
   'GlobalDomainAccessControlListEditor' (contains the modification related APIs for
   master / mediator / owner access and registration control entries)
   See `basemodel/src/main/franca/joynr/*.fidl` for details.
+* **[Java]** Moved and changed property `JeeIntegrationPropertyKeys.
+  JEE_ENABLE_SHARED_SUBSCRIPTIONS="joynr.jeeintegration.enable.sharedsubscriptions"` to `MqttModule.
+  PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS="joynr.messaging.mqtt.enable.sharedsubscriptions"`
 
 ## Other changes
 * **[C++]** Access control can be activated in the cluster-controller. Default: OFF.
