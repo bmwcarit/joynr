@@ -37,7 +37,7 @@ import joynr.system.RoutingTypes.MqttAddress;
  * Overrides the standard {@link MqttMessagingSkeleton} in order to customise the topic subscription strategy in the
  * case where HiveMQ shared subscriptions are available.
  *
- * @see io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS
+ * @see io.joynr.messaging.mqtt.MqttModule#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS
  */
 public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkeleton {
 

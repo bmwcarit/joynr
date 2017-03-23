@@ -50,6 +50,15 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC = "joynr.messaging.mqtt.keepalivetimersec";
     public static final String PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC = "joynr.messaging.mqtt.connectiontimeoutsec";
     public static final String PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS = "joynr.messaging.mqtt.timetowaitms";
+    /**
+     * Use this key to activate shared subscription support by setting the property's value to <code>true</code>. Shared
+     * subscriptions are a feature of HiveMQ which allow queue semantics to be used for subscribers to MQTT topics. That
+     * is, only one subscriber receives a message, rather than all subscribers. This feature can be used to load balance
+     * incoming messages on MQTT. This feature is useful if you want to run a cluster of JEE nodes while using only MQTT
+     * for communication (an alternative is to use the {@link JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY HTTP bridge}
+     * configuration).
+     */
+    public static final String PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS = "joynr.jeeintegration.enable.sharedsubscriptions";
 
     @Provides
     @Named(PROPERTY_MQTT_ADDRESS)

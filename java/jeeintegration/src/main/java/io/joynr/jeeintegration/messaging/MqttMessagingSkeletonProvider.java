@@ -20,7 +20,7 @@ package io.joynr.jeeintegration.messaging;
  */
 
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
-import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
 
@@ -44,9 +44,9 @@ import joynr.system.RoutingTypes.MqttAddress;
  * {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} to see if
  * messages should be received via HTTP instead of MQTT. In this case, it returns an instance of
  * {@link NoOpMessagingSkeleton}. Otherwise it checks if shared subscriptions
- * {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} are
- * enabled. Then it returns an instance of {@link SharedSubscriptionsMqttMessagingSkeleton}. If both properties are
- * set to false (default behaviour), it returns an instance of the normal {@link MqttMessagingSkeleton}.
+ * {@link io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} are enabled. Then it
+ * returns an instance of {@link SharedSubscriptionsMqttMessagingSkeleton}. If both properties are set to false
+ * (default behaviour), it returns an instance of the normal {@link MqttMessagingSkeleton}.
  */
 public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleton> {
 
