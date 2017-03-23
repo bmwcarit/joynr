@@ -3,7 +3,7 @@ package io.joynr.jeeintegration.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,11 @@ import joynr.system.RoutingTypes.MqttAddress;
 /**
  * A provider for {@link IMessagingSkeleton} instances which checks with the property configured under
  * {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} to see if
- * messages should be received via MQTT or not. If they should (default behaviour), then it returns an instance of
- * {@link MqttMessagingSkeleton}, otherwise an instance of {@link NoOpMessagingSkeleton}.
+ * messages should be received via HTTP instead of MQTT. In this case, it returns an instance of
+ * {@link NoOpMessagingSkeleton}. Otherwise it checks if shared subscriptions
+ * {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_SHARED_SUBSCRIPTIONS} are enabled. Then it
+ * returns an instance of {@link SharedSubscriptionsMqttMessagingSkeleton}. If both properties are set to false
+ * (default behaviour), it returns an instance of the normal {@link MqttMessagingSkeleton}.
  */
 public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleton> {
 
