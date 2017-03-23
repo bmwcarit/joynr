@@ -11,7 +11,7 @@
 #    which runs your test executable and produces a lcov code coverage report.
 #
 
-# Copyright (C) 2012, BMW Car IT GmbH
+# Copyright (C) 2017 BMW Car IT GmbH
 
 # Check prereqs
 FIND_PROGRAM( GCOV_PATH gcov )

@@ -1,6 +1,6 @@
 # #%L
 # %%
-# Copyright (C) 2011 - 2013 BMW Car IT GmbH
+# Copyright (C) 2011 - 2017 BMW Car IT GmbH
 # %%
 # __________________
 # 
