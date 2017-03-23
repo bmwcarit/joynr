@@ -40,6 +40,14 @@ import io.joynr.messaging.serialize.MessageSerializerFactory;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
+/**
+ * If the {@link io.joynr.messaging.mqtt.MqttModule#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} property is set to
+ * <code>true</code>, then the shared subscriptions version of the mqtt messaging skeleton is used instead of the
+ * default mqtt messaging skeleton.
+ *
+ * In the case of shared subscriptions we allow load balancing of incoming MQTT messages via the HiveMQ feature of
+ * shared subscriptions.
+ */
 public class MqttModule extends AbstractModule {
 
     // property key
@@ -84,7 +92,7 @@ public class MqttModule extends AbstractModule {
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
         }, new TypeLiteral<IMessagingSkeleton>() {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
-        messagingSkeletonFactory.addBinding(MqttAddress.class).to(MqttMessagingSkeleton.class);
+        messagingSkeletonFactory.addBinding(MqttAddress.class).toProvider(MqttMessagingSkeletonProvider.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),
