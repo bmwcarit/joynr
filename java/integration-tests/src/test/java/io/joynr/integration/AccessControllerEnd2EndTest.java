@@ -1,0 +1,246 @@
+package io.joynr.integration;
+
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Module;
+import com.google.inject.name.Names;
+import com.google.inject.util.Modules;
+
+import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.integration.util.DummyJoynrApplication;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.provider.Promise;
+import io.joynr.runtime.CCInProcessRuntimeModule;
+import io.joynr.runtime.ClusterControllerRuntimeModule;
+import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.JoynrRuntime;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorProxy;
+import joynr.infrastructure.GlobalDomainRoleControllerProxy;
+import joynr.infrastructure.DacTypes.DomainRoleEntry;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.Permission;
+import joynr.infrastructure.DacTypes.Role;
+import joynr.tests.DefaulttestProvider;
+import joynr.tests.testProxy;
+import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+public class AccessControllerEnd2EndTest {
+    private static final String TEST_DOMAIN = "test";
+    private static final String GDAC_DOMAIN = "io.joynr";
+    private static final long DISCOVERY_TIMEOUT = 2000;
+    private static final long MESSAGING_TTL = 2000;
+    private static final String USERID = "todo";
+
+    private JoynrRuntime runtime;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
+    private static class TestProviderImpl extends DefaulttestProvider {
+        public Promise<AddNumbersDeferred> addNumbers(Integer first, Integer second, Integer third) {
+            AddNumbersDeferred addNumbersDeferred = new AddNumbersDeferred();
+            addNumbersDeferred.resolve(first + second + third);
+
+            return new Promise<AddNumbersDeferred>(addNumbersDeferred);
+        }
+    }
+
+    @Before
+    public void setUp() {
+        runtime = createRuntime();
+    }
+
+    @After
+    public void tearDown() {
+        runtime.shutdown(true);
+    }
+
+    @Test
+    public void testAllowedRPCCallSucceeds() {
+        createDefaultGDACEntries(TEST_DOMAIN, testProxy.INTERFACE_NAME, "*", USERID, Permission.YES);
+
+        registerProvider(runtime);
+        testProxy testProxy = createProxy(runtime);
+
+        Integer result = testProxy.addNumbers(3, 5, 7);
+
+        assertEquals(15, result.intValue());
+    }
+
+    @Test
+    public void testForbiddenRPCCallFails() {
+        createDefaultGDACEntries(TEST_DOMAIN, testProxy.INTERFACE_NAME, "*", USERID, Permission.NO);
+
+        registerProvider(runtime);
+        testProxy testProxy = createProxy(runtime);
+
+        expectedException.expect(JoynrMessageNotSentException.class);
+        testProxy.addNumbers(3, 5, 7);
+    }
+
+    private JoynrRuntime createRuntime() {
+        Properties properties = new Properties();
+
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
+        properties.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+
+        Module module = Modules.override(new CCInProcessRuntimeModule()).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
+                              .to(true);
+            }
+        },
+                                                                              new MqttPahoModule());
+
+        DummyJoynrApplication app = (DummyJoynrApplication) new JoynrInjectorFactory(properties, module).createApplication(DummyJoynrApplication.class);
+
+        return app.getRuntime();
+    }
+
+    private void registerProvider(JoynrRuntime runtime) {
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setScope(ProviderScope.LOCAL);
+        providerQos.setPriority(System.currentTimeMillis());
+
+        TestProviderImpl testProvider = new TestProviderImpl();
+
+        runtime.registerProvider(TEST_DOMAIN, testProvider, providerQos);
+    }
+
+    private testProxy createProxy(JoynrRuntime runtime) {
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
+        discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
+        discoveryQos.setDiscoveryTimeoutMs(DISCOVERY_TIMEOUT);
+
+        MessagingQos messagingQos = new MessagingQos();
+        messagingQos.setTtl_ms(MESSAGING_TTL);
+
+        return runtime.getProxyBuilder(TEST_DOMAIN, testProxy.class)
+                      .setDiscoveryQos(discoveryQos)
+                      .setMessagingQos(messagingQos)
+                      .build();
+    }
+
+    private void createDefaultGDACEntries(String domainName,
+                                          String interfaceName,
+                                          String operationName,
+                                          String userId,
+                                          Permission permission) {
+        MasterAccessControlEntry testEntry = new MasterAccessControlEntry();
+        testEntry.setUid(userId);
+        testEntry.setDomain(domainName);
+        testEntry.setInterfaceName(interfaceName);
+        testEntry.setDefaultConsumerPermission(permission);
+        testEntry.setOperation(operationName);
+
+        List<MasterAccessControlEntry> provisionedACEs = new ArrayList<MasterAccessControlEntry>();
+        provisionedACEs.add(testEntry);
+
+        DomainRoleEntry domainMasterRoleEntry = new DomainRoleEntry();
+        domainMasterRoleEntry.setDomains(new String[]{ domainName });
+        domainMasterRoleEntry.setRole(Role.MASTER);
+        domainMasterRoleEntry.setUid(userId);
+
+        DomainRoleEntry domainOwnerRoleEntry = new DomainRoleEntry();
+        domainOwnerRoleEntry.setDomains(new String[]{ domainName });
+        domainOwnerRoleEntry.setRole(Role.OWNER);
+        domainOwnerRoleEntry.setUid(userId);
+
+        List<DomainRoleEntry> domainRoleEntries = new ArrayList<DomainRoleEntry>();
+        domainRoleEntries.add(domainMasterRoleEntry);
+        domainRoleEntries.add(domainOwnerRoleEntry);
+
+        OwnerAccessControlEntry ownerControlEntry = new OwnerAccessControlEntry();
+        ownerControlEntry.setDomain(domainName);
+        ownerControlEntry.setInterfaceName(interfaceName);
+        ownerControlEntry.setUid(userId);
+        ownerControlEntry.setConsumerPermission(Permission.YES);
+
+        List<OwnerAccessControlEntry> ownerEntries = new ArrayList<OwnerAccessControlEntry>();
+        ownerEntries.add(ownerControlEntry);
+
+        sendProvisionedEntriesToGDAC(domainRoleEntries, provisionedACEs, provisionedACEs, ownerEntries);
+    }
+
+    private void sendProvisionedEntriesToGDAC(List<DomainRoleEntry> domainRoleEntries,
+                                              List<MasterAccessControlEntry> masterAccessControlEntries,
+                                              List<MasterAccessControlEntry> mediatorAccessControlEntries,
+                                              List<OwnerAccessControlEntry> ownerAccessControlEntries) {
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+        discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
+        discoveryQos.setDiscoveryTimeoutMs(DISCOVERY_TIMEOUT);
+
+        MessagingQos messagingQos = new MessagingQos();
+        messagingQos.setTtl_ms(MESSAGING_TTL);
+
+        GlobalDomainAccessControlListEditorProxy gdacListEditorProxy = runtime.getProxyBuilder(GDAC_DOMAIN,
+                                                                                               GlobalDomainAccessControlListEditorProxy.class)
+                                                                              .setDiscoveryQos(discoveryQos)
+                                                                              .setMessagingQos(messagingQos)
+                                                                              .build();
+
+        GlobalDomainRoleControllerProxy gdrcProxy = runtime.getProxyBuilder(GDAC_DOMAIN,
+                                                                            GlobalDomainRoleControllerProxy.class)
+                                                           .setDiscoveryQos(discoveryQos)
+                                                           .setMessagingQos(messagingQos)
+                                                           .build();
+
+        for (DomainRoleEntry entry : domainRoleEntries) {
+            assertTrue(gdrcProxy.updateDomainRole(entry));
+        }
+
+        for (MasterAccessControlEntry entry : masterAccessControlEntries) {
+            assertTrue(gdacListEditorProxy.updateMasterAccessControlEntry(entry));
+        }
+
+        for (MasterAccessControlEntry entry : mediatorAccessControlEntries) {
+            assertTrue(gdacListEditorProxy.updateMediatorAccessControlEntry(entry));
+        }
+
+        for (OwnerAccessControlEntry entry : ownerAccessControlEntries) {
+            assertTrue(gdacListEditorProxy.updateOwnerAccessControlEntry(entry));
+        }
+    }
+}

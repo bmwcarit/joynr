@@ -27,8 +27,10 @@ import joynr.infrastructure.DacTypes.TrustLevel;
  */
 public class AccessControllerDummy implements AccessController {
     @Override
-    public boolean hasConsumerPermission(JoynrMessage message) {
-        return true;
+    public void hasConsumerPermission(final JoynrMessage message, final HasConsumerPermissionCallback callback) {
+        if (callback != null) {
+            callback.hasConsumerPermission(true);
+        }
     }
 
     @Override

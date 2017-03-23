@@ -32,7 +32,7 @@ public interface AccessController {
      * @param message The message to check
      * @return true if the message has permission, false otherwise
      */
-    boolean hasConsumerPermission(JoynrMessage message);
+    void hasConsumerPermission(final JoynrMessage message, final HasConsumerPermissionCallback callback);
 
     /**
      * Does the provider with given userId and given trust level, has permission to expose given domain interface?
