@@ -33,6 +33,7 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
+import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
