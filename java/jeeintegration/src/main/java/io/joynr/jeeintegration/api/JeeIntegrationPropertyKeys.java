@@ -4,7 +4,7 @@ package io.joynr.jeeintegration.api;
  * #%L
  * joynr::java::messaging::bounceproxy::bounceproxy-controller
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,6 @@ public class JeeIntegrationPropertyKeys {
      * for communication (an alternative is to use the {@link #JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY HTTP bridge}
      * configuration).
      */
-    public static final String JEE_ENABLE_SHARED_SUBSCRIPTIONS = "joynr.jeeintegration.enable.sharedsubscriptions";
+    public static final String PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS = "joynr.jeeintegration.enable.sharedsubscriptions";
 
 }

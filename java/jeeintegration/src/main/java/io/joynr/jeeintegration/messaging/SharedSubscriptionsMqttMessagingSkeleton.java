@@ -3,7 +3,7 @@ package io.joynr.jeeintegration.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import joynr.system.RoutingTypes.MqttAddress;
  * Overrides the standard {@link MqttMessagingSkeleton} in order to customise the topic subscription strategy in the
  * case where HiveMQ shared subscriptions are available.
  *
- * @see io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_SHARED_SUBSCRIPTIONS
+ * @see io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS
  */
 public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkeleton {
 
