@@ -12,6 +12,8 @@
   'GlobalDomainAccessControlListEditor' (contains the modification related APIs for
   master / mediator / owner access and registration control entries)
   See `basemodel/src/main/franca/joynr/*.fidl` for details.
+* **[All]** Added 'compress' to MessagingQos (available with Java/C++ solely via
+  getter/setter, in JS also via constructor), existing MessagingQos APIs remain working
 
 ## Other changes
 * **[C++]** Access control can be activated in the cluster-controller. Default: OFF.
