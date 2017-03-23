@@ -15,6 +15,7 @@
 * **[Java]** Moved and changed property `JeeIntegrationPropertyKeys.
   JEE_ENABLE_SHARED_SUBSCRIPTIONS="joynr.jeeintegration.enable.sharedsubscriptions"` to `MqttModule.
   PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS="joynr.messaging.mqtt.enable.sharedsubscriptions"`
+* **[Java]** MQTT shared subscriptions are not restricted to JEE any longer
 
 ## Other changes
 * **[C++]** Access control can be activated in the cluster-controller. Default: OFF.
