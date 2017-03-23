@@ -1,4 +1,4 @@
-package io.joynr.jeeintegration.messaging;
+package io.joynr.messaging.mqtt;
 
 /*
  * #%L
@@ -27,9 +27,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.MqttClientFactory;
-import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
-import io.joynr.messaging.mqtt.MqttMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
