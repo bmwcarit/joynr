@@ -19,7 +19,6 @@ package io.joynr.jeeintegration.messaging;
  * #L%
  */
 
-import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
@@ -42,38 +41,30 @@ import joynr.system.RoutingTypes.MqttAddress;
 
 /**
  * A provider for {@link IMessagingSkeleton} instances which checks with the property configured under
- * {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} to see if
- * messages should be received via HTTP instead of MQTT. In this case, it returns an instance of
- * {@link NoOpMessagingSkeleton}. Otherwise it checks if shared subscriptions
- * {@link io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} are enabled. Then it
- * returns an instance of {@link SharedSubscriptionsMqttMessagingSkeleton}. If both properties are set to false
- * (default behaviour), it returns an instance of the normal {@link MqttMessagingSkeleton}.
+ * {@link io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} If shared subscriptions are
+ * enabled, it returns an instance of {@link SharedSubscriptionsMqttMessagingSkeleton}. Otherwise (default behaviour),
+ * it returns an instance of the normal {@link MqttMessagingSkeleton}.
  */
 public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleton> {
 
     private final static Logger logger = LoggerFactory.getLogger(MqttMessagingSkeletonProvider.class);
 
-    private boolean httpBridgeEnabled;
+    protected MqttClientFactory mqttClientFactory;
     private boolean sharedSubscriptionsEnabled;
     private MqttAddress ownAddress;
     private MessageRouter messageRouter;
-    private MqttClientFactory mqttClientFactory;
     private MqttMessageSerializerFactory messageSerializerFactory;
     private String channelId;
     private String receiverId;
 
     @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public MqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String enableHttpBridge,
-                                         @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
+    public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                          @Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
                                          MqttMessageSerializerFactory messageSerializerFactory,
                                          @Named(CHANNELID) String channelId,
                                          @Named(RECEIVERID) String receiverId) {
-        // CHECKSTYLE:ON
-        httpBridgeEnabled = Boolean.valueOf(enableHttpBridge);
         sharedSubscriptionsEnabled = Boolean.valueOf(enableSharedSubscriptions);
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
@@ -81,16 +72,13 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.messageSerializerFactory = messageSerializerFactory;
         this.channelId = channelId;
         this.receiverId = receiverId;
-        logger.debug("Created with httpBridgeEnabled: {} sharedSubscriptionsEnabled: {} "
-                + "ownAddress: {} channelId: {}", new Object[]{ httpBridgeEnabled, sharedSubscriptionsEnabled,
-                this.ownAddress, this.channelId });
+        logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}", new Object[]{
+                sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
     }
 
     @Override
     public IMessagingSkeleton get() {
-        if (httpBridgeEnabled) {
-            return new NoOpMessagingSkeleton(mqttClientFactory);
-        } else if (sharedSubscriptionsEnabled) {
+        if (sharedSubscriptionsEnabled) {
             return new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                 messageRouter,
                                                                 mqttClientFactory,

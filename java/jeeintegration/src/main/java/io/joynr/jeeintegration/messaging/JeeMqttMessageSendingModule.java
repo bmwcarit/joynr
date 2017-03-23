@@ -43,7 +43,7 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
- * Like {@link io.joynr.messaging.mqtt.MqttModule}, but configures the {@link MqttMessagingSkeletonProvider} so that if
+ * Like {@link io.joynr.messaging.mqtt.MqttModule}, but configures the {@link JeeMqttMessagingSkeletonProvider} so that if
  * the {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} property
  * is set to <code>true</true>, messages are only sent via MQTT, but not received via MQTT and also that if the
  * {@link io.joynr.messaging.mqtt.MqttModule#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} property is set to
@@ -84,7 +84,7 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     protected void configure() {
         messagingStubFactory.addBinding(MqttAddress.class).to(MqttMessagingStubFactory.class);
         messageSerializerFactory.addBinding(MqttAddress.class).to(MqttMessageSerializerFactory.class);
-        messagingSkeletonFactory.addBinding(MqttAddress.class).toProvider(MqttMessagingSkeletonProvider.class);
+        messagingSkeletonFactory.addBinding(MqttAddress.class).toProvider(JeeMqttMessagingSkeletonProvider.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),
