@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,6 +113,18 @@ public:
     void setEncrypt(bool encrypt);
 
     /**
+     * @brief Gets the compress flag
+     * @return whether messages will be sent compressed
+     */
+    bool getCompress() const;
+
+    /**
+     * @brief Sets the compress flag
+     * @param compress specifies, whether messages will be sent compressed
+     */
+    void setCompress(bool compress);
+
+    /**
      * @brief Puts a header value for the given header key, replacing an existing value
      * if necessary.
      * @param key the header key for which to put the value.
@@ -150,6 +162,9 @@ private:
 
     /** @brief Specifies, whether messages will be sent encrypted */
     bool encrypt;
+
+    /** @brief Specifies, whether messages will be sent compressed */
+    bool compress;
 
     /** @brief The map of custom message headers */
     std::unordered_map<std::string, std::string> messageHeaders;
