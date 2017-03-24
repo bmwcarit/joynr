@@ -91,7 +91,7 @@ public class LibJoynrMessageRouterTest {
 
         when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
         when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
-        when(messageRouterParent.getGlobalAddress()).thenReturn(globalAddress);
+        when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
         when(parentAddress.getChannelId()).thenReturn("LibJoynrMessageRouterTestChannel");
 
