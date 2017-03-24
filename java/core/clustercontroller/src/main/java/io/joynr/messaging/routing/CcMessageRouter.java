@@ -3,7 +3,7 @@ package io.joynr.messaging.routing;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,31 @@ package io.joynr.messaging.routing;
 
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.annotation.CheckForNull;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
-import com.google.inject.name.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.joynr.accesscontrol.AccessController;
+import io.joynr.accesscontrol.HasConsumerPermissionCallback;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.runtime.ClusterControllerRuntimeModule;
+import joynr.JoynrMessage;
+
+import javax.annotation.CheckForNull;
+
 import io.joynr.runtime.GlobalAddressProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 public class CcMessageRouter extends AbstractMessageRouter {
     private String replyToAddress;
+    private static final Logger logger = LoggerFactory.getLogger(CcMessageRouter.class);
+    private AccessController accessController;
+    private boolean enableAccessControl;
 
     @Inject
     @Singleton
@@ -45,7 +57,9 @@ public class CcMessageRouter extends AbstractMessageRouter {
                            MessagingStubFactory messagingStubFactory,
                            MessagingSkeletonFactory messagingSkeletonFactory,
                            AddressManager addressManager,
-                           MulticastReceiverRegistry multicastReceiverRegistry) {
+                           MulticastReceiverRegistry multicastReceiverRegistry,
+                           AccessController accessController,
+                           @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl) {
         super(routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
@@ -62,6 +76,30 @@ public class CcMessageRouter extends AbstractMessageRouter {
                 replyToAddress = globalAddressString;
             }
         });
+
+        this.accessController = accessController;
+        this.enableAccessControl = enableAccessControl;
+    }
+
+    @Override
+    public void route(final JoynrMessage message) {
+        if (enableAccessControl) {
+            accessController.hasConsumerPermission(message, new HasConsumerPermissionCallback() {
+                @Override
+                public void hasConsumerPermission(boolean hasPermission) {
+                    if (hasPermission) {
+                        CcMessageRouter.super.route(message);
+                    } else {
+                        logger.warn("Dropping message {} from {} to {} because of insufficient access rights",
+                                    message.getId(),
+                                    message.getFrom(),
+                                    message.getTo());
+                    }
+                }
+            });
+        } else {
+            super.route(message);
+        }
     }
 
     @Override

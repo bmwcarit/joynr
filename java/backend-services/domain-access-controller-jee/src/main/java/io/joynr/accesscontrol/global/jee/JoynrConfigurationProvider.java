@@ -3,7 +3,7 @@ package io.joynr.accesscontrol.global.jee;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ package io.joynr.accesscontrol.global.jee;
  */
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID;
 
 import java.util.Map;
 import java.util.Properties;
@@ -33,7 +35,10 @@ import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.runtime.PropertyLoader;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorProvider;
 import joynr.infrastructure.GlobalDomainAccessControllerProvider;
+import joynr.infrastructure.GlobalDomainRoleControllerProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,20 +84,31 @@ public class JoynrConfigurationProvider {
         readAndSetProperty(joynrProperties,
                            MessagingPropertyKeys.PERSISTENCE_FILE,
                            "domain-access-controller-joynr.properties");
-        readAndSetProperty(joynrProperties,
-                           ParticipantIdKeyUtil.getProviderParticipantIdKey(getJoynrLocalDomain(),
-                                                                            GlobalDomainAccessControllerProvider.class),
-                           readDomainAccessControllerParticipantIdFromProperties());
-        return joynrProperties;
-    }
 
-    private String readDomainAccessControllerParticipantIdFromProperties() {
         Properties joynrDefaultProperties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);
-        if (!joynrDefaultProperties.containsKey(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID)) {
-            logger.trace("Default properties loaded: " + joynrDefaultProperties);
-            throw new IllegalStateException("No domain access controller participant ID found in properties.");
+
+        if (joynrDefaultProperties.containsKey(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID)) {
+            readAndSetProperty(joynrProperties,
+                               ParticipantIdKeyUtil.getProviderParticipantIdKey(getJoynrLocalDomain(),
+                                                                                GlobalDomainAccessControllerProvider.class),
+                               joynrDefaultProperties.getProperty(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID));
         }
-        return joynrDefaultProperties.getProperty(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID);
+
+        if (joynrDefaultProperties.containsKey(PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID)) {
+            readAndSetProperty(joynrProperties,
+                               ParticipantIdKeyUtil.getProviderParticipantIdKey(getJoynrLocalDomain(),
+                                                                                GlobalDomainAccessControlListEditorProvider.class),
+                               joynrDefaultProperties.getProperty(PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID));
+        }
+
+        if (joynrDefaultProperties.containsKey(PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID)) {
+            readAndSetProperty(joynrProperties,
+                               ParticipantIdKeyUtil.getProviderParticipantIdKey(getJoynrLocalDomain(),
+                                                                                GlobalDomainRoleControllerProvider.class),
+                               joynrDefaultProperties.getProperty(PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID));
+        }
+
+        return joynrProperties;
     }
 
     private void readAndSetProperty(Properties joynrProperties, String propertyKey, String defaultValue) {

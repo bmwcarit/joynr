@@ -148,6 +148,15 @@ updates the ```lastSeenDateMs``` of all capabilities registered via this cluster
 * **User property**: `joynr.capabilities.freshnessupdateintervalms`
 * **Default value**: `3600000`
 
+##Access Control
+### `PROPERTY_ACCESSCONTROL_ENABLE`
+Enables or disables access control checks.
+
+* **OPTIONAL**
+* **Type**: boolean
+* **User property**: `joynr.accesscontrol.enable`
+* **Default value**: `false`
+
 ##MessagingPropertyKeys
 
 ### `PROPERTY_BOUNCE_PROXY_URL`

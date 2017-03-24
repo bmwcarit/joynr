@@ -25,6 +25,7 @@
 #include <gmock/gmock.h>
 
 #include "joynr/CcMessageRouter.h"
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/LibJoynrMessageRouter.h"
 
 #include "joynr/Semaphore.h"
@@ -106,6 +107,7 @@ protected:
     std::unique_ptr<CcMessageRouter> createMessageRouter()
     {
         const std::string globalCcAddress("globalAddress");
+        ClusterControllerSettings ccSettings(settings);
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue>();
         messageQueue = messageQueueForMessageRouter.get();
 
@@ -114,7 +116,7 @@ protected:
                     multicastMessagingSkeletonDirectory,
                     std::unique_ptr<IPlatformSecurityManager>(),
                     singleThreadedIOService.getIOService(),
-                    std::make_unique<MqttMulticastAddressCalculator>(globalTransport),
+                    std::make_unique<MqttMulticastAddressCalculator>(globalTransport, ccSettings.getMqttMulticastTopicPrefix()),
                     globalCcAddress,
                     6,
                     std::move(messageQueueForMessageRouter)

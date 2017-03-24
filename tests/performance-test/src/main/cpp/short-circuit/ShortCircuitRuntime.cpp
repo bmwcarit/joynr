@@ -51,8 +51,10 @@ ShortCircuitRuntime::ShortCircuitRuntime()
 
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
 
+    const std::string multicastTopicPrefix = "";
+
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
-            std::make_unique<MqttMulticastAddressCalculator>(nullptr);
+            std::make_unique<MqttMulticastAddressCalculator>(nullptr, multicastTopicPrefix);
 
     const std::string& globalClusterControllerAddress("globalAddress");
 

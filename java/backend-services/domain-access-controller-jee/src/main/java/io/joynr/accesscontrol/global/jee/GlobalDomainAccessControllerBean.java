@@ -3,7 +3,7 @@ package io.joynr.accesscontrol.global.jee;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,24 +135,27 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
                             job.getMasterAccessControlEntry(),
                             sanitizeForPartition(job.getMasterAccessControlEntry().getUid()),
                             sanitizeForPartition(job.getMasterAccessControlEntry().getDomain()),
-                            sanitizeForPartition(job.getMasterAccessControlEntry().getInterfaceName()),
-                            sanitizeForPartition(job.getMasterAccessControlEntry().getOperation()));
+                            sanitizeForPartition(job.getMasterAccessControlEntry().getInterfaceName()));
+                    // TODO: add
+                    // sanitizeForPartition(job.getMasterAccessControlEntry().getOperation())
                 } else if (job.getMediatorAccessControlEntry() != null) {
                     globalDomainAccessControllerSubscriptionPublisher.fireMediatorAccessControlEntryChanged(
                             job.getChangeType(),
                             job.getMediatorAccessControlEntry(),
                             sanitizeForPartition(job.getMediatorAccessControlEntry().getUid()),
                             sanitizeForPartition(job.getMediatorAccessControlEntry().getDomain()),
-                            sanitizeForPartition(job.getMediatorAccessControlEntry().getInterfaceName()),
-                            sanitizeForPartition(job.getMediatorAccessControlEntry().getOperation()));
+                            sanitizeForPartition(job.getMediatorAccessControlEntry().getInterfaceName()));
+                    // TODO: add
+                    // sanitizeForPartition(job.getMasterAccessControlEntry().getOperation())
                 } else if (job.getOwnerAccessControlEntry() != null) {
                     globalDomainAccessControllerSubscriptionPublisher.fireOwnerAccessControlEntryChanged(
                             job.getChangeType(),
                             job.getOwnerAccessControlEntry(),
                             sanitizeForPartition(job.getOwnerAccessControlEntry().getUid()),
                             sanitizeForPartition(job.getOwnerAccessControlEntry().getDomain()),
-                            sanitizeForPartition(job.getOwnerAccessControlEntry().getInterfaceName()),
-                            sanitizeForPartition(job.getOwnerAccessControlEntry().getOperation()));
+                            sanitizeForPartition(job.getOwnerAccessControlEntry().getInterfaceName()));
+                    // TODO: add
+                    // sanitizeForPartition(job.getMasterAccessControlEntry().getOperation())
                 } else if (job.getMasterRegistrationControlEntry() != null) {
                     globalDomainAccessControllerSubscriptionPublisher.fireMasterRegistrationControlEntryChanged(
                             job.getChangeType(),
