@@ -19,6 +19,8 @@ package io.joynr.jeeintegration.messaging;
  * #L%
  */
 
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_ADDRESS;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
@@ -56,7 +58,6 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     // property key
     public static final String PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS = "joynr.messaging.mqtt.reconnect.sleepms";
     public static final String PROPERTY_KEY_MQTT_BROKER_URI = "joynr.messaging.mqtt.brokeruri";
-    public static final String PROPERTY_MQTT_ADDRESS = "property_mqtt_address";
     private MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
     private MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
     private MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
