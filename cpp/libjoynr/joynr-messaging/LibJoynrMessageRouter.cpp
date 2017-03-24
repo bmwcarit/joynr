@@ -107,7 +107,7 @@ void LibJoynrMessageRouter::queryGlobalClusterControllerAddress(
         onSuccess();
     };
 
-    parentRouter->getGlobalAddressAsync(std::move(onSuccessWrapper), std::move(onError));
+    parentRouter->getReplyToAddressAsync(std::move(onSuccessWrapper), std::move(onError));
 }
 
 /**

@@ -204,6 +204,18 @@ void CcMessageRouter::getGlobalAddress(
     }
 }
 
+void CcMessageRouter::getReplyToAddress(
+        std::function<void(const std::string&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    if (globalClusterControllerAddress.empty()) {
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "No cluster-controller reply address available."));
+    } else {
+        onSuccess(globalClusterControllerAddress);
+    }
+}
+
 void CcMessageRouter::reestablishMulticastSubscriptions()
 {
     for (const auto& multicastId : multicastReceiverDirectory.getMulticastIds()) {
