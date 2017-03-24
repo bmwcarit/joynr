@@ -31,7 +31,8 @@ define(
             var defaultSettings = {
                 ttl : 60000,
                 customHeaders : {},
-                encrypt : false
+                encrypt : false,
+                compress : false
             };
 
             /**
@@ -42,6 +43,7 @@ define(
              * @param {Object} [settings] the settings object for the constructor call
              * @param {Number} [settings.ttl] Roundtrip timeout for rpc requests, if missing default value is 60 seconds
              * @param {Boolean} [settings.encrypt] Specifies whether messages will be sent encrypted
+             * @param {Boolean} [settings.compress] Specifies whether messages will be sent compressed
              * @param {MessagingQosEffort} [settings.effort] effort to expend on ensuring message delivery
              *
              * @returns {MessagingQos} a messaging Qos Object
@@ -107,6 +109,18 @@ define(
                 }
 
                 /**
+                 * compress
+                 *
+                 * @name MessagingQos#compress
+                 * @type Boolean
+                 */
+                this.compress = settings.compress;
+
+                if (settings.compress !== true && settings.compress !== false) {
+                    throw new Error("compress may only contain a boolean");
+                }
+
+                /**
                  *
                  * @param {String} key
                  *            may contain ascii alphanumeric or hyphen.
@@ -169,6 +183,15 @@ define(
              * @readonly
              */
             MessagingQos.DEFAULT_ENCRYPT = defaultSettings.encrypt;
+
+            /**
+             * @name MessagingQos.DEFAULT_COMPRESS
+             * @type Boolean
+             * @default false
+             * @static
+             * @readonly
+             */
+            MessagingQos.DEFAULT_COMPRESS = defaultSettings.compress;
 
             return MessagingQos;
 

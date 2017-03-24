@@ -24,7 +24,7 @@ var Promise = require('bluebird').Promise;
 var provisioning = { ccAddress: {} };
 
 var timeStart;
-var SHUTDOWN_MAX_TIME = 2000;
+var SHUTDOWN_MAX_TIME = 5000;
 
 exitHook(function () {
     var timeSpent = Date.now() - timeStart;

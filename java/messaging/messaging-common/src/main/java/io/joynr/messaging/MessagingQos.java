@@ -31,11 +31,13 @@ public class MessagingQos {
     private Map<String, String> customHeaders = new HashMap<>();
     private MessagingQosEffort effort;
     private boolean encrypt;
+    private boolean compress = false;
 
     public MessagingQos(MessagingQos src) {
         ttl_ms = src.getRoundTripTtl_ms();
         effort = src.getEffort();
         encrypt = src.getEncrypt();
+        compress = src.getCompress();
     }
 
     /**
@@ -139,6 +141,22 @@ public class MessagingQos {
     }
 
     /**
+     * Gets Compress
+     *
+     * @return specifies, whether messages will be sent compressed
+     */
+    public boolean getCompress() {
+        return compress;
+    }
+
+    /**
+     * @param compress specifies, whether messages will be sent compressed
+     */
+    public void setCompress(boolean compress) {
+        this.compress = compress;
+    }
+
+    /**
      * @param key   may contain ascii alphanumeric or hyphen.
      * @param value may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
      *              dot, star, forward slash and back slash.
@@ -197,6 +215,7 @@ public class MessagingQos {
         result = prime * result + ((effort == null) ? 0 : effort.hashCode());
         result = prime * result + ((customHeaders == null) ? 0 : customHeaders.hashCode());
         result = prime * result + Boolean.hashCode(encrypt);
+        result = prime * result + Boolean.hashCode(compress);
         return result;
     }
 
@@ -225,6 +244,9 @@ public class MessagingQos {
             return false;
         }
         if (encrypt != other.encrypt) {
+            return false;
+        }
+        if (compress != other.compress) {
             return false;
         }
         if (!customHeaders.equals(other.customHeaders)) {
