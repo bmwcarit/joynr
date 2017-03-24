@@ -112,7 +112,7 @@ public class MqttPahoClientTest {
     }
 
     @Test
-    public void mqqtClientTest() throws Exception {
+    public void mqttClientTest() throws Exception {
         client.setMessageListener(mockReceiver);
         String serializedMessage = "test";
         client.publishMessage(ownTopic.getTopic(), serializedMessage);
