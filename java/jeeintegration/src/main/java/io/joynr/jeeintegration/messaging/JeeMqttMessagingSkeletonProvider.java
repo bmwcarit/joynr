@@ -20,6 +20,7 @@ package io.joynr.jeeintegration.messaging;
  */
 
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
@@ -34,7 +35,6 @@ import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
-import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -54,7 +54,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JeeMqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String enableHttpBridge,
                                             @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
-                                            @Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
+                                            @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                             MessageRouter messageRouter,
                                             MqttClientFactory mqttClientFactory,
                                             MqttMessageSerializerFactory messageSerializerFactory,

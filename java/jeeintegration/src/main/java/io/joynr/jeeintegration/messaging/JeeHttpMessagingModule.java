@@ -30,6 +30,7 @@ import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 
 import io.joynr.accesscontrol.AccessControlClientModule;
 import io.joynr.dispatcher.ServletMessageReceiver;
@@ -50,6 +51,8 @@ import io.joynr.messaging.http.operation.HttpRequestFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
+import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -80,9 +83,14 @@ public class JeeHttpMessagingModule extends AbstractModule {
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),
                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-
-                                                   });
+                                                   }, Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_PROVIDER));
         globalAddresses.addBinding().to(ServletHttpGlobalAddressFactory.class);
+
+        Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;
+        replyToAddresses = Multibinder.newSetBinder(binder(),
+                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+                                                   }, Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
+        replyToAddresses.addBinding().to(ServletHttpGlobalAddressFactory.class);
 
         install(new AccessControlClientModule());
 

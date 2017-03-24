@@ -30,10 +30,10 @@ import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.Address;
 
-public class GlobalAddressProvider implements Provider<Address> {
-    public static final String GLOBAL_ADDRESS_PROVIDER = "global_address_provider";
+public class ReplyToAddressProvider implements Provider<Address> {
+    public static final String REPLY_TO_ADDRESS_PROVIDER = "reply_to_address_provider";
 
-    private Set<GlobalAddressFactory<? extends Address>> addressFactories;
+    private Set<GlobalAddressFactory<? extends Address>> replyToAddressFactories;
 
     @Inject(optional = true)
     @Named(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT)
@@ -44,17 +44,17 @@ public class GlobalAddressProvider implements Provider<Address> {
     String primaryGlobalTransport;
 
     @Inject
-    public GlobalAddressProvider(@Named(GLOBAL_ADDRESS_PROVIDER) Set<GlobalAddressFactory<? extends Address>> addressFactories) {
-        this.addressFactories = addressFactories;
+    public ReplyToAddressProvider(@Named(REPLY_TO_ADDRESS_PROVIDER) Set<GlobalAddressFactory<? extends Address>> addressFactories) {
+        this.replyToAddressFactories = addressFactories;
     }
 
     public void registerGlobalAddressesReadyListener(TransportReadyListener listener) {
-        GlobalAddressFactory<? extends Address> addressFactory = getPrimaryGlobalAddressFactory();
+        GlobalAddressFactory<? extends Address> addressFactory = getPrimaryReplyToAddressFactory();
         addressFactory.registerGlobalAddressReady(listener);
     }
 
     public GlobalAddressFactory<? extends Address> getAddressFactoryForTransport(String transport) {
-        for (GlobalAddressFactory<? extends Address> addressFactory : addressFactories) {
+        for (GlobalAddressFactory<? extends Address> addressFactory : replyToAddressFactories) {
             if (addressFactory.supportsTransport(transport)) {
                 return addressFactory;
             }
@@ -67,7 +67,7 @@ public class GlobalAddressProvider implements Provider<Address> {
             return null;
         }
 
-        for (GlobalAddressFactory<? extends Address> addressFactory : addressFactories) {
+        for (GlobalAddressFactory<? extends Address> addressFactory : replyToAddressFactories) {
             if (addressFactory.getClass().isAssignableFrom(targetAddressFactoryClass)) {
                 return addressFactory;
             }
@@ -79,22 +79,22 @@ public class GlobalAddressProvider implements Provider<Address> {
     @Override
     public Address get() {
         try {
-            GlobalAddressFactory<? extends Address> addressFactory = getPrimaryGlobalAddressFactory();
+            GlobalAddressFactory<? extends Address> addressFactory = getPrimaryReplyToAddressFactory();
             return addressFactory.create();
         } catch (IllegalStateException e) {
             return null;
         }
     }
 
-    private GlobalAddressFactory<? extends Address> getPrimaryGlobalAddressFactory() {
+    private GlobalAddressFactory<? extends Address> getPrimaryReplyToAddressFactory() {
         GlobalAddressFactory<? extends Address> addressFactory = getAddressFactoryForTransport(primaryGlobalTransport);
         if (addressFactory == null) {
             // no need to set the primary global transport if only one possible transport is registered
-            if (addressFactories.size() == 1) {
-                addressFactory = addressFactories.iterator().next();
-            } else if (addressFactories.size() == 0) {
+            if (replyToAddressFactories.size() == 1) {
+                addressFactory = replyToAddressFactories.iterator().next();
+            } else if (replyToAddressFactories.size() == 0) {
                 throw new IllegalStateException("no global transport was registered");
-            } else if (addressFactories.size() > 1) {
+            } else if (replyToAddressFactories.size() > 1) {
                 throw new IllegalStateException("multiple global transports were registered but "
                         + MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT + " was not set.");
             }

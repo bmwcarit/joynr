@@ -19,7 +19,8 @@ package io.joynr.jeeintegration.messaging;
  * #L%
  */
 
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -27,6 +28,8 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
+import com.google.inject.name.Names;
+
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
@@ -37,10 +40,13 @@ import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
 import io.joynr.messaging.mqtt.MqttMulticastAddressCalculator;
+import io.joynr.messaging.mqtt.MqttReplyToAddressFactory;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
+import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -71,9 +77,15 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     }
 
     @Provides
-    @Named(PROPERTY_MQTT_ADDRESS)
+    @Named(PROPERTY_MQTT_GLOBAL_ADDRESS)
     public MqttAddress provideMqttOwnAddress(MqttGlobalAddressFactory globalAddressFactory) {
         return globalAddressFactory.create();
+    }
+
+    @Provides
+    @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS)
+    public MqttAddress provideMqttOwnAddress(MqttReplyToAddressFactory replyToAddressFactory) {
+        return replyToAddressFactory.create();
     }
 
     @Override
@@ -85,9 +97,14 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),
                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-
-                                                   });
+                                                   }, Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_PROVIDER));
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
+
+        Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;
+        replyToAddresses = Multibinder.newSetBinder(binder(),
+                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+                                                   }, Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
+        replyToAddresses.addBinding().to(MqttReplyToAddressFactory.class);
 
         bind(MqttClientFactory.class).to(MqttPahoClientFactory.class);
         bind(MqttClientIdProvider.class).to(DefaultMqttClientIdProvider.class);

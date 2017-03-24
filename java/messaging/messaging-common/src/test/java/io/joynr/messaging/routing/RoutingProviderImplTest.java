@@ -39,6 +39,7 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingSubscriptionPublisher;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -51,6 +52,8 @@ public class RoutingProviderImplTest {
     private MessageRouter mockMessageRouter;
     @Mock
     private GlobalAddressProvider mockGlobalAddressProvider;
+    @Mock
+    private ReplyToAddressProvider mockReplyToAddressProvider;
     @Mock
     private PromiseListener mockGlobalAddressPromiseListener;
     @Mock
@@ -78,7 +81,9 @@ public class RoutingProviderImplTest {
         expectedChannelAddress = new ChannelAddress("http://test-bounceproxy-url", "test-channelId");
         expectedChannelAddressString = RoutingTypesUtil.toAddressString(expectedChannelAddress);
 
-        routingProvider = new RoutingProviderImpl(mockMessageRouter, mockGlobalAddressProvider);
+        routingProvider = new RoutingProviderImpl(mockMessageRouter,
+                                                  mockGlobalAddressProvider,
+                                                  mockReplyToAddressProvider);
         routingProvider.setSubscriptionPublisher(mockRoutingSubscriptionPublisher);
 
         getGlobalAddressOnFulfillmentSemaphore = new Semaphore(0);
@@ -131,7 +136,7 @@ public class RoutingProviderImplTest {
 
     @Test(timeout = 500)
     public void testReplyToAddressGetAfterTransportIsReady() throws InterruptedException {
-        verify(mockGlobalAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
+        verify(mockReplyToAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
         transportReadyListener.getValue().transportReady(expectedMqttAddress);
 
         Promise<Deferred<String>> replyToAddressPromise = routingProvider.getReplyToAddress();
@@ -156,7 +161,7 @@ public class RoutingProviderImplTest {
     public void testReplyToAddressGetBeforeTransportIsReady() throws InterruptedException {
         Promise<Deferred<String>> replyToAddressPromise = routingProvider.getReplyToAddress();
 
-        verify(mockGlobalAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
+        verify(mockReplyToAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
         transportReadyListener.getValue().transportReady(expectedMqttAddress);
 
         replyToAddressPromise.then(mockReplyToAddressPromiseListener);
@@ -180,7 +185,7 @@ public class RoutingProviderImplTest {
 
     @Test(timeout = 500)
     public void testReplyToAddressOnChangeNotifications() throws InterruptedException {
-        verify(mockGlobalAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
+        verify(mockReplyToAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
         transportReadyListener.getValue().transportReady(expectedMqttAddress);
 
         verify(mockRoutingSubscriptionPublisher).replyToAddressChanged(expectedMqttAddressString);

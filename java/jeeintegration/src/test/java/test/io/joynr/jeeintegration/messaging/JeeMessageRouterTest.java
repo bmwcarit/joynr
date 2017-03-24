@@ -36,7 +36,7 @@ import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MockChannelAddressFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import org.junit.Test;
@@ -77,7 +77,8 @@ public class JeeMessageRouterTest {
         message.setTo("to");
         when(routingTable.get("to")).thenReturn(address);
 
-        JeeMessageRouter subject = new JeeMessageRouter(new GlobalAddressProvider(Sets.newHashSet(new MockChannelAddressFactory())),
+        @SuppressWarnings("unchecked")
+        JeeMessageRouter subject = new JeeMessageRouter(new ReplyToAddressProvider(Sets.newHashSet(new MockChannelAddressFactory())),
                                                         routingTable,
                                                         scheduler,
                                                         1000L,
@@ -96,7 +97,8 @@ public class JeeMessageRouterTest {
 
     @Test
     public void testShutdown() throws InterruptedException {
-        JeeMessageRouter subject = new JeeMessageRouter(new GlobalAddressProvider(Sets.newHashSet(new MockChannelAddressFactory())),
+        @SuppressWarnings("unchecked")
+        JeeMessageRouter subject = new JeeMessageRouter(new ReplyToAddressProvider(Sets.newHashSet(new MockChannelAddressFactory())),
                                                         routingTable,
                                                         scheduler,
                                                         1000L,

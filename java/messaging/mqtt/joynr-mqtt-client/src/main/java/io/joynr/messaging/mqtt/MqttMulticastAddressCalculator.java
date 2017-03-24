@@ -31,7 +31,7 @@ public class MqttMulticastAddressCalculator implements MulticastAddressCalculato
     private MqttAddress globalAddress;
 
     @Inject
-    public MqttMulticastAddressCalculator(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress globalAddress) {
+    public MqttMulticastAddressCalculator(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress globalAddress) {
         this.globalAddress = (MqttAddress) globalAddress;
     }
 

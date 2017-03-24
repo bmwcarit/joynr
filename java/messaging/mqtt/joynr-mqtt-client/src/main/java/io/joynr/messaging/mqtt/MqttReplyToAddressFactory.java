@@ -21,7 +21,7 @@ package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 
 import javax.inject.Named;
 
@@ -37,7 +37,7 @@ public class MqttReplyToAddressFactory extends GlobalAddressFactory<MqttAddress>
     private String brokerUri;
 
     @Inject
-    public MqttReplyToAddressFactory(@Named(PROPERTY_MQTT_ADDRESS) MqttAddress globalAddress,
+    public MqttReplyToAddressFactory(@Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress globalAddress,
                                      @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                      @Named(RECEIVERID) String receiverId) {
         brokerUri = globalAddress.getBrokerUri();

@@ -19,7 +19,7 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 
 import static java.lang.String.format;
 
@@ -44,7 +44,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private String receiverId;
 
     @Inject
-    public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
+    public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
                                                     MqttMessageSerializerFactory messageSerializerFactory,

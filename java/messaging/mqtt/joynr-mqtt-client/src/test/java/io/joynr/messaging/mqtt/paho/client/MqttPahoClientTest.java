@@ -99,7 +99,8 @@ public class MqttPahoClientTest {
                                             }
                                         });
         mqttClientFactory = injector.getInstance(MqttClientFactory.class);
-        ownTopic = injector.getInstance((Key.get(MqttAddress.class, Names.named(MqttModule.PROPERTY_MQTT_ADDRESS))));
+        ownTopic = injector.getInstance((Key.get(MqttAddress.class,
+                                                 Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
 
         client = mqttClientFactory.create();
         client.start();

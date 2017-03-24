@@ -28,6 +28,7 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingAbstractProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BrowserAddress;
@@ -44,7 +45,6 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
  */
 public class RoutingProviderImpl extends RoutingAbstractProvider {
     private MessageRouter messageRouter;
-    private GlobalAddressProvider globalAddressProvider;
     private String globalAddressString;
     private String replyToAddressString;
     private List<Deferred<String>> unresolvedGlobalAddressDeferreds = new ArrayList<Deferred<String>>();
@@ -54,25 +54,33 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
      * @param messageRouter handles the logic for the RoutingProvider
      */
     @Inject
-    public RoutingProviderImpl(final MessageRouter messageRouter, GlobalAddressProvider globalAddressProvider) {
+    public RoutingProviderImpl(final MessageRouter messageRouter,
+                               GlobalAddressProvider globalAddressProvider,
+                               ReplyToAddressProvider replyToAddressProvider) {
         this.messageRouter = messageRouter;
-        this.globalAddressProvider = globalAddressProvider;
 
-        this.globalAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
+        globalAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
             @Override
             public void transportReady(Address address) {
                 synchronized (unresolvedGlobalAddressDeferreds) {
                     globalAddressString = RoutingTypesUtil.toAddressString(address);
-                    replyToAddressString = globalAddressString;
                     for (Deferred<String> globalAddressDeferred : unresolvedGlobalAddressDeferreds) {
                         globalAddressDeferred.resolve(globalAddressString);
                     }
                     unresolvedGlobalAddressDeferreds.clear();
+                    globalAddressChanged(globalAddressString);
+                }
+            }
+        });
+        replyToAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
+            @Override
+            public void transportReady(Address address) {
+                synchronized (unresolvedGlobalAddressDeferreds) {
+                    replyToAddressString = RoutingTypesUtil.toAddressString(address);
                     for (Deferred<String> replyToAddressDeferred : unresolvedReplyToAddressDeferreds) {
                         replyToAddressDeferred.resolve(replyToAddressString);
                     }
                     unresolvedReplyToAddressDeferreds.clear();
-                    globalAddressChanged(globalAddressString);
                     replyToAddressChanged(replyToAddressString);
                 }
             }

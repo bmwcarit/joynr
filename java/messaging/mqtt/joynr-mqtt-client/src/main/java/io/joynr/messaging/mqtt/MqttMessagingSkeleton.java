@@ -53,7 +53,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
 
     @Inject
-    public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
+    public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttMessageSerializerFactory messageSerializerFactory) {

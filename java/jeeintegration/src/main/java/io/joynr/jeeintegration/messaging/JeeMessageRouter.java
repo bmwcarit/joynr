@@ -31,7 +31,7 @@ import io.joynr.accesscontrol.AccessController;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
-import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ReplyToAddressProvider;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
@@ -58,7 +58,8 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
-    public JeeMessageRouter(GlobalAddressProvider globalAddressProvider, RoutingTable routingTable,
+    public JeeMessageRouter(ReplyToAddressProvider globalAddressProvider,
+                            RoutingTable routingTable,
                             @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                             @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                             MessagingStubFactory messagingStubFactory,
