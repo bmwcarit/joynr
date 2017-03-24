@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@ INIT_LOGGER(MqttReceiver);
 
 MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnection,
                            const MessagingSettings& settings,
-                           const std::string& channelIdForMqttTopic)
+                           const std::string& channelIdForMqttTopic,
+                           const std::string& unicastTopicPrefix)
         : channelIdForMqttTopic(channelIdForMqttTopic),
           globalClusterControllerAddress(),
           mosquittoConnection(mosquittoConnection)
@@ -41,10 +42,11 @@ MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnect
     std::string brokerUri =
             "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
             std::to_string(settings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
-    system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, channelIdForMqttTopic);
-    globalClusterControllerAddress = joynr::serializer::serializeToJson(receiveMqttAddress);
 
-    mosquittoConnection->registerChannelId(channelIdForMqttTopic);
+    std::string unicastChannelIdForMqttTopic = unicastTopicPrefix + channelIdForMqttTopic;
+    system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, unicastChannelIdForMqttTopic);
+    globalClusterControllerAddress = joynr::serializer::serializeToJson(receiveMqttAddress);
+    mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
 }
 
 void MqttReceiver::updateSettings()

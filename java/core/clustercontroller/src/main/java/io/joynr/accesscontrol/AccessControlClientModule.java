@@ -3,7 +3,7 @@ package io.joynr.accesscontrol;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class AccessControlClientModule extends AbstractModule {
         bind(AccessController.class).to(AccessControllerImpl.class).in(Singleton.class);
         bind(LocalDomainAccessController.class).to(LocalDomainAccessControllerImpl.class).in(Singleton.class);
         bind(DomainAccessControlStore.class).to(DomainAccessControlStoreEhCache.class);
-        bind(DomainAccessControlProvisioning.class).to(DefaultDomainAccessControlProvisioning.class);
+        bind(DomainAccessControlProvisioning.class).to(StaticDomainAccessControlProvisioning.class);
     }
 
     @Provides

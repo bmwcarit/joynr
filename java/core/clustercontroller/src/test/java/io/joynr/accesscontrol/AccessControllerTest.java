@@ -3,7 +3,7 @@ package io.joynr.accesscontrol;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,15 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doAnswer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
@@ -32,8 +36,9 @@ import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.capabilities.CapabilitiesProvisioning;
+import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
@@ -51,7 +56,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 /**
  * Test the AccessController
@@ -81,7 +89,7 @@ public class AccessControllerTest {
     private String testOperation = "testOperation";
     private String testPublicKeyId = "testPublicKeyId";
     private MessagingQos messagingQos = new MessagingQos(1000);
-    private ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
+    private HasConsumerPermissionCallback callback = Mockito.mock(HasConsumerPermissionCallback.class);
 
     @BeforeClass
     public static void initialize() {
@@ -101,49 +109,111 @@ public class AccessControllerTest {
 
     @Before
     public void setup() {
+        String discoveryProviderParticipantId = "";
+        String routingProviderParticipantId = "";
         accessController = new AccessControllerImpl(localCapabilitiesDirectory,
                                                     localDomainAccessController,
-                                                    objectMapper);
+                                                    objectMapper,
+                                                    new CapabilitiesProvisioning() {
+                                                        @Override
+                                                        public Collection<DiscoveryEntry> getDiscoveryEntries() {
+                                                            return new ArrayList<DiscoveryEntry>();
+                                                        }
+                                                    },
+                                                    discoveryProviderParticipantId,
+                                                    routingProviderParticipantId);
 
         // Create a dummy message
         request = new Request(testOperation, new String[]{}, new Class<?>[]{});
         message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, messagingQos);
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
-        DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                                                   testDomain,
-                                                                                   testInterface,
-                                                                                   toParticipantId,
-                                                                                   new ProviderQos(),
-                                                                                   System.currentTimeMillis(),
-                                                                                   System.currentTimeMillis()
-                                                                                           + ONE_MINUTE_IN_MS,
-                                                                                   testPublicKeyId,
-                                                                                   false);
-        when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(discoveryEntry);
+        final DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                         testDomain,
+                                                                                         testInterface,
+                                                                                         toParticipantId,
+                                                                                         new ProviderQos(),
+                                                                                         System.currentTimeMillis(),
+                                                                                         System.currentTimeMillis()
+                                                                                                 + ONE_MINUTE_IN_MS,
+                                                                                         testPublicKeyId,
+                                                                                         false);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                CapabilityCallback callback = (CapabilityCallback) invocation.getArguments()[2];
+                callback.processCapabilityReceived(discoveryEntry);
+                return null;
+            }
+        }).when(localCapabilitiesDirectory).lookup(eq(toParticipantId),
+                                                   any(DiscoveryQos.class),
+                                                   any(CapabilityCallback.class));
+
     }
 
     @Test
     public void testAccessWithInterfaceLevelAccessControl() {
-        when(localDomainAccessController.getConsumerPermission(DUMMY_USERID, testDomain, testInterface, TrustLevel.HIGH)).thenReturn(Permission.YES);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                GetConsumerPermissionCallback callback = (GetConsumerPermissionCallback) invocation.getArguments()[4];
+                callback.getConsumerPermission(Permission.YES);
+                return null;
+            }
 
-        assertTrue(accessController.hasConsumerPermission(message));
+        }).when(localDomainAccessController).getConsumerPermission(eq(DUMMY_USERID),
+                                                                   eq(testDomain),
+                                                                   eq(testInterface),
+                                                                   eq(TrustLevel.HIGH),
+                                                                   any(GetConsumerPermissionCallback.class));
+
+        accessController.hasConsumerPermission(message, callback);
+        verify(callback, Mockito.times(1)).hasConsumerPermission(true);
     }
 
     @Test
     public void testAccessWithOperationLevelAccessControl() {
-        when(localDomainAccessController.getConsumerPermission(DUMMY_USERID, testDomain, testInterface, TrustLevel.HIGH)).thenReturn(null);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                GetConsumerPermissionCallback callback = (GetConsumerPermissionCallback) invocation.getArguments()[4];
+                callback.getConsumerPermission(null);
+                return null;
+            }
+
+        }).when(localDomainAccessController).getConsumerPermission(eq(DUMMY_USERID),
+                                                                   eq(testDomain),
+                                                                   eq(testInterface),
+                                                                   eq(TrustLevel.HIGH),
+                                                                   any(GetConsumerPermissionCallback.class));
+
         when(localDomainAccessController.getConsumerPermission(DUMMY_USERID,
                                                                testDomain,
                                                                testInterface,
                                                                testOperation,
                                                                TrustLevel.HIGH)).thenReturn(Permission.YES);
 
-        assertTrue(accessController.hasConsumerPermission(message));
+        accessController.hasConsumerPermission(message, callback);
+        verify(callback, Mockito.times(1)).hasConsumerPermission(true);
     }
 
     @Test
     public void testAccessWithOperationLevelAccessControlAndFaultyMessage() {
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                GetConsumerPermissionCallback callback = (GetConsumerPermissionCallback) invocation.getArguments()[4];
+                callback.getConsumerPermission(null);
+                return null;
+            }
+
+        }).when(localDomainAccessController).getConsumerPermission(eq(DUMMY_USERID),
+                                                                   eq(testDomain),
+                                                                   eq(testInterface),
+                                                                   eq(TrustLevel.HIGH),
+                                                                   any(GetConsumerPermissionCallback.class));
+
         when(localDomainAccessController.getConsumerPermission(DUMMY_USERID,
                                                                testDomain,
                                                                testInterface,
@@ -151,6 +221,7 @@ public class AccessControllerTest {
                                                                TrustLevel.HIGH)).thenReturn(Permission.NO);
         message.setPayload("invalid serialization of Request object");
 
-        assertFalse(accessController.hasConsumerPermission(message));
+        accessController.hasConsumerPermission(message, callback);
+        verify(callback, Mockito.times(1)).hasConsumerPermission(false);
     }
 }

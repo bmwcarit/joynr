@@ -3,7 +3,7 @@ package io.joynr.accesscontrol;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,10 @@ import joynr.infrastructure.DacTypes.TrustLevel;
  */
 public class AccessControllerDummy implements AccessController {
     @Override
-    public boolean hasConsumerPermission(JoynrMessage message) {
-        return true;
+    public void hasConsumerPermission(final JoynrMessage message, final HasConsumerPermissionCallback callback) {
+        if (callback != null) {
+            callback.hasConsumerPermission(true);
+        }
     }
 
     @Override

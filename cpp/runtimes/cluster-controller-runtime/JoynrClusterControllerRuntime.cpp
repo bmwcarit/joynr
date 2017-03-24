@@ -186,7 +186,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         JOYNR_LOG_DEBUG(logger, "MQTT-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
                 brokerUrl.toString(), "");
-        addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(globalAddress);
+        addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(
+                globalAddress, clusterControllerSettings.getMqttMulticastTopicPrefix());
         doMqttMessaging = true;
     } else if (brokerProtocol == "HTTP" || brokerProtocol == "HTTPS") {
         JOYNR_LOG_DEBUG(logger, "HTTP-Messaging");
@@ -260,7 +261,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                             "mqtt MessageReceiver");
 
             mqttMessageReceiver = std::make_shared<MqttReceiver>(
-                    mosquittoConnection, messagingSettings, clusterControllerId);
+                    mosquittoConnection,
+                    messagingSettings,
+                    clusterControllerId,
+                    clusterControllerSettings.getMqttUnicastTopicPrefix());
 
             assert(mqttMessageReceiver != nullptr);
         }
@@ -372,6 +376,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             mqttMessagingSkeleton = std::make_shared<MqttMessagingSkeleton>(
                     *ccMessageRouter,
                     std::static_pointer_cast<MqttReceiver>(mqttMessageReceiver),
+                    clusterControllerSettings.getMqttMulticastTopicPrefix(),
                     messagingSettings.getTtlUpliftMs());
             mqttMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
                 mqttMessagingSkeleton->onTextMessageReceived(msg);
