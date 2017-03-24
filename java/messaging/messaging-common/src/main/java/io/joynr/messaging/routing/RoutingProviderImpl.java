@@ -46,7 +46,9 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     private MessageRouter messageRouter;
     private GlobalAddressProvider globalAddressProvider;
     private String globalAddressString;
+    private String replyToAddressString;
     private List<Deferred<String>> unresolvedGlobalAddressDeferreds = new ArrayList<Deferred<String>>();
+    private List<Deferred<String>> unresolvedReplyToAddressDeferreds = new ArrayList<Deferred<String>>();
 
     /**
      * @param messageRouter handles the logic for the RoutingProvider
@@ -61,11 +63,17 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
             public void transportReady(Address address) {
                 synchronized (unresolvedGlobalAddressDeferreds) {
                     globalAddressString = RoutingTypesUtil.toAddressString(address);
+                    replyToAddressString = globalAddressString;
                     for (Deferred<String> globalAddressDeferred : unresolvedGlobalAddressDeferreds) {
                         globalAddressDeferred.resolve(globalAddressString);
                     }
                     unresolvedGlobalAddressDeferreds.clear();
+                    for (Deferred<String> replyToAddressDeferred : unresolvedReplyToAddressDeferreds) {
+                        replyToAddressDeferred.resolve(replyToAddressString);
+                    }
+                    unresolvedReplyToAddressDeferreds.clear();
                     globalAddressChanged(globalAddressString);
+                    replyToAddressChanged(replyToAddressString);
                 }
             }
         });
@@ -154,5 +162,18 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
             }
         }
         return new Promise<Deferred<String>>(globalAddressDeferred);
+    }
+
+    @Override
+    public Promise<Deferred<String>> getReplyToAddress() {
+        Deferred<String> replyToAddressDeferred = new Deferred<String>();
+        synchronized (unresolvedReplyToAddressDeferreds) {
+            if (replyToAddressString != null) {
+                replyToAddressDeferred.resolve(replyToAddressString);
+            } else {
+                unresolvedReplyToAddressDeferreds.add(replyToAddressDeferred);
+            }
+        }
+        return new Promise<Deferred<String>>(replyToAddressDeferred);
     }
 }
