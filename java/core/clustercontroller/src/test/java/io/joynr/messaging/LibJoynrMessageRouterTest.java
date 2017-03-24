@@ -87,7 +87,7 @@ public class LibJoynrMessageRouterTest {
         message.setExpirationDate(ExpiryDate.fromRelativeTtl(10000));
         message.setTo(unknownParticipantId);
         message.setLocalMessage(false);
-        message.setType(message.MESSAGE_TYPE_REQUEST);
+        message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
 
         when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
         when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
@@ -131,7 +131,6 @@ public class LibJoynrMessageRouterTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void passesNextHopToParent() {
         messageRouter.addNextHop(unknownParticipantId, nextHopAddress);
         Mockito.verify(messageRouterParent).addNextHop(Mockito.eq(unknownParticipantId), Mockito.eq(incomingAddress));
