@@ -178,6 +178,33 @@ will be reachable via the selected global transport middleware.
 * **User property**: `joynr.messaging.primaryglobaltransport`
 * **Default value**: NOT SET
 
+### `MQTT_TOPIC_PREFIX_REPLYTO`
+Set the mqtt prefix to be prepended to replyTo topics when using shared subscriptions.
+If shared subscriptions are disabled, the unicast prefix is used, i.e. the replyTo address
+is the same as the global address for provider registration.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.sharedsubscriptionsreplyto`
+* **Default value**: `replyto/`
+
+### `MQTT_TOPIC_PREFIX_UNICAST`
+Can be used to set the cluster topic prefix (shared by all nodes in a MQTT cluster-node
+configuration).
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.unicast`
+* **Default value**: ``
+
+### `MQTT_TOPIC_PREFIX_MULTICAST`
+Set the mqtt prefix to be prepended to multicast topics.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.multicast`
+* **Default value**: ``
+
 ### `CAPABILITYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
@@ -281,6 +308,20 @@ to the application. A value of -1 means that no timeout is used for actions.
 * **Type**: int
 * **User property**: `joynr.messaging.mqtt.timetowaitms`
 * **Default value**: `-1`
+
+### `PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS`
+
+Use this key to activate shared subscription support by setting the property's value to true.
+Shared subscriptions are a feature of HiveMQ which allow queue semantics to be used for
+subscribers to MQTT topics. That is, only one subscriber receives a message, rather than all
+subscribers. This feature can be used to load balance incoming messages on MQTT. This feature
+is useful if you want to run a cluster of JEE nodes while using only MQTT for communication
+(an alternative is to use the HTTP bridge configuration).
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.messaging.mqtt.enable.sharedsubscriptions`
+* **Default value**: `false`
 
 ## SystemServicesSettings
 
@@ -393,15 +434,6 @@ global cached discovery entries.
 
 These properties are defined as constants in the
 `io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys` class.
-
-### `JEE_ENABLE_SHARED_SUBSCRIPTIONS`
-
-Use this key to activate shared subscription support by setting the property's value to true. Shared subscriptions are a feature of HiveMQ which allow queue semantics to be used for subscribers to MQTT topics. That is, only one subscriber receives a message, rather than all subscribers. This feature can be used to load balance incoming messages on MQTT. This feature is useful if you want to run a cluster of JEE nodes while using only MQTT for communication (an alternative is to use the HTTP bridge configuration).
-
-* **OPTIONAL**
-* **Type**: Boolean
-* **User property**: `joynr.jeeintegration.enable.sharedsubscriptions`
-* **Default value**: `false`
 
 ### `JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY`
 

@@ -62,7 +62,7 @@ Additionally, the method must be annotated with
 
 #### Optional Properties
 
-* `JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS` - enables the
+* `MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS` - enables the
   [HiveMQ](http://www.hivemq.com) specific 'shared subscription' feature, which allows
   clustering of JEE applications using just MQTT for communication. Set this to `true`
   to enable the feature. Defaults to `false`.
@@ -107,7 +107,7 @@ public class JoynrConfigurationProvider {
         "http://localhost:8080");
     joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
         "io.joynr.test.interlanguage.jee.provider");
-    joynrProperties.setProperty(JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS,
+    joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS,
         Boolean.TRUE.toString());
     joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI,
         "tcp://localhost:1883");

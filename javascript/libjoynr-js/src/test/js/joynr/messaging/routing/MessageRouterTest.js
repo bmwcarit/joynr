@@ -193,11 +193,16 @@ define([
                             };
                             spyOn(routingProxySpy.globalAddress, "get").and.returnValue(Promise.resolve(serializedTestGlobalClusterControllerAddress));
 
+                            routingProxySpy.replyToAddress = {
+                                get : null
+                            };
+                            spyOn(routingProxySpy.replyToAddress, "get").and.returnValue(Promise.resolve(serializedTestGlobalClusterControllerAddress));
+
                             messageRouter =
                                 createRootMessageRouter(
                                         persistencySpy,
                                         messageQueueSpy);
-                            messageRouter.setGlobalClusterControllerAddress(serializedTestGlobalClusterControllerAddress);
+                            messageRouter.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
 
                             done();
                         });
@@ -541,7 +546,7 @@ define([
                                             messageQueueSpy,
                                             incomingAddress,
                                             parentMessageRouterAddress);
-                                messageRouter.setGlobalClusterControllerAddress(serializedTestGlobalClusterControllerAddress);
+                                messageRouter.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
                             });
 
                             it("queries global address from routing provider", function(done) {
@@ -553,7 +558,7 @@ define([
                                             parentMessageRouterAddress);
                                 messageRouter.setRoutingProxy(routingProxySpy)
                                 .then(function() {
-                                    expect(routingProxySpy.globalAddress.get).toHaveBeenCalled();
+                                    expect(routingProxySpy.replyToAddress.get).toHaveBeenCalled();
                                     done();
                                 }).catch(function(error) {
                                     done.fail(error);

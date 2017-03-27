@@ -37,7 +37,7 @@ import joynr.JoynrMessage;
 
 import javax.annotation.CheckForNull;
 
-import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -50,7 +50,7 @@ public class CcMessageRouter extends AbstractMessageRouter {
     @Inject
     @Singleton
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
-    public CcMessageRouter(GlobalAddressProvider globalAddressProvider,
+    public CcMessageRouter(ReplyToAddressProvider globalAddressProvider,
                            RoutingTable routingTable,
                            @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                            @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,

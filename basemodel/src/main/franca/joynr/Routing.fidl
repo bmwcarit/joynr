@@ -112,8 +112,18 @@ interface Routing {
 
 	<**
 		@description: global address of cluster-controller
+			used for provider registration. Messages from global
+			to these providers have to be sent to this address.
 	**>
 	attribute String globalAddress readonly // NOTIFYREADONLY
+
+	<**
+		@description: global address of cluster-controller
+			used as replyTo address for outgoing requests.
+			Replies from other cluster controllers have to be sent
+			to this address.
+	**>
+	attribute String replyToAddress readonly // NOTIFYREADONLY
 
 	<**
 		@description: Adds a hop to the parent routing table.

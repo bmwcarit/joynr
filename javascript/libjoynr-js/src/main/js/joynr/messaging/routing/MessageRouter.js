@@ -94,7 +94,7 @@ define(
                 var multicastAddressCalculator = settings.multicastAddressCalculator;
                 var messagingSkeletonFactory = settings.messagingSkeletonFactory;
                 var multicastReceiversRegistry = {};
-                var globalClusterControllerAddress;
+                var replyToAddress;
                 var messageReplyToAddressCalculator = new MessageReplyToAddressCalculator({});
                 var messagesWithoutReplyTo = [];
 
@@ -119,9 +119,9 @@ define(
                     return started;
                 }
 
-                this.setGlobalClusterControllerAddress = function (newAddress) {
-                    globalClusterControllerAddress = newAddress;
-                    messageReplyToAddressCalculator.setReplyToAddress(globalClusterControllerAddress);
+                this.setReplyToAddress = function (newAddress) {
+                    replyToAddress = newAddress;
+                    messageReplyToAddressCalculator.setReplyToAddress(replyToAddress);
                     messagesWithoutReplyTo.forEach(function(msg) {
                         that.route(msg);
                     });
@@ -222,10 +222,10 @@ define(
 
                             routingProxy = newRoutingProxy;
 
-                            var globalAddressPromise = routingProxy.globalAddress.get().then(function(globalAddress) {
-                                that.setGlobalClusterControllerAddress(globalAddress);
+                            var replyToAddressPromise = routingProxy.replyToAddress.get().then(function(replyToAddress) {
+                                that.setReplyToAddress(replyToAddress);
                             }).catch(function(error) {
-                                throw new Error("Failed to get globalAddress from parent router: " + error
+                                throw new Error("Failed to get replyToAddress from parent router: " + error
                                         + (error instanceof JoynrException ? " " + error.detailMessage : ""));
                             });
 
@@ -280,7 +280,7 @@ define(
                             queuedRemoveNextHopCalls = undefined;
                             queuedAddMulticastReceiverCalls = undefined;
                             queuedRemoveMulticastReceiverCalls = undefined;
-                            return globalAddressPromise;
+                            return replyToAddressPromise;
                         };
 
                 /*

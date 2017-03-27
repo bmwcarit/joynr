@@ -30,6 +30,8 @@ import io.joynr.dispatcher.ServletMessageReceiverImpl;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.http.ServletHttpGlobalAddressFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
+import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -54,7 +56,14 @@ public class ServletMessagingModule extends AbstractModule {
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),
                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                   });
+                                                   },
+                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_PROVIDER));
         globalAddresses.addBinding().to(ServletHttpGlobalAddressFactory.class);
+        Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;
+        replyToAddresses = Multibinder.newSetBinder(binder(),
+                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+                                                    },
+                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
+        replyToAddresses.addBinding().to(ServletHttpGlobalAddressFactory.class);
     }
 }

@@ -1,4 +1,4 @@
-package test.io.joynr.jeeintegration.messaging;
+package io.joynr.messaging.mqtt;
 
 /*
  * #%L
@@ -33,10 +33,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import io.joynr.jeeintegration.messaging.SharedSubscriptionsMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
+import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
+import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -56,10 +57,16 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     private MqttAddress ownAddress;
 
     @Mock
+    private MqttAddress replyToAddress;
+
+    @Mock
     private MessageRouter messageRouter;
 
     @Mock
     private MqttMessageSerializerFactory mqttMessageSerializerFactory;
+
+    @Mock
+    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     private SharedSubscriptionsMqttMessagingSkeleton subject;
 
@@ -74,25 +81,29 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     @Test
     public void testSubscribesToSharedSubscription() {
         when(ownAddress.getTopic()).thenReturn("ownTopic");
+        final String replyToAddressTopic = "replyToAddressTopic";
+        when(replyToAddress.getTopic()).thenReturn(replyToAddressTopic);
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                               replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
                                                                "channelId",
-                                                               "receiverId");
+                                                               mqttTopicPrefixProvider);
         subject.init();
         verify(mqttClient).subscribe(eq("$share:channelId:ownTopic/#"));
-        verify(mqttClient).subscribe(eq("replyto/ownTopic/receiverId/#"));
+        verify(mqttClient).subscribe(eq(replyToAddressTopic + "/#"));
     }
 
     @Test
     public void testChannelIdStrippedOfNonAlphaChars() {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                               replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
                                                                "channel@123_bling$$",
-                                                               "receiverId");
+                                                               mqttTopicPrefixProvider);
         subject.init();
         verify(mqttClient).subscribe(startsWith("$share:channelbling:"));
     }
@@ -100,11 +111,12 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalChannelId() {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                               replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
                                                                "@123_$$-!",
-                                                               "receiverId");
+                                                               mqttTopicPrefixProvider);
         subject.init();
     }
 

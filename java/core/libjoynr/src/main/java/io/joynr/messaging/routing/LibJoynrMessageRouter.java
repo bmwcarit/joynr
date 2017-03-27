@@ -196,8 +196,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         }
         deferredParentHopsParticipantIds.clear();
 
-        String globalAddress = parentRouter.getGlobalAddress();
-        replyToAddress = globalAddress;
+        replyToAddress = parentRouter.getReplyToAddress();
     }
 
     /**

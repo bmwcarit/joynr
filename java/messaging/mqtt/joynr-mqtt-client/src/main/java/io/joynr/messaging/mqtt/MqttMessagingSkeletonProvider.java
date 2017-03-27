@@ -1,4 +1,4 @@
-package io.joynr.jeeintegration.messaging;
+package io.joynr.messaging.mqtt;
 
 /*
  * #%L
@@ -19,10 +19,10 @@ package io.joynr.jeeintegration.messaging;
  * #L%
  */
 
-import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
-import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
-import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,69 +32,66 @@ import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.mqtt.MqttClientFactory;
-import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
-import io.joynr.messaging.mqtt.MqttMessagingSkeleton;
-import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
  * A provider for {@link IMessagingSkeleton} instances which checks with the property configured under
- * {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} to see if
- * messages should be received via MQTT or not. If they should (default behaviour), then it returns an instance of
- * {@link MqttMessagingSkeleton}, otherwise an instance of {@link NoOpMessagingSkeleton}.
+ * {@link io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} If shared subscriptions are
+ * enabled, it returns an instance of {@link SharedSubscriptionsMqttMessagingSkeleton}. Otherwise (default behaviour),
+ * it returns an instance of the normal {@link MqttMessagingSkeleton}.
  */
 public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleton> {
 
     private final static Logger logger = LoggerFactory.getLogger(MqttMessagingSkeletonProvider.class);
 
-    private boolean httpBridgeEnabled;
+    protected MqttClientFactory mqttClientFactory;
     private boolean sharedSubscriptionsEnabled;
     private MqttAddress ownAddress;
+    private MqttAddress replyToAddress;
     private MessageRouter messageRouter;
-    private MqttClientFactory mqttClientFactory;
     private MqttMessageSerializerFactory messageSerializerFactory;
     private String channelId;
-    private String receiverId;
+    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public MqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String enableHttpBridge,
-                                         @Named(JEE_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
-                                         @Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
+    public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
+                                         @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
+                                         @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
                                          MqttMessageSerializerFactory messageSerializerFactory,
                                          @Named(CHANNELID) String channelId,
-                                         @Named(RECEIVERID) String receiverId) {
-        // CHECKSTYLE:ON
-        httpBridgeEnabled = Boolean.valueOf(enableHttpBridge);
+                                         MqttTopicPrefixProvider mqttTopicPrefixProvider) {
         sharedSubscriptionsEnabled = Boolean.valueOf(enableSharedSubscriptions);
         this.ownAddress = ownAddress;
+        this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         this.messageSerializerFactory = messageSerializerFactory;
         this.channelId = channelId;
-        this.receiverId = receiverId;
-        logger.debug("Created with httpBridgeEnabled: {} sharedSubscriptionsEnabled: {} "
-                + "ownAddress: {} channelId: {}", new Object[]{ httpBridgeEnabled, sharedSubscriptionsEnabled,
-                this.ownAddress, this.channelId });
+        this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
+        logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}", new Object[]{
+                sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
     }
 
     @Override
     public IMessagingSkeleton get() {
-        if (httpBridgeEnabled) {
-            return new NoOpMessagingSkeleton(mqttClientFactory);
-        } else if (sharedSubscriptionsEnabled) {
+        if (sharedSubscriptionsEnabled) {
             return new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                                replyToAddress,
                                                                 messageRouter,
                                                                 mqttClientFactory,
                                                                 messageSerializerFactory,
                                                                 channelId,
-                                                                receiverId);
+                                                                mqttTopicPrefixProvider);
         }
-        return new MqttMessagingSkeleton(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
+        return new MqttMessagingSkeleton(ownAddress,
+                                         messageRouter,
+                                         mqttClientFactory,
+                                         messageSerializerFactory,
+                                         mqttTopicPrefixProvider);
     }
 
 }

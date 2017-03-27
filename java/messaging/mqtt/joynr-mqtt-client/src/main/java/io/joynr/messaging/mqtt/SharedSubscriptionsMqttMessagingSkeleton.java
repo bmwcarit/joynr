@@ -1,4 +1,4 @@
-package io.joynr.jeeintegration.messaging;
+package io.joynr.messaging.mqtt;
 
 /*
  * #%L
@@ -19,7 +19,8 @@ package io.joynr.jeeintegration.messaging;
  * #L%
  */
 
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 
 import static java.lang.String.format;
 
@@ -27,9 +28,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.MqttClientFactory;
-import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
-import io.joynr.messaging.mqtt.MqttMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -37,31 +35,31 @@ import joynr.system.RoutingTypes.MqttAddress;
  * Overrides the standard {@link MqttMessagingSkeleton} in order to customise the topic subscription strategy in the
  * case where HiveMQ shared subscriptions are available.
  *
- * @see io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_SHARED_SUBSCRIPTIONS
+ * @see io.joynr.messaging.mqtt.MqttModule#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS
  */
 public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkeleton {
 
-    public static final String REPLYTO_PREFIX = "replyto/";
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
     private String channelId;
-    private String receiverId;
+    private MqttAddress replyToAddress;
 
     @Inject
-    public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
+    public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
+                                                    @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
                                                     MqttMessageSerializerFactory messageSerializerFactory,
                                                     @Named(MessagingPropertyKeys.CHANNELID) String channelId,
-                                                    @Named(MessagingPropertyKeys.RECEIVERID) String receiverId) {
-        super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
+                                                    MqttTopicPrefixProvider mqttTopicPrefixProvider) {
+        super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory, mqttTopicPrefixProvider);
+        this.replyToAddress = replyToAddress;
         this.channelId = channelId;
-        this.receiverId = receiverId;
     }
 
     @Override
     protected void subscribe() {
         getClient().subscribe("$share:" + sanitiseChannelIdForUseAsTopic() + ":" + getOwnAddress().getTopic() + "/#");
-        getClient().subscribe(REPLYTO_PREFIX + getOwnAddress().getTopic() + "/" + receiverId + "/#");
+        getClient().subscribe(replyToAddress.getTopic() + "/#");
     }
 
     private String sanitiseChannelIdForUseAsTopic() {

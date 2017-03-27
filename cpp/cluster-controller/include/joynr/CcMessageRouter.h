@@ -159,6 +159,10 @@ public:
             std::function<void(const std::string&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
+    void getReplyToAddress(
+            std::function<void(const std::string&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
+
     /*
      * Implement both IMessageRouter and RoutingAbstractProvider
      */

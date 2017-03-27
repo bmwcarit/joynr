@@ -12,6 +12,10 @@
   'GlobalDomainAccessControlListEditor' (contains the modification related APIs for
   master / mediator / owner access and registration control entries)
   See `basemodel/src/main/franca/joynr/*.fidl` for details.
+* **[Java]** Moved and changed property `JeeIntegrationPropertyKeys.
+  JEE_ENABLE_SHARED_SUBSCRIPTIONS="joynr.jeeintegration.enable.sharedsubscriptions"` to `MqttModule.
+  PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS="joynr.messaging.mqtt.enable.sharedsubscriptions"`
+* **[Java]** MQTT shared subscriptions are not restricted to JEE any longer
 * **[All]** Added 'compress' to MessagingQos (available with Java/C++ solely via
   getter/setter, in JS also via constructor), existing MessagingQos APIs remain working
 
@@ -21,7 +25,10 @@
 * **[Java]** Added properties (`PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC`,
   `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC` and `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`) to
   configure the MQTT connection. See [JavaSettings](JavaSettings.md) for more information.
-* moved to muesli 0.3.1 for serialization of boost::multi_index containers
+* **[C++]** Moved to muesli 0.3.1 for serialization of boost::multi_index containers
+* **[Java]** Allow to set prefixes of Mqtt topics, see [JavaSettings](JavaSettings.md).
+* **[C++]** Allow to set prefixes of Mqtt topics in cluster-controller settings:
+  `mqtt-multicast-topic-prefix` and `mqtt-unicast-topic-prefix`
 * **[Java]** Added property (`PROPERTY_ACCESSCONTROL_ENABLE`) to enable access control checks.
   See [JavaSettings](JavaSettings.md) for more information.
 

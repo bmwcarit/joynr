@@ -43,14 +43,15 @@ import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.routing.MessageRouter;
 
 /**
- * Unit tests for {@link DefaultMqttClientIdProvider}.
+ * Unit tests for {@link DefaultMqttTopicPrefixProvider}.
  */
-public class DefaultMqttClientIdProviderTest {
+public class DefaultMqttTopicPrefixProviderTest {
 
-    private String receiverId = "testReceiverId123";
-    private String clientIdPrefix = "testPrefix-";
-    private MqttClientIdProvider clientIdProviderWithoutClientIdPrefix;
-    private MqttClientIdProvider clientIdProviderWithClientIdPrefix;
+    private MqttTopicPrefixProvider mqttTopicProviderInstance;
+
+    private static final String expectedMulticastPrefix = "multicastPrefix/";
+    private static final String expectedReplyToPrefix = "clusterReplyToPrefix/";
+    private static final String expectedUnicastPrefix = "unicast/";
 
     @Mock
     private MessageRouter mockMessageRouter;
@@ -65,10 +66,9 @@ public class DefaultMqttClientIdProviderTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC, "30");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS, "-1");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
-        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
-        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "");
-        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
-        properties.put(MessagingPropertyKeys.RECEIVERID, receiverId);
+        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, expectedMulticastPrefix);
+        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, expectedReplyToPrefix);
+        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, expectedUnicastPrefix);
         Module testModule = Modules.override(new MqttPahoModule()).with(new AbstractModule() {
             @Override
             protected void configure() {
@@ -77,26 +77,26 @@ public class DefaultMqttClientIdProviderTest {
                                                     .toInstance(Executors.newScheduledThreadPool(10));
             }
         });
-        Injector injectorWithoutClientIdPrefix = Guice.createInjector(testModule, new JoynrPropertiesModule(properties));
-        clientIdProviderWithoutClientIdPrefix = injectorWithoutClientIdPrefix.getInstance(MqttClientIdProvider.class);
-
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_CLIENT_ID_PREFIX, clientIdPrefix);
-        Injector injectorWithClientIdPrefix = Guice.createInjector(testModule, new JoynrPropertiesModule(properties));
-        clientIdProviderWithClientIdPrefix = injectorWithClientIdPrefix.getInstance(MqttClientIdProvider.class);
+        Injector injector = Guice.createInjector(testModule, new JoynrPropertiesModule(properties));
+        mqttTopicProviderInstance = injector.getInstance(MqttTopicPrefixProvider.class);
     }
 
     @Test
-    public void testGetClientIdWithoutPrefix() {
-        String clientId = clientIdProviderWithoutClientIdPrefix.getClientId();
-        String expectedClientId = "joynr:" + receiverId;
-        assertEquals(expectedClientId, clientId);
+    public void testGetMulticastTopicPrefix() {
+        String topicPrefix = mqttTopicProviderInstance.getMulticastTopicPrefix();
+        assertEquals(expectedMulticastPrefix, topicPrefix);
     }
 
     @Test
-    public void testGetClientIdWithPrefix() {
-        String clientId = clientIdProviderWithClientIdPrefix.getClientId();
-        String expectedClientId = clientIdPrefix + "joynr:" + receiverId;
-        assertEquals(expectedClientId, clientId);
+    public void testGetUnicastTopicPrefix() {
+        String topicPrefix = mqttTopicProviderInstance.getUnicastTopicPrefix();
+        assertEquals(expectedUnicastPrefix, topicPrefix);
+    }
+
+    @Test
+    public void testGetReplyToTopicPrefix() {
+        String topicPrefix = mqttTopicProviderInstance.getSharedSubscriptionsReplyToTopicPrefix();
+        assertEquals(expectedReplyToPrefix, topicPrefix);
     }
 
 }
