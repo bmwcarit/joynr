@@ -72,4 +72,19 @@ public class MessagingQosTest {
         messagingQos.setEncrypt(encrypt);
         assertEquals(encrypt, messagingQos.getEncrypt());
     }
+
+    @Test
+    public void testDefaultCompress() {
+        MessagingQos messagingQos = new MessagingQos(0L);
+        assertEquals(false, messagingQos.getCompress());
+    }
+
+    @Test
+    public void testCompressSetter() {
+        MessagingQos messagingQos = new MessagingQos(0L);
+        assertEquals(false, messagingQos.getCompress());
+        boolean compress = true;
+        messagingQos.setCompress(compress);
+        assertEquals(compress, messagingQos.getCompress());
+    }
 }

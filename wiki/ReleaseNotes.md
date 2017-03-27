@@ -16,6 +16,8 @@
   JEE_ENABLE_SHARED_SUBSCRIPTIONS="joynr.jeeintegration.enable.sharedsubscriptions"` to `MqttModule.
   PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS="joynr.messaging.mqtt.enable.sharedsubscriptions"`
 * **[Java]** MQTT shared subscriptions are not restricted to JEE any longer
+* **[All]** Added 'compress' to MessagingQos (available with Java/C++ solely via
+  getter/setter, in JS also via constructor), existing MessagingQos APIs remain working
 
 ## Other changes
 * **[C++]** Access control can be activated in the cluster-controller. Default: OFF.

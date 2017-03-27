@@ -49,6 +49,42 @@ define([
             expect(new MessagingQos({
                 encrypt : true
             })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                effort : MessagingQosEffort.BEST_EFFORT,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                effort : MessagingQosEffort.BEST_EFFORT,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                encrypt : true,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                effort : MessagingQosEffort.BEST_EFFORT,
+                encrypt : true,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                effort : MessagingQosEffort.BEST_EFFORT,
+                encrypt : true,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                compress : true,
+                encrypt : true
+            })).toBeDefined();
         });
 
         it("is of correct type", function() {
@@ -70,6 +106,7 @@ define([
                 ttl : MessagingQos.DEFAULT_TTL
             }));
             expect(new MessagingQos().encrypt).toEqual(false);
+            expect(new MessagingQos().compress).toEqual(false);
         });
 
         function testTtlValues(ttl) {
@@ -117,6 +154,18 @@ define([
         it("constructs with correct encrypt values", function() {
             testEncryptValues(false);
             testEncryptValues(true);
+        });
+
+        function testCompressValues(compress) {
+            var messagingQos = new MessagingQos({
+                compress : compress
+            });
+            expect(messagingQos.compress).toBe(compress);
+        }
+
+        it("constructs with correct compress values", function() {
+            testCompressValues(false);
+            testCompressValues(true);
         });
 
         var runsWithCustomHeaders = [

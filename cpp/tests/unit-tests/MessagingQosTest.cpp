@@ -105,6 +105,7 @@ TEST_F(MessagingQosTest, setCustomEffort)
 TEST_F(MessagingQosTest, defaultEncrypt)
 {
     EXPECT_EQ(false, qos.getEncrypt());
+    EXPECT_EQ(false, qos.getCompress());
 }
 
 TEST_F(MessagingQosTest, setCustomEncrypt)
@@ -112,6 +113,13 @@ TEST_F(MessagingQosTest, setCustomEncrypt)
     EXPECT_EQ(false, qos.getEncrypt());
     qos.setEncrypt(true);
     EXPECT_EQ(true, qos.getEncrypt());
+}
+
+TEST_F(MessagingQosTest, setCustomCompress)
+{
+    EXPECT_EQ(false, qos.getCompress());
+    qos.setCompress(true);
+    EXPECT_EQ(true, qos.getCompress());
 }
 
 TEST_F(MessagingQosTest, constructorWithCustomEffort)
